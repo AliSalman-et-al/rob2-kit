@@ -947,6 +947,14 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     assert "comparison_groups" not in comparative
     assert "analysis_population" in comparative_variant["required"]
     assert "analysis_population" in comparative
+    estimate = comparative["estimate"]
+    assert "point estimate as one string" in estimate["description"]
+    assert "Do not include a confidence interval" in estimate["description"]
+    assert estimate["examples"] == ["0.68"]
+    precision = comparative["precision"]
+    assert "one string" in precision["description"]
+    assert "Do not send an object" in precision["description"]
+    assert precision["examples"] == ["95% CI, 0.57 to 0.80"]
     for form in reported["oneOf"]:
         assert "analysis_population" in form["required"]
     for name, definition in _walk_schema(schema):
@@ -959,19 +967,18 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     assert len(json.dumps(schema, separators=(",", ":")).encode()) < 30000
     assert len(_walk_schema(schema)) <= 40
     save_schema = _tool_schema("save_proposal")
-    assert save_schema["required"] == ["expected_revision", "reasoning_id"]
-    assert set(save_schema["properties"]) == {"expected_revision", "reasoning_id"}
+    assert save_schema["required"] == ["expected_revision"]
+    assert set(save_schema["properties"]) == {"expected_revision"}
 
 
 def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     schema = _tool_schema("save_domain_judgment")
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["trial_id", "domain_id", "expected_revision", "reasoning_id"]
+    assert schema["required"] == ["trial_id", "domain_id", "expected_revision"]
     assert set(schema["properties"]) == {
         "trial_id",
         "domain_id",
         "expected_revision",
-        "reasoning_id",
     }
     draft = _tool_schema("validate_domain_assessment")
     assert draft["additionalProperties"] is False

@@ -127,6 +127,58 @@ def test_issue_420_guidance_keeps_availability_quantities_and_mechanism_distinct
     ):
         assert term in d3, term
 
+    suggestions = {
+        suggestion.query
+        for suggestion in _question(
+            "sq:missing:data-available"
+        ).guidance.operational.query_suggestions
+    }
+    assert {"participant flow", "CONSORT"} <= suggestions
+
+
+def test_assignment_effect_does_not_misclassify_permitted_subsequent_care() -> None:
+    d2 = _guidance_text(("sq:deviations:context-deviations",))
+    for term in (
+        "subsequent treatment",
+        "after progression",
+        "protocol inconsistency",
+        "trial-context cause",
+        "not itself a deviation",
+    ):
+        assert term in d2, term
+
+
+def test_high_risk_inference_gates_are_explicit_in_delivered_question_cards() -> None:
+    rules = {
+        question_id: _question(question_id).guidance.operational.decision_rule.lower()
+        for question_id in (
+            "sq:deviations:context-deviations",
+            "sq:missing:data-available",
+            "sq:selection:multiple-analyses",
+        )
+    }
+    assert all(
+        term in rules["sq:deviations:context-deviations"]
+        for term in ("inconsistent with the protocol", "trial context caused")
+    )
+    assert all(
+        term in rules["sq:missing:data-available"]
+        for term in (
+            "all or nearly all",
+            "materially incomplete",
+            "extent remains unknown",
+            "no_information",
+        )
+    )
+    assert all(
+        term in rules["sq:selection:multiple-analyses"]
+        for term in (
+            "multiplicity alone",
+            "eligible alternatives",
+            "why selection likely depended on the results",
+        )
+    )
+
 
 def test_issue_421_guidance_keeps_measurement_influence_propositions_distinct() -> None:
     d4 = _guidance_text(
@@ -298,3 +350,4 @@ def test_comparison_cards_keep_premise_specific_slots_and_question_bindings() ->
         assert card["question_id"] == question_id
         assert {slot["name"] for slot in card["slots"]} == slot_names
         assert all(slot["status"] == "unknown" for slot in card["slots"])
+        assert "empty passage group is unopened" in card["prompt"]

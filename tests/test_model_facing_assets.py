@@ -68,6 +68,13 @@ def test_domain_references_use_current_handle_only_evidence_contract() -> None:
     assert stale == {}
 
 
+def test_readme_uses_receipt_only_save_contracts_without_internal_reasoning_ids() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    assert "save_proposal` with the returned `reasoning_id`" not in readme
+    assert "save_domain_judgment` with its returned\n`reasoning_id`" not in readme
+    assert "resolves the unique validated draft" in readme
+
+
 def test_evidence_reference_contains_closed_limitation_example() -> None:
     reference = Path("src/rob2_kit/skills/rob2-assess/references/evidence.md").read_text(
         encoding="utf-8"
@@ -170,13 +177,18 @@ def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> Non
         draft.assessments[0].counterevidence[0].evidence != draft.assessments[0].evidence_basis[0]
     )
     receipt = json.loads(examples[1])
-    assert receipt == {
-        "expected_revision": 8,
-        "reasoning_id": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-    }
+    assert receipt == {"expected_revision": 8}
     described = re.search(r"`(\{\"kind\": \"described\".*?\})`", reference)
     assert described is not None
     DescribedTiming.model_validate_json(described.group(1))
+
+
+def test_skill_requires_complete_proposal_construction_before_validation() -> None:
+    skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
+
+    assert "Construct the complete request before calling `validate_proposal`" in skill
+    assert "placeholder strings" in skill
+    assert "typed objects rather than prose shortcuts" in skill
 
 
 def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
@@ -268,8 +280,10 @@ def test_missing_reference_and_skill_share_the_availability_audit() -> None:
     )
     audit = " ".join(line.strip() for line in skill_lines[skill_start:skill_end]).casefold()
     assert audit.count("availability audit") == 1
-    assert "yes/probably yes needs actual outcome-availability evidence" in audit
+    assert "yes/probably yes needs evidence of all or nearly-all availability" in audit
+    assert "no/probably no needs evidence of materially incomplete availability" in audit
+    assert "if the extent remains unknown, use no information" in audit
     assert "analysis membership" in audit
-    assert "planned or scheduled follow-up" in audit
-    assert "treatment continuation or discontinuation" in audit
-    assert "generic censoring rule alone do not suffice" in audit
+    assert "planned follow-up" in audit
+    assert "treatment status" in audit
+    assert "generic censoring rule alone establish neither direction" in audit

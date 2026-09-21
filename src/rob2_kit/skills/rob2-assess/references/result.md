@@ -67,12 +67,12 @@ Evidence support or scientific correctness.
 }
 ```
 
-After a successful validation call, save only its receipt. Copy the exact
-`reasoning_id` and `expected_revision` returned by that call; do not invent or
-recalculate either value, and do not resend the Result cards:
+After a successful validation call, save only its receipt. Copy the
+`expected_revision` returned by that call; do not recalculate it or resend the
+Result cards. The server retains the validated draft and its audit identity:
 
 ```json
-{"expected_revision": 8, "reasoning_id": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}
+{"expected_revision": 8}
 ```
 
 For a group-bound Result, use one `group_values` array and keep every value as

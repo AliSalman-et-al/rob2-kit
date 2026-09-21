@@ -967,7 +967,9 @@ def _comparison_cards(
             "prompt": (
                 "Use the exact passages and server-known scope above. Classify only the remaining "
                 "scientific propositions; do not infer causation, follow-up availability, "
-                "informative censoring, or plan correspondence from Source role or wording alone."
+                "informative censoring, or plan correspondence from Source role or wording alone. "
+                "An empty passage group is unopened, not a no-hit; inspect materially relevant "
+                "unopened Sources before recording an information limitation."
             ),
         }
     ]
@@ -2338,7 +2340,7 @@ def validate_domain_assessment(
                         "trial_id": parsed.trial_id,
                         "domain_id": parsed.domain_id,
                         "cursor": next_cursor,
-                        "page_size": delivery["page_size"],
+                        "max_response_bytes": delivery["page_size"],
                     },
                 },
             },
@@ -2444,18 +2446,15 @@ def _reasoning_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[st
         "trial_id": record["trial_id"],
         "domain_id": record["domain_id"],
         "expected_revision": record["save_revision"],
-        "reasoning_id": record["identity"],
     }
     continuation = {
         "operation": "save_domain_judgment",
         "authority": "host",
         **next_action,
-        "caller_inputs": ["reasoning_id"],
     }
     return _result(
         "success",
         state,
-        reasoning_id=record["identity"],
         active_question_ids=record["active_question_ids"],
         validation_scope=record["validation_scope"],
         repairs=[],

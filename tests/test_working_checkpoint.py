@@ -141,6 +141,7 @@ def test_working_checkpoint_replaces_notes_without_changing_assessment_and_survi
     resumed = _call(workspace, "get_status", {})["data"]["working_checkpoint"]
     assert resumed["status"] == "current"
     assert resumed["checkpoint_identity"] == replaced["data"]["checkpoint_identity"]
+    assert _state(workspace).get("domain_records", {}) == {}
 
 
 def test_current_notes_avoid_duplicate_read_gate_on_approved_proposal_retry(
@@ -178,7 +179,18 @@ def test_working_checkpoint_yields_to_a_newer_canonical_domain_commit(tmp_path: 
     assert status["recovery"] == "resume_from_canonical_checkpoint"
 
 
-def test_working_checkpoint_is_hidden_after_result_replacement(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "scenario",
+    [
+        "cohort",
+        "fixed_time_probability",
+        "follow_up_hazard_ratio",
+        "adverse_event_threshold",
+    ],
+)
+def test_working_checkpoint_is_hidden_after_result_scope_replacement(
+    tmp_path: Path, scenario: str
+) -> None:
     workspace = _workspace(tmp_path)
     evidence = _proposal_waiting_for_review(workspace)
     source_id = evidence["source_id"]
@@ -186,7 +198,18 @@ def test_working_checkpoint_is_hidden_after_result_replacement(tmp_path: Path) -
     _review(workspace)
 
     revised = _result(evidence)
-    revised["target"]["time_point_or_window"]["description"] = "a corrected follow-up window"
+    if scenario == "cohort":
+        revised["reported"]["analysis_population"] = "per-protocol population"
+    elif scenario == "fixed_time_probability":
+        revised["target"]["time_point_or_window"]["description"] = "12 weeks after randomization"
+        revised["target"]["intended_effect_measure"] = "probability"
+    elif scenario == "follow_up_hazard_ratio":
+        revised["target"]["time_point_or_window"]["description"] = "end of follow-up"
+        revised["target"]["intended_effect_measure"] = "hazard ratio"
+    else:
+        revised["target"]["measurement"]["method"] = (
+            "grade 3 or higher treatment-emergent adverse events"
+        )
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [revised]))
 
     assert proposed["outcome"] == "review_required", proposed
@@ -195,6 +218,24 @@ def test_working_checkpoint_is_hidden_after_result_replacement(tmp_path: Path) -
     assert status["reason"] == "result_changed"
     assert status["checkpoint"] is None
     assert status["recovery"] == "reorient_from_sources"
+
+
+def test_working_checkpoint_is_isolated_per_workspace(tmp_path: Path) -> None:
+    first = _workspace(tmp_path / "first")
+    first_evidence = _proposal_waiting_for_review(first)
+    saved = _call(
+        first,
+        "save_working_checkpoint",
+        {"checkpoint": _checkpoint(first_evidence["source_id"])},
+    )
+    assert saved["outcome"] == "success", saved
+
+    second = _workspace(tmp_path / "second")
+    _proposal_waiting_for_review(second)
+    status = _call(second, "get_status", {})["data"]["working_checkpoint"]
+
+    assert status["status"] == "absent"
+    assert status["reason"] == "not_saved"
 
 
 def test_working_checkpoint_is_hidden_when_bound_source_scope_differs(tmp_path: Path) -> None:

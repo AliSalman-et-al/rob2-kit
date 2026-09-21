@@ -5,13 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import pytest
-from fastmcp.exceptions import ToolError
 from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
     _prepared_evidence,
+    _read_required_main_reports,
     _result,
     _workspace,
 )
@@ -50,6 +49,136 @@ def test_proposal_reasoning_receipt_is_required_and_consumed(tmp_path: Path) -> 
     assert reasoned["outcome"] == "success", reasoned
     saved = _call(workspace, "save_proposal", reasoned["data"]["next_action"])
     assert saved["outcome"] == "review_required", saved
+
+
+def _proposal_reasoning_request(
+    workspace: Path,
+    evidence: dict[str, Any],
+    *,
+    evidence_basis: list[str] | None = None,
+    counterevidence: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    return {
+        "results": [_result(evidence)],
+        "assessments": [
+            {
+                "trial_id": "trial",
+                "evidence_basis": evidence_basis or [evidence["handle"]],
+                "scope_justification": "The reported endpoint and time window match the target.",
+                "population_justification": (
+                    "The reported analysis population is distinguished from baseline eligibility."
+                ),
+                "unknowns": [],
+                "counterevidence": counterevidence or [],
+            }
+        ],
+        "expected_revision": int(_call(workspace, "get_status", {})["head"]["state_revision"]),
+    }
+
+
+def test_proposal_reasoning_reports_unknown_evidence_handle(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    # A plausible copied-handle typo must reach the application repair layer,
+    # rather than failing as an opaque transport-level Pydantic error.
+    request = _proposal_reasoning_request(workspace, evidence, evidence_basis=["eh_" + "0" * 15])
+
+    repair = _call(workspace, "validate_proposal", request)
+
+    assert repair["outcome"] == "repair"
+    assert repair["repairs"] == [
+        {
+            "path": "/assessments/0/evidence_basis/0",
+            "code": "unknown_evidence_handle",
+            "detail": "Reasoning Evidence handle must resolve to selected material.",
+        }
+    ]
+
+
+def test_proposal_reasoning_reports_cross_trial_evidence_handle(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    second = workspace / "input" / "second"
+    second.mkdir(parents=True)
+    (second / "main.txt").write_text(
+        (workspace / "input" / "trial" / "main.txt").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    _read_required_main_reports(workspace)
+    primary_source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "main.txt"
+    )
+    foreign_source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "second"})["data"]["sources"]
+        if item["label"] == "main.txt"
+    )
+    primary = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": primary_source["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    foreign = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "second",
+            "source_id": foreign_source["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    request = _proposal_reasoning_request(workspace, primary, evidence_basis=[foreign["handle"]])
+
+    repair = _call(workspace, "validate_proposal", request)
+
+    assert repair["outcome"] == "repair"
+    assert repair["repairs"] == [
+        {
+            "path": "/assessments/0/evidence_basis/0",
+            "code": "cross_trial_evidence",
+            "detail": "Reasoning Evidence must resolve to selected material from this Trial.",
+        }
+    ]
+
+
+def test_proposal_reasoning_reports_unknown_counterevidence_handle(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    request = _proposal_reasoning_request(
+        workspace,
+        evidence,
+        counterevidence=[
+            {
+                "evidence": "eh_" + "f" * 16,
+                "implication": "This passage limits the strength of the conclusion.",
+            }
+        ],
+    )
+
+    repair = _call(workspace, "validate_proposal", request)
+
+    assert repair["outcome"] == "repair"
+    assert repair["repairs"] == [
+        {
+            "path": "/assessments/0/counterevidence/0/evidence",
+            "code": "unknown_counterevidence_handle",
+            "detail": "Counterevidence handle must resolve to selected material.",
+        }
+    ]
 
 
 def _reasoning_draft_for_evidence(
@@ -93,7 +222,7 @@ def test_reasoning_binds_exact_draft_and_preserves_explanations(tmp_path: Path) 
 
     assert reasoned["outcome"] == "success", reasoned
     assert reasoned["data"]["validation_scope"] == "structure_and_references_only"
-    assert reasoned["data"]["next_action"]["reasoning_id"] == reasoned["data"]["reasoning_id"]
+    assert "reasoning_id" not in reasoned["data"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
     assert "reasoning_opt_in" not in _state(workspace)
 
@@ -105,18 +234,22 @@ def test_reasoning_binds_exact_draft_and_preserves_explanations(tmp_path: Path) 
     assert stored["answers"][0]["counterevidence"][0]["basis_index"] == 0
 
 
-def test_batch_requires_reasoning_id_for_save(tmp_path: Path) -> None:
+def test_domain_save_requires_a_validated_revision(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    reasoned = _call(
+    result = _call(
         workspace,
-        "validate_domain_assessment",
-        _reasoning_draft_for_evidence(revision, evidence),
+        "save_domain_judgment",
+        {
+            "trial_id": "trial",
+            "domain_id": SCIENTIFIC_PACK.domains[0].id,
+            "expected_revision": revision,
+        },
     )
-    current_revision = reasoned["head"]["state_revision"]
-    draft = _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, current_revision, evidence)
 
-    with pytest.raises(ToolError, match="reasoning_id"):
-        _call(workspace, "save_domain_judgment", draft, _raw=True)
+    assert result["outcome"] == "condition"
+    assert result.get("code") == "reasoning_stale" or result["condition"]["code"] == (
+        "reasoning_stale"
+    )
 
 
 def test_reasoning_requires_counterevidence_for_contradiction(tmp_path: Path) -> None:
@@ -145,8 +278,8 @@ def test_reasoning_retry_reuses_record(tmp_path: Path) -> None:
 
     assert first["outcome"] == "success"
     assert second["outcome"] == "success"
-    assert second["data"]["reasoning_id"] == first["data"]["reasoning_id"]
     assert second["head"]["state_revision"] == first["head"]["state_revision"]
+    assert len(_state(workspace)["reasoning_records"]) == 2
 
 
 def test_validated_domain_survives_later_domain_save(tmp_path: Path) -> None:

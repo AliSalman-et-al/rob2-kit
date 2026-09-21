@@ -191,16 +191,19 @@ def _verify_packaged_skill(skill: str, reference: str) -> None:
     if audit.count("availability audit") != 1 or not all(
         marker in audit
         for marker in (
-            "yes/probably yes needs actual outcome-availability evidence",
+            "yes/probably yes needs evidence of all or nearly-all availability",
+            "no/probably no needs evidence of materially incomplete availability",
+            "if the extent remains unknown, use no information",
             "analysis membership",
-            "planned or scheduled follow-up",
-            "treatment continuation or discontinuation",
-            "generic censoring rule alone do not suffice",
+            "planned follow-up",
+            "treatment status",
+            "generic censoring rule alone establish neither direction",
         )
     ):
         raise ValueError("packaged skill D3.1 availability audit is incomplete")
 
     audit_lines = section(reference, "## Availability audit", "## ")
+    audit_text = " ".join(line.strip() for line in audit_lines).casefold()
     bullets: list[str] = []
     continuation = False
     for line in audit_lines:
@@ -222,6 +225,12 @@ def _verify_packaged_skill(skill: str, reference: str) -> None:
             ("planned", "scheduled", "follow-up"),
             ("treatment continuation", "discontinuation"),
             ("generic censoring rule", "actual rates", "follow-up accounting"),
+        )
+    ) or not all(
+        marker in audit_text
+        for marker in (
+            "materially incomplete",
+            "failure to demonstrate complete availability is not evidence",
         )
     ):
         raise ValueError("packaged missing-data reference availability audit is incomplete")
@@ -590,7 +599,11 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         context = await _call(
             client,
             "get_domain_context",
-            {"trial_id": "trial", "domain_id": domain_id, "page_size": 131_072},
+            {
+                "trial_id": "trial",
+                "domain_id": domain_id,
+                "max_response_bytes": 131_072,
+            },
         )
         if context.get("domain_id") != domain_id:
             raise ValueError(f"acceptance Domain context differs: {domain_id}")
@@ -762,7 +775,7 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                     {
                         "trial_id": "trial",
                         "domain_id": "domain:randomization",
-                        "page_size": 131_072,
+                        "max_response_bytes": 131_072,
                     },
                 )
                 evidence_rows = context.get("evidence")

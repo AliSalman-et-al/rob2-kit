@@ -64,8 +64,6 @@ class SaveProposalAction(PublicModel):
     operation: Literal["save_proposal"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["reasoning_id"], ...]
-    reasoning_id: Identity
 
 
 class ValidateProposalAction(PublicModel):
@@ -95,8 +93,6 @@ class SaveDomainJudgmentAction(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["reasoning_id"], ...]
-    reasoning_id: Identity
 
 
 class ValidateDomainAssessmentAction(PublicModel):
@@ -212,7 +208,12 @@ class DomainContextRecoveryArguments(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     cursor: StrictStr = Field(min_length=1)
-    page_size: StrictInt = Field(ge=4096, le=131_072)
+    max_response_bytes: StrictInt = Field(
+        ge=4096,
+        le=131_072,
+        description="Byte budget for the continued page; valid range 4096–131072.",
+        json_schema_extra={"examples": [65_536]},
+    )
 
 
 class DomainContextRecovery(PublicModel):
@@ -1268,11 +1269,9 @@ class ProposalData(PublicModel):
 
 class ReasoningProposalSaveAction(PublicModel):
     expected_revision: NonNegativeInt
-    reasoning_id: Identity
 
 
 class ValidateProposalData(PublicModel):
-    reasoning_id: Identity
     validation_scope: Literal["structure_and_references_only"]
     repairs: tuple[RepairDefect, ...] = ()
     next_action: ReasoningProposalSaveAction
@@ -1827,7 +1826,11 @@ class DomainContextPage(PublicModel):
     section: Literal["complete", "questions", "comparison_cards", "evidence"]
     item_start: NonNegativeInt = 0
     item_count: NonNegativeInt = 0
-    page_size: PositiveInt
+    max_response_bytes: StrictInt = Field(
+        ge=4096,
+        le=131_072,
+        description="Byte budget used to produce this page; valid range 4096–131072.",
+    )
     cursor: str | None = Field(default=None, min_length=1)
     next_cursor: str | None = Field(default=None, min_length=1)
     stable_recovery: DomainContextStableRecovery = Field(
@@ -2148,11 +2151,9 @@ class ReasoningSaveAction(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: NonNegativeInt
-    reasoning_id: Identity
 
 
 class ValidateDomainAssessmentData(PublicModel):
-    reasoning_id: Identity
     active_question_ids: tuple[QuestionId, ...]
     validation_scope: Literal["structure_and_references_only"]
     repairs: tuple[RepairDefect, ...] = ()
@@ -2370,7 +2371,6 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
                         "review_reference",
                         "caller_inputs",
                         "supersedes",
-                        "reasoning_id",
                     )
                     if key in continuation
                 }

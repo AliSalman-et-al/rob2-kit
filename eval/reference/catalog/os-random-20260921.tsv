@@ -1,0 +1,4 @@
+outcome	trial	primary_status	role	definition	effect_size	source_locator	reference_label_available
+Overall Survival	GETUG-AFU-15	primary	main_article	the time from randomization to death resulting from any cause	hazard ratio 1.01; 95% CI, 0.75 to 1.36	main article abstract	yes
+Overall Survival	ARASENS	primary	main_article	the time from randomization to death resulting from any cause	hazard ratio 0.68; 95% CI, 0.57 to 0.80; P<0.001	main article abstract	yes
+Overall Survival	CHAARTED	primary	main_article	the time from randomization to death resulting from any cause	hazard ratio 0.61; 95% CI, 0.47 to 0.80; P<0.001	main article abstract	yes

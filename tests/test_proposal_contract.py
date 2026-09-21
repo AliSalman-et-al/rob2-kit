@@ -14,6 +14,8 @@ from support.rob2 import (
     _workspace,
 )
 
+from rob2_kit.workflow_models import ComparativeEffectResult
+
 
 def test_target_interpretation_leaves_do_not_require_exact_source_support(
     tmp_path: Path,
@@ -150,6 +152,40 @@ def test_absent_comparative_precision_is_not_source_bound(tmp_path: Path) -> Non
         binding["field"]["path"] for binding in _state_proposal(workspace)["results"][0]["bindings"]
     }
     assert "/reported/precision" not in paths
+
+
+@pytest.mark.parametrize(
+    ("precision", "expected"),
+    [
+        (
+            {"confidence_level": "95%", "lower": "0.57", "upper": "0.80"},
+            "95% CI, 0.57 to 0.80",
+        ),
+        (
+            {"type": "95% CI", "lower": "0.75", "upper": "1.36"},
+            "95% CI, 0.75 to 1.36",
+        ),
+        (
+            {"confidence_level": 95, "lower": 0.57, "upper": 0.8},
+            "95% CI, 0.57 to 0.8",
+        ),
+    ],
+)
+def test_common_precision_objects_are_sanitized_to_the_public_string(
+    precision: dict[str, object], expected: str
+) -> None:
+    result = ComparativeEffectResult.model_validate(
+        {
+            "form": "comparative_effect",
+            "effect_measure": "hazard ratio",
+            "estimate": "0.68",
+            "precision": precision,
+            "analysis_population": "all randomized participants",
+            "endpoint": {"name": "overall survival"},
+        }
+    )
+
+    assert result.precision == expected
 
 
 def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Path) -> None:

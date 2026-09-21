@@ -24,6 +24,11 @@ evidence. Accept one or more of:
   accounting; or
 - an explicit statement that ascertainment was complete or nearly complete.
 
+Support No or Probably No with evidence that availability was materially
+incomplete for this Result. If the extent remains unknown after bounded
+retrieval, use No information. Failure to demonstrate complete availability is
+not evidence that availability was incomplete.
+
 The following do not establish affirmative availability on their own:
 
 - analysis denominators or ITT membership;

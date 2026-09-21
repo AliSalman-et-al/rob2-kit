@@ -74,7 +74,6 @@ def test_typed_semantics_round_trip() -> None:
     "payload",
     [
         {"event_count": 2},
-        {"event_definition": "grade 3 or higher adverse event"},
         {"population_role": "not-a-population"},
         {"censoring": {"kind": "not-a-kind"}},
     ],
@@ -82,6 +81,13 @@ def test_typed_semantics_round_trip() -> None:
 def test_invalid_semantics_are_rejected(payload: dict[str, object]) -> None:
     with pytest.raises(ValidationError):
         MissingDataSemantics.model_validate(payload)
+
+
+def test_event_definition_can_describe_the_outcome_without_an_event_count() -> None:
+    semantics = MissingDataSemantics.model_validate({"event_definition": "death from any cause"})
+
+    assert semantics.event_count is None
+    assert semantics.event_definition == "death from any cause"
 
 
 def test_normalization_accepts_typed_row() -> None:

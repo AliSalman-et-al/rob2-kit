@@ -155,6 +155,26 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "content_hash": "sha256:bb4f07a86662df2decaad739013e1178a6767aceb9b63e6b438c7f98074d5d84",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_CURRENT_PACK_PRE_INFERENCE_GATES = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "content_hash": "sha256:aeeb5c8aa3fa8f9fd46f4429ae93a4b8ea3f6d89cc292640305f1aa702a449ea",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_CURRENT_PACK_PRE_DEVIATIONS_GUIDANCE = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
     "content_hash": "sha256:7cd97694107582be8fe6cd1091b8a851b631fed0e90aa5b453ffa8d4d9f50d17",
     "official_source": {
         "version": "22 August 2019",
@@ -1920,7 +1940,7 @@ def _valid_evidence_sufficiency(
                 not isinstance(value, str)
                 or value not in evidence
                 or not isinstance(evidence[value], dict)
-                or evidence[value].get("trial_id") != trial_id
+                or cast(dict[str, object], evidence[value]).get("trial_id") != trial_id
                 for value in claim["evidence"]
             )
             or any(
@@ -3983,6 +4003,8 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _CURRENT_PACK_PRE_INFERENCE_GATES,
+                _CURRENT_PACK_PRE_DEVIATIONS_GUIDANCE,
                 _CURRENT_PACK_LEGACY_PROOF,
                 _CURRENT_PACK_PRIOR_GUIDANCE,
                 _CURRENT_PACK_PREVIOUS_PROOF,
@@ -4453,9 +4475,10 @@ def verify(path: Path) -> tuple[bool, str]:
                     return False, "Domain active question set does not match answers"
                 if set(answer_map) != set(active_questions):
                     return False, "Domain answer coverage is incomplete"
-                account_by_identity = {
-                    item.get("identity"): item for item in accounts if isinstance(item, dict)
-                }
+                account_by_identity = cast(
+                    dict[str, dict[str, object]],
+                    {item.get("identity"): item for item in accounts if isinstance(item, dict)},
+                )
                 if len(account_by_identity) != len(accounts):
                     return False, "search accounts are malformed"
                 sources = {
@@ -4540,7 +4563,7 @@ def verify(path: Path) -> tuple[bool, str]:
                 if "evidence_sufficiency" in record and not _valid_evidence_sufficiency(
                     record["evidence_sufficiency"],
                     answers,
-                    account_by_identity,
+                    cast(dict[str, object], account_by_identity),
                     proposal_evidence,
                     record.get("trial_id"),
                     legacy_semantics=legacy_semantics,
@@ -4657,11 +4680,14 @@ def verify(path: Path) -> tuple[bool, str]:
                     account_ids = {
                         account.get("identity") for account in accounts if isinstance(account, dict)
                     }
-                    account_by_identity = {
-                        account.get("identity"): account
-                        for account in accounts
-                        if isinstance(account, dict)
-                    }
+                    account_by_identity = cast(
+                        dict[str, dict[str, object]],
+                        {
+                            account.get("identity"): account
+                            for account in accounts
+                            if isinstance(account, dict)
+                        },
+                    )
                     if len(account_by_identity) != len(accounts):
                         return False, "Domain history search accounts are malformed"
                     for answer in item["answers"]:
@@ -4788,7 +4814,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     if "evidence_sufficiency" in item and not _valid_evidence_sufficiency(
                         item["evidence_sufficiency"],
                         item["answers"],
-                        account_by_identity,
+                        cast(dict[str, object], account_by_identity),
                         proposal_evidence,
                         item.get("trial_id"),
                         legacy_semantics=legacy_semantics,

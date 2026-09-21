@@ -28,19 +28,25 @@ def _first_json(data: bytes) -> dict[str, Any]:
 
 def _one(repo: Path, item: dict[str, Any], answer: str, output: Path) -> dict[str, Any]:
     workspace = Path(item["run_dir"]) / "workspace"
-    command = [str(repo / ".venv" / "Scripts" / "rob2.exe"), "review", "--workspace", str(workspace)]
+    command = [
+        str(repo / ".venv" / "Scripts" / "rob2.exe"),
+        "review",
+        "--workspace",
+        str(workspace),
+    ]
     completed = subprocess.run(
         command,
         cwd=repo,
         input=(answer + "\n").encode("utf-8"),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         check=False,
     )
     review = _first_json(completed.stdout)
     review_path = output / item["outcome"].lower().replace(" ", "-") / f"{item['trial']}.json"
     review_path.parent.mkdir(parents=True, exist_ok=True)
-    review_path.write_text(json.dumps(review, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    review_path.write_text(
+        json.dumps(review, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     results = review.get("candidate", {}).get("proposal", {}).get("results", [])
     result = results[0] if isinstance(results, list) and results else {}
     reported = result.get("reported", {}) if isinstance(result, dict) else {}
@@ -55,14 +61,18 @@ def _one(repo: Path, item: dict[str, Any], answer: str, output: Path) -> dict[st
         "trial_id": result.get("trial_id"),
         "kind": result.get("kind"),
         "relation": result.get("relation"),
-        "endpoint": reported.get("endpoint", {}).get("name") if isinstance(reported, dict) else None,
+        "endpoint": (
+            reported.get("endpoint", {}).get("name") if isinstance(reported, dict) else None
+        ),
         "estimate": reported.get("estimate") if isinstance(reported, dict) else None,
         "precision": reported.get("precision") if isinstance(reported, dict) else None,
     }
 
 
 def main() -> None:
-    sys.stdout.reconfigure(encoding="utf-8")
+    reconfigure = getattr(sys.stdout, "reconfigure", None)
+    if callable(reconfigure):
+        reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--index", type=Path, required=True)
     parser.add_argument("--answer", choices=("no", "yes"), default="no")

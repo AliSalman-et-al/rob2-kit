@@ -211,9 +211,9 @@ when available.
 
 Before saving a Proposal, the host calls `validate_proposal` with the complete
 Result cards and one concise evidence assessment for each Trial. The host then
-calls receipt-only `save_proposal` with the returned `reasoning_id` and
-revision. To change a draft, repeat `validate_proposal`; do not resend cards to
-`save_proposal`.
+calls receipt-only `save_proposal` with the returned revision. The server
+resolves the unique validated draft for that revision and scope. To change a
+draft, repeat `validate_proposal`; do not resend cards to `save_proposal`.
 
 Only a comparative Result or complete group-bound values for both comparison
 groups support assessment. A one-group profile is descriptive: retain its exact
@@ -249,7 +249,8 @@ After approval, the host owns signaling answers for supported trial designs and
 follows the server through all five domains and finalization. Before every
 Domain save, the host calls `validate_domain_assessment` with the complete active
 draft and then calls receipt-only `save_domain_judgment` with its returned
-`reasoning_id` and revision. The server checks structure, references, and
+revision, Trial ID, and Domain ID. The server resolves the unique validated
+draft for that scope and checks structure, references, and
 workflow requirements. A successful reasoning receipt does not establish
 scientific correctness. Known designs outside the installed pack close as
 `unsupported_design`; unresolved designs remain `needs_input` until source

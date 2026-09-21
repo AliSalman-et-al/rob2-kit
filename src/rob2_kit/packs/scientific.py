@@ -239,7 +239,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:deviations:context-deviations": _guidance(
         "Full guidance p. 28, Box 6, signalling question 2.3",
         "Whether deviations inconsistent with protocol arose because of the trial context.",
-        "Answer yes or probably yes with evidence or strong reason that the trial context caused failure to implement protocol interventions or implementation of prohibited interventions. Answer no or probably no when no such deviation occurred, including ordinary non-adherence outside the trial context or protocol-consistent changes.",
+        "Answer yes or probably yes only after establishing both that the change was inconsistent with the protocol and that the trial context caused it; identify both premises in the justification. Answer no or probably no when no such deviation occurred, including ordinary non-adherence outside the trial context, protocol-consistent changes, and protocol-permitted subsequent care after progression.",
         (
             "Evidence linking the deviation to recruitment, engagement, or trial personnel and showing it was inconsistent with the protocol.",
         ),
@@ -256,11 +256,13 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Side-effect-related compromised blinding counts only when resulting changes were protocol-inconsistent and context-caused.",
+            "Subsequent treatment, rescue treatment, or cross-over is not itself a deviation for the effect of assignment: establish both protocol inconsistency and a trial-context cause before answering affirmatively.",
         ),
         (
             "nonadherence alone",
             "an ITT analysis",
             "participants switched treatment",
+            "unequal post-progression treatment without evidence that it was prohibited and trial-context-caused",
             "a protocol deviation without its cause",
         ),
     ),
@@ -361,13 +363,13 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:missing:data-available": _guidance(
         "Full guidance p. 45, Box 8, signalling question 3.1",
         "Whether outcome data were available for all or nearly all randomized participants.",
-        "Use the randomized population. For yes or probably yes, require actual outcome-availability evidence. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
+        "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When the extent remains unknown, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
         (
             "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
             "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
             "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts.",
         ),
-        "Only answer no_information when the report provides no information about the extent of missing outcome data.",
+        "Answer no_information when the extent of missing outcome data remains unknown after bounded retrieval. Lack of evidence for complete availability is not evidence of materially incomplete availability.",
         (
             _anchor(
                 Answer.YES,
@@ -671,7 +673,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:selection:multiple-analyses": _guidance(
         "Full guidance pp. 64-65, Box 11, signalling question 5.3",
         "Whether the result was selected from multiple eligible analyses of the data on the basis of results.",
-        "Answer yes or probably yes when clear evidence shows multiple eligible analyses but only one or a subset is fully reported without justification and selection likely depended on results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
+        "Multiplicity alone does not establish result-based selection. Answer yes or probably yes only when the justification identifies the eligible alternatives, the reporting or selection evidence, and why selection likely depended on the results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
         (
             "The protocol or SAP's eligible analysis methods and which were reported, including adjustment, transformation, composite definitions, and missing-data strategies.",
         ),
@@ -777,6 +779,8 @@ _QUERY_SUGGESTIONS: dict[str, tuple[QuerySuggestion, ...]] = {
     "sq:missing:data-available": (
         _suggestion("missing outcome data", "all", "outcome availability"),
         _suggestion("loss to follow-up", "phrase", "follow-up completeness"),
+        _suggestion("participant flow", "phrase", "randomized follow-up accounting"),
+        _suggestion("CONSORT", "phrase", "participant-flow diagram", "supplement"),
         _suggestion("outcome data available", "all", "observed outcome reporting"),
         _suggestion("mortality status unknown", "all", "unknown mortality status", "supplement"),
         _suggestion("missing values", "all", "missing outcome counts", "supplement"),

@@ -126,7 +126,10 @@ disposable FTS derivative must not change Source, projection, Evidence, or
 workflow identities. The immutable captured bytes remain available for audit.
 
 An **Evidence handle** is a short, Trial-scoped transport pointer to selected
-text or a selected visual region. Canonical Evidence retains Source identity,
+text or a selected visual region. Returned handles have a fixed compact form;
+the input schema admits plausibly copied handle shapes so the application can
+return a scoped unknown-handle repair instead of a transport-level pattern
+error. Canonical Evidence retains Source identity,
 page, exact quote or transcription, and applicable render provenance. Search
 hits are navigation results, not Evidence. Each search creates an immutable,
 Trial- and projection-bound candidate ranking. Bounded responses carry stable

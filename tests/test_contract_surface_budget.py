@@ -175,7 +175,13 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "inactive branch answers" in answer_schema["properties"]["unknowns"]["description"]
     assert "exact Domain draft stored" in (save_tool.description or "")
     assert "multiple_concerns" not in domain_tool.parameters["properties"]
-    assert by_name["validate_proposal"].title == "Validate Proposal draft"
+    proposal_tool = by_name["validate_proposal"]
+    assert proposal_tool.title == "Validate Proposal draft"
+    assert "complete typed request" in (proposal_tool.description or "")
+    assert "partial nested objects" in (proposal_tool.description or "")
+    visual_tool = by_name["select_visual_evidence"]
+    assert "accepts only" in (visual_tool.description or "")
+    assert "attach the returned Evidence later" in (visual_tool.description or "")
     approval_description = by_name["request_proposal_approval"].description or ""
     assert "has no approval arguments" in approval_description
     assert "with {}" in approval_description

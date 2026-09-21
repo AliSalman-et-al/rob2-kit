@@ -10,7 +10,7 @@ import random
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from rob2_kit.evaluation.adjudication import validate_sidecars
 
@@ -204,9 +204,7 @@ def _validate_input(value: object) -> list[dict[str, Any]]:
     return validated
 
 
-def _validated_adjudications(
-    value: object, case_ids: set[str]
-) -> list[dict[str, Any]]:
+def _validated_adjudications(value: object, case_ids: set[str]) -> list[dict[str, Any]]:
     """Validate optional evidence-grounded labels without joining them to scores."""
 
     raw = value.get("adjudications", []) if isinstance(value, dict) else []
@@ -360,10 +358,12 @@ def _diagnostic_ledger(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
     cases: list[dict[str, Any]] = []
     for row in rows:
-        trace = row.get("diagnostic")
-        if not isinstance(trace, dict):
-            trace = row.get("trace") if isinstance(row.get("trace"), dict) else {}
-        artifacts = row.get("artifacts") if isinstance(row.get("artifacts"), dict) else {}
+        trace_value = row.get("diagnostic")
+        if not isinstance(trace_value, dict):
+            trace_value = row.get("trace") if isinstance(row.get("trace"), dict) else {}
+        trace = cast(dict[str, Any], trace_value)
+        artifacts_value = row.get("artifacts")
+        artifacts: dict[str, Any] = artifacts_value if isinstance(artifacts_value, dict) else {}
         selected_id = _selected_attempt(row)[1]
         domains: dict[str, Any] = {}
         for domain in DOMAINS:
@@ -708,7 +708,7 @@ def analyze(value: object, *, bootstrap_replicates: int = 2000, seed: int = 0) -
         known_run_count = len(known_costs)
         unknown_run_count = len(rows) - len(known_costs)
         known_total = sum(known_costs) if known_costs else None
-        mean_known = known_total / len(known_costs) if known_costs else None
+        mean_known = cast(float, known_total) / len(known_costs) if known_costs else None
     finalized = sum(row["completion"] == "finalized" for row in eligible)
     completion_counts = dict(sorted(Counter(row["completion"] for row in rows).items()))
     result = {

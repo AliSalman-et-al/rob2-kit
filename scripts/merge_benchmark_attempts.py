@@ -32,7 +32,10 @@ def main() -> None:
     (output / "continuation.txt").write_text("Continue.\n", encoding="utf-8")
     result = dict(merged)
     result["cases"] = cases
-    result["selected_attempts"] = [str(index_path), *(str(path.resolve()) for path in args.replacement)]
+    result["selected_attempts"] = [
+        str(index_path),
+        *(str(path.resolve()) for path in args.replacement),
+    ]
     (output / "index.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"output": str(output), "cases": len(cases)}))
 

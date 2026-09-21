@@ -9,6 +9,7 @@ content identity derived from its other fields; callers cannot choose an identit
 from __future__ import annotations
 
 import hashlib
+import math
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import PurePosixPath
@@ -70,14 +71,17 @@ DomainId = Literal[
 ]
 QuestionId = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")]
 # Handles are disposable derivative pointers (the content identity remains in
-# the referenced Canonical Evidence record).  The application deliberately
-# uses a short, opaque ``eh_`` token for them.
+# the referenced Canonical Evidence record). Returned handles use the exact
+# compact form. Validation drafts accept a wider shape so plausible copy errors
+# reach the application repair layer.
 EvidenceHandle = Annotated[str, StringConstraints(pattern=r"^eh_[0-9a-f]{16}$")]
+SubmittedEvidenceHandle = Annotated[str, StringConstraints(pattern=r"^eh_[0-9a-f]{8,64}$")]
 # Search receipts are disposable server-issued navigation tokens.  Their
 # content identity stays internal to the canonical ledger; callers submit the
 # short handle returned by ``search_sources`` and the application resolves it
 # before persisting any checkpoint.
 SearchReceiptHandle = Annotated[str, StringConstraints(pattern=r"^sr_[0-9a-f]{16}$")]
+SubmittedSearchReceiptHandle = Annotated[str, StringConstraints(pattern=r"^sr_[0-9a-f]{8,64}$")]
 
 
 def _strict_json_int(value: Any) -> Any:
@@ -351,8 +355,6 @@ class MissingDataSemantics(StrictModel):
     def event_count_has_definition(self) -> MissingDataSemantics:
         if self.event_count is not None and self.event_definition is None:
             raise ValueError("event_count requires event_definition")
-        if self.event_count is None and self.event_definition is not None:
-            raise ValueError("event_definition requires event_count")
         return self
 
 
@@ -380,7 +382,7 @@ class MissingDataRow(StrictModel):
     exclusions: tuple[NonBlankText, ...] = Field(
         default=(), description="Reported reasons for exclusion or missingness."
     )
-    basis: tuple[EvidenceHandle, ...] = Field(
+    basis: tuple[SubmittedEvidenceHandle, ...] = Field(
         default=(),
         description=(
             "Evidence handles supporting this row. When saving an answer, omit to reuse "
@@ -783,6 +785,15 @@ class ResultApplicability(StrictModel):
         return self
 
 
+class ResultApplicabilityDraft(ResultApplicability):
+    """Caller form whose handles are resolved before canonical storage."""
+
+    evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
+        default=(),
+        description="Inspected same-Trial Evidence handles; required when the design is known.",
+    )
+
+
 class TargetRelation(StrEnum):
     EXACT = "exact"
     BROADER = "broader"
@@ -851,12 +862,48 @@ class ComparativeEffectResult(StrictModel):
     )
     effect_measure: NonBlankText = Field(description="Source-reported effect-measure label.")
     estimate: NonBlankText = Field(
-        description="Source-reported comparative estimate; put its interval in precision."
+        description=(
+            "Source-reported point estimate as one string, for example '0.68'. Do not include "
+            "a confidence interval, P value, or other precision; put those in precision."
+        ),
+        json_schema_extra={"examples": ["0.68"]},
     )
     precision: NonBlankText | None = Field(
         default=None,
-        description="Source-reported precision interval or uncertainty; omit when absent.",
+        description=(
+            "Source-reported precision interval or uncertainty as one string, for example "
+            "'95% CI, 0.57 to 0.80'; omit when absent. Do not send an object."
+        ),
+        json_schema_extra={"examples": ["95% CI, 0.57 to 0.80"]},
     )
+
+    @field_validator("precision", mode="before")
+    @classmethod
+    def normalize_common_interval_object(cls, value: Any) -> Any:
+        """Recover common interval objects while keeping the public schema string-only."""
+
+        if not isinstance(value, dict):
+            return value
+        if set(value) - {"type", "label", "confidence_level", "lower", "upper"}:
+            return value
+
+        def token(item: Any) -> str | None:
+            if isinstance(item, str) and item.strip():
+                return item.strip()
+            if type(item) in (int, float) and math.isfinite(item):
+                return format(item, "g")
+            return None
+
+        lower = token(value.get("lower"))
+        upper = token(value.get("upper"))
+        label = value.get("type") or value.get("label")
+        confidence_level = value.get("confidence_level")
+        if label is None and (level := token(confidence_level)) is not None:
+            label = f"{level if level.endswith('%') else level + '%'} CI"
+        if isinstance(label, str) and label.strip() and lower is not None and upper is not None:
+            return f"{label.strip()}, {lower} to {upper}"
+        return value
+
     analysis_population: NonBlankText = Field(
         description=(
             "Summarize who was included in this estimate and any reported exclusions, using the "
@@ -1193,7 +1240,9 @@ class FigureEvidenceDraft(StrictModel):
     """A server-owned figure projection selected by handle."""
 
     kind: Literal["figure"] = Field(description="A server-owned selected figure reference.")
-    handle: EvidenceHandle = Field(description="Exact selected figure handle from this Trial.")
+    handle: SubmittedEvidenceHandle = Field(
+        description="Selected figure handle copied from this Trial."
+    )
 
 
 class DerivedEvidence(StrictModel):
@@ -1212,17 +1261,55 @@ class DerivedInput(StrictModel):
     value: NonBlankText = Field(description="Source value used in the calculation.")
 
 
+class NarrativeEvidenceDraft(NarrativeEvidence):
+    handle: SubmittedEvidenceHandle = Field(
+        description="Selected passage handle copied from this Trial."
+    )
+
+
+class TableEvidenceDraft(TableEvidence):
+    handle: SubmittedEvidenceHandle = Field(
+        description="Selected table passage handle copied from this Trial."
+    )
+
+
+class TableEvidenceSpanDraft(TableEvidenceSpan):
+    handle: SubmittedEvidenceHandle = Field(
+        description="Selected table-fragment handle copied from this Trial."
+    )
+
+
+class MultiSpanTableEvidenceDraft(MultiSpanTableEvidence):
+    spans: tuple[TableEvidenceSpanDraft, ...] = Field(
+        min_length=2,
+        max_length=8,
+        description="Selected fragments and the table role each fragment supports.",
+    )
+
+
+class DerivedInputDraft(DerivedInput):
+    handle: SubmittedEvidenceHandle = Field(
+        description="Selected source-value handle copied from this Trial."
+    )
+
+
+class DerivedEvidenceDraft(DerivedEvidence):
+    inputs: tuple[DerivedInputDraft, ...] = Field(
+        min_length=1, description="Selected source values used by the calculation."
+    )
+
+
 ResultEvidence = Annotated[
     NarrativeEvidence | TableEvidence | MultiSpanTableEvidence | FigureEvidence | DerivedEvidence,
     Field(discriminator="kind"),
 ]
 
 ResultEvidenceDraft = Annotated[
-    NarrativeEvidence
-    | TableEvidence
-    | MultiSpanTableEvidence
+    NarrativeEvidenceDraft
+    | TableEvidenceDraft
+    | MultiSpanTableEvidenceDraft
     | FigureEvidenceDraft
-    | DerivedEvidence,
+    | DerivedEvidenceDraft,
     Field(discriminator="kind"),
 ]
 
@@ -1295,7 +1382,7 @@ class AssessableResultDraft(StrictModel):
             "scope. Matching endpoint names alone do not establish exact correspondence."
         ),
     )
-    applicability: ResultApplicability = Field(
+    applicability: ResultApplicabilityDraft = Field(
         description=(
             "Required pack applicability. Unsupported or unresolved designs remain unassessed "
             "after Proposal Review."
@@ -1316,7 +1403,7 @@ class AssessableResultDraft(StrictModel):
             ),
         ),
     ]
-    passage_refs: tuple[EvidenceHandle, ...] = Field(
+    passage_refs: tuple[SubmittedEvidenceHandle, ...] = Field(
         default=(),
         description="Inspected passage_ref handles from search_sources or read_pages, when needed.",
     )
@@ -1364,7 +1451,7 @@ class UnavailableEvidenceBasisDraft(StrictModel):
     kind: Literal["missing_reporting"] = Field(
         description="Use when selected Evidence explicitly establishes missing reporting.",
     )
-    evidence: EvidenceHandle = Field(
+    evidence: SubmittedEvidenceHandle = Field(
         description="Selected Evidence handle that establishes the missing fact.",
     )
 
@@ -1483,7 +1570,7 @@ class DomainLimitationBasis(StrictModel):
             "Why investigation stopped without claiming that the premise is scientifically absent."
         ),
     )
-    search_receipt: SearchReceiptHandle | None = Field(
+    search_receipt: SubmittedSearchReceiptHandle | None = Field(
         default=None,
         description=(
             "Optional current-Trial search receipt recording retrieval provenance. Its absence "
@@ -1503,7 +1590,9 @@ class DirectEvidenceUse(StrictModel):
     kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
         Field(description="How the selected Evidence bears on this question answer.")
     )
-    evidence: EvidenceHandle = Field(description="Selected Evidence handle for this premise.")
+    evidence: SubmittedEvidenceHandle = Field(
+        description="Selected Evidence handle copied for this premise."
+    )
 
 
 class AbsenceEvidenceUse(StrictModel):
@@ -1513,7 +1602,7 @@ class AbsenceEvidenceUse(StrictModel):
             "scientific absence."
         ),
     )
-    search_receipt: SearchReceiptHandle = Field(
+    search_receipt: SubmittedSearchReceiptHandle = Field(
         description="No-hit search receipt scoped to this question and Trial.",
     )
 
@@ -1691,7 +1780,9 @@ class NewEvidenceRevision(StrictModel):
     kind: Literal["new_evidence"] = Field(
         description="Use when newly selected Evidence changes a saved Domain.",
     )
-    evidence: EvidenceHandle = Field(description="New Evidence supporting this revision.")
+    evidence: SubmittedEvidenceHandle = Field(
+        description="New Evidence handle copied for this revision."
+    )
     rationale: str = Field(min_length=1, description="Why the new Evidence changes the Domain.")
 
     @field_validator("rationale")
@@ -1884,7 +1975,7 @@ class ProposalDraft(StrictModel):
 
 
 class ProposalReasoningCounterevidence(StrictModel):
-    evidence: EvidenceHandle = Field(
+    evidence: SubmittedEvidenceHandle = Field(
         description="Same-Trial Evidence handle for this counterpoint."
     )
     implication: NonBlankText = Field(
@@ -1894,7 +1985,7 @@ class ProposalReasoningCounterevidence(StrictModel):
 
 class ProposalReasoningAssessment(StrictModel):
     trial_id: TrialId = Field(description="Server-issued Trial ID for this assessment.")
-    evidence_basis: tuple[EvidenceHandle, ...] = Field(
+    evidence_basis: tuple[SubmittedEvidenceHandle, ...] = Field(
         default=(),
         description=(
             "Same-Trial selected Evidence handles supporting this assessment. Use [] only for "
