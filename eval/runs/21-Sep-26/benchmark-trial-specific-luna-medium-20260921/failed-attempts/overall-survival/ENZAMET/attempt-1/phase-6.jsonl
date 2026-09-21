@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c05d-5c42-7db1-80d2-6e207eec48b5"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll approve the saved Proposal Review and resume from the server’s current checkpoint, then complete and finalize all five domains if the RoB 2 tools are available."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t complete this because the RoB 2 server tools are not available in the current session (`NO_ROB2_TOOLS`). The saved Proposal Review remains intact, but approval and domain finalization were not recorded."}}
+{"type":"turn.completed","usage":{"input_tokens":2628976,"cached_input_tokens":2452480,"cache_write_input_tokens":0,"output_tokens":7908,"reasoning_output_tokens":1433}}

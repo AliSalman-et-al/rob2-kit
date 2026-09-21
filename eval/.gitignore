@@ -2,8 +2,10 @@
 reference/sources/
 reference/catalog/provisional-labels/
 
-# Generated evaluation run workspaces are local-only. Historical files that
-# are already tracked remain tracked; new runs can be force-added deliberately
-# when a curated artifact is worth publishing.
-runs/
+# Generated evaluation run workspaces are local-only. Keep only benchmark
+# attempt traces; materialized projects, ledgers, artifacts, and host state
+# stay ignored.
+runs/**
+!runs/**/
+!runs/**/*.jsonl
 runs/**/codex-home/

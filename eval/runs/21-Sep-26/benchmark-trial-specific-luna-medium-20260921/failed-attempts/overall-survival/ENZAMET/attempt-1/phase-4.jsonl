@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c05d-5c42-7db1-80d2-6e207eec48b5"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m retrying the saved ENZAMET assessment state and will resume from the next server-authorized action."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The RoB 2 assessment tools are still unavailable, so I cannot record the approval or continue the domain judgments. The saved Proposal Review remains intact and no assessment data was lost."}}
+{"type":"turn.completed","usage":{"input_tokens":2244432,"cached_input_tokens":2072576,"cache_write_input_tokens":0,"output_tokens":7587,"reasoning_output_tokens":1355}}

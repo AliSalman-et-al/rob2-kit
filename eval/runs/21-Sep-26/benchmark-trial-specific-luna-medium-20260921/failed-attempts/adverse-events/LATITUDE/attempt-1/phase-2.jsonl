@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c06a-a965-7863-ba0b-89978c24907d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The proposal is still awaiting the required researcher approval; I’m checking the workflow state so I can resume without changing the submitted Result."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The LATITUDE proposal remains pending researcher approval. Please reply “approve” to authorize continuation to the RoB 2 domain assessments."}}
+{"type":"turn.completed","usage":{"input_tokens":989286,"cached_input_tokens":892416,"cache_write_input_tokens":0,"output_tokens":4030,"reasoning_output_tokens":1164}}

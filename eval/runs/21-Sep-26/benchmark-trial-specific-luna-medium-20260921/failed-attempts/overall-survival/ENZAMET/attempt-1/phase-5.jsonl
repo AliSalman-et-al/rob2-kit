@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c05d-5c42-7db1-80d2-6e207eec48b5"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m retrying the ENZAMET workflow now that the assessment skill is available again."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The RoB 2 server tools remain unavailable in this session, so I cannot continue beyond the saved Proposal Review or record domain judgments."}}
+{"type":"turn.completed","usage":{"input_tokens":2436505,"cached_input_tokens":2261504,"cache_write_input_tokens":0,"output_tokens":7721,"reasoning_output_tokens":1388}}

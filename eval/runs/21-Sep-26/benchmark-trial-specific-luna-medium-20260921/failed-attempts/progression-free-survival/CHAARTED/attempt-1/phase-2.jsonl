@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c064-2e23-7190-a8b6-ec04252d60e3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The CHAARTED proposal is already prepared and is awaiting the required researcher approval. I’m checking the current workflow state so I can resume from the exact checkpoint rather than recreate the assessment."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The CHAARTED Proposal Review remains pending. Please reply “approve” to authorize continuation of the RoB 2 domain assessments."}}
+{"type":"turn.completed","usage":{"input_tokens":1128920,"cached_input_tokens":1033984,"cache_write_input_tokens":0,"output_tokens":3982,"reasoning_output_tokens":739}}

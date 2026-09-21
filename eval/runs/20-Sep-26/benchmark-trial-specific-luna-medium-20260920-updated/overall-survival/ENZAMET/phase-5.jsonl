@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a0bf68-a374-7d30-a75a-86596b6d8386"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"There is no remaining work: the ENZAMET RoB 2 assessment is finalized with overall Low risk of bias."}}
+{"type":"turn.completed","usage":{"input_tokens":4931161,"cached_input_tokens":4716288,"cache_write_input_tokens":0,"output_tokens":12251,"reasoning_output_tokens":2600}}

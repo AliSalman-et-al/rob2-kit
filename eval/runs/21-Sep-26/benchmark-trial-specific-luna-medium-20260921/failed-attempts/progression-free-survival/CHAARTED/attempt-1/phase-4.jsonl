@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c064-2e23-7190-a8b6-ec04252d60e3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m resuming the approved RoB 2 workflow from the saved CHAARTED proposal checkpoint."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The RoB 2 workflow tools are still unavailable, so I cannot record the approval or continue the domain assessments. The CHAARTED proposal remains saved and pending approval in the workflow."}}
+{"type":"turn.completed","usage":{"input_tokens":1408140,"cached_input_tokens":1304320,"cache_write_input_tokens":0,"output_tokens":4490,"reasoning_output_tokens":1034}}

@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c064-2e23-7190-a8b6-ec04252d60e3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m checking whether the RoB 2 service has recovered so I can resume the saved CHAARTED assessment."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The RoB 2 service is still unavailable in this session, so I cannot continue or save the assessment."}}
+{"type":"turn.completed","usage":{"input_tokens":1557058,"cached_input_tokens":1450240,"cache_write_input_tokens":0,"output_tokens":4600,"reasoning_output_tokens":1057}}

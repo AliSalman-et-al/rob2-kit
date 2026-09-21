@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c06a-a965-7863-ba0b-89978c24907d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll approve the saved Proposal Review and resume from the current workflow checkpoint through all five domains and finalization."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t record the approval or continue because the `mcp__rob2` workflow tools are not exposed in this session. The saved Proposal Review remains intact; reconnecting the RoB 2 server is required to resume and finalize."}}
+{"type":"turn.completed","usage":{"input_tokens":1581933,"cached_input_tokens":1477120,"cache_write_input_tokens":0,"output_tokens":5005,"reasoning_output_tokens":1662}}

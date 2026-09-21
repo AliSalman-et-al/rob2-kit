@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c064-2e23-7190-a8b6-ec04252d60e3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll approve the saved Proposal Review and resume the assessment workflow through domain review and finalization."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t approve or continue because the RoB 2 MCP service is unavailable in this session; its approval tool is not callable. The saved Proposal Review remains intact and unmodified."}}
+{"type":"turn.completed","usage":{"input_tokens":1706397,"cached_input_tokens":1597184,"cache_write_input_tokens":0,"output_tokens":4797,"reasoning_output_tokens":1153}}

@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a0be0f-70ad-7170-aee5-be2c25cc0c72"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The Proposal Review is still awaiting explicit approval. Please reply “Approve” to continue the RoB 2 assessment."}}
+{"type":"turn.completed","usage":{"input_tokens":975062,"cached_input_tokens":848896,"cache_write_input_tokens":0,"output_tokens":3827,"reasoning_output_tokens":1001}}
