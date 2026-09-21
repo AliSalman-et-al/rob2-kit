@@ -77,9 +77,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # review attribution, closure operations, evidence-sufficiency receipts,
     # and overall aggregation receipts add schema surface. Keep a small explicit
     # ceiling above the measured contract rather than silently dropping typed
-    # provenance from the public output. D3 semantics and Source coverage are
-    # deliberate additions to that surface.
-    assert total_bytes < 625_000
+    # provenance from the public output. D3 semantics, Source coverage,
+    # premise records, and stable-context recovery are deliberate additions to
+    # that surface; continuation payloads themselves no longer repeat it.
+    assert total_bytes < 635_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations

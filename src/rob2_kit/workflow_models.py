@@ -15,6 +15,7 @@ from pathlib import PurePosixPath
 from typing import Annotated, Any, Literal, TypeVar
 
 from pydantic import (
+    AliasChoices,
     BaseModel,
     BeforeValidator,
     ConfigDict,
@@ -151,6 +152,70 @@ class WorkingDraft(StrictModel):
     )
 
 
+WorkingPremiseStatus = Literal["support", "contradiction", "unresolved"]
+
+
+class WorkingPremiseRecord(StrictModel):
+    """One replaceable, host-owned premise ledger entry.
+
+    Only observations and counterevidence carry source locations.  ``inference``
+    is deliberately plain text: it records the host's tentative interpretation
+    without turning that interpretation into Evidence or another authority.
+    """
+
+    proposition: NonBlankText = Field(
+        max_length=4_000,
+        description="Material scientific proposition being investigated.",
+    )
+    status: WorkingPremiseStatus = Field(
+        description="Host's current tentative disposition of this proposition."
+    )
+    observations: tuple[WorkingNote, ...] = Field(
+        default=(),
+        max_length=16,
+        description="Source-located observations relevant to the proposition.",
+    )
+    inference: NonBlankText | None = Field(
+        default=None,
+        max_length=4_000,
+        description=("Host's tentative interpretation of the observations; this is not Evidence."),
+    )
+    counterevidence: tuple[WorkingNote, ...] = Field(
+        default=(),
+        max_length=16,
+        description="Source-located counterevidence or counterpoints.",
+    )
+    unresolved_component: NonBlankText | None = Field(
+        default=None,
+        max_length=4_000,
+        validation_alias=AliasChoices("unresolved_component", "unresolved"),
+        description="Material part of the proposition that remains unresolved.",
+    )
+    next_action: NonBlankText | None = Field(
+        default=None,
+        max_length=2_000,
+        validation_alias=AliasChoices("next_action", "next_discriminating_action"),
+        description="Next discriminating investigative action, when one is useful.",
+    )
+    domain_id: DomainId | None = Field(
+        default=None, description="Related RoB 2 Domain, when known."
+    )
+    question_id: QuestionId | None = Field(
+        default=None, description="Related pack question, when known."
+    )
+
+    @model_validator(mode="after")
+    def unresolved_status_has_component(self) -> WorkingPremiseRecord:
+        if self.status == "unresolved" and self.unresolved_component is None:
+            raise ValueError("unresolved premise status requires unresolved_component")
+        return self
+
+
+# Keep the shorter name available to callers while the wire/storage field uses
+# the explicit plural ``premise_records`` name.
+WorkingPremise = WorkingPremiseRecord
+
+
 class WorkingCheckpointDraft(StrictModel):
     trial_id: TrialId = Field(description="Current open Trial that owns these notes.")
     observations: tuple[WorkingNote, ...] = Field(
@@ -170,6 +235,15 @@ class WorkingCheckpointDraft(StrictModel):
     )
     drafts: tuple[WorkingDraft, ...] = Field(
         default=(), max_length=16, description="Unfinished, non-authoritative Domain answer drafts."
+    )
+    premise_records: tuple[WorkingPremiseRecord, ...] = Field(
+        default=(),
+        max_length=8,
+        validation_alias=AliasChoices("premise_records", "premises", "premise"),
+        description=(
+            "Replaceable material-premise records. These are working state, not Evidence, "
+            "saved answers, or private reasoning transcripts."
+        ),
     )
     next_action: NonBlankText | None = Field(
         default=None, max_length=2_000, description="Next source-review step, when useful."
@@ -197,6 +271,9 @@ class WorkingCheckpoint(StrictModel):
     unread_ranges: tuple[WorkingSourceRange, ...]
     open_questions: tuple[WorkingNote, ...]
     drafts: tuple[WorkingDraft, ...]
+    # ``None`` preserves the canonical bytes and identity of checkpoints saved
+    # before premise records existed. New saves always write an explicit tuple.
+    premise_records: tuple[WorkingPremiseRecord, ...] | None = None
     next_action: NonBlankText | None = None
 
     @model_validator(mode="after")

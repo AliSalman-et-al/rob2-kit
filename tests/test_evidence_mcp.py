@@ -1024,6 +1024,88 @@ def test_source_navigation_is_literal_bounded_and_cursor_stable(tmp_path: Path) 
     assert reformulated["hits"][0]["page"] == 7
 
 
+def test_source_navigation_paginates_complete_index_and_reports_terminal_state(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    sections = []
+    for index in range(1, 16):
+        sections.extend((f"{index}. Section {index}", "Source detail", ""))
+    (workspace / "input" / "trial" / "protocol.txt").write_text(
+        "\n".join(sections), encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "protocol.txt"
+    )
+
+    entries = []
+    cursor = None
+    pages = []
+    while True:
+        args = {"trial_id": "trial", "source_id": source["id"], "limit": 4}
+        if cursor is not None:
+            args["cursor"] = cursor
+        page = _call(workspace, "list_sources", args)["data"]["navigation"]
+        pages.append(page)
+        entries.extend(page["entries"])
+        assert page["total_entries"] >= 15
+        assert page["returned_entries"] == len(page["entries"])
+        assert page["remaining_entries"] == page["total_entries"] - len(entries)
+        assert page["terminal"] is (page["next_cursor"] is None)
+        cursor = page["next_cursor"]
+        if cursor is None:
+            break
+
+    headings = [entry["text"] for entry in entries if entry["kind"] == "heading_candidate"]
+    assert headings == [f"{index}. Section {index}" for index in range(1, 16)]
+    assert pages[-1]["remaining_entries"] == 0
+    assert pages[-1]["terminal"] is True
+
+
+def test_search_session_keeps_distinct_sibling_passages_through_cursor_traversal(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "alpha beta first\ncontext\ncontext\nalpha beta second\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "all", "limit": 1},
+    )["data"]
+    first = result["hits"]
+    assert len(first) == 1
+    assert result["candidate_count"] == 2
+    assert result["distinct_passage_count"] == 2
+    assert result["distinct_page_count"] == 1
+    assert result["distinct_source_count"] == 1
+    seen = [hit["rank"] for hit in first]
+    cursor = result["next_cursor"]
+    while cursor is not None:
+        result = _call(
+            workspace,
+            "search_sources",
+            {
+                "trial_id": "trial",
+                "query": "alpha beta",
+                "mode": "all",
+                "limit": 1,
+                "cursor": cursor,
+            },
+        )["data"]
+        seen.extend(hit["rank"] for hit in result["hits"])
+        cursor = result["next_cursor"]
+
+    assert len(seen) == 2
+    assert seen == [1, 2]
+
+
 def test_source_navigation_reports_empty_text_projection(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").unlink()

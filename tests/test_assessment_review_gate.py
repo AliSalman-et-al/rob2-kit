@@ -96,6 +96,13 @@ def test_trial_requires_review_and_explicit_closure_before_finalization(tmp_path
     assert reviewed["outcome"] == "success", reviewed
     assert reviewed["data"]["review"]["disposition"] == "assessed"
     assert len(reviewed["data"]["review"]["checkpoint_ids"]) == 5
+    assert reviewed["data"]["result"]["trial_id"] == "trial"
+    assert all(
+        basis["assertion"] == "host_asserted"
+        for finding in reviewed["data"]["domain_findings"]
+        for answer in finding["answers"]
+        for basis in answer["bases"]
+    )
     old_review_reference = reviewed["data"]["review"]["identity"]
 
     searched = _call(

@@ -1,0 +1,210 @@
+{
+  "schema": "rob2-kit.scientific-guidance-fixtures.v1",
+  "purpose": "development_only",
+  "reference_status": "neutral_behavioral_contrasts_require_independent_expert_review",
+  "cases": [
+    {
+      "case_id": "d3-time-to-event-followup",
+      "domain": "domain:missing",
+      "contrast": "time_to_event",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "time to event by day 90 in all randomized participants",
+      "facts": [
+        "Some participants discontinued assigned treatment before day 90.",
+        "Survival status was obtained at day 90 for every randomized participant.",
+        "Administrative censoring occurred after day 90 at a shared data cutoff.",
+        "The report provides the randomized denominator and observed outcome count separately from the event count."
+      ],
+      "expected_answer_path": {
+        "sq:missing:data-available": "yes",
+        "sq:missing:true-value-dependent": "no"
+      }
+    },
+    {
+      "case_id": "d3-adverse-event-quantities",
+      "domain": "domain:missing",
+      "contrast": "adverse_event",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "treatment-emergent adverse events through week 12 in the randomized population",
+      "facts": [
+        "The randomized denominator is 100 per arm and 96 outcomes were observed per arm.",
+        "Eight participants had at least one event; event count is a numerator, not an outcome-observed count.",
+        "Four participants were excluded from the reported analysis after randomization and no outcomes were imputed.",
+        "An as-treated comparison changes group attribution but does not vary unobserved adverse-event values."
+      ],
+      "expected_answer_path": {
+        "sq:missing:data-available": "probably_no",
+        "sq:missing:evidence-unbiased": "probably_no"
+      }
+    },
+    {
+      "case_id": "d3-informative-followup-loss",
+      "domain": "domain:missing",
+      "contrast": "genuine_high",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "time to clinical event by month 6 in all randomized participants",
+      "facts": [
+        "Clinical-event status was unavailable for 18 of 100 randomized participants.",
+        "The unavailable participants stopped follow-up after worsening symptoms.",
+        "The sensitivity analysis only reclassified treatment groups and did not vary unobserved event values.",
+        "The source does not establish that administrative censoring caused the missingness."
+      ],
+      "expected_answer_path": {
+        "sq:missing:data-available": "no",
+        "sq:missing:evidence-unbiased": "no",
+        "sq:missing:true-value-dependent": "yes",
+        "sq:missing:likely-dependent": "yes"
+      }
+    },
+    {
+      "case_id": "d4-valid-standardized-measure",
+      "domain": "domain:measurement",
+      "contrast": "valid_reassurance",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "all-cause mortality by month 12",
+      "facts": [
+        "Death was ascertained from the same registry at the same time point in each randomized group.",
+        "The registry definition is valid for death and has no elicitation, attribution, or grading judgment.",
+        "The assessor identity was documented and blinded to assigned intervention.",
+        "No intervention-related difference in detection opportunity was reported."
+      ],
+      "expected_answer_path": {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "no",
+        "sq:measurement:assessor-aware": "no",
+        "sq:measurement:influence-possible": "no"
+      }
+    },
+    {
+      "case_id": "d4-standardized-subjective-measure",
+      "domain": "domain:measurement",
+      "contrast": "possible_influence",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "patient-reported symptom score at week 8",
+      "facts": [
+        "The same standardized questionnaire and threshold were used in each randomized group.",
+        "Participants completed the questionnaire, but the source does not establish whether they knew assignment.",
+        "Symptom elicitation and attribution require participant judgment even though the instrument is standardized.",
+        "No source evidence shows that awareness actually changed the score."
+      ],
+      "expected_answer_path": {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "no",
+        "sq:measurement:assessor-aware": "no_information",
+        "sq:measurement:influence-possible": "yes",
+        "sq:measurement:influence-likely": "no_information"
+      }
+    },
+    {
+      "case_id": "d4-open-label-graded-composite",
+      "domain": "domain:measurement",
+      "contrast": "likely_influence",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "composite clinical response at week 12",
+      "facts": [
+        "The composite includes an objective laboratory threshold and a symptom component graded by an unblinded clinician.",
+        "The same schedule was offered, but the intervention group received extra visits that created more opportunities to detect symptoms.",
+        "The clinician expected benefit and recorded intervention-attributed symptom improvement before the endpoint.",
+        "The objective component does not erase uncertainty about the subjective component or the detection pathway."
+      ],
+      "expected_answer_path": {
+        "sq:measurement:method-inappropriate": "no_information",
+        "sq:measurement:differential": "no_information",
+        "sq:measurement:assessor-aware": "yes",
+        "sq:measurement:influence-possible": "yes",
+        "sq:measurement:influence-likely": "yes"
+      }
+    },
+    {
+      "case_id": "d5-embedded-sap-exact",
+      "domain": "domain:selection",
+      "contrast": "embedded_sap",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "change from baseline at week 12 in the approved randomized comparison using an adjusted mean difference",
+      "facts": [
+        "The embedded SAP identifies the approved comparison, cohort, endpoint, time window, population, analysis, and effect measure.",
+        "The SAP version is signed before investigators could access unblinded outcome data.",
+        "The reported Result matches each planned field and no eligible alternative analysis is omitted without explanation."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "yes",
+        "sq:selection:multiple-analyses": "no"
+      }
+    },
+    {
+      "case_id": "d5-absent-plan",
+      "domain": "domain:selection",
+      "contrast": "absent_plan",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "event-free survival at month 12 in all randomized participants",
+      "facts": [
+        "The report says an analysis plan existed but no protocol, SAP, or registry plan was captured.",
+        "The report contains no source-located detail about the intended population, analysis, or effect measure.",
+        "The missing plan does not prove selective reporting."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "no_information",
+        "sq:selection:multiple-analyses": "no_information"
+      }
+    },
+    {
+      "case_id": "d5-ambiguous-chronology",
+      "domain": "domain:selection",
+      "contrast": "ambiguous_chronology",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "risk difference at week 24 in the approved population",
+      "facts": [
+        "The original plan and a later amended plan are both captured with source-located content.",
+        "The amendment date is known, but the source does not establish when unblinded outcome data became available.",
+        "The registry posting and retrieval dates are known but do not establish historical investigator intent.",
+        "The data cutoff is reported but is not treated as investigator unblinding."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "no_information"
+      }
+    },
+    {
+      "case_id": "d5-platform-scope-mismatch",
+      "domain": "domain:selection",
+      "contrast": "platform_comparison",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "the approved intervention comparison in one platform cohort",
+      "facts": [
+        "A platform master protocol and a cohort-specific SAP are both available.",
+        "The master protocol applies to several intervention comparisons, while the reported Result comes from one cohort.",
+        "The captured master protocol does not establish applicability to the approved comparison, cohort, or effect measure.",
+        "The cohort-specific analysis is not available."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "no_information"
+      }
+    },
+    {
+      "case_id": "d5-multiple-eligible-analyses",
+      "domain": "domain:selection",
+      "contrast": "multiple_eligible_analyses",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "the approved endpoint and time window in all randomized participants",
+      "facts": [
+        "The source reports adjusted, unadjusted, complete-case, and imputed analyses.",
+        "The plan does not identify which analyses were eligible or which one was intended for the approved Result.",
+        "The report does not link the selected analysis to outcome results or justify the subset reported.",
+        "Multiplicity alone does not establish results-driven selection."
+      ],
+      "expected_answer_path": {
+        "sq:selection:multiple-analyses": "no_information"
+      }
+    }
+  ]
+}

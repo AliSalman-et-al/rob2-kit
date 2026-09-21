@@ -573,13 +573,17 @@ def test_finalize_response_projects_frozen_assessment_summary_and_retry(
     first = _call(tmp_path, "finalize_batch", {"expected_revision": revision})
     assert first["outcome"] == "success", first
     snapshot = _state(tmp_path)["snapshots"]["trial"]
+    expected_receipt = deepcopy(snapshot["overall_receipt"])
+    for driver in expected_receipt["drivers"]:
+        for claim in driver["evidence_sufficiency"]["claims"]:
+            claim["support_attribution"] = "not_established"
     expected = {
         "trial": {
             "overall": snapshot["overall"],
             "domains": snapshot["domain_judgments"],
             "overall_trace": snapshot["overall_trace"],
             "overall_driver_domains": snapshot["overall_driver_domains"],
-            "overall_receipt": snapshot["overall_receipt"],
+            "overall_receipt": expected_receipt,
         }
     }
     assert first["data"]["assessment_summary"] == expected

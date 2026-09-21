@@ -2432,6 +2432,37 @@ def _valid_evidence_sufficiency(
     return True
 
 
+def _counterfactual_answer_branch(
+    domain_id: str,
+    answers: dict[str, str],
+    question_id: str,
+    replacement: str,
+) -> tuple[dict[str, str], tuple[str, ...], tuple[str, ...]]:
+    """Project a one-step alternative onto the branch it activates."""
+
+    alternative_answers = dict(answers)
+    alternative_answers[question_id] = replacement
+    domain_question_ids = {
+        item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == domain_id
+    }
+    active = tuple(
+        question_id
+        for question_id in derive_active_questions(alternative_answers)
+        if question_id in domain_question_ids
+    )
+    projected = {
+        question_id: alternative_answers[question_id]
+        for question_id in active
+        if question_id in alternative_answers
+    }
+    missing = tuple(question_id for question_id in active if question_id not in projected)
+    return projected, active, missing
+
+
+def _counterfactual_missing_reason(missing: tuple[str, ...]) -> str:
+    return f"missing active question IDs: [{', '.join(missing)}]"
+
+
 def _valid_overall_receipt(
     receipt: object,
     snapshot: dict[str, Any],
@@ -2591,36 +2622,31 @@ def _valid_overall_receipt(
         if question_id not in answers or answers[question_id] != from_answer:
             return False
         observed_keys.add(key)
-        alternative_answers = dict(answers)
-        alternative_answers[question_id] = to_answer
-        domain_question_ids = {
-            item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == domain_id
-        }
         try:
-            active = tuple(
-                question_id
-                for question_id in derive_active_questions(alternative_answers)
-                if question_id in domain_question_ids
+            projected_answers, _active, missing_active = _counterfactual_answer_branch(
+                domain_id,
+                answers,
+                question_id,
+                to_answer,
             )
         except (KeyError, TypeError, ValueError):
             return False
-        expected_active = tuple(record.get("active_questions", ()))
-        if active != expected_active:
-            if status != "requires_reassessment" or any(
-                alternative.get(key) is not None
-                for key in ("hypothetical_domain_judgment", "hypothetical_overall")
-            ):
-                return False
+        if missing_active:
             if (
-                "reason" in alternative
-                and alternative["reason"] is not None
-                and not _nonblank(alternative["reason"])
+                status != "requires_reassessment"
+                or any(
+                    alternative.get(key) is not None
+                    for key in ("hypothetical_domain_judgment", "hypothetical_overall")
+                )
+                or set(alternative)
+                != required | {"hypothetical_domain_judgment", "hypothetical_overall", "reason"}
+                or alternative.get("reason") != _counterfactual_missing_reason(missing_active)
             ):
                 return False
             has_pending = True
             continue
         try:
-            hypothetical_domain = evaluate_domain(domain_id, alternative_answers).judgment.value
+            hypothetical_domain = evaluate_domain(domain_id, projected_answers).judgment.value
             hypothetical_judgments = dict(current_judgments)
             hypothetical_judgments[domain_id] = hypothetical_domain
             hypothetical_overall = evaluate_overall(hypothetical_judgments).judgment.value

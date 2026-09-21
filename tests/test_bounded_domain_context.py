@@ -245,8 +245,16 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         assert metadata["trial_id"] == "trial"
         assert metadata["domain_id"] == "domain:deviations"
         assert metadata["state_revision"] == page["head"]["state_revision"]
-        assert page["data"]["result"]
-        assert page["data"]["evidence_workspace"]
+        if metadata["index"] == 0:
+            assert page["data"]["result"]
+            assert page["data"]["evidence_workspace"]
+        else:
+            assert "result" not in page["data"]
+            assert "evidence_workspace" not in page["data"]
+            assert metadata["stable_recovery"] == {
+                "operation": "get_domain_context",
+                "cursor": pages[0]["data"]["context_page"]["stable_recovery"]["cursor"],
+            }
         assert transport_bytes <= metadata["page_size"]
         cursor = metadata["next_cursor"]
         if cursor is not None:
@@ -259,7 +267,9 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert [page["data"]["context_page"]["index"] for page in pages] == list(range(len(pages)))
     assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
     assert pages[-1]["head"]["next_action"]["operation"] == "validate_domain_assessment"
-    question_ids = {question["id"] for page in pages for question in page["data"]["questions"]}
+    question_ids = {
+        question["id"] for page in pages for question in page["data"].get("questions", [])
+    }
     expected_ids = {
         question.id
         for question in SCIENTIFIC_PACK.questions
@@ -270,7 +280,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
 
     reconstructed = dict(pages[0]["data"])
     for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"][section]]
+        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
     reconstructed.pop("context_page")
     full, _transport_bytes = _wire_context(
         workspace,
@@ -444,7 +454,9 @@ def test_domain_context_delivery_does_not_advance_on_validation_failure(
         )
 
 
-def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path: Path) -> None:
+def test_domain_context_cursor_only_continuation_identifies_nonactive_domain(
+    tmp_path: Path,
+) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     saved = _call(
         workspace,
@@ -465,8 +477,14 @@ def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path
 
     continuation, _transport_bytes = _wire_context(workspace, {"cursor": cursor})
 
-    assert continuation["data"]["domain_id"] == "domain:randomization"
-    assert continuation["data"]["context_page"]["domain_id"] == "domain:randomization"
+    assert "domain_id" not in continuation["data"]
+    page = continuation["data"]["context_page"]
+    assert page["domain_id"] == "domain:randomization"
+    recovered, _transport_bytes = _wire_context(
+        workspace, {"cursor": page["stable_recovery"]["cursor"]}, drain=False
+    )
+    assert recovered["data"]["domain_id"] == "domain:randomization"
+    assert recovered["data"]["context_page"]["index"] == 0
 
 
 def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Path) -> None:
@@ -503,6 +521,8 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
         {"missing_data": [preview], "page_size": 32_768},
     )
     context_domain = first["data"]["domain_id"]
+    recovery_cursor = first["data"]["context_page"]["stable_recovery"]["cursor"]
+    original_digest = first["data"]["context_page"]["snapshot_digest"]
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
     changed = preview | {"observed": 0}
@@ -534,6 +554,17 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
         ).fetchone()
     assert delivery[0] != pending_digest
     assert delivery[1:] == (1, 0)
+
+    searched = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "randomized", "mode": "any"},
+    )
+    assert searched["outcome"] == "success"
+    recovered, _transport_bytes = _wire_context(workspace, {"cursor": recovery_cursor}, drain=False)
+    assert recovered["outcome"] == "success"
+    assert recovered["data"]["context_page"]["index"] == 0
+    assert recovered["data"]["context_page"]["snapshot_digest"] == original_digest
 
 
 def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path: Path) -> None:

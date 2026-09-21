@@ -8,7 +8,15 @@ use the discovered Evidence.
 
 **Scientific sufficiency**: The host's judgment that inspected Evidence supports
 an answer or that a material unresolved premise has been honestly bounded. A
-search receipt does not establish scientific sufficiency.
+search receipt does not establish scientific sufficiency. A support status
+preserves the host's stated relationship between a premise and Evidence; it is
+not a server-verified entailment judgment.
+
+**Premise record**: A compact working record for one material scientific
+proposition. It keeps source-located observations, the host's tentative
+inference, counterevidence, unresolved information, and the next discriminating
+action separate. It is resumable working state, not Canonical Evidence or a
+saved signaling answer.
 
 **Scientific limitation**: A material unresolved premise together with the
 reason the investigation stopped. It is not proof that the relevant fact is

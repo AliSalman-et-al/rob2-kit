@@ -203,7 +203,7 @@ def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
     }
     semantic_items = (
         "approved Result's event definition and ascertainment method",
-        "measurement method is appropriate for that approved event",
+        "measurement method is appropriate and valid for that approved event",
         "methods, thresholds, schedules, and detection opportunities between randomized groups",
         "who determines whether that event occurred",
         "assessor awareness separately from susceptibility to influence",

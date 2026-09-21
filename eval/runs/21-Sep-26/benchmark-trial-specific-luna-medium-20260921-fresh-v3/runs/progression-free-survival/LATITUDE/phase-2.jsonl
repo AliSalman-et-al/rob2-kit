@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c498-0014-7c10-a276-06155d8e5de3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m resuming the assessment and first checking the current rob2-kit workflow state, as required after an interruption."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The rob2-kit workflow tools are still unavailable in this session, so I cannot resume or commit the canonical assessment. No state was changed."}}
+{"type":"turn.completed","usage":{"input_tokens":479499,"cached_input_tokens":430592,"cache_write_input_tokens":0,"output_tokens":2626,"reasoning_output_tokens":784}}

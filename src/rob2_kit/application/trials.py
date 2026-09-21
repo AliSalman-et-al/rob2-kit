@@ -82,6 +82,19 @@ def _review_domain_findings(
         # the missing expansion is left for the ordinary recovery path.
         evidence_by_identity = {}
     records = state.get("domain_records") or {}
+    # Working premise notes are reusable only while their own checkpoint still
+    # matches the approved Result and captured Source projection.  A stale
+    # checkpoint is deliberately absent from final review rather than being
+    # treated as a prior Domain judgment.
+    from .working import working_checkpoint_status
+
+    premise_status = working_checkpoint_status(root, state, trial_id)
+    premise_checkpoint = (
+        premise_status.get("checkpoint") if premise_status.get("status") == "current" else None
+    )
+    premise_checkpoint_identity = (
+        premise_status.get("checkpoint_identity") if isinstance(premise_checkpoint, dict) else None
+    )
     findings: list[dict[str, Any]] = []
     for domain in SCIENTIFIC_PACK.domains:
         record = records.get(f"{trial_id}:{domain.id}")
@@ -92,58 +105,73 @@ def _review_domain_findings(
             if not isinstance(answer, dict) or not isinstance(answer.get("question_id"), str):
                 continue
             references: list[dict[str, Any]] = []
+            basis_findings: list[dict[str, Any]] = []
             expansions: list[dict[str, Any]] = []
             seen_evidence: set[str] = set()
             for basis in answer.get("bases", []):
-                if not isinstance(basis, dict) or not isinstance(basis.get("evidence"), str):
+                if not isinstance(basis, dict) or not isinstance(basis.get("kind"), str):
                     continue
-                evidence_identity = basis["evidence"]
-                if evidence_identity in seen_evidence:
-                    continue
-                seen_evidence.add(evidence_identity)
-                evidence = evidence_by_identity.get(evidence_identity)
-                if not isinstance(evidence, dict) or not isinstance(evidence.get("handle"), str):
-                    continue
-                handle = evidence["handle"]
-                references.append({"handle": handle, "identity": evidence_identity})
-                source_id = evidence.get("source_id")
-                page = evidence.get("page")
-                if (
-                    evidence.get("kind") in {"narrative", "table"}
-                    and isinstance(source_id, str)
-                    and isinstance(page, int)
-                    and isinstance(evidence.get("start_line"), int)
-                    and isinstance(evidence.get("end_line"), int)
-                ):
-                    expansions.append(
-                        {
-                            "operation": "read_pages",
-                            "evidence": handle,
-                            "trial_id": trial_id,
-                            "windows": [
-                                {
-                                    "source_id": source_id,
-                                    "page": page,
-                                    "start_line": evidence["start_line"],
-                                    "end_line": evidence["end_line"],
-                                }
-                            ],
+                basis_finding: dict[str, Any] = {
+                    "kind": basis["kind"],
+                    "assertion": "host_asserted",
+                }
+                evidence_identity = basis.get("evidence")
+                if isinstance(evidence_identity, str):
+                    basis_finding["evidence"] = None
+                    evidence = evidence_by_identity.get(evidence_identity)
+                    if isinstance(evidence, dict) and isinstance(evidence.get("handle"), str):
+                        handle = evidence["handle"]
+                        basis_finding["evidence"] = {
+                            "handle": handle,
+                            "identity": evidence_identity,
                         }
-                    )
-                elif (
-                    evidence.get("kind") == "figure"
-                    and isinstance(source_id, str)
-                    and isinstance(page, int)
-                ):
-                    expansions.append(
-                        {
-                            "operation": "render_page",
-                            "evidence": handle,
-                            "trial_id": trial_id,
-                            "source_id": source_id,
-                            "page": page,
-                        }
-                    )
+                        if evidence_identity not in seen_evidence:
+                            seen_evidence.add(evidence_identity)
+                            references.append({"handle": handle, "identity": evidence_identity})
+                            source_id = evidence.get("source_id")
+                            page = evidence.get("page")
+                            if (
+                                evidence.get("kind") in {"narrative", "table"}
+                                and isinstance(source_id, str)
+                                and isinstance(page, int)
+                                and isinstance(evidence.get("start_line"), int)
+                                and isinstance(evidence.get("end_line"), int)
+                            ):
+                                expansions.append(
+                                    {
+                                        "operation": "read_pages",
+                                        "evidence": handle,
+                                        "trial_id": trial_id,
+                                        "windows": [
+                                            {
+                                                "source_id": source_id,
+                                                "page": page,
+                                                "start_line": evidence["start_line"],
+                                                "end_line": evidence["end_line"],
+                                            }
+                                        ],
+                                    }
+                                )
+                            elif (
+                                evidence.get("kind") == "figure"
+                                and isinstance(source_id, str)
+                                and isinstance(page, int)
+                            ):
+                                expansions.append(
+                                    {
+                                        "operation": "render_page",
+                                        "evidence": handle,
+                                        "trial_id": trial_id,
+                                        "source_id": source_id,
+                                        "page": page,
+                                    }
+                                )
+                if isinstance(basis.get("search_receipt"), str):
+                    basis_finding["search_receipt"] = basis["search_receipt"]
+                for key in ("unresolved_premise", "stopping_rationale"):
+                    if isinstance(basis.get(key), str):
+                        basis_finding[key] = basis[key]
+                basis_findings.append(basis_finding)
             answer_findings.append(
                 {
                     "question_id": answer["question_id"],
@@ -152,16 +180,26 @@ def _review_domain_findings(
                     "unknowns": list(answer.get("unknowns") or []),
                     "counterevidence": list(answer.get("counterevidence") or []),
                     "evidence": references,
+                    "bases": basis_findings,
                     "evidence_expansions": expansions,
                 }
             )
         if answer_findings:
+            domain_premises = ()
+            if isinstance(premise_checkpoint, dict):
+                domain_premises = tuple(
+                    item
+                    for item in premise_checkpoint.get("premise_records", ())
+                    if isinstance(item, dict) and item.get("domain_id") == domain.id
+                )
             findings.append(
                 {
                     "domain_id": domain.id,
                     "checkpoint_identity": record["identity"],
                     "judgment": record.get("judgment"),
                     "answers": answer_findings,
+                    "premise_checkpoint_identity": premise_checkpoint_identity,
+                    "premise_records": domain_premises,
                 }
             )
     return findings
@@ -295,10 +333,12 @@ def review_trial(
             and isinstance(closure, dict)
             and current_review.get("identity") == closure.get("review_identity")
         ):
+            result = _approved_result(state, request.trial_id)
             return _result(
                 "success",
                 state,
                 review=_review_output(current_review),
+                result=result,
                 domain_findings=_review_domain_findings(root, state, request.trial_id),
                 retry=True,
             )
@@ -349,6 +389,7 @@ def review_trial(
             "success",
             state,
             review=_review_output(existing),
+            result=result,
             domain_findings=_review_domain_findings(root, state, request.trial_id),
             retry=True,
         )
@@ -368,6 +409,7 @@ def review_trial(
         "success",
         state,
         review=_review_output(review),
+        result=result,
         domain_findings=_review_domain_findings(root, state, request.trial_id),
         continuation=_continuation(state),
     )

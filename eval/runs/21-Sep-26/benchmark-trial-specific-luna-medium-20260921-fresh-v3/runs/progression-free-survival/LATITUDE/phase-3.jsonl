@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c498-0014-7c10-a276-06155d8e5de3"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m retrying the rob2-kit status call once more to resume from any server-side checkpoint."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The rob2-kit tools remain unavailable, so there is no workflow checkpoint I can resume and no assessment can be committed. No state was changed."}}
+{"type":"turn.completed","usage":{"input_tokens":563209,"cached_input_tokens":510976,"cache_write_input_tokens":0,"output_tokens":2777,"reasoning_output_tokens":804}}

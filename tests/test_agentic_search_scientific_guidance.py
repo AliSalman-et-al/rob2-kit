@@ -1,6 +1,20 @@
+from typing import cast
+
 from rob2_kit.application.domains import _comparison_cards
 from rob2_kit.models import ConditionalActivation
 from rob2_kit.packs import SCIENTIFIC_PACK
+
+
+def _fixture_cases() -> list[dict[str, object]]:
+    import json
+    from pathlib import Path
+
+    fixture = json.loads(
+        (Path(__file__).parent / "fixtures" / "scientific_guidance.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    return fixture["cases"]
 
 
 def _question(question_id: str):
@@ -84,6 +98,170 @@ def test_controlled_guidance_cases_do_not_collapse_distinct_premises() -> None:
     for question_id, terms in cases.items():
         text = _guidance_text((question_id,))
         assert all(term.lower() in text for term in terms), question_id
+
+
+def test_issue_420_guidance_keeps_availability_quantities_and_mechanism_distinct() -> None:
+    d3 = _guidance_text(
+        (
+            "sq:missing:data-available",
+            "sq:missing:evidence-unbiased",
+            "sq:missing:true-value-dependent",
+            "sq:missing:likely-dependent",
+        )
+    )
+    for term in (
+        "randomized",
+        "outcome-observed",
+        "analysed",
+        "imputed",
+        "excluded",
+        "event count",
+        "denominator",
+        "administrative censoring",
+        "treatment discontinuation",
+        "last-known-alive",
+        "group attribution",
+        "unobserved outcome",
+        "missingness mechanism",
+        "no universal percentage threshold",
+    ):
+        assert term in d3, term
+
+
+def test_issue_421_guidance_keeps_measurement_influence_propositions_distinct() -> None:
+    d4 = _guidance_text(
+        (
+            "sq:measurement:method-inappropriate",
+            "sq:measurement:differential",
+            "sq:measurement:assessor-aware",
+            "sq:measurement:influence-possible",
+            "sq:measurement:influence-likely",
+        )
+    )
+    for term in (
+        "validity",
+        "detection opportunity",
+        "identity",
+        "awareness",
+        "standardized",
+        "elicitation",
+        "attribution",
+        "grading",
+        "possible influence",
+        "likely influence",
+        "pathway",
+        "mixed objective and subjective components",
+    ):
+        assert term in d4, term
+
+
+def test_issue_425_guidance_matches_exact_result_and_separates_chronology() -> None:
+    d5 = _guidance_text(
+        (
+            "sq:selection:prespecified-analysis",
+            "sq:selection:multiple-measurements",
+            "sq:selection:multiple-analyses",
+        )
+    )
+    for term in (
+        "comparison",
+        "cohort",
+        "endpoint",
+        "time window",
+        "population",
+        "analysis",
+        "effect measure",
+        "original plan",
+        "amended plan",
+        "source-located chronology",
+        "applicability",
+        "current registry content",
+        "unseen historical intent",
+        "data cutoff",
+        "investigator unblinding",
+        "embedded sap",
+        "platform",
+        "multiple eligible analyses",
+    ):
+        assert term in d5, term
+
+
+def test_neutral_fixtures_cover_requested_d3_d4_d5_contrasts() -> None:
+    cases = _fixture_cases()
+    assert {case["domain"] for case in cases} == {
+        "domain:missing",
+        "domain:measurement",
+        "domain:selection",
+    }
+    assert {case["severity"] for case in cases} >= {"low", "some_concerns", "high"}
+    required = {
+        "time_to_event",
+        "adverse_event",
+        "valid_reassurance",
+        "possible_influence",
+        "likely_influence",
+        "genuine_high",
+        "embedded_sap",
+        "absent_plan",
+        "ambiguous_chronology",
+        "platform_comparison",
+        "multiple_eligible_analyses",
+    }
+    assert required <= {case["contrast"] for case in cases}
+    assert all(case["neutral"] for case in cases)
+    facts_by_contrast = {
+        str(case["contrast"]): " ".join(
+            str(fact) for fact in cast(list[object], case["facts"])
+        ).lower()
+        for case in cases
+    }
+    for contrast, terms in {
+        "time_to_event": ("discontinued", "day 90", "administrative censoring"),
+        "adverse_event": ("event count", "denominator", "group attribution"),
+        "valid_reassurance": ("same registry", "blinded", "no intervention-related"),
+        "possible_influence": ("standardized questionnaire", "judgment", "no source evidence"),
+        "likely_influence": ("objective laboratory", "extra visits", "expected benefit"),
+        "embedded_sap": ("embedded sap", "comparison", "signed before"),
+        "absent_plan": ("no protocol", "does not prove selective"),
+        "ambiguous_chronology": ("original plan", "amended plan", "data cutoff"),
+        "platform_comparison": (
+            "platform master protocol",
+            "one cohort",
+            "not establish applicability",
+        ),
+        "multiple_eligible_analyses": ("adjusted", "complete-case", "multiplicity"),
+    }.items():
+        assert all(term in facts_by_contrast[contrast] for term in terms), contrast
+
+
+def test_reference_assets_repeat_the_decision_seams() -> None:
+    from pathlib import Path
+
+    root = Path(__file__).parents[1] / "src" / "rob2_kit" / "skills" / "rob2-assess" / "references"
+    references = {
+        name: (root / name).read_text(encoding="utf-8").lower()
+        for name in ("missing.md", "measurement.md", "selection.md")
+    }
+    for term in (
+        "outcome-observed",
+        "event count",
+        "no universal percentage threshold",
+        "last-known-alive",
+        "group attribution",
+        "standardized instrument",
+        "detection opportunity",
+        "possible influence",
+        "likely influence",
+        "mixed objective and subjective",
+        "original and amended plans",
+        "source-located",
+        "current registry content",
+        "data cutoff",
+        "embedded sap",
+        "platform",
+        "multiple eligible analyses",
+    ):
+        assert any(term in text for text in references.values()), term
 
 
 def test_comparison_cards_keep_premise_specific_slots_and_question_bindings() -> None:

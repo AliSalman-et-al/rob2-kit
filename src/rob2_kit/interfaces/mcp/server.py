@@ -170,6 +170,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "result",
             "reading_recovery",
             "answers",
+            "working_checkpoint",
             "current_checkpoint",
             "guidance",
             "response_framework",
@@ -301,19 +302,19 @@ def _domain_context_page_data(
 ) -> dict[str, Any]:
     result = dict(data)
     for name in _DOMAIN_CONTEXT_PAGE_SECTIONS:
-        result[name] = items if name == section else []
+        if name == section:
+            result[name] = items
+        elif result:
+            result[name] = []
     result["context_page"] = page
     return result
 
 
 def _domain_context_page_template(data: dict[str, Any], index: int) -> dict[str, Any]:
-    result = dict(data)
-    if index:
-        # Result, Evidence workspace, and recovery stay on every page. The
-        # long prose header is delivered on page zero and reconstructed once.
-        result["guidance"] = []
-        result["traps"] = []
-    return result
+    # Page zero is the versioned stable scientific header. Later pages are
+    # deltas so repeated Result and workspace material cannot crowd out new
+    # Evidence. Page metadata carries an exact operation to recover page zero.
+    return dict(data) if index == 0 else {}
 
 
 def _paginate_domain_context_transport(
@@ -511,7 +512,15 @@ def _paginate_domain_context_transport(
         if page_index + 1 < page_count
         else None
     )
+    recovery_cursor = _domain_context_cursor(
+        {
+            **cursor_payload,
+            "page_index": 0,
+        }
+    )
     page = {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": digest,
         "trial_id": trial_id,
         "domain_id": domain_id,
         "state_revision": state_revision,
@@ -523,6 +532,10 @@ def _paginate_domain_context_transport(
         "page_size": page_size,
         "cursor": current_cursor,
         "next_cursor": next_cursor,
+        "stable_recovery": {
+            "operation": "get_domain_context",
+            "cursor": recovery_cursor,
+        },
     }
     paged = {
         **value,
@@ -814,6 +827,8 @@ def _content(
             and isinstance(domain_context_basis_identity, str)
         ):
             if isinstance(page, dict):
+                delivery_trial_id = str(page["trial_id"])
+                delivery_domain_id = str(page["domain_id"])
                 page_cursor = page.get("next_cursor") or page.get("cursor")
                 if domain_context_view_id is None and isinstance(page_cursor, str):
                     decoded_page_cursor = _decode_domain_context_cursor(page_cursor)
@@ -822,8 +837,8 @@ def _content(
                     _record_domain_context_view(
                         _root(_workspace()),
                         domain_context_view_id,
-                        str(data["trial_id"]),
-                        str(data["domain_id"]),
+                        delivery_trial_id,
+                        delivery_domain_id,
                         int(page["state_revision"]),
                         domain_context_digest,
                         int(page["page_size"]),
@@ -841,8 +856,8 @@ def _content(
                     # diagnostics; its state is not authoritative for dcp2.
                     _record_domain_context_delivery(
                         _root(_workspace()),
-                        str(data["trial_id"]),
-                        str(data["domain_id"]),
+                        delivery_trial_id,
+                        delivery_domain_id,
                         int(page["state_revision"]),
                         domain_context_digest,
                         int(page["page_size"]),
@@ -859,8 +874,8 @@ def _content(
                 else:
                     _record_domain_context_delivery(
                         _root(_workspace()),
-                        str(data["trial_id"]),
-                        str(data["domain_id"]),
+                        delivery_trial_id,
+                        delivery_domain_id,
                         int(page["state_revision"]),
                         domain_context_digest,
                         int(page["page_size"]),
@@ -1236,7 +1251,10 @@ def get_status() -> ToolResult:
     title="Save working checkpoint",
     description=(
         "Replace the current Trial's small, source-linked working notes. Use notes for "
-        "observations, interpretations, terminology, unread ranges, open questions, and drafts. "
+        "observations, interpretations, terminology, unread ranges, open questions, drafts, and "
+        "material premise records. A premise record keeps its proposition, source-located "
+        "observations and counterevidence, host tentative inference, unresolved component, and "
+        "next discriminating action separate. "
         "Each note must cite exact source page and line ranges, or 0,0 for a whole-page visual "
         "locator. These notes are resumable working memory; they do not become Evidence, answer "
         "a question, change a Result, or commit a "
@@ -1269,8 +1287,10 @@ def save_working_checkpoint(
         "The inventory includes captured intake conditions and declared omissions for this Trial, "
         "so unsupported or unreadable dossier files remain visible. "
         "For source-scoped navigation, pass source_id and optionally cursor to receive bounded "
-        "literal heading candidates and leading page excerpts from the persisted text projection, "
-        "including page numbers with no extracted text. "
+        "pages from the complete deterministic index of literal heading candidates and leading "
+        "page excerpts from the persisted text projection, including page numbers with no "
+        "extracted text. Follow next_cursor until terminal is true; totals describe the complete "
+        "index, not just this response page. "
         "Navigation is a routing aid, not Evidence; read the cited pages before relying on them."
     ),
     annotations=_READ_ONLY,
