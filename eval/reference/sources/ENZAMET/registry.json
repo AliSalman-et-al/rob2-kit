@@ -1,0 +1,1230 @@
+{
+  "derivedSection": {
+    "conditionBrowseModule": {
+      "ancestors": [
+        {
+          "id": "D005834",
+          "term": "Genital Neoplasms, Male"
+        },
+        {
+          "id": "D014565",
+          "term": "Urogenital Neoplasms"
+        },
+        {
+          "id": "D009371",
+          "term": "Neoplasms by Site"
+        },
+        {
+          "id": "D009369",
+          "term": "Neoplasms"
+        },
+        {
+          "id": "D005832",
+          "term": "Genital Diseases, Male"
+        },
+        {
+          "id": "D000091662",
+          "term": "Genital Diseases"
+        },
+        {
+          "id": "D000091642",
+          "term": "Urogenital Diseases"
+        },
+        {
+          "id": "D011469",
+          "term": "Prostatic Diseases"
+        },
+        {
+          "id": "D052801",
+          "term": "Male Urogenital Diseases"
+        }
+      ],
+      "meshes": [
+        {
+          "id": "D011471",
+          "term": "Prostatic Neoplasms"
+        }
+      ]
+    },
+    "interventionBrowseModule": {
+      "ancestors": [
+        {
+          "id": "D013507",
+          "term": "Endocrine Surgical Procedures"
+        },
+        {
+          "id": "D013514",
+          "term": "Surgical Procedures, Operative"
+        },
+        {
+          "id": "D013519",
+          "term": "Urogenital Surgical Procedures"
+        }
+      ],
+      "meshes": [
+        {
+          "id": "C540278",
+          "term": "enzalutamide"
+        },
+        {
+          "id": "D002369",
+          "term": "Castration"
+        }
+      ]
+    },
+    "miscInfoModule": {
+      "versionHolder": "2026-09-11"
+    }
+  },
+  "hasResults": false,
+  "protocolSection": {
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "description": "Enzalutamide is 160 mg daily, by mouth, until clinical disease progression or prohibitive toxicity.\n\nAll participants are to receive standard background therapy with a LHRHA or surgical castration, as per standard of care. The choice of the LHRHA or surgical castration is at the discretion of the treating clinician.",
+          "interventionNames": [
+            "Drug: Enzalutamide",
+            "Drug: LHRHA or Surgical Castration"
+          ],
+          "label": "Enzalutamide",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "Conventional NSAA, by mouth until clinical disease progression or prohibitive toxicity.\n\nAll participants are to receive standard background therapy with a LHRHA or surgical castration, as per standard of care. The choice of the LHRHA or surgical castration is at the discretion of the treating clinician.",
+          "interventionNames": [
+            "Drug: NSAA",
+            "Drug: LHRHA or Surgical Castration"
+          ],
+          "label": "Conventional NSAA",
+          "type": "ACTIVE_COMPARATOR"
+        }
+      ],
+      "interventions": [
+        {
+          "armGroupLabels": [
+            "Enzalutamide"
+          ],
+          "name": "Enzalutamide",
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Conventional NSAA"
+          ],
+          "name": "NSAA",
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Conventional NSAA",
+            "Enzalutamide"
+          ],
+          "name": "LHRHA or Surgical Castration",
+          "type": "DRUG"
+        }
+      ]
+    },
+    "conditionsModule": {
+      "conditions": [
+        "Prostatic Neoplasms"
+      ],
+      "keywords": [
+        "metastatic prostate cancer",
+        "prostate cancer",
+        "prostate cancer treatment",
+        "enzalutamide"
+      ]
+    },
+    "contactsLocationsModule": {
+      "locations": [
+        {
+          "city": "Boston",
+          "country": "United States",
+          "facility": "Dana Farber Cancer Institute",
+          "geoPoint": {
+            "lat": 42.35843,
+            "lon": -71.05977
+          },
+          "state": "Massachusetts",
+          "zip": "02115"
+        },
+        {
+          "city": "Camperdown",
+          "country": "Australia",
+          "facility": "Chris O'Brien Lifehouse",
+          "geoPoint": {
+            "lat": -33.88965,
+            "lon": 151.17642
+          },
+          "state": "New South Wales",
+          "zip": "2050"
+        },
+        {
+          "city": "Coffs Harbour",
+          "country": "Australia",
+          "facility": "Coffs Harbour Health Campus",
+          "geoPoint": {
+            "lat": -30.29626,
+            "lon": 153.11351
+          },
+          "state": "New South Wales",
+          "zip": "2450"
+        },
+        {
+          "city": "Concord",
+          "country": "Australia",
+          "facility": "Concord Cancer Centre - Concord Repatriation General Hospital",
+          "geoPoint": {
+            "lat": -33.84722,
+            "lon": 151.10381
+          },
+          "state": "New South Wales",
+          "zip": "2139"
+        },
+        {
+          "city": "Darlinghurst",
+          "country": "Australia",
+          "facility": "St Vincent's Hospital Sydney",
+          "geoPoint": {
+            "lat": -33.87939,
+            "lon": 151.21925
+          },
+          "state": "New South Wales",
+          "zip": "2010"
+        },
+        {
+          "city": "Kingswood",
+          "country": "Australia",
+          "facility": "Nepean Cancer Care Centre",
+          "geoPoint": {
+            "lat": -33.75614,
+            "lon": 150.72346
+          },
+          "state": "New South Wales",
+          "zip": "2747"
+        },
+        {
+          "city": "Kogarah",
+          "country": "Australia",
+          "facility": "St. George Hospital",
+          "geoPoint": {
+            "lat": -33.9681,
+            "lon": 151.13564
+          },
+          "state": "New South Wales",
+          "zip": "2217"
+        },
+        {
+          "city": "Orange",
+          "country": "Australia",
+          "facility": "Central West Cancer Services",
+          "geoPoint": {
+            "lat": -33.28397,
+            "lon": 149.10018
+          },
+          "state": "New South Wales",
+          "zip": "2800"
+        },
+        {
+          "city": "Port Macquarie",
+          "country": "Australia",
+          "facility": "Port Macquarie Base Hospital",
+          "geoPoint": {
+            "lat": -31.43084,
+            "lon": 152.90894
+          },
+          "state": "New South Wales",
+          "zip": "2444"
+        },
+        {
+          "city": "Randwick",
+          "country": "Australia",
+          "facility": "Prince of Wales Hospital",
+          "geoPoint": {
+            "lat": -33.91439,
+            "lon": 151.24895
+          },
+          "state": "New South Wales",
+          "zip": "2031"
+        },
+        {
+          "city": "St Leonards",
+          "country": "Australia",
+          "facility": "Genesis Care North Shore",
+          "geoPoint": {
+            "lat": -33.82344,
+            "lon": 151.19836
+          },
+          "state": "New South Wales",
+          "zip": "2065"
+        },
+        {
+          "city": "Tamworth",
+          "country": "Australia",
+          "facility": "Tamworth Rural Referral Hospital",
+          "geoPoint": {
+            "lat": -31.09048,
+            "lon": 150.92905
+          },
+          "state": "New South Wales",
+          "zip": "2340"
+        },
+        {
+          "city": "Tweed Heads",
+          "country": "Australia",
+          "facility": "The Tweed Hospital",
+          "geoPoint": {
+            "lat": -28.17671,
+            "lon": 153.5452
+          },
+          "state": "New South Wales",
+          "zip": "2485"
+        },
+        {
+          "city": "Wagga Wagga",
+          "country": "Australia",
+          "facility": "Riverina Cancer Care Centre",
+          "geoPoint": {
+            "lat": -35.12577,
+            "lon": 147.35375
+          },
+          "state": "New South Wales",
+          "zip": "2650"
+        },
+        {
+          "city": "Wahroonga",
+          "country": "Australia",
+          "facility": "Sydney Adventist Hospital",
+          "geoPoint": {
+            "lat": -33.71816,
+            "lon": 151.11561
+          },
+          "state": "New South Wales",
+          "zip": "2076"
+        },
+        {
+          "city": "Wollongong",
+          "country": "Australia",
+          "facility": "Wollongong Hospital",
+          "geoPoint": {
+            "lat": -34.424,
+            "lon": 150.89345
+          },
+          "state": "New South Wales",
+          "zip": "2500"
+        },
+        {
+          "city": "Tiwi",
+          "country": "Australia",
+          "facility": "Royal Darwin Hospital",
+          "geoPoint": {
+            "lat": -12.35876,
+            "lon": 130.878
+          },
+          "state": "Northern Territory",
+          "zip": "0810"
+        },
+        {
+          "city": "Birtinya",
+          "country": "Australia",
+          "facility": "Sunshine Coast University Hospital",
+          "geoPoint": {
+            "lat": -26.74322,
+            "lon": 153.11913
+          },
+          "state": "Queensland",
+          "zip": "4575"
+        },
+        {
+          "city": "Douglas",
+          "country": "Australia",
+          "facility": "Townsville Hospital",
+          "geoPoint": {
+            "lat": -19.32394,
+            "lon": 146.75234
+          },
+          "state": "Queensland",
+          "zip": "4814"
+        },
+        {
+          "city": "Herston",
+          "country": "Australia",
+          "facility": "Royal Brisbane and Women's Hospital",
+          "geoPoint": {
+            "lat": -27.44453,
+            "lon": 153.01852
+          },
+          "state": "Queensland",
+          "zip": "4006"
+        },
+        {
+          "city": "Southport",
+          "country": "Australia",
+          "facility": "Gold Coast University Hospital",
+          "geoPoint": {
+            "lat": -27.96724,
+            "lon": 153.39796
+          },
+          "state": "Queensland",
+          "zip": "4215"
+        },
+        {
+          "city": "Woolloongabba",
+          "country": "Australia",
+          "facility": "Princess Alexandra Hospital",
+          "geoPoint": {
+            "lat": -27.48855,
+            "lon": 153.03655
+          },
+          "state": "Queensland",
+          "zip": "4102"
+        },
+        {
+          "city": "Adelaide",
+          "country": "Australia",
+          "facility": "Royal Adelaide Hospital",
+          "geoPoint": {
+            "lat": -34.92866,
+            "lon": 138.59863
+          },
+          "state": "South Australia",
+          "zip": "5000"
+        },
+        {
+          "city": "Bedford Park",
+          "country": "Australia",
+          "facility": "Flinders Medical Centre",
+          "geoPoint": {
+            "lat": -35.02204,
+            "lon": 138.56815
+          },
+          "state": "South Australia",
+          "zip": "5042"
+        },
+        {
+          "city": "Kurralta Park",
+          "country": "Australia",
+          "facility": "Adelaide Cancer Centre - Ashford Cancer Care Centre",
+          "geoPoint": {
+            "lat": -34.95142,
+            "lon": 138.56702
+          },
+          "state": "South Australia",
+          "zip": "5037"
+        },
+        {
+          "city": "Hobart",
+          "country": "Australia",
+          "facility": "Royal Hobart Hospital",
+          "geoPoint": {
+            "lat": -42.87936,
+            "lon": 147.32941
+          },
+          "state": "Tasmania",
+          "zip": "7000"
+        },
+        {
+          "city": "Bendigo",
+          "country": "Australia",
+          "facility": "Bendigo Hospital",
+          "geoPoint": {
+            "lat": -36.75818,
+            "lon": 144.28024
+          },
+          "state": "Victoria"
+        },
+        {
+          "city": "Bentleigh East",
+          "country": "Australia",
+          "facility": "Monash Cancer Centre Moorabbin",
+          "geoPoint": {
+            "lat": -37.91928,
+            "lon": 145.05301
+          },
+          "state": "Victoria",
+          "zip": "3165"
+        },
+        {
+          "city": "East Melbourne",
+          "country": "Australia",
+          "facility": "Peter MacCallum Cancer Centre - East Melbourne",
+          "geoPoint": {
+            "lat": -37.81667,
+            "lon": 144.9879
+          },
+          "state": "Victoria",
+          "zip": "3002"
+        },
+        {
+          "city": "Fitzroy",
+          "country": "Australia",
+          "facility": "St. Vincents Hospital Melbourne",
+          "geoPoint": {
+            "lat": -37.79839,
+            "lon": 144.97833
+          },
+          "state": "Victoria",
+          "zip": "3065"
+        },
+        {
+          "city": "Frankston",
+          "country": "Australia",
+          "facility": "Peninsula South Eastern Haematology & Oncology Group- Peninsula Oncology Centre",
+          "geoPoint": {
+            "lat": -38.14458,
+            "lon": 145.12291
+          },
+          "state": "Victoria",
+          "zip": "3199"
+        },
+        {
+          "city": "Geelong",
+          "country": "Australia",
+          "facility": "University Hospital Geelong",
+          "geoPoint": {
+            "lat": -38.14711,
+            "lon": 144.36069
+          },
+          "state": "Victoria",
+          "zip": "3220"
+        },
+        {
+          "city": "Heidelberg",
+          "country": "Australia",
+          "facility": "Austin Hospital",
+          "geoPoint": {
+            "lat": -37.75,
+            "lon": 145.06667
+          },
+          "state": "Victoria",
+          "zip": "3084"
+        },
+        {
+          "city": "Malvern",
+          "country": "Australia",
+          "facility": "Australian Urology Associates",
+          "geoPoint": {
+            "lat": -37.86259,
+            "lon": 145.02811
+          },
+          "state": "Victoria",
+          "zip": "3144"
+        },
+        {
+          "city": "Melbourne",
+          "country": "Australia",
+          "facility": "Eastern Health Box Hill Hospital",
+          "geoPoint": {
+            "lat": -37.814,
+            "lon": 144.96332
+          },
+          "state": "Victoria"
+        },
+        {
+          "city": "Shepparton",
+          "country": "Australia",
+          "facility": "Goulburn Valley Health",
+          "geoPoint": {
+            "lat": -36.38047,
+            "lon": 145.39867
+          },
+          "state": "Victoria",
+          "zip": "3630"
+        },
+        {
+          "city": "Wodonga",
+          "country": "Australia",
+          "facility": "Border Medical Oncology",
+          "geoPoint": {
+            "lat": -36.12179,
+            "lon": 146.88809
+          },
+          "state": "Victoria",
+          "zip": "3690"
+        },
+        {
+          "city": "Nedlands",
+          "country": "Australia",
+          "facility": "Sir Charles Gairdner Hospital",
+          "geoPoint": {
+            "lat": -31.98184,
+            "lon": 115.8073
+          },
+          "state": "Western Australia",
+          "zip": "6009"
+        },
+        {
+          "city": "Perth",
+          "country": "Australia",
+          "facility": "Fiona Stanley Hospital (formerly Royal Perth Hospital)",
+          "geoPoint": {
+            "lat": -31.95224,
+            "lon": 115.8614
+          },
+          "state": "Western Australia",
+          "zip": "6000"
+        },
+        {
+          "city": "Calgary",
+          "country": "Canada",
+          "facility": "Prostate Cancer Institute - Southern Alberta Institute of Urology",
+          "geoPoint": {
+            "lat": 51.05011,
+            "lon": -114.08529
+          },
+          "state": "Alberta",
+          "zip": "T2V 1P9"
+        },
+        {
+          "city": "Edmonton",
+          "country": "Canada",
+          "facility": "Cross Cancer Institute",
+          "geoPoint": {
+            "lat": 53.55014,
+            "lon": -113.46871
+          },
+          "state": "Alberta",
+          "zip": "AB T6G 1Z2"
+        },
+        {
+          "city": "Surrey",
+          "country": "Canada",
+          "facility": "BCCA - Fraser Valley Cancer Center",
+          "geoPoint": {
+            "lat": 49.10635,
+            "lon": -122.82509
+          },
+          "state": "British Columbia",
+          "zip": "BC V3V 1Z2"
+        },
+        {
+          "city": "Vancouver",
+          "country": "Canada",
+          "facility": "BCCA Vancouver Centre",
+          "geoPoint": {
+            "lat": 49.24966,
+            "lon": -123.11934
+          },
+          "state": "British Columbia",
+          "zip": "V5Z 4E6"
+        },
+        {
+          "city": "Winnipeg",
+          "country": "Canada",
+          "facility": "CancerCare Manitoba",
+          "geoPoint": {
+            "lat": 49.8844,
+            "lon": -97.14704
+          },
+          "state": "Manitoba"
+        },
+        {
+          "city": "Fredericton",
+          "country": "Canada",
+          "facility": "Horizon Health Network - Dr Everett Chalmers Hospital",
+          "geoPoint": {
+            "lat": 45.94541,
+            "lon": -66.66558
+          },
+          "state": "New Brunswick",
+          "zip": "NB E3B 5N5"
+        },
+        {
+          "city": "Saint John",
+          "country": "Canada",
+          "facility": "Saint John Regional Hospital",
+          "geoPoint": {
+            "lat": 45.27076,
+            "lon": -66.05616
+          },
+          "state": "New Brunswick",
+          "zip": "NB E2L 4L4"
+        },
+        {
+          "city": "Halifax",
+          "country": "Canada",
+          "facility": "QEII Health Sciences Centre, Capital District Health Authority",
+          "geoPoint": {
+            "lat": 44.64269,
+            "lon": -63.57688
+          },
+          "state": "Nova Scotia",
+          "zip": "NS B3H 2Y9"
+        },
+        {
+          "city": "Cambridge",
+          "country": "Canada",
+          "facility": "Cambridge Memorial Hospital",
+          "geoPoint": {
+            "lat": 43.3601,
+            "lon": -80.31269
+          },
+          "state": "Ontario",
+          "zip": "ON N1R 7S6"
+        },
+        {
+          "city": "Hamilton",
+          "country": "Canada",
+          "facility": "Juravinski Cancer Centre",
+          "geoPoint": {
+            "lat": 43.25011,
+            "lon": -79.84963
+          },
+          "state": "Ontario",
+          "zip": "L8V 5C2"
+        },
+        {
+          "city": "Kingston",
+          "country": "Canada",
+          "facility": "Cancer Centre of Southeastern Ontario at Kingston General Hospital",
+          "geoPoint": {
+            "lat": 44.22976,
+            "lon": -76.48098
+          },
+          "state": "Ontario",
+          "zip": "ON K7L 5P9"
+        },
+        {
+          "city": "London",
+          "country": "Canada",
+          "facility": "London Regional Cancer Program",
+          "geoPoint": {
+            "lat": 42.98339,
+            "lon": -81.23304
+          },
+          "state": "Ontario",
+          "zip": "N6A 5W9"
+        },
+        {
+          "city": "Oshawa",
+          "country": "Canada",
+          "facility": "Lakeridge Health Oshawa",
+          "geoPoint": {
+            "lat": 43.90012,
+            "lon": -78.84957
+          },
+          "state": "Ontario",
+          "zip": "ON L1G 2B9"
+        },
+        {
+          "city": "Ottawa",
+          "country": "Canada",
+          "facility": "Ottawa Hospital Cancer Centre",
+          "geoPoint": {
+            "lat": 45.41117,
+            "lon": -75.69812
+          },
+          "state": "Ontario",
+          "zip": "ON K1H 8L6"
+        },
+        {
+          "city": "Sault Ste. Marie",
+          "country": "Canada",
+          "facility": "Algoma District Cancer Program Sault Area Hospital",
+          "geoPoint": {
+            "lat": 46.51677,
+            "lon": -84.33325
+          },
+          "state": "Ontario",
+          "zip": "P6B 0A8"
+        },
+        {
+          "city": "Thunder Bay",
+          "country": "Canada",
+          "facility": "Thunder Bay Regional Health Sciences Centre",
+          "geoPoint": {
+            "lat": 48.38202,
+            "lon": -89.25018
+          },
+          "state": "Ontario",
+          "zip": "ON P7B 6V4"
+        },
+        {
+          "city": "Toronto",
+          "country": "Canada",
+          "facility": "University Health Network - Princess Margaret Hospital",
+          "geoPoint": {
+            "lat": 43.70643,
+            "lon": -79.39864
+          },
+          "state": "Ontario",
+          "zip": "ON M5G 2M9"
+        },
+        {
+          "city": "Montreal",
+          "country": "Canada",
+          "facility": "Hôpital Notre-Dame",
+          "geoPoint": {
+            "lat": 45.50884,
+            "lon": -73.58781
+          },
+          "state": "Quebec",
+          "zip": "H2L 4M1"
+        },
+        {
+          "city": "Québec",
+          "country": "Canada",
+          "facility": "CHUQ-Pavillon Hotel-Dieu de Quebec",
+          "geoPoint": {
+            "lat": 46.81228,
+            "lon": -71.21454
+          },
+          "state": "Quebec",
+          "zip": "QC G1R 2J6"
+        },
+        {
+          "city": "Regina",
+          "country": "Canada",
+          "facility": "Allan Blair Cancer Centre",
+          "geoPoint": {
+            "lat": 50.45008,
+            "lon": -104.6178
+          },
+          "state": "Saskatchewan",
+          "zip": "S4T 7T1"
+        },
+        {
+          "city": "Saskatoon",
+          "country": "Canada",
+          "facility": "Saskatoon Cancer Centre",
+          "geoPoint": {
+            "lat": 52.13238,
+            "lon": -106.66892
+          },
+          "state": "Saskatchewan",
+          "zip": "S7N 4H4"
+        },
+        {
+          "city": "Beaumont",
+          "country": "Ireland",
+          "facility": "Beaumont Hospital",
+          "geoPoint": {
+            "lat": 53.38721,
+            "lon": -6.22713
+          },
+          "state": "Dublin",
+          "zip": "Dublin 9"
+        },
+        {
+          "city": "Dublin",
+          "country": "Ireland",
+          "facility": "Beacon Private Hospital",
+          "geoPoint": {
+            "lat": 53.33306,
+            "lon": -6.24889
+          },
+          "zip": "Dublin 18"
+        },
+        {
+          "city": "Dublin",
+          "country": "Ireland",
+          "facility": "St Vincent's University Hospital",
+          "geoPoint": {
+            "lat": 53.33306,
+            "lon": -6.24889
+          },
+          "zip": "Dublin 4"
+        },
+        {
+          "city": "Dublin",
+          "country": "Ireland",
+          "facility": "Mater Misercordiae University Hospital",
+          "geoPoint": {
+            "lat": 53.33306,
+            "lon": -6.24889
+          },
+          "zip": "Dublin 7"
+        },
+        {
+          "city": "Dublin",
+          "country": "Ireland",
+          "facility": "Mater Private Hospital",
+          "geoPoint": {
+            "lat": 53.33306,
+            "lon": -6.24889
+          },
+          "zip": "Dublin 7"
+        },
+        {
+          "city": "Dublin",
+          "country": "Ireland",
+          "facility": "St James Hospital",
+          "geoPoint": {
+            "lat": 53.33306,
+            "lon": -6.24889
+          },
+          "zip": "Dublin 8"
+        },
+        {
+          "city": "Galway",
+          "country": "Ireland",
+          "facility": "Galway University Hospital",
+          "geoPoint": {
+            "lat": 53.27245,
+            "lon": -9.05095
+          }
+        },
+        {
+          "city": "Tallaght",
+          "country": "Ireland",
+          "facility": "Adelaide and Meath Hospital - National Children's Hospital",
+          "geoPoint": {
+            "lat": 53.2859,
+            "lon": -6.37344
+          },
+          "zip": "Dublin 24"
+        },
+        {
+          "city": "Waterford",
+          "country": "Ireland",
+          "facility": "University Hospital Waterford",
+          "geoPoint": {
+            "lat": 52.25833,
+            "lon": -7.11194
+          }
+        },
+        {
+          "city": "Auckland",
+          "country": "New Zealand",
+          "facility": "Auckland City Hospital",
+          "geoPoint": {
+            "lat": -36.84853,
+            "lon": 174.76349
+          }
+        },
+        {
+          "city": "Christchurch",
+          "country": "New Zealand",
+          "facility": "Christchurch Hospital",
+          "geoPoint": {
+            "lat": -43.53333,
+            "lon": 172.63333
+          },
+          "zip": "8140"
+        },
+        {
+          "city": "Hamilton",
+          "country": "New Zealand",
+          "facility": "Waikato Hospital",
+          "geoPoint": {
+            "lat": -37.78333,
+            "lon": 175.28333
+          },
+          "zip": "3204"
+        },
+        {
+          "city": "Truro",
+          "country": "United Kingdom",
+          "facility": "Royal Cornwall Hospital",
+          "geoPoint": {
+            "lat": 50.26526,
+            "lon": -5.05436
+          },
+          "state": "Cornwall",
+          "zip": "TR1 3LQ"
+        },
+        {
+          "city": "Brighton",
+          "country": "United Kingdom",
+          "facility": "Royal Sussex Hospital",
+          "geoPoint": {
+            "lat": 50.82838,
+            "lon": -0.13947
+          },
+          "state": "East Sussex",
+          "zip": "BN2 5BE"
+        },
+        {
+          "city": "Canterbury",
+          "country": "United Kingdom",
+          "facility": "Kent and Canterbury Hospital",
+          "geoPoint": {
+            "lat": 51.27904,
+            "lon": 1.07992
+          },
+          "state": "Kent",
+          "zip": "CT1 3NG"
+        },
+        {
+          "city": "Aberdeen",
+          "country": "United Kingdom",
+          "facility": "Aberdeen Royal Infirmary",
+          "geoPoint": {
+            "lat": 57.14369,
+            "lon": -2.09814
+          },
+          "state": "Scotland",
+          "zip": "AB25 2ZN"
+        },
+        {
+          "city": "Cardiff",
+          "country": "United Kingdom",
+          "facility": "Velindre Cancer Centre",
+          "geoPoint": {
+            "lat": 51.48,
+            "lon": -3.18
+          },
+          "state": "Wales",
+          "zip": "CF14 2TL"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "University College Hospital London",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "zip": "NW1 2BU"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "Guys and St Thomas Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "zip": "SE1 9RT"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "Royal Marsden Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "zip": "SW3 6JJ"
+        },
+        {
+          "city": "Southampton",
+          "country": "United Kingdom",
+          "facility": "University Hospital Southampton",
+          "geoPoint": {
+            "lat": 50.90395,
+            "lon": -1.40428
+          },
+          "zip": "SO16 6YD"
+        },
+        {
+          "city": "Swindon",
+          "country": "United Kingdom",
+          "facility": "Great Western Hospital",
+          "geoPoint": {
+            "lat": 51.55797,
+            "lon": -1.78116
+          },
+          "zip": "SN3 6BB"
+        }
+      ],
+      "overallOfficials": [
+        {
+          "affiliation": "Dana Farber Cancer Institute and ANZUP",
+          "name": "Christopher Sweeney",
+          "role": "STUDY_CHAIR"
+        },
+        {
+          "affiliation": "ANZUP and Eastern Health Box Hill Hospital",
+          "name": "Ian Davis",
+          "role": "STUDY_CHAIR"
+        }
+      ]
+    },
+    "descriptionModule": {
+      "briefSummary": "The purpose of this study is to determine the effectiveness of enzalutamide, versus a conventional non-steroidal anti androgen (NSAA), when combined with a luteinizing hormone releasing hormone analog (LHRHA) or surgical castration, as first line androgen deprivation therapy (ADT) for newly diagnosed metastatic prostate cancer."
+    },
+    "designModule": {
+      "designInfo": {
+        "allocation": "RANDOMIZED",
+        "interventionModel": "PARALLEL",
+        "interventionModelDescription": "Stratification factors:\n\n1. High volume disease (yes versus no), characterised as:\n\n   * 4 or more bone metastases, one of which is outside the vertebral column and pelvis AND/OR\n   * Visceral metastases (e.g. lung, pleura, liver, adrenal and others) Lymph node involvement or bladder invasion do NOT qualify as visceral disease.\n2. Study site\n3. Concomitant \"anti-resorptive\" therapy to delay skeletal related events when commencing ADT\n4. Co-morbidities according to the Adult Co-morbidity Evaluation (ACE-27: 0-1 vs 2-3)\n5. Early use of docetaxel defined as use of docetaxel in conjunction with initiation of ADT.",
+        "maskingInfo": {
+          "masking": "NONE"
+        },
+        "primaryPurpose": "TREATMENT"
+      },
+      "enrollmentInfo": {
+        "count": 1125,
+        "type": "ACTUAL"
+      },
+      "phases": [
+        "PHASE3"
+      ],
+      "studyType": "INTERVENTIONAL"
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Men starting first line androgen deprivation therapy for metastatic prostate cancer.\n\nInclusion criteria:\n\n1. Male aged 18 or older with metastatic adenocarcinoma of the prostate\n2. Target or non-target lesions according to Response Evaluation Criteria in Solid Tumours (RECIST) 1.1\n3. Adequate bone marrow function: Haemoglobin (Hb) ≥100g/L and White Cell Count (WCC) ≥ 4.0 x 109/L and platelets ≥100 x 109/L.\n4. Adequate liver function: Alanine transaminase (ALT) \\< 2 x Upper Limit of Normal (ULN) and bilirubin \\< 1.5 x ULN, (or if bilirubin is between 1.5-2 x ULN, they must have a normal conjugated bilirubin). If liver metastases are present ALT must be \\< 5 x ULN\n5. Adequate renal function: calculated creatinine clearance \\> 30 ml/min (Cockcroft-Gault)\n6. Eastern Cooperative Oncology Group (ECOG) performance status of 0-2. Patients with performance status 2 are only eligible if the decline in performance status is due to metastatic prostate cancer.\n7. Study treatment both planned and able to start within 7 days after randomisation.\n8. Willing and able to comply with all study requirements, including treatment and required assessments\n9. Has completed baseline Health-Related Quality of Life (HRQL) questionnaires UNLESS is unable to complete because of limited literacy or vision\n10. Signed, written, informed consent\n\nExclusion Criteria:\n\n1. Prostate cancer with significant sarcomatoid or spindle cell or neuroendocrine small cell components\n2. History of\n\n   * seizure or any condition that may predispose to seizure (e.g., prior cortical stroke or significant brain trauma).\n   * loss of consciousness or transient ischemic attack within 12 months of randomization\n   * significant cardiovascular disease within the last 3 months including: myocardial infarction, unstable angina, congestive heart failure, ongoing arrhythmias of Grade \\>2 \\[National Cancer Institute Common Terminology Criteria for Adverse Events (CTCAE), version 4.03\\], thromboembolic events (e.g., deep vein thrombosis, pulmonary embolism). Chronic stable atrial fibrillation on stable anticoagulant therapy is allowed.\n3. Life expectancy of less than 12 months.\n4. History of another malignancy within 5 years prior to randomisation, except for either non- melanomatous carcinoma of the skin or, adequately treated, non-muscle-invasive urothelial carcinoma of the bladder (Tis, Ta and low grade T1 tumours).\n5. Concurrent illness, including severe infection that might jeopardize the ability of the patient to undergo the procedures outlined in this protocol with reasonable safety\n\n   a. Human Immunodeficiency Virus (HIV)-infection is not an exclusion criterion if it is controlled with anti-retroviral drugs that are unaffected by concomitant enzalutamide.\n6. Presence of any psychological, familial, sociological or geographical condition potentially hampering compliance with the study protocol and follow-up schedule, including alcohol dependence or drug abuse;\n7. Patients who are sexually active and not willing/able to use medically acceptable forms of barrier contraception.\n8. Prior ADT for prostate cancer (including bilateral orchidectomy), except in the following settings:\n\n   * Started less than 12 weeks prior to randomisation AND Prostate Specific Antigen (PSA) is stable or falling. The 12 weeks starts from whichever of the following occurs earliest: first dose of oral anti- androgen, LHRHA, or surgical castration.\n   * In the adjuvant setting, where the completion of adjuvant hormonal therapy was more than 12 months prior to randomisation AND the total duration of hormonal treatment did not exceed 24 months. For depot preparations, hormonal therapy is deemed to have started with the first dose and to have been completed when the next dose would otherwise have been due, e.g. 12 weeks after the last dose of depot goserelin 10.8mg.\n9. Prior cytotoxic chemotherapy for prostate cancer, but up to 2 cycles of docetaxel chemotherapy for metastatic disease is permitted.\n10. Participation in other clinical trials of investigational agents for the treatment of prostate cancer or other diseases.",
+      "healthyVolunteers": false,
+      "minimumAge": "18 Years",
+      "sex": "MALE",
+      "stdAges": [
+        "ADULT",
+        "OLDER_ADULT"
+      ]
+    },
+    "identificationModule": {
+      "acronym": "ENZAMET",
+      "briefTitle": "Enzalutamide in First Line Androgen Deprivation Therapy for Metastatic Prostate Cancer",
+      "nctId": "NCT02446405",
+      "officialTitle": "Randomised Phase 3 Trial of Enzalutamide in First Line Androgen Deprivation Therapy for Metastatic Prostate Cancer: ENZAMET",
+      "orgStudyIdInfo": {
+        "id": "ANZUP 1304"
+      },
+      "organization": {
+        "class": "OTHER",
+        "fullName": "University of Sydney"
+      },
+      "secondaryIdInfos": [
+        {
+          "domain": "Australian New Zealand Clinical Trials Registry (ANZCTR)",
+          "id": "ACTRN12614000110684",
+          "type": "OTHER"
+        }
+      ]
+    },
+    "outcomesModule": {
+      "primaryOutcomes": [
+        {
+          "description": "the interval from the date of randomisation to date of death.",
+          "measure": "Overall Survival Time",
+          "timeFrame": "3 years"
+        }
+      ],
+      "secondaryOutcomes": [
+        {
+          "description": "the interval from the date of randomisation to the date of first evidence of PSA progression, clinical progression, or death from any cause, whichever occurs first, or the date of last known follow-up without PSA progression\n\nPSA progression is defined as: a rise in PSA by more than 25% AND more than 2ng/mL",
+          "measure": "Prostate specific antigen progression free survival time",
+          "timeFrame": "3 years"
+        },
+        {
+          "description": "the interval from the date of randomisation to the date of first clinical evidence of disease progression or death from any cause, whichever occurs first, or the date of last known follow-up without clinical progression",
+          "measure": "Clinical progression free survival time",
+          "timeFrame": "3 years"
+        },
+        {
+          "description": "The NCI Common Terminology Criteria for Adverse Events version 4 (CTCAE v4.03) will be used to classify and grade the intensity of adverse events during study treatment",
+          "measure": "Adverse events",
+          "timeFrame": "3 years"
+        },
+        {
+          "description": "HRQL will be reported by participants using the EORTC core quality of life questionnaire (QLQ C-30) and prostate cancer specific module (PR-25). The EQ-5D-5L will be used to derive utility scores suitable for quality adjusted survival analyses",
+          "measure": "Health-related quality of life (EORTC Core Quality of Life Questionnaire (QLQ C-30), Quality of Life Questionnaire for Prostate Cancer (PR-25), Euroqol 5 item preference-based measure of health (EQ-5 D-5L))",
+          "timeFrame": "3 years"
+        },
+        {
+          "description": "Information on the following areas of health-care resource usage will be collected: hospitalisations, visits to health professionals, and medications Australian unit costs will be applied to the resource usage data to estimate the incremental cost of the addition of enzalutamide to standard treatment",
+          "measure": "Healthcare resource cost-effectiveness (incremental cost effectiveness ratio)",
+          "timeFrame": "3 years"
+        }
+      ]
+    },
+    "oversightModule": {
+      "oversightHasDmc": true
+    },
+    "referencesModule": {
+      "references": [
+        {
+          "citation": "Zhang AY, Thomas H, Begbie S, Cheung L, Chi KN, Chowdhury S, Frydenberg M, Herberstein C, Horvath LG, Joshua AM, Lawrence NJ, Marx G, McCaffrey J, McDermott R, McLaughlin RA, North SA, Parnis F, Parulekar W, Pook DW, Reaume MN, Sandhu SK, Tan A, Tan TH, Thomson A, Vera-Badillo F, Williams SG, Zielinski RR, Stockler MR, Davis ID, Sweeney CJ. Eight-year outcomes of testosterone suppression plus enzalutamide or a non-steroidal anti-androgen for metastatic, hormone-sensitive prostate cancer (ENZAMET; ANZUP 1304). Ann Oncol. 2026 Aug 17:S0923-7534(26)01410-9. doi: 10.1016/j.annonc.2026.07.412. Online ahead of print.",
+          "pmid": "42607762",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Armstrong AJ, Azad AA, Conduit C, Haas GP, Bland C, Davis ID. Enzalutamide in metastatic hormone-sensitive prostate cancer: A plain language summary of the ARCHES and ENZAMET follow-up studies. Future Oncol. 2025 Jan;21(1):15-24. doi: 10.1080/14796694.2024.2408101. Epub 2024 Oct 15.",
+          "pmid": "39404227",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Sweeney CJ, Martin AJ, Stockler MR, Begbie S, Cheung L, Chi KN, Chowdhury S, Frydenberg M, Horvath LG, Joshua AM, Lawrence NJ, Marx G, McCaffrey J, McDermott R, McJannett M, North SA, Parnis F, Parulekar W, Pook DW, Reaume MN, Sandhu SK, Tan A, Tan TH, Thomson A, Vera-Badillo F, Williams SG, Winter D, Yip S, Zhang AY, Zielinski RR, Davis ID; ENZAMET trial investigators and Australian and New Zealand Urogenital and Prostate Cancer Trials Group. Testosterone suppression plus enzalutamide versus testosterone suppression plus standard antiandrogen therapy for metastatic hormone-sensitive prostate cancer (ENZAMET): an international, open-label, randomised, phase 3 trial. Lancet Oncol. 2023 Apr;24(4):323-334. doi: 10.1016/S1470-2045(23)00063-3.",
+          "pmid": "36990608",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Stockler MR, Martin AJ, Davis ID, Dhillon HM, Begbie SD, Chi KN, Chowdhury S, Coskinas X, Frydenberg M, Hague WE, Horvath LG, Joshua AM, Lawrence NJ, Marx GM, McCaffrey J, McDermott R, McJannett M, North SA, Parnis F, Parulekar WR, Pook DW, Reaume MN, Sandhu S, Tan A, Tan TH, Thomson A, Vera-Badillo F, Williams SG, Winter DG, Yip S, Zhang AY, Zielinski RR, Sweeney CJ; ENZAMET Trial Investigators and the Australian and New Zealand Urogenital and Prostate Cancer Trials Group (ANZUP). Health-Related Quality of Life in Metastatic, Hormone-Sensitive Prostate Cancer: ENZAMET (ANZUP 1304), an International, Randomized Phase III Trial Led by ANZUP. J Clin Oncol. 2022 Mar 10;40(8):837-846. doi: 10.1200/JCO.21.00941. Epub 2021 Dec 20.",
+          "pmid": "34928708",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Davis ID, Martin AJ, Stockler MR, Begbie S, Chi KN, Chowdhury S, Coskinas X, Frydenberg M, Hague WE, Horvath LG, Joshua AM, Lawrence NJ, Marx G, McCaffrey J, McDermott R, McJannett M, North SA, Parnis F, Parulekar W, Pook DW, Reaume MN, Sandhu SK, Tan A, Tan TH, Thomson A, Tu E, Vera-Badillo F, Williams SG, Yip S, Zhang AY, Zielinski RR, Sweeney CJ; ENZAMET Trial Investigators and the Australian and New Zealand Urogenital and Prostate Cancer Trials Group. Enzalutamide with Standard First-Line Therapy in Metastatic Prostate Cancer. N Engl J Med. 2019 Jul 11;381(2):121-131. doi: 10.1056/NEJMoa1903835. Epub 2019 Jun 2.",
+          "pmid": "31157964",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Davis ID. Answering Questions and Questioning Answers: More Evidence To Guide Decision-making About Chemohormonal Therapy in Metastatic Prostate Cancer. Eur Urol. 2018 Jun;73(6):856-858. doi: 10.1016/j.eururo.2018.02.020. Epub 2018 Mar 7. No abstract available.",
+          "pmid": "29525541",
+          "type": "DERIVED"
+        }
+      ],
+      "seeAlsoLinks": [
+        {
+          "label": "Australian and New Zealand Urogenital and Prostate (ANZUP) Cancer Trials Group.",
+          "url": "https://www.anzup.org.au/"
+        },
+        {
+          "label": "University of Sydney, National Health and Medical Research Council (NHMRC) Clinical Trials Centre.",
+          "url": "http://ctc.usyd.edu.au/"
+        },
+        {
+          "label": "Australian New Zealand Clinical Trials Registry (ANZCTR)",
+          "url": "http://www.anzctr.org.au/"
+        }
+      ]
+    },
+    "sponsorCollaboratorsModule": {
+      "collaborators": [
+        {
+          "class": "OTHER",
+          "name": "Australian and New Zealand Urogenital and Prostate Cancer Trials Group"
+        },
+        {
+          "class": "NETWORK",
+          "name": "Cancer Trials Ireland"
+        },
+        {
+          "class": "NETWORK",
+          "name": "Canadian Cancer Trials Group"
+        },
+        {
+          "class": "INDUSTRY",
+          "name": "Astellas Pharma Inc"
+        }
+      ],
+      "leadSponsor": {
+        "class": "OTHER",
+        "name": "University of Sydney"
+      },
+      "responsibleParty": {
+        "type": "SPONSOR"
+      }
+    },
+    "statusModule": {
+      "completionDateStruct": {
+        "date": "2027-06-30",
+        "type": "ESTIMATED"
+      },
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "lastUpdatePostDateStruct": {
+        "date": "2025-02-06",
+        "type": "ACTUAL"
+      },
+      "lastUpdateSubmitDate": "2025-02-03",
+      "overallStatus": "ACTIVE_NOT_RECRUITING",
+      "primaryCompletionDateStruct": {
+        "date": "2026-12-31",
+        "type": "ESTIMATED"
+      },
+      "startDateStruct": {
+        "date": "2014-03"
+      },
+      "statusVerifiedDate": "2025-02",
+      "studyFirstPostDateStruct": {
+        "date": "2015-05-18",
+        "type": "ESTIMATED"
+      },
+      "studyFirstSubmitDate": "2015-05-04",
+      "studyFirstSubmitQcDate": "2015-05-13"
+    }
+  }
+}

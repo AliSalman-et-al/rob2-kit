@@ -1,0 +1,29 @@
+{
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:44.999378Z",
+    "path": "registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02677896",
+    "sha256": "101c1f3852c211ee5946b7d008c38a4ec6a7c0e8bf5f5d8c94f6ed1151f87a67"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ARCHES"
+}

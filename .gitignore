@@ -33,10 +33,12 @@ Thumbs.db
 *.swo
 .release-dist/
 
-# Evaluation source corpus and provisional labels are local-only; the public
-# catalog records trial identifiers and outcome-level denominators.
+# Keep evaluation inputs local except for the public catalog and explicitly
+# tracked benchmark source fixtures.
 eval/reference/*
 !eval/reference/catalog/
+!eval/reference/sources/
+!eval/reference/sources/**
 eval/reference/catalog/provisional-labels/
 eval/private/
 

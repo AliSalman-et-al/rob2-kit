@@ -1,0 +1,24 @@
+{
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:29:59.058686Z",
+    "path": "registry.json",
+    "provenance": "captured response retained from OS baseline",
+    "registry_id": "NCT00104715",
+    "sha256": "e910407df99f863aefe3f0388f84e8d7bf4883222c879390830306e13c1f7fca"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "GETUG-AFU-15"
+}

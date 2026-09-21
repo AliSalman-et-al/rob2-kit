@@ -1,0 +1,13 @@
+nct = "NCT02799602"
+
+[roles]
+"main_article.pdf" = "main_article"
+"other-2.pdf" = "other"
+"other.pdf" = "other"
+"protocol.pdf" = "protocol"
+"supplement.pdf" = "supplement"
+
+[registry_capture]
+path = "registry.json"
+captured_at = "2026-09-13T19:31:14.538796Z"
+provenance = "captured response retained from OS baseline"

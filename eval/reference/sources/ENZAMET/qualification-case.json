@@ -1,0 +1,39 @@
+{
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:13:27.679130Z",
+    "path": "registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02446405",
+    "sha256": "ba84ecaa795516d6c69815b6a340786f28eb39bf303ad4de8ad3dd8ac06d9d4e"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ENZAMET"
+}

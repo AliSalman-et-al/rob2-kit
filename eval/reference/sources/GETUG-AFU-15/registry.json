@@ -1,0 +1,836 @@
+{
+  "derivedSection": {
+    "conditionBrowseModule": {
+      "ancestors": [
+        {
+          "id": "D005834",
+          "term": "Genital Neoplasms, Male"
+        },
+        {
+          "id": "D014565",
+          "term": "Urogenital Neoplasms"
+        },
+        {
+          "id": "D009371",
+          "term": "Neoplasms by Site"
+        },
+        {
+          "id": "D009369",
+          "term": "Neoplasms"
+        },
+        {
+          "id": "D005832",
+          "term": "Genital Diseases, Male"
+        },
+        {
+          "id": "D000091662",
+          "term": "Genital Diseases"
+        },
+        {
+          "id": "D000091642",
+          "term": "Urogenital Diseases"
+        },
+        {
+          "id": "D011469",
+          "term": "Prostatic Diseases"
+        },
+        {
+          "id": "D052801",
+          "term": "Male Urogenital Diseases"
+        }
+      ],
+      "meshes": [
+        {
+          "id": "D011471",
+          "term": "Prostatic Neoplasms"
+        }
+      ]
+    },
+    "interventionBrowseModule": {
+      "ancestors": [
+        {
+          "id": "D006727",
+          "term": "Hormone Antagonists"
+        },
+        {
+          "id": "D006730",
+          "term": "Hormones, Hormone Substitutes, and Hormone Antagonists"
+        },
+        {
+          "id": "D045505",
+          "term": "Physiological Effects of Drugs"
+        },
+        {
+          "id": "D020228",
+          "term": "Pharmacologic Actions"
+        },
+        {
+          "id": "D020164",
+          "term": "Chemical Actions and Uses"
+        },
+        {
+          "id": "D043823",
+          "term": "Taxoids"
+        },
+        {
+          "id": "D043822",
+          "term": "Cyclodecanes"
+        },
+        {
+          "id": "D003516",
+          "term": "Cycloparaffins"
+        },
+        {
+          "id": "D006840",
+          "term": "Hydrocarbons, Alicyclic"
+        },
+        {
+          "id": "D006844",
+          "term": "Hydrocarbons, Cyclic"
+        },
+        {
+          "id": "D006838",
+          "term": "Hydrocarbons"
+        },
+        {
+          "id": "D009930",
+          "term": "Organic Chemicals"
+        },
+        {
+          "id": "D004224",
+          "term": "Diterpenes"
+        },
+        {
+          "id": "D013729",
+          "term": "Terpenes"
+        },
+        {
+          "id": "D007987",
+          "term": "Gonadotropin-Releasing Hormone"
+        },
+        {
+          "id": "D010906",
+          "term": "Pituitary Hormone-Releasing Hormones"
+        },
+        {
+          "id": "D007028",
+          "term": "Hypothalamic Hormones"
+        },
+        {
+          "id": "D036361",
+          "term": "Peptide Hormones"
+        },
+        {
+          "id": "D006728",
+          "term": "Hormones"
+        },
+        {
+          "id": "D009479",
+          "term": "Neuropeptides"
+        },
+        {
+          "id": "D010455",
+          "term": "Peptides"
+        },
+        {
+          "id": "D000602",
+          "term": "Amino Acids, Peptides, and Proteins"
+        },
+        {
+          "id": "D009842",
+          "term": "Oligopeptides"
+        },
+        {
+          "id": "D009419",
+          "term": "Nerve Tissue Proteins"
+        },
+        {
+          "id": "D011506",
+          "term": "Proteins"
+        },
+        {
+          "id": "D002369",
+          "term": "Castration"
+        },
+        {
+          "id": "D013507",
+          "term": "Endocrine Surgical Procedures"
+        },
+        {
+          "id": "D013514",
+          "term": "Surgical Procedures, Operative"
+        },
+        {
+          "id": "D013519",
+          "term": "Urogenital Surgical Procedures"
+        },
+        {
+          "id": "D013521",
+          "term": "Urologic Surgical Procedures, Male"
+        },
+        {
+          "id": "D013520",
+          "term": "Urologic Surgical Procedures"
+        }
+      ],
+      "meshes": [
+        {
+          "id": "D000726",
+          "term": "Androgen Antagonists"
+        },
+        {
+          "id": "D000077143",
+          "term": "Docetaxel"
+        },
+        {
+          "id": "D017273",
+          "term": "Goserelin"
+        },
+        {
+          "id": "D009919",
+          "term": "Orchiectomy"
+        }
+      ]
+    },
+    "miscInfoModule": {
+      "versionHolder": "2026-09-11"
+    }
+  },
+  "hasResults": false,
+  "protocolSection": {
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "interventionNames": [
+            "Drug: antiandrogen therapy",
+            "Drug: docetaxel",
+            "Drug: goserelin acetate",
+            "Procedure: orchiectomy"
+          ],
+          "label": "Hormonotherapy + chemotherapy",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "interventionNames": [
+            "Drug: antiandrogen therapy",
+            "Drug: goserelin acetate",
+            "Procedure: orchiectomy"
+          ],
+          "label": "Hormonotherapy alone",
+          "type": "ACTIVE_COMPARATOR"
+        }
+      ],
+      "interventions": [
+        {
+          "armGroupLabels": [
+            "Hormonotherapy + chemotherapy",
+            "Hormonotherapy alone"
+          ],
+          "name": "antiandrogen therapy",
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Hormonotherapy + chemotherapy"
+          ],
+          "name": "docetaxel",
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Hormonotherapy + chemotherapy",
+            "Hormonotherapy alone"
+          ],
+          "name": "goserelin acetate",
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Hormonotherapy + chemotherapy",
+            "Hormonotherapy alone"
+          ],
+          "name": "orchiectomy",
+          "type": "PROCEDURE"
+        }
+      ]
+    },
+    "conditionsModule": {
+      "conditions": [
+        "Prostate Cancer"
+      ],
+      "keywords": [
+        "adenocarcinoma of the prostate",
+        "recurrent prostate cancer",
+        "stage IV prostate cancer"
+      ]
+    },
+    "contactsLocationsModule": {
+      "locations": [
+        {
+          "city": "Angers",
+          "country": "France",
+          "facility": "Centre Paul Papin",
+          "geoPoint": {
+            "lat": 47.47156,
+            "lon": -0.55202
+          },
+          "zip": "49100"
+        },
+        {
+          "city": "Bayonne",
+          "country": "France",
+          "facility": "Centre Hospitalier de la Cote Basque",
+          "geoPoint": {
+            "lat": 43.49316,
+            "lon": -1.473
+          },
+          "zip": "64100"
+        },
+        {
+          "city": "Bobigny",
+          "country": "France",
+          "facility": "Hopital Avicenne",
+          "geoPoint": {
+            "lat": 48.90982,
+            "lon": 2.45012
+          },
+          "zip": "93009"
+        },
+        {
+          "city": "Bordeaux",
+          "country": "France",
+          "facility": "Hopital Saint Andre",
+          "geoPoint": {
+            "lat": 44.84124,
+            "lon": -0.58046
+          },
+          "zip": "33075"
+        },
+        {
+          "city": "Bordeaux",
+          "country": "France",
+          "facility": "Institut Bergonie",
+          "geoPoint": {
+            "lat": 44.84124,
+            "lon": -0.58046
+          },
+          "zip": "33076"
+        },
+        {
+          "city": "Caen",
+          "country": "France",
+          "facility": "Centre Regional Francois Baclesse",
+          "geoPoint": {
+            "lat": 49.18585,
+            "lon": -0.35912
+          },
+          "zip": "14076"
+        },
+        {
+          "city": "Cholet",
+          "country": "France",
+          "facility": "Polyclinique du Parc",
+          "geoPoint": {
+            "lat": 47.05893,
+            "lon": -0.87974
+          },
+          "zip": "49300"
+        },
+        {
+          "city": "Créteil",
+          "country": "France",
+          "facility": "Centre Hospitalier Universitaire Henri Mondor",
+          "geoPoint": {
+            "lat": 48.79266,
+            "lon": 2.46569
+          },
+          "zip": "94000"
+        },
+        {
+          "city": "Dijon",
+          "country": "France",
+          "facility": "Centre de Lutte Contre le Cancer Georges-Francois Leclerc",
+          "geoPoint": {
+            "lat": 47.31344,
+            "lon": 5.01391
+          },
+          "zip": "21079"
+        },
+        {
+          "city": "Hyères",
+          "country": "France",
+          "facility": "Clinique Sainte-Marguerite",
+          "geoPoint": {
+            "lat": 43.12038,
+            "lon": 6.12857
+          },
+          "zip": "83400"
+        },
+        {
+          "city": "La Roche-sur-Yon",
+          "country": "France",
+          "facility": "Centre Hospitalier Departemental",
+          "geoPoint": {
+            "lat": 46.66974,
+            "lon": -1.42757
+          },
+          "zip": "85025"
+        },
+        {
+          "city": "Le Mans",
+          "country": "France",
+          "facility": "Centre Hospitalier General",
+          "geoPoint": {
+            "lat": 48.0021,
+            "lon": 0.20251
+          },
+          "zip": "72037"
+        },
+        {
+          "city": "Limoges",
+          "country": "France",
+          "facility": "Centre Hospital Regional Universitaire de Limoges",
+          "geoPoint": {
+            "lat": 45.83362,
+            "lon": 1.24759
+          },
+          "zip": "87042"
+        },
+        {
+          "city": "Lormont",
+          "country": "France",
+          "facility": "Polyclinique des Quatre Pavillons",
+          "geoPoint": {
+            "lat": 44.8765,
+            "lon": -0.51919
+          },
+          "zip": "33310"
+        },
+        {
+          "city": "Lyon",
+          "country": "France",
+          "facility": "Centre Leon Berard",
+          "geoPoint": {
+            "lat": 45.74906,
+            "lon": 4.84789
+          },
+          "zip": "69008"
+        },
+        {
+          "city": "Marseille",
+          "country": "France",
+          "facility": "Marseille Institute of Cancer - Institut J. Paoli and I. Calmettes",
+          "geoPoint": {
+            "lat": 43.29695,
+            "lon": 5.38107
+          },
+          "zip": "13273"
+        },
+        {
+          "city": "Marseille",
+          "country": "France",
+          "facility": "CHU de la Timone",
+          "geoPoint": {
+            "lat": 43.29695,
+            "lon": 5.38107
+          },
+          "zip": "13385"
+        },
+        {
+          "city": "Metz",
+          "country": "France",
+          "facility": "Hopital Notre-Dame de Bon Secours",
+          "geoPoint": {
+            "lat": 49.11911,
+            "lon": 6.17269
+          },
+          "zip": "57038"
+        },
+        {
+          "city": "Mont-de-Marsan",
+          "country": "France",
+          "facility": "Centre Hospitalier General de Mont de Marsan",
+          "geoPoint": {
+            "lat": 43.89022,
+            "lon": -0.49713
+          },
+          "zip": "40000"
+        },
+        {
+          "city": "Montpellier",
+          "country": "France",
+          "facility": "Centre Regional de Lutte Contre le Cancer - Centre Val d'Aurelle",
+          "geoPoint": {
+            "lat": 43.61093,
+            "lon": 3.87635
+          },
+          "zip": "34298"
+        },
+        {
+          "city": "Muret",
+          "country": "France",
+          "facility": "Clinique D'Occitanie",
+          "geoPoint": {
+            "lat": 43.45998,
+            "lon": 1.32541
+          },
+          "zip": "31600"
+        },
+        {
+          "city": "Nantes",
+          "country": "France",
+          "facility": "Centre Catherine de Sienne",
+          "geoPoint": {
+            "lat": 47.21725,
+            "lon": -1.55336
+          },
+          "zip": "02"
+        },
+        {
+          "city": "Nantes-Saint Herblain",
+          "country": "France",
+          "facility": "CRLCC Nantes - Atlantique",
+          "zip": "44805"
+        },
+        {
+          "city": "Nice",
+          "country": "France",
+          "facility": "Centre Antoine Lacassagne",
+          "geoPoint": {
+            "lat": 43.70313,
+            "lon": 7.26608
+          },
+          "zip": "06189"
+        },
+        {
+          "city": "Nîmes",
+          "country": "France",
+          "facility": "C.H.U. de Nimes - Groupe Hospitals-Universitaire Caremeau",
+          "geoPoint": {
+            "lat": 43.83665,
+            "lon": 4.35788
+          },
+          "zip": "30029"
+        },
+        {
+          "city": "Paris",
+          "country": "France",
+          "facility": "Hopital Europeen Georges Pompidou",
+          "geoPoint": {
+            "lat": 48.85341,
+            "lon": 2.3488
+          },
+          "zip": "75015"
+        },
+        {
+          "city": "Paris",
+          "country": "France",
+          "facility": "Institut Curie Hopital",
+          "geoPoint": {
+            "lat": 48.85341,
+            "lon": 2.3488
+          },
+          "zip": "75248"
+        },
+        {
+          "city": "Paris",
+          "country": "France",
+          "facility": "Hopital Saint-Louis",
+          "geoPoint": {
+            "lat": 48.85341,
+            "lon": 2.3488
+          },
+          "zip": "75475"
+        },
+        {
+          "city": "Paris",
+          "country": "France",
+          "facility": "Hopital Saint Joseph",
+          "geoPoint": {
+            "lat": 48.85341,
+            "lon": 2.3488
+          },
+          "zip": "75674"
+        },
+        {
+          "city": "Paris",
+          "country": "France",
+          "facility": "Hopital Tenon",
+          "geoPoint": {
+            "lat": 48.85341,
+            "lon": 2.3488
+          },
+          "zip": "75970"
+        },
+        {
+          "city": "Reims",
+          "country": "France",
+          "facility": "Institut Jean Godinot",
+          "geoPoint": {
+            "lat": 49.26526,
+            "lon": 4.02853
+          },
+          "zip": "51056"
+        },
+        {
+          "city": "Rennes",
+          "country": "France",
+          "facility": "Centre Eugene Marquis",
+          "geoPoint": {
+            "lat": 48.11109,
+            "lon": -1.67431
+          },
+          "zip": "35042"
+        },
+        {
+          "city": "Saint-Cloud",
+          "country": "France",
+          "facility": "Centre Rene Huguenin",
+          "geoPoint": {
+            "lat": 48.84598,
+            "lon": 2.20289
+          },
+          "zip": "92211"
+        },
+        {
+          "city": "Suresnes",
+          "country": "France",
+          "facility": "Hopital Foch",
+          "geoPoint": {
+            "lat": 48.87143,
+            "lon": 2.22929
+          },
+          "zip": "92151"
+        },
+        {
+          "city": "Toulouse",
+          "country": "France",
+          "facility": "Institut Claudius Regaud",
+          "geoPoint": {
+            "lat": 43.60426,
+            "lon": 1.44367
+          },
+          "zip": "31052"
+        },
+        {
+          "city": "Toulouse",
+          "country": "France",
+          "facility": "Centre Hospitalier Regional de Purpan",
+          "geoPoint": {
+            "lat": 43.60426,
+            "lon": 1.44367
+          },
+          "zip": "31059"
+        },
+        {
+          "city": "Toulouse",
+          "country": "France",
+          "facility": "Clinique Du Parc",
+          "geoPoint": {
+            "lat": 43.60426,
+            "lon": 1.44367
+          },
+          "zip": "31078"
+        },
+        {
+          "city": "Tours",
+          "country": "France",
+          "facility": "Centre Hospitalier Universitaire Bretonneau de Tours",
+          "geoPoint": {
+            "lat": 47.39484,
+            "lon": 0.70398
+          },
+          "zip": "37044"
+        },
+        {
+          "city": "Vandœuvre-lès-Nancy",
+          "country": "France",
+          "facility": "Centre Alexis Vautrin",
+          "geoPoint": {
+            "lat": 48.66115,
+            "lon": 6.17114
+          },
+          "zip": "54511"
+        },
+        {
+          "city": "Vichy",
+          "country": "France",
+          "facility": "Centre Hospitalier Regionale de Vichy",
+          "geoPoint": {
+            "lat": 46.12709,
+            "lon": 3.42577
+          },
+          "zip": "03201"
+        },
+        {
+          "city": "Villejuif",
+          "country": "France",
+          "facility": "Institut Gustave Roussy",
+          "geoPoint": {
+            "lat": 48.7939,
+            "lon": 2.35992
+          },
+          "zip": "F-94805"
+        }
+      ],
+      "overallOfficials": [
+        {
+          "affiliation": "Institut Paoli-Calmettes",
+          "name": "Gwenaelle Gravis, MD",
+          "role": "STUDY_CHAIR"
+        }
+      ]
+    },
+    "descriptionModule": {
+      "briefSummary": "RATIONALE: Androgens can cause the growth of prostate cancer cells. Drugs, such as goserelin, may stop the adrenal glands from making androgens. Drugs used in chemotherapy, such as docetaxel, work in different ways to stop the growth of tumor cells, either by killing the cells or by stopping them from dividing. Giving hormone therapy together with docetaxel may be an effective treatment for prostate cancer. It is not yet known whether giving hormone therapy together with docetaxel is more effective than hormone therapy alone in treating prostate cancer.\n\nPURPOSE: This randomized phase III trial is studying hormone therapy and docetaxel to see how well they work compared to hormone therapy alone in treating patients with metastatic prostate cancer.",
+      "detailedDescription": "OBJECTIVES:\n\n* Compare 36-month overall survival of patients with metastatic prostate adenocarcinoma treated with hormonal therapy and docetaxel vs hormonal therapy alone.\n* Compare 24-month progression-free survival (biological progression and/or clinical progression) in patients treated with these regimens.\n* Compare the quality of life of patients treated with these regimens.\n* Compare costs of these regimens for these patients.\n* Compare the tolerability of these regimens in these patients.\n* Compare the toxicity profile of these regimens in these patients.\n\nOUTLINE: This is a randomized, multicenter study. Patients are randomized to 1 of 2 treatment arms.\n\n* Arm I: Patients receive hormonal therapy comprising 1 of the following: goserelin alone OR goserelin and antiandrogen therapy OR surgical castration. Hormonal therapy continues until the development of hormone resistance. Within 2 months after initiation of hormonal therapy, patients receive docetaxel IV every 3 weeks for up to 9 courses in the absence of disease progression or unacceptable toxicity.\n* Arm II: Patients receive hormonal therapy as in arm I. Quality of life is assessed.\n\nPROJECTED ACCRUAL: A total of 378 patients will be accrued for this study."
+    },
+    "designModule": {
+      "designInfo": {
+        "allocation": "RANDOMIZED",
+        "interventionModel": "PARALLEL",
+        "maskingInfo": {
+          "masking": "NONE"
+        },
+        "primaryPurpose": "TREATMENT"
+      },
+      "enrollmentInfo": {
+        "count": 385,
+        "type": "ACTUAL"
+      },
+      "phases": [
+        "PHASE3"
+      ],
+      "studyType": "INTERVENTIONAL"
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "DISEASE CHARACTERISTICS:\n\n* Histologically confirmed prostate adenocarcinoma\n\n  * Metastatic disease\n* Measurable or evaluable disease\n* No brain metastases\n\nPATIENT CHARACTERISTICS:\n\nAge\n\n* 18 and over\n\nPerformance status\n\n* ECOG 0-2\n\nLife expectancy\n\n* At least 3 months\n\nHematopoietic\n\n* WBC ≥ 2,000/mm\\^3\n* Absolute neutrophil count ≥ 1,000/mm\\^3\n* Platelet count ≥ 100,000/mm\\^3\n\nHepatic\n\n* Bilirubin ≤ 1.5 times upper limit of normal (ULN) (2.5 times normal if hepatic metastases are present)\n* AST and ALT ≤ 1.5 times ULN (2.5 times normal if hepatic metastases are present)\n\nRenal\n\n* Creatinine ≤ 150 μmol/L\n\nCardiovascular\n\n* No symptomatic coronary disease\n* No congenital cardiac insufficiency\n* No New York Heart Association class III or IV cardiovascular disease\n* No other severe cardiovascular disease\n\nOther\n\n* No severe peripheral neuropathy\n* No active infection\n* No other malignancy within the past 5 years except basal cell skin cancer\n* No familial, social, geographical, or psychological situation that would preclude study compliance and follow-up\n* No other serious disease that would preclude study participation\n\nPRIOR CONCURRENT THERAPY:\n\nBiologic therapy\n\n* Not specified\n\nChemotherapy\n\n* No prior chemotherapy for metastatic prostate cancer\n* Prior chemotherapy allowed provided all of the following are true:\n\n  * Chemotherapy was completed \\> 1 year ago\n  * Prostate-specific antigen level has remained stable\n  * No development of metastases within 1 year after completion of chemotherapy\n\nEndocrine therapy\n\n* Prior hormonal therapy within the past 2 months allowed for metastatic prostate cancer\n\nRadiotherapy\n\n* More than 4 weeks since prior radiotherapy to metastatic sites\n\nSurgery\n\n* No prior surgical castration\n\nOther\n\n* No other concurrent investigational drugs",
+      "healthyVolunteers": false,
+      "maximumAge": "120 Years",
+      "minimumAge": "18 Years",
+      "sex": "MALE",
+      "stdAges": [
+        "ADULT",
+        "OLDER_ADULT"
+      ]
+    },
+    "identificationModule": {
+      "briefTitle": "Hormone Therapy and Docetaxel or Hormone Therapy Alone in Treating Patients With Metastatic Prostate Cancer",
+      "nctId": "NCT00104715",
+      "officialTitle": "Randomized Phase III Trial Comparing an Association of Hormonal Treatment and Docetaxel Versus the Hormonal Treatment Alone in Metastatic Prostate Cancers",
+      "orgStudyIdInfo": {
+        "id": "UC-0160/0403"
+      },
+      "organization": {
+        "class": "OTHER",
+        "fullName": "UNICANCER"
+      },
+      "secondaryIdInfos": [
+        {
+          "id": "FRE-FNCLCC-GETUG-15/0403"
+        },
+        {
+          "id": "EU-20505"
+        }
+      ]
+    },
+    "outcomesModule": {
+      "primaryOutcomes": [
+        {
+          "measure": "Overall survival at 36 months"
+        },
+        {
+          "measure": "Progression-free survival (biological progression and/or clinical progression) at 24 months"
+        },
+        {
+          "measure": "Quality of life"
+        },
+        {
+          "measure": "Treatment costs"
+        },
+        {
+          "measure": "Toxicity and tolerance"
+        },
+        {
+          "measure": "Tumor profiles of gene expression as measured by biochips with DNA and tissue microarrays"
+        }
+      ]
+    },
+    "oversightModule": {
+      "isFdaRegulatedDevice": false,
+      "isFdaRegulatedDrug": false,
+      "oversightHasDmc": true
+    },
+    "referencesModule": {
+      "references": [
+        {
+          "citation": "Gravis G, Fizazi K, Joly F, et al.: Safety results from a phase III trial comparing androgen-deprivation therapy (ADT) plus docetaxel versus ADT alone in hormone-naïve metastatic prostate cancer (GETUG-AFU 15/0403). [Abstract] 2010 Genitourinary Cancers Symposium, March 5-7, 2010, San Francisco, California. A-43, 2010.",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Gravis G, Fizazi K, Joly F, et al.: Randomized phase III study comparing docetaxel and androgen deprivation therapy (ADT) versus ADT alone in androgen dependent metastatic prostate cancer (GETUG-15/0403): a French national muticentric study sponsored by the French Federation des Centres. [Abstract] American Society of Clinical Oncology 2007 Prostate Cancer Symposium, 22-24 February 2007, Orlando, FL. A-161, 2007.",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Campillo-Gimenez B, Buscail C, Zekri O, Laguerre B, Le Prise E, De Crevoisier R, Cuggia M. Improving the pre-screening of eligible patients in order to increase enrollment in cancer clinical trials. Trials. 2015 Jan 16;16:15. doi: 10.1186/s13063-014-0535-7.",
+          "pmid": "25592642",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Trump DL. Commentary on \"Androgen-deprivation therapy alone or with docetaxel in non-castrate metastatic prostate cancer (GETUG-AFU 15): a randomised, open-label, phase 3 trial.\" Gravis G, Fizazi K, Joly F, Oudard S, Priou F, Esterni B, Latorzeff I, Delva R, Krakowski I, Laguerre B, Rolland F, Theodore C, Deplanque G, Ferrero JM, Pouessel D, Mourey L, Beuzeboc P, Zanetta S, Habibian M, Berdah JF, Dauba J, Baciuchka M, Platini C, Linassier C, Labourey JL, Machiels JP, El Kouri C, Ravaud A, Suc E, Eymard JC, Hasbini A, Bousquet G, Soulie M, Medical Oncology and Biostatistics, Institut Paoli-Calmettes, Marseille, France. Lancet Oncol 2013;14(2):149-58 [Epub 2013 Jan 8]. Urol Oncol. 2013 Nov;31(8):1845. doi: 10.1016/j.urolonc.2013.08.011.",
+          "pmid": "24210084",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Gravis G, Fizazi K, Joly F, Oudard S, Priou F, Esterni B, Latorzeff I, Delva R, Krakowski I, Laguerre B, Rolland F, Theodore C, Deplanque G, Ferrero JM, Pouessel D, Mourey L, Beuzeboc P, Zanetta S, Habibian M, Berdah JF, Dauba J, Baciuchka M, Platini C, Linassier C, Labourey JL, Machiels JP, El Kouri C, Ravaud A, Suc E, Eymard JC, Hasbini A, Bousquet G, Soulie M. Androgen-deprivation therapy alone or with docetaxel in non-castrate metastatic prostate cancer (GETUG-AFU 15): a randomised, open-label, phase 3 trial. Lancet Oncol. 2013 Feb;14(2):149-58. doi: 10.1016/S1470-2045(12)70560-0. Epub 2013 Jan 8.",
+          "pmid": "23306100",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Huang X, Chau CH, Figg WD. Challenges to improved therapeutics for metastatic castrate resistant prostate cancer: from recent successes and failures. J Hematol Oncol. 2012 Jul 2;5:35. doi: 10.1186/1756-8722-5-35.",
+          "pmid": "22747660",
+          "type": "DERIVED"
+        }
+      ]
+    },
+    "sponsorCollaboratorsModule": {
+      "leadSponsor": {
+        "class": "OTHER",
+        "name": "UNICANCER"
+      },
+      "responsibleParty": {
+        "type": "SPONSOR"
+      }
+    },
+    "statusModule": {
+      "completionDateStruct": {
+        "date": "2015-12-15",
+        "type": "ACTUAL"
+      },
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "lastUpdatePostDateStruct": {
+        "date": "2021-02-21",
+        "type": "ACTUAL"
+      },
+      "lastUpdateSubmitDate": "2021-02-19",
+      "overallStatus": "COMPLETED",
+      "primaryCompletionDateStruct": {
+        "date": "2011-12-04",
+        "type": "ACTUAL"
+      },
+      "startDateStruct": {
+        "date": "2004-10-18",
+        "type": "ACTUAL"
+      },
+      "statusVerifiedDate": "2021-02",
+      "studyFirstPostDateStruct": {
+        "date": "2005-03-04",
+        "type": "ESTIMATED"
+      },
+      "studyFirstSubmitDate": "2005-03-03",
+      "studyFirstSubmitQcDate": "2005-03-03"
+    }
+  }
+}

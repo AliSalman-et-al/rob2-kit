@@ -1,0 +1,2197 @@
+{
+  "derivedSection": {
+    "conditionBrowseModule": {
+      "ancestors": [
+        {
+          "id": "D005834",
+          "term": "Genital Neoplasms, Male"
+        },
+        {
+          "id": "D014565",
+          "term": "Urogenital Neoplasms"
+        },
+        {
+          "id": "D009371",
+          "term": "Neoplasms by Site"
+        },
+        {
+          "id": "D009369",
+          "term": "Neoplasms"
+        },
+        {
+          "id": "D005832",
+          "term": "Genital Diseases, Male"
+        },
+        {
+          "id": "D000091662",
+          "term": "Genital Diseases"
+        },
+        {
+          "id": "D000091642",
+          "term": "Urogenital Diseases"
+        },
+        {
+          "id": "D011469",
+          "term": "Prostatic Diseases"
+        },
+        {
+          "id": "D052801",
+          "term": "Male Urogenital Diseases"
+        }
+      ],
+      "meshes": [
+        {
+          "id": "D011471",
+          "term": "Prostatic Neoplasms"
+        }
+      ]
+    },
+    "interventionBrowseModule": {
+      "ancestors": [
+        {
+          "id": "D000096926",
+          "term": "Benzenesulfonamides"
+        },
+        {
+          "id": "D013449",
+          "term": "Sulfonamides"
+        },
+        {
+          "id": "D000577",
+          "term": "Amides"
+        },
+        {
+          "id": "D009930",
+          "term": "Organic Chemicals"
+        },
+        {
+          "id": "D001555",
+          "term": "Benzene Derivatives"
+        },
+        {
+          "id": "D006841",
+          "term": "Hydrocarbons, Aromatic"
+        },
+        {
+          "id": "D006844",
+          "term": "Hydrocarbons, Cyclic"
+        },
+        {
+          "id": "D006838",
+          "term": "Hydrocarbons"
+        },
+        {
+          "id": "D013450",
+          "term": "Sulfones"
+        },
+        {
+          "id": "D013457",
+          "term": "Sulfur Compounds"
+        },
+        {
+          "id": "D011720",
+          "term": "Pyrazoles"
+        },
+        {
+          "id": "D001393",
+          "term": "Azoles"
+        },
+        {
+          "id": "D006573",
+          "term": "Heterocyclic Compounds, 1-Ring"
+        },
+        {
+          "id": "D006571",
+          "term": "Heterocyclic Compounds"
+        },
+        {
+          "id": "D043823",
+          "term": "Taxoids"
+        },
+        {
+          "id": "D043822",
+          "term": "Cyclodecanes"
+        },
+        {
+          "id": "D003516",
+          "term": "Cycloparaffins"
+        },
+        {
+          "id": "D006840",
+          "term": "Hydrocarbons, Alicyclic"
+        },
+        {
+          "id": "D004224",
+          "term": "Diterpenes"
+        },
+        {
+          "id": "D013729",
+          "term": "Terpenes"
+        },
+        {
+          "id": "D011246",
+          "term": "Pregnadienetriols"
+        },
+        {
+          "id": "D011245",
+          "term": "Pregnadienes"
+        },
+        {
+          "id": "D011278",
+          "term": "Pregnanes"
+        },
+        {
+          "id": "D013256",
+          "term": "Steroids"
+        },
+        {
+          "id": "D000072473",
+          "term": "Fused-Ring Compounds"
+        },
+        {
+          "id": "D011083",
+          "term": "Polycyclic Compounds"
+        },
+        {
+          "id": "D011244",
+          "term": "Pregnadienediols"
+        },
+        {
+          "id": "D006727",
+          "term": "Hormone Antagonists"
+        },
+        {
+          "id": "D006730",
+          "term": "Hormones, Hormone Substitutes, and Hormone Antagonists"
+        },
+        {
+          "id": "D045505",
+          "term": "Physiological Effects of Drugs"
+        },
+        {
+          "id": "D020228",
+          "term": "Pharmacologic Actions"
+        },
+        {
+          "id": "D020164",
+          "term": "Chemical Actions and Uses"
+        },
+        {
+          "id": "D004164",
+          "term": "Diphosphonates"
+        },
+        {
+          "id": "D063065",
+          "term": "Organophosphonates"
+        },
+        {
+          "id": "D009943",
+          "term": "Organophosphorus Compounds"
+        },
+        {
+          "id": "D007093",
+          "term": "Imidazoles"
+        },
+        {
+          "id": "D000736",
+          "term": "Androstenes"
+        },
+        {
+          "id": "D000731",
+          "term": "Androstanes"
+        },
+        {
+          "id": "D001645",
+          "term": "Biguanides"
+        },
+        {
+          "id": "D006146",
+          "term": "Guanidines"
+        },
+        {
+          "id": "D000578",
+          "term": "Amidines"
+        }
+      ],
+      "meshes": [
+        {
+          "id": "D000068579",
+          "term": "Celecoxib"
+        },
+        {
+          "id": "D000077143",
+          "term": "Docetaxel"
+        },
+        {
+          "id": "D011239",
+          "term": "Prednisolone"
+        },
+        {
+          "id": "D011241",
+          "term": "Prednisone"
+        },
+        {
+          "id": "D000726",
+          "term": "Androgen Antagonists"
+        },
+        {
+          "id": "D000077211",
+          "term": "Zoledronic Acid"
+        },
+        {
+          "id": "C089740",
+          "term": "abiraterone"
+        },
+        {
+          "id": "D000069501",
+          "term": "Abiraterone Acetate"
+        },
+        {
+          "id": "C540278",
+          "term": "enzalutamide"
+        },
+        {
+          "id": "D008687",
+          "term": "Metformin"
+        }
+      ]
+    },
+    "miscInfoModule": {
+      "versionHolder": "2026-09-11"
+    }
+  },
+  "hasResults": false,
+  "protocolSection": {
+    "armsInterventionsModule": {
+      "armGroups": [
+        {
+          "description": "Androgen Deprivation Therapy \\[ADT\\] (plus Radiotherapy for newly-diagnosed non-metastatic disease, plus or minus Docetaxel, plus or minus Abiraterone)\\[Control\\]",
+          "interventionNames": [
+            "Drug: ADT"
+          ],
+          "label": "Arm A: Standard of Care",
+          "type": "ACTIVE_COMPARATOR"
+        },
+        {
+          "description": "(ADT + zoledronic acid) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: ADT",
+            "Drug: Zoledronic Acid"
+          ],
+          "label": "Arm B: Zoledronic Acid",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + docetaxel + prednisolone) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: Docetaxel",
+            "Drug: Prednisolone",
+            "Drug: ADT"
+          ],
+          "label": "Arm C: Docetaxel",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + celecoxib) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: Celecoxib",
+            "Drug: ADT"
+          ],
+          "label": "Arm D: Celecoxib",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + zoledronic acid + docetaxel + prednisolone) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: Docetaxel",
+            "Drug: Prednisolone",
+            "Drug: ADT",
+            "Drug: Zoledronic Acid"
+          ],
+          "label": "Arm E: Zoledronic Acid & Docetaxel",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + zoledronic acid + celecoxib) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: Celecoxib",
+            "Drug: ADT",
+            "Drug: Zoledronic Acid"
+          ],
+          "label": "Arm F: Zoledronic Acid & Celecoxib",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + abiraterone acetate + prednisolone) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: Prednisolone",
+            "Drug: ADT",
+            "Drug: Abiraterone"
+          ],
+          "label": "Arm G: Abiraterone",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + radiotherapy to the prostate) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: ADT",
+            "Radiation: Radiotherapy to the prostate"
+          ],
+          "label": "Arm H: M1 RT",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + abiraterone + enzalutamide + Prednisolone) NO LONGER RECRUITING",
+          "interventionNames": [
+            "Drug: Prednisolone",
+            "Drug: ADT",
+            "Drug: Abiraterone",
+            "Drug: Enzalutamide"
+          ],
+          "label": "Arm J: Abiraterone * Enzalutamide",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(ADT + Metformin) RECRUITING IN SELECTED SITES",
+          "interventionNames": [
+            "Drug: ADT",
+            "Drug: Metformin"
+          ],
+          "label": "Arm K: Metformin",
+          "type": "EXPERIMENTAL"
+        },
+        {
+          "description": "(Transdermal oestradiol) RECRUITING",
+          "interventionNames": [
+            "Drug: Transdermal Oestradiol"
+          ],
+          "label": "Arm L: tE2",
+          "type": "EXPERIMENTAL"
+        }
+      ],
+      "interventions": [
+        {
+          "armGroupLabels": [
+            "Arm D: Celecoxib",
+            "Arm F: Zoledronic Acid & Celecoxib"
+          ],
+          "name": "Celecoxib",
+          "otherNames": [
+            "Celebrex"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm C: Docetaxel",
+            "Arm E: Zoledronic Acid & Docetaxel"
+          ],
+          "name": "Docetaxel",
+          "otherNames": [
+            "Taxotere"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm C: Docetaxel",
+            "Arm E: Zoledronic Acid & Docetaxel",
+            "Arm G: Abiraterone",
+            "Arm J: Abiraterone * Enzalutamide"
+          ],
+          "name": "Prednisolone",
+          "otherNames": [
+            "Prednisone"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm A: Standard of Care",
+            "Arm B: Zoledronic Acid",
+            "Arm C: Docetaxel",
+            "Arm D: Celecoxib",
+            "Arm E: Zoledronic Acid & Docetaxel",
+            "Arm F: Zoledronic Acid & Celecoxib",
+            "Arm G: Abiraterone",
+            "Arm H: M1 RT",
+            "Arm J: Abiraterone * Enzalutamide",
+            "Arm K: Metformin"
+          ],
+          "name": "ADT",
+          "otherNames": [
+            "Androgen Deprivation Therapy"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm B: Zoledronic Acid",
+            "Arm E: Zoledronic Acid & Docetaxel",
+            "Arm F: Zoledronic Acid & Celecoxib"
+          ],
+          "name": "Zoledronic Acid",
+          "otherNames": [
+            "Zometa"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm G: Abiraterone",
+            "Arm J: Abiraterone * Enzalutamide"
+          ],
+          "name": "Abiraterone",
+          "otherNames": [
+            "Zytiga"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm H: M1 RT"
+          ],
+          "name": "Radiotherapy to the prostate",
+          "otherNames": [
+            "RT"
+          ],
+          "type": "RADIATION"
+        },
+        {
+          "armGroupLabels": [
+            "Arm J: Abiraterone * Enzalutamide"
+          ],
+          "name": "Enzalutamide",
+          "otherNames": [
+            "Xtandi"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm K: Metformin"
+          ],
+          "name": "Metformin",
+          "otherNames": [
+            "Metformin Hydrochloride"
+          ],
+          "type": "DRUG"
+        },
+        {
+          "armGroupLabels": [
+            "Arm L: tE2"
+          ],
+          "name": "Transdermal Oestradiol",
+          "otherNames": [
+            "Progynova TS"
+          ],
+          "type": "DRUG"
+        }
+      ]
+    },
+    "conditionsModule": {
+      "conditions": [
+        "Prostate Cancer"
+      ],
+      "keywords": [
+        "Stage III Prostate Cancer",
+        "Stage IV Prostate Cancer",
+        "Recurrent Prostate Cancer",
+        "Adenocarcinoma of the prostate"
+      ]
+    },
+    "contactsLocationsModule": {
+      "locations": [
+        {
+          "city": "Lausanne",
+          "country": "Switzerland",
+          "facility": "Lausanne Centre Hospitalier Universitaire",
+          "geoPoint": {
+            "lat": 46.516,
+            "lon": 6.63282
+          },
+          "state": "Canton of Vaud",
+          "zip": "CH-1011"
+        },
+        {
+          "city": "Winterthur",
+          "country": "Switzerland",
+          "facility": "Winterthur Hospital",
+          "geoPoint": {
+            "lat": 47.50564,
+            "lon": 8.72413
+          },
+          "state": "Canton of Zurich",
+          "zip": "CH-8401"
+        },
+        {
+          "city": "Chur",
+          "country": "Switzerland",
+          "facility": "Kantonsspital Graubuenden",
+          "geoPoint": {
+            "lat": 46.84986,
+            "lon": 9.53287
+          },
+          "state": "Kanton Graubünden",
+          "zip": "CH-7000"
+        },
+        {
+          "city": "Aarau",
+          "country": "Switzerland",
+          "facility": "Hirslanden Klinik Aarau",
+          "geoPoint": {
+            "lat": 47.39254,
+            "lon": 8.04422
+          },
+          "zip": "CH-5000"
+        },
+        {
+          "city": "Basel",
+          "country": "Switzerland",
+          "facility": "Universitaetsspital-Basel",
+          "geoPoint": {
+            "lat": 47.55839,
+            "lon": 7.57327
+          },
+          "zip": "CH-4031"
+        },
+        {
+          "city": "Bern",
+          "country": "Switzerland",
+          "facility": "Inselspital Bern",
+          "geoPoint": {
+            "lat": 46.94809,
+            "lon": 7.44744
+          },
+          "zip": "CH-3010 Be"
+        },
+        {
+          "city": "Liestal",
+          "country": "Switzerland",
+          "facility": "Liestal Hospital",
+          "geoPoint": {
+            "lat": 47.48455,
+            "lon": 7.73446
+          },
+          "zip": "CH-4410"
+        },
+        {
+          "city": "Sankt Gallen",
+          "country": "Switzerland",
+          "facility": "Kantonsspital - St. Gallen",
+          "geoPoint": {
+            "lat": 47.42391,
+            "lon": 9.37477
+          },
+          "zip": "CH-9007"
+        },
+        {
+          "city": "Zurich",
+          "country": "Switzerland",
+          "facility": "UniversitaetsSpital Zuerich",
+          "geoPoint": {
+            "lat": 47.36667,
+            "lon": 8.55
+          },
+          "zip": "CH-8091"
+        },
+        {
+          "city": "Zurich",
+          "country": "Switzerland",
+          "facility": "City Hospital Triemli",
+          "geoPoint": {
+            "lat": 47.36667,
+            "lon": 8.55
+          }
+        },
+        {
+          "city": "Reading",
+          "country": "United Kingdom",
+          "facility": "Berkshire Cancer Centre at Royal Berkshire Hospital",
+          "geoPoint": {
+            "lat": 51.45625,
+            "lon": -0.97113
+          },
+          "state": "Berkshire",
+          "zip": "RG1 5AN"
+        },
+        {
+          "city": "Farnworth",
+          "country": "United Kingdom",
+          "facility": "Royal Bolton Hospital",
+          "geoPoint": {
+            "lat": 53.55,
+            "lon": -2.4
+          },
+          "state": "Bolton",
+          "zip": "BL4 0JR"
+        },
+        {
+          "city": "High Wycombe",
+          "country": "United Kingdom",
+          "facility": "Wycombe General Hospital",
+          "geoPoint": {
+            "lat": 51.62907,
+            "lon": -0.74934
+          },
+          "state": "Buckinghamshire",
+          "zip": "HP11 2TT"
+        },
+        {
+          "city": "Cambridge",
+          "country": "United Kingdom",
+          "facility": "Addenbrooke's Hospital",
+          "geoPoint": {
+            "lat": 52.2,
+            "lon": 0.11667
+          },
+          "state": "Cambridgeshire",
+          "zip": "CB2 0QQ"
+        },
+        {
+          "city": "Broomfield",
+          "country": "United Kingdom",
+          "facility": "Broomfield Hospital",
+          "geoPoint": {
+            "lat": 51.76508,
+            "lon": 0.47258
+          },
+          "state": "Chelmsford",
+          "zip": "CM1 7ET"
+        },
+        {
+          "city": "Chester",
+          "country": "United Kingdom",
+          "facility": "Countess of Chester Hospital",
+          "geoPoint": {
+            "lat": 53.1905,
+            "lon": -2.89189
+          },
+          "state": "Chesire",
+          "zip": "CH2 1UL"
+        },
+        {
+          "city": "Middlesbrough",
+          "country": "United Kingdom",
+          "facility": "James Cook University Hospital",
+          "geoPoint": {
+            "lat": 54.57623,
+            "lon": -1.23483
+          },
+          "state": "County Durham",
+          "zip": "TS4 3BW"
+        },
+        {
+          "city": "Carlisle",
+          "country": "United Kingdom",
+          "facility": "Cumberland Infirmary",
+          "geoPoint": {
+            "lat": 54.8951,
+            "lon": -2.9382
+          },
+          "state": "Cumbria",
+          "zip": "CA2 7HY"
+        },
+        {
+          "city": "Barnstaple",
+          "country": "United Kingdom",
+          "facility": "North Devon District Hospital",
+          "geoPoint": {
+            "lat": 51.08022,
+            "lon": -4.05808
+          },
+          "state": "Devon",
+          "zip": "EX31 4JB"
+        },
+        {
+          "city": "Exeter",
+          "country": "United Kingdom",
+          "facility": "Royal Devon and Exeter Hospital",
+          "geoPoint": {
+            "lat": 50.7236,
+            "lon": -3.52751
+          },
+          "state": "Devon",
+          "zip": "EX2 5DW"
+        },
+        {
+          "city": "Bournemouth",
+          "country": "United Kingdom",
+          "facility": "Royal Bournemouth Hospital",
+          "geoPoint": {
+            "lat": 50.72048,
+            "lon": -1.8795
+          },
+          "state": "Dorset",
+          "zip": "BH7 7DW"
+        },
+        {
+          "city": "Dorchester",
+          "country": "United Kingdom",
+          "facility": "Dorset County Hospital",
+          "geoPoint": {
+            "lat": 50.71667,
+            "lon": -2.43333
+          },
+          "state": "Dorset",
+          "zip": "DT1 2JY"
+        },
+        {
+          "city": "Poole",
+          "country": "United Kingdom",
+          "facility": "Poole Hospital",
+          "geoPoint": {
+            "lat": 50.71429,
+            "lon": -1.98458
+          },
+          "state": "Dorset",
+          "zip": "BH15 2JB"
+        },
+        {
+          "city": "Cottingham",
+          "country": "United Kingdom",
+          "facility": "Castle Hill Hospital",
+          "geoPoint": {
+            "lat": 52.50243,
+            "lon": -0.7554
+          },
+          "state": "East Riding Of Yorkshire",
+          "zip": "HU16 5JQ"
+        },
+        {
+          "city": "Eastbourne",
+          "country": "United Kingdom",
+          "facility": "Eastbourne District General Hospital",
+          "geoPoint": {
+            "lat": 50.76871,
+            "lon": 0.28453
+          },
+          "state": "East Sussex",
+          "zip": "BN21 2UD"
+        },
+        {
+          "city": "Saint Leonards-on-Sea",
+          "country": "United Kingdom",
+          "facility": "Conquest Hospital",
+          "geoPoint": {
+            "lat": 50.85565,
+            "lon": 0.5452
+          },
+          "state": "East Sussex",
+          "zip": "TN37 7PT"
+        },
+        {
+          "city": "Ashford",
+          "country": "United Kingdom",
+          "facility": "William Harvey Hospital",
+          "geoPoint": {
+            "lat": 51.14648,
+            "lon": 0.87376
+          },
+          "state": "England",
+          "zip": "TN24 0LZ"
+        },
+        {
+          "city": "Aylesbury",
+          "country": "United Kingdom",
+          "facility": "Stoke Mandeville Hospital",
+          "geoPoint": {
+            "lat": 51.81665,
+            "lon": -0.81458
+          },
+          "state": "England",
+          "zip": "HP21 8AL"
+        },
+        {
+          "city": "Basingstoke",
+          "country": "United Kingdom",
+          "facility": "Basingstoke and North Hampshire NHS Foundation Trust",
+          "geoPoint": {
+            "lat": 51.26249,
+            "lon": -1.08708
+          },
+          "state": "England",
+          "zip": "RG24 9NA"
+        },
+        {
+          "city": "Birmingham",
+          "country": "United Kingdom",
+          "facility": "City Hospital (Birmingham)",
+          "geoPoint": {
+            "lat": 52.48142,
+            "lon": -1.89983
+          },
+          "state": "England",
+          "zip": "B18 7QH"
+        },
+        {
+          "city": "Brighton",
+          "country": "United Kingdom",
+          "facility": "Sussex Cancer Centre at Royal Sussex County Hospital",
+          "geoPoint": {
+            "lat": 50.82838,
+            "lon": -0.13947
+          },
+          "state": "England",
+          "zip": "BN2 5BE"
+        },
+        {
+          "city": "Burnley",
+          "country": "United Kingdom",
+          "facility": "Burnley General Hospital",
+          "geoPoint": {
+            "lat": 53.8,
+            "lon": -2.23333
+          },
+          "state": "England",
+          "zip": "BB10 2PQ"
+        },
+        {
+          "city": "Burton-on-Trent",
+          "country": "United Kingdom",
+          "facility": "Queen's Hospital",
+          "geoPoint": {
+            "lat": 52.80728,
+            "lon": -1.64263
+          },
+          "state": "England",
+          "zip": "DE13 0RB"
+        },
+        {
+          "city": "Bury St Edmunds",
+          "country": "United Kingdom",
+          "facility": "West Suffolk Hospital",
+          "geoPoint": {
+            "lat": 52.2463,
+            "lon": 0.71111
+          },
+          "state": "England",
+          "zip": "IP33 2QZ"
+        },
+        {
+          "city": "Crewe",
+          "country": "United Kingdom",
+          "facility": "Mid Cheshire Hospitals Trust- Leighton Hopsital",
+          "geoPoint": {
+            "lat": 53.09787,
+            "lon": -2.44161
+          },
+          "state": "England",
+          "zip": "CW1 4QJ"
+        },
+        {
+          "city": "Darlington",
+          "country": "United Kingdom",
+          "facility": "Darlington Memorial",
+          "geoPoint": {
+            "lat": 54.52429,
+            "lon": -1.55039
+          },
+          "state": "England",
+          "zip": "DL3 6HX"
+        },
+        {
+          "city": "Derby",
+          "country": "United Kingdom",
+          "facility": "Derbyshire Royal Infirmary",
+          "geoPoint": {
+            "lat": 52.92277,
+            "lon": -1.47663
+          },
+          "state": "England",
+          "zip": "DE22 3NE"
+        },
+        {
+          "city": "Doncaster",
+          "country": "United Kingdom",
+          "facility": "Doncaster Royal Infirmary",
+          "geoPoint": {
+            "lat": 53.52285,
+            "lon": -1.13116
+          },
+          "state": "England",
+          "zip": "DN2 5LT"
+        },
+        {
+          "city": "Dudley",
+          "country": "United Kingdom",
+          "facility": "Russells Hall Hospital",
+          "geoPoint": {
+            "lat": 52.5,
+            "lon": -2.08333
+          },
+          "state": "England",
+          "zip": "DY1 2HQ"
+        },
+        {
+          "city": "Durham",
+          "country": "United Kingdom",
+          "facility": "University Hospital of North Durham",
+          "geoPoint": {
+            "lat": 54.77676,
+            "lon": -1.57566
+          },
+          "state": "England",
+          "zip": "DH1 5TW"
+        },
+        {
+          "city": "Gloucester",
+          "country": "United Kingdom",
+          "facility": "Gloucestershire Royal Hospital",
+          "geoPoint": {
+            "lat": 51.86568,
+            "lon": -2.2431
+          },
+          "state": "England",
+          "zip": "GL1 3NN"
+        },
+        {
+          "city": "Hereford",
+          "country": "United Kingdom",
+          "facility": "Hereford County Hospital",
+          "geoPoint": {
+            "lat": 52.05684,
+            "lon": -2.71482
+          },
+          "state": "England",
+          "zip": "HR1 2ER"
+        },
+        {
+          "city": "Kidderminster",
+          "country": "United Kingdom",
+          "facility": "Kidderminster Hospital",
+          "geoPoint": {
+            "lat": 52.38819,
+            "lon": -2.25
+          },
+          "state": "England",
+          "zip": "DY11 6RJ"
+        },
+        {
+          "city": "Leeds",
+          "country": "United Kingdom",
+          "facility": "Leeds Cancer Centre at St. James's University Hospital",
+          "geoPoint": {
+            "lat": 53.79648,
+            "lon": -1.54785
+          },
+          "state": "England",
+          "zip": "LS9 7TF"
+        },
+        {
+          "city": "Leicester",
+          "country": "United Kingdom",
+          "facility": "Glenfield Hospital",
+          "geoPoint": {
+            "lat": 52.6386,
+            "lon": -1.13169
+          },
+          "state": "England"
+        },
+        {
+          "city": "Liverpool",
+          "country": "United Kingdom",
+          "facility": "Royal Liverpool University Hospital",
+          "geoPoint": {
+            "lat": 53.41058,
+            "lon": -2.97794
+          },
+          "state": "England",
+          "zip": "L7 8XP"
+        },
+        {
+          "city": "Liverpool",
+          "country": "United Kingdom",
+          "facility": "University Hospital Aintree",
+          "geoPoint": {
+            "lat": 53.41058,
+            "lon": -2.97794
+          },
+          "state": "England",
+          "zip": "L9 7AL"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "Helen Rollason Cancer Care Centre at North Middlesex Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "England",
+          "zip": "N18 1QX"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "Guy's Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "England",
+          "zip": "SE1 9RT"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "St. Mary's Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "England",
+          "zip": "W2 1NY"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "UCL Cancer Institute",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "England",
+          "zip": "WC1E 6DD"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "University College of London Hospitals",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "England",
+          "zip": "WIT 3AA"
+        },
+        {
+          "city": "Manchester",
+          "country": "United Kingdom",
+          "facility": "Withington Hospital",
+          "geoPoint": {
+            "lat": 53.48095,
+            "lon": -2.23743
+          },
+          "state": "England",
+          "zip": "M20 8LR"
+        },
+        {
+          "city": "Shrewsbury",
+          "country": "United Kingdom",
+          "facility": "Royal Shrewsbury Hospital",
+          "geoPoint": {
+            "lat": 52.71009,
+            "lon": -2.75208
+          },
+          "state": "England",
+          "zip": "SY3 8XQ"
+        },
+        {
+          "city": "Stockport",
+          "country": "United Kingdom",
+          "facility": "Stepping Hill Hospital",
+          "geoPoint": {
+            "lat": 53.40979,
+            "lon": -2.15761
+          },
+          "state": "England",
+          "zip": "SK2 7JE"
+        },
+        {
+          "city": "Sunderland",
+          "country": "United Kingdom",
+          "facility": "Sunderland Royal Hospital",
+          "geoPoint": {
+            "lat": 54.90465,
+            "lon": -1.38222
+          },
+          "state": "England",
+          "zip": "SR4 7TP"
+        },
+        {
+          "city": "Torquay",
+          "country": "United Kingdom",
+          "facility": "Torbay Hospital",
+          "geoPoint": {
+            "lat": 50.46198,
+            "lon": -3.52522
+          },
+          "state": "England",
+          "zip": "TQ2 7AA"
+        },
+        {
+          "city": "Warrington",
+          "country": "United Kingdom",
+          "facility": "Warrington Hospital NHS Trust",
+          "geoPoint": {
+            "lat": 53.39254,
+            "lon": -2.58024
+          },
+          "state": "England",
+          "zip": "WA5 1QG"
+        },
+        {
+          "city": "Whitehaven",
+          "country": "United Kingdom",
+          "facility": "West Cumberland Hospital",
+          "geoPoint": {
+            "lat": 54.54897,
+            "lon": -3.58412
+          },
+          "state": "England",
+          "zip": "CA28 8JG"
+        },
+        {
+          "city": "Wigan",
+          "country": "United Kingdom",
+          "facility": "Royal Albert Edward Infirmary",
+          "geoPoint": {
+            "lat": 53.54296,
+            "lon": -2.63706
+          },
+          "state": "England",
+          "zip": "WN1 2NN"
+        },
+        {
+          "city": "Worcester",
+          "country": "United Kingdom",
+          "facility": "Worcester Royal Hospital",
+          "geoPoint": {
+            "lat": 52.18935,
+            "lon": -2.22001
+          },
+          "state": "England",
+          "zip": "WR5 1DD"
+        },
+        {
+          "city": "Worthing",
+          "country": "United Kingdom",
+          "facility": "Worthing Hospital",
+          "geoPoint": {
+            "lat": 50.81795,
+            "lon": -0.37538
+          },
+          "state": "England",
+          "zip": "BN11 2DH"
+        },
+        {
+          "city": "Harlow",
+          "country": "United Kingdom",
+          "facility": "Princess Alexandra Hospital",
+          "geoPoint": {
+            "lat": 51.77655,
+            "lon": 0.11158
+          },
+          "state": "Essex",
+          "zip": "CM20 1QX"
+        },
+        {
+          "city": "Romford",
+          "country": "United Kingdom",
+          "facility": "Queen's Hospital",
+          "geoPoint": {
+            "lat": 51.57515,
+            "lon": 0.18582
+          },
+          "state": "Essex",
+          "zip": "RM7 0AG"
+        },
+        {
+          "city": "Westcliff-on-Sea",
+          "country": "United Kingdom",
+          "facility": "Southend University Hospital NHS Foundation Trust",
+          "geoPoint": {
+            "lat": 51.54424,
+            "lon": 0.69179
+          },
+          "state": "Essex",
+          "zip": "SS0 0RY"
+        },
+        {
+          "city": "Swansea",
+          "country": "United Kingdom",
+          "facility": "South West Wales Cancer Institute At Singleton Hospital",
+          "geoPoint": {
+            "lat": 51.62079,
+            "lon": -3.94323
+          },
+          "state": "Glamorgan",
+          "zip": "SA2 8QA"
+        },
+        {
+          "city": "Cheltenham",
+          "country": "United Kingdom",
+          "facility": "Cheltenham General Hospital",
+          "geoPoint": {
+            "lat": 51.90006,
+            "lon": -2.07972
+          },
+          "state": "Gloucestershire",
+          "zip": "GL53 7AN"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "St. Bartholomews Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "Greater London",
+          "zip": "EC1A 7BE"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "Queen Elizabeth Hospital - Woolwich",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "Greater London",
+          "zip": "SE18 4QH"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "St. George's Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "Greater London",
+          "zip": "SW17 0QT"
+        },
+        {
+          "city": "London",
+          "country": "United Kingdom",
+          "facility": "Charing Cross Hospital",
+          "geoPoint": {
+            "lat": 51.50853,
+            "lon": -0.12574
+          },
+          "state": "Greater London",
+          "zip": "W6 8RF"
+        },
+        {
+          "city": "Manchester",
+          "country": "United Kingdom",
+          "facility": "Christie Hospital",
+          "geoPoint": {
+            "lat": 53.48095,
+            "lon": -2.23743
+          },
+          "state": "Greater Manchester",
+          "zip": "M20 4BX"
+        },
+        {
+          "city": "Oldham",
+          "country": "United Kingdom",
+          "facility": "Royal Oldham Hospital",
+          "geoPoint": {
+            "lat": 53.54051,
+            "lon": -2.1183
+          },
+          "state": "Greater Manchester",
+          "zip": "OL1 2JH"
+        },
+        {
+          "city": "Southampton",
+          "country": "United Kingdom",
+          "facility": "Southampton General Hospital",
+          "geoPoint": {
+            "lat": 50.90395,
+            "lon": -1.40428
+          },
+          "state": "Hampshire",
+          "zip": "S016 6YD"
+        },
+        {
+          "city": "Stevenage",
+          "country": "United Kingdom",
+          "facility": "Lister Hospital",
+          "geoPoint": {
+            "lat": 51.90224,
+            "lon": -0.20256
+          },
+          "state": "Hertfordshire",
+          "zip": "SG1 4AB"
+        },
+        {
+          "city": "Inverness",
+          "country": "United Kingdom",
+          "facility": "Raigmore Hospital",
+          "geoPoint": {
+            "lat": 57.47908,
+            "lon": -4.22398
+          },
+          "state": "Highland",
+          "zip": "IV2 3UJ"
+        },
+        {
+          "city": "Newport",
+          "country": "United Kingdom",
+          "facility": "St. Mary's Hospital",
+          "geoPoint": {
+            "lat": 51.58774,
+            "lon": -2.99835
+          },
+          "state": "Isle Of Wight",
+          "zip": "PO30 5TG"
+        },
+        {
+          "city": "Steeton",
+          "country": "United Kingdom",
+          "facility": "Airedale General Hospital",
+          "geoPoint": {
+            "lat": 53.88333,
+            "lon": -1.95
+          },
+          "state": "Keighley",
+          "zip": "BD20 6TD"
+        },
+        {
+          "city": "Canterbury",
+          "country": "United Kingdom",
+          "facility": "Kent and Canterbury Hospital",
+          "geoPoint": {
+            "lat": 51.27904,
+            "lon": 1.07992
+          },
+          "state": "Kent",
+          "zip": "CT1 3NG"
+        },
+        {
+          "city": "Maidstone",
+          "country": "United Kingdom",
+          "facility": "Mid Kent Oncology Centre at Maidstone Hospital",
+          "geoPoint": {
+            "lat": 51.26667,
+            "lon": 0.51667
+          },
+          "state": "Kent",
+          "zip": "ME16 9QQ"
+        },
+        {
+          "city": "Margate",
+          "country": "United Kingdom",
+          "facility": "Queen Elizabeth The Queen Mother Hospital",
+          "geoPoint": {
+            "lat": 51.38132,
+            "lon": 1.38617
+          },
+          "state": "Kent",
+          "zip": "CT9 4AN"
+        },
+        {
+          "city": "Glasgow",
+          "country": "United Kingdom",
+          "facility": "Beatson Institute for Cancer Research - Glasgow",
+          "geoPoint": {
+            "lat": 55.86515,
+            "lon": -4.25763
+          },
+          "state": "Lanarkshire",
+          "zip": "G12 0YN"
+        },
+        {
+          "city": "Preston",
+          "country": "United Kingdom",
+          "facility": "Rosemere Cancer Centre at Royal Preston Hospital",
+          "geoPoint": {
+            "lat": 53.76282,
+            "lon": -2.70452
+          },
+          "state": "Lancashire",
+          "zip": "PR2 4QF"
+        },
+        {
+          "city": "Southport",
+          "country": "United Kingdom",
+          "facility": "Southport and Formby District General Hospital",
+          "geoPoint": {
+            "lat": 53.64581,
+            "lon": -3.01008
+          },
+          "state": "Merseyside",
+          "zip": "PR8 6PN"
+        },
+        {
+          "city": "Northwood",
+          "country": "United Kingdom",
+          "facility": "Mount Vernon Cancer Centre at Mount Vernon Hospital",
+          "geoPoint": {
+            "lat": 51.61162,
+            "lon": -0.42454
+          },
+          "state": "Middlesex",
+          "zip": "HA6 2RN"
+        },
+        {
+          "city": "Edinburgh",
+          "country": "United Kingdom",
+          "facility": "Edinburgh Cancer Centre at Western General Hospital",
+          "geoPoint": {
+            "lat": 55.95206,
+            "lon": -3.19648
+          },
+          "state": "Midlothian",
+          "zip": "EH4 2XU"
+        },
+        {
+          "city": "Newcastle",
+          "country": "United Kingdom",
+          "facility": "Freeman Hospital",
+          "geoPoint": {
+            "lat": 54.21804,
+            "lon": -5.88979
+          },
+          "state": "Newcastle-upon-Tyne",
+          "zip": "NE7 7DN"
+        },
+        {
+          "city": "Scarborough",
+          "country": "United Kingdom",
+          "facility": "Scarborough General Hospital",
+          "geoPoint": {
+            "lat": 54.27966,
+            "lon": -0.40443
+          },
+          "state": "North Yorkshire",
+          "zip": "YO12 6QL"
+        },
+        {
+          "city": "Belfast",
+          "country": "United Kingdom",
+          "facility": "Centre for Cancer Research and Cell Biology at Queen's University Belfast",
+          "geoPoint": {
+            "lat": 54.59682,
+            "lon": -5.92541
+          },
+          "state": "Northern Ireland",
+          "zip": "BT9 7AB"
+        },
+        {
+          "city": "Nottingham",
+          "country": "United Kingdom",
+          "facility": "Nottingham City Hospital",
+          "geoPoint": {
+            "lat": 52.9536,
+            "lon": -1.15047
+          },
+          "state": "Nottinghamshire",
+          "zip": "NG5 1PB"
+        },
+        {
+          "city": "Sutton in Ashfield",
+          "country": "United Kingdom",
+          "facility": "King's Mill Hospital",
+          "geoPoint": {
+            "lat": 53.12542,
+            "lon": -1.26135
+          },
+          "state": "Nottinghamshire",
+          "zip": "NG17 4JL"
+        },
+        {
+          "city": "Oxford",
+          "country": "United Kingdom",
+          "facility": "Churchill Hospital",
+          "geoPoint": {
+            "lat": 51.75222,
+            "lon": -1.25596
+          },
+          "state": "Oxfordshire",
+          "zip": "OX3 7LE"
+        },
+        {
+          "city": "Cosham",
+          "country": "United Kingdom",
+          "facility": "Queen Alexandra Hospital",
+          "geoPoint": {
+            "lat": 50.84654,
+            "lon": -1.06344
+          },
+          "state": "Portsmouth",
+          "zip": "P06 3LY"
+        },
+        {
+          "city": "Ayr",
+          "country": "United Kingdom",
+          "facility": "Ayr Hospital",
+          "geoPoint": {
+            "lat": 55.46273,
+            "lon": -4.63393
+          },
+          "state": "Scotland",
+          "zip": "KA6 6DX"
+        },
+        {
+          "city": "Bath",
+          "country": "United Kingdom",
+          "facility": "Royal United Hospital",
+          "geoPoint": {
+            "lat": 51.3751,
+            "lon": -2.36172
+          },
+          "state": "Somerset",
+          "zip": "BA1 3NG"
+        },
+        {
+          "city": "Bristol",
+          "country": "United Kingdom",
+          "facility": "Bristol Haematology and Oncology Centre",
+          "geoPoint": {
+            "lat": 51.45523,
+            "lon": -2.59665
+          },
+          "state": "Somerset",
+          "zip": "BS2 8ED"
+        },
+        {
+          "city": "Taunton",
+          "country": "United Kingdom",
+          "facility": "Musgrove Park Hospital",
+          "geoPoint": {
+            "lat": 51.01494,
+            "lon": -3.10293
+          },
+          "state": "Somerset",
+          "zip": "TA1 5DA"
+        },
+        {
+          "city": "Weston-super-Mare",
+          "country": "United Kingdom",
+          "facility": "Weston General Hospital",
+          "geoPoint": {
+            "lat": 51.34603,
+            "lon": -2.97665
+          },
+          "state": "Somerset",
+          "zip": "BS23 4TQ"
+        },
+        {
+          "city": "Yeovil",
+          "country": "United Kingdom",
+          "facility": "Yeovil District Hospital",
+          "geoPoint": {
+            "lat": 50.94159,
+            "lon": -2.63211
+          },
+          "state": "Somerset",
+          "zip": "BA21 4AT"
+        },
+        {
+          "city": "Sheffield",
+          "country": "United Kingdom",
+          "facility": "Cancer Research Centre at Weston Park Hospital",
+          "geoPoint": {
+            "lat": 53.38297,
+            "lon": -1.4659
+          },
+          "state": "South Yorkshire",
+          "zip": "S10 2SJ"
+        },
+        {
+          "city": "Stoke-on-Trent",
+          "country": "United Kingdom",
+          "facility": "Royal Stoke University Hospital",
+          "geoPoint": {
+            "lat": 53.00415,
+            "lon": -2.18538
+          },
+          "state": "Staffordshire",
+          "zip": "ST4 6QG"
+        },
+        {
+          "city": "Ipswich",
+          "country": "United Kingdom",
+          "facility": "Ipswich Hospital",
+          "geoPoint": {
+            "lat": 52.05917,
+            "lon": 1.15545
+          },
+          "state": "Suffolk",
+          "zip": "IP4 5PD"
+        },
+        {
+          "city": "Guildford",
+          "country": "United Kingdom",
+          "facility": "St. Luke's Cancer Centre at Royal Surrey County Hospital",
+          "geoPoint": {
+            "lat": 51.23536,
+            "lon": -0.57427
+          },
+          "state": "Surrey",
+          "zip": "GU2 7XX"
+        },
+        {
+          "city": "Sutton",
+          "country": "United Kingdom",
+          "facility": "Royal Marsden - Sutton",
+          "geoPoint": {
+            "lat": 51.35,
+            "lon": -0.2
+          },
+          "state": "Surrey",
+          "zip": "SM2 5PT"
+        },
+        {
+          "city": "Newcastle upon Tyne",
+          "country": "United Kingdom",
+          "facility": "Northern Centre for Cancer Treatment at Newcastle General Hospital",
+          "geoPoint": {
+            "lat": 54.97328,
+            "lon": -1.61396
+          },
+          "state": "Tyne & Wear",
+          "zip": "NE4 6BE"
+        },
+        {
+          "city": "South Shields",
+          "country": "United Kingdom",
+          "facility": "South Tyneside District Hospital",
+          "geoPoint": {
+            "lat": 54.99859,
+            "lon": -1.4323
+          },
+          "state": "Tyne & Wear",
+          "zip": "NE34 0PL"
+        },
+        {
+          "city": "Aberystwyth",
+          "country": "United Kingdom",
+          "facility": "Bronglais General Hospital",
+          "geoPoint": {
+            "lat": 52.41548,
+            "lon": -4.08292
+          },
+          "state": "Wales",
+          "zip": "SY23 1ER"
+        },
+        {
+          "city": "Cardiff",
+          "country": "United Kingdom",
+          "facility": "Velindre Cancer Center at Velindre Hospital",
+          "geoPoint": {
+            "lat": 51.48,
+            "lon": -3.18
+          },
+          "state": "Wales",
+          "zip": "CF14 2TL"
+        },
+        {
+          "city": "Birmingham",
+          "country": "United Kingdom",
+          "facility": "Queen Elizabeth Hospital at University Hospital of Birmingham NHS Trust",
+          "geoPoint": {
+            "lat": 52.48142,
+            "lon": -1.89983
+          },
+          "state": "West Midlands",
+          "zip": "B15 2TH"
+        },
+        {
+          "city": "Sutton Coldfield",
+          "country": "United Kingdom",
+          "facility": "Good Hope Hospital",
+          "geoPoint": {
+            "lat": 52.56667,
+            "lon": -1.81667
+          },
+          "state": "West Midlands",
+          "zip": "B75 7RR"
+        },
+        {
+          "city": "Bradford",
+          "country": "United Kingdom",
+          "facility": "Bradford Royal Infirmary",
+          "geoPoint": {
+            "lat": 53.79391,
+            "lon": -1.75206
+          },
+          "state": "West Yorkshire",
+          "zip": "BD9 6RJ"
+        },
+        {
+          "city": "Huddersfield",
+          "country": "United Kingdom",
+          "facility": "Huddersfield Royal Infirmary",
+          "geoPoint": {
+            "lat": 53.64904,
+            "lon": -1.78416
+          },
+          "state": "West Yorkshire",
+          "zip": "HD3 3EA"
+        },
+        {
+          "city": "Swindon",
+          "country": "United Kingdom",
+          "facility": "Great Western Hospital",
+          "geoPoint": {
+            "lat": 51.55797,
+            "lon": -1.78116
+          },
+          "state": "Wiltshire",
+          "zip": "SN3 6BB"
+        },
+        {
+          "city": "Bebington",
+          "country": "United Kingdom",
+          "facility": "Clatterbridge Centre for Oncology",
+          "geoPoint": {
+            "lat": 53.35,
+            "lon": -3.01667
+          },
+          "state": "Wirral",
+          "zip": "CH63 4JY"
+        },
+        {
+          "city": "Barnet",
+          "country": "United Kingdom",
+          "facility": "Barnet General Hospital",
+          "geoPoint": {
+            "lat": 51.65,
+            "lon": -0.2
+          },
+          "zip": "EN5 3DJ"
+        },
+        {
+          "city": "Colchester",
+          "country": "United Kingdom",
+          "facility": "Colchester General Hospital",
+          "geoPoint": {
+            "lat": 51.88921,
+            "lon": 0.90421
+          },
+          "zip": "CO4 5JL"
+        },
+        {
+          "city": "Larbert",
+          "country": "United Kingdom",
+          "facility": "Forth Valley Hospital",
+          "geoPoint": {
+            "lat": 56.02246,
+            "lon": -3.82872
+          },
+          "zip": "FK5 4WR"
+        },
+        {
+          "city": "Lincoln",
+          "country": "United Kingdom",
+          "facility": "Lincoln Hospital",
+          "geoPoint": {
+            "lat": 53.22683,
+            "lon": -0.53792
+          },
+          "zip": "LN2 5QY"
+        },
+        {
+          "city": "Stockton-on-Tees",
+          "country": "United Kingdom",
+          "facility": "North Tees Hospital",
+          "geoPoint": {
+            "lat": 54.56848,
+            "lon": -1.3187
+          },
+          "zip": "TS19 8PE"
+        },
+        {
+          "city": "Wolverhampton",
+          "country": "United Kingdom",
+          "facility": "New Cross Hospital",
+          "geoPoint": {
+            "lat": 52.58547,
+            "lon": -2.12296
+          },
+          "zip": "WV10 0QP"
+        }
+      ],
+      "overallOfficials": [
+        {
+          "affiliation": "Institute of Cancer Research, United Kingdom",
+          "name": "Nicholas D. James, MD",
+          "role": "STUDY_CHAIR"
+        }
+      ]
+    },
+    "descriptionModule": {
+      "briefSummary": "The overall aim of this trial, which is called STAMPEDE, is to assess novel approaches for the treatment of men with prostate cancer who are starting long-term ADT for the first time, termed hormone-naïve prostate cancer. This trial aims to see if we can improve the way in which prostate cancer is currently managed, either by adding new treatments to the standard approach or by modifying the type of hormone therapy aiming to improve quality-of-life by reducing the side effects of treatment. Each new treatment approach is compared against a control arm receiving the current standard treatments. We aim to identify treatment strategies that enable men to live longer, or as long but with an improved quality-of-life, as well as offering value for money for the health service.\n\nSince opening to accrual in Oct-2005, the trial has tested many ways of treating prostate cancer and some results are now already known. More than 10,000 men will join the trial with answers becoming available throughout the trial. New patients joining the trial from Protocol version 17.0 onwards (activated in December 2018) may be eligible to join one of two treatment comparisons, metformin (treatment group K; the \"metformin comparison\") and transdermal oestradiol (treatment group L; the \"transdermal oestradiol comparison\"). A computer program will be used to allocate which treatment each participant receives, using a chance process.\n\nSummary of the research arms in STAMPEDE trial platform Summary of research treatment groups currently open to recruitment (June 2017)\n\n1. Metformin (Arm K): This anti-diabetic medication is proposed to have both anti-cancer effects and may help prevent the adverse metabolic effects of long-term ADT. STAMPEDE will investigate whether adding metformin to the current standard-of-care for non-diabetic men can improve all-cause survival.\n2. Transdermal oestradiol (Arm L): This is an alternative form of hormone treatment which has been shown to suppress testosterone as effectively as standard ADT and avoid some of the side-effects. It may also help to avoid the adverse metabolic effects and fatigue and therefore improve overall quality of life compared with standard forms of ADT. STAMPEDE will investigate whether transdermal oestradiol can treat the cancer as well as current standard forms of ADT.\n3. Control group (Arm A): Patients allocated to this group receive the current standard-of-care ADT +/- RT +/- docetaxel.",
+      "detailedDescription": "STAMPEDE (also known as MRC PR08) is a multi-arm multi-stage (MAMS) randomised controlled trial recruiting in the UK and Switzerland. It aims to evaluate multiple therapeutic strategies in the management of high-risk locally advanced and metastatic hormone-naïve prostate cancer. Each novel treatment strategy is compared against a single, contemporaneous control arm. When the trial originally opened in 2005 there were 6 research arms enabling 5 randomised comparisons. Each comparison is evaluated in stages with pre-planned interim analyses after which recruitment may be halted should the experimental treatment fail to reach a \"hurdle\" of activity. Patient data from all arms and all stages are, however, included in the final analyses of the primary outcome measure, even if the investigational arm did not proceed to the final stage.\n\nProviding sufficient activity is demonstrated, recruitment continues to the final stage and then an assessment of efficacy is determined based on the primary outcome of overall survival. Patient data from all arms and all stages are included in the final analyses of the primary outcome measure, even if the investigational arm did not proceed to the final stage.\n\nThe original comparisons which have all now been reported, evaluated a bisphosphonate (zoledronic acid), a cytotoxic chemotherapeutic agent (docetaxel) and a cyclooxygenase (Cox 2) inhibitor (celecoxib), as single agents or combinations. Since the start of the trial, a number of new research arms have been added to STAMPEDE over time to evaluate: abiraterone, a steroid synthesis inhibitor; prostate radiotherapy for patients with newly diagnosed metastatic disease; enzalutamide, an inhibitor of androgen receptor signalling, given with abiraterone; and metformin, an anti-diabetic medication and transdermal oestradiol, to be given as an alternative form of ADT.\n\nObjectives:\n\nPrimary\n\nTo compare the safety and efficacy of novel therapeutic strategies against the current standard-of-care for men with high-risk locally advanced or metastatic prostate cancer starting long-term ADT for the first time.\n\nOutline: This is a randomised, controlled, multi-centre MAMS trial platform. Patients are current randomised to 1 of 3 arms: control group (arm A), metformin treatment group (arm K) and transdermal oestradiol (Arm L). The other arms are all closed to recruitment with results known for all the original comparisons and awaited for others added since the trial commenced.\n\nPatient population: STAMPEDE recruits both men with high-risk locally advanced prostate cancer and men with metastatic prostate cancer, all of whom must be starting long-term ADT for the first time. Patients who received previous radical treatment and are now relapsing with high-risk features are also eligible.\n\nFollow-up: All patients are follow-up life long\n\nSub-studies: There are several translational sub-studies ongoing as part of STAMPEDE. Participation is optional. These currently include several translational sub-studies involving sample collection: saliva collection for germline DNA analysis, sequential circulating tumour DNA analysis and FFPE tumour block retrieval for DNA and RNA analysis. Other sub-studies include a QOL sub-study and an imaging sub-study."
+    },
+    "designModule": {
+      "designInfo": {
+        "allocation": "RANDOMIZED",
+        "interventionModel": "PARALLEL",
+        "interventionModelDescription": "Multi-arm Multi-Stage",
+        "maskingInfo": {
+          "masking": "NONE"
+        },
+        "primaryPurpose": "TREATMENT"
+      },
+      "enrollmentInfo": {
+        "count": 11992,
+        "type": "ACTUAL"
+      },
+      "phases": [
+        "PHASE2",
+        "PHASE3"
+      ],
+      "studyType": "INTERVENTIONAL"
+    },
+    "eligibilityModule": {
+      "eligibilityCriteria": "Inclusion Criteria Participants must fulfil all the criteria in one of the following three categories. Additionally, all patients must fulfil the criteria in Section 4.\n\n1. High-Risk Newly-Diagnosed Non-Metastatic Node-Negative (N0/Nx) Disease\n\n   Both:\n\n   • At least two of: T category T3/4, PSA≥40ng/ml or Gleason sum score 8-10\n\n   • Intention to treat with radical radiotherapy (unless there is a contra-indication)\n\n   OR\n2. Newly-Diagnosed Metastatic Or Node-Positive Disease\n\n   At least one of:\n   * Stage Tany N+ M0\n   * Stage Tany Nany M+\n\n   OR\n3. Previously Radically Treated, Now Relapsing (Prior Radical Surgery And/or Radiotherapy)\n\n   At least one of:\n\n   • PSA ≥4ng/ml and rising with doubling time less than 6 months\n\n   • PSA ≥20ng/ml\n\n   • N+\n\n   • M+\n\n   AND\n4. General Inclusion Criteria Required For All Participants\n\n<!-- -->\n\n1. Histologically confirmed prostate adenocarcinoma\n2. Intention to treat with long-term androgen deprivation therapy\n3. Fit for all protocol treatment and follow up, WHO performance status 0-2\n4. Have completed the appropriate investigations prior to randomisation\n5. Adequate haematological function: neutrophil count ≥1.5x109/l and platelets ≥100x109/l\n6. Adequate renal function, defined as GFR ≥30ml/min/1.73m2\n7. Written informed consent\n8. Willing and expected to comply with follow up schedule\n9. Using effective contraceptive method if applicable\n\n<!-- -->\n\n1. Medical contraindications to the trial medications are given in Section 6\n2. For WHO performance status definitions see Appendix A\n\n5\\. General Exclusion Criteria\n\nPatients must not fulfil any of the criteria below:\n\n1. Prior systemic therapy for locally-advanced or metastatic prostate cancer (1) (except as listed in the protocol section 4.3)\n2. Prior exposure to hormone therapy for a duration of \\> 12 months, or prior exposure completing \\< 12 months before randomisation (see section 4.3.1 for permitted prior exposure details)\n3. Metastatic brain disease or leptomeningeal disease\n4. Abnormal liver functions consisting of any of the following:\n\n   • Serum bilirubin ≥1.5 x ULN (except for patients with Gilbert's disease, for whom the upper limit of serum bilirubin is 51.3μmol/l or 3mg/dl)\n\n   • Aspartate aminotransferase (AST) or alanine aminotransferase (ALT) ≥2.5 x ULN - site must indicate at randomisation whether one or both tests are performed at site. Where both results are available both must confirm eligibility.\n5. Any other previous or current malignant disease which, in the judgement of the responsible clinician, is likely to interfere with STAMPEDE treatment or assessment\n6. Any surgical wound (e.g. TURP) which in the judgement of the responsible clinician may interfere with or be exacerbated by protocol treatment\n7. Participant with significant cardiovascular disease, including:\n\n   • Severe/unstable angina\n\n   • Myocardial infarction less than 6 months prior to randomisation\n\n   • Arterial thrombotic events less than 6 months prior to randomisation\n\n   • Clinically significant cardiac failure requiring treatment, defined as New York Heart Association (NYHA) class II or above (1)\n\n   • Cerebrovascular disease (e.g. stroke or transient ischaemic episode) less than 6 months prior to randomisation\n   * Any other significant cardiovascular disease that in the investigator's opinion means the participant is unfit for any of the study treatments.\n\n     1. Excluding participants receiving docetaxel as part of SOC\n     2. NYHA classifications can be found in Appendix A\n\n6\\. Comparison-specific eligibility criteria\n\nIn addition to the general inclusion and exclusion criteria, the following comparison-specific eligibility criteria apply.\n\nFor Randomisation to the \"Metformin Comparison\"\n\nPlease note from protocol v20 only patients willing to participate in the metabolic sub study should be randomised to the metformin comparison. The sub study will be conducted in a limited number of sites, see section 4.7.4 for further information.\n\nIn addition to the general inclusion and general exclusion criteria the following comparison-specific inclusion criteria must be met to be eligible for randomisation to the \"metformin comparison\":\n\n• HbA1c \\<48mmol/mol (equivalent to \\<6.5%) (1)\n\n• Adequate renal function, defined as GFR ≥45ml/min/1.73m (except for Switzerland (2))\n\n• No history of lactic acidosis or pre-disposing conditions\n\n* Not current or previous treatment with metformin\n* No contra-indications to metformin\n* No current or previous medication for treatment of diabetes\n* Willingness to join the metabolic sub study\n\nThe method used to determine glomerular filtration rate may vary according to local practice.\n\nEquations that either estimate glomerular filtration rate (eGFR) or creatinine clearance (CrCl) may be used and the same threshold value applies. Where possible, HbA1c should be performed prior to commencing SOC docetaxel to reduce the likelihood of corticosteroid-related hyperglycaemia impacting on eligibility. All participants with abnormal baseline HbA1c (i.e. 6.5% or higher) should be informed and referred to their GP for further management.\n\n(2) Except Switzerland, please refer to SAKK appendix for local guidance\n\nFor Randomisation To The \"Transdermal Oestradiol Comparison\"\n\nIn addition to the general inclusion and exclusion criteria, participants fulfilling all of the following are eligible for the \"transdermal oestradiol comparison\":\n\n• ≤8 weeks of anti-androgen (AR-antagonists) use\n\n• Maximum of 1 dose of monthly or 4-weekly LHRH agonist/antagonist\n\n• No prior LHRH agonist injection with a stated duration of effect greater than 1 month\n\n• ≤12 weeks since first dose of any hormone therapy\n\n• Not had a bilateral orchidectomy\n\n• No use of cyproterone acetate (36) prior to randomisation\n\n• No known porphyria\n\n* No known history of deep vein thrombosis or pulmonary embolism confirmed radiologically\n* No known thrombophilic disorder (e.g. Protein C, Protein S, antithrombin deficiency)\n* Not yet started SOC abiraterone, enzalutamide or apalutamide",
+      "healthyVolunteers": false,
+      "maximumAge": "120 Years",
+      "sex": "MALE",
+      "stdAges": [
+        "CHILD",
+        "ADULT",
+        "OLDER_ADULT"
+      ]
+    },
+    "identificationModule": {
+      "acronym": "STAMPEDE",
+      "briefTitle": "Systemic Therapy in Advancing or Metastatic Prostate Cancer: Evaluation of Drug Efficacy",
+      "nctId": "NCT00268476",
+      "officialTitle": "STAMPEDE: Systemic Therapy in Advancing or Metastatic Prostate Cancer: Evaluation of Drug Efficacy: A Multi-Stage Multi-Arm Randomised Controlled Trial",
+      "orgStudyIdInfo": {
+        "id": "CDR0000455008"
+      },
+      "organization": {
+        "class": "OTHER_GOV",
+        "fullName": "Medical Research Council"
+      },
+      "secondaryIdInfos": [
+        {
+          "domain": "MRC",
+          "id": "MRC-STAMPEDE",
+          "type": "OTHER"
+        },
+        {
+          "domain": "EU",
+          "id": "EU-205102",
+          "type": "OTHER"
+        },
+        {
+          "domain": "MRC CTU at UCL",
+          "id": "PR08",
+          "type": "OTHER"
+        },
+        {
+          "domain": "ISRCTN",
+          "id": "ISRCTN78818544",
+          "type": "REGISTRY"
+        },
+        {
+          "id": "2004-000193-31",
+          "type": "EUDRACT_NUMBER"
+        },
+        {
+          "id": "2004",
+          "link": "https://reporter.nih.gov/quickSearch/2004",
+          "type": "NIH"
+        }
+      ]
+    },
+    "outcomesModule": {
+      "primaryOutcomes": [
+        {
+          "description": "Time to mortality",
+          "measure": "Overall survival",
+          "timeFrame": "1:Not applicable"
+        }
+      ],
+      "secondaryOutcomes": [
+        {
+          "description": "Report of time from initiation of treatment to the first progression event of each patient",
+          "measure": "Failure-free survival",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the comparison of costs associated with the additional treatments provided and the survival gain attributed to the additional treatments, to SOC alone.",
+          "measure": "Cost effectiveness by EuroQol",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Determination of changes in quality of life with interventions",
+          "measure": "Quality of life (QOL) by EORTC QOL Questionnaire C30 and prostate specific 25-item",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the incidence, type and severity of side effects within the trial population. CTCAE v4.0 will be used to classify the events names and severity.",
+          "measure": "Number of participants with treatment-related side effects as assessed by CTCAE v4.0",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the incidence and types of skeletal related events",
+          "measure": "Skeletal related events",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "For the purposes of the STAMPEDE trial, a unique threshold PSA value for biochemical failure is calculated for each patient, referred to as the PSA progression value.\n\nA. If PSA nadir in the 24 weeks following randomisation is more than 4ng/ml and more than 50% of the pre-treatment PSA level - immediate treatment failure.\n\nB. If PSA nadir in the 24 weeks following randomisation is less than or equal to 50% of the pre-treatment PSA level but remains above 4ng/ml - treatment failure will be defined as a rise of 50% above the nadir level.\n\nC. If PSA nadir in the 24 weeks following randomisation is less than or equal to 4ng/ml - treatment failure will be defined as at least 50% rise above the nadir value and also above 4ng/ml.",
+          "measure": "Biochemical failure",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the incidence of mortality without a progression event",
+          "measure": "Progression-free survival",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the incidence and severity of lymph node events",
+          "measure": "Lymph node progression",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the incidence and severity of distant metastatic events",
+          "measure": "Distant metastases",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Identifying and reporting the treatments used in second line treatment. Incidence and types of treatments.",
+          "measure": "Treatment for progression",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the mortality attributed to Prostate Cancer",
+          "measure": "Disease-specific survival",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the mortality not attributed to Prostate Cancer",
+          "measure": "Non-prostate cancer death",
+          "timeFrame": "1:Not applicable"
+        },
+        {
+          "description": "Reporting the incidence and severity of effects on metabolic systems",
+          "measure": "Metabolic effects",
+          "timeFrame": "1:Not applicable"
+        }
+      ]
+    },
+    "oversightModule": {
+      "isFdaRegulatedDevice": false,
+      "isFdaRegulatedDrug": false,
+      "oversightHasDmc": true
+    },
+    "referencesModule": {
+      "references": [
+        {
+          "citation": "Sydes MR, Parmar MK, James ND, Clarke NW, Dearnaley DP, Mason MD, Morgan RC, Sanders K, Royston P. Issues in applying multi-arm multi-stage methodology to a clinical trial in prostate cancer: the MRC STAMPEDE trial. Trials. 2009 Jun 11;10:39. doi: 10.1186/1745-6215-10-39.",
+          "pmid": "19519885",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "Sydes MR, Parmar MK, Mason MD, Clarke NW, Amos C, Anderson J, de Bono J, Dearnaley DP, Dwyer J, Green C, Jovic G, Ritchie AW, Russell JM, Sanders K, Thalmann G, James ND. Flexible trial design in practice - stopping arms for lack-of-benefit and adding research arms mid-trial in STAMPEDE: a multi-arm multi-stage randomized controlled trial. Trials. 2012 Sep 15;13:168. doi: 10.1186/1745-6215-13-168.",
+          "pmid": "22978443",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "Parker CC, Sydes MR, Mason MD, Clarke NW, Aebersold D, de Bono JS, Dearnaley DP, Ritchie AW, Russell JM, Thalmann G, Parmar MK, James ND. Prostate radiotherapy for men with metastatic disease: a new comparison in the Systemic Therapy in Advancing or Metastatic Prostate Cancer: Evaluation of Drug Efficacy (STAMPEDE) trial. BJU Int. 2013 May;111(5):697-9. doi: 10.1111/bju.12087. No abstract available.",
+          "pmid": "23578233",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "Attard G, Sydes MR, Mason MD, Clarke NW, Aebersold D, de Bono JS, Dearnaley DP, Parker CC, Ritchie AW, Russell JM, Thalmann G, Cassoly E, Millman R, Matheson D, Schiavone F, Spears MR, Parmar MK, James ND. Combining enzalutamide with abiraterone, prednisone, and androgen deprivation therapy in the STAMPEDE trial. Eur Urol. 2014 Nov;66(5):799-802. doi: 10.1016/j.eururo.2014.05.038. Epub 2014 Jun 27.",
+          "pmid": "24985962",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "James ND, Spears MR, Clarke NW, Dearnaley DP, De Bono JS, Gale J, Hetherington J, Hoskin PJ, Jones RJ, Laing R, Lester JF, McLaren D, Parker CC, Parmar MKB, Ritchie AWS, Russell JM, Strebel RT, Thalmann GN, Mason MD, Sydes MR. Survival with Newly Diagnosed Metastatic Prostate Cancer in the \"Docetaxel Era\": Data from 917 Patients in the Control Arm of the STAMPEDE Trial (MRC PR08, CRUK/06/019). Eur Urol. 2015 Jun;67(6):1028-1038. doi: 10.1016/j.eururo.2014.09.032. Epub 2014 Oct 6.",
+          "pmid": "25301760",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "James ND, Spears MR, Clarke NW, Dearnaley DP, Mason MD, Parker CC, Ritchie AW, Russell JM, Schiavone F, Attard G, de Bono JS, Birtle A, Engeler DS, Elliott T, Matheson D, O'Sullivan J, Pudney D, Srihari N, Wallace J, Barber J, Syndikus I, Parmar MK, Sydes MR; STAMPEDE Investigators. Failure-Free Survival and Radiotherapy in Patients With Newly Diagnosed Nonmetastatic Prostate Cancer: Data From Patients in the Control Arm of the STAMPEDE Trial. JAMA Oncol. 2016 Mar;2(3):348-57. doi: 10.1001/jamaoncol.2015.4350.",
+          "pmid": "26606329",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "Gillessen S, Gilson C, James N, Adler A, Sydes MR, Clarke N; STAMPEDE Trial Management Group. Repurposing Metformin as Therapy for Prostate Cancer within the STAMPEDE Trial Platform. Eur Urol. 2016 Dec;70(6):906-908. doi: 10.1016/j.eururo.2016.07.015. Epub 2016 Jul 19.",
+          "pmid": "27450106",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "Gilbert DC, Duong T, Sydes M, Bara A, Clarke N, Abel P, James N, Langley R, Parmar M; STAMPEDE and PATCH Trial Management Groups. Transdermal oestradiol as a method of androgen suppression for prostate cancer within the STAMPEDE trial platform. BJU Int. 2018 May;121(5):680-683. doi: 10.1111/bju.14153. Epub 2018 Feb 28. No abstract available.",
+          "pmid": "29388336",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "Parmar MK, Barthel FM, Sydes M, Langley R, Kaplan R, Eisenhauer E, Brady M, James N, Bookman MA, Swart AM, Qian W, Royston P. Speeding up the evaluation of new agents in cancer. J Natl Cancer Inst. 2008 Sep 3;100(17):1204-14. doi: 10.1093/jnci/djn267. Epub 2008 Aug 26.",
+          "pmid": "18728279",
+          "type": "BACKGROUND"
+        },
+        {
+          "citation": "James ND, Sydes MR, Clarke NW, Mason MD, Dearnaley DP, Anderson J, Popert RJ, Sanders K, Morgan RC, Stansfeld J, Dwyer J, Masters J, Parmar MK. Systemic therapy for advancing or metastatic prostate cancer (STAMPEDE): a multi-arm, multistage randomized controlled trial. BJU Int. 2009 Feb;103(4):464-9. doi: 10.1111/j.1464-410X.2008.08034.x. Epub 2008 Oct 8.",
+          "pmid": "18990168",
+          "type": "RESULT"
+        },
+        {
+          "citation": "James ND, Sydes MR, Mason MD, Clarke NW, Anderson J, Dearnaley DP, Dwyer J, Jovic G, Ritchie AW, Russell JM, Sanders K, Thalmann GN, Bertelli G, Birtle AJ, O'Sullivan JM, Protheroe A, Sheehan D, Srihari N, Parmar MK; STAMPEDE investigators. Celecoxib plus hormone therapy versus hormone therapy alone for hormone-sensitive prostate cancer: first results from the STAMPEDE multiarm, multistage, randomised controlled trial. Lancet Oncol. 2012 May;13(5):549-58. doi: 10.1016/S1470-2045(12)70088-8. Epub 2012 Mar 26.",
+          "pmid": "22452894",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Vale CL, Burdett S, Rydzewska LHM, Albiges L, Clarke NW, Fisher D, Fizazi K, Gravis G, James ND, Mason MD, Parmar MKB, Sweeney CJ, Sydes MR, Tombal B, Tierney JF; STOpCaP Steering Group. Addition of docetaxel or bisphosphonates to standard of care in men with localised or metastatic, hormone-sensitive prostate cancer: a systematic review and meta-analyses of aggregate data. Lancet Oncol. 2016 Feb;17(2):243-256. doi: 10.1016/S1470-2045(15)00489-1. Epub 2015 Dec 21.",
+          "pmid": "26718929",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Mason MD, Clarke NW, James ND, Dearnaley DP, Spears MR, Ritchie AWS, Attard G, Cross W, Jones RJ, Parker CC, Russell JM, Thalmann GN, Schiavone F, Cassoly E, Matheson D, Millman R, Rentsch CA, Barber J, Gilson C, Ibrahim A, Logue J, Lydon A, Nikapota AD, O'Sullivan JM, Porfiri E, Protheroe A, Srihari NN, Tsang D, Wagstaff J, Wallace J, Walmsley C, Parmar MKB, Sydes MR; STAMPEDE Investigators. Adding Celecoxib With or Without Zoledronic Acid for Hormone-Naive Prostate Cancer: Long-Term Survival Results From an Adaptive, Multiarm, Multistage, Platform, Randomized Controlled Trial. J Clin Oncol. 2017 May 10;35(14):1530-1541. doi: 10.1200/JCO.2016.69.0677. Epub 2017 Mar 13.",
+          "pmid": "28300506",
+          "type": "RESULT"
+        },
+        {
+          "citation": "James ND, de Bono JS, Spears MR, Clarke NW, Mason MD, Dearnaley DP, Ritchie AWS, Amos CL, Gilson C, Jones RJ, Matheson D, Millman R, Attard G, Chowdhury S, Cross WR, Gillessen S, Parker CC, Russell JM, Berthold DR, Brawley C, Adab F, Aung S, Birtle AJ, Bowen J, Brock S, Chakraborti P, Ferguson C, Gale J, Gray E, Hingorani M, Hoskin PJ, Lester JF, Malik ZI, McKinna F, McPhail N, Money-Kyrle J, O'Sullivan J, Parikh O, Protheroe A, Robinson A, Srihari NN, Thomas C, Wagstaff J, Wylie J, Zarkar A, Parmar MKB, Sydes MR; STAMPEDE Investigators. Abiraterone for Prostate Cancer Not Previously Treated with Hormone Therapy. N Engl J Med. 2017 Jul 27;377(4):338-351. doi: 10.1056/NEJMoa1702900. Epub 2017 Jun 3.",
+          "pmid": "28578639",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Sydes MR, Spears MR, Mason MD, Clarke NW, Dearnaley DP, de Bono JS, Attard G, Chowdhury S, Cross W, Gillessen S, Malik ZI, Jones R, Parker CC, Ritchie AWS, Russell JM, Millman R, Matheson D, Amos C, Gilson C, Birtle A, Brock S, Capaldi L, Chakraborti P, Choudhury A, Evans L, Ford D, Gale J, Gibbs S, Gilbert DC, Hughes R, McLaren D, Lester JF, Nikapota A, O'Sullivan J, Parikh O, Peedell C, Protheroe A, Rudman SM, Shaffer R, Sheehan D, Simms M, Srihari N, Strebel R, Sundar S, Tolan S, Tsang D, Varughese M, Wagstaff J, Parmar MKB, James ND; STAMPEDE Investigators. Adding abiraterone or docetaxel to long-term hormone therapy for prostate cancer: directly randomised data from the STAMPEDE multi-arm, multi-stage platform protocol. Ann Oncol. 2018 May 1;29(5):1235-1248. doi: 10.1093/annonc/mdy072.",
+          "pmid": "29529169",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Parker CC, James ND, Brawley CD, Clarke NW, Hoyle AP, Ali A, Ritchie AWS, Attard G, Chowdhury S, Cross W, Dearnaley DP, Gillessen S, Gilson C, Jones RJ, Langley RE, Malik ZI, Mason MD, Matheson D, Millman R, Russell JM, Thalmann GN, Amos CL, Alonzi R, Bahl A, Birtle A, Din O, Douis H, Eswar C, Gale J, Gannon MR, Jonnada S, Khaksar S, Lester JF, O'Sullivan JM, Parikh OA, Pedley ID, Pudney DM, Sheehan DJ, Srihari NN, Tran ATH, Parmar MKB, Sydes MR; Systemic Therapy for Advanced or Metastatic Prostate cancer: Evaluation of Drug Efficacy (STAMPEDE) investigators. Radiotherapy to the primary tumour for newly diagnosed, metastatic prostate cancer (STAMPEDE): a randomised controlled phase 3 trial. Lancet. 2018 Dec 1;392(10162):2353-2366. doi: 10.1016/S0140-6736(18)32486-3. Epub 2018 Oct 21.",
+          "pmid": "30355464",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Clarke NW, Ali A, Ingleby FC, Hoyle A, Amos CL, Attard G, Brawley CD, Calvert J, Chowdhury S, Cook A, Cross W, Dearnaley DP, Douis H, Gilbert D, Gillessen S, Jones RJ, Langley RE, MacNair A, Malik Z, Mason MD, Matheson D, Millman R, Parker CC, Ritchie AWS, Rush H, Russell JM, Brown J, Beesley S, Birtle A, Capaldi L, Gale J, Gibbs S, Lydon A, Nikapota A, Omlin A, O'Sullivan JM, Parikh O, Protheroe A, Rudman S, Srihari NN, Simms M, Tanguay JS, Tolan S, Wagstaff J, Wallace J, Wylie J, Zarkar A, Sydes MR, Parmar MKB, James ND. Addition of docetaxel to hormonal therapy in low- and high-burden metastatic hormone sensitive prostate cancer: long-term survival results from the STAMPEDE trial. Ann Oncol. 2019 Dec 1;30(12):1992-2003. doi: 10.1093/annonc/mdz396.",
+          "pmid": "31560068",
+          "type": "RESULT"
+        },
+        {
+          "citation": "Kayani M, Murphy L, Dutey-Magni P, Howlett S, Sachdeva A, Padden-Modi M, Abdel-Aty H, Brown LC, Amos CL, Chan K, Gilbert DC, Langley RE, Brown M, Sydes MR, Parker CC; STAMPEDE Collaborators; Cross W, Malik Z, Varughese M, Turco F, Millman R, Matheson D, Gillessen S, Clarke NW, Parmar MKB, James ND, Attard G. On-treatment serum prostate-specific antigen and overall survival in prostate cancer (STAMPEDE platform protocol): a post-hoc analysis of data from five phase 3 trials. Lancet Oncol. 2026 May;27(5):625-636. doi: 10.1016/S1470-2045(26)00066-5.",
+          "pmid": "42061373",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Langley RE, Gilbert DC, Mangar S, Rosen S, Bourmaki E, Rush HL, Kananga Sundaram S, Alhasso A, Kockelbergh R, Abdel-Aty H, Amos CL, Brown L, Brown S, Carvalho C, Chan K, Collins G, Cross W, Deighan J, Dixit S, Duong T, Dyer J, Gale J, Gillessen S, Griffiths A, Laniado M, Lydon A, McPhail N, MacNair A, Madaan S, Marshall J, Matheson D, Millman R, Mohamed W, Murphy L, Narahari K, Parker C, Panades M, Pope A, Raval A, Robinson A, Russell M, Scrase C, Sydes M, Turo R, Venkitaraman R, Wade S, Kynaston H, Attard G, James ND, Clarke N, Parmar MK, Nankivell M; STAMPEDE-1 and PATCH Investigators. Transdermal Estradiol Patches in Locally Advanced Prostate Cancer. N Engl J Med. 2026 Apr 23;394(16):1595-1607. doi: 10.1056/NEJMoa2511781. Epub 2026 Mar 25.",
+          "pmid": "41880608",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Gillessen S, Murphy L, James ND, Sachdeva A, El-Taji O, Abdel-Aty H, Adler AI, Amos C, Attard G, Varughese M, Gale J, Brown S, Srihari N, Birtle AJ, Brown M, Chan K, Chowdhury S, Cross W, Dearnaley DP, Din O, Dutey-Magni P, Gilbert DC, Gilson C, Gray S, Grist E, Hofmann U, Hudson AM, Jain Y, Jeyasangar G, Jones R, Kayani M, Langley RE, Malik Z, Mason MD, Matheson D, McAlpine C, Macnair A, Millman R, Murphy C, Padden-Modi M, Parikh O, Parker C, Rush H, Russell M, Srinivasan R, Sundar S, Tanguay JS, Turco F, Williams P, Sydes MR, Parmar MKB, Brown LC, Clarke NW; STAMPEDE investigators. Metformin for patients with metastatic prostate cancer starting androgen deprivation therapy: a randomised phase 3 trial of the STAMPEDE platform protocol. Lancet Oncol. 2025 Aug;26(8):1018-1030. doi: 10.1016/S1470-2045(25)00231-1. Epub 2025 Jul 7.",
+          "pmid": "40639383",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Huang L, He W, Guo Y. From Androgen Deprivation to Precision Therapy: A Bibliometric Review of Global Research Trends (2008-2023). Am J Mens Health. 2025 May-Jun;19(3):15579883251346819. doi: 10.1177/15579883251346819. Epub 2025 Jun 20.",
+          "pmid": "40539499",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Parker CTA, Mendes L, Liu VYT, Grist E, Joun S, Yamashita R, Mitani A, Chen E, Parry MA, Sachdeva A, Murphy L, Huang HC, Griffin J, van der Wal D, Todorovic T, Lall S, Santos Vidal S, Goncalves M, Thakali S, Wingate A, Zakka L, Brown M, Wetterskog D, Amos CL, Atako NB, Jones RJ, Cross WR, Gillessen S, Parker CC; STAMPEDE collaborators; Berney DM, Tran PT, Spratt DE, Sydes MR, Parmar MKB, Clarke NW, Brown LC, Feng FY, Esteva A, James ND, Attard G. External validation of a digital pathology-based multimodal artificial intelligence-derived prognostic model in patients with advanced prostate cancer starting long-term androgen deprivation therapy: a post-hoc ancillary biomarker study of four phase 3 randomised controlled trials of the STAMPEDE platform protocol. Lancet Digit Health. 2025 Jul;7(7):100885. doi: 10.1016/j.landig.2025.100885. Epub 2025 Jun 3.",
+          "pmid": "40467357",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Gilbert DC, Nankivell M, Rush H, Clarke NW, Mangar S, Al-Hasso A, Rosen S, Kockelbergh R, Sundaram SK, Dixit S, Laniado M, McPhail N, Shaheen A, Brown S, Gale J, Deighan J, Marshall J, Duong T, Macnair A, Griffiths A, Amos CL, Sydes MR, James ND, Parmar MKB, Langley RE. A Repurposing Programme Evaluating Transdermal Oestradiol Patches for the Treatment of Prostate Cancer Within the PATCH and STAMPEDE Trials: Current Results and Adapting Trial Design. Clin Oncol (R Coll Radiol). 2024 Jan;36(1):e11-e19. doi: 10.1016/j.clon.2023.10.054. Epub 2023 Nov 8.",
+          "pmid": "37973477",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Attard G, Murphy L, Clarke NW, Sachdeva A, Jones C, Hoyle A, Cross W, Jones RJ, Parker CC, Gillessen S, Cook A, Brawley C, Gilson C, Rush H, Abdel-Aty H, Amos CL, Murphy C, Chowdhury S, Malik Z, Russell JM, Parkar N, Pugh C, Diaz-Montana C, Pezaro C, Grant W, Saxby H, Pedley I, O'Sullivan JM, Birtle A, Gale J, Srihari N, Thomas C, Tanguay J, Wagstaff J, Das P, Gray E, Alzouebi M, Parikh O, Robinson A, Montazeri AH, Wylie J, Zarkar A, Cathomas R, Brown MD, Jain Y, Dearnaley DP, Mason MD, Gilbert D, Langley RE, Millman R, Matheson D, Sydes MR, Brown LC, Parmar MKB, James ND; STAMPEDE investigators. Abiraterone acetate plus prednisolone with or without enzalutamide for patients with metastatic prostate cancer starting androgen deprivation therapy: final results from two randomised phase 3 trials of the STAMPEDE platform protocol. Lancet Oncol. 2023 May;24(5):443-456. doi: 10.1016/S1470-2045(23)00148-1.",
+          "pmid": "37142371",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Grist E, Friedrich S, Brawley C, Mendes L, Parry M, Ali A, Haran A, Hoyle A, Gilson C, Lall S, Zakka L, Bautista C, Landless A, Nowakowska K, Wingate A, Wetterskog D, Hasan AMM, Akato NB, Richmond M, Ishaq S, Matthews N, Hamid AA, Sweeney CJ, Sydes MR, Berney DM, Lise S; STAMPEDE investigators; Parmar MKB, Clarke NW, James ND, Cremaschi P, Brown LC, Attard G. Accumulation of copy number alterations and clinical progression across advanced prostate cancer. Genome Med. 2022 Sep 5;14(1):102. doi: 10.1186/s13073-022-01080-4.",
+          "pmid": "36059000",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Parker CC, James ND, Brawley CD, Clarke NW, Ali A, Amos CL, Attard G, Chowdhury S, Cook A, Cross W, Dearnaley DP, Douis H, Gilbert DC, Gilson C, Gillessen S, Hoyle A, Jones RJ, Langley RE, Malik ZI, Mason MD, Matheson D, Millman R, Rauchenberger M, Rush H, Russell JM, Sweeney H, Bahl A, Birtle A, Capaldi L, Din O, Ford D, Gale J, Henry A, Hoskin P, Kagzi M, Lydon A, O'Sullivan JM, Paisey SA, Parikh O, Pudney D, Ramani V, Robson P, Srihari NN, Tanguay J, Parmar MKB, Sydes MR; STAMPEDE Trial Collaborative Group. Radiotherapy to the prostate for men with metastatic prostate cancer in the UK and Switzerland: Long-term results from the STAMPEDE randomised controlled trial. PLoS Med. 2022 Jun 7;19(6):e1003998. doi: 10.1371/journal.pmed.1003998. eCollection 2022 Jun.",
+          "pmid": "35671327",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Attard G, Murphy L, Clarke NW, Cross W, Jones RJ, Parker CC, Gillessen S, Cook A, Brawley C, Amos CL, Atako N, Pugh C, Buckner M, Chowdhury S, Malik Z, Russell JM, Gilson C, Rush H, Bowen J, Lydon A, Pedley I, O'Sullivan JM, Birtle A, Gale J, Srihari N, Thomas C, Tanguay J, Wagstaff J, Das P, Gray E, Alzoueb M, Parikh O, Robinson A, Syndikus I, Wylie J, Zarkar A, Thalmann G, de Bono JS, Dearnaley DP, Mason MD, Gilbert D, Langley RE, Millman R, Matheson D, Sydes MR, Brown LC, Parmar MKB, James ND; Systemic Therapy in Advancing or Metastatic Prostate cancer: Evaluation of Drug Efficacy (STAMPEDE) investigators. Abiraterone acetate and prednisolone with or without enzalutamide for high-risk non-metastatic prostate cancer: a meta-analysis of primary results from two randomised controlled phase 3 trials of the STAMPEDE platform protocol. Lancet. 2022 Jan 29;399(10323):447-460. doi: 10.1016/S0140-6736(21)02437-5. Epub 2021 Dec 23.",
+          "pmid": "34953525",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Rush HL, Murphy L, Morgans AK, Clarke NW, Cook AD, Attard G, Macnair A, Dearnaley DP, Parker CC, Russell JM, Gillessen S, Matheson D, Millman R, Brawley CD, Pugh C, Tanguay JS, Jones RJ, Wagstaff J, Rudman S, O'Sullivan JM, Gale J, Birtle A, Protheroe A, Gray E, Perna C, Tolan S, McPhail N, Malik ZI, Vengalil S, Fackrell D, Hoskin P, Sydes MR, Chowdhury S, Gilbert DC, Parmar MKB, James ND, Langley RE. Quality of Life in Men With Prostate Cancer Randomly Allocated to Receive Docetaxel or Abiraterone in the STAMPEDE Trial. J Clin Oncol. 2022 Mar 10;40(8):825-836. doi: 10.1200/JCO.21.00728. Epub 2021 Nov 10.",
+          "pmid": "34757812",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Ali A, Hoyle A, Haran AM, Brawley CD, Cook A, Amos C, Calvert J, Douis H, Mason MD, Dearnaley D, Attard G, Gillessen S, Parmar MKB, Parker CC, Sydes MR, James ND, Clarke NW. Association of Bone Metastatic Burden With Survival Benefit From Prostate Radiotherapy in Patients With Newly Diagnosed Metastatic Prostate Cancer: A Secondary Analysis of a Randomized Clinical Trial. JAMA Oncol. 2021 Apr 1;7(4):555-563. doi: 10.1001/jamaoncol.2020.7857.",
+          "pmid": "33599706",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Jakob T, Tesfamariam YM, Macherey S, Kuhr K, Adams A, Monsef I, Heidenreich A, Skoetz N. Bisphosphonates or RANK-ligand-inhibitors for men with prostate cancer and bone metastases: a network meta-analysis. Cochrane Database Syst Rev. 2020 Dec 3;12(12):CD013020. doi: 10.1002/14651858.CD013020.pub2.",
+          "pmid": "33270906",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Roy S, Malone S, Grimes S, Morgan SC. Impact of Concomitant Medications on Biochemical Outcome in Localised Prostate Cancer Treated with Radiotherapy and Androgen Deprivation Therapy. Clin Oncol (R Coll Radiol). 2021 Mar;33(3):181-190. doi: 10.1016/j.clon.2020.09.005. Epub 2020 Sep 29.",
+          "pmid": "32994091",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "James ND, Sydes MR, Clarke NW, Mason MD, Dearnaley DP, Spears MR, Ritchie AW, Parker CC, Russell JM, Attard G, de Bono J, Cross W, Jones RJ, Thalmann G, Amos C, Matheson D, Millman R, Alzouebi M, Beesley S, Birtle AJ, Brock S, Cathomas R, Chakraborti P, Chowdhury S, Cook A, Elliott T, Gale J, Gibbs S, Graham JD, Hetherington J, Hughes R, Laing R, McKinna F, McLaren DB, O'Sullivan JM, Parikh O, Peedell C, Protheroe A, Robinson AJ, Srihari N, Srinivasan R, Staffurth J, Sundar S, Tolan S, Tsang D, Wagstaff J, Parmar MK; STAMPEDE investigators. Addition of docetaxel, zoledronic acid, or both to first-line long-term hormone therapy in prostate cancer (STAMPEDE): survival results from an adaptive, multiarm, multistage, platform randomised controlled trial. Lancet. 2016 Mar 19;387(10024):1163-77. doi: 10.1016/S0140-6736(15)01037-5. Epub 2015 Dec 21.",
+          "pmid": "26719232",
+          "type": "DERIVED"
+        },
+        {
+          "citation": "Huang X, Chau CH, Figg WD. Challenges to improved therapeutics for metastatic castrate resistant prostate cancer: from recent successes and failures. J Hematol Oncol. 2012 Jul 2;5:35. doi: 10.1186/1756-8722-5-35.",
+          "pmid": "22747660",
+          "type": "DERIVED"
+        }
+      ],
+      "seeAlsoLinks": [
+        {
+          "label": "Trial home page",
+          "url": "http://www.stampedetrial.org/"
+        }
+      ]
+    },
+    "sponsorCollaboratorsModule": {
+      "leadSponsor": {
+        "class": "OTHER_GOV",
+        "name": "Medical Research Council"
+      },
+      "responsibleParty": {
+        "investigatorAffiliation": "Medical Research Council",
+        "investigatorFullName": "Medical Research Council",
+        "investigatorTitle": "Medical Research Council",
+        "type": "SPONSOR_INVESTIGATOR"
+      }
+    },
+    "statusModule": {
+      "completionDateStruct": {
+        "date": "2030-12",
+        "type": "ESTIMATED"
+      },
+      "expandedAccessInfo": {
+        "hasExpandedAccess": false
+      },
+      "lastUpdatePostDateStruct": {
+        "date": "2023-04-18",
+        "type": "ACTUAL"
+      },
+      "lastUpdateSubmitDate": "2023-04-17",
+      "overallStatus": "ACTIVE_NOT_RECRUITING",
+      "primaryCompletionDateStruct": {
+        "date": "2026-03",
+        "type": "ESTIMATED"
+      },
+      "startDateStruct": {
+        "date": "2005-07-08",
+        "type": "ACTUAL"
+      },
+      "statusVerifiedDate": "2023-04",
+      "studyFirstPostDateStruct": {
+        "date": "2005-12-22",
+        "type": "ESTIMATED"
+      },
+      "studyFirstSubmitDate": "2005-12-20",
+      "studyFirstSubmitQcDate": "2005-12-20"
+    }
+  }
+}

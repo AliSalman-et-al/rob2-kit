@@ -1,5 +1,4 @@
 # Private source corpus and provisional labels.
-reference/sources/
 reference/catalog/provisional-labels/
 
 # Generated evaluation run workspaces are local-only. Keep only benchmark
