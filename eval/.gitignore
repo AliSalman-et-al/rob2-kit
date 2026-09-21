@@ -1,6 +1,3 @@
-# Private source corpus and provisional labels.
-reference/catalog/provisional-labels/
-
 # Generated evaluation run workspaces are local-only. Keep only benchmark
 # attempt traces; materialized projects, ledgers, artifacts, and host state
 # stay ignored.
