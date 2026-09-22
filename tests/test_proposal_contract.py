@@ -226,9 +226,7 @@ def test_missing_group_value_unit_reaches_structured_repair(tmp_path: Path) -> N
     )
 
     assert repair["outcome"] == "repair"
-    assert any(
-        item["code"] == "reported_group_value_unit_required" for item in repair["repairs"]
-    )
+    assert any(item["code"] == "reported_group_value_unit_required" for item in repair["repairs"])
 
 
 def test_endpoint_definition_can_be_omitted_when_no_coherent_definition_is_selected(

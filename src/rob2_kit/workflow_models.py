@@ -1707,8 +1707,10 @@ class DomainAnswer(StrictModel):
             normalized.append(limitation)
             if isinstance(evidence, str):
                 normalized.append({"kind": "context", "evidence": evidence})
-            elif evidence and isinstance(evidence, list) and all(
-                isinstance(item, str) for item in evidence
+            elif (
+                evidence
+                and isinstance(evidence, list)
+                and all(isinstance(item, str) for item in evidence)
             ):
                 normalized.extend({"kind": "context", "evidence": item} for item in evidence)
             else:
