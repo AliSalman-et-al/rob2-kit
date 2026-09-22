@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from ..workflow_models import (
+    MISSING_GROUP_VALUE_UNIT,
     AssessableResult,
     AssessableResultDraft,
     CategoryProfileResult,
@@ -176,6 +177,18 @@ def _proposal_shape_repairs(
             reported_path = ""
             reported_ids = []
         if reported_path:
+            for value_index, value in enumerate(result.reported.group_values):
+                if value.unit == MISSING_GROUP_VALUE_UNIT:
+                    result_repairs.append(
+                        {
+                            "path": f"{reported_path}/{value_index}/unit",
+                            "code": "reported_group_value_unit_required",
+                            "detail": (
+                                "Copy the source-reported unit for this group value. Do not "
+                                "infer or invent a unit from the statistic or value."
+                            ),
+                        }
+                    )
             result_repairs.extend(
                 _duplicate_values(
                     reported_ids,

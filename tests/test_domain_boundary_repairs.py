@@ -126,6 +126,26 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{8,64}$"
 
 
+def test_nested_limitation_evidence_is_preserved_as_context() -> None:
+    parsed = DomainAnswer.model_validate(
+        {
+            "question_id": "sq:randomization:sequence",
+            "answer": "probably_no",
+            "bases": [
+                {
+                    "kind": "limitation",
+                    "unresolved_premise": "The report does not resolve the sequence method.",
+                    "stopping_rationale": "The bounded read did not establish the method.",
+                    "evidence": "eh_0123456789abcdef",
+                }
+            ],
+        }
+    )
+
+    assert [basis.kind for basis in parsed.bases] == ["limitation", "context"]
+    assert parsed.bases[1].evidence == "eh_0123456789abcdef"
+
+
 def test_answer_scope_repairs_are_atomic_and_valid_replay_is_idempotent(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     for prior_domain in ("domain:randomization", "domain:deviations"):

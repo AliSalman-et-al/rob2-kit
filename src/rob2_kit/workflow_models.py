@@ -825,6 +825,9 @@ class ResultClarity(StrictModel):
     eligible_result_choice: Literal["specified", "unclear", "unavailable"]
 
 
+MISSING_GROUP_VALUE_UNIT = "__rob2_missing_group_unit__"
+
+
 class GroupResultValue(StrictModel):
     group_id: NonBlankText = Field(
         description=(
@@ -1677,6 +1680,40 @@ class DomainAnswer(StrictModel):
             "use an empty array when none are identified."
         ),
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_limitation_context(cls, value: Any) -> Any:
+        """Move a common nested limitation citation into a non-definitive context basis.
+
+        A limitation records what the Sources did not establish. Models sometimes place the
+        inspected handle inside that object instead of adding a separate ``context`` basis.
+        Preserve the limitation and make the citation's weaker role explicit before strict
+        validation; definitive answers still require a direct, indirect, or contradictory basis.
+        """
+
+        if not isinstance(value, dict) or not isinstance(value.get("bases"), list):
+            return value
+        normalized: list[Any] = []
+        for raw_basis in value["bases"]:
+            if not isinstance(raw_basis, dict) or raw_basis.get("kind") != "limitation":
+                normalized.append(raw_basis)
+                continue
+            evidence = raw_basis.get("evidence")
+            if evidence is None:
+                normalized.append(raw_basis)
+                continue
+            limitation = {key: item for key, item in raw_basis.items() if key != "evidence"}
+            normalized.append(limitation)
+            if isinstance(evidence, str):
+                normalized.append({"kind": "context", "evidence": evidence})
+            elif evidence and isinstance(evidence, list) and all(
+                isinstance(item, str) for item in evidence
+            ):
+                normalized.extend({"kind": "context", "evidence": item} for item in evidence)
+            else:
+                normalized.append(raw_basis)
+        return {**value, "bases": normalized}
 
     @field_validator("justification")
     @classmethod

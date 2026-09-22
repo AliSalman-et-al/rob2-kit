@@ -80,6 +80,7 @@ from rob2_kit.application.trials import review_trial as _review_trial
 from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
+    MISSING_GROUP_VALUE_UNIT,
     DomainDraft,
     DomainId,
     DomainReasoningAnswer,
@@ -126,6 +127,42 @@ def _reject_scalar_coercion(value: Any) -> Any:
 
 StrictJsonInt = Annotated[StrictInt, BeforeValidator(_reject_scalar_coercion)]
 StrictJsonBool = Annotated[StrictBool, BeforeValidator(_reject_scalar_coercion)]
+
+
+def _mark_missing_group_value_units(value: Any) -> Any:
+    """Let omitted group units reach the application repair layer.
+
+    The public schema still documents ``unit`` as required. A model can nevertheless omit it
+    in a JSON call; marking that omission avoids a transport-level Pydantic failure while the
+    application returns a typed repair and refuses to persist the incomplete Result.
+    """
+
+    if not isinstance(value, dict) or value.get("kind") != "assessable":
+        return value
+    reported = value.get("reported")
+    if not isinstance(reported, dict) or reported.get("form") not in {
+        "comparative_effect",
+        "group_bound_values",
+    }:
+        return value
+    group_values = reported.get("group_values")
+    if not isinstance(group_values, list):
+        return value
+    normalized = [
+        {
+            **group,
+            "unit": MISSING_GROUP_VALUE_UNIT,
+        }
+        if isinstance(group, dict) and ("unit" not in group or group.get("unit") is None)
+        else group
+        for group in group_values
+    ]
+    return {**value, "reported": {**reported, "group_values": normalized}}
+
+
+McpResultChoiceDraft = Annotated[
+    ResultChoiceDraft, BeforeValidator(_mark_missing_group_value_units)
+]
 SearchLimit = Annotated[StrictJsonInt, Field(ge=1, le=100)]
 SourceNavigationLimit = Annotated[StrictJsonInt, Field(ge=1, le=12)]
 Inline = StrictJsonBool
@@ -2373,7 +2410,7 @@ def select_visual_evidence(
 )
 def validate_proposal(
     results: Annotated[
-        list[ResultChoiceDraft],
+        list[McpResultChoiceDraft],
         Field(min_length=1, description="The exact Result cards for this Proposal save."),
     ],
     assessments: Annotated[

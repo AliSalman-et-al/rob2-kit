@@ -207,6 +207,30 @@ def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Pat
     assert _state_proposal(workspace)["results"][0]["reported"]["group_values"] == []
 
 
+def test_missing_group_value_unit_reaches_structured_repair(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["reported"]["group_values"][0].pop("unit")
+    proposal = _proposal_args(workspace, [result])
+
+    repair = _call(
+        workspace,
+        "validate_proposal",
+        {
+            "results": proposal["results"],
+            "assessments": _proposal_assessments(proposal["results"]),
+            "expected_revision": proposal["expected_revision"],
+        },
+        _raw=True,
+    )
+
+    assert repair["outcome"] == "repair"
+    assert any(
+        item["code"] == "reported_group_value_unit_required" for item in repair["repairs"]
+    )
+
+
 def test_endpoint_definition_can_be_omitted_when_no_coherent_definition_is_selected(
     tmp_path: Path,
 ) -> None:
