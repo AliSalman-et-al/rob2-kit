@@ -35,7 +35,7 @@ using the published schema, and retry the corrected call. When the result has
 Raise the output limit only when the host explicitly reports truncation. Do
 not treat a missing structured receipt as a no-hit or absence result.
 
-For Codex host receipt inspection and separate-page cursor storage, read
+If the host exposes MCP tools through `functions.exec`, read
 [Codex receipt snippets](references/codex.md). Use the common
 [Receipt and continuation recovery](references/evidence.md#receipt-and-continuation-recovery)
 procedure for every host. Keep every page host-visible, pass each cursor unchanged,
@@ -136,10 +136,19 @@ contains one card for every captured Trial. While Proposal Review is pending,
 submit only complete replacement cards for corrected Trials; the server preserves
 the rest.
 
+Construct the complete request before calling `validate_proposal`. Never call it
+with `{}`, placeholder strings, partial nested objects, or guessed enum values to
+discover the schema. Open and follow the complete assessable or unavailable
+example in [Specify the Result](references/result.md), replace every fictional
+value, and then make one validation call. In particular, `applicability`,
+`target`, and `reported` are typed objects rather than prose shortcuts.
+
 For an assessable Result, the server reconstructs the captured outcome and
 closed effect of interest, then derives clarity, retained Evidence, and bindings.
 Do not send those derived fields or put Evidence objects inside `reported`.
-Preserve exact Source labels and quantities, or values equivalent after normalization.
+Copy `reported.endpoint.name`, `reported.precision`, and other Source-owned
+quantities from the quantitative passage. Include `reported.endpoint.definition`
+only when one selected passage explicitly joins that name and definition.
 For `analysis_population`, a supported summary may combine passages when it preserves
 the reported inclusion criteria and exclusions.
 
@@ -156,7 +165,7 @@ Distinguish baseline eligibility from exclusions or missing observations in the
 reported analysis. Identify material conflicting evidence and unresolved facts;
 do not infer unavailable facts. The server validates structure, Evidence
 references and workflow requirements, not scientific correctness. Save using the
-returned `reasoning_id`.
+returned revision; the server keeps the validated draft and its audit identity.
 
 ### 4. Complete Proposal Review
 
@@ -168,18 +177,20 @@ After explicit approval in conversation, call `request_proposal_approval` with
 the empty arguments object `{}`. Its
 client elicitation binds approval to that Review. Then call `get_status`.
 For each approved assessable Trial, recover its approved Result and current
-source-bound working context when the Trial becomes active. Continue any
-unfinished [bounded text reading](references/read-main-report.md); repeat the
-post-approval orientation only when no valid checkpoint is available. Finish
-when reading status is `complete` or `budget_limited`, before answering its
-first Domain. Researcher messages after approval do not
-set or revise signalling answers.
+source-bound working context when the Trial becomes active. Researcher messages
+after approval do not set or revise signalling answers.
 
 ### 5. Assess a Domain
 
 Call `get_domain_context` for the active Trial and Domain in `head.next_action`,
 or pass an explicit `domain_id` to inspect or assess another Domain before
-committing the next one. Read `data.pack.version` and treat every returned
+committing the next one. If `reading_recovery.status` is `required`, read its
+issued windows and then fetch the remaining windows. Confirm `complete` or
+`budget_limited` before drafting the first Domain. Repeat this orientation only
+when no valid checkpoint is available. Follow
+[Read the main report](references/read-main-report.md) for the bounded pass.
+
+Read `data.pack.version` and treat every returned
 question field, including wording, options, activation, and official and
 operational guidance, as authoritative. Domain receipts remain usable while you
 investigate or commit another Domain in the same Trial, provided the approved
@@ -216,7 +227,8 @@ invalid or stale, structured content is missing, or the host reports
 truncation. Keep each page host-visible and reconstruct the complete question,
 comparison, Evidence, and recovery fields before deciding. If the server
 returns a header or item oversized condition, retry the same explicit scope
-with the larger `required_page_size`; an unrecoverable condition requires
+with the returned `max_response_bytes`; otherwise omit that argument and let
+the server paginate automatically. An unrecoverable condition requires
 review without dropping a field. `read_pages` is bounded by the complete
 serialized UTF-8 response, and an oversized physical line is returned through
 lossless character fragments. A fragment has no `passage_ref` or Evidence
@@ -294,7 +306,7 @@ server ignores it. Use allowed card answer values and supported bases for every
 submitted answer. Submit the complete active set in one
 `validate_domain_assessment` call. The server resolves activation from the draft
 and commits active answers after `save_domain_judgment` consumes the returned
-`reasoning_id`.
+revision.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
@@ -310,12 +322,14 @@ step is `validate_domain_assessment` after `head.next_action`, `reading_recovery
 and any required Evidence reading are complete; follow another continuation
 first when it is present.
 
-For D3.1, run the **availability audit** before saving: Yes/Probably Yes needs
-actual outcome-availability evidence; analysis membership, planned or scheduled
-follow-up, treatment continuation or discontinuation, and a generic censoring
-rule alone do not suffice. For mortality, recovery or discharge alone does not
-establish later vital status. Use [Missing outcome data](references/missing.md)
-to reconcile outcome-specific counts, follow-up, and censoring.
+For D3.1, run the **availability audit** before saving. Yes/Probably Yes needs
+evidence of all or nearly-all availability; No/Probably No needs evidence of
+materially incomplete availability. If the extent remains unknown, use No
+information. Analysis membership, planned follow-up, treatment status, and a
+generic censoring rule alone establish neither direction. For mortality,
+recovery or discharge alone does not establish later vital status. Use
+[Missing outcome data](references/missing.md) to reconcile outcome-specific
+counts, follow-up, and censoring.
 
 Only question 3.1 may carry `missing_data` rows. Keep randomized, observed,
 analyzed, imputed, and excluded counts distinct. The server reuses answer
@@ -324,8 +338,9 @@ For an optional count preview before saving D3, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
 Commit the exact draft stored by `validate_domain_assessment`. Supply its
-returned `reasoning_id` and revision to `save_domain_judgment`. To change the
-draft, call `validate_domain_assessment` again with the complete revised draft.
+returned revision to `save_domain_judgment`; do not copy its internal audit
+identity. To change the draft, call `validate_domain_assessment` again with the
+complete revised draft.
 
 Apply every reported repair and retain other drafted answers. Add missing
 questions to the existing answer set. Resubmit the complete resulting active
@@ -367,9 +382,6 @@ uncertain. Use the question card's permitted uncertainty answer, record the
 unresolved premise and limitation in the Domain answer, and continue the
 supported workflow. Use a terminal request only when the supported workflow
 cannot continue.
-
-Use the current `trial_id` and `expected_revision` from `head.next_action`.
-With all five checkpoints, omit `request` and review the Trial normally.
 
 After a successful review, close with the exact returned review identity:
 

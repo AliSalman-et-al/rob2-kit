@@ -99,6 +99,9 @@ def _ranges(draft: WorkingCheckpointDraft) -> tuple[WorkingSourceRange, ...]:
             values.extend(item.sources)
     for item in draft.terminology:
         values.extend(item.sources)
+    for premise in draft.premise_records:
+        for item in (*premise.observations, *premise.counterevidence):
+            values.extend(item.sources)
     return tuple(values)
 
 

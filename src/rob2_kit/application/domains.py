@@ -587,8 +587,13 @@ _DOMAIN_GUIDANCE = (
     "A relationship kind describes the use of Evidence; it adds no scientific fact.",
     "When inference, conflict, or uncertainty connects Evidence to an answer, include a concise "
     "question-specific justification. State what the passages establish, what remains unresolved, "
-    "and why the selected option follows. The server checks structure and Evidence identity; "
-    "you judge whether the cited facts support the answer.",
+    "and why the selected option follows. Any support relationship is host-asserted: the server "
+    "checks structure, ownership, and exact Evidence provenance but does not independently judge "
+    "semantic entailment.",
+    "Working premise records are source-grounded resumable notes. Reuse them only when the "
+    "working checkpoint is current for this exact approved Result and captured Source projection; "
+    "a stale checkpoint requires the stated recovery action and never carries a prior Domain "
+    "judgment into this assessment.",
     "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
     "a limitation or absence alone supports uncertainty, not a definitive answer.",
     "Evaluate activation against your draft answers. If validation reports missing active "
@@ -962,7 +967,9 @@ def _comparison_cards(
             "prompt": (
                 "Use the exact passages and server-known scope above. Classify only the remaining "
                 "scientific propositions; do not infer causation, follow-up availability, "
-                "informative censoring, or plan correspondence from Source role or wording alone."
+                "informative censoring, or plan correspondence from Source role or wording alone. "
+                "An empty passage group is unopened, not a no-hit; inspect materially relevant "
+                "unopened Sources before recording an information limitation."
             ),
         }
     ]
@@ -1266,6 +1273,7 @@ def _domain_context_basis_identity(
     trial_id: str,
     domain_id: str,
     preview_missing_data: list[dict[str, Any]] | None,
+    working_checkpoint: dict[str, Any] | None = None,
 ) -> str:
     batch = state.get("batch")
     current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
@@ -1277,6 +1285,11 @@ def _domain_context_basis_identity(
             "result_identity": _identity(_approved_result(state, trial_id)),
             "pack_identity": _pack_identity(),
             "checkpoint_identity": current.get("identity") if isinstance(current, dict) else None,
+            # A premise checkpoint is reusable only inside the exact Result and
+            # Source projection that produced it.  Include its full status in
+            # the context basis so a stale workspace cannot silently feed a
+            # new Domain view.
+            "working_checkpoint": working_checkpoint,
             "preview_identity": _identity(preview_missing_data or []),
         }
     )
@@ -1290,6 +1303,24 @@ def _pack_identity() -> str:
             "content_hash": SCIENTIFIC_PACK.content_hash,
         }
     )
+
+
+def _domain_premise_status(status: dict[str, Any]) -> dict[str, Any]:
+    """Project only the reusable, source-grounded fields into Domain context."""
+
+    result = {
+        key: status.get(key)
+        for key in ("status", "reason", "trial_id", "checkpoint_identity", "recovery")
+    }
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict):
+        result["checkpoint"] = {
+            key: checkpoint.get(key)
+            for key in ("identity", "result_identity", "source_scope", "premise_records")
+        }
+    else:
+        result["checkpoint"] = None
+    return result
 
 
 def _domain_identity(record: dict[str, Any]) -> str:
@@ -1376,6 +1407,72 @@ def _evidence_sufficiency(
     summary = {"claims": tuple(claims)}
     summary["identity"] = _identity(summary)
     return summary
+
+
+def _host_asserted_sufficiency(summary: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Annotate a model-facing receipt without changing canonical history.
+
+    Historical bundles and the standalone verifier intentionally retain the
+    compact, versioned evidence-sufficiency shape.  The attribution belongs to
+    the transport projection, where it prevents a structural receipt from
+    being mistaken for an independently judged scientific conclusion.
+    """
+
+    if not isinstance(summary, dict):
+        return summary
+    claims = summary.get("claims")
+    if not isinstance(claims, (list, tuple)):
+        return summary
+    return {
+        **summary,
+        "claims": tuple(
+            {
+                **claim,
+                "support_attribution": (
+                    "host_asserted"
+                    if isinstance(claim, dict)
+                    and (
+                        claim.get("evidence")
+                        or claim.get("search_receipts")
+                        or claim.get("unresolved_premises")
+                    )
+                    else "not_established"
+                ),
+            }
+            if isinstance(claim, dict)
+            else claim
+            for claim in claims
+        ),
+    }
+
+
+def _counterfactual_answer_branch(
+    domain_id: str,
+    answers: dict[str, str],
+    question_id: str,
+    replacement: str,
+) -> tuple[dict[str, str], tuple[str, ...], tuple[str, ...]]:
+    """Project a one-step alternative onto the branch it activates."""
+
+    alternative_answers = dict(answers)
+    alternative_answers[question_id] = replacement
+    domain_question_ids = {
+        question.id for question in SCIENTIFIC_PACK.questions if question.domain_id == domain_id
+    }
+    active = tuple(
+        item for item in active_questions(alternative_answers) if item in domain_question_ids
+    )
+    projected = {
+        question_id: alternative_answers[question_id]
+        for question_id in active
+        if question_id in alternative_answers
+    }
+    missing = tuple(question_id for question_id in active if question_id not in projected)
+    return projected, active, missing
+
+
+def _counterfactual_missing_reason(missing: tuple[str, ...]) -> str:
+    return f"missing active question IDs: [{_ids(list(missing))}]"
 
 
 def _overall_receipt(
@@ -1467,21 +1564,21 @@ def _overall_receipt(
                     "hypothetical_overall": None,
                 }
                 try:
-                    domain_evaluation = evaluate_domain(domain.id, alternative_answers)
-                    domain_question_ids = {
-                        question.id
-                        for question in SCIENTIFIC_PACK.questions
-                        if question.domain_id == domain.id
-                    }
-                    alternative_active = tuple(
-                        item
-                        for item in active_questions(alternative_answers)
-                        if item in domain_question_ids
+                    (
+                        projected_answers,
+                        _alternative_active,
+                        missing_active,
+                    ) = _counterfactual_answer_branch(
+                        domain.id,
+                        alternative_answers,
+                        question_id,
+                        replacement,
                     )
-                    if alternative_active != tuple(record.get("active_questions", ())):
+                    if missing_active:
                         alternative["status"] = "requires_reassessment"
-                        alternative["reason"] = None
+                        alternative["reason"] = _counterfactual_missing_reason(missing_active)
                     else:
+                        domain_evaluation = evaluate_domain(domain.id, projected_answers)
                         hypothetical_judgments = dict(judgments)
                         hypothetical_judgments[domain.id] = domain_evaluation.judgment.value
                         alternative["status"] = "evaluated"
@@ -2200,11 +2297,13 @@ def validate_domain_assessment(
     delivery = _domain_context_delivery(root, parsed.trial_id, parsed.domain_id, None)
     if delivery is not None:
         preview_scope = delivery.get("preview_scope")
+        premise_status = working_checkpoint_status(root, state, parsed.trial_id)
         current_basis = _domain_context_basis_identity(
             state,
             parsed.trial_id,
             parsed.domain_id,
             preview_scope if isinstance(preview_scope, list) else None,
+            premise_status,
         )
         if delivery.get("basis_identity") != current_basis:
             return _result(
@@ -2241,7 +2340,7 @@ def validate_domain_assessment(
                         "trial_id": parsed.trial_id,
                         "domain_id": parsed.domain_id,
                         "cursor": next_cursor,
-                        "page_size": delivery["page_size"],
+                        "max_response_bytes": delivery["page_size"],
                     },
                 },
             },
@@ -2347,18 +2446,15 @@ def _reasoning_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[st
         "trial_id": record["trial_id"],
         "domain_id": record["domain_id"],
         "expected_revision": record["save_revision"],
-        "reasoning_id": record["identity"],
     }
     continuation = {
         "operation": "save_domain_judgment",
         "authority": "host",
         **next_action,
-        "caller_inputs": ["reasoning_id"],
     }
     return _result(
         "success",
         state,
-        reasoning_id=record["identity"],
         active_question_ids=record["active_question_ids"],
         validation_scope=record["validation_scope"],
         repairs=[],
@@ -2447,6 +2543,7 @@ def get_domain_context(
         None,
     )
     existing = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}", {})
+    premise_status = working_checkpoint_status(root, state, trial_id)
     checkpoint_identity = existing.get("identity") if isinstance(existing, dict) else None
     if not isinstance(checkpoint_identity, str):
         checkpoint_identity = None
@@ -3029,7 +3126,8 @@ def get_domain_context(
         "result": result_projection(result),
         "evidence": list(catalog.values()),
         "answers": answer_rows,
-        "evidence_sufficiency": (
+        "working_checkpoint": _domain_premise_status(premise_status),
+        "evidence_sufficiency": _host_asserted_sufficiency(
             existing.get("evidence_sufficiency") if isinstance(existing, dict) else None
         ),
         "current_checkpoint": checkpoint_identity,
@@ -3149,6 +3247,6 @@ def get_domain_context(
     }
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(
-        state, trial_id, domain_id, preview_missing_data
+        state, trial_id, domain_id, preview_missing_data, premise_status
     )
     return projected

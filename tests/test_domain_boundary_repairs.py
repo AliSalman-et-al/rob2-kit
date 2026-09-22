@@ -28,7 +28,7 @@ from rob2_kit.application.domains import reconcile_missing_data
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.packs import SCIENTIFIC_PACK
-from rob2_kit.workflow_models import DomainAnswer
+from rob2_kit.workflow_models import DirectEvidenceUse, DomainAnswer
 
 
 def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -108,7 +108,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     )
     assert set(direct["properties"]) == {"kind", "evidence"}
     absence = next(item for item in bases if item["properties"]["kind"].get("const") == "absence")
-    assert absence["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{16}$"
+    assert absence["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{8,64}$"
     limitation = next(
         item for item in bases if item["properties"]["kind"].get("const") == "limitation"
     )
@@ -120,10 +120,32 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     }
     receipt_schema = limitation["properties"]["search_receipt"]
     receipt_options = receipt_schema.get("anyOf", [receipt_schema])
-    assert any(option.get("pattern") == r"^sr_[0-9a-f]{16}$" for option in receipt_options)
+    assert any(option.get("pattern") == r"^sr_[0-9a-f]{8,64}$" for option in receipt_options)
     assert "search_receipt" not in limitation.get("required", [])
     missing_row = answer["properties"]["missing_data"]["anyOf"][0]["items"]
-    assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{16}$"
+    assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{8,64}$"
+
+
+def test_nested_limitation_evidence_is_preserved_as_context() -> None:
+    parsed = DomainAnswer.model_validate(
+        {
+            "question_id": "sq:randomization:sequence",
+            "answer": "probably_no",
+            "bases": [
+                {
+                    "kind": "limitation",
+                    "unresolved_premise": "The report does not resolve the sequence method.",
+                    "stopping_rationale": "The bounded read did not establish the method.",
+                    "evidence": "eh_0123456789abcdef",
+                }
+            ],
+        }
+    )
+
+    assert [basis.kind for basis in parsed.bases] == ["limitation", "context"]
+    context_basis = parsed.bases[1]
+    assert isinstance(context_basis, DirectEvidenceUse)
+    assert context_basis.evidence == "eh_0123456789abcdef"
 
 
 def test_answer_scope_repairs_are_atomic_and_valid_replay_is_idempotent(tmp_path: Path) -> None:
@@ -1446,6 +1468,26 @@ def test_domain_limitation_without_receipt_is_accepted_after_direct_read(tmp_pat
     accepted = _call(workspace, "save_domain_judgment", draft)
     assert accepted["outcome"] == "success", accepted
     assert _stored_checkpoint(workspace)["search_accounts"] == []
+
+
+def test_copied_search_receipt_typo_gets_scoped_repair(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence=evidence)
+    draft["answers"][0]["bases"] = [
+        {
+            "kind": "limitation",
+            "unresolved_premise": "The sequence method remains unresolved.",
+            "stopping_rationale": "The bounded search did not resolve the premise.",
+            "search_receipt": "sr_" + "0" * 17,
+        }
+    ]
+
+    repaired = _call_raw(workspace, draft)
+
+    _assert_repairs(repaired)
+    repair = next(item for item in repaired["repairs"] if item["path"].endswith("search_receipt"))
+    assert repair["code"] == "invalid_search_receipt"
+    assert "exact search_receipt handle" in repair["detail"]
 
 
 def test_domain_rejects_truncated_search_as_absence_basis(tmp_path: Path) -> None:

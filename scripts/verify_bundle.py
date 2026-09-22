@@ -155,7 +155,27 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.8",
-    "content_hash": "sha256:d0d55f1381b9a2a19e670dca92bd34eec60dc09abe554012f09f7ce972e7f82c",
+    "content_hash": "sha256:bb4f07a86662df2decaad739013e1178a6767aceb9b63e6b438c7f98074d5d84",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_CURRENT_PACK_PRE_INFERENCE_GATES = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "content_hash": "sha256:aeeb5c8aa3fa8f9fd46f4429ae93a4b8ea3f6d89cc292640305f1aa702a449ea",
+    "official_source": {
+        "version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    },
+}
+_CURRENT_PACK_PRE_DEVIATIONS_GUIDANCE = {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "content_hash": "sha256:7cd97694107582be8fe6cd1091b8a851b631fed0e90aa5b453ffa8d4d9f50d17",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -1920,7 +1940,7 @@ def _valid_evidence_sufficiency(
                 not isinstance(value, str)
                 or value not in evidence
                 or not isinstance(evidence[value], dict)
-                or evidence[value].get("trial_id") != trial_id
+                or cast(dict[str, object], evidence[value]).get("trial_id") != trial_id
                 for value in claim["evidence"]
             )
             or any(
@@ -2176,7 +2196,7 @@ def _domain_question_sets(
             raise ValueError("answer is not allowed")
 
     def accepted(question_id: str, values: set[str]) -> bool:
-        return answers.get(question_id) in values
+        return question_id in active and answers.get(question_id) in values
 
     active = set(order[:3]) if domain_id == "domain:randomization" else set()
     if domain_id == "domain:deviations":
@@ -2225,9 +2245,7 @@ def _domain_question_sets(
     ]
 
 
-def _domain_evaluation(
-    domain_id: object, answers: dict[str, str]
-) -> tuple[str, str, list[str]]:
+def _domain_evaluation(domain_id: object, answers: dict[str, str]) -> tuple[str, str, list[str]]:
     """Replay the domain rule and its severity-driving questions independently."""
 
     if not isinstance(domain_id, str):
@@ -2297,10 +2315,9 @@ def _domain_evaluation(
                     "sq:deviations:balanced",
                 },
             )
-        if (
-            answers["sq:deviations:appropriate-analysis"] in no_or_unknown
-            and answers.get("sq:deviations:substantial-impact") in y | {"no_information"}
-        ):
+        if answers["sq:deviations:appropriate-analysis"] in no_or_unknown and answers.get(
+            "sq:deviations:substantial-impact"
+        ) in y | {"no_information"}:
             return result(
                 "high",
                 "deviations.analysis_substantial_impact",
@@ -2463,6 +2480,30 @@ def _overall_evaluation(judgments: dict[str, str]) -> tuple[str, str, list[str]]
             ],
         )
     return "low", "overall.all_low", []
+
+
+def _counterfactual_answer_branch(
+    domain_id: str,
+    answers: dict[str, str],
+    question_id: str,
+    replacement: str,
+) -> tuple[dict[str, str], list[str], list[str]]:
+    """Project a one-step alternative onto the branch it activates."""
+
+    alternative_answers = dict(answers)
+    alternative_answers[question_id] = replacement
+    active, _ = _domain_question_sets(domain_id, alternative_answers, require_complete=False)
+    projected = {
+        question_id: alternative_answers[question_id]
+        for question_id in active
+        if question_id in alternative_answers
+    }
+    missing = [question_id for question_id in active if question_id not in projected]
+    return projected, active, missing
+
+
+def _counterfactual_missing_reason(missing: list[str]) -> str:
+    return f"missing active question IDs: [{', '.join(missing)}]"
 
 
 def _valid_overall_receipt(
@@ -2629,28 +2670,31 @@ def _valid_overall_receipt(
         if question_id not in answers or answers[question_id] != from_answer:
             return False
         observed_keys.add(key)
-        alternative_answers = dict(answers)
-        alternative_answers[question_id] = to_answer
         try:
-            expected_active, _ = _domain_question_sets(
-                domain_id, alternative_answers, require_complete=False
+            projected_answers, _active, missing_active = _counterfactual_answer_branch(
+                domain_id,
+                answers,
+                question_id,
+                to_answer,
             )
         except (KeyError, TypeError, ValueError):
             return False
-        if expected_active != record.get("active_questions"):
-            if status != "requires_reassessment" or any(
-                alternative.get(key) is not None
-                for key in ("hypothetical_domain_judgment", "hypothetical_overall")
-            ):
-                return False
-            if "reason" in alternative and alternative["reason"] is not None and (
-                not isinstance(alternative["reason"], str) or not alternative["reason"].strip()
+        if missing_active:
+            if (
+                status != "requires_reassessment"
+                or any(
+                    alternative.get(key) is not None
+                    for key in ("hypothetical_domain_judgment", "hypothetical_overall")
+                )
+                or set(alternative)
+                != required | {"hypothetical_domain_judgment", "hypothetical_overall", "reason"}
+                or alternative.get("reason") != _counterfactual_missing_reason(missing_active)
             ):
                 return False
             has_pending = True
             continue
         try:
-            hypothetical_domain, _, _ = _domain_evaluation(domain_id, alternative_answers)
+            hypothetical_domain, _, _ = _domain_evaluation(domain_id, projected_answers)
             hypothetical_judgments = dict(judgments)
             hypothetical_judgments[domain_id] = hypothetical_domain
             hypothetical_overall, _, _ = _overall_evaluation(hypothetical_judgments)
@@ -3959,6 +4003,8 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _CURRENT_PACK_PRE_INFERENCE_GATES,
+                _CURRENT_PACK_PRE_DEVIATIONS_GUIDANCE,
                 _CURRENT_PACK_LEGACY_PROOF,
                 _CURRENT_PACK_PRIOR_GUIDANCE,
                 _CURRENT_PACK_PREVIOUS_PROOF,
@@ -4315,9 +4361,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     expected_domain_fields.add("result_identity")
                 if isinstance(record, dict):
                     expected_domain_fields.update(
-                        key
-                        for key in ("driver_questions", "evidence_sufficiency")
-                        if key in record
+                        key for key in ("driver_questions", "evidence_sufficiency") if key in record
                     )
                 if (
                     not isinstance(record, dict)
@@ -4431,9 +4475,10 @@ def verify(path: Path) -> tuple[bool, str]:
                     return False, "Domain active question set does not match answers"
                 if set(answer_map) != set(active_questions):
                     return False, "Domain answer coverage is incomplete"
-                account_by_identity = {
-                    item.get("identity"): item for item in accounts if isinstance(item, dict)
-                }
+                account_by_identity = cast(
+                    dict[str, dict[str, object]],
+                    {item.get("identity"): item for item in accounts if isinstance(item, dict)},
+                )
                 if len(account_by_identity) != len(accounts):
                     return False, "search accounts are malformed"
                 sources = {
@@ -4518,7 +4563,7 @@ def verify(path: Path) -> tuple[bool, str]:
                 if "evidence_sufficiency" in record and not _valid_evidence_sufficiency(
                     record["evidence_sufficiency"],
                     answers,
-                    account_by_identity,
+                    cast(dict[str, object], account_by_identity),
                     proposal_evidence,
                     record.get("trial_id"),
                     legacy_semantics=legacy_semantics,
@@ -4635,11 +4680,14 @@ def verify(path: Path) -> tuple[bool, str]:
                     account_ids = {
                         account.get("identity") for account in accounts if isinstance(account, dict)
                     }
-                    account_by_identity = {
-                        account.get("identity"): account
-                        for account in accounts
-                        if isinstance(account, dict)
-                    }
+                    account_by_identity = cast(
+                        dict[str, dict[str, object]],
+                        {
+                            account.get("identity"): account
+                            for account in accounts
+                            if isinstance(account, dict)
+                        },
+                    )
                     if len(account_by_identity) != len(accounts):
                         return False, "Domain history search accounts are malformed"
                     for answer in item["answers"]:
@@ -4766,7 +4814,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     if "evidence_sufficiency" in item and not _valid_evidence_sufficiency(
                         item["evidence_sufficiency"],
                         item["answers"],
-                        account_by_identity,
+                        cast(dict[str, object], account_by_identity),
                         proposal_evidence,
                         item.get("trial_id"),
                         legacy_semantics=legacy_semantics,
@@ -4837,10 +4885,7 @@ def verify(path: Path) -> tuple[bool, str]:
                         return False, "snapshot history overall inputs are invalid"
                     if item.get("overall") != expected_overall:
                         return False, "snapshot history overall is invalid"
-                    if (
-                        "overall_trace" in item
-                        and item["overall_trace"] != [expected_rule]
-                    ) or (
+                    if ("overall_trace" in item and item["overall_trace"] != [expected_rule]) or (
                         "overall_driver_domains" in item
                         and item["overall_driver_domains"] != expected_driver_domains
                     ):
@@ -4979,8 +5024,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     except (KeyError, TypeError, ValueError):
                         return False, f"overall inputs are invalid: {trial_id}"
                     if (
-                        "overall_trace" in snapshot
-                        and snapshot["overall_trace"] != [expected_rule]
+                        "overall_trace" in snapshot and snapshot["overall_trace"] != [expected_rule]
                     ) or (
                         "overall_driver_domains" in snapshot
                         and snapshot["overall_driver_domains"] != expected_driver_domains

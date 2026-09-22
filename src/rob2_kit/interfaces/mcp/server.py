@@ -80,6 +80,7 @@ from rob2_kit.application.trials import review_trial as _review_trial
 from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
+    MISSING_GROUP_VALUE_UNIT,
     DomainDraft,
     DomainId,
     DomainReasoningAnswer,
@@ -126,6 +127,42 @@ def _reject_scalar_coercion(value: Any) -> Any:
 
 StrictJsonInt = Annotated[StrictInt, BeforeValidator(_reject_scalar_coercion)]
 StrictJsonBool = Annotated[StrictBool, BeforeValidator(_reject_scalar_coercion)]
+
+
+def _mark_missing_group_value_units(value: Any) -> Any:
+    """Let omitted group units reach the application repair layer.
+
+    The public schema still documents ``unit`` as required. A model can nevertheless omit it
+    in a JSON call; marking that omission avoids a transport-level Pydantic failure while the
+    application returns a typed repair and refuses to persist the incomplete Result.
+    """
+
+    if not isinstance(value, dict) or value.get("kind") != "assessable":
+        return value
+    reported = value.get("reported")
+    if not isinstance(reported, dict) or reported.get("form") not in {
+        "comparative_effect",
+        "group_bound_values",
+    }:
+        return value
+    group_values = reported.get("group_values")
+    if not isinstance(group_values, list):
+        return value
+    normalized = [
+        {
+            **group,
+            "unit": MISSING_GROUP_VALUE_UNIT,
+        }
+        if isinstance(group, dict) and ("unit" not in group or group.get("unit") is None)
+        else group
+        for group in group_values
+    ]
+    return {**value, "reported": {**reported, "group_values": normalized}}
+
+
+McpResultChoiceDraft = Annotated[
+    ResultChoiceDraft, BeforeValidator(_mark_missing_group_value_units)
+]
 SearchLimit = Annotated[StrictJsonInt, Field(ge=1, le=100)]
 SourceNavigationLimit = Annotated[StrictJsonInt, Field(ge=1, le=12)]
 Inline = StrictJsonBool
@@ -170,6 +207,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "result",
             "reading_recovery",
             "answers",
+            "working_checkpoint",
             "current_checkpoint",
             "guidance",
             "response_framework",
@@ -301,19 +339,19 @@ def _domain_context_page_data(
 ) -> dict[str, Any]:
     result = dict(data)
     for name in _DOMAIN_CONTEXT_PAGE_SECTIONS:
-        result[name] = items if name == section else []
+        if name == section:
+            result[name] = items
+        elif result:
+            result[name] = []
     result["context_page"] = page
     return result
 
 
 def _domain_context_page_template(data: dict[str, Any], index: int) -> dict[str, Any]:
-    result = dict(data)
-    if index:
-        # Result, Evidence workspace, and recovery stay on every page. The
-        # long prose header is delivered on page zero and reconstructed once.
-        result["guidance"] = []
-        result["traps"] = []
-    return result
+    # Page zero is the versioned stable scientific header. Later pages are
+    # deltas so repeated Result and workspace material cannot crowd out new
+    # Evidence. Page metadata carries an exact operation to recover page zero.
+    return dict(data) if index == 0 else {}
 
 
 def _paginate_domain_context_transport(
@@ -413,7 +451,7 @@ def _paginate_domain_context_transport(
             "section": "complete",
             "item_start": 0,
             "item_count": 0,
-            "page_size": page_size,
+            "max_response_bytes": page_size,
             "cursor": cursor_placeholder,
             "next_cursor": cursor_placeholder,
         },
@@ -431,7 +469,7 @@ def _paginate_domain_context_transport(
             )
         raise ValueError(
             "domain_context_header_oversized: "
-            f"required_page_size={required_page_size};retry with a larger page_size"
+            f"required_page_size={required_page_size};retry with a larger max_response_bytes"
         )
     records: list[tuple[str, int, list[dict[str, Any]]]] = []
     for section, section_items in sections:
@@ -456,7 +494,7 @@ def _paginate_domain_context_transport(
                         "section": section,
                         "item_start": start,
                         "item_count": len(candidate),
-                        "page_size": page_size,
+                        "max_response_bytes": page_size,
                         "cursor": cursor_placeholder,
                         "next_cursor": cursor_placeholder,
                     },
@@ -511,7 +549,15 @@ def _paginate_domain_context_transport(
         if page_index + 1 < page_count
         else None
     )
+    recovery_cursor = _domain_context_cursor(
+        {
+            **cursor_payload,
+            "page_index": 0,
+        }
+    )
     page = {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": digest,
         "trial_id": trial_id,
         "domain_id": domain_id,
         "state_revision": state_revision,
@@ -520,9 +566,13 @@ def _paginate_domain_context_transport(
         "section": section,
         "item_start": item_start,
         "item_count": len(items),
-        "page_size": page_size,
+        "max_response_bytes": page_size,
         "cursor": current_cursor,
         "next_cursor": next_cursor,
+        "stable_recovery": {
+            "operation": "get_domain_context",
+            "cursor": recovery_cursor,
+        },
     }
     paged = {
         **value,
@@ -551,7 +601,7 @@ def _paginate_domain_context_transport(
             )
         raise ValueError(
             "domain_context_page_oversized: "
-            f"required_page_size={required_page_size};restart with a larger page_size"
+            f"required_page_size={required_page_size};restart with a larger max_response_bytes"
         )
     return paged
 
@@ -814,6 +864,8 @@ def _content(
             and isinstance(domain_context_basis_identity, str)
         ):
             if isinstance(page, dict):
+                delivery_trial_id = str(page["trial_id"])
+                delivery_domain_id = str(page["domain_id"])
                 page_cursor = page.get("next_cursor") or page.get("cursor")
                 if domain_context_view_id is None and isinstance(page_cursor, str):
                     decoded_page_cursor = _decode_domain_context_cursor(page_cursor)
@@ -822,11 +874,11 @@ def _content(
                     _record_domain_context_view(
                         _root(_workspace()),
                         domain_context_view_id,
-                        str(data["trial_id"]),
-                        str(data["domain_id"]),
+                        delivery_trial_id,
+                        delivery_domain_id,
                         int(page["state_revision"]),
                         domain_context_digest,
-                        int(page["page_size"]),
+                        int(page["max_response_bytes"]),
                         int(page["count"]),
                         int(page["index"]),
                         page.get("next_cursor")
@@ -841,11 +893,11 @@ def _content(
                     # diagnostics; its state is not authoritative for dcp2.
                     _record_domain_context_delivery(
                         _root(_workspace()),
-                        str(data["trial_id"]),
-                        str(data["domain_id"]),
+                        delivery_trial_id,
+                        delivery_domain_id,
                         int(page["state_revision"]),
                         domain_context_digest,
-                        int(page["page_size"]),
+                        int(page["max_response_bytes"]),
                         int(page["count"]),
                         int(page["index"]),
                         page.get("next_cursor")
@@ -859,11 +911,11 @@ def _content(
                 else:
                     _record_domain_context_delivery(
                         _root(_workspace()),
-                        str(data["trial_id"]),
-                        str(data["domain_id"]),
+                        delivery_trial_id,
+                        delivery_domain_id,
                         int(page["state_revision"]),
                         domain_context_digest,
-                        int(page["page_size"]),
+                        int(page["max_response_bytes"]),
                         int(page["count"]),
                         int(page["index"]),
                         page.get("next_cursor")
@@ -1236,7 +1288,10 @@ def get_status() -> ToolResult:
     title="Save working checkpoint",
     description=(
         "Replace the current Trial's small, source-linked working notes. Use notes for "
-        "observations, interpretations, terminology, unread ranges, open questions, and drafts. "
+        "observations, interpretations, terminology, unread ranges, open questions, drafts, and "
+        "material premise records. A premise record keeps its proposition, source-located "
+        "observations and counterevidence, host tentative inference, unresolved component, and "
+        "next discriminating action separate. "
         "Each note must cite exact source page and line ranges, or 0,0 for a whole-page visual "
         "locator. These notes are resumable working memory; they do not become Evidence, answer "
         "a question, change a Result, or commit a "
@@ -1269,8 +1324,10 @@ def save_working_checkpoint(
         "The inventory includes captured intake conditions and declared omissions for this Trial, "
         "so unsupported or unreadable dossier files remain visible. "
         "For source-scoped navigation, pass source_id and optionally cursor to receive bounded "
-        "literal heading candidates and leading page excerpts from the persisted text projection, "
-        "including page numbers with no extracted text. "
+        "pages from the complete deterministic index of literal heading candidates and leading "
+        "page excerpts from the persisted text projection, including page numbers with no "
+        "extracted text. Follow next_cursor until terminal is true; totals describe the complete "
+        "index, not just this response page. "
         "Navigation is a routing aid, not Evidence; read the cited pages before relying on them."
     ),
     annotations=_READ_ONLY,
@@ -2283,7 +2340,9 @@ def render_page(
         "Record visual Evidence from a rendered page. Transcription must be one exact, "
         "self-contained account containing every applicable title, axis, series, label, value, "
         "unit, uncertainty, denominator, and footnote. Select only with the delivery_receipt "
-        "returned alongside an ImageContent block by render_page."
+        "returned alongside an ImageContent block by render_page. This tool accepts only "
+        "trial_id, source_id, delivery_receipt, transcription, and region; attach the returned "
+        "Evidence later through an answer basis."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("select_visual_evidence"),
@@ -2341,15 +2400,17 @@ def select_visual_evidence(
         "and chosen time point or window. Distinguish baseline eligibility from exclusions or "
         "missing observations in the reported analysis. Identify material conflicting evidence "
         "and unresolved facts; do not infer unavailable facts. The server validates structure, "
-        "Evidence references and workflow requirements, not scientific correctness. Save using "
-        "the returned reasoning_id."
+        "Evidence references and workflow requirements, not scientific correctness. Construct "
+        "the complete typed request before calling: placeholders, partial nested objects, and "
+        "guessed enum values are invalid. Save using the returned revision; the server retains "
+        "the validated draft."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("validate_proposal"),
 )
 def validate_proposal(
     results: Annotated[
-        list[ResultChoiceDraft],
+        list[McpResultChoiceDraft],
         Field(min_length=1, description="The exact Result cards for this Proposal save."),
     ],
     assessments: Annotated[
@@ -2375,10 +2436,10 @@ def validate_proposal(
     name="save_proposal",
     title="Save Result proposal",
     description=(
-        "Commit the exact Result cards stored by validate_proposal. Supply its reasoning_id and "
-        "returned revision; do not resend Result cards. To change the draft, repeat "
-        "validate_proposal with complete replacement cards and matching assessments, then pass "
-        "its reasoning_id and revision here."
+        "Commit the exact Result cards stored by validate_proposal using its returned revision; "
+        "do not resend Result cards or copy an internal receipt identity. To change the draft, "
+        "repeat validate_proposal with complete replacement cards and matching assessments, "
+        "then pass its returned revision here."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_proposal"),
@@ -2388,15 +2449,22 @@ def save_proposal(
         ExpectedRevision,
         Field(description="Revision returned by validate_proposal."),
     ],
-    reasoning_id: Annotated[
-        Identity,
-        Field(description="Exact reasoning_id returned by validate_proposal."),
-    ],
 ) -> ToolResult:
     root = _root(_workspace())
     state = _state(root)
     records = state.get("reasoning_records")
-    record = records.get(reasoning_id) if isinstance(records, dict) else None
+    candidates = (
+        [
+            item
+            for item in records.values()
+            if isinstance(item, dict)
+            and item.get("kind") == "proposal_reasoning"
+            and item.get("save_revision") == expected_revision
+        ]
+        if isinstance(records, dict)
+        else []
+    )
+    record = candidates[0] if len(candidates) == 1 else None
     if not isinstance(record, dict) or record.get("kind") != "proposal_reasoning":
         return _content(
             "save_proposal",
@@ -2493,8 +2561,8 @@ class ProposalApprovalDecision(StrictModel):
         "This tool has no approval arguments: only a directly accepted elicitation with "
         "approved=true commits it. "
         "For corrections, inspect Sources, submit complete replacement Result cards and matching "
-        "assessments to validate_proposal, then pass its reasoning_id and revision to "
-        "save_proposal before presenting the fresh Review."
+        "assessments to validate_proposal, then pass its returned revision to save_proposal "
+        "before presenting the fresh Review."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("request_proposal_approval"),
@@ -2735,22 +2803,24 @@ def get_domain_context(
             description=(
                 "Opaque context_page.next_cursor from the immediately preceding page. It is "
                 "bound to the same Trial, Domain, approved Result, pack, current Domain "
-                "checkpoint, preview, and page_size. Searches and unrelated Domain commits do "
+                "checkpoint, preview, and max_response_bytes. Searches and unrelated Domain "
+                "commits do "
                 "not change this frozen page sequence."
             ),
         ),
     ] = None,
-    page_size: Annotated[
+    max_response_bytes: Annotated[
         StrictJsonInt | None,
         Field(
             default=None,
             ge=_DOMAIN_CONTEXT_MIN_PAGE_BYTES,
             le=_DOMAIN_CONTEXT_MAX_PAGE_BYTES,
             description=(
-                "Optional full structured transport byte budget override for bounded "
-                "pages. The server auto-pages receipts above 32768 bytes; subsequent calls "
-                "follow the returned cursor."
+                "Maximum serialized response size in bytes. Omit for automatic pagination. "
+                "Default: 32768. Valid range: 4096–131072. Example: 65536. Set this only "
+                "when an oversized-page condition returns the required byte count."
             ),
+            json_schema_extra={"examples": [65_536]},
         ),
     ] = None,
 ) -> ToolResult:
@@ -2812,7 +2882,7 @@ def get_domain_context(
             include_candidates,
         ),
         domain_cursor=cursor,
-        domain_page_size=page_size,
+        domain_page_size=max_response_bytes,
         domain_preview_missing_data=preview_rows,
     )
 
@@ -2827,8 +2897,8 @@ def get_domain_context(
         "for any material unresolved fact, or record a bounded information limit. Identify "
         "material counterevidence and unresolved facts without treating uncertainty as a finding. "
         "The server validates structure, references, activation and workflow requirements, not "
-        "scientific correctness. Save using the "
-        "returned reasoning_id."
+        "scientific correctness. Save using the returned revision; the server retains the "
+        "validated draft."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("validate_domain_assessment"),
@@ -2854,31 +2924,14 @@ def validate_domain_assessment(
                 [
                     {
                         "question_id": "sq:randomization:sequence",
-                        "answer": "probably_yes",
-                        "bases": [
-                            {"kind": "context", "evidence": "eh_0123456789abcdef"},
-                            {
-                                "kind": "limitation",
-                                "unresolved_premise": "The sequence generator is not reported.",
-                                "stopping_rationale": (
-                                    "Relevant captured Sources were reviewed, but the premise "
-                                    "remains unresolved."
-                                ),
-                                "search_receipt": "sr_0123456789abcdef",
-                            },
-                        ],
+                        "answer": "yes",
+                        "bases": [{"kind": "direct_support", "evidence": "eh_0123456789abcdef"}],
                         "justification": (
                             "The inspected passage states that a computer generated random "
-                            "allocations. The report does not identify who generated the "
-                            "sequence."
+                            "allocation sequence."
                         ),
-                        "unknowns": ["The report does not identify the sequence generator."],
-                        "counterevidence": [
-                            {
-                                "basis_index": 1,
-                                "implication": "The unresolved generator limits confidence.",
-                            }
-                        ],
+                        "unknowns": [],
+                        "counterevidence": [],
                     }
                 ]
             ],
@@ -2917,9 +2970,10 @@ def validate_domain_assessment(
     name="save_domain_judgment",
     title="Save Domain judgment",
     description=(
-        "Commit the exact Domain draft stored by validate_domain_assessment. Supply its "
-        "reasoning_id and returned revision; do not resend answers. To change the draft, repeat "
-        "validate_domain_assessment with the revised draft. Complete the post-approval bounded "
+        "Commit the exact Domain draft stored by validate_domain_assessment using its returned "
+        "revision; do not resend answers or copy an internal receipt identity. To change the "
+        "draft, repeat validate_domain_assessment with the revised draft. Complete the "
+        "post-approval bounded "
         "main-report text pass and every Domain context page before reasoning. "
         "The fifth accepted Domain makes the Trial ready for review; it remains correctable "
         "until close_trial commits the exact current review."
@@ -2933,14 +2987,24 @@ def save_domain_judgment(
     expected_revision: Annotated[
         ExpectedRevision, Field(description="Revision returned by validate_domain_assessment.")
     ],
-    reasoning_id: Annotated[
-        Identity, Field(description="Exact reasoning_id returned by validate_domain_assessment.")
-    ],
 ) -> ToolResult:
     root = _root(_workspace())
     state = _state(root)
     records = state.get("reasoning_records")
-    record = records.get(reasoning_id) if isinstance(records, dict) else None
+    candidates = (
+        [
+            item
+            for item in records.values()
+            if isinstance(item, dict)
+            and item.get("kind") == "domain_reasoning"
+            and item.get("trial_id") == trial_id
+            and item.get("domain_id") == domain_id
+            and item.get("save_revision") == expected_revision
+        ]
+        if isinstance(records, dict)
+        else []
+    )
+    record = candidates[0] if len(candidates) == 1 else None
     if (
         not isinstance(record, dict)
         or record.get("kind") != "domain_reasoning"

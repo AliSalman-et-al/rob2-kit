@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c473-6efc-7612-a872-eceea4cdb6fe"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m treating “Continue” as approval of the exact Proposal Review and recording that approval now. I’ll then complete each RoB 2 domain using the live question cards and source evidence."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m blocked from continuing because the RoB 2 assessment tools became unavailable after approval was given. The Proposal Review is approved and preserved, but no domain judgments were committed."}}
+{"type":"turn.completed","usage":{"input_tokens":1281898,"cached_input_tokens":1175040,"cache_write_input_tokens":0,"output_tokens":4869,"reasoning_output_tokens":1393}}

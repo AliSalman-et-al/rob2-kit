@@ -77,9 +77,11 @@ including `head`, `data.result`, `questions`, `comparison_cards`, `evidence`,
 `evidence_workspace`, and recovery fields.
 For `render_page`, keep image content blocks separate from deduplicated JSON and
 render/inspect the image when layout carries meaning.
-If the server returns `domain_context_header_oversized` or
+The optional `max_response_bytes` input defaults to 32768 bytes and accepts
+4096–131072 bytes; use a value that the host can deliver as one structured
+response. If the server returns `domain_context_header_oversized` or
 `domain_context_item_oversized`, retry the same Trial/Domain scope with the
-reported larger `required_page_size`; an unrecoverable condition requires
+reported larger `required_page_size` as `max_response_bytes`; an unrecoverable condition requires
 review without omitting the record.
 
 Pass `context_page.next_cursor` unchanged. When the host supports variables,

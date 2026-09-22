@@ -59,7 +59,7 @@ def _wire_context(
             async with Client(mcp) as client:
                 request = arguments or {}
                 result = await client.call_tool("get_domain_context", request)
-                if drain and "cursor" not in request and "page_size" not in request:
+                if drain and "cursor" not in request and "max_response_bytes" not in request:
                     pages = [result]
                     structured = dict(result.structured_content or {})
                     while (
@@ -117,7 +117,7 @@ def _pending_assessment_workspace(tmp_path: Path) -> tuple[Path, dict, int]:
 
 def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Path) -> None:
     workspace, evidence, revision = _pending_assessment_workspace(tmp_path)
-    first, transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
+    first, transport_bytes = _wire_context(workspace, {"max_response_bytes": 16_384}, drain=False)
     page = first["data"]["context_page"]
     assert page["index"] == 0
     assert page["next_cursor"]
@@ -141,7 +141,7 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     recovery = blocked["condition"]["recovery"]
     assert recovery["operation"] == "get_domain_context"
     assert recovery["arguments"]["cursor"] == first_cursor
-    assert recovery["arguments"]["page_size"] == page["page_size"]
+    assert recovery["arguments"]["max_response_bytes"] == page["max_response_bytes"]
     assert _domain_context_transport_bytes(blocked) <= 32_768
 
     stale_revision = _call(
@@ -193,7 +193,9 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
             "FROM domain_context_delivery"
         ).fetchone()
 
-    refreshed, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
+    refreshed, _transport_bytes = _wire_context(
+        workspace, {"max_response_bytes": 16_384}, drain=False
+    )
     assert refreshed["data"]["context_page"]["index"] == 0
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         assert (
@@ -236,7 +238,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     arguments: dict[str, object] = {
         "trial_id": "trial",
         "domain_id": "domain:deviations",
-        "page_size": 32_768,
+        "max_response_bytes": 32_768,
     }
     while True:
         page, transport_bytes = _wire_context(workspace, arguments)
@@ -245,9 +247,17 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         assert metadata["trial_id"] == "trial"
         assert metadata["domain_id"] == "domain:deviations"
         assert metadata["state_revision"] == page["head"]["state_revision"]
-        assert page["data"]["result"]
-        assert page["data"]["evidence_workspace"]
-        assert transport_bytes <= metadata["page_size"]
+        if metadata["index"] == 0:
+            assert page["data"]["result"]
+            assert page["data"]["evidence_workspace"]
+        else:
+            assert "result" not in page["data"]
+            assert "evidence_workspace" not in page["data"]
+            assert metadata["stable_recovery"] == {
+                "operation": "get_domain_context",
+                "cursor": pages[0]["data"]["context_page"]["stable_recovery"]["cursor"],
+            }
+        assert transport_bytes <= metadata["max_response_bytes"]
         cursor = metadata["next_cursor"]
         if cursor is not None:
             assert page["head"]["next_action"]["operation"] == "get_domain_context"
@@ -259,7 +269,9 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert [page["data"]["context_page"]["index"] for page in pages] == list(range(len(pages)))
     assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
     assert pages[-1]["head"]["next_action"]["operation"] == "validate_domain_assessment"
-    question_ids = {question["id"] for page in pages for question in page["data"]["questions"]}
+    question_ids = {
+        question["id"] for page in pages for question in page["data"].get("questions", [])
+    }
     expected_ids = {
         question.id
         for question in SCIENTIFIC_PACK.questions
@@ -270,7 +282,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
 
     reconstructed = dict(pages[0]["data"])
     for section in ("questions", "comparison_cards", "evidence"):
-        reconstructed[section] = [item for page in pages for item in page["data"][section]]
+        reconstructed[section] = [item for page in pages for item in page["data"].get(section, [])]
     reconstructed.pop("context_page")
     full, _transport_bytes = _wire_context(
         workspace,
@@ -281,7 +293,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
 
 def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    first, _transport_bytes = _wire_context(workspace, {"page_size": 32_768})
+    first, _transport_bytes = _wire_context(workspace, {"max_response_bytes": 32_768})
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
     first_cursor = cursor
@@ -323,7 +335,7 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     _review(workspace)
     _read_required_main_reports(workspace)
     original, _transport_bytes = _wire_context(workspace)
-    first, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
+    first, _transport_bytes = _wire_context(workspace, {"max_response_bytes": 16_384}, drain=False)
     first_page = first["data"]["context_page"]
     cursor = first_page["next_cursor"]
     assert cursor
@@ -350,7 +362,9 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     reconstructed.pop("context_page")
     assert reconstructed == original["data"]
 
-    replaced, _transport_bytes = _wire_context(workspace, {"page_size": 16_384}, drain=False)
+    replaced, _transport_bytes = _wire_context(
+        workspace, {"max_response_bytes": 16_384}, drain=False
+    )
     assert replaced["data"]["context_page"]["index"] == 0
     continued, _transport_bytes = _wire_context(workspace, {"cursor": first_cursor}, drain=False)
     assert continued["outcome"] == "success", continued
@@ -369,7 +383,9 @@ def test_domain_context_cursor_survives_unrelated_domain_commit(tmp_path: Path) 
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     scope: dict[str, object] = {"trial_id": "trial", "domain_id": "domain:deviations"}
     original, _transport_bytes = _wire_context(workspace, scope)
-    first, _transport_bytes = _wire_context(workspace, {**scope, "page_size": 16_384}, drain=False)
+    first, _transport_bytes = _wire_context(
+        workspace, {**scope, "max_response_bytes": 16_384}, drain=False
+    )
     first_page = first["data"]["context_page"]
     cursor = first_page["next_cursor"]
     assert cursor is not None
@@ -444,7 +460,9 @@ def test_domain_context_delivery_does_not_advance_on_validation_failure(
         )
 
 
-def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path: Path) -> None:
+def test_domain_context_cursor_only_continuation_identifies_nonactive_domain(
+    tmp_path: Path,
+) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     saved = _call(
         workspace,
@@ -457,7 +475,7 @@ def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path
         {
             "trial_id": "trial",
             "domain_id": "domain:randomization",
-            "page_size": 32_768,
+            "max_response_bytes": 32_768,
         },
     )
     cursor = first["data"]["context_page"]["next_cursor"]
@@ -465,8 +483,14 @@ def test_domain_context_cursor_only_continuation_keeps_nonactive_domain(tmp_path
 
     continuation, _transport_bytes = _wire_context(workspace, {"cursor": cursor})
 
-    assert continuation["data"]["domain_id"] == "domain:randomization"
-    assert continuation["data"]["context_page"]["domain_id"] == "domain:randomization"
+    assert "domain_id" not in continuation["data"]
+    page = continuation["data"]["context_page"]
+    assert page["domain_id"] == "domain:randomization"
+    recovered, _transport_bytes = _wire_context(
+        workspace, {"cursor": page["stable_recovery"]["cursor"]}, drain=False
+    )
+    assert recovered["data"]["domain_id"] == "domain:randomization"
+    assert recovered["data"]["context_page"]["index"] == 0
 
 
 def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Path) -> None:
@@ -500,9 +524,11 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
     }
     first, _transport_bytes = _wire_context(
         workspace,
-        {"missing_data": [preview], "page_size": 32_768},
+        {"missing_data": [preview], "max_response_bytes": 32_768},
     )
     context_domain = first["data"]["domain_id"]
+    recovery_cursor = first["data"]["context_page"]["stable_recovery"]["cursor"]
+    original_digest = first["data"]["context_page"]["snapshot_digest"]
     cursor = first["data"]["context_page"]["next_cursor"]
     assert cursor
     changed = preview | {"observed": 0}
@@ -522,7 +548,7 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
         ).fetchone()[0]
     restarted, _transport_bytes = _wire_context(
         workspace,
-        {"missing_data": [changed], "page_size": 32_768},
+        {"missing_data": [changed], "max_response_bytes": 32_768},
         drain=False,
     )
     assert restarted["data"]["context_page"]["index"] == 0
@@ -534,6 +560,17 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
         ).fetchone()
     assert delivery[0] != pending_digest
     assert delivery[1:] == (1, 0)
+
+    searched = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "randomized", "mode": "any"},
+    )
+    assert searched["outcome"] == "success"
+    recovered, _transport_bytes = _wire_context(workspace, {"cursor": recovery_cursor}, drain=False)
+    assert recovered["outcome"] == "success"
+    assert recovered["data"]["context_page"]["index"] == 0
+    assert recovered["data"]["context_page"]["snapshot_digest"] == original_digest
 
 
 def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path: Path) -> None:
@@ -567,14 +604,14 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
         }
         for index in range(18)
     ]
-    arguments: dict[str, object] = {"missing_data": preview, "page_size": 131_072}
+    arguments: dict[str, object] = {"missing_data": preview, "max_response_bytes": 131_072}
     pages: list[tuple[dict, int]] = []
     while True:
         page, transport_bytes = _wire_context(workspace, arguments)
         assert page["outcome"] == "success"
         pages.append((page, transport_bytes))
         metadata = page["data"]["context_page"]
-        assert transport_bytes <= metadata["page_size"]
+        assert transport_bytes <= metadata["max_response_bytes"]
         if metadata["next_cursor"] is None:
             break
         arguments = {"cursor": metadata["next_cursor"]}
@@ -605,13 +642,13 @@ def test_domain_context_pagination_rejects_oversized_unicode_evidence(
     page = _paginate_domain_context_transport(
         value, None, required, "test-basis", value["head"]["state_revision"]
     )
-    assert page["data"]["context_page"]["page_size"] == required
+    assert page["data"]["context_page"]["max_response_bytes"] == required
 
 
 def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) -> None:
     workspace, _evidence, _revision = _assessment_workspace(tmp_path)
     page_size = 4_096
-    context, _transport_bytes = _wire_context(workspace, {"page_size": page_size})
+    context, _transport_bytes = _wire_context(workspace, {"max_response_bytes": page_size})
 
     assert context["outcome"] == "condition"
     assert context["condition"]["code"] == "domain_context_header_oversized"
@@ -619,7 +656,7 @@ def test_domain_context_small_budget_returns_header_condition(tmp_path: Path) ->
         required_match = re.search(r"required_page_size=(\d+)", context["condition"]["detail"])
         assert required_match is not None
         page_size = int(required_match.group(1))
-        context, _transport_bytes = _wire_context(workspace, {"page_size": page_size})
+        context, _transport_bytes = _wire_context(workspace, {"max_response_bytes": page_size})
         if context["outcome"] == "success":
             break
         assert context["condition"]["code"] in {

@@ -4,7 +4,7 @@ Use this reference for Domain 4. The approved Result fixes the outcome; the
 returned question cards are authoritative. Apply this ordered audit:
 
 1. Start from the approved Result's event definition and ascertainment method.
-2. Assess whether the measurement method is appropriate for that approved event.
+2. Assess whether the measurement method is appropriate and valid for that approved event.
 3. Compare methods, thresholds, schedules, and detection opportunities between
    randomized groups.
 4. Identify who determines whether that event occurred, not merely who records
@@ -23,4 +23,13 @@ An endpoint label does not prove validity or objectivity. A shared time origin,
 analysis population, or planned protocol does not prove equal actual assessment.
 An open-label design alone does not decide method suitability, differential
 measurement, or likely influence. Additional visits, passive detection, or
-different thresholds matter only through their effect on outcome ascertainment.
+different thresholds matter only through an explicit pathway to differential
+ascertainment; a different opportunity alone is not a severity judgment.
+
+Keep validity, detection opportunity, assessor identity, assessor awareness,
+possible influence, and likely influence as separate propositions. A
+standardized instrument can still involve judgment in elicitation, attribution,
+grading, or assessment. For a mixed objective and subjective composite,
+preserve component-specific Evidence and uncertainty: reassurance for an
+objective component does not override an unresolved or influenced subjective
+component.

@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from ..workflow_models import (
+    MISSING_GROUP_VALUE_UNIT,
     AssessableResult,
     AssessableResultDraft,
     CategoryProfileResult,
@@ -162,20 +163,35 @@ def _proposal_shape_repairs(
                 "target comparison group",
             )
         )
+        reported_values = ()
         if isinstance(result.reported, ComparativeEffectResult):
-            if result.reported.group_values:
+            reported_values = result.reported.group_values
+            if reported_values:
                 reported_path = f"{path}/reported/group_values"
-                reported_ids = [item.group_id for item in result.reported.group_values]
+                reported_ids = [item.group_id for item in reported_values]
             else:
                 reported_path = ""
                 reported_ids = []
         elif isinstance(result.reported, GroupBoundValuesResult):
+            reported_values = result.reported.group_values
             reported_path = f"{path}/reported/group_values"
-            reported_ids = [item.group_id for item in result.reported.group_values]
+            reported_ids = [item.group_id for item in reported_values]
         else:
             reported_path = ""
             reported_ids = []
         if reported_path:
+            for value_index, value in enumerate(reported_values):
+                if value.unit == MISSING_GROUP_VALUE_UNIT:
+                    result_repairs.append(
+                        {
+                            "path": f"{reported_path}/{value_index}/unit",
+                            "code": "reported_group_value_unit_required",
+                            "detail": (
+                                "Copy the source-reported unit for this group value. Do not "
+                                "infer or invent a unit from the statistic or value."
+                            ),
+                        }
+                    )
             result_repairs.extend(
                 _duplicate_values(
                     reported_ids,
@@ -1642,19 +1658,44 @@ def validate_proposal(
             )
     catalog = _evidence_catalog(root)
     for index, assessment in enumerate(parsed.assessments):
-        handles = (
-            *assessment.evidence_basis,
-            *(item.evidence for item in assessment.counterevidence),
-        )
-        for handle_index, handle in enumerate(handles):
+        for handle_index, handle in enumerate(assessment.evidence_basis):
             selected = _selected(catalog, handle)
-            if selected is None or selected.get("trial_id") != assessment.trial_id:
+            if selected is None:
+                repairs.append(
+                    {
+                        "path": f"/assessments/{index}/evidence_basis/{handle_index}",
+                        "code": "unknown_evidence_handle",
+                        "detail": ("Reasoning Evidence handle must resolve to selected material."),
+                    }
+                )
+            elif selected.get("trial_id") != assessment.trial_id:
                 repairs.append(
                     {
                         "path": f"/assessments/{index}/evidence_basis/{handle_index}",
                         "code": "cross_trial_evidence",
                         "detail": (
                             "Reasoning Evidence must resolve to selected material from this Trial."
+                        ),
+                    }
+                )
+        for counterevidence_index, item in enumerate(assessment.counterevidence):
+            selected = _selected(catalog, item.evidence)
+            path = f"/assessments/{index}/counterevidence/{counterevidence_index}/evidence"
+            if selected is None:
+                repairs.append(
+                    {
+                        "path": path,
+                        "code": "unknown_counterevidence_handle",
+                        "detail": "Counterevidence handle must resolve to selected material.",
+                    }
+                )
+            elif selected.get("trial_id") != assessment.trial_id:
+                repairs.append(
+                    {
+                        "path": path,
+                        "code": "cross_trial_counterevidence",
+                        "detail": (
+                            "Counterevidence must resolve to selected material from this Trial."
                         ),
                     }
                 )
@@ -1711,12 +1752,10 @@ def validate_proposal(
 def _reasoning_proposal_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[str, Any]:
     next_action = {
         "expected_revision": state.get("revision", 0),
-        "reasoning_id": record["identity"],
     }
     return _result(
         "success",
         state,
-        reasoning_id=record["identity"],
         validation_scope="structure_and_references_only",
         repairs=[],
         next_action=next_action,
@@ -1724,6 +1763,5 @@ def _reasoning_proposal_receipt(state: dict[str, Any], record: dict[str, Any]) -
             "operation": "save_proposal",
             "authority": "host",
             **next_action,
-            "caller_inputs": ["reasoning_id"],
         },
     )

@@ -46,8 +46,8 @@ _SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.1"
 _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
-_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.8"
-_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.8"
+_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.9"
+_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.9"
 _SEARCH_NORMALIZATION_VERSION = "rob2-kit.search-normalization.v1"
 _SEARCH_RANKING_VERSION = "fts5-bm25-scoped-page-source-tiebreak.v1"
 _LEGACY_SEARCH_PROFILE = "legacy-default-v1"
@@ -183,16 +183,20 @@ def _source_navigation(
     selected = entries[offset : offset + bounded_limit]
     next_offset = offset + len(selected)
     has_more = next_offset < len(entries)
+    unreadable_pages = [page for page, text in enumerate(pages, 1) if not text.strip()]
     return {
         "source_id": source["id"],
         "projection_hash": source["projection_hash"],
         "navigation_version": _SOURCE_NAVIGATION_VERSION,
         "entries": selected,
+        "total_entries": len(entries),
+        "returned_entries": len(selected),
+        "remaining_entries": len(entries) - next_offset,
+        "terminal": not has_more,
         "page_count": len(pages),
         "pages_examined": len(pages),
-        "pages_without_text_projection": [
-            page for page, text in enumerate(pages, 1) if not text.strip()
-        ],
+        "pages_without_text_projection": unreadable_pages,
+        "unreadable_pages": unreadable_pages,
         "truncated": has_more,
         "next_cursor": (_source_navigation_cursor(source, next_offset) if has_more else None),
         "condition": "no_text_projection" if not entries else None,
@@ -415,12 +419,11 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
         )
         not in metadata_locations
     ]
-    metadata = [
-        item for item in ordered if item["kind"] not in {"heading_candidate", "page_excerpt"}
-    ]
-    ordinary = [item for item in ordered if item["kind"] in {"heading_candidate", "page_excerpt"}]
-    selected = (metadata + ordinary)[:_SOURCE_NAVIGATION_MAX_ENTRIES]
-    return sorted(selected, key=lambda item: (item["page"], item["start_line"], item["kind"]))
+    # Keep the complete deterministic index here.  ``_source_navigation`` is
+    # the transport boundary and is the only place that should apply the
+    # response limit; truncating this list would make late sections
+    # unreachable while reporting a false terminal page.
+    return sorted(ordered, key=lambda item: (item["page"], item["start_line"], item["kind"]))
 
 
 def _verified_source_projections(
@@ -800,6 +803,9 @@ def search_sources(
             "session_handle": session_handle,
             "matching_page_count": 0,
             "candidate_count": 0,
+            "distinct_passage_count": 0,
+            "distinct_page_count": 0,
+            "distinct_source_count": 0,
             "ranking_complete": True,
             "returned_rank_start": None,
             "returned_rank_end": None,
@@ -1267,6 +1273,9 @@ def search_sources(
         "session_handle": session_handle,
         "matching_page_count": total_matches,
         "candidate_count": len(candidates),
+        "distinct_passage_count": len(candidates),
+        "distinct_page_count": total_matches,
+        "distinct_source_count": len({source_id for source_id, _page in all_pairs}),
         "ranking_complete": True,
         "returned_rank_start": receipt["returned_rank_start"],
         "returned_rank_end": receipt["returned_rank_end"],
@@ -2270,9 +2279,13 @@ def _session_candidates(
     profile: str = _SEARCH_PROFILE,
 ) -> list[dict[str, Any]]:
     COUNTERS["candidate_reconstructions"] += 1
-    by_page_rank = {pair: index + 1 for index, pair in enumerate(all_pairs)}
+    # FTS normally returns each page once, but the canonical session must not
+    # depend on that implementation detail.  Preserve the first page rank
+    # when a derivative or legacy projection repeats a page.
+    unique_pairs = list(dict.fromkeys(all_pairs))
+    by_page_rank = {pair: index + 1 for index, pair in enumerate(unique_pairs)}
     candidates: list[dict[str, Any]] = []
-    for source_id, page in all_pairs:
+    for source_id, page in unique_pairs:
         text = pages[source_id][page - 1]
         starts = _line_starts(text)
         spans = _all_search_match_spans(text, query, mode, profile=profile)
@@ -2313,8 +2326,34 @@ def _session_candidates(
                     "cluster": cluster,
                 }
             )
+    # Coalesce only canonical ranges from one continuous Source page.  Source
+    # identity, projection/version, and page remain part of the identity, so
+    # similar text in another Source or version is never merged.  The union
+    # keeps qualifiers, headers, and footnotes from either overlapping window.
+    candidates.sort(key=lambda item: (item["source_id"], item["page"], item["start"], item["end"]))
+    coalesced: list[dict[str, Any]] = []
+    for candidate in candidates:
+        if coalesced:
+            prior = coalesced[-1]
+            same_page = (
+                prior["source_id"] == candidate["source_id"] and prior["page"] == candidate["page"]
+            )
+            overlap = max(
+                0,
+                min(prior["end"], candidate["end"]) - max(prior["start"], candidate["start"]),
+            )
+            smaller = min(prior["end"] - prior["start"], candidate["end"] - candidate["start"])
+            strongly_overlaps = smaller > 0 and overlap * 5 >= smaller * 4
+            if same_page and strongly_overlaps:
+                prior["start"] = min(prior["start"], candidate["start"])
+                prior["end"] = max(prior["end"], candidate["end"])
+                prior["start_line"] = min(prior["start_line"], candidate["start_line"])
+                prior["end_line"] = max(prior["end_line"], candidate["end_line"])
+                continue
+        coalesced.append(candidate)
+
     source_order = {value: index for index, value in enumerate(ordered_source_ids)}
-    candidates.sort(
+    coalesced.sort(
         key=lambda item: (
             item["score"],
             source_order[item["source_id"]],
@@ -2322,7 +2361,7 @@ def _session_candidates(
             item["cluster"],
         )
     )
-    presentation = candidates
+    presentation = coalesced
     for rank, item in enumerate(presentation, 1):
         item["rank"] = rank
         item["within_source_rank"] = sum(

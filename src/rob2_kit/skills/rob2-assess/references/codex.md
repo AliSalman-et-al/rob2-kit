@@ -19,7 +19,7 @@ const r = await tools.mcp__rob2__get_domain_context({
   trial_id: head.next_action.trial_id,
   domain_id: head.next_action.domain_id,
 });
-text(r?.structuredContent ?? r?.content ?? []);
+text({ isError: r?.isError ?? false, payload: r?.structuredContent ?? r?.content ?? [] });
 ```
 
 ## Store the first cursor
@@ -27,7 +27,7 @@ text(r?.structuredContent ?? r?.content ?? []);
 ```javascript
 const r = await tools.mcp__rob2__get_domain_context({ trial_id, domain_id });
 const page = r?.structuredContent ?? null;
-text(page ?? r?.content ?? []);
+text({ isError: r?.isError ?? false, payload: page ?? r?.content ?? [] });
 if (page?.outcome === "success") {
   store(`domain-next-cursor:${trial_id}:${domain_id}`, page.data?.context_page?.next_cursor ?? null);
 }
@@ -39,7 +39,7 @@ if (page?.outcome === "success") {
 const cursor = load(`domain-next-cursor:${trial_id}:${domain_id}`);
 const r = await tools.mcp__rob2__get_domain_context({ cursor });
 const page = r?.structuredContent ?? null;
-text(page ?? r?.content ?? []);
+text({ isError: r?.isError ?? false, payload: page ?? r?.content ?? [] });
 if (page?.outcome === "success") {
   store(`domain-next-cursor:${trial_id}:${domain_id}`, page.data?.context_page?.next_cursor ?? null);
 }

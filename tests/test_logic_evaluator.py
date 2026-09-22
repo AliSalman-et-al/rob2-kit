@@ -23,7 +23,7 @@ def test_pack_ids_wording_provenance_and_hashes():
     ) == ("sha256:96ff2d1a649d6b40f40fe7fa73c3127c5eb1725e8392b8728f9d25f951338425")
     assert SCIENTIFIC_PACK.questions[16].wording.startswith("If N/PN/NI to 4.1 and 4.2")
     assert SCIENTIFIC_PACK.content_hash == (
-        "sha256:d0d55f1381b9a2a19e670dca92bd34eec60dc09abe554012f09f7ce972e7f82c"
+        "sha256:bb4f07a86662df2decaad739013e1178a6767aceb9b63e6b438c7f98074d5d84"
     )
     assert "not attributed to Cochrane" in MAINTAINER_POLICY_PACK.attribution
     assert MAINTAINER_POLICY_PACK.id != SCIENTIFIC_PACK.id

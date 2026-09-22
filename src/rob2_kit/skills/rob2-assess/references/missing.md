@@ -24,6 +24,11 @@ evidence. Accept one or more of:
   accounting; or
 - an explicit statement that ascertainment was complete or nearly complete.
 
+Support No or Probably No with evidence that availability was materially
+incomplete for this Result. If the extent remains unknown after bounded
+retrieval, use No information. Failure to demonstrate complete availability is
+not evidence that availability was incomplete.
+
 The following do not establish affirmative availability on their own:
 
 - analysis denominators or ITT membership;
@@ -57,22 +62,29 @@ Keep these quantities distinct for each arm and time point:
 - participants with the outcome observed;
 - participants included in the reported analysis;
 - participants whose outcomes were imputed; and
-- post-randomization exclusions.
+- post-randomization exclusions; and
+- outcome events, which are a numerator rather than an observed-participant count.
 
 An analyzed count is not necessarily an observed count. Imputed outcomes count
 as missing outcome data for RoB 2. Treatment discontinuation is not missing
 outcome data when follow-up and outcome ascertainment continued.
 
 If some outcomes are missing, assess whether data remain available for nearly
-all randomized participants. Consider whether the missing outcomes could make
-an important difference to this Result. For dichotomous outcomes, compare the
-missing count with observed events, not only the randomized denominator.
-A count below the randomized total does not settle that question.
+all randomized participants. Keep the randomized denominator, outcome-observed
+count, analyzed count, imputed count, excluded count, and event count separate
+for the same arm, population, unit, and time point. Consider whether the
+missing outcomes could make an important difference to this Result. For
+dichotomous outcomes, compare the missing count with observed events, not only
+the randomized denominator. A count below the randomized total does not settle
+that question, and no universal percentage threshold replaces this impact
+judgment.
 
 Distinguish administrative censoring at a common data cutoff from censoring
-caused by missing follow-up before the outcome could be observed. For time-to-event Results,
-censoring may still create missing outcome information; assess its timing,
-reason, and relation to treatment or prognosis instead of treating every
+caused by missing follow-up before the outcome could be observed. Treatment
+discontinuation or last-known-alive censoring does not by itself establish that
+outcome observation stopped. For time-to-event Results, censoring may still
+create missing outcome information; assess its timing, reason, actual follow-up
+pathway, and relation to treatment or prognosis instead of treating every
 censored participant as either fully observed or missing by default.
 
 Question 3.1 may include compact `missing_data` rows. Give each row a comparable
@@ -119,8 +131,12 @@ If data were not available for all or nearly all participants, ask in sequence:
 
 Simple imputation, including last observation carried forward or multiple
 imputation based only on intervention group, does not by itself show freedom from
-bias. Documented reasons support reassurance only when they address the outcome
-relationship.
+bias. A comparison that changes group attribution, such as ITT versus
+as-treated, does not test unobserved outcome values unless the source establishes
+that relationship. A reassuring sensitivity analysis must vary plausible
+unobserved outcomes under the missingness mechanism relevant to the approved
+Result. Documented reasons support reassurance only when they address the
+outcome relationship.
 
 Keep possible dependence in 3.3 separate from likely dependence in 3.4. For
 3.4, state which reasons or trial circumstances support the likelihood judgment.

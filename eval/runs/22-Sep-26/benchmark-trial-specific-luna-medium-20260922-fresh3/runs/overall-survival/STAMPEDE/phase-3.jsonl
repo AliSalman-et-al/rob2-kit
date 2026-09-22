@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c5fe-00fa-7b20-8f6e-23a4da809c83"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m resuming from the saved workflow state and checking whether the approval elicitation is now available. If it is, I’ll continue directly into Domain 1."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The RoB 2 tools are currently unavailable in this resumed session, including `get_status`, so I cannot safely continue or record domain judgments. The saved Proposal Review remains intact and pending."}}
+{"type":"turn.completed","usage":{"input_tokens":1584129,"cached_input_tokens":1458688,"cache_write_input_tokens":0,"output_tokens":5026,"reasoning_output_tokens":1118}}

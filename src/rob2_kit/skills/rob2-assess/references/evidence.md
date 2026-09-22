@@ -24,7 +24,7 @@ Branch on the result before retrying:
 - When proposal approval is declined or cancelled, leave the Review pending and wait for researcher direction.
 - When the host does not support elicitation, report that capability condition. Repeating the same call cannot add the capability.
 - When a condition reports corrupt canonical or Source state, stop the affected operation and report the condition. Do not fabricate handles or resubmit the same request.
-- When Domain context reports an oversized header, item, or page, restart the same explicit Trial and Domain scope with the returned larger `page_size`. This is different from following a valid cursor.
+- When Domain context reports an oversized header, item, or page, restart the same explicit Trial and Domain scope with the returned `max_response_bytes`. Otherwise omit that argument. This is different from following a valid cursor.
 
 ## Keep returned handles distinct
 
@@ -148,7 +148,9 @@ spans remain separate citations: do not concatenate their text, assume they
 are adjacent, or claim that they scientifically belong together merely because
 they are used by one Result.
 
-Preserve exact Source labels and quantities, or values equivalent after normalization.
+Copy `reported.endpoint.name`, `reported.precision`, and other Source-owned
+quantities from the quantitative passage. Include `reported.endpoint.definition`
+only when one selected passage explicitly joins that name and definition.
 For `analysis_population`, a supported summary may combine passages when it preserves
 the reported inclusion criteria and exclusions. Caller-owned target interpretation,
 timing, and arm assignments do not need duplicate source quotations.
@@ -187,15 +189,6 @@ directly read passage does not require a search receipt. An
 report `truncated:false`, `total_matches:0`, and `condition:"no_hits"`. A
 positive search may support a limitation after you inspect the
 relevant material, but it cannot support absence.
-
-For example:
-
-```json
-{"kind":"limitation","unresolved_premise":"The report leaves the outcome ascertainment process unresolved after scoped discovery.","stopping_rationale":"Relevant captured Sources were reviewed, but the premise remains unresolved.","search_receipt":"sr_0123456789abcdef"}
-```
-
-If you include a search receipt, use the actual receipt returned for the
-current Trial. The handle above is fictional.
 
 A relationship label never expands what the passage says. Keep plans separate
 from conduct, analysis populations from observed outcomes, endpoint definitions
@@ -241,7 +234,8 @@ Use these exact shapes for the three basis forms:
 `inference` use a selected `evidence` handle. `absence` uses an untruncated
 zero-hit `search_receipt`. `limitation` uses an explicit `unresolved_premise`
 and `stopping_rationale`. Its current-Trial `search_receipt` is optional and
-may be truncated. A basis kind describes how the premise is used;
+may be truncated. When present, copy the actual receipt returned for the
+current Trial. A basis kind describes how the premise is used;
 it does not add facts to the cited passage.
 
 ## Recover an unresolved premise

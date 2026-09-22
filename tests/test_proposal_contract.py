@@ -14,6 +14,8 @@ from support.rob2 import (
     _workspace,
 )
 
+from rob2_kit.workflow_models import ComparativeEffectResult
+
 
 def test_target_interpretation_leaves_do_not_require_exact_source_support(
     tmp_path: Path,
@@ -152,6 +154,40 @@ def test_absent_comparative_precision_is_not_source_bound(tmp_path: Path) -> Non
     assert "/reported/precision" not in paths
 
 
+@pytest.mark.parametrize(
+    ("precision", "expected"),
+    [
+        (
+            {"confidence_level": "95%", "lower": "0.57", "upper": "0.80"},
+            "95% CI, 0.57 to 0.80",
+        ),
+        (
+            {"type": "95% CI", "lower": "0.75", "upper": "1.36"},
+            "95% CI, 0.75 to 1.36",
+        ),
+        (
+            {"confidence_level": 95, "lower": 0.57, "upper": 0.8},
+            "95% CI, 0.57 to 0.8",
+        ),
+    ],
+)
+def test_common_precision_objects_are_sanitized_to_the_public_string(
+    precision: dict[str, object], expected: str
+) -> None:
+    result = ComparativeEffectResult.model_validate(
+        {
+            "form": "comparative_effect",
+            "effect_measure": "hazard ratio",
+            "estimate": "0.68",
+            "precision": precision,
+            "analysis_population": "all randomized participants",
+            "endpoint": {"name": "overall survival"},
+        }
+    )
+
+    assert result.precision == expected
+
+
 def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     evidence = _prepared_evidence(workspace)
@@ -169,6 +205,28 @@ def test_complete_comparative_effect_does_not_require_group_values(tmp_path: Pat
 
     assert saved["outcome"] == "review_required"
     assert _state_proposal(workspace)["results"][0]["reported"]["group_values"] == []
+
+
+def test_missing_group_value_unit_reaches_structured_repair(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["reported"]["group_values"][0].pop("unit")
+    proposal = _proposal_args(workspace, [result])
+
+    repair = _call(
+        workspace,
+        "validate_proposal",
+        {
+            "results": proposal["results"],
+            "assessments": _proposal_assessments(proposal["results"]),
+            "expected_revision": proposal["expected_revision"],
+        },
+        _raw=True,
+    )
+
+    assert repair["outcome"] == "repair"
+    assert any(item["code"] == "reported_group_value_unit_required" for item in repair["repairs"])
 
 
 def test_endpoint_definition_can_be_omitted_when_no_coherent_definition_is_selected(

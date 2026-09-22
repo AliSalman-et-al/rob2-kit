@@ -48,6 +48,7 @@ from rob2_kit.workflow_models import (
     SourceRole,
     TrialId,
     UnavailableResult,
+    WorkingPremiseStatus,
 )
 
 
@@ -63,8 +64,6 @@ class SaveProposalAction(PublicModel):
     operation: Literal["save_proposal"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["reasoning_id"], ...]
-    reasoning_id: Identity
 
 
 class ValidateProposalAction(PublicModel):
@@ -94,8 +93,6 @@ class SaveDomainJudgmentAction(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["reasoning_id"], ...]
-    reasoning_id: Identity
 
 
 class ValidateDomainAssessmentAction(PublicModel):
@@ -211,7 +208,12 @@ class DomainContextRecoveryArguments(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     cursor: StrictStr = Field(min_length=1)
-    page_size: StrictInt = Field(ge=4096, le=131_072)
+    max_response_bytes: StrictInt = Field(
+        ge=4096,
+        le=131_072,
+        description="Byte budget for the continued page; valid range 4096–131072.",
+        json_schema_extra={"examples": [65_536]},
+    )
 
 
 class DomainContextRecovery(PublicModel):
@@ -613,6 +615,24 @@ class WorkingDraftData(PublicModel):
     sources: tuple[WorkingSourceRangeData, ...] = Field(min_length=1, max_length=8)
 
 
+class WorkingPremiseRecordData(PublicModel):
+    proposition: str = Field(min_length=1, max_length=4_000)
+    status: WorkingPremiseStatus
+    observations: tuple[WorkingNoteData, ...] = ()
+    inference: str | None = Field(default=None, min_length=1, max_length=4_000)
+    counterevidence: tuple[WorkingNoteData, ...] = ()
+    unresolved_component: str | None = Field(default=None, min_length=1, max_length=4_000)
+    next_action: str | None = Field(default=None, min_length=1, max_length=2_000)
+    domain_id: DomainId | None = None
+    question_id: QuestionId | None = None
+
+    @model_validator(mode="after")
+    def unresolved_status_has_component(self) -> WorkingPremiseRecordData:
+        if self.status == "unresolved" and self.unresolved_component is None:
+            raise ValueError("unresolved premise status requires unresolved_component")
+        return self
+
+
 class WorkingCheckpointData(PublicModel):
     identity: Identity
     batch_id: Identity
@@ -626,6 +646,7 @@ class WorkingCheckpointData(PublicModel):
     unread_ranges: tuple[WorkingSourceRangeData, ...]
     open_questions: tuple[WorkingNoteData, ...]
     drafts: tuple[WorkingDraftData, ...]
+    premise_records: tuple[WorkingPremiseRecordData, ...] = ()
     next_action: str | None = None
 
 
@@ -645,6 +666,40 @@ class WorkingCheckpointStatus(PublicModel):
     trial_id: TrialId | None = None
     checkpoint_identity: Identity | None = None
     checkpoint: WorkingCheckpointData | None = None
+    recovery: Literal[
+        "reorient_from_sources",
+        "resume_from_checkpoint",
+        "resume_from_canonical_checkpoint",
+    ]
+
+
+class DomainPremiseCheckpoint(PublicModel):
+    """Small Domain-context projection of the reusable premise checkpoint."""
+
+    identity: Identity
+    result_identity: Identity | None = None
+    source_scope: tuple[WorkingSourceBindingData, ...]
+    premise_records: tuple[WorkingPremiseRecordData, ...] = ()
+
+
+class DomainPremiseCheckpointStatus(PublicModel):
+    """Compatibility-safe status and recovery metadata for premise reuse."""
+
+    status: Literal["absent", "current", "stale"]
+    reason: (
+        Literal[
+            "no_active_trial",
+            "no_active_batch",
+            "not_saved",
+            "result_changed",
+            "source_changed",
+            "canonical_newer",
+        ]
+        | None
+    )
+    trial_id: TrialId | None = None
+    checkpoint_identity: Identity | None = None
+    checkpoint: DomainPremiseCheckpoint | None = None
     recovery: Literal[
         "reorient_from_sources",
         "resume_from_checkpoint",
@@ -747,6 +802,16 @@ class SourceNavigationData(PublicModel):
     projection_hash: Identity
     navigation_version: Literal["rob2-kit.source-navigation.v0.1"]
     entries: tuple[SourceNavigationEntry, ...] = Field(max_length=12)
+    total_entries: NonNegativeInt = Field(
+        description="Total entries in the complete deterministic Source navigation index."
+    )
+    returned_entries: NonNegativeInt = Field(description="Entries returned in this transport page.")
+    remaining_entries: NonNegativeInt = Field(
+        description="Entries still available after this transport page."
+    )
+    terminal: StrictBool = Field(
+        description="True only when the complete navigation index has been traversed."
+    )
     page_count: PageNumber
     pages_examined: NonNegativeInt = Field(
         description=(
@@ -758,6 +823,12 @@ class SourceNavigationData(PublicModel):
         description=(
             "Source pages with no extracted text in the captured text projection. Such a page "
             "may contain visual or otherwise unextracted material and requires direct inspection."
+        )
+    )
+    unreadable_pages: tuple[PageNumber, ...] = Field(
+        description=(
+            "Source pages without readable extracted text. Their presence does not imply that "
+            "other pages were exhausted or that the underlying content is absent."
         )
     )
     truncated: StrictBool
@@ -1015,6 +1086,15 @@ class SearchData(PublicModel):
     session_handle: str = Field(pattern=r"^ss_[0-9a-f]{16}$")
     matching_page_count: NonNegativeInt
     candidate_count: NonNegativeInt
+    distinct_passage_count: NonNegativeInt = Field(
+        description="Distinct canonical Source/projection/range passages in the complete session."
+    )
+    distinct_page_count: NonNegativeInt = Field(
+        description="Distinct matching Source pages in the complete session."
+    )
+    distinct_source_count: NonNegativeInt = Field(
+        description="Distinct Sources contributing matching pages in the complete session."
+    )
     ranking_complete: StrictBool
     returned_rank_start: PositiveInt | None
     returned_rank_end: PositiveInt | None
@@ -1189,11 +1269,9 @@ class ProposalData(PublicModel):
 
 class ReasoningProposalSaveAction(PublicModel):
     expected_revision: NonNegativeInt
-    reasoning_id: Identity
 
 
 class ValidateProposalData(PublicModel):
-    reasoning_id: Identity
     validation_scope: Literal["structure_and_references_only"]
     repairs: tuple[RepairDefect, ...] = ()
     next_action: ReasoningProposalSaveAction
@@ -1648,10 +1726,11 @@ class OfficialGuidanceRecovery(PublicModel):
 
 
 class DomainContextData(PublicModel):
-    trial_id: TrialId
-    domain_id: DomainId
-    pack: DomainPack = Field(
-        description="Exact scientific pack identity and version used for this Domain context."
+    trial_id: TrialId | None = None
+    domain_id: DomainId | None = None
+    pack: DomainPack | None = Field(
+        default=None,
+        description="Exact scientific pack identity and version used for this Domain context.",
     )
     official_guidance: OfficialGuidanceRecovery | None = Field(
         default=None,
@@ -1660,9 +1739,17 @@ class DomainContextData(PublicModel):
             "only when a bounded continuation is supplied."
         ),
     )
-    result: DomainResultChoice
-    evidence: tuple[DomainEvidence, ...]
-    answers: tuple[CheckpointAnswer, ...]
+    result: DomainResultChoice | None = None
+    evidence: tuple[DomainEvidence, ...] = ()
+    answers: tuple[CheckpointAnswer, ...] = ()
+    working_checkpoint: dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "Current source-grounded premise checkpoint, when one exists. It is reusable only "
+            "while its exact approved Result identity and captured Source projections match; "
+            "stale checkpoints are returned with an explicit recovery reason."
+        ),
+    )
     evidence_sufficiency: EvidenceSufficiencySummary | None = None
     # Only the active checkpoint is needed to form a model-owned revision.
     # Complete revision history remains in the canonical bundle, not in the
@@ -1671,12 +1758,12 @@ class DomainContextData(PublicModel):
         default=None,
         description="Exact active checkpoint identity, when this Domain has been saved before.",
     )
-    guidance: tuple[str, ...]
-    response_framework: ResponseFramework
-    traps: tuple[str, ...]
-    questions: tuple[DomainQuestionCard, ...]
-    completion_rule: str = Field(min_length=1)
-    evidence_workspace: EvidenceWorkspace
+    guidance: tuple[str, ...] = ()
+    response_framework: ResponseFramework | None = None
+    traps: tuple[str, ...] = ()
+    questions: tuple[DomainQuestionCard, ...] = ()
+    completion_rule: str | None = Field(default=None, min_length=1)
+    evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
     coverage: tuple[SourceCoverage, ...] = ()
     reading_recovery: MainReportRecovery | None = Field(
@@ -1691,8 +1778,41 @@ class DomainContextData(PublicModel):
         ),
     )
 
+    @model_validator(mode="after")
+    def stable_header_is_delivered_once(self) -> DomainContextData:
+        continuation = self.context_page is not None and self.context_page.index > 0
+        stable = (
+            self.trial_id,
+            self.domain_id,
+            self.pack,
+            self.result,
+            self.response_framework,
+            self.completion_rule,
+            self.evidence_workspace,
+        )
+        if continuation and any(value is not None for value in stable):
+            raise ValueError("continuation pages must contain only context deltas")
+        if not continuation and any(value is None for value in stable):
+            raise ValueError("the first context page requires the complete stable header")
+        return self
+
+
+class DomainContextStableRecovery(PublicModel):
+    operation: Literal["get_domain_context"]
+    cursor: str = Field(
+        min_length=1,
+        description="Opaque page-zero cursor for the exact frozen scientific view.",
+    )
+
 
 class DomainContextPage(PublicModel):
+    view_version: Literal["rob2-kit.domain-context.v1"] = "rob2-kit.domain-context.v1"
+    snapshot_digest: str = Field(
+        min_length=64,
+        max_length=64,
+        pattern=r"^[0-9a-f]{64}$",
+        description="Digest of the canonical unpaginated scientific view reconstructed by pages.",
+    )
     trial_id: TrialId
     domain_id: DomainId
     state_revision: NonNegativeInt = Field(
@@ -1706,9 +1826,16 @@ class DomainContextPage(PublicModel):
     section: Literal["complete", "questions", "comparison_cards", "evidence"]
     item_start: NonNegativeInt = 0
     item_count: NonNegativeInt = 0
-    page_size: PositiveInt
+    max_response_bytes: StrictInt = Field(
+        ge=4096,
+        le=131_072,
+        description="Byte budget used to produce this page; valid range 4096–131072.",
+    )
     cursor: str | None = Field(default=None, min_length=1)
     next_cursor: str | None = Field(default=None, min_length=1)
+    stable_recovery: DomainContextStableRecovery = Field(
+        description="Exact operation for recovering the stable page-zero scientific header."
+    )
 
 
 class ComparisonPassageRef(PublicModel):
@@ -1883,6 +2010,13 @@ class ClaimTrace(PublicModel):
     evidence: tuple[Identity, ...] = ()
     search_receipts: tuple[Identity, ...] = ()
     unresolved_premises: tuple[str, ...] = ()
+    support_attribution: Literal["host_asserted", "not_established"] = Field(
+        default="not_established",
+        description=(
+            "Whether the recorded status reflects the host's asserted Evidence relationship. "
+            "This is not a server semantic judgment."
+        ),
+    )
 
 
 class EvidenceSufficiencySummary(PublicModel):
@@ -2017,11 +2151,9 @@ class ReasoningSaveAction(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: NonNegativeInt
-    reasoning_id: Identity
 
 
 class ValidateDomainAssessmentData(PublicModel):
-    reasoning_id: Identity
     active_question_ids: tuple[QuestionId, ...]
     validation_scope: Literal["structure_and_references_only"]
     repairs: tuple[RepairDefect, ...] = ()
@@ -2033,6 +2165,31 @@ class ReviewEvidenceReference(PublicModel):
 
     handle: EvidenceHandle
     identity: Identity
+
+
+class ReviewBasisFinding(PublicModel):
+    """One host assertion retained in the final review projection."""
+
+    kind: Literal[
+        "direct_support",
+        "indirect_support",
+        "contradiction",
+        "context",
+        "inference",
+        "absence",
+        "limitation",
+    ]
+    assertion: Literal["host_asserted"] = Field(
+        default="host_asserted",
+        description=(
+            "The relationship or limitation was asserted by the host. The server preserves and "
+            "checks its references but does not independently judge scientific entailment."
+        ),
+    )
+    evidence: ReviewEvidenceReference | None = None
+    search_receipt: Identity | None = None
+    unresolved_premise: str | None = None
+    stopping_rationale: str | None = None
 
 
 class ReviewReadEvidenceAction(PublicModel):
@@ -2067,6 +2224,13 @@ class ReviewAnswerFinding(PublicModel):
     unknowns: tuple[str, ...] = ()
     counterevidence: tuple[DomainCounterevidence, ...] = ()
     evidence: tuple[ReviewEvidenceReference, ...] = ()
+    bases: tuple[dict[str, Any], ...] = Field(
+        default=(),
+        description=(
+            "Exact premise-basis assertions retained for review; support remains host-asserted "
+            "and is not a server semantic finding."
+        ),
+    )
     evidence_expansions: tuple[ReviewEvidenceExpansion, ...] = ()
 
 
@@ -2075,10 +2239,31 @@ class ReviewDomainFinding(PublicModel):
     checkpoint_identity: Identity
     judgment: Judgment
     answers: tuple[ReviewAnswerFinding, ...] = Field(min_length=1)
+    premise_checkpoint_identity: Identity | None = Field(
+        default=None,
+        description=(
+            "Current source-grounded premise checkpoint used for this projection, when it is "
+            "still bound to the approved Result and Source projections."
+        ),
+    )
+    premise_records: tuple[WorkingPremiseRecordData, ...] = Field(
+        default=(),
+        description=(
+            "Source-grounded host notes for material premises. They are not Domain judgments or "
+            "Evidence authority."
+        ),
+    )
 
 
 class ReviewTrialData(PublicModel):
     review: TrialReviewSummary
+    result: dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "Exact approved Result scope retained with final review: endpoint, measurement, "
+            "population, comparison, timing, analysis, effect measure, and eligible alternatives."
+        ),
+    )
     domain_findings: tuple[ReviewDomainFinding, ...] = Field(
         default=(),
         description="Current checkpoint support and exact Evidence expansion actions for review.",
@@ -2186,7 +2371,6 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
                         "review_reference",
                         "caller_inputs",
                         "supersedes",
-                        "reasoning_id",
                     )
                     if key in continuation
                 }
@@ -2345,7 +2529,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
     if tool == "review_trial":
         return {
             key: _public_review(value[key]) if key == "review" else value[key]
-            for key in ("review", "domain_findings", "retry")
+            for key in ("review", "result", "domain_findings", "retry")
             if key in value
         }
     if tool == "close_trial":

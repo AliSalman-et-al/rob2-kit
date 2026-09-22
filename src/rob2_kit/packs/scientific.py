@@ -239,7 +239,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:deviations:context-deviations": _guidance(
         "Full guidance p. 28, Box 6, signalling question 2.3",
         "Whether deviations inconsistent with protocol arose because of the trial context.",
-        "Answer yes or probably yes with evidence or strong reason that the trial context caused failure to implement protocol interventions or implementation of prohibited interventions. Answer no or probably no when no such deviation occurred, including ordinary non-adherence outside the trial context or protocol-consistent changes.",
+        "Answer yes or probably yes only after establishing both that the change was inconsistent with the protocol and that the trial context caused it; identify both premises in the justification. Answer no or probably no when no such deviation occurred, including ordinary non-adherence outside the trial context, protocol-consistent changes, and protocol-permitted subsequent care after progression.",
         (
             "Evidence linking the deviation to recruitment, engagement, or trial personnel and showing it was inconsistent with the protocol.",
         ),
@@ -256,11 +256,13 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Side-effect-related compromised blinding counts only when resulting changes were protocol-inconsistent and context-caused.",
+            "Subsequent treatment, rescue treatment, or cross-over is not itself a deviation for the effect of assignment: establish both protocol inconsistency and a trial-context cause before answering affirmatively.",
         ),
         (
             "nonadherence alone",
             "an ITT analysis",
             "participants switched treatment",
+            "unequal post-progression treatment without evidence that it was prohibited and trial-context-caused",
             "a protocol deviation without its cause",
         ),
     ),
@@ -361,13 +363,13 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:missing:data-available": _guidance(
         "Full guidance p. 45, Box 8, signalling question 3.1",
         "Whether outcome data were available for all or nearly all randomized participants.",
-        "Use the randomized population. For yes or probably yes, require actual outcome-availability evidence. Nearly all means missing outcomes were sufficiently few that, whatever they were, they could make no important difference; 95% often suffices for continuous outcomes, while dichotomous outcomes depend on event risk. Imputed data count as missing.",
+        "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When the extent remains unknown, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
         (
             "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
-            "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish randomized, observed, analysed, and imputed counts, plus exclusions and reasons. A missing count or an explicit complete-ascertainment statement is valid source information; do not substitute an analysis denominator for observed data. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
+            "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
             "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts.",
         ),
-        "Only answer no_information when the report provides no information about the extent of missing outcome data.",
+        "Answer no_information when the extent of missing outcome data remains unknown after bounded retrieval. Lack of evidence for complete availability is not evidence of materially incomplete availability.",
         (
             _anchor(
                 Answer.YES,
@@ -385,7 +387,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
             "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
-            "For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
+            "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
         ),
         (
             "a complete-case analysis label",
@@ -393,6 +395,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "analysis denominators or ITT membership alone",
             "planned or scheduled follow-up alone",
             "treatment continuation or discontinuation alone",
+            "last-known-alive censoring alone",
+            "an event count treated as an observed-outcome count",
+            "an analysis denominator treated as an outcome denominator",
             "a generic censoring rule without actual rates or follow-up accounting",
             "imputed data counted as observed outcomes",
         ),
@@ -400,9 +405,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:missing:evidence-unbiased": _guidance(
         "Full guidance p. 45, Box 8, signalling question 3.2",
         "Whether there is evidence that the result was not biased by missing outcome data.",
-        "Evidence may come from methods correcting for bias or sensitivity analyses showing little change under plausible assumptions about missingness and true outcome. Last-observation-carried-forward or multiple imputation based only on intervention group should not be assumed to correct bias.",
+        "Evidence may come from methods correcting for bias or sensitivity analyses showing little change under plausible assumptions about missingness and true outcome. The assumptions must match the documented missingness mechanism and the approved Result. A comparison that changes group attribution, such as ITT versus as-treated, does not test unobserved outcome values unless the source explicitly establishes that relationship. Last-observation-carried-forward or multiple imputation based only on intervention group should not be assumed to correct bias.",
         (
-            "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result.",
+            "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result, including the missingness mechanism it addresses.",
+            "If the source only changes intervention-group attribution or analysis membership, record that distinction; do not describe it as a test of unobserved outcome values without source support.",
         ),
         "No_information is not an allowed response to this question in the parallel-assignment pack; provide direct evidence or answer no/probably no.",
         (
@@ -418,6 +424,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Imputation alone is not evidence that missing outcome data did not bias the result.",
             "Availability and mitigation are separate premises: a familiar method name or numerically stable estimate is not enough; the sensitivity analysis must span plausible assumptions relevant to the documented missingness mechanism.",
+            "This question permits complete ascertainment, mechanism-matched reassurance, and legitimate uncertainty. Do not apply a universal percentage threshold in place of a Result-specific impact judgment.",
         ),
         (
             "an ITT analysis",
@@ -439,7 +446,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "For time-to-event outcomes, inspect censoring reasons and timing to identify missing follow-up. A common administrative cutoff does not by itself establish outcome-dependent missingness.",
-            "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership.",
+            "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. Treatment discontinuation or last-known-alive censoring is not by itself evidence that observation stopped. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership.",
         ),
         (
             "complete follow-up claims",
@@ -470,10 +477,11 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:measurement:method-inappropriate": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.1",
-        "Whether the method of measuring the outcome was inappropriate for the outcome.",
-        "Answer yes or probably yes when the method is unlikely to be sensitive to plausible intervention effects or the instrument has demonstrated poor validity. Do not assess whether choosing the outcome itself was sensible.",
+        "Whether the method of measuring the outcome was inappropriate for the outcome, including validity and sensitivity to plausible intervention effects.",
+        "Answer yes or probably yes when the method is unlikely to be sensitive to plausible intervention effects or the instrument has demonstrated poor validity. Validity and sensitivity are distinct from detection opportunity, assessor identity or awareness, and whether knowledge influenced assessment. Do not assess whether choosing the outcome itself was sensible.",
         (
             "The measurement method's sensitivity to plausible effects and evidence of instrument validity for this outcome.",
+            "For a mixed objective and subjective composite, inspect each component that can determine the approved event; objective components do not establish validity or influence conclusions for a subjective component.",
         ),
         "Use no_information when appropriateness of the measurement method cannot be determined.",
         (
@@ -486,6 +494,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "For pre-specified outcomes the answer will usually be no or probably no.",
             "Measurement susceptibility concerns whether the method can validly and sensitively measure this outcome. It is distinct from assessor awareness, detection opportunity, and whether knowledge of intervention likely influenced assessment.",
+            "A standardized instrument can still involve judgment in elicitation, attribution, grading, or assessment. Preserve component-specific Evidence and uncertainty for mixed objective and subjective components.",
         ),
         (
             "a surrogate or proxy label",
@@ -496,9 +505,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:measurement:differential": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.2",
         "Whether measurement or ascertainment of the outcome could have differed between intervention groups.",
-        "Comparable measurement uses the same methods and thresholds at comparable time points. Consider diagnostic detection bias from passive collection and additional healthcare visits caused by an intervention.",
+        "Comparable measurement uses the same methods and thresholds at comparable time points. Consider diagnostic detection bias from passive collection and additional healthcare visits caused by an intervention, but identify the pathway by which a different detection opportunity could change ascertainment before judging its severity.",
         (
-            "Methods, thresholds, timing, and opportunities for outcome ascertainment in each intervention group.",
+            "Methods, thresholds, timing, and opportunities for outcome ascertainment in each intervention group, plus the pathway connecting any opportunity difference to differential detection.",
         ),
         "Use no_information when comparability of measurement or ascertainment cannot be assessed.",
         (
@@ -513,12 +522,13 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Compare actual methods and detection opportunities. Assessor awareness or possible reporting influence alone does not establish a between-group method difference; assess awareness and influence in 4.3 to 4.5.",
             "Detection opportunity is the chance an outcome could be identified or recorded, including passive ascertainment or intervention-related visits. Keep it separate from measurement susceptibility (4.1) and from who knew the assignment (4.3).",
+            "A different visit schedule or passive collection is not enough on its own: explain how it could make the approved outcome more or less likely to be detected in one group.",
         ),
         ("a common endpoint label", "an equal number randomized", "an ITT analysis"),
     ),
     "sq:measurement:assessor-aware": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.3",
-        "Whether outcome assessors were aware of the intervention received, when 4.1 and 4.2 are not yes/probably yes. Identify who determines the approved outcome at the relevant time point and distinguish that assessor from someone who merely records it.",
+        "Whether outcome assessors were aware of the intervention received, when 4.1 and 4.2 are not yes/probably yes. Identify the assessor's identity and role: who determines the approved outcome at the relevant time point, not merely who records it.",
         "Answer no when the outcome assessor was blinded to intervention status. For participant-reported outcomes, the participant is the outcome assessor, so participant blinding can determine this answer. This question is applicable only after the stated activation conditions.",
         ("Who assessed the outcome and whether that assessor was blinded to intervention status.",),
         "Use no_information when assessor awareness cannot be determined; do not infer blinding from an objective endpoint or from blinding elsewhere in the trial.",
@@ -529,6 +539,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "The assessor can be a participant, intervention provider, or independent observer.",
             "This asks only whether the relevant assessor knew assignment. It does not establish that the measurement was susceptible to bias, that detection opportunities differed, or that knowledge likely changed the assessment; those are separate questions.",
+            "Unknown assessor identity or awareness does not prevent conditional reasoning about whether the measurement could be influenced if awareness existed.",
         ),
         (
             "an objective endpoint",
@@ -540,7 +551,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:measurement:influence-possible": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.4",
         "Whether assessment could have been influenced by knowledge of intervention received. Keep assessor awareness separate from the mechanism by which awareness could change a judgement.",
-        "Knowledge could influence participant-reported outcomes, observer-reported outcomes involving judgement, and intervention-provider decisions; it is unlikely to influence observer-reported outcomes without judgement, such as all-cause mortality.",
+        "Knowledge could influence participant-reported outcomes, observer-reported outcomes involving judgement, and intervention-provider decisions; it is unlikely to influence observer-reported outcomes without judgement, such as all-cause mortality. A standardized instrument does not remove judgment from elicitation, attribution, grading, or assessment.",
         (
             "Outcome type, assessor role, degree of judgement, and whether knowledge of assignment could change assessment.",
         ),
@@ -555,6 +566,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Assess whether knowledge could influence this outcome. Evidence that influence actually occurred belongs to 4.5; its absence does not resolve 4.4.",
             "Possible influence requires a judgement or reporting pathway through which assessor awareness could matter. Awareness alone is not a measurement difference, and a susceptible outcome does not by itself show that influence was possible in this assessment.",
+            "When a composite mixes objective and subjective components, assess each component's pathway separately and retain uncertainty where a component-specific link is unresolved.",
         ),
         (
             "an objective endpoint label",
@@ -565,7 +577,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:measurement:influence-likely": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.5",
         "Whether knowledge of intervention likely influenced outcome assessment. Require evidence or strong beliefs plus a judgement opportunity; awareness alone does not establish influence.",
-        "Distinguish possible influence without reason to believe it occurred from likely influence. Strong beliefs about benefits or harms make influence more likely, for example patient-reported symptoms in homeopathy or recovery assessed by an intervention physiotherapist.",
+        "Distinguish possible influence without reason to believe it occurred from likely influence. Strong beliefs about benefits or harms make influence more likely, for example patient-reported symptoms or recovery assessed by an intervention provider. A standardized scale or grading rule does not by itself remove an elicitation, attribution, grading, or assessment pathway.",
         (
             "Evidence of actual influence or strong beliefs and judgement opportunities that make influence likely, given the assessor and outcome.",
         ),
@@ -580,15 +592,17 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Possible influence without evidence it occurred maps differently from likely influence.",
             "Likely influence requires more than assessor awareness or a possible pathway: look for evidence it occurred, or strong beliefs and a real judgement opportunity. Keep this conclusion separate from measurement susceptibility and detection opportunity.",
+            "Objective components can provide valid reassurance for those components without overriding likely influence or unresolved Evidence for subjective components in the same Result.",
         ),
         ("assessor awareness alone", "an objective endpoint label", "an ITT analysis"),
     ),
     "sq:selection:prespecified-analysis": _guidance(
         "Full guidance p. 63, Box 11, signalling question 5.1",
         "Whether data producing this result followed a pre-specified plan finalized before unblinded outcome data were available.",
-        "Compare the approved result with intended measurements, timing, population, and analyses. Distinguish source creation/version and amendment dates from trial events and retrieval time; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
+        "Compare the approved Result with the applicable plan for the exact intervention comparison, cohort, endpoint, time window, population, analysis, and effect measure. Distinguish source creation/version and amendment dates from trial events and retrieval time; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
         (
-            "A sufficiently detailed protocol or SAP, its finalization date relative to unblinded outcome data, and the reported analysis.",
+            "A sufficiently detailed protocol or SAP, its source-located chronology and finalization date relative to unblinded outcome data, and the reported analysis.",
+            "For an original plan and an amended plan, capture the source-located content and chronology separately. An embedded SAP can be applicable evidence when its comparison, cohort, and Result fields match; an absent or unresolved plan remains an information limit.",
         ),
         "Use a definitive answer when firm evidence establishes timing and correspondence. "
         "Use a probable answer when source facts and trial circumstances support only an inference. "
@@ -607,7 +621,8 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Assess correspondence between the applicable plan and the exact approved Result: outcome, time point, population, effect measure, and analysis must be compared.",
-            "Establish chronology separately: plan finalization must precede availability of unblinded outcome data; a source creation date, registry date, amendment date, or retrieval date is not automatically the relevant trial chronology.",
+            "Assess applicability before chronology: a platform or master plan may cover several comparisons and cohorts, so its presence does not establish applicability to the approved Result. Establish chronology separately: plan finalization must precede availability of unblinded outcome data; a source creation date, registry posting or update date, amendment date, or retrieval date is not automatically the relevant trial chronology.",
+            "Current registry content does not establish unseen historical intent, and a data cutoff is not investigator unblinding. Preserve unresolved applicability or chronology instead of filling the gap from report wording that merely looks prespecified.",
             "Results-driven selection is a separate concern from whether a plan exists or whether its chronology is known. Do not infer selection merely from an amendment or from a mismatch without evidence that the choice was driven by results.",
         ),
         (
@@ -615,6 +630,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "a registry link",
             "an endpoint label",
             "a protocol mention without date or detail",
+            "current registry content treated as historical intent",
+            "a data cutoff treated as investigator unblinding",
+            "a platform master plan treated as applicable to every comparison",
         ),
     ),
     "sq:selection:multiple-measurements": _guidance(
@@ -640,9 +658,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported measurement with all eligible alternatives.",
+            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported measurement with all eligible alternatives. Keep the exact Result's comparison, cohort, endpoint, time window, population, and analysis scope fixed while doing so.",
             "An applicable plan's correspondence and chronology are relevant context but do not themselves establish results-driven selection. The approved Result fixes the target being assessed; it does not erase other eligible measurements in the outcome domain or make their selection an observed fact.",
             "If eligible alternatives remain unresolved, preserve no_information rather than treating the absence of documented selection as no/probably no. Eligibility is defined independently of which result was reported.",
+            "An embedded SAP or platform plan may list eligible measurements without proving that it applied to the approved cohort; applicability and chronology remain separate premises.",
         ),
         (
             "an endpoint definition",
@@ -654,7 +673,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:selection:multiple-analyses": _guidance(
         "Full guidance pp. 64-65, Box 11, signalling question 5.3",
         "Whether the result was selected from multiple eligible analyses of the data on the basis of results.",
-        "Answer yes or probably yes when clear evidence shows multiple eligible analyses but only one or a subset is fully reported without justification and selection likely depended on results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
+        "Multiplicity alone does not establish result-based selection. Answer yes or probably yes only when the justification identifies the eligible alternatives, the reporting or selection evidence, and why selection likely depended on the results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
         (
             "The protocol or SAP's eligible analysis methods and which were reported, including adjustment, transformation, composite definitions, and missing-data strategies.",
         ),
@@ -674,10 +693,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported analysis with the complete eligible set.",
+            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported analysis with the complete set of multiple eligible analyses. Keep the exact Result's comparison, cohort, endpoint, time window, population, and effect measure fixed.",
             "An applicable plan's correspondence and chronology are distinct checks. The approved Result fixes the target being assessed; it does not erase eligible alternative analyses or turn an unresolved alternative into an observed selection.",
             "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred.",
-            "When the plan is insufficiently detailed and eligible analyses remain possible but unresolved, use no_information; do not turn an unobserved selection into no/probably no merely because the report names one analysis.",
+            "When the plan is insufficiently detailed and multiple eligible analyses remain possible but unresolved, use no_information; do not turn an unobserved selection into no/probably no merely because the report names one analysis. Preserve the evidence path's support for Low, Some concerns, High, or legitimate uncertainty without forcing a severity category.",
         ),
         (
             "an endpoint definition",
@@ -760,6 +779,8 @@ _QUERY_SUGGESTIONS: dict[str, tuple[QuerySuggestion, ...]] = {
     "sq:missing:data-available": (
         _suggestion("missing outcome data", "all", "outcome availability"),
         _suggestion("loss to follow-up", "phrase", "follow-up completeness"),
+        _suggestion("participant flow", "phrase", "randomized follow-up accounting"),
+        _suggestion("CONSORT", "phrase", "participant-flow diagram", "supplement"),
         _suggestion("outcome data available", "all", "observed outcome reporting"),
         _suggestion("mortality status unknown", "all", "unknown mortality status", "supplement"),
         _suggestion("missing values", "all", "missing outcome counts", "supplement"),

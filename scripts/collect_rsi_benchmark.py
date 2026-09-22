@@ -89,8 +89,10 @@ def _benchmark_rows(path: Path | None) -> dict[tuple[str, str], dict[str, Any]]:
         raise ValueError("benchmark manifest rows are missing")
     indexed: dict[tuple[str, str], dict[str, Any]] = {}
     for row in rows:
-        if not isinstance(row, dict) or not isinstance(row.get("trial"), str) or not isinstance(
-            row.get("outcome"), str
+        if (
+            not isinstance(row, dict)
+            or not isinstance(row.get("trial"), str)
+            or not isinstance(row.get("outcome"), str)
         ):
             raise ValueError("benchmark manifest row is malformed")
         key = (_normalise(row["outcome"]), _normalise(row["trial"]))
@@ -129,9 +131,7 @@ def _bundle(
     artifact = execution.get("artifact")
     if execution.get("state") != "succeeded":
         if bundles:
-            raise ValueError(
-                f"unclaimed bundle exists for non-successful execution in {trial_dir}"
-            )
+            raise ValueError(f"unclaimed bundle exists for non-successful execution in {trial_dir}")
         return None
     if not isinstance(artifact, dict):
         raise ValueError(f"successful execution has no artifact record: {trial_dir}")
@@ -188,15 +188,19 @@ def _read_bundle(
         raise ValueError(f"bundle snapshot is invalid: {path}")
     batch = canonical.get("batch")
     batch_trials = batch.get("trials") if isinstance(batch, dict) else None
-    batch_trial = next(
-        (
-            item
-            for item in batch_trials
-            if isinstance(item, dict)
-            and _normalise(str(item.get("id", ""))) == _normalise(str(trial_id))
-        ),
-        None,
-    ) if isinstance(batch_trials, list) else None
+    batch_trial = (
+        next(
+            (
+                item
+                for item in batch_trials
+                if isinstance(item, dict)
+                and _normalise(str(item.get("id", ""))) == _normalise(str(trial_id))
+            ),
+            None,
+        )
+        if isinstance(batch_trials, list)
+        else None
+    )
     if expected_outcome is not None and (
         not isinstance(batch_trial, dict)
         or not isinstance(batch_trial.get("requested_outcome"), str)
@@ -215,11 +219,11 @@ def _read_bundle(
     if set(observed) != {domain_key for domain_key, _ in DOMAINS}:
         raise ValueError(f"bundle snapshot is missing domain judgments: {path}")
     results = canonical.get("proposal", {}).get("payload", {}).get("results", [])
-    trial_results = [
-        item
-        for item in results
-        if isinstance(item, dict) and item.get("trial_id") == trial_id
-    ] if isinstance(results, list) else []
+    trial_results = (
+        [item for item in results if isinstance(item, dict) and item.get("trial_id") == trial_id]
+        if isinstance(results, list)
+        else []
+    )
     if len(trial_results) != 1:
         raise ValueError(f"bundle Result coverage is not unique for {trial_id}: {path}")
     proposal = trial_results[0]
@@ -302,20 +306,25 @@ def _validate_execution_inputs(
             ) from error
         batch = canonical.get("batch") if isinstance(canonical, dict) else None
         batch_trials = batch.get("trials") if isinstance(batch, dict) else None
-        bundle_trial = next(
-            (
-                item
-                for item in batch_trials
-                if isinstance(item, dict)
-                and _normalise(str(item.get("id", ""))) == _normalise(trial)
-            ),
-            None,
-        ) if isinstance(batch_trials, list) else None
+        bundle_trial = (
+            next(
+                (
+                    item
+                    for item in batch_trials
+                    if isinstance(item, dict)
+                    and _normalise(str(item.get("id", ""))) == _normalise(trial)
+                ),
+                None,
+            )
+            if isinstance(batch_trials, list)
+            else None
+        )
         if not isinstance(bundle_trial, dict):
             raise ValueError(f"bundle batch does not contain the requested trial: {trial}")
-        if not isinstance(bundle_trial.get("requested_outcome"), str) or not bundle_trial[
-            "requested_outcome"
-        ].strip():
+        if (
+            not isinstance(bundle_trial.get("requested_outcome"), str)
+            or not bundle_trial["requested_outcome"].strip()
+        ):
             raise ValueError(f"bundle trial-specific requested outcome is missing for {trial}")
 
         def source_inventory(rows: object) -> list[tuple[str, str]]:
@@ -349,8 +358,8 @@ def _validate_execution_inputs(
             raise ValueError(f"benchmark manifest inputs are incomplete for {trial}")
         if expected_run_dir and Path(expected_run_dir).resolve() != trial_dir.resolve():
             raise ValueError(f"run directory is not the manifest case directory for {trial}")
-        case_file = Path(case_path)
-        prompt_file = Path(prompt_path)
+        case_file = Path(case_path if isinstance(case_path, str) else "")
+        prompt_file = Path(prompt_path if isinstance(prompt_path, str) else "")
         if not case_file.is_file() or not prompt_file.is_file():
             raise ValueError(f"benchmark manifest input is missing for {trial}")
         if execution.get("manifest_sha256") != hashlib.sha256(case_file.read_bytes()).hexdigest():
@@ -372,11 +381,7 @@ def _adjudication_paths(trial_dir: Path) -> list[Path]:
     if root_record.is_file():
         candidates.append(root_record)
     candidates.extend(
-        sorted(
-            path
-            for path in (trial_dir / "adjudications").glob("*.json")
-            if path.is_file()
-        )
+        sorted(path for path in (trial_dir / "adjudications").glob("*.json") if path.is_file())
     )
     return candidates
 
@@ -408,7 +413,8 @@ def _case_adjudications(
     if not isinstance(snapshot, dict):
         raise ValueError(f"canonical bundle is missing snapshot for {trial_id}")
     checkpoint_ids = {
-        item for item in (snapshot.get("checkpoints", []) if isinstance(snapshot, dict) else [])
+        item
+        for item in (snapshot.get("checkpoints", []) if isinstance(snapshot, dict) else [])
         if isinstance(item, str)
     }
     if not checkpoint_ids:
@@ -444,15 +450,18 @@ def _case_adjudications(
             raise ValueError(f"adjudication Result identity mismatch for {case_id}")
         if record.checkpoint_identity not in checkpoint_ids:
             raise ValueError(f"adjudication checkpoint identity mismatch for {case_id}")
-        checkpoint = next(
-            (
-                item
-                for item in domain_records.values()
-                if isinstance(item, dict)
-                and item.get("identity") == record.checkpoint_identity
-            ),
-            None,
-        ) if isinstance(domain_records, dict) else None
+        checkpoint = (
+            next(
+                (
+                    item
+                    for item in domain_records.values()
+                    if isinstance(item, dict) and item.get("identity") == record.checkpoint_identity
+                ),
+                None,
+            )
+            if isinstance(domain_records, dict)
+            else None
+        )
         if not isinstance(checkpoint, dict) or checkpoint.get("trial_id") != trial_id:
             raise ValueError(f"adjudication checkpoint record is unavailable for {case_id}")
         if checkpoint.get("domain_id") != record.domain_identity:
@@ -556,14 +565,18 @@ def collect(
             )
             completion = "finalized"
         case_id = identity["case_id"]
-        case_adjudications = _case_adjudications(
-            trial_dir,
-            case_id=case_id,
-            trial_id=trial,
-            campaign_id=campaign_id,
-            bundle=bundle,
-            result_identity=result_identity,
-        ) if trial_dir.is_dir() else []
+        case_adjudications = (
+            _case_adjudications(
+                trial_dir,
+                case_id=case_id,
+                trial_id=trial,
+                campaign_id=campaign_id,
+                bundle=bundle,
+                result_identity=result_identity,
+            )
+            if trial_dir.is_dir()
+            else []
+        )
         adjudications.extend(case_adjudications)
         cases.append(
             {

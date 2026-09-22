@@ -48,7 +48,7 @@ def _call(
             auto_drain = (
                 tool == "get_domain_context"
                 and "cursor" not in arguments
-                and "page_size" not in arguments
+                and "max_response_bytes" not in arguments
             )
             request = dict(arguments)
             if not _raw and tool == "save_proposal" and "results" in request:
@@ -139,10 +139,10 @@ def _call(
                 ):
                     break
                 required_page_size = int(match.group(1))
-                current_page_size = request.get("page_size")
+                current_page_size = request.get("max_response_bytes")
                 if isinstance(current_page_size, int) and required_page_size <= current_page_size:
                     break
-                request = {**arguments, "page_size": required_page_size}
+                request = {**arguments, "max_response_bytes": required_page_size}
                 result = await client.call_tool(tool, request)
                 value = dict(result.structured_content or {})
             if auto_drain:

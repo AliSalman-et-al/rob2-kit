@@ -14,6 +14,13 @@ For 2.3, a negative answer covers no relevant deviation as well as changes that
 were protocol-consistent or could occur outside the trial context. An affirmative
 answer needs evidence or strong reason linking a protocol-inconsistent deviation
 to the trial context. State that link when it is an inference.
+Do not treat subsequent treatment after progression, rescue treatment, or
+cross-over as a 2.3 deviation merely because its use differed between randomized
+groups or could affect the outcome. For the effect of assignment, first establish
+that the subsequent treatment was prohibited or otherwise inconsistent with the
+trial protocol and that the trial context caused it. Protocol-permitted subsequent
+care, including ordinary treatment after progression, supports `no` or
+`probably_no` for 2.3.
 A protocol establishes the plan, not conduct. Different assigned treatments or
 visible schedules do not by themselves prove that participants or carers knew
 the assignment.
