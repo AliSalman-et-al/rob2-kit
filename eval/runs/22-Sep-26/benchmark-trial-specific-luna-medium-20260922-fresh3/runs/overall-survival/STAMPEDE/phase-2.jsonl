@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c5fe-00fa-7b20-8f6e-23a4da809c83"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The Proposal Review is approved by your instruction. I’m advancing the workflow now and will assess each RoB 2 domain using the live question cards and source-bound evidence."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m blocked by the workflow host: the required `request_proposal_approval` elicitation tool is currently unavailable, so approval cannot be recorded and domain assessment cannot safely begin. The Proposal Review remains pending."}}
+{"type":"turn.completed","usage":{"input_tokens":1317616,"cached_input_tokens":1201408,"cache_write_input_tokens":0,"output_tokens":4751,"reasoning_output_tokens":1027}}

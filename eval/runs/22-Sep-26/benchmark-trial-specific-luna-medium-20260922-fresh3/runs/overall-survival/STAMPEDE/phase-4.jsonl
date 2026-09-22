@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0c5fe-00fa-7b20-8f6e-23a4da809c83"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m retrying the saved RoB 2 session from its current checkpoint."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The RoB 2 workflow host is still unavailable (`get_status` cannot be called), so I cannot safely resume or record assessments. The saved Proposal Review remains pending."}}
+{"type":"turn.completed","usage":{"input_tokens":1764889,"cached_input_tokens":1637376,"cache_write_input_tokens":0,"output_tokens":5145,"reasoning_output_tokens":1145}}
