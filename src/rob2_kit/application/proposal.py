@@ -163,21 +163,24 @@ def _proposal_shape_repairs(
                 "target comparison group",
             )
         )
+        reported_values = ()
         if isinstance(result.reported, ComparativeEffectResult):
-            if result.reported.group_values:
+            reported_values = result.reported.group_values
+            if reported_values:
                 reported_path = f"{path}/reported/group_values"
-                reported_ids = [item.group_id for item in result.reported.group_values]
+                reported_ids = [item.group_id for item in reported_values]
             else:
                 reported_path = ""
                 reported_ids = []
         elif isinstance(result.reported, GroupBoundValuesResult):
+            reported_values = result.reported.group_values
             reported_path = f"{path}/reported/group_values"
-            reported_ids = [item.group_id for item in result.reported.group_values]
+            reported_ids = [item.group_id for item in reported_values]
         else:
             reported_path = ""
             reported_ids = []
         if reported_path:
-            for value_index, value in enumerate(result.reported.group_values):
+            for value_index, value in enumerate(reported_values):
                 if value.unit == MISSING_GROUP_VALUE_UNIT:
                     result_repairs.append(
                         {

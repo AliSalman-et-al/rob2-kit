@@ -28,7 +28,7 @@ from rob2_kit.application.domains import reconcile_missing_data
 from rob2_kit.application.evidence import _search_receipt
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.packs import SCIENTIFIC_PACK
-from rob2_kit.workflow_models import DomainAnswer
+from rob2_kit.workflow_models import DirectEvidenceUse, DomainAnswer
 
 
 def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -143,7 +143,9 @@ def test_nested_limitation_evidence_is_preserved_as_context() -> None:
     )
 
     assert [basis.kind for basis in parsed.bases] == ["limitation", "context"]
-    assert parsed.bases[1].evidence == "eh_0123456789abcdef"
+    context_basis = parsed.bases[1]
+    assert isinstance(context_basis, DirectEvidenceUse)
+    assert context_basis.evidence == "eh_0123456789abcdef"
 
 
 def test_answer_scope_repairs_are_atomic_and_valid_replay_is_idempotent(tmp_path: Path) -> None:
