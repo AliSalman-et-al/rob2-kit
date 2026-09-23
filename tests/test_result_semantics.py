@@ -563,7 +563,8 @@ def test_domain_context_missing_data_preview_is_typed_read_only_and_scope_bounde
     expected_rows = [row | {"basis": [evidence["identity"]]} for row in rows]
     assert card["missing_data"] == reconcile_missing_data(expected_rows)
     preview_by_scope = {
-        tuple(item["scope"].values()): item for item in card["missing_data"]["rows"]
+        tuple(item["scope"][key] for key in ("arm", "population", "unit", "time_point")): item
+        for item in card["missing_data"]["rows"]
     }
     assert (
         preview_by_scope[("intervention", "analyzed participants", "participants", "week 12")][

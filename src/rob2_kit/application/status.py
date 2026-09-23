@@ -5,7 +5,7 @@ from ..packs import SCIENTIFIC_PACK
 from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
 from .evidence import _evidence_catalog, main_report_reading_status
-from .working import working_checkpoint_status
+from .working import investigation_projection, working_checkpoint_status
 
 _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
@@ -199,6 +199,7 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
         terminal_counts=public["counts"],
         continuation=_continuation(state),
         working_checkpoint=working_checkpoint_status(root, state, active_trial),
+        investigation=investigation_projection(root, state, active_trial, _active_domain),
         trial_review=_current_trial_review(state),
         selected_evidence=_selected_evidence(root) if state.get("phase") == "proposal" else [],
         main_report_reading=main_report_reading,

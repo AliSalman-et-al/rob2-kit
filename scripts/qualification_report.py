@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Validate an integrated, privacy-safe qualification report."""
+"""Validate an integrated, privacy-safe qualification report.
+
+The report is a deterministic receipt for an externally executed campaign;
+this command does not launch a model or provide a second scientific authority.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-from rob2_kit.evaluation.qualification_report import validate
+from rob2_kit.evaluation.qualification_report import QUALIFICATION_SCHEMA, validate
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -24,7 +28,14 @@ def main(argv: list[str] | None = None) -> int:
     if errors:
         print("qualification report rejected: " + "; ".join(errors), file=sys.stderr)
         return 1
-    print(f"qualification report validated; {report['promotion']}")
+    if report["schema"] == QUALIFICATION_SCHEMA:
+        print(
+            "qualification report validated; "
+            f"{report['promotion']} (bounded engineering claim; "
+            "not adjudicated scientific accuracy)"
+        )
+    else:
+        print(f"qualification report validated; {report['promotion']}")
     return 0
 
 

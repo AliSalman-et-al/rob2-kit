@@ -26,6 +26,41 @@ def _collector() -> dict[str, Any]:
     return runpy.run_path(str(SCRIPTS / "collect_rsi_benchmark.py"))
 
 
+def test_runtime_evidence_requires_a_completed_rob2_response(tmp_path: Path) -> None:
+    contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
+    has_evidence = contract["trace_has_rob2_runtime_evidence"]
+    trace = tmp_path / "phase.jsonl"
+    base = {
+        "item": {
+            "type": "mcp_tool_call",
+            "server": "rob2",
+            "tool": "get_status",
+            "status": "completed",
+            "error": None,
+            "result": {"isError": True, "content": [{"type": "text", "text": "invalid request"}]},
+        }
+    }
+
+    for event in (
+        None,
+        [],
+        {**base, "type": "item.started"},
+        {
+            "type": "item.completed",
+            "item": {**base["item"], "status": "in_progress", "result": None},
+        },
+        {
+            "type": "item.completed",
+            "item": {**base["item"], "error": "transport failed", "result": None},
+        },
+    ):
+        trace.write_text(json.dumps(event) + "\n", encoding="utf-8")
+        assert has_evidence(trace) is False
+
+    trace.write_text(json.dumps({**base, "type": "item.completed"}) + "\n", encoding="utf-8")
+    assert has_evidence(trace) is True
+
+
 def test_execution_record_binds_campaign_and_rejects_duplicate_phase(tmp_path: Path) -> None:
     runner = _runner()
     run_dir = tmp_path / "campaign" / "outcome" / "Trial-A"
@@ -86,6 +121,45 @@ def test_execution_record_binds_campaign_and_rejects_duplicate_phase(tmp_path: P
         )
 
 
+def test_attempt_identity_binds_every_runtime_input() -> None:
+    runner = _runner()
+    identity = {
+        "campaign_id": "campaign",
+        "case_id": "campaign-outcome-trial",
+        "trial_id": "Trial-A",
+        "outcome": "Overall Survival",
+    }
+    base_runtime = {
+        "build_sha256": "build-a",
+        "skill_sha256": "skill-a",
+        "pack": "pack-a",
+        "contract": "contract-a",
+        "host": {"platform": "test", "os_name": "test"},
+        "expected_tool_inventory": ["get_status", "save_working_checkpoint"],
+        "tool_inventory_version": "rob2-kit.mcp-tools.v1",
+    }
+    common = {
+        "run_input_sha256": "run-a",
+        "prompt_sha256": "prompt-a",
+        "manifest_sha256": "manifest-a",
+        "model": "model-a",
+        "effort": "medium",
+        "selection_policy": "declared",
+        "retry": 0,
+    }
+    original = runner["_attempt_identity"](identity, runtime_inputs=base_runtime, **common)
+
+    for field in base_runtime:
+        changed = dict(base_runtime)
+        if field == "host":
+            changed[field] = {"platform": "changed", "os_name": "test"}
+        elif field == "expected_tool_inventory":
+            changed[field] = ["get_status", "changed_tool"]
+        else:
+            changed[field] = f"changed-{field}"
+        assert runner["_attempt_identity"](identity, runtime_inputs=changed, **common) != original
+
+
 def test_success_requires_verified_bundle_and_preserves_phase_provenance(tmp_path: Path) -> None:
     runner = _runner()
     run_dir = tmp_path / "campaign" / "outcome" / "Trial-A"
@@ -99,7 +173,9 @@ def test_success_requires_verified_bundle_and_preserves_phase_provenance(tmp_pat
     trace.parent.mkdir(parents=True)
     artifact.parent.mkdir(parents=True)
     trace.write_text("{}\n", encoding="utf-8")
-    artifact.write_bytes(b"bundle")
+    artifact_identity = "sha256:" + "0" * 64
+    with zipfile.ZipFile(artifact, "w") as archive:
+        archive.writestr("manifest.json", json.dumps({"identity": artifact_identity}))
 
     original = runner["_finish_execution"].__globals__["runpy"].run_path
     runner["_finish_execution"].__globals__["runpy"].run_path = lambda path: {
@@ -111,15 +187,42 @@ def test_success_requires_verified_bundle_and_preserves_phase_provenance(tmp_pat
             record,
             1,
             0,
-            artifact={"path": "result.rob2.zip", "identity": "sha256:" + "0" * 64},
+            artifact={"path": "result.rob2.zip", "identity": artifact_identity},
         )
     finally:
         runner["_finish_execution"].__globals__["runpy"].run_path = original
 
     assert record["state"] == "succeeded"
     assert record["artifact"]["verified"] is True
-    assert record["artifact"]["sha256"] == hashlib.sha256(b"bundle").hexdigest()
+    assert record["artifact"]["sha256"] == hashlib.sha256(artifact.read_bytes()).hexdigest()
     assert record["phases"][0]["trace_sha256"] == runner["_sha256_file"](trace)
+
+
+def test_finish_rejects_artifact_receipt_identity_that_differs_from_manifest(
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    run_dir = tmp_path / "campaign" / "outcome" / "Trial-A"
+    trace = run_dir / "phase-1.jsonl"
+    artifact = run_dir / "workspace" / "result.rob2.zip"
+    trace.parent.mkdir(parents=True)
+    artifact.parent.mkdir(parents=True)
+    trace.write_text("{}\n", encoding="utf-8")
+    with zipfile.ZipFile(artifact, "w") as archive:
+        archive.writestr("manifest.json", json.dumps({"identity": "sha256:" + "a" * 64}))
+    record = {"state": "running", "phases": [{"phase": 1}]}
+
+    with pytest.raises(ValueError, match="artifact identity mismatch"):
+        runner["_finish_execution"](
+            run_dir,
+            record,
+            1,
+            0,
+            artifact={"path": "result.rob2.zip", "identity": "sha256:" + "b" * 64},
+        )
+
+    assert record["state"] == "failed_infrastructure"
+    assert "artifact" not in record
 
 
 def test_collector_binds_adjudication_to_checkpoint_domain_question_and_label(
@@ -236,17 +339,179 @@ def test_trace_artifact_recovery_finds_nested_finalize_receipt(tmp_path: Path) -
     }
 
 
+def test_trace_session_recovery_supports_current_thread_event_and_legacy_event(
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    current = tmp_path / "current.jsonl"
+    current.write_text(
+        json.dumps({"type": "thread.started", "thread_id": "current-thread"}) + "\n",
+        encoding="utf-8",
+    )
+    assert runner["_trace_session_id"](current) == "current-thread"
+
+    legacy = tmp_path / "legacy.jsonl"
+    legacy.write_text(
+        json.dumps({"type": "session_id", "session_id": "legacy-session"}) + "\n",
+        encoding="utf-8",
+    )
+    assert runner["_trace_session_id"](legacy) == "legacy-session"
+
+
+def test_continuation_tool_inventory_requires_exact_recovery_surface(tmp_path: Path) -> None:
+    runner = _runner()
+    contract = json.loads(
+        (Path(__file__).parents[1] / "docs" / "release" / "public-contract.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    advertised = tuple(tool["name"] for tool in contract["tools"])
+    assert runner["EXPECTED_TOOL_INVENTORY"] == advertised
+    assert "save_working_checkpoint" in runner["EXPECTED_TOOL_INVENTORY"]
+
+    trace = tmp_path / "phase-1.jsonl"
+    trace.write_text(
+        json.dumps(
+            {
+                "type": "mcp_list_tools",
+                "tools": [{"name": name} for name in runner["EXPECTED_TOOL_INVENTORY"]],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "execution.json").write_text(
+        json.dumps(
+            {
+                "runtime_inputs": {
+                    "expected_tool_inventory": list(runner["EXPECTED_TOOL_INVENTORY"]),
+                    "tool_inventory_version": "rob2-kit.mcp-tools.v1",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    assert runner["_validate_tool_inventory"](tmp_path, 1) == tuple(
+        sorted(runner["EXPECTED_TOOL_INVENTORY"])
+    )
+
+    trace.write_text(
+        json.dumps({"type": "mcp_list_tools", "tools": [{"name": "get_status"}]}) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="smallest valid recovery|fresh benchmark attempt"):
+        runner["_validate_tool_inventory"](tmp_path, 1, expected=("get_status", "search_sources"))
+
+
+def test_continuation_accepts_trace_without_inventory_when_launch_record_is_frozen(
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    expected = tuple(runner["EXPECTED_TOOL_INVENTORY"])
+    (tmp_path / "phase-1.jsonl").write_text(
+        "\n".join(
+            (
+                json.dumps({"type": "thread.started", "thread_id": "session-1"}),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "get_status",
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {"outcome": "success"}},
+                        },
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "execution.json").write_text(
+        json.dumps(
+            {
+                "runtime_inputs": {
+                    "expected_tool_inventory": list(expected),
+                    "tool_inventory_version": "rob2-kit.mcp-tools.v1",
+                    "tool_inventory": {
+                        "names": list(expected),
+                        "version": "rob2-kit.mcp-tools.v1",
+                        "source": "docs/release/public-contract.json",
+                    },
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert runner["_validate_tool_inventory"](tmp_path, 1) == tuple(sorted(expected))
+
+    (tmp_path / "phase-1.jsonl").write_text(
+        json.dumps({"type": "thread.started", "thread_id": "session-1"}) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="runtime availability is unverified"):
+        runner["_validate_tool_inventory"](tmp_path, 1)
+
+    (tmp_path / "execution.json").write_text(
+        json.dumps({"runtime_inputs": {"tool_inventory_version": "rob2-kit.mcp-tools.v1"}}),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="frozen launch tool inventory is unavailable"):
+        runner["_validate_tool_inventory"](tmp_path, 1)
+
+
+def test_collector_keeps_legacy_execution_without_attempt_id_unqualified(
+    tmp_path: Path,
+) -> None:
+    collector = _collector()
+    trial_dir = tmp_path / "case"
+    trial_dir.mkdir()
+    identity = {
+        "campaign_id": "campaign",
+        "case_id": "campaign-overallsurvival-triala",
+        "trial_id": "Trial-A",
+        "outcome": "Overall Survival",
+    }
+    (trial_dir / "execution.json").write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.rsi-execution.v1",
+                "identity": identity,
+                "state": "succeeded",
+                "phases": [{"phase": 1, "state": "succeeded"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    execution = collector["_execution"](trial_dir, identity, legacy_read_only=False)
+
+    assert execution is not None
+    assert execution["compatibility"] == {
+        "mode": "historical-unqualified",
+        "schema": "rob2-kit.rsi-execution.v1",
+        "reason": "immutable attempt identity was not recorded",
+    }
+
+
 def test_collector_rejects_unclaimed_or_moved_bundles(tmp_path: Path) -> None:
     collector = _collector()
     bundle = tmp_path / "case" / "workspace" / "result.rob2.zip"
     bundle.parent.mkdir(parents=True)
-    bundle.write_bytes(b"bundle")
+    identity = "sha256:" + "1" * 64
+    with zipfile.ZipFile(bundle, "w") as archive:
+        archive.writestr("manifest.json", json.dumps({"identity": identity}))
     execution = {
         "state": "succeeded",
         "artifact": {
             "path": "workspace/result.rob2.zip",
-            "sha256": hashlib.sha256(b"bundle").hexdigest(),
+            "sha256": hashlib.sha256(bundle.read_bytes()).hexdigest(),
             "verified": True,
+            "identity": identity,
         },
     }
     assert collector["_bundle"](bundle.parents[1], execution) == bundle
@@ -336,6 +601,57 @@ def test_continuation_session_is_recovered_from_a_crashed_phase_trace(tmp_path: 
         session="authoritative-session",
     )
     assert resumed["codex_session_id"] == "authoritative-session"
+    runner["_release_execution_lock"](run_dir)
+
+
+def test_continuation_rejects_changed_runtime_inputs(tmp_path: Path) -> None:
+    runner = _runner()
+    run_dir = tmp_path / "campaign" / "outcome" / "Trial-A"
+    prompt = tmp_path / "prompt.txt"
+    case = tmp_path / "case.json"
+    prompt.write_text("prompt", encoding="utf-8")
+    case.write_text("{}", encoding="utf-8")
+    inputs = {"trial": "Trial-A", "requested_outcome": "Overall Survival"}
+    identity = runner["_execution_identity"](run_dir, inputs)
+    runtime_inputs = {
+        "build_sha256": "build-a",
+        "skill_sha256": "skill-a",
+        "pack": "pack-a",
+        "contract": "contract-a",
+        "host": {"platform": "test", "os_name": "test"},
+        "expected_tool_inventory": ["get_status"],
+    }
+    runner["_load_or_create_execution"](
+        run_dir,
+        identity,
+        run_inputs=inputs,
+        case_file=case,
+        prompt_file=prompt,
+        phase=1,
+        session=None,
+        runtime_inputs=runtime_inputs,
+    )
+    (run_dir / "phase-1.jsonl").write_text(
+        json.dumps({"session_id": "authoritative-session"}) + "\n", encoding="utf-8"
+    )
+    record = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
+    record["state"] = "resumable"
+    runner["_atomic_json"](run_dir / "execution.json", record)
+    runner["_release_execution_lock"](run_dir)
+
+    changed_runtime = dict(runtime_inputs)
+    changed_runtime["pack"] = "pack-b"
+    with pytest.raises(ValueError, match="runtime input mismatch"):
+        runner["_load_or_create_execution"](
+            run_dir,
+            identity,
+            run_inputs=inputs,
+            case_file=case,
+            prompt_file=prompt,
+            phase=2,
+            session="authoritative-session",
+            runtime_inputs=changed_runtime,
+        )
     runner["_release_execution_lock"](run_dir)
 
 

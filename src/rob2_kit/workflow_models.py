@@ -156,7 +156,7 @@ class WorkingDraft(StrictModel):
     )
 
 
-WorkingPremiseStatus = Literal["support", "contradiction", "unresolved"]
+WorkingPremiseStatus = Literal["support", "contradiction", "unresolved", "bounded"]
 
 
 class WorkingPremiseRecord(StrictModel):
@@ -201,6 +201,14 @@ class WorkingPremiseRecord(StrictModel):
         validation_alias=AliasChoices("next_action", "next_discriminating_action"),
         description="Next discriminating investigative action, when one is useful.",
     )
+    stopping_rationale: NonBlankText | None = Field(
+        default=None,
+        max_length=4_000,
+        description=(
+            "Why the host stopped investigating this premise while retaining any unresolved "
+            "component; this is a host assertion, not a server sufficiency finding."
+        ),
+    )
     domain_id: DomainId | None = Field(
         default=None, description="Related RoB 2 Domain, when known."
     )
@@ -210,8 +218,10 @@ class WorkingPremiseRecord(StrictModel):
 
     @model_validator(mode="after")
     def unresolved_status_has_component(self) -> WorkingPremiseRecord:
-        if self.status == "unresolved" and self.unresolved_component is None:
-            raise ValueError("unresolved premise status requires unresolved_component")
+        if self.status in {"unresolved", "bounded"} and self.unresolved_component is None:
+            raise ValueError(f"{self.status} premise status requires unresolved_component")
+        if self.status == "bounded" and self.stopping_rationale is None:
+            raise ValueError("bounded premise status requires stopping_rationale")
         return self
 
 
@@ -259,6 +269,13 @@ class WorkingSourceBinding(StrictModel):
     projection_hash: Identity
 
 
+class WorkingDomainBinding(StrictModel):
+    """The canonical Domain head observed when a working checkpoint was saved."""
+
+    domain_id: DomainId
+    checkpoint_identity: Identity
+
+
 class WorkingCheckpoint(StrictModel):
     identity: Identity | None = None
     batch_id: Identity
@@ -278,6 +295,9 @@ class WorkingCheckpoint(StrictModel):
     # ``None`` preserves the canonical bytes and identity of checkpoints saved
     # before premise records existed. New saves always write an explicit tuple.
     premise_records: tuple[WorkingPremiseRecord, ...] | None = None
+    # ``None`` identifies checkpoints written before per-Domain dependency
+    # bindings existed. New saves always write an explicit tuple.
+    domain_checkpoint_bindings: tuple[WorkingDomainBinding, ...] | None = None
     next_action: NonBlankText | None = None
 
     @model_validator(mode="after")
@@ -358,8 +378,26 @@ class MissingDataSemantics(StrictModel):
         return self
 
 
+ParticipantFlowKind = Literal[
+    "randomized",
+    "eligible",
+    "treated",
+    "observed",
+    "analyzed",
+    "imputed",
+    "excluded",
+    "event",
+]
+
+
 class MissingDataRow(StrictModel):
-    """One scope-matched participant-flow count supplied for Domain 3."""
+    """One scope-matched participant-flow record supplied for Domain 2 or 3.
+
+    The legacy randomized/observed/analyzed/imputed fields remain the compact
+    D3 form.  The additional fields make the other participant transitions
+    explicit without allowing an analysis, treatment, exclusion, or event
+    count to masquerade as outcome availability.
+    """
 
     arm: NonBlankText = Field(description="Trial arm for this participant-flow row.")
     population: NonBlankText = Field(
@@ -367,8 +405,30 @@ class MissingDataRow(StrictModel):
     )
     unit: NonBlankText = Field(description="Unit counted, such as participants.")
     time_point: NonBlankText = Field(description="Outcome time point represented by this row.")
+    result_identity: Identity | None = Field(
+        default=None,
+        description="Identity of the exact approved Result represented by this row, when known.",
+    )
+    endpoint: NonBlankText | None = Field(
+        default=None,
+        description="Result-specific endpoint or event definition, when reported.",
+    )
+    severity: NonBlankText | None = Field(
+        default=None,
+        description="Outcome severity or threshold represented by this row, when relevant.",
+    )
+    window: NonBlankText | None = Field(
+        default=None,
+        description="Result-specific outcome window; time_point remains the legacy alias.",
+    )
     randomized: NonNegativeInt | None = Field(
         default=None, description="Number randomized when reported."
+    )
+    eligible: NonNegativeInt | None = Field(
+        default=None, description="Number eligible under the reported analysis or outcome scope."
+    )
+    treated: NonNegativeInt | None = Field(
+        default=None, description="Number receiving or starting the assigned intervention."
     )
     observed: NonNegativeInt | None = Field(
         default=None, description="Number with observed outcome data when reported."
@@ -378,6 +438,17 @@ class MissingDataRow(StrictModel):
     )
     imputed: NonNegativeInt | None = Field(
         default=None, description="Number whose outcome data were imputed when reported."
+    )
+    excluded: NonNegativeInt | None = Field(
+        default=None, description="Number excluded from a reported analysis or participant flow."
+    )
+    event_count: NonNegativeInt | None = Field(
+        default=None,
+        description="Event numerator; never a participant availability count.",
+    )
+    event_definition: NonBlankText | None = Field(
+        default=None,
+        description="Definition or severity threshold for event_count, when supplied.",
     )
     exclusions: tuple[NonBlankText, ...] = Field(
         default=(), description="Reported reasons for exclusion or missingness."
@@ -397,6 +468,12 @@ class MissingDataRow(StrictModel):
             "event, analysis, and safety counts never establish outcome availability."
         ),
     )
+
+    @model_validator(mode="after")
+    def event_count_has_definition(self) -> MissingDataRow:
+        if self.event_count is not None and self.event_definition is None:
+            raise ValueError("event_count requires event_definition")
+        return self
 
 
 RelativePath = Annotated[
@@ -1236,6 +1313,15 @@ class FigureEvidence(StrictModel):
     )
     provenance: Literal["text_corroborated", "host_visual"] = Field(
         description="Whether the transcription has text corroboration or host visual review."
+    )
+    uncertainty: NonBlankText | None = Field(
+        default=None,
+        max_length=2_000,
+        exclude_if=lambda value: value is None,
+        description=(
+            "Optional host-observed uncertainty about the transcription. This records the "
+            "observation provenance; it does not assert that the transcription is correct."
+        ),
     )
 
 

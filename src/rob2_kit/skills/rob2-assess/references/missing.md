@@ -148,3 +148,13 @@ D3.2 does not allow `no_information`. When no bias-correcting evidence is found,
 use the question card to choose a permitted negative or probably-negative answer
 with the appropriate limitation or Evidence basis. Do not fabricate direct
 support for the absence of bias.
+
+## Paired premise check
+
+Use neutral pairs to keep the seams separate: complete outcome ascertainment
+versus an analysis denominator with unresolved availability; common administrative
+censoring versus follow-up stopping after worsening symptoms. The changed premise
+is the ascertainment or missingness mechanism, not a percentage threshold. The
+pair supplies no answer or risk label; the host still grounds each proposition
+in exact Evidence and retains No information or High where the official path
+requires it.

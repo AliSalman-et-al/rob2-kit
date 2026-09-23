@@ -33,3 +33,12 @@ grading, or assessment. For a mixed objective and subjective composite,
 preserve component-specific Evidence and uncertainty: reassurance for an
 objective component does not override an unresolved or influenced subjective
 component.
+
+## Paired premise check
+
+Compare an objective registry outcome with equal detection opportunity against a
+judgment-dependent participant outcome, and compare equal ascertainment schedules
+against an intervention that creates additional detection visits. These are
+neutral contrasts: assess suitability, differential detection, assessor identity
+and awareness, susceptibility, and likely influence separately. Open-label status
+or an endpoint class does not supply an answer.

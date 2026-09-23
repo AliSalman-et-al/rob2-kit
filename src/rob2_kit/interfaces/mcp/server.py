@@ -65,6 +65,7 @@ from rob2_kit.application.finalization import finalize_batch as _finalize_batch
 from rob2_kit.application.intake import approve_review as _approve_review
 from rob2_kit.application.intake import prepare_batch_for_outcome as _prepare_batch
 from rob2_kit.application.intake import proposal_approval_context as _proposal_approval_context
+from rob2_kit.application.intake import validate_requested_outcome
 from rob2_kit.application.proposal import save_proposal as _save_proposal
 from rob2_kit.application.proposal import validate_proposal as _validate_proposal
 from rob2_kit.application.source_handles import (
@@ -110,6 +111,10 @@ mcp = FastMCP(
     "rob2-kit",
     version=__version__,
     website_url="https://github.com/AliSalman-et-al/rob2-kit",
+    # Keep shared public types as JSON Schema references. Dereferencing copies
+    # the same large response models into every tool and needlessly inflates
+    # the MCP surface presented to the host.
+    dereference_schemas=False,
     # JSON arrays and enum values must be decoded by Pydantic before invoking
     # the typed workflow models. FastMCP 4's strict adapter rejects those
     # ordinary JSON representations (tuples/enums) before our models run;
@@ -190,7 +195,13 @@ _DOMAIN_CONTEXT_PAGE_SECTIONS = ("questions", "comparison_cards", "evidence")
 
 
 def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
-    """Order high-signal context first without dropping pack guidance."""
+    """Order the decision projection without dropping recoverable support.
+
+    The application owns the projection's contents.  This helper only fixes the
+    host-visible order: the approved Result and current premise come before
+    broad guidance, while all source-bound support and recovery metadata remain
+    available later in the same payload (or through the page cursor).
+    """
 
     encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
     copied = json.loads(encoded)
@@ -202,20 +213,22 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
         for key in (
             "trial_id",
             "domain_id",
-            "pack",
-            "official_guidance",
             "result",
-            "reading_recovery",
+            "investigation",
+            "questions",
+            "comparison_cards",
             "answers",
-            "working_checkpoint",
-            "current_checkpoint",
             "guidance",
             "response_framework",
             "traps",
-            "questions",
             "completion_rule",
-            "comparison_cards",
             "evidence",
+            "working_checkpoint",
+            "current_checkpoint",
+            "coverage",
+            "pack",
+            "official_guidance",
+            "reading_recovery",
             "evidence_workspace",
         )
         if key in data
@@ -471,7 +484,13 @@ def _paginate_domain_context_transport(
             "domain_context_header_oversized: "
             f"required_page_size={required_page_size};retry with a larger max_response_bytes"
         )
-    records: list[tuple[str, int, list[dict[str, Any]]]] = []
+    # Page zero carries the stable scientific header by itself. Combining the
+    # header with the first (often guidance-heavy) question makes otherwise
+    # ordinary 16 KiB delivery budgets fail even though both pieces are
+    # independently recoverable.
+    records: list[tuple[str, int, list[dict[str, Any]]]] = (
+        [("complete", 0, [])] if sections != [("complete", [])] else []
+    )
     for section, section_items in sections:
         start = 0
         while start < len(section_items) or (not section_items and start == 0):
@@ -611,9 +630,7 @@ def _workspace() -> str:
 
 
 def _nonblank(value: str) -> str:
-    if not value.strip():
-        raise ValueError("requested_outcome must contain non-whitespace content")
-    return value
+    return validate_requested_outcome(value)
 
 
 RequestedOutcome = Annotated[
@@ -1271,7 +1288,9 @@ def prepare_batch(
     name="get_status",
     title="Get workflow status",
     description=(
-        "Read phase, revision, dispositions, next action, and main-report reading status. "
+        "Read phase, revision, dispositions, next action, main-report reading status, and the "
+        "derived investigation view. The view separates host-asserted sufficiency from workflow "
+        "permission and keeps recovery choices visible. "
         "When reading status is required, read its required_ranges before scientific work. "
         "Check again after finishing the returned windows. Omitted Evidence quotes retain exact "
         "read_pages recovery; recover unfamiliar passages before using them."
@@ -1290,8 +1309,8 @@ def get_status() -> ToolResult:
         "Replace the current Trial's small, source-linked working notes. Use notes for "
         "observations, interpretations, terminology, unread ranges, open questions, drafts, and "
         "material premise records. A premise record keeps its proposition, source-located "
-        "observations and counterevidence, host tentative inference, unresolved component, and "
-        "next discriminating action separate. "
+        "observations and counterevidence, host tentative inference, unresolved component, next "
+        "discriminating action, and stopping rationale separate. "
         "Each note must cite exact source page and line ranges, or 0,0 for a whole-page visual "
         "locator. These notes are resumable working memory; they do not become Evidence, answer "
         "a question, change a Result, or commit a "
@@ -1325,9 +1344,10 @@ def save_working_checkpoint(
         "so unsupported or unreadable dossier files remain visible. "
         "For source-scoped navigation, pass source_id and optionally cursor to receive bounded "
         "pages from the complete deterministic index of literal heading candidates and leading "
-        "page excerpts from the persisted text projection, including page numbers with no "
-        "extracted text. Follow next_cursor until terminal is true; totals describe the complete "
-        "index, not just this response page. "
+        "page excerpts from the persisted text projection, including readable labels, logical "
+        "sections, literal embedded version/date spans, and page numbers with no extracted text. "
+        "Image-only PDF pages include an exact render_page recovery route. Follow next_cursor "
+        "until terminal is true; totals describe the complete index, not just this response page. "
         "Navigation is a routing aid, not Evidence; read the cited pages before relying on them."
     ),
     annotations=_READ_ONLY,
@@ -2341,7 +2361,8 @@ def render_page(
         "self-contained account containing every applicable title, axis, series, label, value, "
         "unit, uncertainty, denominator, and footnote. Select only with the delivery_receipt "
         "returned alongside an ImageContent block by render_page. This tool accepts only "
-        "trial_id, source_id, delivery_receipt, transcription, and region; attach the returned "
+        "trial_id, source_id, delivery_receipt, transcription, region, and optional uncertainty; "
+        "attach the returned "
         "Evidence later through an answer basis."
     ),
     annotations=_MUTATION,
@@ -2377,6 +2398,17 @@ def select_visual_evidence(
     ] = Field(
         description=("Normalized x0,y0,x1,y1 bounds in [0,1]; use [0,0,1,1] for the whole page."),
     ),
+    uncertainty: Annotated[
+        VisualTranscription | None,
+        Field(
+            default=None,
+            max_length=2_000,
+            description=(
+                "Optional host-observed uncertainty about the transcription. This records "
+                "provenance and does not assert that the transcription is correct."
+            ),
+        ),
+    ] = None,
 ) -> ToolResult:
     return _invoke(
         "select_visual_evidence",
@@ -2387,6 +2419,7 @@ def select_visual_evidence(
             delivery_receipt,
             transcription,
             list(region),
+            uncertainty,
         ),
     )
 
@@ -2751,7 +2784,9 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     title="Get Domain context",
     description=(
         "Read the approved Result, current Domain checkpoint, Evidence, comparison cards, and "
-        "question cards. Complete required reading before answering. Use the returned revision "
+        "question cards. The investigation projection separates host-asserted sufficiency from "
+        "workflow permission and keeps recovery choices visible. Complete required reading before "
+        "answering. Use the returned revision "
         "and official answer values when validating. Follow context_page.next_cursor until it is "
         "null. If a cursor is stale, restart without a cursor. If cited content is missing or "
         "uncertain, recover the passage before relying on it."
@@ -2897,8 +2932,9 @@ def get_domain_context(
         "for any material unresolved fact, or record a bounded information limit. Identify "
         "material counterevidence and unresolved facts without treating uncertainty as a finding. "
         "The server validates structure, references, activation and workflow requirements, not "
-        "scientific correctness. Save using the returned revision; the server retains the "
-        "validated draft."
+        "scientific correctness. The returned investigation projection keeps search, read, "
+        "revision, and honest-limitation choices visible after structural validation. Save using "
+        "the returned revision; the server retains the validated draft."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("validate_domain_assessment"),

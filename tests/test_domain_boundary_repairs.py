@@ -31,6 +31,17 @@ from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import DirectEvidenceUse, DomainAnswer
 
 
+def _resolve_local(schema: dict[str, Any], node: dict[str, Any]) -> dict[str, Any]:
+    reference = node.get("$ref")
+    if not isinstance(reference, str) or not reference.startswith("#/"):
+        return node
+    resolved: Any = schema
+    for part in reference.removeprefix("#/").split("/"):
+        resolved = resolved[part.replace("~1", "/").replace("~0", "~")]
+    assert isinstance(resolved, dict)
+    return resolved
+
+
 def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
     async def invoke() -> dict[str, Any]:
         os.environ["ROB2_WORKSPACE"] = str(workspace)
@@ -79,7 +90,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     assert "clauses" not in draft["properties"]
     assert "evidence_uses" not in draft["properties"]
     assert "limitations" not in draft["properties"]
-    answer = draft["properties"]["answers"]["items"]
+    answer = _resolve_local(draft, draft["properties"]["answers"]["items"])
     assert set(answer["properties"]) == {
         "question_id",
         "answer",
@@ -89,7 +100,9 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         "unknowns",
         "counterevidence",
     }
-    bases = answer["properties"]["bases"]["items"]["oneOf"]
+    bases = [
+        _resolve_local(draft, item) for item in answer["properties"]["bases"]["items"]["oneOf"]
+    ]
     kinds = {
         item["properties"]["kind"].get("const") or item["properties"]["kind"]["enum"][0]
         for item in bases
@@ -122,7 +135,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     receipt_options = receipt_schema.get("anyOf", [receipt_schema])
     assert any(option.get("pattern") == r"^sr_[0-9a-f]{8,64}$" for option in receipt_options)
     assert "search_receipt" not in limitation.get("required", [])
-    missing_row = answer["properties"]["missing_data"]["anyOf"][0]["items"]
+    missing_row = _resolve_local(draft, answer["properties"]["missing_data"]["anyOf"][0]["items"])
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{8,64}$"
 
 

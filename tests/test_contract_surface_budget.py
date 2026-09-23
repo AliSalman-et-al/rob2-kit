@@ -18,6 +18,19 @@ def _walk(value: Any) -> list[dict[str, Any]]:
     return []
 
 
+def _resolve(schema: dict[str, Any], node: dict[str, Any]) -> dict[str, Any]:
+    """Resolve a local JSON Schema reference without requiring dereferencing."""
+
+    reference = node.get("$ref")
+    if not isinstance(reference, str) or not reference.startswith("#/"):
+        return node
+    resolved: Any = schema
+    for part in reference.removeprefix("#/").split("/"):
+        resolved = resolved[part.replace("~1", "/").replace("~0", "~")]
+    assert isinstance(resolved, dict)
+    return resolved
+
+
 def test_public_output_surface_is_closed_and_within_budget() -> None:
     tools = asyncio.run(mcp.list_tools())
     assert tuple(tool.name for tool in tools) == (
@@ -138,7 +151,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     windows_description = read_parameters["properties"]["windows"]["description"]
     assert "Supply trial_id and windows" in windows_description
     assert "top-level start_line" in windows_description
-    read_window = read_parameters["properties"]["windows"]["anyOf"][0]["items"]
+    read_window = _resolve(
+        read_parameters,
+        read_parameters["properties"]["windows"]["anyOf"][0]["items"],
+    )
     assert (
         "Copy the returned source_id exactly"
         in read_window["properties"]["source_id"]["description"]
@@ -169,7 +185,10 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     )
     assert "Before saving a Domain" in (domain_tool.description or "")
     assert "counterevidence and unresolved facts" in (domain_tool.description or "")
-    answer_schema = domain_tool.parameters["properties"]["answers"]["items"]
+    answer_schema = _resolve(
+        domain_tool.parameters,
+        domain_tool.parameters["properties"]["answers"]["items"],
+    )
     assert set(answer_schema["required"]) >= {"question_id", "answer", "bases"}
     assert "active answer" in answer_schema["properties"]["justification"]["description"]
     assert "inactive branch answers" in answer_schema["properties"]["unknowns"]["description"]

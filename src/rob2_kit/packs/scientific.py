@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.2"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.3"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -257,6 +257,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Side-effect-related compromised blinding counts only when resulting changes were protocol-inconsistent and context-caused.",
             "Subsequent treatment, rescue treatment, or cross-over is not itself a deviation for the effect of assignment: establish both protocol inconsistency and a trial-context cause before answering affirmatively.",
+            "Neutral contrast: protocol-permitted rescue after progression is ordinary subsequent care; prohibited rescue encouraged by trial staff is a candidate trial-context deviation. Change only the protocol-consistency and cause premises before changing the reasoning.",
         ),
         (
             "nonadherence alone",
@@ -264,6 +265,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "participants switched treatment",
             "unequal post-progression treatment without evidence that it was prohibited and trial-context-caused",
             "a protocol deviation without its cause",
+            "discontinuation or crossover without protocol and cause evidence",
         ),
     ),
     "sq:deviations:affected-outcome": _guidance(
@@ -388,6 +390,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
             "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
             "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
+            "Neutral paired control: complete ascertainment and an analysis denominator with unresolved ascertainment differ only in the availability premise; administrative censoring and worsening-related follow-up loss differ only in the missingness mechanism.",
         ),
         (
             "a complete-case analysis label",
@@ -523,6 +526,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "Compare actual methods and detection opportunities. Assessor awareness or possible reporting influence alone does not establish a between-group method difference; assess awareness and influence in 4.3 to 4.5.",
             "Detection opportunity is the chance an outcome could be identified or recorded, including passive ascertainment or intervention-related visits. Keep it separate from measurement susceptibility (4.1) and from who knew the assignment (4.3).",
             "A different visit schedule or passive collection is not enough on its own: explain how it could make the approved outcome more or less likely to be detected in one group.",
+            "Neutral paired control: equal ascertainment schedules and intervention-created additional visits differ only in detection opportunity; do not turn that contrast into an automatic risk label.",
         ),
         ("a common endpoint label", "an equal number randomized", "an ITT analysis"),
     ),
@@ -624,6 +628,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "Assess applicability before chronology: a platform or master plan may cover several comparisons and cohorts, so its presence does not establish applicability to the approved Result. Establish chronology separately: plan finalization must precede availability of unblinded outcome data; a source creation date, registry posting or update date, amendment date, or retrieval date is not automatically the relevant trial chronology.",
             "Current registry content does not establish unseen historical intent, and a data cutoff is not investigator unblinding. Preserve unresolved applicability or chronology instead of filling the gap from report wording that merely looks prespecified.",
             "Results-driven selection is a separate concern from whether a plan exists or whether its chronology is known. Do not infer selection merely from an amendment or from a mismatch without evidence that the choice was driven by results.",
+            "Neutral paired control: an applicable plan for the approved cohort differs from a platform plan for another phase; pre-unblinding finalization differs from ambiguous chronology only in the timing premise.",
         ),
         (
             "an objective definition",

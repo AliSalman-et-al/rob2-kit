@@ -3,6 +3,11 @@
 The report is deliberately a receipt, not a scorer.  It records what was
 checked and what the host exposed; an inaccessible host observation can never
 be converted into a passing observation by this module.
+
+Version 1 remains readable for historical reports.  Version 2 is intentionally
+not a drop-in extension: it must carry a complete qualification comparison
+receipt and joins its campaign, attempts, and deterministic metrics to that
+receipt before a promotion decision can be accepted.
 """
 
 from __future__ import annotations
@@ -10,9 +15,12 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from copy import deepcopy
 from typing import Any
 
 SCHEMA = "rob2-kit.integrated-qualification.v1"
+QUALIFICATION_SCHEMA = "rob2-kit.integrated-qualification.v2"
+QUALIFICATION_COMPARISON_RUN_SCHEMA = "rob2-kit.evaluation-comparison-run.v0.2"
 PROMOTIONS = frozenset({"promote", "hold"})
 STATUSES = frozenset(
     {
@@ -52,6 +60,93 @@ _PRIVATE = frozenset(
     }
 )
 _DELIVERIES = frozenset({"success", "repairable_error", "unobservable"})
+_QUALIFICATION_METRICS = (
+    "result_scope",
+    "premise_support",
+    "counterevidence",
+    "unsupported_concern",
+    "unsupported_reassurance",
+    "provisional_agreement",
+    "completion",
+)
+_QUALIFICATION_TOTALS = ("context_bytes", "calls", "latency", "cost")
+_QUALIFICATION_REPORT_FIELDS = {
+    "schema",
+    "identity",
+    "campaign",
+    "metrics",
+    "mechanical",
+    "observations",
+    "attempts",
+    "promotion",
+    "claim",
+    "comparison",
+}
+_QUALIFICATION_CAMPAIGN_FIELDS = {
+    "campaign_id",
+    "split",
+    "conditions",
+    "attempt_policy",
+    "platforms",
+    "controls",
+}
+_QUALIFICATION_SPLIT_FIELDS = {"kind", "development_trials", "holdout_trials"}
+_QUALIFICATION_CONDITION_FIELDS = {"baseline", "successor"}
+_QUALIFICATION_ATTEMPT_FIELDS = {"draws_per_cell", "selection"}
+_QUALIFICATION_PLATFORM_FIELDS = {
+    "id",
+    "host",
+    "model_family",
+    "model_version",
+    "effort",
+}
+_QUALIFICATION_COMPARISON_FIELDS = {
+    "receipt",
+    "receipt_identity",
+    "campaign_identity",
+    "attempt_identity",
+    "metric_identity",
+    "report_metrics_identity",
+}
+_QUALIFICATION_RECEIPT_FIELDS = {
+    "schema",
+    "config_identity",
+    "plan_identity",
+    "campaign_identity",
+    "configuration",
+    "campaign",
+    "plan",
+    "interventions",
+    "outcomes",
+    "metrics",
+    "retained_outcome_count",
+    "outcome_identity",
+    "metric_identity",
+    "receipt_identity",
+}
+_QUALIFICATION_REPORT_ATTEMPT_FIELDS = {
+    "attempt_id",
+    "host",
+    "status",
+    "platform_id",
+    "arm_id",
+    "cell_id",
+    "draw",
+}
+_LABEL_METRIC_FIELDS = frozenset(
+    {
+        "provisional_agreement",
+        "scientific_accuracy",
+        "class_recall",
+        "left_provisional_agreement",
+        "right_provisional_agreement",
+        "left_accuracy",
+        "right_accuracy",
+    }
+)
+_QUALIFICATION_ATTEMPT_STATUSES = frozenset(
+    {"assessed", "needs_input", "failed", "draw", "scope_correction"}
+)
 
 
 def _canonical(value: Any) -> bytes:
@@ -101,17 +196,396 @@ def _valid_status(value: object) -> bool:
     return isinstance(value, str) and value in STATUSES
 
 
+def _metric_rate(value: object, location: str, errors: list[str]) -> None:
+    if not isinstance(value, dict) or set(value) != {"numerator", "denominator", "rate"}:
+        errors.append(f"{location} has an invalid rate metric")
+        return
+    numerator = value["numerator"]
+    denominator = value["denominator"]
+    rate = value["rate"]
+    if (
+        type(numerator) is not int
+        or numerator < 0
+        or type(denominator) is not int
+        or denominator < 0
+        or numerator > denominator
+        or type(rate) not in (int, float)
+        or isinstance(rate, bool)
+        or not 0 <= rate <= 1
+        or rate != (numerator / denominator if denominator else 0.0)
+    ):
+        errors.append(f"{location} is not a deterministic rate")
+
+
+def _metric_total(value: object, location: str, errors: list[str]) -> None:
+    if not isinstance(value, dict) or set(value) != {"total"}:
+        errors.append(f"{location} has an invalid total metric")
+        return
+    total = value["total"]
+    if type(total) not in (int, float) or isinstance(total, bool) or total < 0:
+        errors.append(f"{location} is not a non-negative total")
+
+
+def _metric_count(value: object, location: str, errors: list[str]) -> None:
+    if not isinstance(value, dict) or set(value) != {"count"}:
+        errors.append(f"{location} has an invalid count metric")
+        return
+    count = value["count"]
+    if type(count) is not int or count < 0:
+        errors.append(f"{location} is not a non-negative count")
+
+
+def _digest(value: Any) -> str:
+    """Use the comparison harness' canonical JSON digest format."""
+
+    return (
+        "sha256:"
+        + hashlib.sha256(
+            json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+    )
+
+
+def _without_label_metrics(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: _without_label_metrics(item)
+            for key, item in value.items()
+            if key not in _LABEL_METRIC_FIELDS
+        }
+    if isinstance(value, list):
+        return [_without_label_metrics(item) for item in value]
+    return value
+
+
+def _bound_identity(receipt_identity: object, value: object) -> str:
+    return identity({"receipt_identity": receipt_identity, "value": value})
+
+
+def bind_comparison(report: dict[str, Any], receipt: dict[str, Any]) -> dict[str, Any]:
+    """Bind a v2 report to one complete qualification comparison receipt.
+
+    The returned copy keeps the full privacy-safe receipt so an independent
+    validator can replay configuration, outcome, and metric joins without
+    trusting a detached campaign summary.
+    """
+
+    if report.get("schema") != QUALIFICATION_SCHEMA:
+        raise ValueError("comparison binding requires the qualification report v2 schema")
+    if receipt.get("schema") != QUALIFICATION_COMPARISON_RUN_SCHEMA:
+        raise ValueError("comparison binding requires a qualification comparison receipt")
+    if not isinstance(receipt.get("receipt_identity"), str):
+        raise ValueError("comparison receipt is missing its deterministic identity")
+    bound = deepcopy(report)
+    bound["comparison"] = {
+        "receipt": deepcopy(receipt),
+        "receipt_identity": receipt["receipt_identity"],
+        "campaign_identity": receipt.get("campaign_identity"),
+        "attempt_identity": _bound_identity(receipt.get("outcome_identity"), bound.get("attempts")),
+        "metric_identity": receipt.get("metric_identity"),
+        "report_metrics_identity": _bound_identity(
+            receipt.get("receipt_identity"), bound.get("metrics")
+        ),
+    }
+    return bound
+
+
+def _validate_qualification_extension(
+    campaign: object, metrics: object, claim: object, errors: list[str]
+) -> None:
+    if not isinstance(campaign, dict) or set(campaign) != _QUALIFICATION_CAMPAIGN_FIELDS:
+        errors.append("campaign has an unclosed field set")
+    else:
+        if not _valid_id(campaign["campaign_id"]):
+            errors.append("campaign id is invalid")
+        split = campaign["split"]
+        if not isinstance(split, dict) or set(split) != _QUALIFICATION_SPLIT_FIELDS:
+            errors.append("campaign split has an unclosed field set")
+        else:
+            if split["kind"] != "trial_heldout":
+                errors.append("campaign split is not Trial-held-out")
+            trial_sets: list[set[str]] = []
+            for name in ("development_trials", "holdout_trials"):
+                values = split[name]
+                if (
+                    not isinstance(values, list)
+                    or not values
+                    or any(not _valid_id(value) for value in values)
+                    or len(set(values)) != len(values)
+                ):
+                    errors.append(f"campaign split {name} are invalid")
+                else:
+                    trial_sets.append(set(values))
+            if len(trial_sets) == 2 and trial_sets[0] & trial_sets[1]:
+                errors.append("campaign Trial-held-out split overlaps")
+        conditions = campaign["conditions"]
+        if (
+            not isinstance(conditions, dict)
+            or set(conditions) != _QUALIFICATION_CONDITION_FIELDS
+            or not all(_valid_id(conditions.get(key)) for key in _QUALIFICATION_CONDITION_FIELDS)
+            or conditions.get("baseline") == conditions.get("successor")
+        ):
+            errors.append("campaign conditions are invalid")
+        attempt_policy = campaign["attempt_policy"]
+        if (
+            not isinstance(attempt_policy, dict)
+            or set(attempt_policy) != _QUALIFICATION_ATTEMPT_FIELDS
+            or type(attempt_policy.get("draws_per_cell")) is not int
+            or not 1 <= attempt_policy.get("draws_per_cell", 0) <= 8
+            or attempt_policy.get("selection") != "retain_all"
+        ):
+            errors.append("campaign attempt policy is invalid")
+        platforms = campaign["platforms"]
+        platform_ids: set[str] = set()
+        hosts: set[str] = set()
+        families: set[str] = set()
+        if not isinstance(platforms, list) or not platforms:
+            errors.append("campaign platforms must be a non-empty list")
+        else:
+            for index, platform in enumerate(platforms):
+                location = f"campaign.platforms[{index}]"
+                if (
+                    not isinstance(platform, dict)
+                    or set(platform) != _QUALIFICATION_PLATFORM_FIELDS
+                ):
+                    errors.append(f"{location} has an unclosed field set")
+                    continue
+                if (
+                    any(not _valid_id(platform[key]) for key in _QUALIFICATION_PLATFORM_FIELDS)
+                    or platform["id"] in platform_ids
+                ):
+                    errors.append(f"{location} identity is invalid")
+                    continue
+                platform_ids.add(platform["id"])
+                hosts.add(platform["host"])
+                families.add(platform["model_family"])
+            if len(hosts) < 2 and len(families) < 2:
+                errors.append("campaign requires two model families or materially different hosts")
+        controls = campaign["controls"]
+        if (
+            not isinstance(controls, list)
+            or len(controls) != 4
+            or set(controls) != {"D2", "D3", "D4", "D5"}
+        ):
+            errors.append("campaign controls must cover D2, D3, D4, and D5")
+
+    if not isinstance(metrics, dict) or set(metrics) != set(_QUALIFICATION_METRICS) | set(
+        _QUALIFICATION_TOTALS
+    ) | {"errors"}:
+        errors.append("qualification metrics are incomplete or unclosed")
+    else:
+        for metric in _QUALIFICATION_METRICS:
+            _metric_rate(metrics[metric], f"metrics.{metric}", errors)
+        _metric_count(metrics["errors"], "metrics.errors", errors)
+        for metric in _QUALIFICATION_TOTALS:
+            _metric_total(metrics[metric], f"metrics.{metric}", errors)
+
+    if not isinstance(claim, dict) or set(claim) != {
+        "decision",
+        "scope",
+        "adjudicated_scientific_accuracy",
+    }:
+        errors.append("qualification claim has an unclosed field set")
+    else:
+        if claim["decision"] not in PROMOTIONS:
+            errors.append("qualification claim decision is invalid")
+        if claim["scope"] != "bounded_engineering":
+            errors.append("qualification claim scope is invalid")
+        if claim["adjudicated_scientific_accuracy"] is not False:
+            errors.append("qualification claim must disclaim adjudicated scientific accuracy")
+
+
+def _validate_comparison_binding(report: dict[str, Any], errors: list[str]) -> None:
+    """Validate the exact comparison receipt joined into a v2 report."""
+
+    comparison = report.get("comparison")
+    if not isinstance(comparison, dict) or set(comparison) != _QUALIFICATION_COMPARISON_FIELDS:
+        errors.append("comparison has an unclosed field set")
+        return
+    identities = {
+        key: comparison[key]
+        for key in (
+            "receipt_identity",
+            "campaign_identity",
+            "attempt_identity",
+            "metric_identity",
+            "report_metrics_identity",
+        )
+    }
+    if any(
+        not isinstance(value, str) or not _HASH.fullmatch(value) for value in identities.values()
+    ):
+        errors.append("comparison identities are invalid")
+
+    receipt = comparison["receipt"]
+    if not isinstance(receipt, dict) or set(receipt) != _QUALIFICATION_RECEIPT_FIELDS:
+        errors.append("comparison.receipt has an unclosed field set")
+        return
+    if receipt["schema"] != QUALIFICATION_COMPARISON_RUN_SCHEMA:
+        errors.append("comparison receipt schema is invalid")
+        return
+    receipt_hashes = {
+        key: receipt[key]
+        for key in (
+            "config_identity",
+            "plan_identity",
+            "campaign_identity",
+            "outcome_identity",
+            "metric_identity",
+            "receipt_identity",
+        )
+    }
+    if any(
+        not isinstance(value, str) or not _HASH.fullmatch(value)
+        for value in receipt_hashes.values()
+    ):
+        errors.append("comparison receipt identities are invalid")
+    else:
+        receipt_without_identity = {
+            key: value for key, value in receipt.items() if key != "receipt_identity"
+        }
+        if _digest(receipt_without_identity) != receipt["receipt_identity"]:
+            errors.append("comparison receipt identity does not match its contents")
+        if _digest(receipt["outcomes"]) != receipt["outcome_identity"]:
+            errors.append("comparison receipt outcome identity does not match its outcomes")
+        if _digest(receipt["metrics"]) != receipt["metric_identity"]:
+            errors.append("comparison receipt metric identity does not match its metrics")
+        if receipt["config_identity"] != _digest(receipt["configuration"]):
+            errors.append("comparison receipt configuration identity does not match")
+        if receipt["plan_identity"] != _digest(receipt["plan"]):
+            errors.append("comparison receipt plan identity does not match")
+        if receipt["campaign_identity"] != _digest(receipt["campaign"]):
+            errors.append("comparison receipt campaign identity does not match")
+    for field in ("receipt_identity", "campaign_identity", "metric_identity"):
+        if comparison[field] != receipt[field]:
+            errors.append(f"comparison {field} does not match the receipt")
+    if report.get("campaign") != receipt.get("campaign"):
+        errors.append("qualification campaign is detached from the comparison receipt")
+
+    try:
+        from .harness import run_comparison, validate_comparison_config
+
+        configuration = receipt["configuration"]
+        interventions = receipt["interventions"]
+        validate_comparison_config(configuration, interventions)
+        if receipt["campaign"] != configuration["campaign"]:
+            errors.append("comparison receipt campaign is detached from configuration")
+        if receipt["plan"] != configuration["plan"]:
+            errors.append("comparison receipt plan is detached from configuration")
+        expected = run_comparison(configuration, interventions, receipt["outcomes"])
+        if _without_label_metrics(expected["metrics"]) != _without_label_metrics(
+            receipt["metrics"]
+        ):
+            errors.append("comparison receipt metrics do not match its retained outcomes")
+    except (KeyError, TypeError, ValueError):
+        errors.append("comparison receipt configuration or outcomes are invalid")
+        return
+
+    campaign = receipt["campaign"]
+    platforms = campaign.get("platforms") if isinstance(campaign, dict) else None
+    platform_hosts = (
+        {
+            platform["id"]: platform["host"]
+            for platform in platforms
+            if isinstance(platform, dict)
+            and isinstance(platform.get("id"), str)
+            and isinstance(platform.get("host"), str)
+        }
+        if isinstance(platforms, list)
+        else {}
+    )
+    outcomes = receipt["outcomes"]
+    if not isinstance(outcomes, list) or receipt["retained_outcome_count"] != len(outcomes):
+        errors.append("comparison attempt identity or retained count is invalid")
+        return
+    if not isinstance(report["attempts"], list):
+        errors.append("comparison attempt identity or retained count is invalid")
+        return
+    if (
+        _bound_identity(receipt["outcome_identity"], report["attempts"])
+        != comparison["attempt_identity"]
+    ):
+        errors.append("comparison attempt identity does not match report attempts")
+    expected_attempts: list[dict[str, Any]] = []
+    for outcome in outcomes:
+        if not isinstance(outcome, dict):
+            errors.append("comparison receipt outcome is invalid")
+            return
+        platform_id = outcome.get("platform_id")
+        expected_attempts.append(
+            {
+                "attempt_id": outcome.get("attempt_id"),
+                "host": platform_hosts.get(platform_id),
+                "status": outcome.get("status"),
+                "platform_id": platform_id,
+                "arm_id": outcome.get("arm_id"),
+                "cell_id": outcome.get("cell_id"),
+                "draw": outcome.get("draw"),
+            }
+        )
+    if report["attempts"] != expected_attempts:
+        errors.append("qualification attempts are detached from comparison outcomes")
+
+    expected_metrics: dict[str, Any] = {
+        "completion": {
+            "numerator": sum(
+                isinstance(row, dict) and row.get("completion") is True for row in outcomes
+            ),
+            "denominator": len(outcomes),
+        },
+        "errors": {
+            "count": sum(
+                isinstance(row, dict) and row.get("status") == "failed" for row in outcomes
+            )
+        },
+        "context_bytes": {"total": sum(row["context_bytes"] for row in outcomes)},
+        "calls": {"total": sum(row["tool_calls"] for row in outcomes)},
+        "latency": {"total": sum(row["latency_ms"] for row in outcomes)},
+        "cost": {"total": sum(row["cost"] for row in outcomes)},
+    }
+    completed: dict[str, Any] = expected_metrics["completion"]
+    completed["rate"] = (
+        completed["numerator"] / completed["denominator"] if completed["denominator"] else 0.0
+    )
+    metrics = report["metrics"]
+    if not isinstance(metrics, dict):
+        errors.append("qualification metrics are invalid")
+    else:
+        for name, expected_metric in expected_metrics.items():
+            if metrics.get(name) != expected_metric:
+                errors.append(f"qualification metric {name} is detached from comparison outcomes")
+    if (
+        _bound_identity(receipt["receipt_identity"], metrics)
+        != comparison["report_metrics_identity"]
+    ):
+        errors.append("comparison report metric identity does not match report metrics")
+
+
 def validate(report: object) -> list[str]:
     """Return structural/privacy errors, without echoing private payloads."""
     if not isinstance(report, dict):
         return ["report must be an object"]
     errors = _private(report)
+    schema = report.get("schema")
     fields = {"schema", "identity", "mechanical", "observations", "attempts", "promotion"}
-    if set(report) not in (fields, fields | {"qualification"}):
+    if schema == QUALIFICATION_SCHEMA:
+        allowed_fields = (
+            _QUALIFICATION_REPORT_FIELDS,
+            _QUALIFICATION_REPORT_FIELDS | {"qualification"},
+        )
+    else:
+        if any(key in report for key in ("campaign", "metrics", "claim")):
+            errors.append(f"qualification fields require schema {QUALIFICATION_SCHEMA}")
+        allowed_fields = (fields, fields | {"qualification"})
+    if set(report) not in allowed_fields:
         errors.append("report has an unclosed field set")
         return errors
-    if report["schema"] != SCHEMA:
+    if not isinstance(schema, str) or schema not in {SCHEMA, QUALIFICATION_SCHEMA}:
         errors.append("report schema is invalid")
+    if schema == QUALIFICATION_SCHEMA:
+        _validate_qualification_extension(
+            report.get("campaign"), report.get("metrics"), report.get("claim"), errors
+        )
     frozen = report["identity"]
     identity_fields = {"build", "pack", "skill", "source", "config"}
     extended_identity_fields = identity_fields | {
@@ -263,7 +737,10 @@ def validate(report: object) -> list[str]:
     else:
         for index, attempt in enumerate(attempts):
             location = f"attempts[{index}]"
-            if not _closed(attempt, {"attempt_id", "host", "status"}, location, errors):
+            attempt_fields = {"attempt_id", "host", "status"}
+            if schema == QUALIFICATION_SCHEMA:
+                attempt_fields = _QUALIFICATION_REPORT_ATTEMPT_FIELDS
+            if not _closed(attempt, attempt_fields, location, errors):
                 continue
             attempt_id = attempt["attempt_id"]
             if not _valid_id(attempt_id) or (
@@ -276,8 +753,21 @@ def validate(report: object) -> list[str]:
                     attempt_hosts[attempt_id] = attempt["host"]
                 if isinstance(attempt.get("status"), str):
                     attempt_statuses[attempt_id] = attempt["status"]
-            if not _valid_id(attempt["host"]) or not _valid_status(attempt["status"]):
+            valid_attempt_status = _valid_status(attempt["status"]) or (
+                schema == QUALIFICATION_SCHEMA
+                and isinstance(attempt["status"], str)
+                and attempt["status"] in _QUALIFICATION_ATTEMPT_STATUSES
+            )
+            if not _valid_id(attempt["host"]) or not valid_attempt_status:
                 errors.append(f"{location} host or status is invalid")
+            if schema == QUALIFICATION_SCHEMA and (
+                not _valid_id(attempt["platform_id"])
+                or not _valid_id(attempt["arm_id"])
+                or not _valid_id(attempt["cell_id"])
+                or type(attempt["draw"]) is not int
+                or attempt["draw"] < 1
+            ):
+                errors.append(f"{location} comparison linkage is invalid")
 
     if observation_rows and attempt_ids:
         observation_attempt_ids = {
@@ -331,6 +821,8 @@ def validate(report: object) -> list[str]:
                             "repairable-error host observation is missing for "
                             f"{host} ({attempt_id}): {kind}"
                         )
+    if schema == QUALIFICATION_SCHEMA:
+        _validate_comparison_binding(report, errors)
     expected_promotion = "promote"
     if errors:
         expected_promotion = "hold"
@@ -347,11 +839,23 @@ def validate(report: object) -> list[str]:
         or any(attempt["status"] in {"failure", "regression", "concern"} for attempt in attempts)
     ):
         expected_promotion = "hold"
+    if (
+        schema == QUALIFICATION_SCHEMA
+        and isinstance(report.get("metrics"), dict)
+        and isinstance(report["metrics"].get("errors"), dict)
+        and isinstance(report["metrics"]["errors"].get("count"), int)
+        and report["metrics"]["errors"]["count"] > 0
+    ):
+        expected_promotion = "hold"
     promotion = report["promotion"]
     if not isinstance(promotion, str) or promotion not in PROMOTIONS:
         errors.append("promotion is invalid")
     elif promotion != expected_promotion:
         errors.append("promotion does not match recorded evidence")
+    if schema == QUALIFICATION_SCHEMA and isinstance(report.get("claim"), dict):
+        claim = report["claim"]
+        if claim.get("decision") != expected_promotion:
+            errors.append("qualification claim decision does not match recorded evidence")
     return errors
 
 

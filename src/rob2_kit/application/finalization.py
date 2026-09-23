@@ -2861,6 +2861,13 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60",
         "official_source": expected["official_source"],
     }
+    current_pack_pre_semantic_guidance = {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "content_hash": "sha256:bb4f07a86662df2decaad739013e1178a6767aceb9b63e6b438c7f98074d5d84",
+        "official_source": expected["official_source"],
+    }
     current_pack_previous_proof = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
@@ -2899,6 +2906,7 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
     return value in (
         current_pack_legacy_proof,
         current_pack_prior_guidance,
+        current_pack_pre_semantic_guidance,
         historical,
         legacy,
         current_pack_previous_proof,

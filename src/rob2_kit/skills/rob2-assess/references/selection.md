@@ -92,3 +92,12 @@ exact approved definition and relation rationale with the plan; do not silently
 assess a more convenient planned endpoint. Preserve Low, Some concerns, High,
 or legitimate No information according to the evidence path rather than forcing
 a severity category when applicability or chronology is unresolved.
+
+## Paired premise check
+
+Contrast an applicable SAP that names the exact comparison and cohort with a
+platform plan that names a different phase or cohort. Separately contrast
+multiplicity with actual evidence that a favorable analysis was selected. The
+changed premise is applicability, chronology, or result dependence; document
+availability, dates, and the existence of eligible alternatives do not answer
+the selection question by themselves.

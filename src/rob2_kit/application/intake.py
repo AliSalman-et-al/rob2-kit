@@ -434,8 +434,7 @@ def prepare_batch_for_outcome(
     trial_labels: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     """Discover selected Trial dossiers and prepare one Batch for one outcome."""
-    if not isinstance(requested_outcome, str) or not requested_outcome.strip():
-        raise ValueError("requested_outcome must contain non-whitespace content")
+    requested_outcome = validate_requested_outcome(requested_outcome)
     root = _root(workspace)
     _ensure(root)
     directories = _trial_directories(root)
@@ -471,6 +470,18 @@ def prepare_batch_for_outcome(
             )
         )
     return prepare_batch(root, declarations, expected_revision)
+
+
+def validate_requested_outcome(value: str) -> str:
+    """Keep Result-specific definitions out of the Batch outcome concept."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("requested_outcome must contain non-whitespace content")
+    if " defined as " in f" {value.casefold()} ":
+        raise ValueError(
+            "requested_outcome must contain only the outcome concept; move its definition and "
+            "other Result-specific facets to the Proposal"
+        )
+    return value
 
 
 def prepare_batch(
@@ -686,7 +697,9 @@ def prepare_batch(
                 "trial_id": trial_id,
                 "role": role,
                 "declared_role": declared_role,
-                "label": path.name,
+                # Keep root filenames pleasantly short while preserving a
+                # stable, human-readable label for nested combined dossiers.
+                "label": relative,
                 "logical_path": relative,
                 "sha256": digest,
                 "media_type": media_type,

@@ -12,6 +12,13 @@ from .status import _active_trial_and_domain, _continuation
 
 _OUT_OF_SCOPE_DESIGNS = {"cluster_randomized", "crossover"}
 
+_REVIEW_CONFLICT_MARKERS = {
+    "population_mismatch": ("population mismatch", "different population", "population differs"),
+    "endpoint_mismatch": ("endpoint mismatch", "different endpoint", "endpoint differs"),
+    "window_mismatch": ("window mismatch", "different window", "window differs"),
+    "chronology_conflict": ("chronology conflict", "chronology mismatch", "chronology differs"),
+}
+
 
 def _approved_result(state: dict[str, Any], trial_id: str) -> dict[str, Any]:
     results = (state.get("proposal") or {}).get("payload", {}).get("results", [])
@@ -86,29 +93,284 @@ def _review_domain_findings(
     # matches the approved Result and captured Source projection.  A stale
     # checkpoint is deliberately absent from final review rather than being
     # treated as a prior Domain judgment.
-    from .working import working_checkpoint_status
+    from .working import (
+        _stored_checkpoint,
+        investigation_projection,
+        working_checkpoint_status,
+    )
 
     premise_status = working_checkpoint_status(root, state, trial_id)
     premise_checkpoint = (
         premise_status.get("checkpoint") if premise_status.get("status") == "current" else None
     )
+    if premise_checkpoint is None and premise_status.get("reason") == "canonical_newer":
+        stored = _stored_checkpoint(root, state, trial_id)
+        premise_checkpoint = (
+            stored.model_dump(mode="json", exclude_none=True) if stored is not None else None
+        )
     premise_checkpoint_identity = (
         premise_status.get("checkpoint_identity") if isinstance(premise_checkpoint, dict) else None
     )
+
+    def evidence_reference(identity: object) -> dict[str, str] | None:
+        if not isinstance(identity, str):
+            return None
+        evidence = evidence_by_identity.get(identity)
+        if not isinstance(evidence, dict) or not isinstance(evidence.get("handle"), str):
+            return None
+        return {"handle": evidence["handle"], "identity": identity}
+
+    def evidence_text(identity: object, basis: dict[str, Any]) -> str | None:
+        source = basis.get("source")
+        if isinstance(source, str) and source.strip():
+            return source
+        evidence = evidence_by_identity.get(identity) if isinstance(identity, str) else None
+        if not isinstance(evidence, dict):
+            return None
+        values: list[str] = []
+        for key in (
+            "quote",
+            "transcription",
+            "title",
+            "scope",
+            "cohort",
+            "row",
+            "value",
+            "event_definition",
+        ):
+            value = evidence.get(key)
+            if isinstance(value, str) and value.strip():
+                values.append(value)
+        for key in ("columns", "group_or_category_axes", "cells", "units", "denominators"):
+            values.extend(value for value in evidence.get(key, ()) if isinstance(value, str))
+        return " | ".join(values) or None
+
+    def report_evidence(reports: list[dict[str, Any]]) -> tuple[dict[str, str], ...]:
+        references: list[dict[str, str]] = []
+        seen: set[str] = set()
+        for report in reports:
+            for identity in report.get("basis", ()):
+                reference = evidence_reference(identity)
+                if reference is not None and reference["identity"] not in seen:
+                    seen.add(reference["identity"])
+                    references.append(reference)
+        return tuple(references)
+
+    def structured_scope_conflicts(answer: dict[str, Any]) -> list[dict[str, Any]]:
+        missing_data = answer.get("missing_data")
+        raw_conflicts = missing_data.get("conflicts", ()) if isinstance(missing_data, dict) else ()
+        conflicts: list[dict[str, Any]] = []
+        for raw_conflict in raw_conflicts:
+            if not isinstance(raw_conflict, dict):
+                continue
+            reports = [item for item in raw_conflict.get("reports", ()) if isinstance(item, dict)]
+            if len(reports) < 2:
+                continue
+            dimensions: list[tuple[str, list[object]]] = []
+            dimensions.append(
+                (
+                    "population_mismatch",
+                    [
+                        item.get("scope", {}).get("population")
+                        for item in reports
+                        if isinstance(item.get("scope"), dict)
+                    ],
+                )
+            )
+            dimensions.extend(
+                (
+                    kind,
+                    [item.get(field) for item in reports],
+                )
+                for kind, field in (
+                    ("endpoint_mismatch", "endpoint"),
+                    ("window_mismatch", "window"),
+                )
+            )
+            found = False
+            for kind, values in dimensions:
+                normalized = {str(value).strip() for value in values if value is not None}
+                if len(normalized) > 1:
+                    conflicts.append(
+                        {
+                            "kind": kind,
+                            "detail": (
+                                "Host-recorded reports disagree on the answer's "
+                                f"{kind.removesuffix('_mismatch')} scope."
+                            ),
+                            "evidence": report_evidence(reports),
+                        }
+                    )
+                    found = True
+            if not found:
+                conflicts.append(
+                    {
+                        "kind": "contradiction",
+                        "detail": (
+                            "Host-recorded Evidence reports conflict within the answer scope."
+                        ),
+                        "evidence": report_evidence(reports),
+                    }
+                )
+        return conflicts
+
+    def host_scope_conflicts(
+        answer: dict[str, Any], references: tuple[dict[str, str], ...]
+    ) -> list[dict[str, Any]]:
+        texts = [
+            value
+            for value in (
+                answer.get("justification"),
+                *(answer.get("unknowns") or ()),
+                *(
+                    item.get("implication")
+                    for item in (answer.get("counterevidence") or ())
+                    if isinstance(item, dict)
+                ),
+            )
+            if isinstance(value, str)
+        ]
+        joined = " ".join(texts).lower()
+        return [
+            {
+                "kind": kind,
+                "detail": f"Host-reported {kind.replace('_', ' ')}.",
+                "evidence": references,
+            }
+            for kind, markers in _REVIEW_CONFLICT_MARKERS.items()
+            if any(marker in joined for marker in markers)
+        ]
+
+    def premise_routes(
+        domain_id: str,
+        answer: dict[str, Any],
+        premise_records: tuple[dict[str, Any], ...],
+        unread_ranges: tuple[dict[str, Any], ...],
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        routes: list[dict[str, Any]] = []
+        conflicts: list[dict[str, Any]] = []
+        unresolved = any(
+            isinstance(item, dict)
+            and item.get("question_id") in {None, answer.get("question_id")}
+            and item.get("status") in {"unresolved", "bounded", "contradiction"}
+            for item in premise_records
+        )
+        if not unresolved:
+            unresolved = any(item.get("kind") == "limitation" for item in answer.get("bases", ()))
+        for basis in answer.get("bases", ()):
+            if not isinstance(basis, dict) or basis.get("kind") != "limitation":
+                continue
+            receipt = basis.get("search_receipt")
+            if isinstance(receipt, str):
+                routes.append(
+                    {
+                        "operation": "search_sources",
+                        "detail": (
+                            "Continue or reformulate the scoped search before treating the "
+                            "limitation as closed."
+                        ),
+                        "search_receipt": receipt,
+                    }
+                )
+        if unresolved:
+            for premise in premise_records:
+                if not isinstance(premise, dict):
+                    continue
+                if premise.get("question_id") not in {None, answer.get("question_id")}:
+                    continue
+                next_action = premise.get("next_action")
+                if isinstance(next_action, str) and next_action.strip():
+                    routes.append(
+                        {
+                            "operation": "search_sources",
+                            "detail": next_action,
+                        }
+                    )
+            if not routes and unread_ranges:
+                routes.append(
+                    {
+                        "operation": "read_pages",
+                        "detail": (
+                            "Read the accessible unread Source range before accepting this "
+                            "limitation."
+                        ),
+                    }
+                )
+        unique_routes: list[dict[str, Any]] = []
+        seen_routes: set[tuple[object, object, object]] = set()
+        for route in routes:
+            key = (route.get("operation"), route.get("detail"), route.get("search_receipt"))
+            if key in seen_routes:
+                continue
+            seen_routes.add(key)
+            unique_routes.append(route)
+            conflicts.append(
+                {
+                    "kind": "accessible_uninvestigated_route",
+                    "detail": str(route["detail"]),
+                    "evidence": [],
+                }
+            )
+        return unique_routes, conflicts
+
     findings: list[dict[str, Any]] = []
     for domain in SCIENTIFIC_PACK.domains:
         record = records.get(f"{trial_id}:{domain.id}")
         if not isinstance(record, dict) or not isinstance(record.get("identity"), str):
             continue
         answer_findings: list[dict[str, Any]] = []
+        investigation = investigation_projection(
+            root,
+            state,
+            trial_id,
+            domain.id,
+            workflow_permission={
+                "permitted": True,
+                "operation": "validate_domain_assessment",
+                "authority": "host",
+                "detail": (
+                    "Revise this Domain through ordinary validation before refreshing Trial "
+                    "review; review itself is not semantic approval."
+                ),
+            },
+        )
+        domain_premises: tuple[dict[str, Any], ...] = ()
+        unread_ranges: tuple[dict[str, Any], ...] = ()
+        if isinstance(premise_checkpoint, dict):
+            domain_premises = tuple(
+                item
+                for item in premise_checkpoint.get("premise_records", ())
+                if isinstance(item, dict) and item.get("domain_id") == domain.id
+            )
+            unread_ranges = tuple(
+                item
+                for item in premise_checkpoint.get("unread_ranges", ())
+                if isinstance(item, dict)
+            )
+        if investigation is not None and investigation.get("stale"):
+            domain_premises = tuple(
+                {
+                    **{
+                        key: value
+                        for key, value in item.items()
+                        if key not in {"inference", "stopping_rationale"}
+                    },
+                    "status": "unresolved",
+                    "unresolved_component": item.get("unresolved_component")
+                    or "The prior inference must be revisited after the Domain revision.",
+                }
+                for item in domain_premises
+            )
         for answer in record.get("answers", []):
             if not isinstance(answer, dict) or not isinstance(answer.get("question_id"), str):
                 continue
             references: list[dict[str, Any]] = []
             basis_findings: list[dict[str, Any]] = []
+            facts: list[dict[str, Any]] = []
+            limitations: list[dict[str, Any]] = []
             expansions: list[dict[str, Any]] = []
             seen_evidence: set[str] = set()
-            for basis in answer.get("bases", []):
+            for basis_index, basis in enumerate(answer.get("bases", [])):
                 if not isinstance(basis, dict) or not isinstance(basis.get("kind"), str):
                     continue
                 basis_finding: dict[str, Any] = {
@@ -116,6 +378,13 @@ def _review_domain_findings(
                     "assertion": "host_asserted",
                 }
                 evidence_identity = basis.get("evidence")
+                fact_role = (
+                    "counterevidence"
+                    if basis["kind"] == "contradiction"
+                    else "context"
+                    if basis["kind"] in {"context", "inference", "absence", "limitation"}
+                    else "support"
+                )
                 if isinstance(evidence_identity, str):
                     basis_finding["evidence"] = None
                     evidence = evidence_by_identity.get(evidence_identity)
@@ -166,32 +435,93 @@ def _review_domain_findings(
                                         "page": page,
                                     }
                                 )
+                        fact_text = evidence_text(evidence_identity, basis)
+                        if fact_text is not None:
+                            facts.append(
+                                {
+                                    "text": fact_text,
+                                    "evidence": basis_finding["evidence"],
+                                    "role": fact_role,
+                                }
+                            )
+                elif basis["kind"] == "limitation" and isinstance(
+                    basis.get("unresolved_premise"), str
+                ):
+                    facts.append(
+                        {
+                            "text": basis["unresolved_premise"],
+                            "role": "context",
+                        }
+                    )
+                if basis["kind"] == "limitation" and isinstance(
+                    basis.get("unresolved_premise"), str
+                ):
+                    limitations.append(
+                        {
+                            "unresolved_premise": basis["unresolved_premise"],
+                            "stopping_rationale": basis.get("stopping_rationale"),
+                            "search_receipt": basis.get("search_receipt"),
+                        }
+                    )
                 if isinstance(basis.get("search_receipt"), str):
                     basis_finding["search_receipt"] = basis["search_receipt"]
                 for key in ("unresolved_premise", "stopping_rationale"):
                     if isinstance(basis.get(key), str):
                         basis_finding[key] = basis[key]
                 basis_findings.append(basis_finding)
+            review_references = tuple(references)
+            conflicts = structured_scope_conflicts(answer) + host_scope_conflicts(
+                answer, review_references
+            )
+            if any(
+                basis.get("kind") in {"direct_support", "indirect_support", "contradiction"}
+                and not isinstance(basis.get("evidence"), str)
+                for basis in answer.get("bases", ())
+                if isinstance(basis, dict)
+            ):
+                conflicts.append(
+                    {
+                        "kind": "unsupported_link",
+                        "detail": (
+                            "A host support relationship has no resolvable Evidence identity."
+                        ),
+                        "evidence": review_references,
+                    }
+                )
+            if any(
+                basis.get("kind") == "contradiction"
+                for basis in answer.get("bases", ())
+                if isinstance(basis, dict)
+            ):
+                conflicts.append(
+                    {
+                        "kind": "contradiction",
+                        "detail": "The host recorded contradictory Evidence against this answer.",
+                        "evidence": review_references,
+                    }
+                )
+            routes, route_conflicts = premise_routes(
+                domain.id, answer, domain_premises, unread_ranges
+            )
+            conflicts.extend(route_conflicts)
             answer_findings.append(
                 {
                     "question_id": answer["question_id"],
                     "answer": answer.get("answer"),
+                    "facts": facts,
+                    "warrant": answer.get("justification"),
                     "justification": answer.get("justification"),
                     "unknowns": list(answer.get("unknowns") or []),
                     "counterevidence": list(answer.get("counterevidence") or []),
+                    "limitations": limitations,
+                    "conflicts": conflicts,
+                    "uninvestigated_routes": routes,
                     "evidence": references,
                     "bases": basis_findings,
                     "evidence_expansions": expansions,
                 }
             )
         if answer_findings:
-            domain_premises = ()
-            if isinstance(premise_checkpoint, dict):
-                domain_premises = tuple(
-                    item
-                    for item in premise_checkpoint.get("premise_records", ())
-                    if isinstance(item, dict) and item.get("domain_id") == domain.id
-                )
             findings.append(
                 {
                     "domain_id": domain.id,
@@ -200,6 +530,7 @@ def _review_domain_findings(
                     "answers": answer_findings,
                     "premise_checkpoint_identity": premise_checkpoint_identity,
                     "premise_records": domain_premises,
+                    "investigation": investigation,
                 }
             )
     return findings

@@ -367,6 +367,12 @@ def _canonical_result(
     for evidence_index, item in enumerate(raw["evidence"]):
         if item["kind"] != "figure":
             continue
+        # Optional Pydantic fields are serialized as null by default, but the
+        # canonical Evidence contract treats omitted uncertainty as absent.
+        # Keep the compact shape used by both bundle verifiers; a supplied
+        # non-null observation remains part of the Result reference.
+        if item.get("uncertainty") is None:
+            item.pop("uncertainty", None)
         selected = _selected(catalog, item["handle"])
         render = {} if selected is None else selected.get("render", {})
         if selected is None or selected.get("kind") != "figure":

@@ -324,10 +324,22 @@ def test_missing_working_notes_request_reorientation_without_changing_assessment
     with sqlite3.connect(workspace / ".rob2-kit" / "working.sqlite3") as connection:
         connection.execute("DELETE FROM working_checkpoints")
 
-    status = _call(workspace, "get_status", {})["data"]["working_checkpoint"]
+    status_data = _call(workspace, "get_status", {})["data"]
+    status = status_data["working_checkpoint"]
     assert status["status"] == "absent"
     assert status["reason"] == "not_saved"
     assert status["recovery"] == "reorient_from_sources"
+    investigation = status_data["investigation"]
+    assert investigation["status"] == "not_established"
+    assert investigation["sufficiency"]["attribution"] == "not_established"
+    assert investigation["coverage"]["state"] == "unobserved"
+    choices = {item["operation"] for item in investigation["recovery_choices"]}
+    assert {
+        "save_working_checkpoint",
+        "search_sources",
+        "read_pages",
+        "validate_domain_assessment",
+    } <= choices
     after = _state(workspace)
     assert after["revision"] == before["revision"]
     assert after["trial_dispositions"] == before["trial_dispositions"]
@@ -447,3 +459,148 @@ def test_premise_record_is_saved_and_resumed_as_working_state(tmp_path: Path) ->
         premise["unresolved_component"] == checkpoint["premise_records"][0]["unresolved_component"]
     )
     assert premise["observations"][0]["sources"][0]["source_id"] == source_id
+
+
+def test_investigation_projection_tracks_domain_dependency_and_unread_coverage(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _proposal_waiting_for_review(workspace)
+    source_id = evidence["source_id"]
+    checkpoint = _checkpoint(source_id)
+    checkpoint["premise_records"] = [
+        {
+            "proposition": "Allocation remained concealed until assignment.",
+            "status": "bounded",
+            "observations": [
+                {
+                    "text": "The report does not describe the allocation process.",
+                    "sources": [
+                        {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 1}
+                    ],
+                }
+            ],
+            "unresolved_component": "The sequence and concealment procedure are not reported.",
+            "stopping_rationale": "The captured report does not resolve this premise.",
+            "domain_id": "domain:randomization",
+        }
+    ]
+    saved = _call(workspace, "save_working_checkpoint", {"checkpoint": checkpoint})
+    assert saved["outcome"] == "success", saved
+
+    _review(workspace)
+    status = _call(workspace, "get_status", {})
+    investigation = status["data"]["investigation"]
+    assert investigation["status"] == "bounded"
+    assert (
+        investigation["stopping_rationale"]
+        == checkpoint["premise_records"][0]["stopping_rationale"]
+    )
+    assert investigation["coverage"]["unread_sources"] == [source_id]
+    assert investigation["coverage"]["state"] == "partial"
+    assert all(
+        choice["operation"] != "save_domain_judgment"
+        for choice in investigation["recovery_choices"]
+    )
+
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )
+    context_choices = {
+        choice["operation"] for choice in context["data"]["investigation"]["recovery_choices"]
+    }
+    assert "validate_domain_assessment" in context_choices
+    assert "save_domain_judgment" not in context_choices
+    revision = int(context["head"]["state_revision"])
+    saved_domain = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved_domain["outcome"] == "success", saved_domain
+
+    unrelated = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:deviations"},
+    )["data"]["investigation"]
+    assert unrelated["stale"] == []
+    assert unrelated["coverage"]["unread_sources"] == [source_id]
+    assert unrelated["coverage"]["state"] == "partial"
+
+    related = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )["data"]["investigation"]
+    assert related["status"] == "unresolved"
+    assert related["sufficiency"] == {
+        "status": "unresolved",
+        "attribution": "not_established",
+    }
+    assert related["stopping_rationale"] is None
+    assert related["coverage"]["unread_sources"] == [source_id]
+    assert {item["material"] for item in related["stale"]} == {
+        "interpretations",
+        "premise_inference",
+        "drafts",
+        "stopping_rationale",
+    }
+
+
+def test_trial_review_retains_source_observations_after_domain_commits(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _proposal_waiting_for_review(workspace)
+    checkpoint = _checkpoint(evidence["source_id"])
+    checkpoint["premise_records"] = [
+        {
+            "proposition": "Allocation remained concealed until assignment.",
+            "status": "bounded",
+            "observations": checkpoint["observations"],
+            "unresolved_component": "The concealment procedure is not reported.",
+            "stopping_rationale": "The captured report leaves the procedure unresolved.",
+            "domain_id": "domain:randomization",
+            "question_id": "sq:randomization:concealment",
+            "next_action": "Read the remaining accessible protocol section.",
+        }
+    ]
+    saved = _call(workspace, "save_working_checkpoint", {"checkpoint": checkpoint})
+    assert saved["outcome"] == "success", saved
+
+    _review(workspace)
+    revision = int(
+        _call(
+            workspace,
+            "get_domain_context",
+            {"trial_id": "trial", "domain_id": SCIENTIFIC_PACK.domains[0].id},
+        )["head"]["state_revision"]
+    )
+    for domain in SCIENTIFIC_PACK.domains:
+        saved_domain = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert saved_domain["outcome"] == "success", saved_domain
+        revision = int(saved_domain["head"]["state_revision"])
+
+    review = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": revision},
+    )
+    assert review["outcome"] == "success", review
+    randomization = next(
+        item
+        for item in review["data"]["domain_findings"]
+        if item["domain_id"] == "domain:randomization"
+    )
+    assert randomization["premise_records"][0]["observations"]
+    concealment = next(
+        item
+        for item in randomization["answers"]
+        if item["question_id"] == "sq:randomization:concealment"
+    )
+    assert concealment["uninvestigated_routes"]

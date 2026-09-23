@@ -15,6 +15,16 @@ import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
+from benchmark_contract import (
+    TOOL_INVENTORY_VERSION,
+    artifact_manifest_identity,
+    public_contract_version,
+    public_tool_inventory,
+    tool_inventory_provenance,
+    trace_has_rob2_runtime_evidence,
+)
+from prepare_rsi_workspace import approved_scope_record, prepare_workspace
+
 try:
     import fcntl
 except ImportError:  # pragma: no cover - Windows uses msvcrt below.
@@ -25,7 +35,119 @@ if os.name == "nt":
 else:  # pragma: no cover - exercised only on Windows.
     msvcrt = None
 
-from prepare_rsi_workspace import approved_scope_record, prepare_workspace
+# Keep the expected surface at the launcher boundary: a resumed session with
+# a different public contract is not the same experimental condition.
+EXPECTED_TOOL_INVENTORY = public_tool_inventory()
+
+_SESSION_EVENT_TYPES = {
+    "session.started",
+    "session.created",
+    "session_id",
+    "thread.started",
+}
+_TOOL_INVENTORY_EVENT_TYPES = {
+    "mcp_list_tools",
+    "mcp.tools.list",
+    "session.ready",
+    "thread.ready",
+}
+
+
+def _optional_text(value: object) -> str | None:
+    return value if isinstance(value, str) and value else None
+
+
+def _first_text(*values: object, default: str) -> str:
+    for value in values:
+        text = _optional_text(value)
+        if text is not None:
+            return text
+    return default
+
+
+def _normalise_tool_inventory(value: object) -> tuple[str, ...] | None:
+    """Return a canonical tool-name tuple from a host inventory payload."""
+
+    if not isinstance(value, (list, tuple, set)):
+        return None
+    names: set[str] = set()
+    for item in value:
+        if isinstance(item, str) and item.strip():
+            names.add(item.strip())
+        elif isinstance(item, dict):
+            name = item.get("name") or item.get("tool")
+            if isinstance(name, str) and name.strip():
+                names.add(name.strip())
+    return tuple(sorted(names)) if names else None
+
+
+def _trace_metadata(path: Path) -> dict[str, object]:
+    """Recover only explicit session/inventory events from a JSONL trace.
+
+    MCP search receipts also contain a ``session_id``.  They are not host
+    session bindings, so this parser intentionally accepts session identifiers
+    only from session/thread events (or their supported legacy envelopes).
+    """
+
+    sessions: set[str] = set()
+    inventories: set[tuple[str, ...]] = set()
+    if not path.is_file():
+        return {"sessions": (), "inventories": ()}
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return {"sessions": (), "inventories": ()}
+    for line in lines:
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        event_type = event.get("type")
+        if event_type in _SESSION_EVENT_TYPES or (
+            event_type is None and any(key in event for key in ("thread_id", "session_id"))
+        ):
+            for key in ("thread_id", "session_id"):
+                value = event.get(key)
+                if isinstance(value, str) and value.strip():
+                    sessions.add(value.strip())
+            thread = event.get("thread")
+            if isinstance(thread, dict):
+                value = thread.get("id")
+                if isinstance(value, str) and value.strip():
+                    sessions.add(value.strip())
+        item = event.get("item")
+        if isinstance(item, dict):
+            item_type = item.get("type")
+            if item_type in _SESSION_EVENT_TYPES:
+                for key in ("thread_id", "session_id"):
+                    value = item.get(key)
+                    if isinstance(value, str) and value.strip():
+                        sessions.add(value.strip())
+        inventory_payload = None
+        if event_type in _TOOL_INVENTORY_EVENT_TYPES:
+            inventory_payload = (
+                event.get("tools")
+                or event.get("tool_inventory")
+                or event.get("available_tools")
+                or event.get("mcp_tools")
+            )
+        elif event_type == "item.completed" and isinstance(item, dict):
+            if item.get("type") in _TOOL_INVENTORY_EVENT_TYPES:
+                inventory_payload = (
+                    item.get("tools")
+                    or item.get("tool_inventory")
+                    or item.get("available_tools")
+                    or item.get("mcp_tools")
+                )
+        inventory = _normalise_tool_inventory(inventory_payload)
+        if inventory is not None:
+            inventories.add(inventory)
+    return {
+        "sessions": tuple(sorted(sessions)),
+        "inventories": tuple(sorted(inventories)),
+    }
 
 
 def _resolve_executable(
@@ -103,6 +225,7 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
             '":tmpdir" = "write"',
             '":slash_tmp" = "write"',
             f'{json.dumps(allowed.as_posix())} = "write"',
+            f'{json.dumps(sentinel.as_posix())} = "deny"',
             "",
             "[permissions.rob2-rsi.network]",
             "enabled = false",
@@ -153,7 +276,6 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
                     "operation not permitted",
                     "not allowed",
                     "outside the allowed",
-                    "forbidden",
                 )
             ):
                 raise RuntimeError(
@@ -202,23 +324,123 @@ def _sha256_file(path: Path) -> str:
 def _trace_session_id(path: Path) -> str | None:
     """Recover a Codex session identifier from a complete or partial JSONL trace."""
 
-    if not path.is_file():
+    sessions = _trace_metadata(path)["sessions"]
+    if not isinstance(sessions, tuple):
         return None
-    try:
-        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-            try:
-                value = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if not isinstance(value, dict):
-                continue
-            for key in ("session_id", "thread_id"):
-                session_id = value.get(key)
-                if isinstance(session_id, str) and session_id.strip():
-                    return session_id
-    except OSError:
+    if len(sessions) > 1:
+        raise ValueError(f"ambiguous Codex session identifiers in {path}")
+    return sessions[0] if sessions else None
+
+
+def _trace_tool_inventory(path: Path) -> tuple[str, ...] | None:
+    inventories = _trace_metadata(path)["inventories"]
+    if not isinstance(inventories, tuple):
         return None
-    return None
+    if len(inventories) > 1:
+        raise ValueError(f"ambiguous tool inventories in {path}")
+    return inventories[0] if inventories else None
+
+
+def _validate_tool_inventory(
+    run_dir: Path,
+    phase: int,
+    *,
+    expected: tuple[str, ...] = EXPECTED_TOOL_INVENTORY,
+) -> tuple[str, ...]:
+    """Validate the current launch against the frozen runtime inventory.
+
+    Codex does not emit an MCP inventory event in every JSONL trace.  The
+    launch record is authoritative for the expected surface; when a trace does
+    expose an inventory it is an additional consistency check, not a required
+    continuation prerequisite.
+    """
+
+    trace = run_dir / f"phase-{phase}.jsonl"
+    execution_path = run_dir / "execution.json"
+    frozen: tuple[str, ...] | None = None
+    frozen_version: str | None = None
+    frozen_provenance: dict[str, object] | None = None
+    if execution_path.is_file():
+        try:
+            execution = json.loads(execution_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError("frozen launch runtime record is unreadable") from error
+        runtime = execution.get("runtime_inputs") if isinstance(execution, dict) else None
+        if isinstance(runtime, dict):
+            frozen = _normalise_tool_inventory(runtime.get("expected_tool_inventory"))
+            frozen_version = _optional_text(runtime.get("tool_inventory_version"))
+            provenance = runtime.get("tool_inventory")
+            if isinstance(provenance, dict):
+                frozen_provenance = provenance
+                frozen = _normalise_tool_inventory(provenance.get("names")) or frozen
+                frozen_version = _optional_text(provenance.get("version")) or frozen_version
+        if frozen is None:
+            frozen = _normalise_tool_inventory(execution.get("expected_tool_inventory"))
+            frozen_version = _optional_text(execution.get("tool_inventory_version"))
+    if frozen is None:
+        raise ValueError(
+            "frozen launch tool inventory is unavailable; recovery: start a fresh "
+            "benchmark attempt and retain this run as resumable"
+        )
+    if frozen_version is None:
+        raise ValueError(
+            "frozen launch tool inventory provenance is unavailable; recovery: start a fresh "
+            "benchmark attempt and retain this run as resumable"
+        )
+    if frozen_version != TOOL_INVENTORY_VERSION:
+        raise ValueError(
+            "frozen launch tool inventory version is incompatible ("
+            f"{frozen_version} != {TOOL_INVENTORY_VERSION}); recovery: start a fresh "
+            "benchmark attempt"
+        )
+    if frozen_provenance is not None:
+        current_provenance = tool_inventory_provenance()
+        for field in ("source", "contract_version", "contract_sha256"):
+            frozen_value = frozen_provenance.get(field)
+            current_value = current_provenance.get(field)
+            if frozen_value is not None and frozen_value != current_value:
+                raise ValueError(
+                    "current tool inventory provenance is incompatible with the frozen "
+                    f"launch record ({field}); recovery: start a fresh benchmark attempt"
+                )
+    current = _normalise_tool_inventory(expected)
+    if current is None or frozen != current:
+        frozen_set = set(frozen)
+        expected_set = set(current or ())
+        missing = sorted(frozen_set - expected_set)
+        unexpected = sorted(expected_set - frozen_set)
+        detail = []
+        if missing:
+            detail.append("missing=" + ",".join(missing))
+        if unexpected:
+            detail.append("unexpected=" + ",".join(unexpected))
+        raise ValueError(
+            "current tool inventory is incompatible with the frozen launch inventory ("
+            + "; ".join(detail)
+            + "); recovery: start a fresh benchmark attempt"
+        )
+    observed = _trace_tool_inventory(trace)
+    if observed is None and not trace_has_rob2_runtime_evidence(trace):
+        raise ValueError(
+            "continuation runtime availability is unverified; no rob2 MCP call was observed; "
+            "recovery: start a fresh benchmark attempt and retain this run"
+        )
+    if observed is not None and set(observed) != set(frozen):
+        observed_set = set(observed)
+        frozen_set = set(frozen)
+        missing = sorted(frozen_set - observed_set)
+        unexpected = sorted(observed_set - frozen_set)
+        detail = []
+        if missing:
+            detail.append("missing=" + ",".join(missing))
+        if unexpected:
+            detail.append("unexpected=" + ",".join(unexpected))
+        raise ValueError(
+            "continuation tool inventory is incompatible ("
+            + "; ".join(detail)
+            + "); recovery: start a fresh benchmark attempt"
+        )
+    return frozen
 
 
 def _trace_artifact(run_dir: Path, phase: int) -> dict[str, object] | None:
@@ -546,6 +768,43 @@ def _execution_identity(run_dir: Path, run_inputs: dict[str, object]) -> dict[st
     }
 
 
+def _json_sha256(value: object) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _attempt_identity(
+    identity: dict[str, str],
+    *,
+    run_input_sha256: str,
+    prompt_sha256: str,
+    manifest_sha256: str | None,
+    model: str,
+    effort: str,
+    selection_policy: str,
+    retry: int,
+    runtime_inputs: dict[str, object] | None = None,
+) -> str:
+    """Create a stable attempt identity from immutable launch inputs."""
+
+    payload = {
+        "identity": identity,
+        "run_input_sha256": run_input_sha256,
+        "prompt_sha256": prompt_sha256,
+        "manifest_sha256": manifest_sha256,
+        "model": model,
+        "reasoning_effort": effort,
+        "selection_policy": selection_policy,
+        "retry": retry,
+        "runtime_inputs": runtime_inputs or {},
+    }
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return "attempt_" + digest[:32]
+
+
 def _load_or_create_execution_record(
     run_dir: Path,
     identity: dict[str, str],
@@ -556,9 +815,24 @@ def _load_or_create_execution_record(
     phase: int,
     session: str | None,
     allow_stale_running: bool = False,
+    expected_tool_inventory: tuple[str, ...] | None = None,
+    model: str | None = None,
+    effort: str | None = None,
+    selection_policy: str | None = None,
+    overrides: dict[str, str] | None = None,
+    runtime_inputs: dict[str, object] | None = None,
 ) -> dict[str, object]:
     path = run_dir / "execution.json"
     now = datetime.now(UTC).isoformat()
+    model = model or "gpt-5.6-luna"
+    effort = effort or "medium"
+    selection_policy = selection_policy or (
+        "select the declared attempt before execution; retain every attempt; "
+        "never select a best-scoring retry"
+    )
+    overrides = dict(overrides or {})
+    runtime_inputs = dict(runtime_inputs or {})
+    runtime_inputs_sha256 = _json_sha256(runtime_inputs) if runtime_inputs else None
     if phase > 1 and not path.exists():
         raise ValueError("continuation requires an existing execution.json")
     if path.exists():
@@ -584,6 +858,12 @@ def _load_or_create_execution_record(
             )
         prior_session = _recover_codex_session(run_dir, record)
         if phase > 1:
+            if expected_tool_inventory is not None:
+                _validate_tool_inventory(
+                    run_dir,
+                    phase - 1,
+                    expected=expected_tool_inventory,
+                )
             if not isinstance(prior_session, str):
                 raise ValueError(
                     "continuation session binding is unavailable; recover the original "
@@ -600,13 +880,26 @@ def _load_or_create_execution_record(
             "state": "queued",
             "attempt": 1,
             "retry": 0,
-            "selected_attempt_rule": (
-                "select the declared attempt before execution; retain every attempt; "
-                "never select a best-scoring retry"
-            ),
+            "selected_attempt_rule": selection_policy,
             "attempts": [],
             "phases": [],
             "created_at": now,
+            **(
+                {
+                    "expected_tool_inventory": list(expected_tool_inventory),
+                    "tool_inventory_version": TOOL_INVENTORY_VERSION,
+                }
+                if expected_tool_inventory is not None
+                else {}
+            ),
+            **(
+                {
+                    "runtime_inputs": runtime_inputs,
+                    "runtime_inputs_sha256": runtime_inputs_sha256,
+                }
+                if runtime_inputs_sha256 is not None
+                else {}
+            ),
         }
     if record.get("state") == "running" and not allow_stale_running:
         raise ValueError("execution is already running; duplicate launch refused")
@@ -639,6 +932,27 @@ def _load_or_create_execution_record(
                 raise ValueError(f"continuation input mismatch for {field}")
         if phase == 1 and record.get("prompt_sha256") not in {None, prompt_sha256}:
             raise ValueError("initial prompt mismatch")
+        for field, current in (
+            ("model", model),
+            ("reasoning_effort", effort),
+            ("selected_attempt_rule", selection_policy),
+        ):
+            prior = record.get(field)
+            if prior is not None and prior != current:
+                raise ValueError(f"continuation input mismatch for {field}")
+        prior_runtime_inputs_sha256 = record.get("runtime_inputs_sha256")
+        if runtime_inputs_sha256 is not None or prior_runtime_inputs_sha256 is not None:
+            if runtime_inputs_sha256 is None:
+                raise ValueError("continuation runtime inputs are required")
+            prior_runtime_inputs = record.get("runtime_inputs")
+            if (
+                not isinstance(prior_runtime_inputs, dict)
+                or not isinstance(prior_runtime_inputs_sha256, str)
+                or prior_runtime_inputs != runtime_inputs
+                or _json_sha256(prior_runtime_inputs) != prior_runtime_inputs_sha256
+                or prior_runtime_inputs_sha256 != runtime_inputs_sha256
+            ):
+                raise ValueError("continuation runtime input mismatch")
     initial_prompt_sha256 = record.get("prompt_sha256", prompt_sha256)
     if not isinstance(initial_prompt_sha256, str):
         initial_prompt_sha256 = prompt_sha256
@@ -655,10 +969,12 @@ def _load_or_create_execution_record(
         "prompt_sha256": initial_prompt_sha256,
         "prompt_sha256_by_phase": phase_prompt_hashes,
         "manifest_sha256": (
-            manifest_sha256
-            if manifest_sha256 is not None
-            else record.get("manifest_sha256")
+            manifest_sha256 if manifest_sha256 is not None else record.get("manifest_sha256")
         ),
+        "model": model,
+        "reasoning_effort": effort,
+        "selected_attempt_rule": selection_policy,
+        "overrides": overrides,
         "continuation": {
             "session": session,
             "parent_phase": phase - 1 if phase > 1 else None,
@@ -668,36 +984,57 @@ def _load_or_create_execution_record(
             ],
         },
     }
-    record.update(
-        record_update
-    )
+    if runtime_inputs_sha256 is not None:
+        record_update["runtime_inputs"] = runtime_inputs
+        record_update["runtime_inputs_sha256"] = runtime_inputs_sha256
+    record.update(record_update)
+    attempt_id = record.get("attempt_id")
+    if not isinstance(attempt_id, str) or not attempt_id:
+        attempt_id = _attempt_identity(
+            identity,
+            run_input_sha256=run_input_sha256,
+            prompt_sha256=prompt_sha256,
+            manifest_sha256=(
+                manifest_sha256
+                if manifest_sha256 is not None
+                else _optional_text(record.get("manifest_sha256"))
+            ),
+            model=model,
+            effort=effort,
+            selection_policy=selection_policy,
+            retry=retry,
+            runtime_inputs=runtime_inputs,
+        )
+        record["attempt_id"] = attempt_id
     phases = record.setdefault("phases", [])
     if not isinstance(phases, list):
         raise ValueError("execution phases are malformed")
-    phases.append(
-        {
-            "phase": phase,
-            "session": session,
-            "retry": retry,
-            "prompt_sha256": prompt_sha256,
-            "started_at": now,
-        }
-    )
+    phase_record: dict[str, object] = {
+        "phase": phase,
+        "session": session,
+        "retry": retry,
+        "prompt_sha256": prompt_sha256,
+        "started_at": now,
+    }
+    if runtime_inputs_sha256 is not None:
+        phase_record["runtime_inputs"] = runtime_inputs
+        phase_record["runtime_inputs_sha256"] = runtime_inputs_sha256
+    phases.append(phase_record)
     attempts = record.setdefault("attempts", [])
     if not isinstance(attempts, list):
         raise ValueError("execution attempts are malformed")
-    attempts.append(
-        {
-            "attempt": (
-                record.get("attempt", 1)
-                if isinstance(record.get("attempt", 1), int)
-                else 1
-            ),
-            "phase": phase,
-            "retry": retry,
-            "selected": True,
-        }
-    )
+    attempt_record: dict[str, object] = {
+        "attempt_id": attempt_id,
+        "attempt": (record.get("attempt", 1) if isinstance(record.get("attempt", 1), int) else 1),
+        "phase": phase,
+        "retry": retry,
+        "selected": phase == 1,
+        "kind": "initial" if phase == 1 else "resumption",
+        "overrides": overrides,
+    }
+    if runtime_inputs_sha256 is not None:
+        attempt_record["runtime_inputs_sha256"] = runtime_inputs_sha256
+    attempts.append(attempt_record)
     _atomic_json(path, record)
     return record
 
@@ -711,6 +1048,12 @@ def _load_or_create_execution(
     prompt_file: Path,
     phase: int,
     session: str | None,
+    expected_tool_inventory: tuple[str, ...] | None = None,
+    model: str | None = None,
+    effort: str | None = None,
+    selection_policy: str | None = None,
+    overrides: dict[str, str] | None = None,
+    runtime_inputs: dict[str, object] | None = None,
 ) -> dict[str, object]:
     _acquire_execution_lock(run_dir)
     try:
@@ -731,6 +1074,12 @@ def _load_or_create_execution(
             phase=phase,
             session=session,
             allow_stale_running=allow_stale_running,
+            expected_tool_inventory=expected_tool_inventory,
+            model=model,
+            effort=effort,
+            selection_policy=selection_policy,
+            overrides=overrides,
+            runtime_inputs=runtime_inputs,
         )
     except BaseException:
         _release_execution_lock(run_dir)
@@ -745,18 +1094,23 @@ def _finish_execution(
     *,
     artifact: dict[str, object] | None = None,
     waiting_for_user: bool = False,
+    terminal_state: str | None = None,
 ) -> None:
     path = run_dir / "execution.json"
     trace = run_dir / f"phase-{phase}.jsonl"
     phases = record.get("phases")
-    phase_record = next(
-        (
-            item
-            for item in reversed(phases)
-            if isinstance(item, dict) and item.get("phase") == phase
-        ),
-        None,
-    ) if isinstance(phases, list) else None
+    phase_record = (
+        next(
+            (
+                item
+                for item in reversed(phases)
+                if isinstance(item, dict) and item.get("phase") == phase
+            ),
+            None,
+        )
+        if isinstance(phases, list)
+        else None
+    )
     if isinstance(phase_record, dict):
         phase_record.update(
             {
@@ -764,6 +1118,15 @@ def _finish_execution(
                 "exit_code": exit_code,
                 "trace_sha256": _sha256_file(trace) if trace.is_file() else None,
                 "codex_session_id": _trace_session_id(trace),
+                "tool_inventory": (
+                    (
+                        list(inventory)
+                        if (inventory := _trace_tool_inventory(trace)) is not None
+                        else None
+                    )
+                    if trace.is_file()
+                    else None
+                ),
             }
         )
     session_id = _trace_session_id(trace)
@@ -787,15 +1150,59 @@ def _finish_execution(
                 "verification": verification_message,
             }
     saved_artifact = record.get("artifact")
+    artifact_error: str | None = None
+    if artifact and isinstance(artifact.get("path"), str):
+        artifact_path = run_dir / "workspace" / str(artifact["path"])
+        if artifact_path.is_file():
+            try:
+                internal_identity = artifact_manifest_identity(artifact_path)
+            except ValueError as error:
+                artifact_error = str(error)
+            else:
+                reported_identity = artifact.get("identity")
+                if not isinstance(reported_identity, str) or reported_identity != internal_identity:
+                    artifact_error = (
+                        "artifact identity mismatch: execution receipt does not match "
+                        "the identity recorded in manifest.json"
+                    )
+        else:
+            artifact_error = "artifact path is missing while binding its internal identity"
+    if artifact_error is not None:
+        record.pop("artifact", None)
+        record["artifact_error"] = artifact_error
+    effective_terminal_state = (
+        terminal_state
+        if terminal_state is not None
+        else "failed_infrastructure"
+        if artifact_error is not None
+        else None
+    )
+    if effective_terminal_state is not None and effective_terminal_state not in {
+        "queued",
+        "running",
+        "waiting_for_user",
+        "resumable",
+        "succeeded",
+        "failed_infrastructure",
+        "scientific_failed",
+        "cancelled",
+        "expired",
+    }:
+        raise ValueError(f"unsupported execution terminal state: {terminal_state}")
     record["state"] = (
-        "waiting_for_user"
-        if waiting_for_user and exit_code == 0
+        effective_terminal_state
+        if effective_terminal_state is not None
         else (
-            "succeeded"
-            if exit_code == 0
-            and isinstance(saved_artifact, dict)
-            and saved_artifact.get("verified") is True
-            else ("failed_infrastructure" if exit_code else "resumable")
+            "waiting_for_user"
+            if waiting_for_user and exit_code == 0
+            else (
+                "succeeded"
+                if exit_code == 0
+                and artifact_error is None
+                and isinstance(saved_artifact, dict)
+                and saved_artifact.get("verified") is True
+                else ("failed_infrastructure" if exit_code else "resumable")
+            )
         )
     )
     record["child_exit_code"] = exit_code
@@ -818,6 +1225,8 @@ def _finish_execution(
         _atomic_json(path, record)
     finally:
         _release_execution_lock(run_dir)
+    if artifact_error is not None:
+        raise ValueError(artifact_error)
 
 
 def main() -> None:
@@ -827,8 +1236,23 @@ def main() -> None:
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--phase", type=int, required=True)
     parser.add_argument("--session", help="Codex session ID for a continuation phase")
-    parser.add_argument("--model", default="gpt-5.6-luna")
-    parser.add_argument("--effort", default="medium")
+    parser.add_argument("--model")
+    parser.add_argument("--effort")
+    parser.add_argument(
+        "--manifest-model",
+        help="model declared by the benchmark manifest (used to identify overrides)",
+    )
+    parser.add_argument(
+        "--manifest-effort",
+        help="reasoning effort declared by the benchmark manifest",
+    )
+    parser.add_argument(
+        "--selection-policy",
+        default=(
+            "select the declared attempt before execution; retain every attempt; "
+            "never select a best-scoring retry"
+        ),
+    )
     parser.add_argument(
         "--require-isolated-host",
         action="store_true",
@@ -853,6 +1277,36 @@ def main() -> None:
     run_dir = args.run_dir.resolve()
     prompt_file = args.prompt.resolve(strict=True)
     case_file = args.case.resolve(strict=True) if args.case is not None else None
+    case_settings: dict[str, object] = {}
+    if case_file is not None:
+        try:
+            loaded_case = json.loads(case_file.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            parser.error(f"case manifest is unreadable: {error}")
+        if isinstance(loaded_case, dict):
+            case_settings = loaded_case
+    manifest_model = _optional_text(args.manifest_model) or (
+        case_settings.get("model") if isinstance(case_settings.get("model"), str) else None
+    )
+    manifest_effort = _optional_text(args.manifest_effort) or (
+        case_settings.get("reasoning_effort")
+        if isinstance(case_settings.get("reasoning_effort"), str)
+        else case_settings.get("effort")
+        if isinstance(case_settings.get("effort"), str)
+        else None
+    )
+    cli_model = _optional_text(args.model)
+    cli_effort = _optional_text(args.effort)
+    model = _first_text(cli_model, manifest_model, default="gpt-5.6-luna")
+    effort = _first_text(cli_effort, manifest_effort, default="medium")
+    overrides = {
+        key: value
+        for key, value, manifest_value in (
+            ("model", cli_model, manifest_model),
+            ("reasoning_effort", cli_effort, manifest_effort),
+        )
+        if isinstance(value, str) and value != manifest_value
+    }
     phase_artifacts = tuple(
         run_dir / f"phase-{args.phase}{suffix}"
         for suffix in (
@@ -883,6 +1337,10 @@ def main() -> None:
                 "host isolation must match phase 1; repeat --require-isolated-host "
                 "for every continuation"
             )
+        try:
+            _validate_tool_inventory(run_dir, args.phase - 1)
+        except (OSError, ValueError) as error:
+            parser.error(str(error))
 
     auth_source = Path.home() / ".codex" / "auth.json"
     if not auth_source.is_file():
@@ -969,6 +1427,47 @@ def main() -> None:
                 json.dumps(approved_scope, indent=2, sort_keys=True) + "\n", encoding="utf-8"
             )
 
+    skill_digest = hashlib.sha256()
+    for member in sorted(path for path in skill.rglob("*") if path.is_file()):
+        skill_digest.update(member.relative_to(skill).as_posix().encode("utf-8"))
+        skill_digest.update(member.read_bytes())
+    build_digest = hashlib.sha256()
+    package_root = repository / "src" / "rob2_kit"
+    for member in sorted(
+        path
+        for path in package_root.rglob("*")
+        if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
+    ):
+        build_digest.update(member.relative_to(repository).as_posix().encode("utf-8"))
+        build_digest.update(member.read_bytes())
+    for member in (
+        Path(__file__).resolve(),
+        Path(__file__).resolve().with_name("prepare_rsi_workspace.py"),
+        repository / "pyproject.toml",
+        repository / "uv.lock",
+        rob2_command,
+        codex_command,
+    ):
+        _add_digest_member(build_digest, member, repository)
+    runtime_inputs: dict[str, object] = {
+        "build_sha256": build_digest.hexdigest(),
+        "skill_sha256": skill_digest.hexdigest(),
+        # Case manifests predate explicit pack/contract fields; retain the
+        # installed benchmark defaults in the immutable launch inputs.
+        "pack": (run_inputs.get("pack_version") or run_inputs.get("pack") or "2019.1"),
+        "contract": (
+            run_inputs.get("contract_version")
+            or run_inputs.get("contract")
+            or public_contract_version()
+        ),
+        "host": preflight["host"],
+        "expected_tool_inventory": list(EXPECTED_TOOL_INVENTORY),
+        "tool_inventory_version": TOOL_INVENTORY_VERSION,
+        "tool_inventory": tool_inventory_provenance(),
+    }
+
     try:
         execution = _load_or_create_execution(
             run_dir,
@@ -978,6 +1477,12 @@ def main() -> None:
             prompt_file=prompt_file,
             phase=args.phase,
             session=args.session,
+            expected_tool_inventory=EXPECTED_TOOL_INVENTORY,
+            model=model,
+            effort=effort,
+            selection_policy=args.selection_policy,
+            overrides=overrides,
+            runtime_inputs=runtime_inputs,
         )
     except (OSError, ValueError, json.JSONDecodeError) as error:
         parser.error(str(error))
@@ -1004,30 +1509,6 @@ def main() -> None:
             profile.append(f"{json.dumps(path.as_posix())} = {json.dumps(access)}")
         profile.extend(["", "[permissions.rob2-rsi.network]", "enabled = false"])
         (codex_home / "config.toml").write_text("\n".join(profile) + "\n", encoding="utf-8")
-    skill_digest = hashlib.sha256()
-    for member in sorted(path for path in skill.rglob("*") if path.is_file()):
-        skill_digest.update(member.relative_to(skill).as_posix().encode("utf-8"))
-        skill_digest.update(member.read_bytes())
-    build_digest = hashlib.sha256()
-    package_root = repository / "src" / "rob2_kit"
-    for member in sorted(
-        path
-        for path in package_root.rglob("*")
-        if path.is_file()
-        and "__pycache__" not in path.parts
-        and path.suffix not in {".pyc", ".pyo"}
-    ):
-        build_digest.update(member.relative_to(repository).as_posix().encode("utf-8"))
-        build_digest.update(member.read_bytes())
-    for member in (
-        Path(__file__).resolve(),
-        Path(__file__).resolve().with_name("prepare_rsi_workspace.py"),
-        repository / "pyproject.toml",
-        repository / "uv.lock",
-        rob2_command,
-        codex_command,
-    ):
-        _add_digest_member(build_digest, member, repository)
     scorer_path = repository / "scripts" / "analyze_rsi_runs.py"
     scorer_metadata: dict[str, object] = {
         "schema": "rob2-kit.rsi-run-analysis.v1",
@@ -1038,15 +1519,17 @@ def main() -> None:
     else:
         scorer_metadata["available"] = False
     auth_copy = codex_home / "auth.json"
-    config = [
+    config: list[str] = [
         "-c",
-        "model_reasoning_effort=" + json.dumps(args.effort),
+        "model_reasoning_effort=" + json.dumps(effort),
         "-c",
         "mcp_servers.rob2.command=" + json.dumps(str(rob2_command)),
         "-c",
         'mcp_servers.rob2.args=["mcp"]',
         "-c",
         "mcp_servers.rob2.env={ROB2_WORKSPACE=" + json.dumps(str(workspace)) + "}",
+        "-c",
+        "mcp_servers.rob2.startup_timeout_sec=120",
     ]
     if not args.require_isolated_host:
         config += [
@@ -1059,7 +1542,7 @@ def main() -> None:
         ]
         if _is_windows():
             config += ["-c", 'windows.sandbox="unelevated"']
-    command = [str(codex_command), "exec"]
+    command: list[str] = [str(codex_command), "exec"]
     if args.session:
         command += ["resume", args.session]
     command += [
@@ -1072,8 +1555,12 @@ def main() -> None:
         "--skip-git-repo-check",
         "--json",
         "--model",
-        args.model,
+        model,
         *config,
+        "--disable",
+        "plugins",
+        "--disable",
+        "apps",
         "--disable",
         "remote_plugin",
         "--output-last-message",
@@ -1085,8 +1572,11 @@ def main() -> None:
     trace = run_dir / f"phase-{args.phase}.jsonl"
     stderr = run_dir / f"phase-{args.phase}.stderr.txt"
     metadata = {
-        "model": args.model,
-        "effort": args.effort,
+        "model": model,
+        "effort": effort,
+        "manifest_model": manifest_model,
+        "manifest_effort": manifest_effort,
+        "overrides": overrides,
         "kit_commit": subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=repository, text=True
         ).strip(),
@@ -1120,12 +1610,50 @@ def main() -> None:
             "do not retry a scientific disagreement"
         ),
         "budget": {
-            "reasoning_effort": args.effort,
+            "reasoning_effort": effort,
             "phase": "single host invocation",
             "declared": "Codex CLI budget for the selected reasoning effort",
         },
         "scorer": scorer_metadata,
+        "runtime_inputs": runtime_inputs,
     }
+    execution_identity = execution.get("identity")
+    execution_identity = execution_identity if isinstance(execution_identity, dict) else {}
+    execution["provenance"] = {
+        "case": {
+            "campaign_id": execution_identity.get("campaign_id"),
+            "case_id": execution_identity.get("case_id"),
+            "trial": run_inputs.get("trial"),
+            "outcome": run_inputs.get("requested_outcome"),
+            "run_inputs_sha256": metadata["run_inputs_sha256"],
+            "sources": run_inputs.get("sources", []),
+        },
+        "prompt": {
+            "path": str(prompt_file),
+            "sha256": metadata["prompt_sha256"],
+        },
+        "build": {
+            "kit_commit": metadata["kit_commit"],
+            "sha256": metadata["build_sha256"],
+        },
+        "skill": {"sha256": metadata["skill_sha256"]},
+        "contract": runtime_inputs["contract"],
+        "pack": runtime_inputs["pack"],
+        "host": preflight["host"],
+        "model": model,
+        "reasoning_effort": effort,
+        "overrides": overrides,
+        "tool_inventory": {
+            "expected": list(EXPECTED_TOOL_INVENTORY),
+            "version": TOOL_INVENTORY_VERSION,
+        },
+    }
+    execution["selection_policy"] = {
+        "declared_before_execution": True,
+        "rule": args.selection_policy,
+        "selected_attempt_id": execution.get("attempt_id"),
+    }
+    _atomic_json(run_dir / "execution.json", execution)
     metadata_path = run_dir / f"phase-{args.phase}.meta.json"
     _atomic_json(metadata_path, metadata)
     environment = os.environ.copy()
@@ -1164,11 +1692,7 @@ def main() -> None:
             )
             status_data = json.loads(status.stdout)
             status_payload = status_data.get("data") if isinstance(status_data, dict) else None
-            artifact = (
-                status_data.get("artifact")
-                if isinstance(status_data, dict)
-                else None
-            )
+            artifact = status_data.get("artifact") if isinstance(status_data, dict) else None
             if artifact is None and isinstance(status_payload, dict):
                 artifact = status_payload.get("artifact")
             if artifact is None:

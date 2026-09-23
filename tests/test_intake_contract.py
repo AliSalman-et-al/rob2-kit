@@ -140,13 +140,41 @@ def _prepare_schema() -> dict[str, object]:
     return asyncio.run(read_schema())
 
 
+def _dereference_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Expand local references for assertions about the logical tool shape."""
+
+    def visit(value: Any, active: frozenset[str] = frozenset()) -> Any:
+        if isinstance(value, list):
+            return [visit(item, active) for item in value]
+        if not isinstance(value, dict):
+            return value
+        reference = value.get("$ref")
+        if isinstance(reference, str) and reference.startswith("#/") and reference not in active:
+            target: Any = schema
+            for part in reference.removeprefix("#/").split("/"):
+                target = target[part.replace("~1", "/").replace("~0", "~")]
+            return visit(
+                {**target, **{key: item for key, item in value.items() if key != "$ref"}},
+                active | {reference},
+            )
+        return {
+            key: visit(item, active)
+            for key, item in value.items()
+            if key not in {"$defs", "definitions"}
+        }
+
+    resolved = visit(schema)
+    assert isinstance(resolved, dict)
+    return resolved
+
+
 def _tool_schema(name: str) -> dict[str, Any]:
     async def read_schema() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(item for item in await client.list_tools() if item.name == name)
             return dict(tool.input_schema)
 
-    return asyncio.run(read_schema())
+    return _dereference_schema(asyncio.run(read_schema()))
 
 
 def _tool_description(name: str) -> str:
@@ -164,7 +192,7 @@ def _tool_output_schema(name: str) -> dict[str, Any]:
             tool = next(item for item in await client.list_tools() if item.name == name)
             return dict(tool.output_schema)
 
-    return asyncio.run(read_schema())
+    return _dereference_schema(asyncio.run(read_schema()))
 
 
 def _walk_schema(schema: object, path: str = "$") -> list[tuple[str, dict[str, Any]]]:
@@ -436,6 +464,26 @@ def test_prepare_batch_rejects_empty_or_blank_trial_labels(
                     {
                         "requested_outcome": "requested outcome",
                         "trial_labels": labels,
+                        "expected_revision": 0,
+                    },
+                )
+
+    asyncio.run(prepare())
+
+
+def test_prepare_batch_rejects_result_definition_in_outcome_concept(tmp_path: Path) -> None:
+    (tmp_path / "input" / "Trial A").mkdir(parents=True)
+
+    async def prepare() -> None:
+        os.environ["ROB2_WORKSPACE"] = str(tmp_path)
+        async with Client(mcp) as client:
+            with pytest.raises(ToolError, match="only the outcome concept"):
+                await client.call_tool(
+                    "prepare_batch",
+                    {
+                        "requested_outcome": (
+                            "Overall Survival defined as time from randomization to death"
+                        ),
                         "expected_revision": 0,
                     },
                 )

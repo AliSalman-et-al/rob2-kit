@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 import runpy
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -40,6 +41,50 @@ def test_strict_isolation_rejects_windows_without_uac(monkeypatch: pytest.Monkey
     )
     with pytest.raises(RuntimeError, match="without UAC"):
         runner_helpers["_preflight_isolation"](Path("codex"), True)
+
+
+def test_strict_isolation_explicitly_denies_the_sentinel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "scripts"))
+    runner = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
+    monkeypatch.setitem(runner["_preflight_isolation"].__globals__, "_is_windows", lambda: False)
+    captured: dict[str, str] = {}
+
+    def denied(command, **kwargs):
+        config = Path(kwargs["env"]["CODEX_HOME"]) / "config.toml"
+        captured["profile"] = config.read_text(encoding="utf-8")
+        raise subprocess.CalledProcessError(1, command, output="Permission denied")
+
+    monkeypatch.setattr(subprocess, "check_output", denied)
+
+    result = runner["_preflight_isolation"](Path("codex"), True)
+
+    assert result["sentinel"] == "denied"
+    assert any(
+        "forbidden sentinel.txt" in line and line.endswith('= "deny"')
+        for line in captured["profile"].splitlines()
+    )
+
+
+def test_strict_isolation_does_not_treat_the_sentinel_name_as_a_denial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.syspath_prepend(str(Path(__file__).parents[1] / "scripts"))
+    runner = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
+    monkeypatch.setitem(runner["_preflight_isolation"].__globals__, "_is_windows", lambda: False)
+
+    def unrelated_failure(command, **_kwargs):
+        raise subprocess.CalledProcessError(
+            1,
+            command,
+            output="Traceback: forbidden sentinel.txt could not be opened",
+        )
+
+    monkeypatch.setattr(subprocess, "check_output", unrelated_failure)
+
+    with pytest.raises(RuntimeError, match="without a verified denial"):
+        runner["_preflight_isolation"](Path("codex"), True)
 
 
 def _receipt() -> dict[str, object]:

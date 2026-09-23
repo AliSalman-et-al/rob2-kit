@@ -264,6 +264,14 @@ def test_runner_resolves_relative_run_directory(
     assert Path(metadata["command"][metadata["command"].index("-C") + 1]).is_absolute()
 
 
+def test_runner_gives_the_local_mcp_server_a_realistic_startup_budget(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _run_dir, metadata = _invoke_failed_run(tmp_path, monkeypatch, mode="exit")
+
+    assert "mcp_servers.rob2.startup_timeout_sec=120" in metadata["command"]
+
+
 @pytest.mark.skipif(os.name == "nt", reason="strict host isolation requires a POSIX host")
 def test_required_host_isolation_records_a_deny_by_default_profile(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch

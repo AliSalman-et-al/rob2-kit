@@ -11,7 +11,9 @@ from typing import Any
 SCHEMA = "rob2-kit.held-out-evaluation.v0.5"
 MANIFEST_SCHEMA = "rob2-kit.evaluation-manifest.v0.5"
 COMPARISON_SCHEMA = "rob2-kit.evaluation-comparisons.v0.1"
+QUALIFICATION_COMPARISON_SCHEMA = "rob2-kit.evaluation-comparisons.v0.2"
 COMPARISON_RUN_SCHEMA = "rob2-kit.evaluation-comparison-run.v0.1"
+QUALIFICATION_COMPARISON_RUN_SCHEMA = "rob2-kit.evaluation-comparison-run.v0.2"
 CELL_FIELDS = (
     "trial_id",
     "result_identity",
@@ -73,6 +75,7 @@ _COMPARISON_ARM_FIELDS = {
 }
 _COMPARISON_PAIR_FIELDS = {"id", "left", "right", "diagnostic"}
 _COMPARISON_CONFIG_FIELDS = {"schema", "arms", "pairs"}
+_QUALIFICATION_CONFIG_FIELDS = _COMPARISON_CONFIG_FIELDS | {"campaign", "plan"}
 _COMPARISON_PLAN_FIELDS = {
     "cases",
     "host",
@@ -114,18 +117,57 @@ _COMPARISON_ATTEMPT_FIELDS = {
 }
 _COMPARISON_STATUSES = frozenset({"assessed", "needs_input", "failed", "draw", "scope_correction"})
 _COMPARISON_SUPPORT = frozenset({"full", "partial", "unsupported", "conflicted", "unavailable"})
+_QUALIFICATION_CONTROLS = frozenset({"D2", "D3", "D4", "D5"})
+_QUALIFICATION_CONTROL_DOMAINS = {
+    "D2": "domain:deviations",
+    "D3": "domain:missing",
+    "D4": "domain:measurement",
+    "D5": "domain:selection",
+}
+_COMPARISON_CAMPAIGN_FIELDS = {
+    "campaign_id",
+    "split",
+    "conditions",
+    "attempt_policy",
+    "platforms",
+    "controls",
+}
+_COMPARISON_SPLIT_FIELDS = {"kind", "development_trials", "holdout_trials"}
+_COMPARISON_CONDITION_FIELDS = {"baseline", "successor"}
+_COMPARISON_ATTEMPT_POLICY_FIELDS = {"draws_per_cell", "selection"}
+_COMPARISON_PLATFORM_FIELDS = {
+    "id",
+    "host",
+    "model_family",
+    "model_version",
+    "effort",
+}
+_COMPARISON_ATTEMPT_FIELDS_V2 = _COMPARISON_ATTEMPT_FIELDS | {"platform_id", "draw"}
 
 
 def validate_comparison_config(config: Any, interventions: dict[str, str]) -> None:
     """Validate a predeclared comparison design without model-facing coaching."""
-    if not isinstance(config, dict) or set(config) not in (
-        _COMPARISON_CONFIG_FIELDS,
-        _COMPARISON_CONFIG_FIELDS | {"plan"},
-    ):
+    if not isinstance(config, dict):
         raise ValueError("comparison_config has an unclosed field set")
     if not isinstance(interventions, dict):
         raise ValueError("comparison interventions must be an object")
-    if config["schema"] != COMPARISON_SCHEMA:
+    schema = config.get("schema")
+    if schema == COMPARISON_SCHEMA:
+        if "campaign" in config:
+            raise ValueError(
+                f"qualification campaign requires schema {QUALIFICATION_COMPARISON_SCHEMA}"
+            )
+        allowed_fields = (
+            _COMPARISON_CONFIG_FIELDS,
+            _COMPARISON_CONFIG_FIELDS | {"plan"},
+        )
+    elif schema == QUALIFICATION_COMPARISON_SCHEMA:
+        allowed_fields = (_QUALIFICATION_CONFIG_FIELDS,)
+    else:
+        raise ValueError("comparison_config schema is invalid")
+    if set(config) not in allowed_fields:
+        raise ValueError("comparison_config has an unclosed field set")
+    if schema not in {COMPARISON_SCHEMA, QUALIFICATION_COMPARISON_SCHEMA}:
         raise ValueError("comparison_config schema is invalid")
     arms = config["arms"]
     if not isinstance(arms, list) or not arms:
@@ -174,8 +216,16 @@ def validate_comparison_config(config: Any, interventions: dict[str, str]) -> No
     if not isinstance(pairs, list) or not pairs:
         raise ValueError("comparison_config pairs must be a non-empty list")
     pair_ids: set[str] = set()
+    qualification = schema == QUALIFICATION_COMPARISON_SCHEMA
+    pair_fields = (
+        _COMPARISON_PAIR_FIELDS | {"control", "case_ids"}
+        if qualification
+        else _COMPARISON_PAIR_FIELDS
+    )
+    controls: set[str] = set()
+    control_case_ids: dict[str, set[str]] = {}
     for pair in pairs:
-        if not isinstance(pair, dict) or set(pair) != _COMPARISON_PAIR_FIELDS:
+        if not isinstance(pair, dict) or set(pair) != pair_fields:
             raise ValueError("comparison pair has an unclosed field set")
         pair_id = pair["id"]
         left = pair["left"]
@@ -190,20 +240,148 @@ def validate_comparison_config(config: Any, interventions: dict[str, str]) -> No
             or right not in arm_ids
             or left == right
             or pair["diagnostic"] is not True
+            or (
+                qualification
+                and (
+                    not isinstance(pair["control"], str)
+                    or pair["control"] not in _QUALIFICATION_CONTROLS
+                    or pair["control"] in controls
+                    or not isinstance(pair["case_ids"], list)
+                    or not pair["case_ids"]
+                    or any(
+                        not isinstance(case_id, str) or not case_id for case_id in pair["case_ids"]
+                    )
+                    or len(set(pair["case_ids"])) != len(pair["case_ids"])
+                )
+            )
         ):
             raise ValueError("comparison pair is invalid")
         pair_ids.add(pair_id)
-    if "plan" in config:
+        if qualification:
+            controls.add(pair["control"])
+            control_case_ids[pair["control"]] = set(pair["case_ids"])
+    if qualification and controls != _QUALIFICATION_CONTROLS:
+        raise ValueError(
+            "qualification comparisons require one paired control for D2, D3, D4, and D5"
+        )
+    if qualification:
+        _validate_comparison_campaign(config["campaign"], arm_ids)
+        condition_arms = {
+            config["campaign"]["conditions"]["baseline"],
+            config["campaign"]["conditions"]["successor"],
+        }
+        if any({pair["left"], pair["right"]} != condition_arms for pair in pairs):
+            raise ValueError("qualification paired controls must compare baseline and successor")
+        _validate_comparison_plan(config["plan"], config["campaign"])
+        _validate_qualification_controls(config["pairs"], config["plan"], control_case_ids)
+    elif "plan" in config:
         _validate_comparison_plan(config["plan"])
 
 
-def _validate_comparison_plan(plan: Any) -> None:
+def _validate_comparison_campaign(campaign: Any, arm_ids: set[str]) -> None:
+    _closed_plan_object(campaign, _COMPARISON_CAMPAIGN_FIELDS, "campaign")
+    if not isinstance(campaign["campaign_id"], str) or not campaign["campaign_id"]:
+        raise ValueError("qualification campaign id is invalid")
+
+    _closed_plan_object(campaign["split"], _COMPARISON_SPLIT_FIELDS, "split")
+    split = campaign["split"]
+    if split["kind"] != "trial_heldout":
+        raise ValueError("qualification split must be Trial-held-out")
+    trial_sets: list[set[str]] = []
+    for name in ("development_trials", "holdout_trials"):
+        values = split[name]
+        if (
+            not isinstance(values, list)
+            or not values
+            or any(not isinstance(value, str) or not value for value in values)
+            or len(set(values)) != len(values)
+        ):
+            raise ValueError(f"qualification split {name} are invalid")
+        trial_sets.append(set(values))
+    if trial_sets[0] & trial_sets[1]:
+        raise ValueError("qualification Trial-held-out split overlaps")
+
+    _closed_plan_object(campaign["conditions"], _COMPARISON_CONDITION_FIELDS, "conditions")
+    conditions = campaign["conditions"]
+    if (
+        not isinstance(conditions["baseline"], str)
+        or not isinstance(conditions["successor"], str)
+        or conditions["baseline"] not in arm_ids
+        or conditions["successor"] not in arm_ids
+        or conditions["baseline"] == conditions["successor"]
+    ):
+        raise ValueError("qualification conditions must name distinct baseline and successor arms")
+
+    _closed_plan_object(
+        campaign["attempt_policy"], _COMPARISON_ATTEMPT_POLICY_FIELDS, "attempt policy"
+    )
+    attempt_policy = campaign["attempt_policy"]
+    if (
+        type(attempt_policy["draws_per_cell"]) is not int
+        or not 1 <= attempt_policy["draws_per_cell"] <= 8
+        or attempt_policy["selection"] != "retain_all"
+    ):
+        raise ValueError("qualification attempt policy must retain every bounded draw")
+
+    platforms = campaign["platforms"]
+    if not isinstance(platforms, list) or not platforms:
+        raise ValueError("qualification platforms must be a non-empty list")
+    platform_ids: set[str] = set()
+    hosts: set[str] = set()
+    families: set[str] = set()
+    for platform in platforms:
+        if not isinstance(platform, dict) or set(platform) != _COMPARISON_PLATFORM_FIELDS:
+            raise ValueError("qualification platform has an unclosed field set")
+        if (
+            any(not isinstance(platform[key], str) or not platform[key] for key in platform)
+            or platform["id"] in platform_ids
+        ):
+            raise ValueError("qualification platform identity is invalid")
+        platform_ids.add(platform["id"])
+        hosts.add(platform["host"])
+        families.add(platform["model_family"])
+    if len(hosts) < 2 and len(families) < 2:
+        raise ValueError("qualification requires two model families or materially different hosts")
+
+    controls = campaign["controls"]
+    if (
+        not isinstance(controls, list)
+        or len(controls) != len(_QUALIFICATION_CONTROLS)
+        or any(not isinstance(control, str) for control in controls)
+        or set(controls) != _QUALIFICATION_CONTROLS
+    ):
+        raise ValueError("qualification controls must cover D2, D3, D4, and D5")
+
+
+def _validate_qualification_controls(
+    pairs: list[dict[str, Any]], plan: dict[str, Any], control_case_ids: dict[str, set[str]]
+) -> None:
+    cases = {case["case_id"]: case for case in plan["cases"]}
+    used_case_ids: set[str] = set()
+    for pair in pairs:
+        control = pair["control"]
+        declared_case_ids = control_case_ids[control]
+        missing = declared_case_ids - set(cases)
+        if missing:
+            raise ValueError(f"qualification control {control} references an unknown case")
+        if used_case_ids & declared_case_ids:
+            raise ValueError("qualification controls must use distinct premise-changing cases")
+        required_domain = _QUALIFICATION_CONTROL_DOMAINS[control]
+        if any(
+            required_domain not in cases[case_id]["domain_ids"] for case_id in declared_case_ids
+        ):
+            raise ValueError(f"qualification control {control} has a mismatched Domain")
+        used_case_ids.update(declared_case_ids)
+
+
+def _validate_comparison_plan(plan: Any, campaign: dict[str, Any] | None = None) -> None:
     if not isinstance(plan, dict) or set(plan) != _COMPARISON_PLAN_FIELDS:
         raise ValueError("comparison plan has an unclosed field set")
     cases = plan["cases"]
     if not isinstance(cases, list) or not cases:
         raise ValueError("comparison plan cases must be a non-empty list")
     case_ids: set[str] = set()
+    case_trials: set[str] = set()
     for case in cases:
         if not isinstance(case, dict) or set(case) != _COMPARISON_CASE_FIELDS:
             raise ValueError("comparison plan case has an unclosed field set")
@@ -215,6 +393,7 @@ def _validate_comparison_plan(plan: Any) -> None:
             not isinstance(case[key], str) or not case[key] for key in ("trial_id", "outcome_id")
         ):
             raise ValueError("comparison plan case target is invalid")
+        case_trials.add(case["trial_id"])
         domains = case["domain_ids"]
         if (
             not isinstance(domains, list)
@@ -223,6 +402,12 @@ def _validate_comparison_plan(plan: Any) -> None:
             or len(set(domains)) != len(domains)
         ):
             raise ValueError("comparison plan case domains are invalid")
+        if campaign is not None:
+            declared_trials = set(campaign["split"]["development_trials"]) | set(
+                campaign["split"]["holdout_trials"]
+            )
+            if case["trial_id"] not in declared_trials:
+                raise ValueError("qualification case Trial is absent from the frozen split")
 
     _closed_plan_object(plan["host"], _COMPARISON_HOST_FIELDS, "host")
     host = plan["host"]
@@ -277,6 +462,20 @@ def _validate_comparison_plan(plan: Any) -> None:
         or budget["max_tool_calls"] < 0
     ):
         raise ValueError("comparison plan budget is invalid")
+    if campaign is not None:
+        holdout_trials = set(campaign["split"]["holdout_trials"])
+        if not case_trials & holdout_trials:
+            raise ValueError("qualification plan must include a holdout Trial")
+        if campaign["attempt_policy"]["draws_per_cell"] > retry_policy["max_attempts"]:
+            raise ValueError("qualification draw policy exceeds the retry bound")
+        required_attempts = (
+            len(cases)
+            * len(campaign["platforms"])
+            * 2
+            * campaign["attempt_policy"]["draws_per_cell"]
+        )
+        if budget["max_attempts"] < required_attempts:
+            raise ValueError("qualification budget cannot retain every declared draw")
 
 
 def _closed_plan_object(value: Any, fields: set[str], name: str) -> None:
@@ -302,7 +501,9 @@ def run_comparison(
     plan = config.get("plan")
     if plan is None:
         raise ValueError("comparison runs require a predeclared plan")
-    _validate_comparison_plan(plan)
+    qualification = config["schema"] == QUALIFICATION_COMPARISON_SCHEMA
+    campaign = config.get("campaign")
+    _validate_comparison_plan(plan, campaign if qualification else None)
     if not isinstance(outcomes, list) or not outcomes:
         raise ValueError("comparison outcomes must be a non-empty list")
     arm_ids = {arm["id"] for arm in config["arms"]}
@@ -310,11 +511,19 @@ def run_comparison(
     retry_limit = plan["retry_policy"]["max_attempts"]
     budget = plan["budget"]
     seen_attempts: set[str] = set()
-    attempts_by_cell: Counter[tuple[str, str]] = Counter()
+    attempts_by_cell: Counter[tuple[str, ...]] = Counter()
     sessions_by_arm: dict[str, set[str]] = defaultdict(set)
     rows: list[dict[str, Any]] = []
+    if qualification:
+        assert isinstance(campaign, dict)
+        platform_ids = {platform["id"] for platform in campaign["platforms"]}
+        draws_per_cell = campaign["attempt_policy"]["draws_per_cell"]
+    else:
+        platform_ids = set()
+        draws_per_cell = 0
+    outcome_fields = _COMPARISON_ATTEMPT_FIELDS_V2 if qualification else _COMPARISON_ATTEMPT_FIELDS
     for index, outcome in enumerate(outcomes):
-        row = _closed(outcome, _COMPARISON_ATTEMPT_FIELDS, f"comparison outcome[{index}]")
+        row = _closed(outcome, outcome_fields, f"comparison outcome[{index}]")
         if (
             not all(
                 isinstance(row[key], str) and row[key]
@@ -330,12 +539,26 @@ def run_comparison(
                 not isinstance(row[key], (int, float)) or isinstance(row[key], bool) or row[key] < 0
                 for key in ("latency_ms", "cost", "context_bytes", "tool_calls")
             )
+            or (
+                qualification
+                and (
+                    not isinstance(row["platform_id"], str)
+                    or row["platform_id"] not in platform_ids
+                    or type(row["draw"]) is not int
+                    or not 1 <= row["draw"] <= draws_per_cell
+                )
+            )
         ):
             raise ValueError(f"comparison outcome[{index}] is invalid")
         seen_attempts.add(row["attempt_id"])
-        attempt_key = (row["arm_id"], row["cell_id"])
+        attempt_key = (
+            (row["arm_id"], row["cell_id"], row["platform_id"])
+            if qualification
+            else (row["arm_id"], row["cell_id"])
+        )
         attempts_by_cell[attempt_key] += 1
-        if attempts_by_cell[attempt_key] > retry_limit:
+        attempt_limit = draws_per_cell if qualification else retry_limit
+        if attempts_by_cell[attempt_key] > attempt_limit:
             raise ValueError("comparison retry policy was exceeded")
         sessions_by_arm[row["arm_id"]].add(row["session_id"])
         rows.append(dict(row))
@@ -350,6 +573,34 @@ def run_comparison(
     all_sessions = [session for sessions in sessions_by_arm.values() for session in sessions]
     if len(all_sessions) != len(set(all_sessions)):
         raise ValueError("comparison arms require independent sessions")
+    if qualification:
+        assert isinstance(campaign, dict)
+        required_arms = {
+            campaign["conditions"]["baseline"],
+            campaign["conditions"]["successor"],
+        }
+        observed = {
+            (row["arm_id"], row["cell_id"], row["platform_id"])
+            for row in rows
+            if row["arm_id"] in required_arms
+        }
+        expected = {
+            (arm_id, case_id, platform_id)
+            for arm_id in required_arms
+            for case_id in case_ids
+            for platform_id in platform_ids
+        }
+        if observed != expected:
+            raise ValueError("qualification campaign is missing a baseline or successor cell")
+        expected_draws = set(range(1, draws_per_cell + 1))
+        for key in sorted(expected):
+            draws = {
+                row["draw"]
+                for row in rows
+                if (row["arm_id"], row["cell_id"], row["platform_id"]) == key
+            }
+            if draws != expected_draws:
+                raise ValueError("qualification campaign did not retain every declared draw")
     if labels is not None:
         if not isinstance(labels, dict) or any(
             not isinstance(cell, str) or not cell or not isinstance(label, str) or not label
@@ -379,10 +630,15 @@ def run_comparison(
                 )
                 for label in classes
             }
+        accuracy = _rate(correct, len(scored)) if labels is not None else None
         return {
             "attempts": len(arm_rows),
             "completion": _rate(sum(row["completion"] for row in arm_rows), len(arm_rows)),
-            "scientific_accuracy": _rate(correct, len(scored)) if labels is not None else None,
+            **(
+                {"provisional_agreement": accuracy}
+                if qualification
+                else {"scientific_accuracy": accuracy}
+            ),
             "class_recall": class_recall,
             "support": dict(Counter(row["support"] for row in arm_rows)),
             "statuses": dict(Counter(row["status"] for row in arm_rows)),
@@ -398,39 +654,47 @@ def run_comparison(
     }
     pair_metrics: dict[str, Any] = {}
     for pair in config["pairs"]:
-        left: dict[str, list[dict[str, Any]]] = defaultdict(list)
-        right: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        left: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+        right: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+        declared_case_ids: set[str] = set(pair["case_ids"]) if qualification else set()
         for row in rows:
+            if qualification and row["cell_id"] not in declared_case_ids:
+                continue
+            pair_key = (
+                (row["cell_id"], row["platform_id"], row["draw"])
+                if qualification
+                else (row["cell_id"],)
+            )
             if row["arm_id"] == pair["left"]:
-                left[row["cell_id"]].append(row)
+                left[pair_key].append(row)
             elif row["arm_id"] == pair["right"]:
-                right[row["cell_id"]].append(row)
+                right[pair_key].append(row)
         matched = sorted(set(left) & set(right))
-        comparable = [cell for cell in matched if len(left[cell]) == len(right[cell]) == 1]
-        labeled_comparable = [cell for cell in comparable if labels and cell in labels]
+        comparable = [key for key in matched if len(left[key]) == len(right[key]) == 1]
+        labeled_comparable = [key for key in comparable if labels and key[0] in labels]
         pair_metrics[pair["id"]] = {
             "left": pair["left"],
             "right": pair["right"],
             "matched_cells": len(matched),
             "ambiguous_cells": len(matched) - len(comparable),
             "same_prediction": sum(
-                left[cell][0]["prediction"] == right[cell][0]["prediction"] for cell in comparable
+                left[key][0]["prediction"] == right[key][0]["prediction"] for key in comparable
             ),
             "different_prediction": sum(
-                left[cell][0]["prediction"] != right[cell][0]["prediction"] for cell in comparable
+                left[key][0]["prediction"] != right[key][0]["prediction"] for key in comparable
             ),
-            "left_accuracy": (
+            ("left_provisional_agreement" if qualification else "left_accuracy"): (
                 _rate(
-                    sum(left[cell][0]["prediction"] == labels[cell] for cell in labeled_comparable),
+                    sum(left[key][0]["prediction"] == labels[key[0]] for key in labeled_comparable),
                     len(labeled_comparable),
                 )
                 if labels is not None
                 else None
             ),
-            "right_accuracy": (
+            ("right_provisional_agreement" if qualification else "right_accuracy"): (
                 _rate(
                     sum(
-                        right[cell][0]["prediction"] == labels[cell] for cell in labeled_comparable
+                        right[key][0]["prediction"] == labels[key[0]] for key in labeled_comparable
                     ),
                     len(labeled_comparable),
                 )
@@ -438,17 +702,47 @@ def run_comparison(
                 else None
             ),
         }
+        if qualification:
+            pair_metrics[pair["id"]].update(
+                {"control": pair["control"], "case_ids": sorted(declared_case_ids)}
+            )
     return privacy_safe_receipt(
-        {
-            "schema": COMPARISON_RUN_SCHEMA,
-            "config_identity": _hash(config),
-            "plan_identity": _hash(plan),
-            "interventions": dict(interventions),
-            "outcomes": rows,
-            "metrics": {"arms": by_arm, "pairs": pair_metrics},
-            "retained_outcome_count": len(rows),
-        }
+        _comparison_receipt(
+            {
+                "schema": (
+                    QUALIFICATION_COMPARISON_RUN_SCHEMA if qualification else COMPARISON_RUN_SCHEMA
+                ),
+                "config_identity": _hash(config),
+                "plan_identity": _hash(plan),
+                **({"campaign_identity": _hash(campaign)} if qualification else {}),
+                **(
+                    {"configuration": config, "campaign": campaign, "plan": plan}
+                    if qualification
+                    else {}
+                ),
+                "interventions": dict(interventions),
+                "outcomes": rows,
+                "metrics": {"arms": by_arm, "pairs": pair_metrics},
+                "retained_outcome_count": len(rows),
+            }
+        )
     )
+
+
+def _comparison_receipt(receipt: dict[str, Any]) -> dict[str, Any]:
+    """Add deterministic identities to a comparison receipt.
+
+    The receipt identity excludes only itself.  The outcome and metric identities
+    make the two joins used by an integrated qualification report explicit while
+    retaining the complete privacy-safe run receipt for independent replay.
+    """
+
+    if receipt["schema"] != QUALIFICATION_COMPARISON_RUN_SCHEMA:
+        return receipt
+    receipt["outcome_identity"] = _hash(receipt["outcomes"])
+    receipt["metric_identity"] = _hash(receipt["metrics"])
+    receipt["receipt_identity"] = _hash(receipt)
+    return receipt
 
 
 def _hash(value: Any) -> str:

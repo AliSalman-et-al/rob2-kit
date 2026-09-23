@@ -35,3 +35,12 @@ and prognostic exclusions as well as the percentage affected.
 
 Support each conduct-chain proposition with source facts and any stated
 inference. A passage supporting one proposition does not settle the others.
+
+## Paired premise check
+
+Use the comparison card's neutral pair as a reasoning control. In the permitted
+care case, rescue or crossover is allowed by the protocol and is ordinary later
+care; in the changed case, the same treatment change is prohibited and caused
+by trial participation or trial staff. Change the reasoning only when both
+protocol inconsistency and a trial-context cause change. Do not import an
+expected answer or risk label from the pair.

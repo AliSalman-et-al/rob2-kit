@@ -13,6 +13,8 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+from benchmark_contract import artifact_manifest_identity
+
 from rob2_kit.evaluation.adjudication import read_sidecar, validate_sidecars
 
 DOMAINS = (
@@ -23,6 +25,8 @@ DOMAINS = (
     ("D5", "selection"),
 )
 SCHEMA = "rob2-kit.rsi-run-analysis.v1"
+EXECUTION_SCHEMA = "rob2-kit.rsi-execution.v1"
+HISTORICAL_EXECUTION_COMPATIBILITY = "historical-unqualified"
 
 
 def _normalise(value: str) -> str:
@@ -149,6 +153,12 @@ def _bundle(
     actual_hash = hashlib.sha256(path.read_bytes()).hexdigest()
     if expected_hash != actual_hash:
         raise ValueError(f"bundle hash mismatch for {path}")
+    recorded_identity = artifact.get("identity")
+    if not isinstance(recorded_identity, str) or not recorded_identity:
+        raise ValueError(f"successful execution has no artifact identity: {trial_dir}")
+    internal_identity = artifact_manifest_identity(path)
+    if recorded_identity != internal_identity:
+        raise ValueError(f"artifact identity mismatch for {path}")
     return path
 
 
@@ -229,13 +239,29 @@ def _read_bundle(
     proposal = trial_results[0]
     reported = proposal.get("reported", {}) if isinstance(proposal, dict) else {}
     endpoint = reported.get("endpoint", {}) if isinstance(reported, dict) else {}
+    target = proposal.get("target", {}) if isinstance(proposal, dict) else {}
     proposal_details = {
+        "trial": trial_id,
         "relation": proposal.get("relation") if isinstance(proposal, dict) else None,
+        "comparison": target.get("comparison_groups") if isinstance(target, dict) else None,
         "endpoint": endpoint.get("name") if isinstance(endpoint, dict) else None,
-        "definition": endpoint.get("definition") if isinstance(endpoint, dict) else None,
+        "endpoint_definition": (
+            target.get("outcome_definition")
+            if isinstance(target, dict) and target.get("outcome_definition") is not None
+            else endpoint.get("definition")
+            if isinstance(endpoint, dict)
+            else None
+        ),
+        "population": (
+            target.get("intended_analysis_population") if isinstance(target, dict) else None
+        ),
+        "window_or_cutoff": (
+            target.get("time_point_or_window") if isinstance(target, dict) else None
+        ),
         "estimate": reported.get("estimate") if isinstance(reported, dict) else None,
         "precision": reported.get("precision") if isinstance(reported, dict) else None,
     }
+    proposal_details["definition"] = proposal_details["endpoint_definition"]
     result_identity = snapshot.get("result_identity")
     overall = snapshot.get("overall")
     return (
@@ -260,11 +286,55 @@ def _execution(
         raise ValueError(f"invalid execution.json: {path}") from error
     if (
         not isinstance(record, dict)
-        or record.get("schema") != "rob2-kit.rsi-execution.v1"
+        or record.get("schema") != EXECUTION_SCHEMA
         or record.get("identity") != identity
     ):
         raise ValueError(f"execution identity mismatch: {path}")
+    attempts = record.get("attempts")
+    if (
+        not isinstance(attempts, list)
+        or not attempts
+        or any(
+            not isinstance(attempt, dict) or not isinstance(attempt.get("attempt_id"), str)
+            for attempt in attempts
+        )
+    ):
+        historical = dict(record)
+        historical["compatibility"] = {
+            "mode": HISTORICAL_EXECUTION_COMPATIBILITY,
+            "schema": EXECUTION_SCHEMA,
+            "reason": "immutable attempt identity was not recorded",
+        }
+        return historical
+    attempt_ids: set[str] = set()
+    selected_ids: set[str] = set()
+    for index, attempt in enumerate(attempts):
+        if not isinstance(attempt, dict) or not isinstance(attempt.get("attempt_id"), str):
+            raise ValueError(f"execution attempt {index} is missing an immutable identity: {path}")
+        attempt_id = attempt["attempt_id"]
+        attempt_ids.add(attempt_id)
+        if attempt.get("selected") is True:
+            selected_ids.add(attempt_id)
+    if len(selected_ids) > 1:
+        raise ValueError(f"execution selects more than one attempt: {path}")
+    policy = record.get("selected_attempt_rule")
+    if not isinstance(policy, str) or not policy.strip():
+        raise ValueError(f"execution selection policy is missing: {path}")
+    selection = record.get("selection_policy")
+    if isinstance(selection, dict) and selection.get("selected_attempt_id") not in {
+        None,
+        *attempt_ids,
+    }:
+        raise ValueError(f"execution selected attempt is unknown: {path}")
     return record
+
+
+def _is_historical_execution(record: dict[str, Any] | None) -> bool:
+    compatibility = record.get("compatibility") if isinstance(record, dict) else None
+    return (
+        isinstance(compatibility, dict)
+        and compatibility.get("mode") == HISTORICAL_EXECUTION_COMPATIBILITY
+    )
 
 
 def _validate_execution_inputs(
@@ -513,20 +583,27 @@ def collect(
         if manifest is not None and manifest_row is None:
             raise ValueError(f"benchmark manifest is missing eligible case: {outcome}/{trial}")
         if execution is not None:
+            historical_execution = _is_historical_execution(execution)
             bundle = (
-                _bundle(trial_dir, execution, legacy_read_only=legacy_read_only)
+                _bundle(
+                    trial_dir,
+                    None if historical_execution else execution,
+                    legacy_read_only=legacy_read_only or historical_execution,
+                )
                 if trial_dir.is_dir()
                 else None
             )
-            _validate_execution_inputs(
-                trial_dir,
-                execution,
-                trial=trial,
-                outcome=outcome,
-                manifest_row=manifest_row,
-                bundle=bundle,
-            )
+            if not historical_execution:
+                _validate_execution_inputs(
+                    trial_dir,
+                    execution,
+                    trial=trial,
+                    outcome=outcome,
+                    manifest_row=manifest_row,
+                    bundle=bundle,
+                )
         else:
+            historical_execution = False
             bundle = (
                 _bundle(trial_dir, execution, legacy_read_only=legacy_read_only)
                 if trial_dir.is_dir()
@@ -542,14 +619,14 @@ def collect(
             proposal: dict[str, Any] = {}
             result_identity = None
             completion = "incomplete" if phases else "unknown"
-        elif execution is None:
+        elif execution is None or historical_execution:
             verified, verification_message = _verify_bundle(bundle)
             if not verified:
                 raise ValueError(f"bundle verification failed: {verification_message}")
             observed, observed_overall, proposal, result_identity = _read_bundle(
                 bundle, expected_trial=trial, expected_outcome=outcome
             )
-            completion = "legacy_finalized"
+            completion = "historical_unqualified" if historical_execution else "legacy_finalized"
         elif execution.get("state") != "succeeded":
             observed = {}
             observed_overall = None
@@ -620,7 +697,12 @@ def collect(
                     else None
                 ),
                 "verification": (
-                    {"verified": True, "mode": "authoritative"}
+                    {
+                        "verified": True,
+                        "mode": (
+                            "historical-unqualified" if historical_execution else "authoritative"
+                        ),
+                    }
                     if bundle and execution
                     else ({"verified": True, "mode": "legacy-read-only"} if bundle else None)
                 ),

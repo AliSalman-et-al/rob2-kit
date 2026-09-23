@@ -138,6 +138,7 @@ def list_sources(
         navigation = _source_navigation(
             source,
             pages,
+            trial_id=trial["id"],
             cursor=cursor,
             limit=limit,
         )
@@ -161,6 +162,7 @@ def _source_navigation(
     source: dict[str, Any],
     pages: tuple[str, ...],
     *,
+    trial_id: str | None = None,
     cursor: str | None,
     limit: int,
 ) -> dict[str, Any]:
@@ -184,8 +186,26 @@ def _source_navigation(
     next_offset = offset + len(selected)
     has_more = next_offset < len(entries)
     unreadable_pages = [page for page, text in enumerate(pages, 1) if not text.strip()]
+    render_recovery = [
+        {
+            "operation": "render_page",
+            "trial_id": trial_id,
+            "source_id": source["id"],
+            "page": page,
+            "inline": True,
+        }
+        for page in unreadable_pages
+        if trial_id is not None and source.get("media_type") == "application/pdf"
+    ]
+    # These are navigation metadata, not a second unbounded index.  Keep them
+    # page-local so a caller following the existing cursor never receives the
+    # complete version/date catalogue over and over again.
+    version_spans = [item for item in selected if item.get("embedded_version") is not None]
+    date_spans = [item for item in selected if item.get("kind") == "date_lead"]
     return {
         "source_id": source["id"],
+        "source_label": source["label"],
+        "logical_path": source["logical_path"],
         "projection_hash": source["projection_hash"],
         "navigation_version": _SOURCE_NAVIGATION_VERSION,
         "entries": selected,
@@ -200,6 +220,9 @@ def _source_navigation(
         "truncated": has_more,
         "next_cursor": (_source_navigation_cursor(source, next_offset) if has_more else None),
         "condition": "no_text_projection" if not entries else None,
+        "render_recovery": render_recovery,
+        "version_spans": version_spans,
+        "date_spans": date_spans,
     }
 
 
@@ -423,7 +446,15 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
     # the transport boundary and is the only place that should apply the
     # response limit; truncating this list would make late sections
     # unreachable while reporting a false terminal page.
-    return sorted(ordered, key=lambda item: (item["page"], item["start_line"], item["kind"]))
+    ordered = sorted(ordered, key=lambda item: (item["page"], item["start_line"], item["kind"]))
+    current_section: str | None = None
+    for item in ordered:
+        if item["kind"] == "heading_candidate":
+            current_section = item["text"]
+        item["logical_section"] = current_section
+        if item["kind"] == "version_lead":
+            item["embedded_version"] = item["text"]
+    return ordered
 
 
 def _verified_source_projections(
@@ -620,6 +651,7 @@ def _source_navigation_diagnostic(
     navigation = _source_navigation(
         source,
         pages,
+        trial_id=trial_id,
         cursor=None,
         limit=_SOURCE_NAVIGATION_MAX_ENTRIES,
     )
@@ -3423,6 +3455,8 @@ def _validate_selected_evidence(
         else set()
     )
     allowed_shapes = {frozenset(expected)}
+    if kind == "figure":
+        allowed_shapes.add(frozenset({*expected, "uncertainty"}))
     if kind == "narrative":
         for source_version in (False, True):
             for line_bounds in (False, True):
@@ -3526,6 +3560,15 @@ def _validate_selected_evidence(
             }
         )
         or item.get("provenance") not in {"text_corroborated", "host_visual"}
+        or (
+            "uncertainty" in item
+            and (
+                not isinstance(item.get("uncertainty"), str)
+                or not item["uncertainty"].strip()
+                or item["uncertainty"] != item["uncertainty"].strip()
+                or len(item["uncertainty"]) > 2_000
+            )
+        )
         or not isinstance(region, list)
         or len(region) != 4
         or not all(
@@ -4254,12 +4297,19 @@ def select_visual_evidence(
     delivery_receipt: str,
     transcription: str,
     region: list[float],
+    uncertainty: str | None = None,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     transcription = transcription.strip()
     if not transcription:
         raise ValueError("visual transcription must contain non-whitespace text")
+    if uncertainty is not None:
+        uncertainty = uncertainty.strip()
+        if not uncertainty:
+            raise ValueError("visual uncertainty must contain non-whitespace text")
+        if len(uncertainty) > 2_000:
+            raise ValueError("visual uncertainty is too long")
     source = _find_source(root, trial_id, source_id)
     with _db(root, "derivative.sqlite3") as connection:
         delivery = connection.execute(
@@ -4304,6 +4354,15 @@ def select_visual_evidence(
         ]
         if _normalized_contains(page_text, transcription):
             provenance = "text_corroborated"
+    evidence = {
+        "render": render,
+        "delivery_receipt": delivery_receipt,
+        "transcription": transcription,
+        "region": region,
+        "provenance": provenance,
+    }
+    if uncertainty is not None:
+        evidence["uncertainty"] = uncertainty
     return {
         "outcome": "success",
         "evidence": _evidence(
@@ -4311,12 +4370,6 @@ def select_visual_evidence(
             trial_id,
             source_id,
             "figure",
-            {
-                "render": render,
-                "delivery_receipt": delivery_receipt,
-                "transcription": transcription,
-                "region": region,
-                "provenance": provenance,
-            },
+            evidence,
         ),
     }

@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from typing import Any
 
 import pytest
 
 from rob2_kit.evaluation import run_comparison, validate_comparison_config
+from rob2_kit.evaluation.harness import QUALIFICATION_COMPARISON_SCHEMA
 from rob2_kit.evaluation.observations import ObservationImportError, import_observations
 from rob2_kit.interfaces.mcp.contracts import SearchBatchRequest, SearchData
 
 
-def _config() -> dict[str, object]:
+def _config() -> dict[str, Any]:
     neutral = {
         "mode": "none",
         "passages": "not_supplied",
@@ -51,13 +53,25 @@ def _config() -> dict[str, object]:
                     "case_id": "case-1",
                     "trial_id": "trial-1",
                     "outcome_id": "outcome-1",
-                    "domain_ids": ["domain:missing"],
+                    "domain_ids": ["domain:deviations"],
                 },
                 {
                     "case_id": "case-2",
                     "trial_id": "trial-2",
                     "outcome_id": "outcome-2",
+                    "domain_ids": ["domain:missing"],
+                },
+                {
+                    "case_id": "case-3",
+                    "trial_id": "trial-3",
+                    "outcome_id": "outcome-3",
                     "domain_ids": ["domain:measurement"],
+                },
+                {
+                    "case_id": "case-4",
+                    "trial_id": "trial-4",
+                    "outcome_id": "outcome-4",
+                    "domain_ids": ["domain:selection"],
                 },
             ],
             "host": {
@@ -125,6 +139,109 @@ def test_comparison_schema_rejects_malformed_json_without_leaking_type_errors(mu
         )
 
 
+def _qualification_config() -> dict[str, Any]:
+    config = deepcopy(_config())
+    config["schema"] = QUALIFICATION_COMPARISON_SCHEMA
+    config["pairs"] = [
+        {
+            **config["pairs"][0],
+            "control": control,
+            "case_ids": [f"case-{index}"],
+            "id": f"control-{control.lower()}",
+        }
+        for index, control in enumerate(("D2", "D3", "D4", "D5"), 1)
+    ]
+    config["campaign"] = {
+        "campaign_id": "qualification-1",
+        "split": {
+            "kind": "trial_heldout",
+            "development_trials": ["trial-dev"],
+            "holdout_trials": ["trial-1", "trial-2", "trial-3", "trial-4"],
+        },
+        "conditions": {"baseline": "free", "successor": "oracle"},
+        "attempt_policy": {"draws_per_cell": 1, "selection": "retain_all"},
+        "platforms": [
+            {
+                "id": "platform-luna",
+                "host": "codex-cli",
+                "model_family": "luna",
+                "model_version": "5.6",
+                "effort": "medium",
+            },
+            {
+                "id": "platform-claude",
+                "host": "codex-cli",
+                "model_family": "claude",
+                "model_version": "4",
+                "effort": "medium",
+            },
+        ],
+        "controls": ["D2", "D3", "D4", "D5"],
+    }
+    config["plan"]["budget"].update(
+        {"max_attempts": 16, "max_cost": 2.0, "max_context_bytes": 2000, "max_tool_calls": 40}
+    )
+    return config
+
+
+def test_qualification_config_freezes_heldout_campaign_contract() -> None:
+    config = _qualification_config()
+    validate_comparison_config(
+        config, {"free": "sha256:" + "a" * 64, "oracle": "sha256:" + "b" * 64}
+    )
+
+
+def test_legacy_comparison_schema_rejects_qualification_fields_with_version_hint() -> None:
+    config = _config()
+    config["campaign"] = {}
+    with pytest.raises(ValueError, match=QUALIFICATION_COMPARISON_SCHEMA):
+        validate_comparison_config(
+            config, {"free": "sha256:" + "a" * 64, "oracle": "sha256:" + "b" * 64}
+        )
+
+
+@pytest.mark.parametrize(
+    "mutate, message",
+    [
+        (
+            lambda config: config["campaign"]["platforms"][1].update({"model_family": "luna"}),
+            "two model families",
+        ),
+        (
+            lambda config: config["campaign"]["split"]["holdout_trials"].append("trial-dev"),
+            "overlaps",
+        ),
+        (
+            lambda config: config["campaign"]["attempt_policy"].update({"selection": "best"}),
+            "retain every",
+        ),
+        (
+            lambda config: config["pairs"].pop(),
+            "D2, D3, D4, and D5",
+        ),
+        (
+            lambda config: config["pairs"][1].update({"case_ids": ["case-1"]}),
+            "distinct premise-changing cases",
+        ),
+        (
+            lambda config: config["pairs"][0].update({"case_ids": ["unknown-case"]}),
+            "unknown case",
+        ),
+        (
+            lambda config: config["pairs"][0].update({"case_ids": ["case-2"]}),
+            "mismatched Domain",
+        ),
+    ],
+)
+def test_qualification_config_rejects_inadequate_campaigns(mutate, message) -> None:
+    config = _qualification_config()
+    mutate(config)
+    with pytest.raises(ValueError, match=message):
+        validate_comparison_config(
+            config, {"free": "sha256:" + "a" * 64, "oracle": "sha256:" + "b" * 64}
+        )
+
+
 def _outcome(
     attempt_id: str,
     arm_id: str,
@@ -173,6 +290,86 @@ def test_comparison_runner_retains_failures_and_does_not_choose_a_retry() -> Non
     assert result["metrics"]["arms"]["oracle"]["class_recall"]["high"]["rate"] == 1.0
     assert "labels" not in result
     assert result["plan_identity"].startswith("sha256:")
+
+
+def test_qualification_runner_retains_every_platform_draw_and_failure() -> None:
+    config = _qualification_config()
+    interventions = {"free": "sha256:" + "a" * 64, "oracle": "sha256:" + "b" * 64}
+    outcomes = []
+    attempt = 0
+    for platform_id in ("platform-luna", "platform-claude"):
+        for case_id in ("case-1", "case-2", "case-3", "case-4"):
+            for arm_id, prediction in (("free", "low"), ("oracle", "high")):
+                attempt += 1
+                outcomes.append(
+                    {
+                        **_outcome(
+                            f"attempt-{attempt}",
+                            arm_id,
+                            case_id,
+                            f"session-{attempt}",
+                            prediction,
+                            status="failed" if attempt == 1 else "assessed",
+                        ),
+                        "platform_id": platform_id,
+                        "draw": 1,
+                    }
+                )
+
+    result = run_comparison(
+        config,
+        interventions,
+        outcomes,
+        {"case-1": "low", "case-2": "high", "case-3": "low", "case-4": "high"},
+    )
+
+    assert result["schema"] == "rob2-kit.evaluation-comparison-run.v0.2"
+    assert result["retained_outcome_count"] == 16
+    assert result["outcomes"][0]["status"] == "failed"
+    assert result["campaign_identity"].startswith("sha256:")
+    assert result["metrics"]["pairs"]["control-d2"]["matched_cells"] == 2
+    assert result["metrics"]["pairs"]["control-d2"]["ambiguous_cells"] == 0
+    assert result["metrics"]["pairs"]["control-d2"]["case_ids"] == ["case-1"]
+    assert result["metrics"]["pairs"]["control-d3"]["case_ids"] == ["case-2"]
+    assert set(result["metrics"]["pairs"]["control-d2"]["case_ids"]).isdisjoint(
+        result["metrics"]["pairs"]["control-d3"]["case_ids"]
+    )
+    assert {pair["case_ids"][0] for pair in result["metrics"]["pairs"].values()} == {
+        "case-1",
+        "case-2",
+        "case-3",
+        "case-4",
+    }
+    assert all(pair["matched_cells"] == 2 for pair in result["metrics"]["pairs"].values())
+    assert all(
+        result["metrics"]["pairs"][pair]["control"] in {"D2", "D3", "D4", "D5"}
+        for pair in result["metrics"]["pairs"]
+    )
+
+
+def test_qualification_runner_rejects_a_missing_declared_draw() -> None:
+    config = _qualification_config()
+    config["campaign"]["attempt_policy"]["draws_per_cell"] = 2
+    config["plan"]["budget"]["max_attempts"] = 32
+    interventions = {"free": "sha256:" + "a" * 64, "oracle": "sha256:" + "b" * 64}
+    outcomes = []
+    attempt = 0
+    for platform_id in ("platform-luna", "platform-claude"):
+        for case_id in ("case-1", "case-2", "case-3", "case-4"):
+            for arm_id in ("free", "oracle"):
+                attempt += 1
+                outcomes.append(
+                    {
+                        **_outcome(
+                            f"attempt-{attempt}", arm_id, case_id, f"session-{attempt}", "low"
+                        ),
+                        "platform_id": platform_id,
+                        "draw": 1,
+                    }
+                )
+
+    with pytest.raises(ValueError, match="every declared draw"):
+        run_comparison(config, interventions, outcomes)
 
 
 def test_search_purpose_models_require_a_domain_for_question_purpose() -> None:

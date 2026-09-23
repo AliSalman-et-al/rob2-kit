@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import json
 import runpy
 import sqlite3
 from pathlib import Path
@@ -1063,6 +1064,86 @@ def test_source_navigation_paginates_complete_index_and_reports_terminal_state(
     assert headings == [f"{index}. Section {index}" for index in range(1, 16)]
     assert pages[-1]["remaining_entries"] == 0
     assert pages[-1]["terminal"] is True
+
+
+def test_source_navigation_pages_metadata_spans_and_preserves_exact_recovery(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    leads = [
+        f"Revision {index}.0; amended 2026-01-{(index % 28) + 1:02d}" for index in range(1, 201)
+    ]
+    (workspace / "input" / "trial" / "protocol.txt").write_text("\n".join(leads), encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "protocol.txt"
+    )
+
+    def span_key(span: dict[str, Any]) -> tuple[Any, ...]:
+        return tuple(
+            span.get(field) for field in ("page", "start_line", "end_line", "kind", "text")
+        )
+
+    entries: list[dict[str, Any]] = []
+    version_spans: list[dict[str, Any]] = []
+    date_spans: list[dict[str, Any]] = []
+    cursor = None
+    while True:
+        args: dict[str, object] = {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "limit": 12,
+        }
+        if cursor is not None:
+            args["cursor"] = cursor
+        page = _call(workspace, "list_sources", args)["data"]["navigation"]
+        page_entries = page["entries"]
+        entries.extend(page_entries)
+        version_spans.extend(page["version_spans"])
+        date_spans.extend(page["date_spans"])
+
+        assert len(page_entries) <= 12
+        assert page["returned_entries"] == len(page_entries)
+        assert len(page["version_spans"]) <= len(page_entries)
+        assert len(page["date_spans"]) <= len(page_entries)
+        entry_keys = {span_key(entry) for entry in page_entries}
+        assert {span_key(span) for span in page["version_spans"]} <= entry_keys
+        assert {span_key(span) for span in page["date_spans"]} <= entry_keys
+        assert (
+            len(json.dumps(page, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+            <= 24_000
+        )
+
+        cursor = page["next_cursor"]
+        if cursor is None:
+            assert page["terminal"] is True
+            break
+
+    assert len(version_spans) == 200
+    assert len(date_spans) == 200
+    assert len({span_key(span) for span in version_spans}) == 200
+    assert len({span_key(span) for span in date_spans}) == 200
+    assert len(entries) == 401
+
+    span = version_spans[-1]
+    recovered = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": span["page"],
+                    "start_line": span["start_line"],
+                    "end_line": span["end_line"],
+                }
+            ],
+        },
+    )["data"]["pages"][0]
+    assert recovered["numbered_text"] == f"{span['start_line']}|{span['text']}"
 
 
 def test_search_session_keeps_distinct_sibling_passages_through_cursor_traversal(
