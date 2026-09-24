@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import runpy
 import subprocess
@@ -14,6 +15,12 @@ def reviewer(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     scripts = Path(__file__).parents[1] / "scripts"
     monkeypatch.syspath_prepend(str(scripts))
     return runpy.run_path(str(scripts / "review_benchmark_proposals.py"))
+
+
+def _expected_hash(value: dict[str, Any]) -> str:
+    return hashlib.sha256(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def _review(result: dict[str, Any]) -> dict[str, Any]:
@@ -138,6 +145,104 @@ def test_yes_refuses_scope_mismatch_without_acknowledging(
     assert calls == [b"no\n"]
     assert recorded["approved"] is False
     assert recorded["scope_mismatches"][0]["field"] == "estimate"
+
+
+def test_yes_accepts_source_adjudicated_scope_difference_when_relation_matches(
+    reviewer: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    result = {**_result(), "relation": "broader"}
+    expected = _expected(reviewer, result)
+    expected["estimate"] = "HR 0.80"
+    expected["reported_scope"]["estimate"] = "HR 0.80"
+    review = _review(result)
+    response = json.dumps(review).encode()
+    approval = (
+        response
+        + b"\n"
+        + json.dumps({"acknowledgment_record": {"review_identity": "review-1"}}).encode()
+        + b"\n"
+    )
+    calls: list[bytes] = []
+
+    def run(command, **kwargs):
+        calls.append(kwargs["input"])
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            approval if kwargs["input"] == b"yes\n" else response,
+            b"",
+        )
+
+    monkeypatch.setitem(reviewer["_one"].__globals__, "_rob2_executable", lambda repo: "rob2")
+    monkeypatch.setattr(subprocess, "run", run)
+    item = {
+        "outcome": "Overall Survival",
+        "trial": "TRIAL-A",
+        "run_dir": str(tmp_path / "run"),
+        "expected_result": expected,
+    }
+    adjudication = {
+        "outcome": "Overall Survival",
+        "trial": "TRIAL-A",
+        "expected_result_sha256": _expected_hash(expected),
+        "review_identity": "review-1",
+        "result_identity": reviewer["_canonical_identity"](result),
+        "observed_relation": "broader",
+        "decision": "accepted_with_scope_difference",
+        "rationale": "The broader reported event is accepted for sensitivity analysis.",
+        "source_citation": "Main article, p. 1.",
+    }
+
+    recorded = reviewer["_one"](
+        tmp_path, item, "yes", tmp_path / "reviews", [adjudication]
+    )
+
+    assert calls == [b"no\n", b"yes\n"]
+    assert recorded["approved"] is True
+    assert recorded["scope_adjudication"]["decision"] == "accepted_with_scope_difference"
+
+
+def test_yes_rejects_scope_adjudication_when_relation_differs(
+    reviewer: dict[str, Any], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    result = {**_result(), "relation": "broader"}
+    expected = _expected(reviewer, result)
+    expected["estimate"] = "HR 0.80"
+    expected["reported_scope"]["estimate"] = "HR 0.80"
+    response = json.dumps(_review(result)).encode()
+    calls: list[bytes] = []
+
+    def run(command, **kwargs):
+        calls.append(kwargs["input"])
+        return subprocess.CompletedProcess(command, 1, response, b"")
+
+    monkeypatch.setitem(reviewer["_one"].__globals__, "_rob2_executable", lambda repo: "rob2")
+    monkeypatch.setattr(subprocess, "run", run)
+    item = {
+        "outcome": "Overall Survival",
+        "trial": "TRIAL-A",
+        "run_dir": str(tmp_path / "run"),
+        "expected_result": expected,
+    }
+    adjudication = {
+        "outcome": "Overall Survival",
+        "trial": "TRIAL-A",
+        "expected_result_sha256": _expected_hash(expected),
+        "review_identity": "review-1",
+        "result_identity": reviewer["_canonical_identity"](result),
+        "observed_relation": "related",
+        "decision": "accepted_with_scope_difference",
+        "rationale": "The source was reviewed.",
+        "source_citation": "Main article, p. 1.",
+    }
+
+    recorded = reviewer["_one"](
+        tmp_path, item, "yes", tmp_path / "reviews", [adjudication]
+    )
+
+    assert calls == [b"no\n"]
+    assert recorded["approved"] is False
+    assert recorded["scope_adjudication"] is None
 
 
 def test_cli_rejects_approval_after_inspected_review_changed(

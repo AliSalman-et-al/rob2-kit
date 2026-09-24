@@ -1,0 +1,3625 @@
+{
+  "by_domain": {
+    "D1": {
+      "exact": {
+        "correct": 26,
+        "rate": 1.0,
+        "total": 26
+      },
+      "low_vs_non_low": {
+        "correct": 26,
+        "rate": 1.0,
+        "total": 26
+      }
+    },
+    "D2": {
+      "exact": {
+        "correct": 16,
+        "rate": 0.6153846153846154,
+        "total": 26
+      },
+      "low_vs_non_low": {
+        "correct": 16,
+        "rate": 0.6153846153846154,
+        "total": 26
+      }
+    },
+    "D3": {
+      "exact": {
+        "correct": 9,
+        "rate": 0.34615384615384615,
+        "total": 26
+      },
+      "low_vs_non_low": {
+        "correct": 15,
+        "rate": 0.5769230769230769,
+        "total": 26
+      }
+    },
+    "D4": {
+      "exact": {
+        "correct": 20,
+        "rate": 0.7692307692307693,
+        "total": 26
+      },
+      "low_vs_non_low": {
+        "correct": 25,
+        "rate": 0.9615384615384616,
+        "total": 26
+      }
+    },
+    "D5": {
+      "exact": {
+        "correct": 13,
+        "rate": 0.5,
+        "total": 26
+      },
+      "low_vs_non_low": {
+        "correct": 13,
+        "rate": 0.5,
+        "total": 26
+      }
+    }
+  },
+  "by_outcome": {
+    "Adverse Events": {
+      "case_count": 7,
+      "domain_cells": 35,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 7,
+            "rate": 1.0,
+            "total": 7
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 1.0,
+            "total": 7
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.2857142857142857,
+            "total": 7
+          },
+          "low_vs_non_low": {
+            "correct": 2,
+            "rate": 0.2857142857142857,
+            "total": 7
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.2857142857142857,
+            "total": 7
+          },
+          "low_vs_non_low": {
+            "correct": 3,
+            "rate": 0.42857142857142855,
+            "total": 7
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.5714285714285714,
+            "total": 7
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 1.0,
+            "total": 7
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.2857142857142857,
+            "total": 7
+          },
+          "low_vs_non_low": {
+            "correct": 2,
+            "rate": 0.2857142857142857,
+            "total": 7
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 0,
+          "rate": 0.0,
+          "total": 7
+        },
+        "low_vs_non_low": {
+          "correct": 6,
+          "rate": 0.8571428571428571,
+          "total": 7
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 17,
+          "rate": 0.4857142857142857,
+          "total": 35
+        },
+        "low_vs_non_low": {
+          "correct": 21,
+          "rate": 0.6,
+          "total": 35
+        }
+      }
+    },
+    "Overall Survival": {
+      "case_count": 10,
+      "domain_cells": 50,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 7,
+            "rate": 0.7,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.7,
+            "total": 10
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.4,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.7,
+            "total": 10
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.6,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.6,
+            "total": 10
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 2,
+          "rate": 0.2,
+          "total": 10
+        },
+        "low_vs_non_low": {
+          "correct": 7,
+          "rate": 0.7,
+          "total": 10
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 37,
+          "rate": 0.74,
+          "total": 50
+        },
+        "low_vs_non_low": {
+          "correct": 40,
+          "rate": 0.8,
+          "total": 50
+        }
+      }
+    },
+    "Progression-Free Survival": {
+      "case_count": 9,
+      "domain_cells": 45,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 9,
+            "rate": 1.0,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 9,
+            "rate": 1.0,
+            "total": 9
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 7,
+            "rate": 0.7777777777777778,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.7777777777777778,
+            "total": 9
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 3,
+            "rate": 0.3333333333333333,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.5555555555555556,
+            "total": 9
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.6666666666666666,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 0.8888888888888888,
+            "total": 9
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.5555555555555556,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.5555555555555556,
+            "total": 9
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 1,
+          "rate": 0.1111111111111111,
+          "total": 9
+        },
+        "low_vs_non_low": {
+          "correct": 8,
+          "rate": 0.8888888888888888,
+          "total": 9
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 30,
+          "rate": 0.6666666666666666,
+          "total": 45
+        },
+        "low_vs_non_low": {
+          "correct": 34,
+          "rate": 0.7555555555555555,
+          "total": 45
+        }
+      }
+    }
+  },
+  "by_outcome_domain": {
+    "Adverse Events": {
+      "D1": {
+        "exact": {
+          "correct": 7,
+          "rate": 1.0,
+          "total": 7
+        },
+        "low_vs_non_low": {
+          "correct": 7,
+          "rate": 1.0,
+          "total": 7
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 2,
+          "rate": 0.2857142857142857,
+          "total": 7
+        },
+        "low_vs_non_low": {
+          "correct": 2,
+          "rate": 0.2857142857142857,
+          "total": 7
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 2,
+          "rate": 0.2857142857142857,
+          "total": 7
+        },
+        "low_vs_non_low": {
+          "correct": 3,
+          "rate": 0.42857142857142855,
+          "total": 7
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 4,
+          "rate": 0.5714285714285714,
+          "total": 7
+        },
+        "low_vs_non_low": {
+          "correct": 7,
+          "rate": 1.0,
+          "total": 7
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 2,
+          "rate": 0.2857142857142857,
+          "total": 7
+        },
+        "low_vs_non_low": {
+          "correct": 2,
+          "rate": 0.2857142857142857,
+          "total": 7
+        }
+      }
+    },
+    "Overall Survival": {
+      "D1": {
+        "exact": {
+          "correct": 10,
+          "rate": 1.0,
+          "total": 10
+        },
+        "low_vs_non_low": {
+          "correct": 10,
+          "rate": 1.0,
+          "total": 10
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 7,
+          "rate": 0.7,
+          "total": 10
+        },
+        "low_vs_non_low": {
+          "correct": 7,
+          "rate": 0.7,
+          "total": 10
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 4,
+          "rate": 0.4,
+          "total": 10
+        },
+        "low_vs_non_low": {
+          "correct": 7,
+          "rate": 0.7,
+          "total": 10
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 10,
+          "rate": 1.0,
+          "total": 10
+        },
+        "low_vs_non_low": {
+          "correct": 10,
+          "rate": 1.0,
+          "total": 10
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 6,
+          "rate": 0.6,
+          "total": 10
+        },
+        "low_vs_non_low": {
+          "correct": 6,
+          "rate": 0.6,
+          "total": 10
+        }
+      }
+    },
+    "Progression-Free Survival": {
+      "D1": {
+        "exact": {
+          "correct": 9,
+          "rate": 1.0,
+          "total": 9
+        },
+        "low_vs_non_low": {
+          "correct": 9,
+          "rate": 1.0,
+          "total": 9
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 7,
+          "rate": 0.7777777777777778,
+          "total": 9
+        },
+        "low_vs_non_low": {
+          "correct": 7,
+          "rate": 0.7777777777777778,
+          "total": 9
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 3,
+          "rate": 0.3333333333333333,
+          "total": 9
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 0.5555555555555556,
+          "total": 9
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 6,
+          "rate": 0.6666666666666666,
+          "total": 9
+        },
+        "low_vs_non_low": {
+          "correct": 8,
+          "rate": 0.8888888888888888,
+          "total": 9
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 5,
+          "rate": 0.5555555555555556,
+          "total": 9
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 0.5555555555555556,
+          "total": 9
+        }
+      }
+    }
+  },
+  "by_primary_status": {
+    "primary": {
+      "case_count": 12,
+      "domain_cells": 60,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 12,
+            "rate": 1.0,
+            "total": 12
+          },
+          "low_vs_non_low": {
+            "correct": 12,
+            "rate": 1.0,
+            "total": 12
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 8,
+            "rate": 0.6666666666666666,
+            "total": 12
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 0.6666666666666666,
+            "total": 12
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.3333333333333333,
+            "total": 12
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.5833333333333334,
+            "total": 12
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 12,
+            "rate": 1.0,
+            "total": 12
+          },
+          "low_vs_non_low": {
+            "correct": 12,
+            "rate": 1.0,
+            "total": 12
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 7,
+            "rate": 0.5833333333333334,
+            "total": 12
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.5833333333333334,
+            "total": 12
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 2,
+          "rate": 0.16666666666666666,
+          "total": 12
+        },
+        "low_vs_non_low": {
+          "correct": 9,
+          "rate": 0.75,
+          "total": 12
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 43,
+          "rate": 0.7166666666666667,
+          "total": 60
+        },
+        "low_vs_non_low": {
+          "correct": 46,
+          "rate": 0.7666666666666667,
+          "total": 60
+        }
+      }
+    },
+    "secondary": {
+      "case_count": 14,
+      "domain_cells": 70,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 14,
+            "rate": 1.0,
+            "total": 14
+          },
+          "low_vs_non_low": {
+            "correct": 14,
+            "rate": 1.0,
+            "total": 14
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 8,
+            "rate": 0.5714285714285714,
+            "total": 14
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 0.5714285714285714,
+            "total": 14
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.35714285714285715,
+            "total": 14
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 0.5714285714285714,
+            "total": 14
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 8,
+            "rate": 0.5714285714285714,
+            "total": 14
+          },
+          "low_vs_non_low": {
+            "correct": 13,
+            "rate": 0.9285714285714286,
+            "total": 14
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.42857142857142855,
+            "total": 14
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.42857142857142855,
+            "total": 14
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 1,
+          "rate": 0.07142857142857142,
+          "total": 14
+        },
+        "low_vs_non_low": {
+          "correct": 12,
+          "rate": 0.8571428571428571,
+          "total": 14
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 41,
+          "rate": 0.5857142857142857,
+          "total": 70
+        },
+        "low_vs_non_low": {
+          "correct": 49,
+          "rate": 0.7,
+          "total": 70
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\overall-survival\\ARASENS\\workspace\\.rob2-kit\\finalized\\83ed44dfa4a7670c235392b497e3c9c074be9323268ee1da730b48c9c071acf8.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+            "id": "darolutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.68",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.57-0.80",
+        "reported_scope": {
+          "analysis_population": "Full analysis set: 1,305 patients (651 assigned to darolutamide and 654 assigned to placebo) from 1,306 randomized patients.",
+          "effect_measure": "Hazard ratio for death",
+          "endpoint": {
+            "definition": "Time from randomization until death from any cause",
+            "name": "Overall survival"
+          },
+          "estimate": "0.68",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.57-0.80"
+        },
+        "trial": "arasens",
+        "window_or_cutoff": {
+          "description": "Primary analysis after 533 deaths; median overall-survival follow-up was 43.7 months in the darolutamide group and 42.4 months in the placebo group",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "32793c57e7ea5b2b9df1b319289fd2852e00bfe2e5477657877fadae95e75f75",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:088b875b7d00fba2375464e026140aa288afe43692bee30808ad6af82291d880",
+        "review_identity": "sha256:49d5413b65c9af0441185790d5f0b18490e9f04b5778c2bd79f160dc26096894",
+        "source_citation": "Supplement eTable 1, PDF p.64; article abstract, PDF p.1",
+        "trial": "ARASENS"
+      },
+      "trial": "ARASENS"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\phase1-replacement\\runs\\progression-free-survival\\ARASENS\\workspace\\.rob2-kit\\finalized\\46627b99871f0dc2b81abb9389abd7653032b38dea63cf13c66de47067cd74c9.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "high",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+            "id": "darolutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.36",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "0.30-0.42",
+        "reported_scope": {
+          "analysis_population": "Full analysis set: all patients who underwent randomization and were assessed according to assigned treatment; 651 in the darolutamide group and 654 in the placebo group.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Time to castration-resistant prostate cancer"
+          },
+          "estimate": "0.36",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "0.30-0.42"
+        },
+        "trial": "arasens",
+        "window_or_cutoff": {
+          "description": "Time to first qualifying event from randomization; analyzed at the primary analysis cutoff (October 25, 2021).",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "efcb8c851d0646aeaa727b38fba175d31571c3fb13e993a82918f3e600fe85cd",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:7913fdb691669499527ee39c954098031773217003274acc50b2017faeefaccf",
+        "review_identity": "sha256:43cd82ac9d6f72a43af5996540573fa61504ac3930f31ee4c64854e5a0d2ea18",
+        "source_citation": "Supplement eTable 1, PDF p.64 (time to castration-resistant prostate cancer; no row named PFS); article abstract, PDF p.1",
+        "trial": "ARASENS"
+      },
+      "trial": "ARASENS"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\phase1-replacement\\runs\\adverse-events\\ARASENS\\workspace\\.rob2-kit\\finalized\\11c1c65d07ecb166c595f484ec7c786cf3ae049c78aff4ea87d0361a3f7010c3.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+            "id": "darolutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Adverse Events",
+        "estimate": null,
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Safety analysis set: patients who received at least one dose, analyzed according to treatment received (652 darolutamide and 650 placebo); three randomized placebo patients received no treatment, and one placebo-assigned patient who received darolutamide was included in the darolutamide safety group.",
+          "endpoint": {
+            "definition": null,
+            "name": "grade 3 or 4 adverse events"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "darolutamide",
+              "statistic": "frequency",
+              "unit": "%",
+              "value": "66.1"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "frequency",
+              "unit": "%",
+              "value": "63.5"
+            }
+          ]
+        },
+        "trial": "arasens",
+        "window_or_cutoff": {
+          "description": "During treatment",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "4265ebfde2735d1c7dae38e307cebc26a078cbd5f1baf7cf7a3349514fdd023a",
+        "observed_relation": "narrower",
+        "outcome": "Adverse Events",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:c82d13fdd301c13188016208e4cc695d72b64cfb7c7d435b7d1e0b73827ff01e",
+        "review_identity": "sha256:219ae28c5d4dcfe06453e2343ef5e996034d27bfa7c128bd71bb3daf79c04475",
+        "source_citation": "Supplement eTable 1, PDF p.65; article abstract, PDF p.1",
+        "trial": "ARASENS"
+      },
+      "trial": "ARASENS"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\overall-survival\\ARCHES\\workspace\\.rob2-kit\\finalized\\74c1a0f376f34650ef190edaabd9611619b81fca0a49a761e87f43d496975e12.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus androgen deprivation therapy",
+            "id": "enzalutamide_plus_adt"
+          },
+          {
+            "assignment": "Placebo plus androgen deprivation therapy",
+            "id": "placebo_plus_adt"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.81",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.53 to 1.25",
+        "reported_scope": {
+          "analysis_population": "Intent-to-treat population; all randomized patients (enzalutamide plus ADT, n=574; placebo plus ADT, n=576). At this interim analysis, 84 deaths had occurred (39 and 45, respectively); median OS was not reached in either group.",
+          "effect_measure": "HR",
+          "endpoint": {
+            "definition": "Time from randomization to death from any cause",
+            "name": "OS"
+          },
+          "estimate": "0.81",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.53 to 1.25"
+        },
+        "trial": "arches",
+        "window_or_cutoff": {
+          "description": "Time-to-event follow-up through the interim OS analysis at the October 14, 2018 data cutoff, with censoring for patients still alive",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "a55cede28a9283f879e915d4952be3304d642643dfde787210b2b19a03dc0028",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:fd309d8f414911009240da6b6434d93111abfd0d9383da39444dc4c04b6ab93a",
+        "review_identity": "sha256:03e53de01be8c2772b24e67663e5053d056374193a877ab75582ba2a6e2c5922",
+        "source_citation": "Supplement eTable 1, PDF p.61; article methods, PDF p.2",
+        "trial": "ARCHES"
+      },
+      "trial": "ARCHES"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\phase1-replacement\\runs\\adverse-events\\ARCHES\\workspace\\.rob2-kit\\finalized\\4bfb230f2e9cec2e5665833232173e4b6dfbece777c90b940d579ad40b641d92.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus ADT",
+            "id": "enzalutamide_plus_adt"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo_plus_adt"
+          }
+        ],
+        "endpoint_definition": "Adverse Events",
+        "estimate": null,
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Safety population: patients who received at least one dose of study drug; 572 in the enzalutamide plus ADT group and 574 in the placebo plus ADT group. Two randomized patients in each group did not receive study drug.",
+          "endpoint": {
+            "definition": null,
+            "name": "AEs"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "enzalutamide_plus_adt",
+              "statistic": "Grade \u2021 3",
+              "unit": "No. (%)",
+              "value": "139 (24.3)"
+            },
+            {
+              "group_id": "placebo_plus_adt",
+              "statistic": "Grade \u2021 3",
+              "unit": "No. (%)",
+              "value": "147 (25.6)"
+            }
+          ]
+        },
+        "trial": "arches",
+        "window_or_cutoff": {
+          "description": "Adverse events reported through the study safety analysis at the October 14, 2018 data cutoff; the exact AE collection window is not stated in the selected report.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "cd021c624f85dd5fe6727188789bc006c09e4cab850d0a45adb6bbfa1ca585c7",
+        "observed_relation": "narrower",
+        "outcome": "Adverse Events",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:0ecf6935f5dc0e0d8f319f02d8b159d9e63951edcda4e2f68a02d1a3f6f0fa8f",
+        "review_identity": "sha256:83a9cdec45b3a932cb5282b072a459a9e91478fde4c301e0c92d0ac105bd6f22",
+        "source_citation": "Supplement eTable 1, PDF p.62; article abstract, PDF p.1",
+        "trial": "ARCHES"
+      },
+      "trial": "ARCHES"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\runs\\overall-survival\\CHAARTED\\workspace\\.rob2-kit\\finalized\\7537391e21526be8728564a991bd083d39c470ba440459bb455e9515a555b3af.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ],
+        "endpoint_definition": "Overall survival",
+        "estimate": "0.61",
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "All 790 randomized patients; intention-to-treat analysis, with all randomized patients followed and included in their assigned group.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "median overall survival"
+          },
+          "estimate": "0.61",
+          "form": "comparative_effect",
+          "group_values": [
+            {
+              "group_id": "adt_docetaxel",
+              "statistic": "median",
+              "unit": "months",
+              "value": "57.6"
+            },
+            {
+              "group_id": "adt_alone",
+              "statistic": "median",
+              "unit": "months",
+              "value": "44.0"
+            }
+          ],
+          "precision": null
+        },
+        "trial": "chaarted",
+        "window_or_cutoff": {
+          "description": "Survival follow-up; data cutoff December 23, 2013; median follow-up 28.9 months",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "a1c09d7c35b24035e89fec30a24e973ec7726cef7a804061f867dd460b1c03b2",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:02a8e7813d3c02948a5334cb4cc760fe6ca47cdb16126f5f43df478e0687cabf",
+        "review_identity": "sha256:53c745d31767ad6af8896d3eba2bdd806c3d9d0a945c59a94a2e2f5f6adcc39b",
+        "source_citation": "Supplement eTable 1, PDF p.63; article abstract, PDF p.1",
+        "trial": "CHAARTED"
+      },
+      "trial": "CHAARTED"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\runs\\progression-free-survival\\CHAARTED\\workspace\\.rob2-kit\\finalized\\3caaae33fc0a269561001920933cf8fbb0eb7f35abd4a667002cad00f0e399e5.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "combination"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "control"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.61 (0.50-0.75)",
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "All 790 randomized patients; all were followed and included in primary intention-to-treat analyses regardless of eligibility and treatment status. Endpoint is tabulated by randomized groups (397 assigned ADT plus docetaxel; 393 assigned ADT alone).",
+          "effect_measure": "Hazard Ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Time to clinical progression - mo"
+          },
+          "estimate": "0.61 (0.50-0.75)",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": null
+        },
+        "trial": "chaarted",
+        "window_or_cutoff": {
+          "description": "From randomization until documented clinical progression",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "8f5ea6b83b6efa2b3592cfe091a3fef5f14b47252e5bfbe5816eaad418903ae1",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:0ffeb587028d9ef281d8c47f968d5b61fe53dff56873a87cd6702af4307322e6",
+        "review_identity": "sha256:6de9cb89e04b6496ceaf56f7b0193fd0af8f6cfc1dab320e70e8d4aba1fb0d2b",
+        "source_citation": "Supplement eTable 1, PDF p.64; article abstract, PDF p.1",
+        "trial": "CHAARTED"
+      },
+      "trial": "CHAARTED"
+    },
+    {
+      "bundle": "eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs2\\overall-survival\\ENZAMET\\workspace\\.rob2-kit\\finalized\\00f628eddc8d3f8467e8b9a66f5ac4c1bc8c2a0a20e3b800c6d51a9f3fa40b6c.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus testosterone suppression",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression",
+            "id": "standard_care"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.67",
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "All 1125 randomized patients (563 assigned to enzalutamide and 562 to standard care), analyzed according to the intention-to-treat principle.",
+          "effect_measure": "Hazard ratio for death",
+          "endpoint": {
+            "definition": null,
+            "name": "Overall survival"
+          },
+          "estimate": "0.67",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": null
+        },
+        "trial": "enzamet",
+        "window_or_cutoff": {
+          "description": "From randomization through available follow-up; 3-year overall survival estimates reported (median follow-up 34 months)",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "a4329b1511d3e76b93a07c2370a3ddc275cfdebef79d06a2d8601cef3e5f3ad1",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:22c9c806aaede2da00ad546b50fb68350c90740cba5efa5cecdff067eae0196b",
+        "review_identity": "sha256:d1d33f76885cb4ee7fa394ded50cecec841cc2d6c5a61ee2b11bf1eeb81f34d4",
+        "source_citation": "Supplement eTable 1, PDF p.63; article abstract, PDF p.1",
+        "trial": "ENZAMET"
+      },
+      "trial": "ENZAMET"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\phase1-replacement\\runs\\progression-free-survival\\ENZAMET\\workspace\\.rob2-kit\\finalized\\d35f5f4a00c41dd11ae6371582853b58ee048e5df96a8ab36e746e2c950dee45.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus testosterone suppression, with early docetaxel when planned or used.",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression, with early docetaxel when planned or used.",
+            "id": "standard_care"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.39",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.33 to 0.47",
+        "reported_scope": {
+          "analysis_population": "All randomized patients (intention-to-treat efficacy analyses).",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "PSA progression-free survival"
+          },
+          "estimate": "0.39",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.33 to 0.47"
+        },
+        "trial": "enzamet",
+        "window_or_cutoff": {
+          "description": "From randomization until the earliest qualifying event or last known follow-up without PSA progression.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "a93a3154d352c29e07405bf2020557b70b933383ff00bed2de4984ffb3ad8b5b",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:d43a192febf3727bb71b1f31f7555ef6c1eb77976bc8fe687b5df572f0d907c1",
+        "review_identity": "sha256:34701439dfbc7e44a37187cf7833fdb3d6b297d6db82107b1f4fe6cc2c87a5e7",
+        "source_citation": "Supplement eTable 1, PDF p.63; article abstract, PDF p.1",
+        "trial": "ENZAMET"
+      },
+      "trial": "ENZAMET"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\adverse-events\\ENZAMET\\workspace\\.rob2-kit\\finalized\\826ebe49b0ebe3b755ab832a14dd17e80fc1c91eeeae5b39bad6f964c69e1a85.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "high",
+        "D3": "high",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus testosterone suppression",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen plus testosterone suppression",
+            "id": "standard_care"
+          }
+        ],
+        "endpoint_definition": "Adverse Events",
+        "estimate": null,
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Safety population; participants who received at least one dose of trial drug, with denominators 563 enzalutamide and 558 standard care.",
+          "endpoint": {
+            "definition": null,
+            "name": "Adverse event leading to treatment discontinuation at any time"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "enzalutamide",
+              "statistic": "no. of patients",
+              "unit": "patients",
+              "value": "33"
+            },
+            {
+              "group_id": "standard_care",
+              "statistic": "no. of patients",
+              "unit": "patients",
+              "value": "14"
+            }
+          ]
+        },
+        "trial": "enzamet",
+        "window_or_cutoff": {
+          "description": "At any time during trial treatment",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e561b39b896c8bbd02b059cda7dcf7942a7d22dd73865b3a3eb4e6732f6ad390",
+        "observed_relation": "component",
+        "outcome": "Adverse Events",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:3509a561e14287781cbe7b8e11fa8086a782c5fd3193e6374946dae064e7e22e",
+        "review_identity": "sha256:fba89ec29d6b23e06038a7544295f9b063bc7c3f0e001c75c4eaf81eef353f08",
+        "source_citation": "Supplement eTable 1, PDF p.63; article abstract, PDF p.1",
+        "trial": "ENZAMET"
+      },
+      "trial": "ENZAMET"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\overall-survival\\GETUG-AFU-15\\workspace\\.rob2-kit\\finalized\\ac6422c2c5ac3b718295c519c214d471e8d619991038b610ae6f26741f2ef15e.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy alone",
+            "id": "adt"
+          }
+        ],
+        "endpoint_definition": "overall survival",
+        "estimate": "1\u00b701",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI 0\u00b775-1\u00b736",
+        "reported_scope": {
+          "analysis_population": "Intention-to-treat population: all 192 patients assigned to ADT plus docetaxel and all 193 assigned to ADT alone.",
+          "effect_measure": "HR",
+          "endpoint": {
+            "definition": null,
+            "name": "Median overall survival"
+          },
+          "estimate": "1\u00b701",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI 0\u00b775-1\u00b736"
+        },
+        "trial": "getug-afu-15",
+        "window_or_cutoff": {
+          "description": "Follow-up through the data cutoff on July 31, 2011; median follow-up 50 months",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "6ee2d22fc226be99f8289c9054349af79fa613f1573177b19cbed9706db4602c",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:341ab2e4b537025041c8d157686ea77d3e6e43892e6178efcd5e45f2a761563d",
+        "review_identity": "sha256:1273438e94c616450a16a3f165bbd3057c2baa3774cbfeddfaaf6c905fcd45dd",
+        "source_citation": "Supplement eTable 1, PDF p.64; article abstract, PDF p.1",
+        "trial": "GETUG-AFU-15"
+      },
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\runs\\progression-free-survival\\GETUG-AFU-15\\workspace\\.rob2-kit\\finalized\\64c56ee365b6a7ca112fd394b83fbeecab7eb2c596cfe50a76a29300bddab30c.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy alone",
+            "id": "adt_alone"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.75",
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Intention-to-treat population; 192 assigned to ADT plus docetaxel and 193 assigned to ADT alone.",
+          "effect_measure": "HR",
+          "endpoint": {
+            "definition": null,
+            "name": "cPFS"
+          },
+          "estimate": "0.75",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": null
+        },
+        "trial": "getug-afu-15",
+        "window_or_cutoff": {
+          "description": "Time since randomisation to clinical progression or death; median cPFS reported.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "2a604d06d30bdb7925b3e8233021d916e7336f1e8cdf9de53c382df90b516911",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:106f190467df437dec37192644b27b25ffc4746f09bbe7349b81a2cd69c9e58b",
+        "review_identity": "sha256:1913578f1787294aa260b0f242625539f90d3d4ad0812b3738aaa71248e75ce7",
+        "source_citation": "Supplement eTable 1, PDF p.64; article abstract, PDF p.1",
+        "trial": "GETUG-AFU-15"
+      },
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\overall-survival\\LATITUDE\\workspace\\.rob2-kit\\finalized\\910084909b2c727d85f074fcabce7b0ff68eba9e735b520b0f5fd800ba119808.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.62",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.51 to 0.76; P<0.001",
+        "reported_scope": {
+          "analysis_population": "Randomized patients assigned to the abiraterone group (597) or placebo group (602); the report does not explicitly state the analysis population.",
+          "effect_measure": "Hazard ratio for death",
+          "endpoint": {
+            "definition": "Time from randomization to death from any cause",
+            "name": "Overall survival"
+          },
+          "estimate": "0.62",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.51 to 0.76; P<0.001"
+        },
+        "trial": "latitude",
+        "window_or_cutoff": {
+          "description": "From randomization to death from any cause",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "315c464815acb82c099ce03703273ba712566560f21c4ae842ee7245bd824b8e",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:5f880b5fe126e6023f7b3782f5eda3899a662b589d1d58b5c337369e88ea159e",
+        "review_identity": "sha256:c72ee641069a9df1971b7272bd908570791618f3f7b3e399a698121254a0fccf",
+        "source_citation": "Supplement eTable 1, PDF p.62; article abstract, PDF p.1",
+        "trial": "LATITUDE"
+      },
+      "trial": "LATITUDE"
+    },
+    {
+      "bundle": "eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs2\\progression-free-survival\\LATITUDE\\workspace\\.rob2-kit\\finalized\\5a172374ae046df68fc9ab7d2bd70768e4a4dca218c3fdd5cd8285923d8b9441.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.47",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.39 to 0.55",
+        "reported_scope": {
+          "analysis_population": "The report gives 597 patients assigned to the abiraterone group and 602 to the placebo group; the specific analysis population for this endpoint is not separately stated.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Radiographic progression-free survival"
+          },
+          "estimate": "0.47",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.39 to 0.55"
+        },
+        "trial": "latitude",
+        "window_or_cutoff": {
+          "description": "From randomization until radiographic progression or death from any cause",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "9025935276b30ce4d641f9e7ade9ff2906c881b4b4525ed49e1ff46641acc06b",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:d13a19c403cf5792e3338734ede40d02a798e14c0f9f4d767b169be1dea81d78",
+        "review_identity": "sha256:8a1d0895c10038be7e798ad1856c826aae6ebb4a89aaba63988f7d7ec798384e",
+        "source_citation": "Supplement eTable 1, PDF p.62; article abstract, PDF p.1",
+        "trial": "LATITUDE"
+      },
+      "trial": "LATITUDE"
+    },
+    {
+      "bundle": "eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs2\\adverse-events\\LATITUDE\\workspace\\.rob2-kit\\finalized\\63af72f32313b8545936c2e836a7a00c9b4df859e47c1e128b32899f587e6ddd.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Abiraterone acetate plus prednisone and androgen-deprivation therapy",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Dual placebos and androgen-deprivation therapy",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "adverse events",
+        "estimate": "Higher in the abiraterone group",
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Abiraterone and placebo groups; the abstract does not report adverse-event-specific analyzed denominators.",
+          "effect_measure": "Rates",
+          "endpoint": {
+            "definition": null,
+            "name": "Rates of grade 3 hypertension and hypokalemia"
+          },
+          "estimate": "Higher in the abiraterone group",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": null
+        },
+        "trial": "latitude",
+        "window_or_cutoff": {
+          "description": "First interim analysis, after median follow-up of 30.4 months; the AE observation window is not stated.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "d489bd4f507a72a667f45962d0fecacab95038655bd29b008a9d03bbafd57015",
+        "observed_relation": "exact",
+        "outcome": "Adverse Events",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:617099da23b6bb18c231038207203e8c211b0582e77a6775558778c1270b464f",
+        "review_identity": "sha256:2cfe46c3df4f4ceaf9eabd725c386991e9e8c987d09c799ad82a8c038d8037b7",
+        "source_citation": "Supplement eTable 1, PDF p.63; article abstract, PDF p.1",
+        "trial": "LATITUDE"
+      },
+      "trial": "LATITUDE"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\runs\\overall-survival\\PEACE-1\\workspace\\.rob2-kit\\finalized\\2ba7152c72ded7e5fa8f5807cebf9cbfcf6454ac19705de04b5ab365481f596c.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Standard of care plus abiraterone, with or without radiotherapy",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Standard of care without abiraterone, with or without radiotherapy",
+            "id": "no_abiraterone"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0\u00b782",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95\u00b71% CI 0\u00b769-0\u00b798; p=0\u00b7030",
+        "reported_scope": {
+          "analysis_population": "Intention-to-treat overall population: 583 assigned to SOC plus abiraterone and 589 assigned to SOC without abiraterone (n=1172); one enrolled patient withdrew consent for analysis and was excluded.",
+          "effect_measure": "adjusted HR for overall survival",
+          "endpoint": {
+            "definition": null,
+            "name": "Overall survival"
+          },
+          "estimate": "0\u00b782",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95\u00b71% CI 0\u00b769-0\u00b798; p=0\u00b7030"
+        },
+        "trial": "peace-1",
+        "window_or_cutoff": {
+          "description": "From randomization through last follow-up at the overall-survival analysis cutoff (June 1, 2021).",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "7247892b831b776f739137c36407071d4ca2bebe2368cd24b38ec40431175562",
+        "observed_relation": "narrower",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:5a75bac44db3c5b95bfa790b26b892d249e9aac104d0146936b39323b09265de",
+        "review_identity": "sha256:020b89fec1f45be7e8e84023da71a650aa080033a5c768ef9f4dd0f0dc6f8a00",
+        "source_citation": "Supplement eTable 1, PDF p.60; article abstract, PDF p.1",
+        "trial": "PEACE-1"
+      },
+      "trial": "PEACE-1"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\runs\\progression-free-survival\\PEACE-1\\workspace\\.rob2-kit\\finalized\\2a322a7aae1040700190bc1f6cad1e1d971dcc00372e157de1d6afa3c0257657.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Standard of care (ADT with or without docetaxel), with or without radiotherapy, plus abiraterone and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Standard of care (ADT with or without docetaxel), with or without radiotherapy, without abiraterone",
+            "id": "no_abiraterone"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0\u00b754",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "99\u00b79% CI 0\u00b741-0\u00b771; p<0\u00b70001",
+        "reported_scope": {
+          "analysis_population": "Overall intention-to-treat efficacy population: all randomized participants except one who withdrew consent for analysis; SOC groups pooled across radiotherapy assignment by abiraterone assignment (583 assigned abiraterone; 589 not assigned abiraterone).",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Radiographic progression-free survival"
+          },
+          "estimate": "0\u00b754",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "99\u00b79% CI 0\u00b741-0\u00b771; p<0\u00b70001"
+        },
+        "trial": "peace-1",
+        "window_or_cutoff": {
+          "description": "From randomization to radiographic progression or death; rPFS cutoff September 1, 2020.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "3e6c6977298b87447e033d36962a0170baec0cfd2578865c64cea9895716db8d",
+        "observed_relation": "narrower",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:4c7ef22f64b77d03e4e9d1d0c9910c6412b85ce22cc45411994b0e14bf9add1f",
+        "review_identity": "sha256:42eafbaa7f3693b20ea67927d5f14160f5ff5f2c6e1d8c26f1085364b86ddf65",
+        "source_citation": "Supplement eTable 1, PDF p.60; article abstract, PDF p.1",
+        "trial": "PEACE-1"
+      },
+      "trial": "PEACE-1"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\runs\\adverse-events\\PEACE-1\\workspace\\.rob2-kit\\finalized\\14ac92b64451d4986d02d2094fd2e1b3427db74a053729366e97f3d2ead6bf72.rob2.zip",
+      "completion": "reconciled",
+      "completion_reconciliation_phase": 5,
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT with docetaxel plus abiraterone, with or without radiotherapy",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "ADT with docetaxel without abiraterone, with or without radiotherapy",
+            "id": "control"
+          }
+        ],
+        "endpoint_definition": "adverse events",
+        "estimate": null,
+        "population": "All randomized participants in the comparison groups; baseline subgroup: Docetaxel population",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Docetaxel safety population, patients who actually received assigned treatment.",
+          "endpoint": {
+            "definition": null,
+            "name": "Severe (grade \u22653) adverse events"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "abiraterone",
+              "statistic": "n",
+              "unit": "%",
+              "value": "217 (63%)"
+            },
+            {
+              "group_id": "control",
+              "statistic": "n",
+              "unit": "%",
+              "value": "181 (52%)"
+            }
+          ]
+        },
+        "trial": "peace-1",
+        "window_or_cutoff": {
+          "description": "From treatment initiation to castration resistance",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "07a9bcae6026d6ddcd9ea00b03c80441bc0694a8996a3f032a196a6848318a94",
+        "observed_relation": "narrower",
+        "outcome": "Adverse Events",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:6d3ca950903260460f2fe6c010c6906a1a6bfb4863918c70feb2913151cba3a4",
+        "review_identity": "sha256:8a705cf0e95e49ba2d6701e751cbe3eedc6f10ca6046634664e6677071325056",
+        "source_citation": "Supplement eTable 1, PDF p.60; article abstract, PDF p.1",
+        "trial": "PEACE-1"
+      },
+      "trial": "PEACE-1"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\phase1-retry\\phase1-replacement\\runs\\overall-survival\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\acc23df83c5effa155976cdc40be04b780a740b1442a950124317ea8ed31b97a.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy (ADT) alone",
+            "id": "adt"
+          },
+          {
+            "assignment": "ADT plus abiraterone acetate and prednisolone",
+            "id": "combination"
+          }
+        ],
+        "endpoint_definition": "Overall survival",
+        "estimate": "0.63",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.52 to 0.76; P<0.001",
+        "reported_scope": {
+          "analysis_population": "All 1917 patients were included in efficacy analyses under their assigned treatment on an intention-to-treat basis.",
+          "effect_measure": "Hazard ratio for death",
+          "endpoint": {
+            "definition": "Time from randomization to death from any cause.",
+            "name": "Overall survival"
+          },
+          "estimate": "0.63",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.52 to 0.76; P<0.001"
+        },
+        "trial": "stampede",
+        "window_or_cutoff": {
+          "description": "Time-to-event from randomization until death from any cause.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "0d078ec9d796ea87be972acff0c769980fb311c3d978b11f70e5eec7673197bc",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:411fb94db533715d0149566010ab6e68473aa8f517e83bca6721d7c912401e60",
+        "review_identity": "sha256:9008a1a980511a8fe16caefd17adb8e973b0e78933582139056727bb3b1b84db",
+        "source_citation": "Supplement eTable 1, PDF p.60; article abstract, PDF p.1",
+        "trial": "STAMPEDE"
+      },
+      "trial": "STAMPEDE"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\progression-free-survival\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\897b9128c6527291db0cee0f48d4ac6174c234817304eb6bbc86a8b3eac20853.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "high",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy alone",
+            "id": "adt"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone",
+            "id": "combination"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.40",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.34 to 0.47",
+        "reported_scope": {
+          "analysis_population": "All randomized patients analyzed under assigned treatment on an intention-to-treat basis (957 ADT alone; 960 combination therapy).",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Progression-free survival"
+          },
+          "estimate": "0.40",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.34 to 0.47"
+        },
+        "trial": "stampede",
+        "window_or_cutoff": {
+          "description": "From randomization until the first qualifying progression-free survival event or censoring.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "4fd7f80c79b024bc34d765a773610bd15c87b02485ea51f080cd42228569f052",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:b70a61ec3ef089dbc275d165ed978ff60651d548768ff04529e05891f74f6d03",
+        "review_identity": "sha256:6d9b355bea14aa97a4588b77a3c0f862548922ba6aae6cac6ebf6121a8e7d67d",
+        "source_citation": "Supplement eTable 1, PDF p.60; article abstract, PDF p.1",
+        "trial": "STAMPEDE"
+      },
+      "trial": "STAMPEDE"
+    },
+    {
+      "bundle": "eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs2\\adverse-events\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\be0cdacd4afe6d74c1897595682888d38c8c361572a93384a7d5cbbf82e7a214.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT alone",
+            "id": "adt"
+          },
+          {
+            "assignment": "ADT plus abiraterone acetate and prednisolone",
+            "id": "combination"
+          }
+        ],
+        "endpoint_definition": "Adverse Events",
+        "estimate": null,
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Safety population; safety analyses grouped patients according to the treatment they started (960 ADT alone; 948 combination therapy).",
+          "endpoint": {
+            "definition": null,
+            "name": "Adverse events of grade 3 or higher during their entire time in the trial"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "adt",
+              "statistic": "adverse events of grade 3 or higher",
+              "unit": "patients",
+              "value": "315 of 960 (33%)"
+            },
+            {
+              "group_id": "combination",
+              "statistic": "adverse events of grade 3 or higher",
+              "unit": "patients",
+              "value": "443 of 948 (47%)"
+            }
+          ]
+        },
+        "trial": "stampede",
+        "window_or_cutoff": {
+          "description": "Entire time in the trial",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "eb180048cf645e85ee7b9526c509d086d7e3aa05c91cc70a94b77591a8e0c7c6",
+        "observed_relation": "narrower",
+        "outcome": "Adverse Events",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:310bb76db8ffca1d192bd69963cf8610cc87385f6d60a0d27b990c748ac4943d",
+        "review_identity": "sha256:ded05536c3afa19ee0a7bf0fe4a1d04c8833d00ef0e92bc34b368cf1071ba9f1",
+        "source_citation": "Supplement eTable 1, PDF p.60; article abstract, PDF p.1",
+        "trial": "STAMPEDE"
+      },
+      "trial": "STAMPEDE"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\runs\\overall-survival\\SWOG-1216\\workspace\\.rob2-kit\\finalized\\01aa2d56a90bc204234f467df54f156b12090fe5baa2a4135246715457d43c5f.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT plus orteronel",
+            "id": "orteronel"
+          },
+          {
+            "assignment": "ADT plus bicalutamide",
+            "id": "bicalutamide"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.86",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.72 to 1.02",
+        "reported_scope": {
+          "analysis_population": "1,279 patients included in the intention-to-treat analysis (638 assigned to ADT plus orteronel and 641 assigned to ADT plus bicalutamide); 32 randomized patients were ineligible and two withdrew all consent before starting treatment.",
+          "effect_measure": "HR",
+          "endpoint": {
+            "definition": null,
+            "name": "OS"
+          },
+          "estimate": "0.86",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.72 to 1.02"
+        },
+        "trial": "swog-1216",
+        "window_or_cutoff": {
+          "description": "From random assignment until death from any cause",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "42baed74ffdc0c455bd01e7535c19792b716b8a1f15eb3edf0d9b4d8c35a3d7c",
+        "observed_relation": "narrower",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:b9538c4bb305269eda9fedcd57473daffe03850edcd316e1590fe17ab64e8fcd",
+        "review_identity": "sha256:ca228aecf8b611a3e171969d02aae18ac2c2f36f8930e991f400d669f0309588",
+        "source_citation": "Supplement eTable 1, PDF p.65; article abstract, PDF p.1",
+        "trial": "SWOG-1216"
+      },
+      "trial": "SWOG-1216"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\progression-free-survival\\SWOG-1216\\workspace\\.rob2-kit\\finalized\\16c3da36a93573e7524df67081c24d20651ccf028bcfb601166031b99cf40257.rob2.zip",
+      "completion": "reconciled",
+      "completion_reconciliation_phase": 5,
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Orteronel plus continuous androgen deprivation therapy",
+            "id": "orteronel"
+          },
+          {
+            "assignment": "Bicalutamide plus continuous androgen deprivation therapy",
+            "id": "bicalutamide"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.58",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.51 to 0.67",
+        "reported_scope": {
+          "analysis_population": "1,279 patients included in the intention-to-treat analysis: 638 assigned to orteronel plus ADT and 641 assigned to bicalutamide plus ADT; 32 randomized patients were ineligible and two withdrew all consent before treatment.",
+          "effect_measure": "HR",
+          "endpoint": {
+            "definition": null,
+            "name": "PFS"
+          },
+          "estimate": "0.58",
+          "form": "comparative_effect",
+          "group_values": [
+            {
+              "group_id": "orteronel",
+              "statistic": "median",
+              "unit": "months",
+              "value": "47.6"
+            },
+            {
+              "group_id": "bicalutamide",
+              "statistic": "median",
+              "unit": "months",
+              "value": "23.0"
+            }
+          ],
+          "precision": "95% CI, 0.51 to 0.67"
+        },
+        "trial": "swog-1216",
+        "window_or_cutoff": {
+          "description": "From random assignment until the first PFS event",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "4ac478a50d8c4a6055e1ec141ddd53a4495fd68cca063460e402063d5406ec00",
+        "observed_relation": "narrower",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:d168000dbbed85b03b2ca0d4ed3f5972168afcd8dd0415ad1282470d2d7b24e7",
+        "review_identity": "sha256:1baf5c23555da35fa5ce329f164cb655f9e0ca82d2dd6b863756fc094b42f213",
+        "source_citation": "Supplement eTable 1, PDF p.65; article abstract, PDF p.1",
+        "trial": "SWOG-1216"
+      },
+      "trial": "SWOG-1216"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\phase1-replacement\\runs\\overall-survival\\TITAN\\workspace\\.rob2-kit\\finalized\\03b1d86a147fba8d21652c1e057f775eec10f0a9ec3fe12604b7fb3e6881f389.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Apalutamide plus androgen-deprivation therapy",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.67",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.51 to 0.89",
+        "reported_scope": {
+          "analysis_population": "The ITT population of all randomized participants (525 assigned apalutamide plus ADT and 527 assigned placebo plus ADT). The article reports 39 participants lost to follow-up or withdrawn from all further data collection; the arm-specific counts and handling in the OS analysis are not stated.",
+          "effect_measure": "Hazard ratio for death",
+          "endpoint": {
+            "definition": null,
+            "name": "Overall survival"
+          },
+          "estimate": "0.67",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.51 to 0.89"
+        },
+        "trial": "titan",
+        "window_or_cutoff": {
+          "description": "24 months after randomization",
+          "kind": "quantified",
+          "unit": "months",
+          "value": "24"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "f12c00dd1462ce65d2cf9ce56c30223d1bf8463fd47492e7935ed4ac38a50b03",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:d04c513969f24e24ca91433660929031fe7797e9a18be3f201dcbb50c3250021",
+        "review_identity": "sha256:00d35ca7ad908ca03860f303b5010840d30e76d90ef27c0b388182c2a595b18e",
+        "source_citation": "Supplement eTable 1, PDF pp.60-61; article abstract, PDF p.1",
+        "trial": "TITAN"
+      },
+      "trial": "TITAN"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\phase1-replacement\\runs\\progression-free-survival\\TITAN\\workspace\\.rob2-kit\\finalized\\2bc5cdde1fd02da09c5118a87cd64a9287ee26e4680eddc551daf88001c90575.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Apalutamide plus ADT",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.48",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.39 to 0.60",
+        "reported_scope": {
+          "analysis_population": "525 patients randomly assigned to apalutamide plus ADT and 527 randomly assigned to placebo plus ADT; report does not provide a separate analysis denominator for radiographic progression-free survival.",
+          "effect_measure": "Hazard ratio for radiographic progression or death",
+          "endpoint": {
+            "definition": null,
+            "name": "Radiographic progression-free survival"
+          },
+          "estimate": "0.48",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.39 to 0.60"
+        },
+        "trial": "titan",
+        "window_or_cutoff": {
+          "description": "24 months after randomization",
+          "kind": "quantified",
+          "unit": "months",
+          "value": "24"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "ae879578c329f0b9a74c2c8f19a9025dc98036248f027b7e4ce91cfa9b77d352",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:216c8dd527b2267fe2152e450296ae77203d4fefe6e5bf37060e7f26c23788fc",
+        "review_identity": "sha256:647f2af29a36706bb050bc190ec3bf82a316134bd5955a64cf5aa99e4eee4400",
+        "source_citation": "Supplement eTable 1, PDF p.60; article abstract, PDF p.1",
+        "trial": "TITAN"
+      },
+      "trial": "TITAN"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\adverse-events\\TITAN\\workspace\\.rob2-kit\\finalized\\f2842e6341651c24967303ac2e352c477fb14842f285e12305ded5e5f85be162.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Apalutamide plus androgen-deprivation therapy",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "adverse events",
+        "estimate": null,
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Patients who received trial intervention: apalutamide N=524 and placebo N=527; one apalutamide-assigned patient withdrew consent before treatment.",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3 or 4 adverse event"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "apalutamide",
+              "statistic": "percent",
+              "unit": "percent",
+              "value": "42.2"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "percent",
+              "unit": "percent",
+              "value": "40.8"
+            }
+          ]
+        },
+        "trial": "titan",
+        "window_or_cutoff": {
+          "description": "From first dose of trial intervention through 30 days after last dose",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "8597cd9f975d4a31e0596fafeb8c9ac26cd3122de333602bed7ce076c11c0baf",
+        "observed_relation": "narrower",
+        "outcome": "Adverse Events",
+        "rationale": "Independent source review confirmed this candidate identifies the eTable 1 trial-specific outcome and the corresponding main-article result. Remaining strict-field differences reflect source wording, analysis-set reporting, or presentation of the same eligible result, not a different endpoint or contrast.",
+        "result_identity": "sha256:59f35bc9401614f80378bfe9bb53c2b3f94d4690dac9eb52fc5cb9ccfa18c104",
+        "review_identity": "sha256:adb900690a70fad0e6128402295a8f037a176e1d0cf465bb2f5887f13abf1c13",
+        "source_citation": "Supplement eTable 1, PDF p.62; article abstract, PDF p.1",
+        "trial": "TITAN"
+      },
+      "trial": "TITAN"
+    }
+  ],
+  "excluded": [
+    {
+      "outcome": "Adverse Events",
+      "reason": "reference label unavailable",
+      "trial": "CHAARTED"
+    },
+    {
+      "outcome": "Adverse Events",
+      "reason": "reference label unavailable",
+      "trial": "GETUG-AFU-15"
+    }
+  ],
+  "hard_failures": [],
+  "label_interpretation": "agreement with frozen provisional catalog labels; not adjudicated scientific accuracy",
+  "manifest": "eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\final\\manifest.json",
+  "model": "gpt-6-luna",
+  "pooled": {
+    "case_count": 26,
+    "domain_cells": 130,
+    "domains": {
+      "D1": {
+        "exact": {
+          "correct": 26,
+          "rate": 1.0,
+          "total": 26
+        },
+        "low_vs_non_low": {
+          "correct": 26,
+          "rate": 1.0,
+          "total": 26
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 16,
+          "rate": 0.6153846153846154,
+          "total": 26
+        },
+        "low_vs_non_low": {
+          "correct": 16,
+          "rate": 0.6153846153846154,
+          "total": 26
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 9,
+          "rate": 0.34615384615384615,
+          "total": 26
+        },
+        "low_vs_non_low": {
+          "correct": 15,
+          "rate": 0.5769230769230769,
+          "total": 26
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 20,
+          "rate": 0.7692307692307693,
+          "total": 26
+        },
+        "low_vs_non_low": {
+          "correct": 25,
+          "rate": 0.9615384615384616,
+          "total": 26
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 13,
+          "rate": 0.5,
+          "total": 26
+        },
+        "low_vs_non_low": {
+          "correct": 13,
+          "rate": 0.5,
+          "total": 26
+        }
+      }
+    },
+    "overall": {
+      "exact": {
+        "correct": 3,
+        "rate": 0.11538461538461539,
+        "total": 26
+      },
+      "low_vs_non_low": {
+        "correct": 21,
+        "rate": 0.8076923076923077,
+        "total": 26
+      }
+    },
+    "pooled_domains": {
+      "exact": {
+        "correct": 84,
+        "rate": 0.6461538461538462,
+        "total": 130
+      },
+      "low_vs_non_low": {
+        "correct": 95,
+        "rate": 0.7307692307692307,
+        "total": 130
+      }
+    }
+  },
+  "prompt_policy": "minimal human-like trial-specific prompts; Luna medium; Codex CLI JSONL logs",
+  "reasoning_effort": "medium",
+  "schema": "rob2-kit.trial-benchmark-score.v1",
+  "scope": {
+    "excluded_cases": 2,
+    "finalized_domain_cells": 130,
+    "finalized_scored_cases": 26,
+    "manifest_rows": 30,
+    "scope_difference_cases": 2,
+    "sensitivity_domain_cells": 140,
+    "sensitivity_scored_cases": 28
+  },
+  "scope_difference_cases": [
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\progression-free-survival\\ARCHES\\workspace\\.rob2-kit\\finalized\\b2a7739ecd9b4e073ae259e1e91a6f38aa767238aa8726de38c9c2bfa76dfc26.rob2.zip",
+      "completion": "reconciled",
+      "completion_reconciliation_phase": 3,
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide 160 mg/day plus ADT",
+            "id": "enza"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.39",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.30 to 0.50",
+        "reported_scope": {
+          "analysis_population": "Intent-to-treat population: all randomized patients (574 assigned enzalutamide plus ADT; 576 assigned placebo plus ADT).",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "rPFS"
+          },
+          "estimate": "0.39",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.30 to 0.50"
+        },
+        "trial": "arches",
+        "window_or_cutoff": {
+          "description": "From randomization until first radiographic progression or qualifying death.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "accepted_with_scope_difference",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "accepted_with_scope_difference",
+        "expected_result_sha256": "e48cc4c5972b227aebd0c655c754b34ff8111dd10b374889b3eaf2aed05d0402",
+        "observed_relation": "broader",
+        "outcome": "Progression-Free Survival",
+        "rationale": "The published rPFS definition additionally counts at least two new bone-scan lesions beyond the eTable 1 RECIST wording. This source-supported result is broader and is retained in sensitivity analysis only.",
+        "result_identity": "sha256:1f28c67fe0399f90f1ca2fdfbf76b8eab7cdb4c90794bf8a828b16a53d8f3e34",
+        "review_identity": "sha256:44d3bdc21cae39ff5911d40866968113fe72f95303fbdcb91ed134a69227bfae",
+        "source_citation": "Supplement eTable 1, p. 61; main article, pp. 2\u20133; article supplement Appendix A1, p. 14.",
+        "trial": "ARCHES"
+      },
+      "trial": "ARCHES"
+    },
+    {
+      "bundle": "C:\\Users\\Ali Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-human-prompts-retry1-work\\retry-runs\\adverse-events\\SWOG-1216\\workspace\\.rob2-kit\\finalized\\3a7b23ebd1e6c213b3d71ead3b631631050f88f2ffe08b2da99a2aa500ea7e59.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "some_concerns",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT plus orteronel",
+            "id": "orteronel"
+          },
+          {
+            "assignment": "ADT plus bicalutamide",
+            "id": "bicalutamide"
+          }
+        ],
+        "endpoint_definition": "Adverse events",
+        "estimate": "43% v 14%",
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "The abstract states that 1,279 patients were included in the analysis (638 orteronel; 641 control). The main-text safety table uses denominators of 627 and 629; the denominator for the abstract aggregate is not stated.",
+          "effect_measure": "Grade 3/4 adverse events",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3/4 adverse events"
+          },
+          "estimate": "43% v 14%",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": null
+        },
+        "trial": "swog-1216",
+        "window_or_cutoff": {
+          "description": "Assessment window not reported",
+          "kind": "described"
+        }
+      },
+      "result_scope": "accepted_with_scope_difference",
+      "role": "main_article",
+      "scope_adjudication": {
+        "decision": "accepted_with_scope_difference",
+        "expected_result_sha256": "a2cefee18561b067f30fa5a108872c0523d3b0a1c04754c5aadc73820cfd7563",
+        "observed_relation": "related",
+        "outcome": "Adverse Events",
+        "rationale": "The abstract reports grade 3/4 adverse events as 43% versus 14%, while the main safety table reports 13% for control and the abstract does not specify the denominator or observation window. Preserve the published abstract result as related and include it only in sensitivity analysis.",
+        "result_identity": "sha256:fda11dab70be663be97cf1f9248b696e7b6de35187863f39dac1adb6c22c775a",
+        "review_identity": "sha256:67edbe0cbaf64348fd4de3f9b23e52aded55f86c009816d8e5445c40398d623d",
+        "source_citation": "Main article abstract, p. 1, and Safety/Table 2, p. 4; supplement eTable 1, p. 65.",
+        "trial": "SWOG-1216"
+      },
+      "trial": "SWOG-1216"
+    }
+  ],
+  "sensitivity": {
+    "added_scope_difference_cases": 2,
+    "by_domain": {
+      "D1": {
+        "exact": {
+          "correct": 27,
+          "rate": 0.9642857142857143,
+          "total": 28
+        },
+        "low_vs_non_low": {
+          "correct": 27,
+          "rate": 0.9642857142857143,
+          "total": 28
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 17,
+          "rate": 0.6071428571428571,
+          "total": 28
+        },
+        "low_vs_non_low": {
+          "correct": 17,
+          "rate": 0.6071428571428571,
+          "total": 28
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 10,
+          "rate": 0.35714285714285715,
+          "total": 28
+        },
+        "low_vs_non_low": {
+          "correct": 16,
+          "rate": 0.5714285714285714,
+          "total": 28
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 20,
+          "rate": 0.7142857142857143,
+          "total": 28
+        },
+        "low_vs_non_low": {
+          "correct": 26,
+          "rate": 0.9285714285714286,
+          "total": 28
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 13,
+          "rate": 0.4642857142857143,
+          "total": 28
+        },
+        "low_vs_non_low": {
+          "correct": 13,
+          "rate": 0.4642857142857143,
+          "total": 28
+        }
+      }
+    },
+    "by_outcome": {
+      "Adverse Events": {
+        "case_count": 8,
+        "domain_cells": 40,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 7,
+              "rate": 0.875,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "rate": 0.875,
+              "total": 8
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 2,
+              "rate": 0.25,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 2,
+              "rate": 0.25,
+              "total": 8
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 2,
+              "rate": 0.25,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 3,
+              "rate": 0.375,
+              "total": 8
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 4,
+              "rate": 0.5,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 2,
+              "rate": 0.25,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 2,
+              "rate": 0.25,
+              "total": 8
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 0,
+            "rate": 0.0,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.875,
+            "total": 8
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 17,
+            "rate": 0.425,
+            "total": 40
+          },
+          "low_vs_non_low": {
+            "correct": 22,
+            "rate": 0.55,
+            "total": 40
+          }
+        }
+      },
+      "Overall Survival": {
+        "case_count": 10,
+        "domain_cells": 50,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 10,
+              "rate": 1.0,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 10,
+              "rate": 1.0,
+              "total": 10
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 7,
+              "rate": 0.7,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "rate": 0.7,
+              "total": 10
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 4,
+              "rate": 0.4,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "rate": 0.7,
+              "total": 10
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 10,
+              "rate": 1.0,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 10,
+              "rate": 1.0,
+              "total": 10
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 6,
+              "rate": 0.6,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 0.6,
+              "total": 10
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.2,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.7,
+            "total": 10
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 37,
+            "rate": 0.74,
+            "total": 50
+          },
+          "low_vs_non_low": {
+            "correct": 40,
+            "rate": 0.8,
+            "total": 50
+          }
+        }
+      },
+      "Progression-Free Survival": {
+        "case_count": 10,
+        "domain_cells": 50,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 10,
+              "rate": 1.0,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 10,
+              "rate": 1.0,
+              "total": 10
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 8,
+              "rate": 0.8,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 0.8,
+              "total": 10
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 4,
+              "rate": 0.4,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 0.6,
+              "total": 10
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 6,
+              "rate": 0.6,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 0.8,
+              "total": 10
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 5,
+              "rate": 0.5,
+              "total": 10
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "rate": 0.5,
+              "total": 10
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 1,
+            "rate": 0.1,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 9,
+            "rate": 0.9,
+            "total": 10
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 33,
+            "rate": 0.66,
+            "total": 50
+          },
+          "low_vs_non_low": {
+            "correct": 37,
+            "rate": 0.74,
+            "total": 50
+          }
+        }
+      }
+    },
+    "by_outcome_domain": {
+      "Adverse Events": {
+        "D1": {
+          "exact": {
+            "correct": 7,
+            "rate": 0.875,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.875,
+            "total": 8
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.25,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 2,
+            "rate": 0.25,
+            "total": 8
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.25,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 3,
+            "rate": 0.375,
+            "total": 8
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.5,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.25,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 2,
+            "rate": 0.25,
+            "total": 8
+          }
+        }
+      },
+      "Overall Survival": {
+        "D1": {
+          "exact": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 7,
+            "rate": 0.7,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.7,
+            "total": 10
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.4,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 7,
+            "rate": 0.7,
+            "total": 10
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.6,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.6,
+            "total": 10
+          }
+        }
+      },
+      "Progression-Free Survival": {
+        "D1": {
+          "exact": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 10,
+            "rate": 1.0,
+            "total": 10
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 8,
+            "rate": 0.8,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 0.8,
+            "total": 10
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.4,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.6,
+            "total": 10
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.6,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 0.8,
+            "total": 10
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.5,
+            "total": 10
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.5,
+            "total": 10
+          }
+        }
+      }
+    },
+    "by_primary_status": {
+      "primary": {
+        "case_count": 13,
+        "domain_cells": 65,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 13,
+              "rate": 1.0,
+              "total": 13
+            },
+            "low_vs_non_low": {
+              "correct": 13,
+              "rate": 1.0,
+              "total": 13
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 9,
+              "rate": 0.6923076923076923,
+              "total": 13
+            },
+            "low_vs_non_low": {
+              "correct": 9,
+              "rate": 0.6923076923076923,
+              "total": 13
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 5,
+              "rate": 0.38461538461538464,
+              "total": 13
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 0.6153846153846154,
+              "total": 13
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 12,
+              "rate": 0.9230769230769231,
+              "total": 13
+            },
+            "low_vs_non_low": {
+              "correct": 12,
+              "rate": 0.9230769230769231,
+              "total": 13
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 7,
+              "rate": 0.5384615384615384,
+              "total": 13
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "rate": 0.5384615384615384,
+              "total": 13
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.15384615384615385,
+            "total": 13
+          },
+          "low_vs_non_low": {
+            "correct": 10,
+            "rate": 0.7692307692307693,
+            "total": 13
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 46,
+            "rate": 0.7076923076923077,
+            "total": 65
+          },
+          "low_vs_non_low": {
+            "correct": 49,
+            "rate": 0.7538461538461538,
+            "total": 65
+          }
+        }
+      },
+      "secondary": {
+        "case_count": 15,
+        "domain_cells": 75,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 14,
+              "rate": 0.9333333333333333,
+              "total": 15
+            },
+            "low_vs_non_low": {
+              "correct": 14,
+              "rate": 0.9333333333333333,
+              "total": 15
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 8,
+              "rate": 0.5333333333333333,
+              "total": 15
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 0.5333333333333333,
+              "total": 15
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 5,
+              "rate": 0.3333333333333333,
+              "total": 15
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 0.5333333333333333,
+              "total": 15
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 8,
+              "rate": 0.5333333333333333,
+              "total": 15
+            },
+            "low_vs_non_low": {
+              "correct": 14,
+              "rate": 0.9333333333333333,
+              "total": 15
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 6,
+              "rate": 0.4,
+              "total": 15
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 0.4,
+              "total": 15
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 1,
+            "rate": 0.06666666666666667,
+            "total": 15
+          },
+          "low_vs_non_low": {
+            "correct": 13,
+            "rate": 0.8666666666666667,
+            "total": 15
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 41,
+            "rate": 0.5466666666666666,
+            "total": 75
+          },
+          "low_vs_non_low": {
+            "correct": 50,
+            "rate": 0.6666666666666666,
+            "total": 75
+          }
+        }
+      }
+    },
+    "pooled": {
+      "case_count": 28,
+      "domain_cells": 140,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 27,
+            "rate": 0.9642857142857143,
+            "total": 28
+          },
+          "low_vs_non_low": {
+            "correct": 27,
+            "rate": 0.9642857142857143,
+            "total": 28
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 17,
+            "rate": 0.6071428571428571,
+            "total": 28
+          },
+          "low_vs_non_low": {
+            "correct": 17,
+            "rate": 0.6071428571428571,
+            "total": 28
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 10,
+            "rate": 0.35714285714285715,
+            "total": 28
+          },
+          "low_vs_non_low": {
+            "correct": 16,
+            "rate": 0.5714285714285714,
+            "total": 28
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 20,
+            "rate": 0.7142857142857143,
+            "total": 28
+          },
+          "low_vs_non_low": {
+            "correct": 26,
+            "rate": 0.9285714285714286,
+            "total": 28
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 13,
+            "rate": 0.4642857142857143,
+            "total": 28
+          },
+          "low_vs_non_low": {
+            "correct": 13,
+            "rate": 0.4642857142857143,
+            "total": 28
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 3,
+          "rate": 0.10714285714285714,
+          "total": 28
+        },
+        "low_vs_non_low": {
+          "correct": 23,
+          "rate": 0.8214285714285714,
+          "total": 28
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 87,
+          "rate": 0.6214285714285714,
+          "total": 140
+        },
+        "low_vs_non_low": {
+          "correct": 99,
+          "rate": 0.7071428571428572,
+          "total": 140
+        }
+      }
+    }
+  }
+}

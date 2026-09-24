@@ -501,21 +501,44 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
         json.dumps(replacement_runtime_inputs, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     replacement_execution_path.write_text(json.dumps(replacement_execution), encoding="utf-8")
-    with pytest.raises(ValueError, match="execution condition differs"):
+    transition = contract["_execution_build_transition"](
+        original_execution, replacement_execution
+    )
+    assert transition == {
+        "from_build_sha256": "build-v1",
+        "to_build_sha256": "different-build",
+        "reason": (
+            "Predeclared infrastructure-only replacement used a different build; "
+            "all other execution conditions matched."
+        ),
+    }
+    changed_runtime = dict(replacement_runtime_inputs)
+    changed_runtime["pack"] = "different-pack"
+    changed_execution = dict(replacement_execution)
+    changed_execution["runtime_inputs"] = changed_runtime
+    changed_execution["runtime_inputs_sha256"] = hashlib.sha256(
+        json.dumps(changed_runtime, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    (replacement_run / "execution.json").write_text(
+        json.dumps(changed_execution), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="changed fields: build_sha256, pack"):
         contract["validate_replacement_case"](
             original_index_path,
             json.loads(original_index_path.read_text(encoding="utf-8")),
             replacement_index_path,
             json.loads(replacement_index_path.read_text(encoding="utf-8")),
             ("overallsurvival", "trial"),
-            require_success=True,
+            require_success=False,
         )
-    replacement_runtime_inputs["build_sha256"] = "build-v1"
-    replacement_execution["runtime_inputs"] = replacement_runtime_inputs
-    replacement_execution["runtime_inputs_sha256"] = hashlib.sha256(
-        json.dumps(replacement_runtime_inputs, sort_keys=True, separators=(",", ":")).encode()
+    replacement_run_execution = dict(replacement_execution)
+    replacement_run_execution["runtime_inputs"] = replacement_runtime_inputs
+    replacement_run_execution["runtime_inputs_sha256"] = hashlib.sha256(
+        json.dumps(
+            replacement_runtime_inputs, sort_keys=True, separators=(",", ":")
+        ).encode()
     ).hexdigest()
-    replacement_execution_path.write_text(json.dumps(replacement_execution), encoding="utf-8")
+    replacement_execution_path.write_text(json.dumps(replacement_run_execution), encoding="utf-8")
 
     merge = runpy.run_path(str(SCRIPTS / "merge_benchmark_attempts.py"))
     monkeypatch = pytest.MonkeyPatch()
@@ -537,6 +560,8 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
     finally:
         monkeypatch.undo()
     selected_index = tmp_path / "selected" / "index.json"
+    selected_payload = json.loads(selected_index.read_text(encoding="utf-8"))
+    assert selected_payload["cases"][0]["execution_build_transition"] == transition
     sidecar, details = collector["collect"](
         reference, original_root, outcome, manifest=selected_index
     )
@@ -548,7 +573,7 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
     ]
     assert [item["selected"] for item in case_result["attempts"]] == [False, True]
     assert len(details["cases"][0]["attempts"]) == 2
-    assert case_result["identity"]["campaign_id"] == "frozen-campaign-27f36d"
+    assert case_result["case_id"] == "frozen-campaign-27f36d-overallsurvival-trial"
 
 
 def test_merge_rejects_replacement_without_predeclared_policy(tmp_path: Path) -> None:

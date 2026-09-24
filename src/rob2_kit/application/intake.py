@@ -21,6 +21,8 @@ from ..workflow_models import (
 )
 from ._state import (
     _PAGE_PROJECTION_VERSION,
+    _SEARCH_DERIVATIVE_VERSION,
+    _SEARCH_PROFILE,
     _commit_records,
     _db,
     _ensure,
@@ -510,6 +512,11 @@ def prepare_batch(
         raise ValueError("intake state is missing declaration identity")
     if current.get("phase") != "empty":
         raise ValueError("prepare_batch is not the current operation")
+    with _db(root, "derivative.sqlite3") as derivative:
+        derivative.execute("DELETE FROM source_index")
+        derivative.execute("DELETE FROM pages")
+        derivative.execute("DELETE FROM pages_fts")
+        derivative.execute("DELETE FROM search_projection_meta")
     # This recipe version is canonical workspace metadata rather than a
     # disposable derivative flag.  It survives deletion/rebuild of the
     # derivative database and lets a later code version reject old page
@@ -889,6 +896,14 @@ def prepare_batch(
     }
     records: dict[str, dict[str, Any]] = {"batch": batch}
     state = _commit_records(root, state, expected_revision, records)
+    with _db(root, "derivative.sqlite3") as derivative:
+        derivative.executemany(
+            "INSERT OR REPLACE INTO search_projection_meta(name,value) VALUES (?,?)",
+            (
+                ("version", _SEARCH_DERIVATIVE_VERSION),
+                ("profile", _SEARCH_PROFILE),
+            ),
+        )
     result = _result(
         "success",
         state,

@@ -8,6 +8,7 @@ import runpy
 import subprocess
 import sys
 import threading
+import tomllib
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -64,20 +65,21 @@ def test_strict_isolation_explicitly_denies_the_sentinel(
     runner = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
     monkeypatch.setitem(runner["_preflight_isolation"].__globals__, "_is_windows", lambda: False)
     captured: dict[str, str] = {}
+    denial_output = (
+        "ENV:clean\nALLOWED:read_write\nDENIED:sentinel\nDENIED_WRITE:sentinel\n"
+        "DENIED:run_inputs\nDENIED_WRITE:run_inputs\nDENIED:approved_scope\n"
+        "DENIED_WRITE:approved_scope\nDENIED:codex_auth\nDENIED_WRITE:codex_auth\n"
+        "DENIED:execution\nDENIED_WRITE:execution\nDENIED:source_auth\n"
+        "DENIED_WRITE:source_auth\nDENIED:sibling_codex_auth\n"
+        "DENIED_WRITE:sibling_codex_auth\nDENIED:sibling_run_inputs\n"
+        "DENIED_WRITE:sibling_run_inputs\nDENIED:outside_temp\n"
+        "DENIED_WRITE:outside_temp\n"
+    )
 
     def denied(command, **kwargs):
         config = Path(kwargs["env"]["CODEX_HOME"]) / "config.toml"
         captured["profile"] = config.read_text(encoding="utf-8")
-        return (
-            "ENV:clean\nALLOWED:read_write\nDENIED:sentinel\nDENIED_WRITE:sentinel\n"
-            "DENIED:run_inputs\nDENIED_WRITE:run_inputs\nDENIED:approved_scope\n"
-            "DENIED_WRITE:approved_scope\nDENIED:codex_auth\nDENIED_WRITE:codex_auth\n"
-            "DENIED:execution\nDENIED_WRITE:execution\nDENIED:source_auth\n"
-            "DENIED_WRITE:source_auth\nDENIED:sibling_codex_auth\n"
-            "DENIED_WRITE:sibling_codex_auth\nDENIED:sibling_run_inputs\n"
-            "DENIED_WRITE:sibling_run_inputs\nDENIED:outside_temp\n"
-            "DENIED_WRITE:outside_temp\n"
-        )
+        return captured.get("output", denial_output)
 
     monkeypatch.setattr(subprocess, "check_output", denied)
 
@@ -88,6 +90,70 @@ def test_strict_isolation_explicitly_denies_the_sentinel(
         "forbidden sentinel.txt" in line and line.endswith('= "deny"')
         for line in captured["profile"].splitlines()
     )
+    captured["output"] = denial_output + "WRITE:sentinel\n"
+    with pytest.raises(RuntimeError, match="a protected file was readable"):
+        runner["_preflight_isolation"](Path("codex"), True)
+
+
+def test_phase_completion_metadata_binds_the_trace_session(tmp_path: Path) -> None:
+    runner = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
+    trace = tmp_path / "phase-1.jsonl"
+    trace.write_text(
+        json.dumps({"type": "thread.started", "thread_id": "session-1"}) + "\n",
+        encoding="utf-8",
+    )
+
+    metadata = runner["_phase_completion_metadata"](trace, None)
+
+    assert metadata["codex_session_id"] == "session-1"
+    assert metadata["trace_sha256"] == hashlib.sha256(trace.read_bytes()).hexdigest()
+    assert metadata["host_delivery_observed"]["session_id_sha256"] == hashlib.sha256(
+        b"session-1"
+    ).hexdigest()
+
+
+def test_private_codex_config_requires_the_preflighted_rob2_server(tmp_path: Path) -> None:
+    runner = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
+
+    config = tomllib.loads(
+        "\n".join(runner["_codex_mcp_config"](r"C:\rob2.exe", tmp_path))
+    )
+
+    assert config["mcp_servers"]["rob2"] == {
+        "command": r"C:\rob2.exe",
+        "args": ["mcp"],
+        "env": {"ROB2_WORKSPACE": str(tmp_path.resolve())},
+        "required": True,
+        "startup_timeout_sec": 120,
+        "tool_timeout_sec": runner["ROB2_MCP_TOOL_TIMEOUT_SECONDS"],
+    }
+
+
+def test_successful_cli_turn_without_rob2_delivery_is_infrastructure_failure(
+    tmp_path: Path,
+) -> None:
+    runner = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
+    trace = tmp_path / "phase-2.jsonl"
+    trace.write_text(
+        json.dumps({"type": "thread.started", "thread_id": "session-1"}) + "\n",
+        encoding="utf-8",
+    )
+
+    exit_code, state, reason, diagnosis = runner["_host_delivery_postcondition"](
+        0, trace, "session-1"
+    )
+
+    assert exit_code == 75
+    assert state == "failed_infrastructure"
+    assert reason == "Codex completed without verified rob2 host-tool delivery: host_delivery_call_missing"
+    assert diagnosis == {
+        "code": "host_delivery_call_missing",
+        "detail": (
+            "The prior trace lacks a completed typed rob2 call and either a completed get_status "
+            "call or a valid status head in a typed receipt."
+        ),
+        "recovery": "Keep this phase resumable and start a fresh case or repair the retained trace.",
+    }
 
 
 def test_strict_isolation_does_not_treat_the_sentinel_name_as_a_denial(
@@ -361,6 +427,68 @@ def test_benchmark_manifest_preparation_rejects_scope_omission_trial_mismatch_an
 
     write_rows([row, {**row, "outcome": " overall survival "}])
     with pytest.raises(ValueError, match="duplicate fresh benchmark case"):
+        _load_benchmark_rows(rows_path)
+
+
+def test_benchmark_manifest_preparation_accepts_explicitly_unlabelled_cases(
+    tmp_path: Path,
+) -> None:
+    rows_path = tmp_path / "metadata.tsv"
+    fields = [
+        "outcome",
+        "trial",
+        "primary_status",
+        "role",
+        "definition",
+        "effect_size",
+        "source_locator",
+        "reference_label_available",
+        "expected_result",
+    ]
+    row = {
+        "outcome": "Adverse Events",
+        "trial": "Trial-A",
+        "primary_status": "secondary",
+        "role": "main_article",
+        "definition": "NCI-CTCAE v4 scale",
+        "effect_size": "Grade 3 events: 4% vs 5%",
+        "source_locator": "abstract",
+        "reference_label_available": "no",
+        "expected_result": json.dumps(
+            {
+                "trial": "Trial-A",
+                "comparison": [
+                    {"id": "A", "assignment": "treatment"},
+                    {"id": "B", "assignment": "control"},
+                ],
+                "endpoint_definition": "NCI-CTCAE v4 scale",
+                "population": "all randomized participants",
+                "window": "entire treatment period",
+                "reported_scope": {
+                    "form": "group_bound_values",
+                    "analysis_population": "all randomized participants",
+                    "endpoint": {"definition": "Grade 3 events"},
+                    "group_values": [
+                        {"group_id": "A", "statistic": "percent", "value": "4%", "unit": "%"},
+                        {"group_id": "B", "statistic": "percent", "value": "5%", "unit": "%"},
+                    ],
+                },
+            }
+        ),
+    }
+    with rows_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, delimiter="\t")
+        writer.writeheader()
+        writer.writerow(row)
+
+    assert _load_benchmark_rows(rows_path)[0]["reference_label_available"] == "no"
+
+    row["reference_label_available"] = "unknown"
+    with rows_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields, delimiter="\t")
+        writer.writeheader()
+        writer.writerow(row)
+    with pytest.raises(ValueError, match="must be 'yes' or 'no'"):
         _load_benchmark_rows(rows_path)
 
 

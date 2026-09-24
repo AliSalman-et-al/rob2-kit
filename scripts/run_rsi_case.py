@@ -22,7 +22,9 @@ from benchmark_contract import (
     artifact_manifest_identity,
     host_delivery_diagnosis,
     host_delivery_observed,
+    rob2_call_diagnostics,
     execution_index_binding,
+    host_tools_infrastructure_recovery_diagnosis,
     probe_server_advertised_inventory,
     public_contract_version,
     public_tool_inventory,
@@ -44,6 +46,9 @@ else:  # pragma: no cover - exercised only on Windows.
 # Keep the expected surface at the launcher boundary: a resumed session with
 # a different public contract is not the same experimental condition.
 EXPECTED_TOOL_INVENTORY = public_tool_inventory()
+# The prior 300-second MCP client limit expired while a benchmark search later
+# returned after roughly 447 seconds.
+ROB2_MCP_TOOL_TIMEOUT_SECONDS = 600
 
 def _optional_text(value: object) -> str | None:
     return value if isinstance(value, str) and value else None
@@ -118,7 +123,7 @@ def _preflight_executable(executable: Path, label: str) -> str:
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                timeout=15,
+                timeout=30,
             )
         except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
             if argument == "--help":
@@ -341,8 +346,9 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
                 "requested strict host isolation is unavailable; forbidden-file sentinel "
                 f"was not verified: {error}"
             ) from error
+        lines = {line.strip() for line in output.splitlines()}
         if any(
-            marker in output
+            marker in lines
             for name in protected_files
             for marker in (f"READ:{name}", f"WRITE:{name}")
         ):
@@ -352,18 +358,18 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
         missing_denials = [
             name
             for name in protected_files
-            if f"DENIED:{name}" not in output or f"DENIED_WRITE:{name}" not in output
+            if f"DENIED:{name}" not in lines or f"DENIED_WRITE:{name}" not in lines
         ]
         if missing_denials:
             raise RuntimeError(
                 "requested strict host isolation did not deny protected files: "
                 + ", ".join(missing_denials)
             )
-        if "ALLOWED:read_write" not in output:
+        if "ALLOWED:read_write" not in lines:
             raise RuntimeError(
                 "requested strict host isolation did not verify workspace read/write access"
             )
-        if "ENV:clean" not in output or "ENV:secret_present" in output:
+        if "ENV:clean" not in lines or "ENV:secret_present" in lines:
             raise RuntimeError(
                 "requested strict host isolation exposed a non-allowlisted environment secret"
             )
@@ -400,6 +406,50 @@ def _trace_session_id(path: Path) -> str | None:
     if len(sessions) > 1:
         raise ValueError(f"ambiguous Codex session identifiers in {path}")
     return sessions[0] if sessions else None
+
+
+def _phase_completion_metadata(trace: Path, expected_session: str | None) -> dict[str, object]:
+    calls = rob2_call_diagnostics(trace)
+    return {
+        "trace_sha256": _sha256_file(trace) if trace.is_file() else None,
+        "trace_complete": trace.is_file(),
+        "codex_session_id": _trace_session_id(trace) if trace.is_file() else None,
+        "host_delivery_observed": host_delivery_observed(trace, expected_session),
+        "timed_out_rob2_calls": list(calls["timed_out"]),
+    }
+
+
+def _host_delivery_postcondition(
+    exit_code: int, trace: Path, expected_session: str | None
+) -> tuple[int, str | None, str | None, dict[str, str] | None]:
+    if exit_code != 0:
+        return exit_code, None, None, None
+    session = expected_session or _trace_session_id(trace)
+    diagnosis = host_delivery_diagnosis(
+        trace,
+        expected_sha256=_sha256_file(trace) if trace.is_file() else None,
+        expected_session=session,
+    )
+    if diagnosis is None:
+        return exit_code, None, None, None
+    return (
+        75,
+        "failed_infrastructure",
+        "Codex completed without verified rob2 host-tool delivery: " + diagnosis["code"],
+        diagnosis,
+    )
+
+
+def _codex_mcp_config(command: str, workspace: Path) -> list[str]:
+    return [
+        "[mcp_servers.rob2]",
+        "command = " + json.dumps(command),
+        'args = ["mcp"]',
+        "env = { ROB2_WORKSPACE = " + json.dumps(str(workspace.resolve())) + " }",
+        "required = true",
+        "startup_timeout_sec = 120",
+        f"tool_timeout_sec = {ROB2_MCP_TOOL_TIMEOUT_SECONDS}",
+    ]
 
 
 def _validate_tool_inventory(
@@ -539,7 +589,11 @@ def _validate_tool_inventory(
         expected_session=(prior.get("codex_session_id") if isinstance(prior, dict) else None),
     )
     if delivery is not None:
-        raise ValueError(json.dumps(delivery, sort_keys=True))
+        if delivery.get("code") != "host_delivery_call_missing":
+            raise ValueError(json.dumps(delivery, sort_keys=True))
+        recovery = host_tools_infrastructure_recovery_diagnosis(run_dir, phase)
+        if recovery is not None:
+            raise ValueError(json.dumps(recovery, sort_keys=True))
     return frozen
 
 
@@ -918,6 +972,19 @@ def _json_sha256(value: object) -> str:
     ).hexdigest()
 
 
+def _changed_runtime_input_keys(
+    prior: dict[str, object], current: dict[str, object]
+) -> list[str]:
+    """Return top-level runtime fields whose frozen values changed."""
+
+    missing = object()
+    return sorted(
+        key
+        for key in set(prior) | set(current)
+        if prior.get(key, missing) != current.get(key, missing)
+    )
+
+
 def _codex_home_path(run_dir: Path) -> Path:
     """Keep resumable Codex state outside retained benchmark artifacts."""
 
@@ -996,6 +1063,8 @@ def _load_or_create_execution_record(
     runtime_inputs: dict[str, object] | None = None,
     prompt_bytes: bytes | None = None,
     attempt_number: int = 1,
+    allow_build_only_transition: bool = False,
+    build_transition_reason: str | None = None,
 ) -> dict[str, object]:
     path = run_dir / "execution.json"
     now = datetime.now(UTC).isoformat()
@@ -1007,6 +1076,21 @@ def _load_or_create_execution_record(
     )
     overrides = dict(overrides or {})
     runtime_inputs = dict(runtime_inputs or {})
+    if phase == 1 and (allow_build_only_transition or build_transition_reason is not None):
+        raise ValueError(
+            "build-only runtime transitions are valid only for continuation phases"
+        )
+    has_build_transition_reason = bool(
+        isinstance(build_transition_reason, str) and build_transition_reason.strip()
+    )
+    if build_transition_reason is not None and not has_build_transition_reason:
+        raise ValueError("--build-transition-reason must be nonempty")
+    if allow_build_only_transition != has_build_transition_reason:
+        raise ValueError(
+            "--allow-build-only-transition and --build-transition-reason must be supplied together"
+        )
+    if build_transition_reason is not None:
+        build_transition_reason = build_transition_reason.strip()
     if (
         isinstance(attempt_number, bool)
         or not isinstance(attempt_number, int)
@@ -1014,6 +1098,7 @@ def _load_or_create_execution_record(
     ):
         raise ValueError("attempt number must be a positive integer")
     runtime_inputs_sha256 = _json_sha256(runtime_inputs) if runtime_inputs else None
+    runtime_transition: dict[str, object] | None = None
     if phase > 1 and not path.exists():
         raise ValueError("continuation requires an existing execution.json")
     if path.exists():
@@ -1148,14 +1233,77 @@ def _load_or_create_execution_record(
             if runtime_inputs_sha256 is None:
                 raise ValueError("continuation runtime inputs are required")
             prior_runtime_inputs = record.get("runtime_inputs")
-            if (
-                not isinstance(prior_runtime_inputs, dict)
-                or not isinstance(prior_runtime_inputs_sha256, str)
-                or prior_runtime_inputs != runtime_inputs
-                or _json_sha256(prior_runtime_inputs) != prior_runtime_inputs_sha256
-                or prior_runtime_inputs_sha256 != runtime_inputs_sha256
+            if not isinstance(prior_runtime_inputs, dict) or not isinstance(
+                prior_runtime_inputs_sha256, str
             ):
-                raise ValueError("continuation runtime input mismatch")
+                raise ValueError(
+                    "continuation prior top-level runtime provenance is incomplete"
+                )
+            if _json_sha256(prior_runtime_inputs) != prior_runtime_inputs_sha256:
+                raise ValueError(
+                    "continuation prior top-level runtime inputs failed their integrity check"
+                )
+            prior_phase = next(
+                (
+                    row
+                    for row in reversed(phases)
+                    if isinstance(row, dict) and row.get("phase") == phase - 1
+                ),
+                None,
+            )
+            if not isinstance(prior_phase, dict):
+                raise ValueError(
+                    f"continuation phase {phase - 1} runtime provenance is missing"
+                )
+            prior_phase_runtime = prior_phase.get("runtime_inputs")
+            prior_phase_runtime_sha256 = prior_phase.get("runtime_inputs_sha256")
+            if not isinstance(prior_phase_runtime, dict) or not isinstance(
+                prior_phase_runtime_sha256, str
+            ):
+                raise ValueError(
+                    f"continuation phase {phase - 1} runtime provenance is incomplete"
+                )
+            if _json_sha256(prior_phase_runtime) != prior_phase_runtime_sha256:
+                raise ValueError(
+                    f"continuation phase {phase - 1} runtime inputs failed their integrity check"
+                )
+            if prior_phase_runtime_sha256 != prior_runtime_inputs_sha256:
+                raise ValueError(
+                    "continuation prior phase and top-level runtime hashes do not match"
+                )
+            changed_keys = _changed_runtime_input_keys(prior_runtime_inputs, runtime_inputs)
+            if changed_keys:
+                if changed_keys != ["build_sha256"]:
+                    raise ValueError(
+                        "continuation runtime input mismatch (changed keys: "
+                        + ", ".join(changed_keys)
+                        + "); only build_sha256 may change with an explicit build-only transition"
+                    )
+                old_build = prior_runtime_inputs.get("build_sha256")
+                new_build = runtime_inputs.get("build_sha256")
+                if not isinstance(old_build, str) or not isinstance(new_build, str):
+                    raise ValueError(
+                        "build-only runtime transition requires nonempty prior and current build_sha256"
+                    )
+                if not allow_build_only_transition:
+                    raise ValueError(
+                        "continuation runtime input mismatch (changed keys: build_sha256); "
+                        "use --allow-build-only-transition with a nonempty "
+                        "--build-transition-reason"
+                    )
+                runtime_transition = {
+                    "kind": "build_sha256_only",
+                    "old_build_sha256": old_build,
+                    "new_build_sha256": new_build,
+                    "reason": build_transition_reason,
+                    "prior_runtime_inputs_sha256": prior_runtime_inputs_sha256,
+                    "prior_phase_runtime_inputs_sha256": prior_phase_runtime_sha256,
+                    "new_runtime_inputs_sha256": runtime_inputs_sha256,
+                }
+            elif allow_build_only_transition:
+                raise ValueError(
+                    "build-only runtime transition was requested but build_sha256 did not change"
+                )
     initial_prompt_sha256 = record.get("prompt_sha256", prompt_sha256)
     if not isinstance(initial_prompt_sha256, str):
         initial_prompt_sha256 = prompt_sha256
@@ -1240,6 +1388,8 @@ def _load_or_create_execution_record(
     if runtime_inputs_sha256 is not None:
         phase_record["runtime_inputs"] = runtime_inputs
         phase_record["runtime_inputs_sha256"] = runtime_inputs_sha256
+    if runtime_transition is not None:
+        phase_record["runtime_transition"] = runtime_transition
     phases.append(phase_record)
     attempts = record.setdefault("attempts", [])
     if not isinstance(attempts, list):
@@ -1319,6 +1469,8 @@ def _load_or_create_execution(
     runtime_inputs: dict[str, object] | None = None,
     prompt_bytes: bytes | None = None,
     attempt_number: int = 1,
+    allow_build_only_transition: bool = False,
+    build_transition_reason: str | None = None,
 ) -> dict[str, object]:
     _acquire_execution_lock(run_dir)
     try:
@@ -1347,6 +1499,8 @@ def _load_or_create_execution(
             runtime_inputs=runtime_inputs,
             prompt_bytes=prompt_bytes,
             attempt_number=attempt_number,
+            allow_build_only_transition=allow_build_only_transition,
+            build_transition_reason=build_transition_reason,
         )
     except BaseException:
         _release_execution_lock(run_dir)
@@ -1364,9 +1518,17 @@ def _finish_execution(
     terminal_state: str | None = None,
     terminal_reason: str | None = None,
     expected_session: str | None = None,
-) -> None:
+) -> str | None:
     path = run_dir / "execution.json"
     trace = run_dir / f"phase-{phase}.jsonl"
+    rob2_calls = rob2_call_diagnostics(trace)
+    pending_calls = rob2_calls["incomplete"]
+    if terminal_state is None and pending_calls:
+        terminal_state = "failed_infrastructure"
+        terminal_reason = (
+            "Codex exited without a successful rob2 MCP response for call(s): "
+            + ", ".join(pending_calls)
+        )
     phases = record.get("phases")
     phase_record = (
         next(
@@ -1389,6 +1551,7 @@ def _finish_execution(
                 "trace_sha256": _sha256_file(trace) if trace.is_file() else None,
                 "codex_session_id": _trace_session_id(trace),
                 "host_delivery_observed": delivery,
+                "timed_out_rob2_calls": list(rob2_calls["timed_out"]),
             }
         )
     session_id = _trace_session_id(trace)
@@ -1450,7 +1613,7 @@ def _finish_execution(
         "expired",
     }:
         raise ValueError(f"unsupported execution terminal state: {terminal_state}")
-    if terminal_state in {"scientific_failed", "cancelled", "expired"}:
+    if terminal_state in {"failed_infrastructure", "scientific_failed", "cancelled", "expired"}:
         if not isinstance(terminal_reason, str) or not terminal_reason.strip():
             raise ValueError(f"{terminal_state} requires an explicit terminal reason")
         record["terminal_reason"] = terminal_reason.strip()
@@ -1518,6 +1681,7 @@ def _finish_execution(
         _release_execution_lock(run_dir)
     if artifact_error is not None:
         raise ValueError(artifact_error)
+    return terminal_reason.strip() if isinstance(terminal_reason, str) else None
 
 
 def _mark_scientific_terminal(run_dir: Path, reason: str) -> dict[str, object]:
@@ -1624,6 +1788,15 @@ def main() -> None:
         action="store_true",
         help="Resume a pending Proposal Review to request a replacement Result",
     )
+    parser.add_argument(
+        "--allow-build-only-transition",
+        action="store_true",
+        help="Permit a continuation whose only runtime change is build_sha256",
+    )
+    parser.add_argument(
+        "--build-transition-reason",
+        help="Required nonempty reason when allowing a build-only continuation transition",
+    )
     args = parser.parse_args()
     if args.mark_scientific_terminal:
         if not args.terminal_reason or not args.terminal_reason.strip():
@@ -1642,6 +1815,20 @@ def main() -> None:
         parser.error("--timeout-seconds must be positive")
     if args.attempt_number < 1:
         parser.error("--attempt-number must be positive")
+    if args.phase == 1 and (
+        args.allow_build_only_transition or args.build_transition_reason is not None
+    ):
+        parser.error(
+            "build-only runtime transitions are valid only for continuation phases"
+        )
+    if args.allow_build_only_transition != bool(
+        isinstance(args.build_transition_reason, str) and args.build_transition_reason.strip()
+    ):
+        parser.error(
+            "--allow-build-only-transition and --build-transition-reason must be supplied together"
+        )
+    if args.build_transition_reason is not None and not args.build_transition_reason.strip():
+        parser.error("--build-transition-reason must be nonempty")
     if bool(args.benchmark_index) != bool(args.benchmark_index_sha256):
         parser.error("--benchmark-index and --benchmark-index-sha256 must be supplied together")
     if args.phase < 1 or (args.phase > 1) != bool(args.session):
@@ -1738,7 +1925,7 @@ def main() -> None:
         ("codex.cmd", "codex.exe", "codex"),
     )
     preflight = {
-        "rob2": {"path": str(rob2_command), "version": _preflight_executable(rob2_command, "rob2")},
+        "rob2": {"path": str(rob2_command)},
         "codex": {
             "path": str(codex_command),
             "version": _preflight_executable(codex_command, "Codex"),
@@ -1747,13 +1934,13 @@ def main() -> None:
         "isolation": _preflight_isolation(codex_command, args.require_isolated_host),
     }
     workspace = run_dir / "workspace"
-    (workspace / ".tmp").mkdir(parents=True, exist_ok=True)
     skill = workspace / ".agents" / "skills" / "rob2-assess"
     approved_scope_for_record: dict[str, object] | None = None
     if args.phase == 1:
         if case_file is None:
             parser.error("phase 1 requires --case")
         run_inputs = prepare_workspace(case_file, workspace)
+        (workspace / ".tmp").mkdir(parents=True, exist_ok=True)
         isolation_record.write_text(
             json.dumps(
                 {
@@ -1779,6 +1966,8 @@ def main() -> None:
         )
     elif not (workspace / "input").is_dir():
         parser.error("prepared workspace is missing")
+    else:
+        (workspace / ".tmp").mkdir(parents=True, exist_ok=True)
 
     run_inputs = json.loads((run_dir / "run-inputs.json").read_text(encoding="utf-8"))
     expected_result = run_inputs.get("expected_result") if isinstance(run_inputs, dict) else None
@@ -1818,6 +2007,15 @@ def main() -> None:
             parser.error(str(error))
     try:
         server_inventory = probe_server_advertised_inventory(rob2_command, workspace)
+        # Process cleanup is per-probe telemetry, not part of frozen server identity.
+        preflight["rob2"]["probe_cleanup"] = server_inventory.pop("probe_cleanup", "unknown")
+        server_info = server_inventory.get("server_info")
+        server_version = server_info.get("version") if isinstance(server_info, dict) else None
+        preflight["rob2"]["version"] = (
+            server_version.strip()
+            if isinstance(server_version, str) and server_version.strip()
+            else "unknown"
+        )
         if args.phase > 1:
             _validate_tool_inventory(
                 run_dir,
@@ -1870,6 +2068,7 @@ def main() -> None:
         Path(__file__).resolve(),
         Path(__file__).resolve().with_name("prepare_rsi_workspace.py"),
         Path(__file__).resolve().with_name("benchmark_contract.py"),
+        Path(__file__).resolve().with_name("benchmark_recovery_exec_allowlist.json"),
         repository / "pyproject.toml",
         repository / "uv.lock",
         rob2_command,
@@ -1904,6 +2103,22 @@ def main() -> None:
         **({"benchmark_index": benchmark_binding} if benchmark_binding is not None else {}),
         **({"scope_unresolved": unresolved_scope} if unresolved_scope is not None else {}),
     }
+    previous_runtime: object = None
+    previous_execution_path = run_dir / "execution.json"
+    if args.phase > 1 and previous_execution_path.is_file():
+        try:
+            previous_execution = json.loads(
+                previous_execution_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError):
+            previous_execution = None
+        if isinstance(previous_execution, dict):
+            previous_runtime = previous_execution.get("runtime_inputs")
+    if args.phase == 1 or (
+        isinstance(previous_runtime, dict)
+        and "codex_mcp_tool_timeout_sec" in previous_runtime
+    ):
+        runtime_inputs["codex_mcp_tool_timeout_sec"] = ROB2_MCP_TOOL_TIMEOUT_SECONDS
 
     try:
         execution = _load_or_create_execution(
@@ -1922,6 +2137,8 @@ def main() -> None:
             runtime_inputs=runtime_inputs,
             prompt_bytes=prompt_bytes,
             attempt_number=args.attempt_number,
+            allow_build_only_transition=args.allow_build_only_transition,
+            build_transition_reason=args.build_transition_reason,
         )
     except (OSError, ValueError, json.JSONDecodeError) as error:
         parser.error(str(error))
@@ -1934,6 +2151,7 @@ def main() -> None:
 
     _prepare_codex_home(codex_home)
     auth_copy = codex_home / "auth.json"
+    profile: list[str] = []
     if args.require_isolated_host:
         auth_source = Path.home() / ".codex" / "auth.json"
         campaign_root = (
@@ -1958,7 +2176,6 @@ def main() -> None:
                 auth_source,
             ),
         )
-        (codex_home / "config.toml").write_text("\n".join(profile) + "\n", encoding="utf-8")
     scorer_path = repository / "scripts" / "analyze_rsi_runs.py"
     scorer_metadata: dict[str, object] = {
         "schema": "rob2-kit.rsi-run-analysis.v1",
@@ -1981,17 +2198,21 @@ def main() -> None:
         != hashlib.sha256(str(workspace.resolve()).encode("utf-8")).hexdigest()
     ):
         parser.error("Codex rob2 command/args do not match the exact tools/list preflight")
+    profile.extend(_codex_mcp_config(codex_mcp_command, workspace))
+    codex_config_path = codex_home / "config.toml"
+    codex_config_bytes = ("\n".join(profile) + "\n").encode("utf-8")
+    codex_config_path.write_bytes(codex_config_bytes)
+    config_snapshot_path = run_dir / f"phase-{args.phase}.codex-config.toml"
+    if config_snapshot_path.is_file():
+        if config_snapshot_path.read_bytes() != codex_config_bytes:
+            parser.error(
+                f"Phase {args.phase} Codex config snapshot already exists with different content"
+            )
+    else:
+        config_snapshot_path.write_bytes(codex_config_bytes)
     config: list[str] = [
         "-c",
         "model_reasoning_effort=" + json.dumps(effort),
-        "-c",
-        "mcp_servers.rob2.command=" + json.dumps(codex_mcp_command),
-        "-c",
-        "mcp_servers.rob2.args=" + json.dumps(codex_mcp_args),
-        "-c",
-        "mcp_servers.rob2.env={ROB2_WORKSPACE=" + json.dumps(str(workspace)) + "}",
-        "-c",
-        "mcp_servers.rob2.startup_timeout_sec=120",
     ]
     if not args.require_isolated_host:
         config += [
@@ -2008,7 +2229,6 @@ def main() -> None:
     if args.session:
         command += ["resume", args.session]
     command += [
-        *([] if args.require_isolated_host else ["--ignore-user-config"]),
         *(
             ["--strict-config", "-c", 'default_permissions="rob2-rsi"']
             if args.require_isolated_host
@@ -2079,8 +2299,38 @@ def main() -> None:
         },
         "scorer": scorer_metadata,
         "runtime_inputs": runtime_inputs,
+        "runtime_inputs_sha256": _json_sha256(runtime_inputs),
+        "codex_mcp_config": {
+            "path": str(codex_config_path),
+            "sha256": _sha256_file(codex_config_path),
+            "snapshot_path": config_snapshot_path.name,
+            "snapshot_sha256": _sha256_file(config_snapshot_path),
+            "required": True,
+            "tool_timeout_sec": ROB2_MCP_TOOL_TIMEOUT_SECONDS,
+            "timeout_reason": (
+                "Increased after a benchmark source search exceeded the former 300-second "
+                "client limit and returned later."
+            ),
+        },
         "server_advertised_inventory": server_inventory,
     }
+    phase_transition = None
+    recorded_phases = execution.get("phases")
+    if isinstance(recorded_phases, list):
+        recorded_phase = next(
+            (
+                row
+                for row in reversed(recorded_phases)
+                if isinstance(row, dict) and row.get("phase") == args.phase
+            ),
+            None,
+        )
+        if isinstance(recorded_phase, dict):
+            candidate_transition = recorded_phase.get("runtime_transition")
+            if isinstance(candidate_transition, dict):
+                phase_transition = candidate_transition
+    if phase_transition is not None:
+        metadata["runtime_transition"] = phase_transition
     execution_identity = execution.get("identity")
     execution_identity = execution_identity if isinstance(execution_identity, dict) else {}
     execution["provenance"] = {
@@ -2161,6 +2411,14 @@ def main() -> None:
         auth_copy.unlink(missing_ok=True)
     if completed is None:
         raise RuntimeError("Codex phase did not start")
+    codex_exit_code = completed.returncode
+    postcondition_exit, postcondition_state, postcondition_reason, delivery_diagnosis = (
+        _host_delivery_postcondition(codex_exit_code, trace, args.session)
+    )
+    if postcondition_state is not None:
+        terminal_state = postcondition_state
+        terminal_reason = postcondition_reason
+        completed = subprocess.CompletedProcess(command, postcondition_exit)
     artifact = None
     waiting_for_user = False
     if completed.returncode == 0:
@@ -2189,7 +2447,7 @@ def main() -> None:
             )
         except (OSError, subprocess.CalledProcessError, json.JSONDecodeError):
             artifact = None
-    _finish_execution(
+    terminal_reason = _finish_execution(
         run_dir,
         execution,
         args.phase,
@@ -2204,11 +2462,15 @@ def main() -> None:
         {
             "finished_at": datetime.now(UTC).isoformat(),
             "exit_code": completed.returncode,
-            "trace_sha256": _sha256_file(trace) if trace.is_file() else None,
-            "trace_complete": trace.is_file(),
+            "codex_exit_code": codex_exit_code,
+            **(
+                {"host_delivery_diagnosis": delivery_diagnosis}
+                if delivery_diagnosis is not None
+                else {}
+            ),
+            **_phase_completion_metadata(trace, args.session),
             "execution_state": execution.get("state"),
             "terminal_reason": terminal_reason,
-            "host_delivery_observed": host_delivery_observed(trace, args.session),
         }
     )
     _atomic_json(metadata_path, metadata)

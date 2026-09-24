@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import io
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -250,6 +252,213 @@ def test_generic_nonzero_codex_exit_does_not_prove_infrastructure_retry(
         index_path,
         {"trial": "trial", "outcome": "Overall Survival", "run_dir": str(run_dir)},
     )
+
+
+def test_unreturned_rob2_call_is_recorded_as_infrastructure_failure(
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    run_dir = tmp_path / "campaign" / "runs" / "trial"
+    run_dir.mkdir(parents=True)
+    (run_dir / "phase-1.jsonl").write_text(
+        "\n".join(
+            (
+                json.dumps({"type": "thread.started", "thread_id": "session-1"}),
+                json.dumps({
+                    "type": "item.completed",
+                    "item": {
+                        "id": "item-1",
+                        "type": "mcp_tool_call",
+                        "server": "rob2",
+                        "tool": "get_status",
+                        "status": "completed",
+                        "error": None,
+                        "result": {"structured_content": {}},
+                    },
+                }),
+                json.dumps({
+                    "type": "item.started",
+                    "item": {
+                        "id": "item-2",
+                        "type": "mcp_tool_call",
+                        "server": "rob2",
+                        "tool": "prepare_batch",
+                        "status": "in_progress",
+                    },
+                }),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    record = {
+        "state": "running",
+        "attempt_id": "attempt-1",
+        "attempts": [{"attempt_id": "attempt-1", "phase": 1, "state": "running"}],
+        "phases": [{"attempt_id": "attempt-1", "phase": 1, "state": "running"}],
+    }
+
+    terminal_reason = runner["_finish_execution"](
+        run_dir, record, 1, 0, expected_session="session-1"
+    )
+
+    assert record["state"] == "failed_infrastructure"
+    assert record["attempts"][0]["state"] == "failed_infrastructure"
+    assert "prepare_batch" in record["terminal_reason"]
+    assert terminal_reason == record["terminal_reason"]
+
+
+def test_completed_timeout_is_resumable_and_recorded_as_telemetry(
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    run_dir = tmp_path / "campaign" / "runs" / "trial"
+    run_dir.mkdir(parents=True)
+    (run_dir / "phase-1.jsonl").write_text(
+        "\n".join(
+            (
+                json.dumps({"type": "thread.started", "thread_id": "session-1"}),
+                json.dumps({
+                    "type": "item.started",
+                    "item": {
+                        "id": "item-1",
+                        "type": "mcp_tool_call",
+                        "server": "rob2",
+                        "tool": "prepare_batch",
+                        "status": "in_progress",
+                    },
+                }),
+                json.dumps({
+                    "type": "item.completed",
+                    "item": {
+                        "id": "item-1",
+                        "type": "mcp_tool_call",
+                        "server": "rob2",
+                        "tool": "prepare_batch",
+                        "status": "failed",
+                        "error": {
+                            "message": (
+                                "tool call failed for `rob2/prepare_batch`: "
+                                "timed out awaiting tools/call after 300s"
+                            )
+                        },
+                    },
+                }),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    record = {
+        "state": "running",
+        "attempt_id": "attempt-1",
+        "attempts": [{"attempt_id": "attempt-1", "phase": 1, "state": "running"}],
+        "phases": [{"attempt_id": "attempt-1", "phase": 1, "state": "running"}],
+    }
+
+    terminal_reason = runner["_finish_execution"](
+        run_dir, record, 1, 0, expected_session="session-1"
+    )
+
+    assert record["state"] == "resumable"
+    assert record["attempts"][0]["state"] == "resumable"
+    assert record["phases"][0]["timed_out_rob2_calls"] == ["prepare_batch"]
+    assert terminal_reason is None
+
+
+def test_completed_timeout_does_not_invalidate_a_verified_finalized_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = _runner()
+    run_dir = tmp_path / "campaign" / "runs" / "trial"
+    run_dir.mkdir(parents=True)
+    artifact_path = run_dir / "workspace" / ".rob2-kit" / "finalized" / "result.rob2.zip"
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_bytes(b"verified test artifact")
+    artifact_sha256 = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    artifact_identity = "sha256:verified-artifact"
+    artifact = {
+        "path": ".rob2-kit/finalized/result.rob2.zip",
+        "identity": artifact_identity,
+        "sha256": artifact_sha256,
+    }
+    timeout = {
+        "message": "tool call failed for `rob2/search_sources`: timed out awaiting tools/call after 300s"
+    }
+    events = [
+        {"type": "thread.started", "thread_id": "session-1"},
+        {
+            "type": "item.started",
+            "item": {
+                "id": "item-timeout",
+                "type": "mcp_tool_call",
+                "server": "rob2",
+                "tool": "search_sources",
+            },
+        },
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "item-timeout",
+                "type": "mcp_tool_call",
+                "server": "rob2",
+                "tool": "search_sources",
+                "status": "failed",
+                "error": timeout,
+            },
+        },
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "item-finalize",
+                "type": "mcp_tool_call",
+                "server": "rob2",
+                "tool": "finalize_batch",
+                "status": "completed",
+                "error": None,
+                "result": {
+                    "structured_content": {
+                        "outcome": "success",
+                        "head": {"phase": "finalized"},
+                        "data": {"artifact": artifact},
+                    }
+                },
+            },
+        },
+        {"type": "turn.completed"},
+    ]
+    trace = run_dir / "phase-1.jsonl"
+    trace.write_text("\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8")
+    monkeypatch.setitem(
+        runner["_finish_execution"].__globals__,
+        "artifact_manifest_identity",
+        lambda _path: artifact_identity,
+    )
+    monkeypatch.setattr(
+        runner["runpy"],
+        "run_path",
+        lambda _path: {"verify": lambda _artifact: (True, "bundle verified")},
+    )
+    record = {
+        "state": "running",
+        "attempt_id": "attempt-1",
+        "attempts": [{"attempt_id": "attempt-1", "phase": 1, "state": "running"}],
+        "phases": [{"attempt_id": "attempt-1", "phase": 1, "state": "running"}],
+    }
+
+    terminal_reason = runner["_finish_execution"](
+        run_dir,
+        record,
+        1,
+        0,
+        artifact=artifact,
+        expected_session="session-1",
+    )
+
+    assert record["state"] == "succeeded"
+    assert record["artifact"]["verified"] is True
+    assert record["phases"][0]["timed_out_rob2_calls"] == ["search_sources"]
+    assert terminal_reason is None
 
 
 def test_launcher_retry_requires_predecessor_summary_and_exact_run_directory(
@@ -536,11 +745,43 @@ def test_trace_session_recovery_supports_current_thread_event_and_legacy_event(
     assert runner["_trace_session_id"](legacy) == "legacy-session"
 
 
+class _FakePreflightProcess:
+    def __init__(self, stdout: str) -> None:
+        self.stdin = self.FakeStdin()
+        self.stdout = io.StringIO(stdout)
+        self.stderr = io.StringIO("")
+        self.returncode = 0
+
+    class FakeStdin:
+        def __init__(self) -> None:
+            self.writes: list[str] = []
+            self.closed = False
+
+        def write(self, value: str) -> int:
+            self.writes.append(value)
+            return len(value)
+
+        def flush(self) -> None:
+            pass
+
+        def close(self) -> None:
+            self.closed = True
+
+    def wait(self, timeout: float | None = None) -> int:
+        return self.returncode
+
+    def poll(self) -> int:
+        return self.returncode
+
+    def kill(self) -> None:
+        raise AssertionError("preflight should have completed before cleanup")
+
+
 def _probe_inventory(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     tools_response: dict[str, Any] | None = None,
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any], Any]:
     contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
     tools_response = tools_response or _tools_list_response()
     stdout = "\n".join(
@@ -549,16 +790,19 @@ def _probe_inventory(
             json.dumps({"jsonrpc": "2.0", "id": 2, "result": tools_response}),
         )
     )
+
+    process = _FakePreflightProcess(stdout)
     monkeypatch.setattr(
         contract["subprocess"],
-        "run",
-        lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout=stdout, stderr=""),
+        "Popen",
+        lambda *_args, **_kwargs: process,
     )
     command = tmp_path / "rob2"
     command.touch()
     workspace = tmp_path / "workspace"
     workspace.mkdir(exist_ok=True)
-    return contract, contract["probe_server_advertised_inventory"](command, workspace)
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+    return contract, inventory, process
 
 
 def _write_frozen_inventory(
@@ -631,15 +875,839 @@ def _write_frozen_inventory(
     )
 
 
+def _write_host_tools_recovery_fixture(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    proof_case: str = "binding",
+    proof_task_id: str | None = None,
+) -> dict[str, Any]:
+    """Build a minimal, hash-bound Phase-2 no-tool recovery record."""
+
+    contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
+    allowlist = json.loads(
+        (SCRIPTS / "benchmark_recovery_exec_allowlist.json").read_text(encoding="utf-8")
+    )
+    case_path = {
+        "binding": "runs/overall-survival/CHAARTED",
+        "status_only": "phase1-replacement/runs/overall-survival/TITAN",
+        "readonly": "runs/progression-free-survival/CHAARTED",
+        "registry": "runs/overall-survival/PEACE-1",
+    }[proof_case]
+    turn_record = next(row for row in allowlist["turns"] if row["case"] == case_path)
+    session_id = turn_record["session_id"]
+    proof_task_id = proof_task_id or turn_record["turn_id"]
+    trial = {
+        "binding": "CHAARTED",
+        "status_only": "TITAN",
+        "readonly": "CHAARTED",
+        "registry": "PEACE-1",
+    }[proof_case]
+    outcome = "Progression-Free Survival" if proof_case == "readonly" else "Overall Survival"
+    cells = {row["sha256"]: row for row in allowlist["cells"]}
+    turn_cells = [cells[digest] for digest in turn_record["exec_source_sha256s"]]
+
+    run_dir = tmp_path / case_path
+    run_dir.mkdir(parents=True)
+    (run_dir / "workspace").mkdir()
+    codex_home = tmp_path / "private-codex-home"
+    codex_home.mkdir()
+
+    expected_result = {
+        "trial": trial,
+        "outcome": "Overall Survival",
+        "definition": "time from randomization to death",
+        "estimate": "HR 0.75",
+    }
+    expected_result_sha256 = hashlib.sha256(
+        json.dumps(expected_result, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    (run_dir / "run-inputs.json").write_text(
+        json.dumps(
+            {
+                "expected_result": expected_result,
+                "trial": trial,
+                "requested_outcome": outcome,
+                "approved_scope": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+    approved_scope = {
+        "schema": "rob2-kit.rsi-approved-scope.v1",
+        "approval_identity": "sha256:approval",
+        "proposal_identity": "sha256:proposal",
+        "results": [{"identity": "sha256:result", "trial_id": "trial-a"}],
+    }
+    approved_scope_path = run_dir / "approved-scope.json"
+    approved_scope_path.write_text(
+        json.dumps(approved_scope, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    phase_1_trace = run_dir / "phase-1.jsonl"
+    phase_1_trace.write_text(
+        json.dumps({"type": "thread.started", "thread_id": session_id}) + "\n",
+        encoding="utf-8",
+    )
+    phase_2_trace = run_dir / "phase-2.jsonl"
+    phase_2_events = [
+        {"type": "thread.started", "thread_id": session_id},
+        {"type": "turn.started", "turn_id": proof_task_id},
+    ]
+    if proof_case == "readonly":
+        for item_id, tool in (
+            ("resource-list", "list_mcp_resources"),
+            ("resource-templates", "list_mcp_resource_templates"),
+        ):
+            call = {
+                "id": item_id,
+                "type": "mcp_tool_call",
+                "server": "codex",
+                "tool": tool,
+                "arguments": {},
+                "result": None,
+                "error": None,
+                "status": "in_progress",
+            }
+            phase_2_events.append({"type": "item.started", "item": call})
+            phase_2_events.append(
+                {
+                    "type": "item.completed",
+                    "item": {
+                        **call,
+                        "result": {"content": [], "structured_content": None},
+                        "status": "completed",
+                    },
+                }
+            )
+    phase_2_events.extend(
+        [
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "message-1",
+                "type": "agent_message",
+                "text": "The rob2 tools were unavailable.",
+            },
+        },
+        {"type": "turn.completed", "turn_id": proof_task_id},
+        ]
+    )
+    phase_2_trace.write_text(
+        "\n".join(json.dumps(event) for event in phase_2_events) + "\n",
+        encoding="utf-8",
+    )
+    trace_sha256 = hashlib.sha256(phase_2_trace.read_bytes()).hexdigest()
+    turn_record["trace_sha256"] = trace_sha256
+    allowlist["turns"] = [turn_record]
+    allowlist["turn_count"] = 1
+    fixture_allowlist = tmp_path / "benchmark_recovery_exec_allowlist.json"
+    fixture_allowlist.write_text(json.dumps(allowlist), encoding="utf-8")
+    monkeypatch.setitem(
+        contract["host_tools_infrastructure_recovery_diagnosis"].__globals__,
+        "RECOVERY_EXEC_ALLOWLIST",
+        fixture_allowlist,
+    )
+    phase_1_trace_sha256 = hashlib.sha256(phase_1_trace.read_bytes()).hexdigest()
+    runtime_inputs = {
+        "codex_home_path": str(codex_home),
+        "codex_registered_mcp": {"command": "rob2"},
+        "benchmark_index": {
+            "campaign_id": allowlist["campaign_id"],
+            "path": str(tmp_path / "index.json"),
+        },
+    }
+    runtime_inputs_sha256 = hashlib.sha256(
+        json.dumps(runtime_inputs, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    phase_record = {
+        "phase": 2,
+        "state": "resumable",
+        "attempt_id": "attempt-1",
+        "trace_sha256": trace_sha256,
+        "codex_session_id": session_id,
+        "expected_result_sha256": expected_result_sha256,
+        "exit_code": 0,
+        "started_at": "2026-09-24T00:00:00Z",
+        "finished_at": "2026-09-24T00:10:00Z",
+        "runtime_inputs": runtime_inputs,
+        "runtime_inputs_sha256": runtime_inputs_sha256,
+    }
+    execution = {
+        "state": "resumable",
+        "attempt_id": "attempt-1",
+        "codex_session_id": session_id,
+        "runtime_inputs": runtime_inputs,
+        "runtime_inputs_sha256": runtime_inputs_sha256,
+        "phases": [
+            {
+                "phase": 1,
+                "state": "resumable",
+                "attempt_id": "attempt-1",
+                "trace_sha256": phase_1_trace_sha256,
+                "codex_session_id": session_id,
+                "exit_code": 0,
+            },
+            phase_record,
+        ],
+    }
+    (run_dir / "execution.json").write_text(json.dumps(execution), encoding="utf-8")
+    phase_meta = {
+        "phase": 2,
+        "trace_sha256": trace_sha256,
+        "codex_session_id": session_id,
+        "attempt_id": "attempt-1",
+        "session": session_id,
+        "trial": trial,
+        "exit_code": 0,
+        "execution_state": "resumable",
+        "runtime_inputs": runtime_inputs,
+        "runtime_inputs_sha256": runtime_inputs_sha256,
+    }
+    phase_meta_path = run_dir / "phase-2.meta.json"
+    phase_meta_path.write_text(json.dumps(phase_meta), encoding="utf-8")
+    (run_dir / "phase-1.meta.json").write_text(
+        json.dumps(
+            {
+                "trace_sha256": phase_1_trace_sha256,
+                "codex_session_id": session_id,
+                "attempt_id": "attempt-1",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rollout_lines = [
+        {
+            "type": "session_meta",
+            "payload": {"type": "session_meta", "session_id": session_id},
+        },
+        {
+            "type": "event_msg",
+            "timestamp": "2026-09-24T00:01:00Z",
+            "payload": {"type": "task_started", "turn_id": proof_task_id},
+        },
+    ]
+
+    def add_exec_call(call_id: str, cell: dict[str, Any], output: object) -> None:
+        rollout_lines.extend(
+            [
+                {
+                    "type": "response_item",
+                    "payload": {
+                        "type": "custom_tool_call",
+                        "name": "exec",
+                        "call_id": call_id,
+                        "input": cell["source"],
+                    },
+                },
+                {
+                    "type": "response_item",
+                    "payload": {
+                        "type": "custom_tool_call_output",
+                        "call_id": call_id,
+                        "output": output,
+                    },
+                },
+            ]
+        )
+
+    if proof_case != "registry":
+        for index, cell in enumerate(turn_cells):
+            if cell["kind"] == "missing_rob2_method":
+                method = cell["method"]
+                add_exec_call(
+                    f"missing-call-{index}",
+                    cell,
+                    f"TypeError: tools.mcp__rob2__{method} is not a function",
+                )
+            elif cell["kind"] == "read_only_mcp_resource_probe":
+                add_exec_call(
+                    f"resource-call-{index}",
+                    cell,
+                    [{"type": "input_text", "text": "Script completed\nOutput:\n{\"resources\":[]}"}],
+                )
+            else:
+                add_exec_call(
+                    f"inventory-call-{index}",
+                    cell,
+                    [{"type": "input_text", "text": "Script completed\nOutput:\n[]"}],
+                )
+    else:
+        for index, cell in enumerate(turn_cells):
+            if cell["kind"] == "inventory_method_lookup":
+                output: object = [
+                    {"type": "input_text", "text": "Script completed\nOutput:\n"},
+                    {"type": "input_text", "text": "undefined"},
+                ]
+            elif cell.get("proof") == "rob2_tool_names":
+                output = [
+                    {"type": "input_text", "text": "Script completed\nOutput:\n"},
+                    {"type": "input_text", "text": "[]"},
+                ]
+            else:
+                output = [
+                    {
+                        "type": "input_text",
+                        "text": 'Script completed\nOutput:\n[{"name":"apply_patch"}]',
+                    }
+                ]
+            add_exec_call(f"diagnostic-call-{index}", cell, output)
+    rollout_lines.append(
+        {
+            "type": "event_msg",
+            "timestamp": "2026-09-24T00:09:00Z",
+            "payload": {"type": "task_complete", "turn_id": proof_task_id},
+        }
+    )
+    rollout_path = codex_home / "rollout.jsonl"
+    rollout_path.write_text(
+        "\n".join(json.dumps(event) for event in rollout_lines) + "\n", encoding="utf-8"
+    )
+    rollout_bytes = rollout_path.read_bytes()
+    prefix_bytes = len(rollout_bytes)
+    sidecar = {
+        "schema": "rob2-kit.host-tools-infrastructure-recovery.v2",
+        "reason": "rob2_tools_unavailable",
+        "phase": 2,
+        "attempt_id": "attempt-1",
+        "codex_session_id": session_id,
+        "trace_sha256": trace_sha256,
+        "phase_meta_sha256": hashlib.sha256(phase_meta_path.read_bytes()).hexdigest(),
+        "phase_record_sha256": hashlib.sha256(
+            json.dumps(phase_record, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
+        "expected_result_sha256": expected_result_sha256,
+        "approved_scope_sha256": hashlib.sha256(approved_scope_path.read_bytes()).hexdigest(),
+        "workspace_status_projection": {
+            "phase": "assessment",
+            "state_revision": 17,
+            "continuation": {
+                "authority": "host",
+                "operation": "get_domain_context",
+                "trial_id": "trial-a",
+                "domain_id": "D1",
+            },
+        },
+        "codex_rollout": {
+            "path": "rollout.jsonl",
+            "sha256": hashlib.sha256(rollout_bytes).hexdigest(),
+            "turn_id": proof_task_id,
+            "byte_count": prefix_bytes,
+        },
+        "evidence_subtype": turn_record["evidence_subtype"],
+    }
+    sidecar_path = run_dir / "phase-2.infrastructure.json"
+    sidecar_path.write_text(json.dumps(sidecar), encoding="utf-8")
+
+    status = {
+        "outcome": "success",
+        "phase": "assessment",
+        "state_revision": 17,
+        "continuation": {
+            "authority": "host",
+            "operation": "get_domain_context",
+            "trial_id": "trial-a",
+            "domain_id": "D1",
+        },
+    }
+    monkeypatch.setattr(
+        contract["subprocess"],
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0, stdout=json.dumps(status), stderr=""
+        ),
+    )
+    import prepare_rsi_workspace
+
+    monkeypatch.setattr(
+        prepare_rsi_workspace,
+        "approved_scope_record",
+        lambda _workspace, _requested_scope: approved_scope,
+    )
+    return {
+        "contract": contract,
+        "run_dir": run_dir,
+        "execution": execution,
+        "phase_meta": phase_meta,
+        "sidecar": sidecar,
+        "sidecar_path": sidecar_path,
+        "rollout_path": rollout_path,
+        "status": status,
+    }
+
+
+def _rewrite_recovery_rollout(fixture: dict[str, Any], events: list[dict[str, Any]]) -> None:
+    rollout_path = fixture["rollout_path"]
+    rollout_path.write_text(
+        "\n".join(json.dumps(event) for event in events) + "\n", encoding="utf-8"
+    )
+    rollout_bytes = rollout_path.read_bytes()
+    sidecar = json.loads(fixture["sidecar_path"].read_text(encoding="utf-8"))
+    sidecar["codex_rollout"].update(
+        {
+            "byte_count": len(rollout_bytes),
+            "sha256": hashlib.sha256(rollout_bytes).hexdigest(),
+        }
+    )
+    fixture["sidecar_path"].write_text(json.dumps(sidecar), encoding="utf-8")
+
+
+def test_host_tools_recovery_accepts_one_hash_bound_phase_two_no_tool_turn(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+
+    assert (
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+            fixture["run_dir"], 2
+        )
+        is None
+    )
+
+
+def test_host_tools_recovery_accepts_required_status_binding_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(
+        tmp_path, monkeypatch, proof_case="status_only"
+    )
+
+    assert (
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+            fixture["run_dir"], 2
+        )
+        is None
+    )
+
+
+@pytest.mark.parametrize(
+    "inventory_output",
+    [
+        'Script completed\nOutput:\n["mcp__rob2__get_status"]',
+        "Script completed\nWarning: truncated output",
+    ],
+)
+def test_host_tools_recovery_accepts_populated_or_truncated_read_only_inventory_cases(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    inventory_output: str,
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    events = [
+        json.loads(line)
+        for line in fixture["rollout_path"].read_text(encoding="utf-8").splitlines()
+    ]
+    call = next(
+        event
+        for event in events
+        if event.get("payload", {}).get("type") == "custom_tool_call"
+        and event["payload"]["call_id"].startswith("inventory-call-")
+    )
+    call_id = call["payload"]["call_id"]
+    output = next(
+        event
+        for event in events
+        if event.get("payload", {}).get("type") == "custom_tool_call_output"
+        and event["payload"]["call_id"] == call_id
+    )
+    output["payload"]["output"] = inventory_output
+    _rewrite_recovery_rollout(fixture, events)
+
+    assert (
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+            fixture["run_dir"], 2
+        )
+        is None
+    )
+
+
+def test_host_tools_recovery_accepts_explicit_missing_registry_proof(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(
+        tmp_path, monkeypatch, proof_case="registry"
+    )
+
+    assert (
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+            fixture["run_dir"], 2
+        )
+        is None
+    )
+
+
+@pytest.mark.parametrize(
+    "inventory_output",
+    [
+        'Script completed\nOutput:\n["mcp__rob2__get_status"]',
+        "Script completed\nWarning: truncated output",
+    ],
+)
+def test_host_tools_recovery_rejects_nonempty_or_truncated_missing_registry_proof(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    inventory_output: str,
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(
+        tmp_path, monkeypatch, proof_case="registry"
+    )
+    events = [
+        json.loads(line)
+        for line in fixture["rollout_path"].read_text(encoding="utf-8").splitlines()
+    ]
+    allowlist = json.loads(
+        (SCRIPTS / "benchmark_recovery_exec_allowlist.json").read_text(encoding="utf-8")
+    )
+    proof_sha256 = next(
+        row["sha256"] for row in allowlist["cells"]
+        if row.get("proof") == "rob2_tool_names"
+    )
+    proof_source = next(
+        row["source"] for row in allowlist["cells"] if row["sha256"] == proof_sha256
+    )
+    call = next(
+        event
+        for event in events
+        if event.get("payload", {}).get("type") == "custom_tool_call"
+        and event["payload"].get("input") == proof_source
+    )
+    call_id = call["payload"]["call_id"]
+    output = next(
+        event
+        for event in events
+        if event.get("payload", {}).get("type") == "custom_tool_call_output"
+        and event["payload"]["call_id"] == call_id
+    )
+    output["payload"]["output"] = inventory_output
+    _rewrite_recovery_rollout(fixture, events)
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_rollout_mismatch"
+
+
+def test_host_tools_recovery_rejects_metadata_runtime_binding_drift(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    phase_meta_path = fixture["run_dir"] / "phase-2.meta.json"
+    phase_meta = json.loads(phase_meta_path.read_text(encoding="utf-8"))
+    phase_meta["runtime_inputs"]["codex_registered_mcp"]["command"] = "other-rob2"
+    phase_meta["runtime_inputs_sha256"] = hashlib.sha256(
+        json.dumps(
+            phase_meta["runtime_inputs"], sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
+    ).hexdigest()
+    phase_meta_path.write_text(json.dumps(phase_meta), encoding="utf-8")
+
+    sidecar = json.loads(fixture["sidecar_path"].read_text(encoding="utf-8"))
+    sidecar["phase_meta_sha256"] = hashlib.sha256(phase_meta_path.read_bytes()).hexdigest()
+    fixture["sidecar_path"].write_text(json.dumps(sidecar), encoding="utf-8")
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_runtime_mismatch"
+
+
+@pytest.mark.parametrize(
+    "field",
+    ["trace_sha256", "phase_meta_sha256", "phase_record_sha256", "expected_result_sha256"],
+)
+def test_host_tools_recovery_rejects_stale_identity_hashes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, field: str
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    sidecar = json.loads(fixture["sidecar_path"].read_text(encoding="utf-8"))
+    sidecar[field] = "f" * 64
+    fixture["sidecar_path"].write_text(json.dumps(sidecar), encoding="utf-8")
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] in {
+        "host_tools_recovery_binding_mismatch",
+        "host_tools_recovery_scope_mismatch",
+    }
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["execution_session", "phase1_session", "execution_attempt", "phase1_attempt"],
+)
+def test_host_tools_recovery_requires_phase_one_phase_two_and_execution_ids_to_agree(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mutation: str
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    execution_path = fixture["run_dir"] / "execution.json"
+    execution = json.loads(execution_path.read_text(encoding="utf-8"))
+    if mutation == "execution_session":
+        execution["codex_session_id"] = "different-session"
+    elif mutation == "execution_attempt":
+        execution["attempt_id"] = "different-attempt"
+    else:
+        key = "codex_session_id" if mutation == "phase1_session" else "attempt_id"
+        execution["phases"][0][key] = "different-value"
+    execution_path.write_text(json.dumps(execution), encoding="utf-8")
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_binding_mismatch"
+
+
+def test_host_tools_recovery_sidecar_is_only_valid_for_phase_two(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    sidecar = json.loads(fixture["sidecar_path"].read_text(encoding="utf-8"))
+    sidecar["phase"] = 1
+    (fixture["run_dir"] / "phase-1.infrastructure.json").write_text(
+        json.dumps(sidecar), encoding="utf-8"
+    )
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 1
+    )
+
+    assert diagnosis is not None
+
+
+def test_host_tools_recovery_rollout_session_meta_binds_the_selected_session(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    events = [
+        json.loads(line)
+        for line in fixture["rollout_path"].read_text(encoding="utf-8").splitlines()
+    ]
+    events[0]["payload"]["session_id"] = "different-session"
+    _rewrite_recovery_rollout(fixture, events)
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+
+
+def test_host_tools_recovery_rejects_arbitrary_exec_or_shell_mutation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    events = [
+        json.loads(line)
+        for line in fixture["rollout_path"].read_text(encoding="utf-8").splitlines()
+    ]
+    events.insert(
+        -1,
+        {
+            "type": "response_item",
+            "payload": {
+                "type": "custom_tool_call",
+                "name": "exec",
+                "call_id": "arbitrary-exec",
+                "input": 'tools.exec_command({cmd: "Get-Process"})',
+            },
+        },
+    )
+    _rewrite_recovery_rollout(fixture, events)
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+
+
+def test_host_tools_recovery_rejects_orphan_missing_function_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    events = [
+        json.loads(line)
+        for line in fixture["rollout_path"].read_text(encoding="utf-8").splitlines()
+    ]
+    error_event = next(
+        event
+        for event in events
+        if event.get("payload", {}).get("type") == "custom_tool_call_output"
+        and isinstance(event["payload"].get("output"), str)
+        and "TypeError: tools.mcp__rob2__" in event["payload"]["output"]
+    )
+    error_event["payload"]["call_id"] = "orphan-error"
+    _rewrite_recovery_rollout(fixture, events)
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+
+
+def test_host_tools_recovery_pairs_inventory_receipt_by_call_id(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    events = [
+        json.loads(line)
+        for line in fixture["rollout_path"].read_text(encoding="utf-8").splitlines()
+    ]
+    inventory_call = next(
+        event
+        for event in events
+        if event.get("payload", {}).get("type") == "custom_tool_call"
+        and event["payload"]["call_id"].startswith("inventory-call-")
+    )
+    inventory_call_id = inventory_call["payload"]["call_id"]
+    inventory_output = next(
+        event
+        for event in events
+        if event.get("payload", {}).get("type") == "custom_tool_call_output"
+        and event["payload"]["call_id"] == inventory_call_id
+    )
+    inventory_output["payload"]["call_id"] = "wrong-inventory-call"
+    _rewrite_recovery_rollout(fixture, events)
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+
+
+def test_host_tools_recovery_recomputes_the_exact_approved_scope(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    approved_scope_path = fixture["run_dir"] / "approved-scope.json"
+    approved_scope_path.write_text(
+        approved_scope_path.read_text(encoding="utf-8").replace(
+            '"sha256:result"', '"sha256:tampered"'
+        ),
+        encoding="utf-8",
+    )
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_approval_mismatch"
+
+
+def test_host_tools_recovery_rejects_proof_from_another_rollout_turn(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(
+        tmp_path, monkeypatch, proof_task_id="turn-other"
+    )
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_rollout_mismatch"
+
+
+def test_host_tools_recovery_rejects_rollout_prefix_tampering(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    sidecar = json.loads(fixture["sidecar_path"].read_text(encoding="utf-8"))
+    sidecar["codex_rollout"]["byte_count"] -= 1
+    fixture["sidecar_path"].write_text(json.dumps(sidecar), encoding="utf-8")
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_rollout_mismatch"
+
+
+def test_host_tools_recovery_rejects_current_status_revision_changes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    fixture["status"]["state_revision"] = 18
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_status_changed"
+
+
+@pytest.mark.parametrize("rollout_path", ["..\\outside.jsonl", "C:outside.jsonl"])
+def test_host_tools_recovery_rejects_windows_escape_paths(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, rollout_path: str
+) -> None:
+    if os.name != "nt":
+        pytest.skip("Windows path semantics are required for this guard")
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    sidecar = json.loads(fixture["sidecar_path"].read_text(encoding="utf-8"))
+    sidecar["codex_rollout"]["path"] = rollout_path
+    fixture["sidecar_path"].write_text(json.dumps(sidecar), encoding="utf-8")
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_rollout_invalid"
+
+
+def test_host_tools_recovery_rejects_rollout_symlink_escape(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
+    outside = tmp_path / "outside-rollout.jsonl"
+    outside.write_bytes(fixture["rollout_path"].read_bytes())
+    link = fixture["rollout_path"].with_name("rollout-link.jsonl")
+    try:
+        link.symlink_to(outside)
+    except OSError:
+        pytest.skip("The test host does not permit creating symlinks")
+    sidecar = json.loads(fixture["sidecar_path"].read_text(encoding="utf-8"))
+    sidecar["codex_rollout"]["path"] = link.name
+    fixture["sidecar_path"].write_text(json.dumps(sidecar), encoding="utf-8")
+
+    diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
+        fixture["run_dir"], 2
+    )
+
+    assert diagnosis is not None
+    assert diagnosis["code"] == "host_tools_recovery_rollout_invalid"
+
+
 def test_tools_list_preflight_checks_schemas_and_metadata(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    contract, inventory = _probe_inventory(tmp_path, monkeypatch)
+    contract, inventory, process = _probe_inventory(tmp_path, monkeypatch)
 
     assert inventory["status"] == "verified"
     assert inventory["source"] == "stdio tools/list"
     assert inventory["tool_count"] == len(contract["public_tool_inventory"]())
     assert inventory["server_info"]["name"] == "rob2"
+    assert process.stdin.closed
+    assert len(process.stdin.writes) == 2
+    assert json.loads(process.stdin.writes[0])["method"] == "initialize"
+    assert [json.loads(line)["method"] for line in process.stdin.writes[1].splitlines()] == [
+        "notifications/initialized",
+        "tools/list",
+    ]
 
     payload = _tools_list_response()
     status = next(item for item in payload["tools"] if item["name"] == "get_status")
@@ -652,10 +1720,8 @@ def test_tools_list_preflight_checks_schemas_and_metadata(
     )
     monkeypatch.setattr(
         contract["subprocess"],
-        "run",
-        lambda *_args, **_kwargs: SimpleNamespace(
-            returncode=0, stdout=altered_stdout, stderr=""
-        ),
+        "Popen",
+        lambda *_args, **_kwargs: _FakePreflightProcess(altered_stdout),
     )
     with pytest.raises(ValueError, match="get_status.schema_sha256"):
         contract["probe_server_advertised_inventory"](
@@ -668,7 +1734,7 @@ def test_continuation_requires_matching_server_preflight_not_a_jsonl_event(
 ) -> None:
     phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
     runner = _runner()
-    _contract, inventory = _probe_inventory(tmp_path, monkeypatch)
+    _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
     expected = tuple(runner["EXPECTED_TOOL_INVENTORY"])
     trace = tmp_path / "phase-1.jsonl"
     trace.write_text(
@@ -700,7 +1766,7 @@ def test_continuation_requires_hash_bound_same_session_typed_calls(
 ) -> None:
     phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
     runner = _runner()
-    _contract, inventory = _probe_inventory(tmp_path, monkeypatch)
+    _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
     _write_frozen_inventory(tmp_path, inventory, tuple(runner["EXPECTED_TOOL_INVENTORY"]))
 
     trace = tmp_path / "phase-1.jsonl"
@@ -908,6 +1974,89 @@ def test_phase_runner_passes_declared_timeout_to_case_launcher(
     assert result["exit_code"] == 0
 
 
+def test_phase_runner_passes_build_transition_options_to_case_launcher(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+    prompt = tmp_path / "prompt.txt"
+    prompt.write_text("Continue.", encoding="utf-8")
+    run_dir = tmp_path / "run"
+    (run_dir / "execution.json").parent.mkdir(parents=True)
+    (run_dir / "execution.json").write_text(
+        json.dumps({"runtime_inputs": {"host_isolation_required": False}}),
+        encoding="utf-8",
+    )
+    captured: dict[str, Any] = {}
+
+    def fake_run(command: list[str], **_kwargs: Any) -> SimpleNamespace:
+        captured["command"] = command
+        return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+
+    monkeypatch.setattr(
+        phase_runner["_run_one"].__globals__["subprocess"], "run", fake_run
+    )
+    monkeypatch.setitem(
+        phase_runner["_run_one"].__globals__, "_continuation_diagnosis", lambda *_args: None
+    )
+    monkeypatch.setitem(
+        phase_runner["_run_one"].__globals__, "_session_id", lambda *_args: "session-1"
+    )
+    result = phase_runner["_run_one"](
+        Path(__file__).parents[1],
+        {"outcome": "Overall Survival", "trial": "Trial-A", "run_dir": str(run_dir)},
+        2,
+        prompt,
+        model="gpt-6-luna",
+        effort="medium",
+        manifest_model="gpt-6-luna",
+        manifest_effort="medium",
+        require_isolated_host=False,
+        allow_build_only_transition=True,
+        build_transition_reason="Continue after the runner build update.",
+    )
+
+    command = captured["command"]
+    assert "--allow-build-only-transition" in command
+    assert command[command.index("--build-transition-reason") + 1] == (
+        "Continue after the runner build update."
+    )
+    assert result["exit_code"] == 0
+
+
+def test_phase_runner_validates_and_reports_excluded_cases() -> None:
+    phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+    parse = phase_runner["_parse_excluded_cases"]
+    parse_included = phase_runner["_parse_included_cases"]
+    cases = [
+        {"outcome": "Overall Survival", "trial": "Trial-A"},
+        {"outcome": "Adverse Events", "trial": "Trial-B"},
+    ]
+
+    selected, excluded = parse([" adverse events:trial-b "], cases)
+
+    assert selected == {("adverse events", "trial-b")}
+    assert excluded == [{"outcome": "Adverse Events", "trial": "Trial-B"}]
+    with pytest.raises(SystemExit, match="expected OUTCOME:TRIAL"):
+        parse(["Overall Survival"], cases)
+    with pytest.raises(SystemExit, match="not present"):
+        parse(["Overall Survival:Trial-C"], cases)
+    with pytest.raises(SystemExit, match="duplicate"):
+        parse(["Overall Survival:Trial-A", "overall survival:trial-a"], cases)
+
+    included, selected = parse_included(
+        ["adverse events:trial-b", "Overall Survival:Trial-A"], cases
+    )
+    assert included == {("adverse events", "trial-b"), ("overall survival", "trial-a")}
+    assert selected == [
+        {"outcome": "Adverse Events", "trial": "Trial-B"},
+        {"outcome": "Overall Survival", "trial": "Trial-A"},
+    ]
+    with pytest.raises(SystemExit, match="requires at least one"):
+        parse_included([], cases)
+    with pytest.raises(SystemExit, match="duplicate"):
+        parse_included(["Overall Survival:Trial-A", "overall survival:trial-a"], cases)
+
+
 def test_phase_launcher_binds_strict_mode_and_index_digest(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1092,6 +2241,252 @@ def test_host_delivery_observation_is_same_session_and_distinct_from_inventory(
     assert contract["host_delivery_observed"](trace, "different-session")["status"] == "unavailable"
 
 
+def test_host_delivery_accepts_typed_receipt_status_head_without_get_status(
+    tmp_path: Path,
+) -> None:
+    contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
+    trace = tmp_path / "typed-only.jsonl"
+    trace.write_text(
+        "\n".join(
+            (
+                json.dumps({"type": "thread.started", "thread_id": "session-1"}),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "save_proposal",
+                            "arguments": {"trial_id": "trial-a"},
+                            "status": "completed",
+                            "error": None,
+                            "result": {
+                                "structured_content": {
+                                    "head": {
+                                        "phase": "proposal",
+                                        "state_revision": 4,
+                                        "next_action": {"operation": "request_proposal_approval"},
+                                    }
+                                }
+                            },
+                        },
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    observed = contract["host_delivery_observed"](trace, "session-1")
+    diagnosis = contract["host_delivery_diagnosis"](
+        trace,
+        expected_sha256=hashlib.sha256(trace.read_bytes()).hexdigest(),
+        expected_session="session-1",
+    )
+
+    assert observed["get_status_call"] is False
+    assert observed["typed_call"] is True
+    assert observed["status_head_observed"] is True
+    assert diagnosis is None
+
+
+def test_host_delivery_does_not_combine_status_head_with_a_different_typed_event(
+    tmp_path: Path,
+) -> None:
+    contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
+    valid_head = {
+        "phase": "proposal",
+        "state_revision": 4,
+        "next_action": {"operation": "request_proposal_approval"},
+    }
+    trace = tmp_path / "mixed-evidence.jsonl"
+    trace.write_text(
+        "\n".join(
+            (
+                json.dumps({"type": "thread.started", "thread_id": "session-1"}),
+                # A completed result with a head is not typed without arguments.
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "save_proposal",
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {"head": valid_head}},
+                        },
+                    }
+                ),
+                # A failed result with a head must not contribute evidence.
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "validate_proposal",
+                            "arguments": {"trial_id": "trial-a"},
+                            "status": "failed",
+                            "error": {"message": "validation failed"},
+                            "result": {"structured_content": {"head": valid_head}},
+                        },
+                    }
+                ),
+                # This is typed, but lacks a status head.
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "search_sources",
+                            "arguments": {"query": "randomized"},
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {"outcome": "success"}},
+                        },
+                    }
+                ),
+                # An incomplete event with a head must not contribute evidence.
+                json.dumps(
+                    {
+                        "type": "item.started",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "read_pages",
+                            "arguments": {"page": 1},
+                            "status": "in_progress",
+                            "result": {"structured_content": {"head": valid_head}},
+                        },
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    observed = contract["host_delivery_observed"](trace, "session-1")
+    diagnosis = contract["host_delivery_diagnosis"](
+        trace,
+        expected_sha256=hashlib.sha256(trace.read_bytes()).hexdigest(),
+        expected_session="session-1",
+    )
+
+    assert observed["typed_call"] is True
+    assert observed["status_head_observed"] is False
+    assert diagnosis["code"] == "host_delivery_call_missing"
+
+
+@pytest.mark.parametrize(
+    "head",
+    [
+        None,
+        {"phase": "proposal", "state_revision": True, "next_action": {}},
+        {"phase": "proposal", "state_revision": 4},
+        {"phase": "proposal", "state_revision": 4, "next_action": []},
+    ],
+)
+def test_host_delivery_blocks_typed_receipt_without_valid_status_head(
+    tmp_path: Path, head: object
+) -> None:
+    contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
+    trace = tmp_path / "invalid-head.jsonl"
+    trace.write_text(
+        "\n".join(
+            (
+                json.dumps({"type": "thread.started", "thread_id": "session-1"}),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "save_proposal",
+                            "arguments": {"trial_id": "trial-a"},
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {"head": head}},
+                        },
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    observed = contract["host_delivery_observed"](trace, "session-1")
+    diagnosis = contract["host_delivery_diagnosis"](
+        trace,
+        expected_sha256=hashlib.sha256(trace.read_bytes()).hexdigest(),
+        expected_session="session-1",
+    )
+
+    assert observed["typed_call"] is True
+    assert observed["status_head_observed"] is False
+    assert diagnosis["code"] == "host_delivery_call_missing"
+    assert "valid status head" in diagnosis["detail"]
+
+
+def test_host_delivery_accepts_completed_get_status_without_status_head(
+    tmp_path: Path,
+) -> None:
+    contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
+    trace = tmp_path / "get-status.jsonl"
+    trace.write_text(
+        "\n".join(
+            (
+                json.dumps({"type": "thread.started", "thread_id": "session-1"}),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "get_status",
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {"outcome": "success"}},
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "search_sources",
+                            "arguments": {"query": "randomized"},
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {"outcome": "success"}},
+                        },
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    observed = contract["host_delivery_observed"](trace, "session-1")
+    diagnosis = contract["host_delivery_diagnosis"](
+        trace,
+        expected_sha256=hashlib.sha256(trace.read_bytes()).hexdigest(),
+        expected_session="session-1",
+    )
+
+    assert observed["get_status_call"] is True
+    assert observed["typed_call"] is True
+    assert observed["status_head_observed"] is False
+    assert diagnosis is None
+
+
 @pytest.mark.parametrize(
     "session_event",
     [
@@ -1110,7 +2505,7 @@ def test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls(
 ) -> None:
     phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
     runner = _runner()
-    _contract, inventory = _probe_inventory(tmp_path, monkeypatch)
+    _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
     _write_frozen_inventory(
         tmp_path,
         inventory,
@@ -1346,6 +2741,134 @@ def test_continuation_rejects_changed_runtime_inputs(tmp_path: Path) -> None:
             phase=2,
             session="authoritative-session",
             runtime_inputs=changed_runtime,
+        )
+    runner["_release_execution_lock"](run_dir)
+
+
+def test_continuation_allows_explicit_build_only_transition_and_preserves_phase_provenance(
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    run_dir = tmp_path / "campaign" / "outcome" / "Trial-A"
+    prompt = tmp_path / "prompt.txt"
+    case = tmp_path / "case.json"
+    prompt.write_text("prompt", encoding="utf-8")
+    case.write_text("{}", encoding="utf-8")
+    inputs = {
+        "trial": "Trial-A",
+        "requested_outcome": "Overall Survival",
+        "expected_result": {"trial": "Trial-A", "estimate": "HR 0.75"},
+    }
+    identity = runner["_execution_identity"](run_dir, inputs)
+    first_runtime = {
+        "build_sha256": "build-a",
+        "skill_sha256": "skill-a",
+        "pack": "pack-a",
+        "contract": "contract-a",
+        "host": {"platform": "test", "os_name": "test"},
+        "expected_tool_inventory": ["get_status"],
+    }
+    runner["_load_or_create_execution"](
+        run_dir,
+        identity,
+        run_inputs=inputs,
+        case_file=case,
+        prompt_file=prompt,
+        phase=1,
+        session=None,
+        runtime_inputs=first_runtime,
+    )
+    (run_dir / "phase-1.jsonl").write_text(
+        json.dumps({"type": "thread.started", "thread_id": "authoritative-session"})
+        + "\n",
+        encoding="utf-8",
+    )
+    record = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
+    record["state"] = "resumable"
+    runner["_atomic_json"](run_dir / "execution.json", record)
+    runner["_release_execution_lock"](run_dir)
+
+    second_runtime = {**first_runtime, "build_sha256": "build-b"}
+    resumed = runner["_load_or_create_execution"](
+        run_dir,
+        identity,
+        run_inputs=inputs,
+        case_file=case,
+        prompt_file=prompt,
+        phase=2,
+        session="authoritative-session",
+        runtime_inputs=second_runtime,
+        allow_build_only_transition=True,
+        build_transition_reason="Continue the pending correction after the runner build update.",
+    )
+
+    old_phase = resumed["phases"][0]
+    new_phase = resumed["phases"][1]
+    assert old_phase["runtime_inputs"] == first_runtime
+    assert old_phase["runtime_inputs_sha256"] == runner["_json_sha256"](first_runtime)
+    assert new_phase["runtime_inputs"] == second_runtime
+    assert resumed["runtime_inputs"] == second_runtime
+    transition = new_phase["runtime_transition"]
+    assert transition == {
+        "kind": "build_sha256_only",
+        "old_build_sha256": "build-a",
+        "new_build_sha256": "build-b",
+        "reason": "Continue the pending correction after the runner build update.",
+        "prior_runtime_inputs_sha256": runner["_json_sha256"](first_runtime),
+        "prior_phase_runtime_inputs_sha256": runner["_json_sha256"](first_runtime),
+        "new_runtime_inputs_sha256": runner["_json_sha256"](second_runtime),
+    }
+    runner["_release_execution_lock"](run_dir)
+
+
+def test_continuation_build_transition_rejects_other_runtime_drift_with_keys(
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    run_dir = tmp_path / "campaign" / "outcome" / "Trial-A"
+    prompt = tmp_path / "prompt.txt"
+    case = tmp_path / "case.json"
+    prompt.write_text("prompt", encoding="utf-8")
+    case.write_text("{}", encoding="utf-8")
+    inputs = {"trial": "Trial-A", "requested_outcome": "Overall Survival"}
+    identity = runner["_execution_identity"](run_dir, inputs)
+    runtime = {
+        "build_sha256": "build-a",
+        "pack": "pack-a",
+        "contract": "contract-a",
+    }
+    runner["_load_or_create_execution"](
+        run_dir,
+        identity,
+        run_inputs=inputs,
+        case_file=case,
+        prompt_file=prompt,
+        phase=1,
+        session=None,
+        runtime_inputs=runtime,
+    )
+    (run_dir / "phase-1.jsonl").write_text(
+        json.dumps({"type": "thread.started", "thread_id": "authoritative-session"})
+        + "\n",
+        encoding="utf-8",
+    )
+    record = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
+    record["state"] = "resumable"
+    runner["_atomic_json"](run_dir / "execution.json", record)
+    runner["_release_execution_lock"](run_dir)
+
+    with pytest.raises(ValueError, match="changed keys: build_sha256, pack"):
+        runner["_load_or_create_execution"](
+            run_dir,
+            identity,
+            run_inputs=inputs,
+            case_file=case,
+            prompt_file=prompt,
+            phase=2,
+            session="authoritative-session",
+            runtime_inputs={**runtime, "build_sha256": "build-b", "pack": "pack-b"},
+            allow_build_only_transition=True,
+            build_transition_reason="A build update was observed.",
         )
     runner["_release_execution_lock"](run_dir)
 

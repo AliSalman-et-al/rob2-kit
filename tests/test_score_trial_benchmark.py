@@ -7,6 +7,8 @@ import sys
 import zipfile
 from pathlib import Path
 
+import pytest
+
 SCRIPTS = Path(__file__).parents[1] / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
@@ -15,6 +17,7 @@ _scorer = runpy.run_path(str(SCRIPTS / "score_trial_benchmark.py"))
 _result_dimensions = _scorer["_result_dimensions"]
 _result_mismatches = _scorer["_result_mismatches"]
 score = _scorer["score"]
+render_markdown = _scorer["render_markdown"]
 
 def _write_reference(root: Path) -> None:
     catalog = root / "catalog"
@@ -157,6 +160,9 @@ def test_score_keeps_legacy_case_unscored_and_excludes_unfinished_cases(tmp_path
         "manifest_rows": 2,
         "finalized_scored_cases": 0,
         "finalized_domain_cells": 0,
+        "sensitivity_scored_cases": 0,
+        "sensitivity_domain_cells": 0,
+        "scope_difference_cases": 0,
         "excluded_cases": 2,
     }
 
@@ -456,6 +462,123 @@ def test_result_scope_rejects_changed_group_bound_values() -> None:
     mismatches = _result_mismatches(expected, _result_dimensions(result, "trial-a"), "trial-a")
 
     assert [item["field"] for item in mismatches] == ["reported_scope"]
+
+
+def test_result_scope_accepts_trial_name_case_difference_only() -> None:
+    result = {
+        "trial_id": "peace-1",
+        "target": {
+            "comparison_groups": [{"id": "A"}, {"id": "B"}],
+            "outcome_definition": "death from any cause",
+            "intended_analysis_population": "all randomized participants",
+            "time_point_or_window": "follow-up",
+        },
+        "reported": {
+            "form": "comparative_effect",
+            "analysis_population": "all randomized participants",
+            "endpoint": {"name": "overall survival"},
+            "effect_measure": "HR",
+            "estimate": "0.82",
+            "precision": "95% CI 0.69 to 0.98",
+            "group_values": [],
+        },
+    }
+    observed = _result_dimensions(result, "PEACE-1")
+    expected = {**observed, "trial": "PEACE-1"}
+
+    assert _result_mismatches(expected, observed, "PEACE-1") == []
+
+
+def test_score_keeps_scope_difference_out_of_primary_and_adds_it_to_sensitivity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    expected = _expected_result()
+    _write_reference(tmp_path / "reference")
+    labels = {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns",
+    }
+    monkeypatch.setitem(
+        score.__globals__,
+        "_load_reference",
+        lambda _root: {("Overall Survival", "GETUG-AFU-15"): labels},
+    )
+    adjudication = {
+        "outcome": "Overall Survival",
+        "trial": "GETUG-AFU-15",
+        "expected_result_sha256": "0" * 64,
+        "review_identity": "review-1",
+        "result_identity": "result-1",
+        "observed_relation": "broader",
+        "decision": "accepted_with_scope_difference",
+        "rationale": "The broader endpoint is retained for sensitivity analysis.",
+        "source_citation": "Main article, p. 1.",
+    }
+    bundles = [
+        {"observed": labels, "bundle": "exact.rob2.zip", "scope_adjudication": None},
+        {
+            "observed": labels,
+            "bundle": "broader.rob2.zip",
+            "scope_adjudication": adjudication,
+        },
+    ]
+
+    def fake_bundle(*_args, **_kwargs):
+        return bundles.pop(0), None
+
+    monkeypatch.setitem(score.__globals__, "_bundle_snapshot", fake_bundle)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.benchmark-manifest.v2",
+                "rows": [
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "run_dir": str(tmp_path / "exact"),
+                        "primary_status": "primary",
+                        "expected_result": expected,
+                    },
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "run_dir": str(tmp_path / "broader"),
+                        "primary_status": "primary",
+                        "expected_result": expected,
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = score(manifest, tmp_path / "reference")
+
+    assert result["scope"]["finalized_scored_cases"] == 1
+    assert result["scope"]["sensitivity_scored_cases"] == 2
+    assert result["scope"]["scope_difference_cases"] == 1
+    assert result["pooled"]["case_count"] == 1
+    assert result["sensitivity"]["pooled"]["case_count"] == 2
+    assert result["sensitivity"]["pooled"]["domain_cells"] == 10
+    assert result["sensitivity"]["by_outcome"]["Overall Survival"]["case_count"] == 2
+    assert result["sensitivity"]["by_domain"]["D1"]["exact"]["total"] == 2
+    assert (
+        result["sensitivity"]["by_outcome_domain"]["Overall Survival"]["D1"]["exact"]["total"]
+        == 2
+    )
+    assert result["sensitivity"]["by_primary_status"]["primary"]["case_count"] == 2
+    assert (
+        result["scope_difference_cases"][0]["scope_adjudication"]["decision"]
+        == "accepted_with_scope_difference"
+    )
+    markdown = render_markdown(result)
+    assert "Scope-difference sensitivity" in markdown
+    assert "accepted_with_scope_difference" in markdown
 
 
 def test_legacy_manifest_row_without_expected_result_is_visible_and_unscored(

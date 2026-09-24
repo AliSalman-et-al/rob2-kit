@@ -13,7 +13,16 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from benchmark_contract import artifact_manifest_identity, missing_result_scope_dimensions
+from benchmark_contract import (
+    artifact_manifest_identity,
+    missing_result_scope_dimensions,
+    validate_completion_reconciliation,
+)
+from benchmark_scope_adjudication import (
+    expected_result_sha256,
+    load_scope_adjudications,
+    matching_scope_adjudication,
+)
 from verify_bundle import verify as verify_bundle_independently
 
 from rob2_kit.application._state import _identity as _canonical_identity
@@ -220,14 +229,24 @@ def _result_mismatches(
     expected_fields = _expected_dimensions(expected, trial)
     mismatches = []
     for field in RESULT_FIELDS:
-        if expected_fields[field] is _MISSING or expected_fields[field] != observed.get(field):
+        expected_value = expected_fields[field]
+        observed_value = observed.get(field)
+        equivalent_trial_id = (
+            field == "trial"
+            and expected_value is not _MISSING
+            and _norm_identity(expected_value) == _norm_identity(observed_value)
+        )
+        if (
+            expected_value is _MISSING
+            or (expected_value != observed_value and not equivalent_trial_id)
+        ):
             mismatches.append(
                 {
                     "field": field,
                     "expected": (
-                        None if expected_fields[field] is _MISSING else expected_fields[field]
+                        None if expected_value is _MISSING else expected_value
                     ),
-                    "observed": observed.get(field),
+                    "observed": observed_value,
                 }
             )
     return mismatches
@@ -271,33 +290,83 @@ def _scope_mismatch_failure(mismatches: list[dict[str, Any]]) -> _SnapshotFailur
     )
 
 
+def _validated_completion_reconciliation(
+    run_dir: Path,
+    execution: dict[str, Any],
+    expected_result: dict[str, Any] | None,
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    try:
+        record, artifact_path = validate_completion_reconciliation(run_dir)
+    except ValueError:
+        return None
+    selection = execution.get("selection_policy")
+    selected_attempt_id = (
+        selection.get("selected_attempt_id") if isinstance(selection, dict) else None
+    )
+    if (
+        execution.get("state") != "failed_infrastructure"
+        or not isinstance(selected_attempt_id, str)
+        or record.get("attempt_id") != selected_attempt_id
+    ):
+        return None
+    if expected_result is not None and record.get("expected_result_sha256") != expected_result_sha256(
+        expected_result
+    ):
+        return None
+    try:
+        relative_artifact_path = artifact_path.resolve().relative_to(run_dir.resolve())
+    except ValueError:
+        return None
+    artifact = record.get("artifact")
+    if not isinstance(artifact, dict):
+        return None
+    return record, {
+        "attempt_id": record["attempt_id"],
+        "identity": artifact.get("identity"),
+        "path": str(relative_artifact_path),
+        "sha256": artifact.get("sha256"),
+        "verified": record.get("verification") == {"verified": True},
+    }
+
+
 def _bundle_snapshot(
     run_dir: Path,
     *,
+    execution_snapshot: dict[str, Any] | None = None,
+    completion_reconciliation: tuple[dict[str, Any], dict[str, Any]] | None = None,
     expected_result: dict[str, Any] | None = None,
     expected_trial: str | None = None,
+    expected_outcome: str | None = None,
+    scope_adjudications: list[dict[str, Any]] | None = None,
     require_attempt_history: bool = False,
     require_independent_verification: bool = False,
 ) -> tuple[dict[str, Any] | None, str | None]:
     execution_path = run_dir / "execution.json"
     if not execution_path.exists():
         return None, "missing execution.json"
-    execution = json.loads(execution_path.read_text(encoding="utf-8"))
+    execution = (
+        execution_snapshot
+        if execution_snapshot is not None
+        else json.loads(execution_path.read_text(encoding="utf-8"))
+    )
     if execution.get("state") != "succeeded":
-        phases = execution.get("phases") or []
-        last_phase = phases[-1] if phases else {}
-        state = execution.get("state", "unknown")
-        detail = last_phase.get("state") if isinstance(last_phase, dict) else None
-        return None, f"execution state={state}" + (f", last phase={detail}" if detail else "")
-    artifact = execution.get("artifact")
+        if (
+            execution.get("state") == "failed_infrastructure"
+            and completion_reconciliation is not None
+        ):
+            artifact = completion_reconciliation[1]
+        else:
+            phases = execution.get("phases") or []
+            last_phase = phases[-1] if phases else {}
+            state = execution.get("state", "unknown")
+            detail = last_phase.get("state") if isinstance(last_phase, dict) else None
+            return None, f"execution state={state}" + (f", last phase={detail}" if detail else "")
+    else:
+        artifact = execution.get("artifact")
     authoritative = execution.get("schema") == "rob2-kit.rsi-execution.v1" or artifact is not None
     selected_attempt_id = None
     expected_result_hash = (
-        hashlib.sha256(
-            json.dumps(expected_result, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        ).hexdigest()
-        if expected_result is not None
-        else None
+        expected_result_sha256(expected_result) if expected_result is not None else None
     )
     qualified_attempts = isinstance(execution.get("attempts"), list)
     if authoritative and isinstance(execution.get("attempts"), list):
@@ -395,7 +464,37 @@ def _bundle_snapshot(
             expected_result, observed_result, expected_trial or trial_key
         )
         if mismatches:
-            return None, _scope_mismatch_failure(mismatches)
+            proposal_review = canonical.get("proposal_review")
+            acknowledgment = canonical.get("proposal_acknowledgment")
+            review_identity = (
+                proposal_review.get("identity") if isinstance(proposal_review, dict) else None
+            )
+            acknowledged_review_identity = (
+                acknowledgment.get("review_identity")
+                if isinstance(acknowledgment, dict)
+                else None
+            )
+            result_identity = _canonical_identity(result)
+            adjudication = (
+                matching_scope_adjudication(
+                    scope_adjudications or [],
+                    outcome=expected_outcome or "",
+                    trial=expected_trial or trial_key,
+                    expected_result=expected_result,
+                    review_identity=review_identity,
+                    result_identity=result_identity,
+                    relation=result.get("relation"),
+                )
+                if review_identity == acknowledged_review_identity
+                and result_identity == snapshot_result_identity
+                else None
+            )
+            if adjudication is None:
+                return None, _scope_mismatch_failure(mismatches)
+        else:
+            adjudication = None
+    else:
+        adjudication = None
     if (
         require_attempt_history
         and authoritative
@@ -426,6 +525,15 @@ def _bundle_snapshot(
     return {
         "observed": observed,
         "bundle": str(bundles[0]),
+        **(
+            {
+                "completion": "reconciled",
+                "completion_reconciliation_phase": completion_reconciliation[0].get("phase"),
+            }
+            if completion_reconciliation is not None
+            else {}
+        ),
+        "scope_adjudication": adjudication,
         "result": _result_dimensions(result, expected_trial or trial_key)
         if isinstance(result, dict)
         else None,
@@ -464,13 +572,51 @@ def _group(rows: list[dict[str, Any]], *, include_overall: bool = False) -> dict
     }
 
 
-def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
+def _aggregates(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build the common pooled and stratified aggregates for one case set."""
+
+    by_outcome = {
+        outcome: _group(
+            [row for row in rows if row["outcome"] == outcome], include_overall=True
+        )
+        for outcome in sorted({row["outcome"] for row in rows})
+    }
+    by_domain = {domain: _score(rows, domain) for domain in DOMAINS}
+    by_role = {
+        role: _group(
+            [row for row in rows if row["primary_status"] == role], include_overall=True
+        )
+        for role in ("primary", "secondary")
+    }
+    by_outcome_domain = {
+        outcome: {
+            domain: _score([row for row in rows if row["outcome"] == outcome], domain)
+            for domain in DOMAINS
+        }
+        for outcome in sorted({row["outcome"] for row in rows})
+    }
+    return {
+        "pooled": _group(rows, include_overall=True),
+        "by_outcome": by_outcome,
+        "by_domain": by_domain,
+        "by_outcome_domain": by_outcome_domain,
+        "by_primary_status": by_role,
+    }
+
+
+def score(
+    manifest_path: Path,
+    reference_root: Path,
+    scope_adjudications_path: Path | None = None,
+) -> dict[str, Any]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     rows = manifest.get("rows")
     if not isinstance(rows, list):
         raise ValueError("manifest rows must be a list")
     references = _load_reference(reference_root)
+    scope_adjudications = load_scope_adjudications(scope_adjudications_path)
     scored: list[dict[str, Any]] = []
+    scope_difference_scored: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
     hard_failures: list[dict[str, Any]] = []
     for item in rows:
@@ -551,10 +697,29 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
             )
             continue
         run_dir = Path(item["run_dir"])
+        execution_snapshot: dict[str, Any] | None = None
+        execution_path = run_dir / "execution.json"
+        if execution_path.is_file():
+            try:
+                loaded_execution = json.loads(execution_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                loaded_execution = None
+            if isinstance(loaded_execution, dict):
+                execution_snapshot = loaded_execution
+        completion_reconciliation = (
+            _validated_completion_reconciliation(run_dir, execution_snapshot, expected_result)
+            if isinstance(execution_snapshot, dict)
+            and execution_snapshot.get("state") == "failed_infrastructure"
+            else None
+        )
         bundle, reason = _bundle_snapshot(
             run_dir,
+            execution_snapshot=execution_snapshot,
+            completion_reconciliation=completion_reconciliation,
             expected_result=expected_result,
             expected_trial=trial,
+            expected_outcome=outcome,
+            scope_adjudications=scope_adjudications,
             require_attempt_history=(
                 manifest.get("schema") == "rob2-kit.trial-benchmark-manifest.v3"
             ),
@@ -575,15 +740,14 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
                 }
             excluded.append(exclusion)
             if isinstance(item.get("expected_result"), dict):
-                try:
-                    execution_path = Path(item["run_dir"]) / "execution.json"
-                    execution = json.loads(execution_path.read_text(encoding="utf-8"))
-                except (OSError, json.JSONDecodeError, TypeError):
-                    execution = {}
+                execution = execution_snapshot if isinstance(execution_snapshot, dict) else {}
                 if (
                     isinstance(execution, dict)
                     and execution.get("schema") == "rob2-kit.rsi-execution.v1"
-                    and execution.get("state") == "succeeded"
+                    and (
+                        execution.get("state") == "succeeded"
+                        or completion_reconciliation is not None
+                    )
                     and (
                         isinstance(execution.get("attempts"), list)
                         or manifest.get("schema") != "rob2-kit.benchmark-manifest.v2"
@@ -597,36 +761,49 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
                     hard_failures.append(hard_failure)
             continue
         expected = references[(outcome, trial)]
-        scored.append(
-            {
-                "outcome": outcome,
-                "trial": trial,
-                "primary_status": item.get("primary_status"),
-                "role": item.get("role"),
-                "expected": expected,
-                "observed": bundle["observed"],
-                "bundle": bundle["bundle"],
-                "result": bundle.get("result"),
-                "result_scope": "matched",
-            }
-        )
-
-    by_outcome = {
-        outcome: _group([row for row in scored if row["outcome"] == outcome], include_overall=True)
-        for outcome in sorted({row["outcome"] for row in scored})
-    }
-    by_domain = {domain: _score(scored, domain) for domain in DOMAINS}
-    by_role = {
-        role: _group([row for row in scored if row["primary_status"] == role], include_overall=True)
-        for role in ("primary", "secondary")
-    }
-    by_outcome_domain = {
-        outcome: {
-            domain: _score([row for row in scored if row["outcome"] == outcome], domain)
-            for domain in DOMAINS
+        adjudication = bundle.get("scope_adjudication")
+        case = {
+            "outcome": outcome,
+            "trial": trial,
+            "primary_status": item.get("primary_status"),
+            "role": item.get("role"),
+            **(
+                {
+                    "completion": bundle["completion"],
+                    "completion_reconciliation_phase": bundle[
+                        "completion_reconciliation_phase"
+                    ],
+                }
+                if bundle.get("completion") == "reconciled"
+                else {}
+            ),
+            "expected": expected,
+            "observed": bundle["observed"],
+            "bundle": bundle["bundle"],
+            **(
+                {"scope_adjudication": adjudication}
+                if adjudication is not None
+                else {}
+            ),
+            "result": bundle.get("result"),
+            "result_scope": (
+                "accepted_with_scope_difference"
+                if isinstance(adjudication, dict)
+                and adjudication.get("decision") == "accepted_with_scope_difference"
+                else "matched"
+            ),
         }
-        for outcome in sorted({row["outcome"] for row in scored})
-    }
+        if (
+            isinstance(adjudication, dict)
+            and adjudication.get("decision") == "accepted_with_scope_difference"
+        ):
+            scope_difference_scored.append(case)
+        else:
+            scored.append(case)
+
+    primary_aggregates = _aggregates(scored)
+    sensitivity_cases = [*scored, *scope_difference_scored]
+    sensitivity_aggregates = _aggregates(sensitivity_cases)
     return {
         "schema": "rob2-kit.trial-benchmark-score.v1",
         "manifest": str(manifest_path),
@@ -640,16 +817,20 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
             "manifest_rows": len(rows),
             "finalized_scored_cases": len(scored),
             "finalized_domain_cells": len(scored) * len(DOMAINS),
+            "sensitivity_scored_cases": len(sensitivity_cases),
+            "sensitivity_domain_cells": len(sensitivity_cases) * len(DOMAINS),
+            "scope_difference_cases": len(scope_difference_scored),
             "excluded_cases": len(excluded),
         },
-        "pooled": _group(scored, include_overall=True),
-        "by_outcome": by_outcome,
-        "by_domain": by_domain,
-        "by_outcome_domain": by_outcome_domain,
-        "by_primary_status": by_role,
+        **primary_aggregates,
+        "sensitivity": {
+            "added_scope_difference_cases": len(scope_difference_scored),
+            **sensitivity_aggregates,
+        },
         "excluded": excluded,
         "hard_failures": hard_failures,
         "cases": scored,
+        "scope_difference_cases": scope_difference_scored,
     }
 
 
@@ -679,7 +860,7 @@ def render_markdown(result: dict[str, Any]) -> str:
             f"- Finalized scored cases: {result['scope']['finalized_scored_cases']} "
             f"({result['scope']['finalized_domain_cells']} domain cells)."
         ),
-        f"- Excluded after execution: {result['scope']['excluded_cases']}.",
+        f"- Cases excluded from scoring: {result['scope']['excluded_cases']}.",
         (
             "- Exact scoring compares Low, Some Concerns, and High. Binary scoring maps "
             "Some Concerns and High to Non-Low."
@@ -702,6 +883,31 @@ def render_markdown(result: dict[str, Any]) -> str:
             f"| Overall final label ({pooled['case_count']} cases) | "
             f"{_metric_text(pooled['overall']['exact'])} | "
             f"{_metric_text(pooled['overall']['low_vs_non_low'])} |"
+        ),
+        "",
+        "## Scope-difference sensitivity",
+        "",
+        (
+            "The primary results include exact scope matches and source-adjudicated "
+            "`equivalent` cases. This sensitivity aggregate adds cases adjudicated "
+            "`accepted_with_scope_difference` (broader or related)."
+        ),
+        (
+            f"- Added scope-difference cases: "
+            f"{result['scope'].get('scope_difference_cases', 0)}."
+        ),
+        "",
+        "| Measure | Exact | Low vs Non-Low |",
+        "|---|---:|---:|",
+        (
+            f"| Five domains ({result['sensitivity']['pooled']['domain_cells']} cells) | "
+            f"{_metric_text(result['sensitivity']['pooled']['pooled_domains']['exact'])} | "
+            f"{_metric_text(result['sensitivity']['pooled']['pooled_domains']['low_vs_non_low'])} |"
+        ),
+        (
+            f"| Overall final label ({result['sensitivity']['pooled']['case_count']} cases) | "
+            f"{_metric_text(result['sensitivity']['pooled']['overall']['exact'])} | "
+            f"{_metric_text(result['sensitivity']['pooled']['overall']['low_vs_non_low'])} |"
         ),
         "",
         "## Accuracy by outcome",
@@ -815,9 +1021,17 @@ def main() -> int:
     parser.add_argument("--reference", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--markdown-output", type=Path)
+    parser.add_argument(
+        "--scope-adjudications",
+        type=Path,
+        help=(
+            "source-backed decisions for equivalent or accepted broader/related "
+            "frozen Result scopes"
+        ),
+    )
     args = parser.parse_args()
     try:
-        result = score(args.manifest, args.reference)
+        result = score(args.manifest, args.reference, args.scope_adjudications)
         args.output.write_text(
             json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )

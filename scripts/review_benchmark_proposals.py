@@ -11,7 +11,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
+from benchmark_scope_adjudication import (
+    load_scope_adjudications,
+    matching_scope_adjudication,
+)
 from score_trial_benchmark import _norm_identity, _result_dimensions, _result_mismatches
+from rob2_kit.application._state import _identity as _canonical_identity
 
 
 def _json_objects(data: bytes) -> list[dict[str, Any]]:
@@ -99,7 +104,13 @@ def _scope_mismatches(review: dict[str, Any], item: dict[str, Any]) -> list[dict
     return mismatches
 
 
-def _one(repo: Path, item: dict[str, Any], answer: str, output: Path) -> dict[str, Any]:
+def _one(
+    repo: Path,
+    item: dict[str, Any],
+    answer: str,
+    output: Path,
+    scope_adjudications: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     workspace = Path(item["run_dir"]) / "workspace"
     command = [
         _rob2_executable(repo),
@@ -119,9 +130,27 @@ def _one(repo: Path, item: dict[str, Any], answer: str, output: Path) -> dict[st
     )
     review = _first_json(inspected.stdout)
     mismatches = _scope_mismatches(review, item) if answer == "yes" else []
+    results = review.get("candidate", {}).get("proposal", {}).get("results", [])
+    result = results[0] if isinstance(results, list) and results else {}
+    expected_result = item.get("expected_result")
+    result_identity = _canonical_identity(result) if isinstance(result, dict) else None
+    adjudication = (
+        matching_scope_adjudication(
+            scope_adjudications or [],
+            outcome=item["outcome"],
+            trial=item["trial"],
+            expected_result=expected_result,
+            review_identity=review.get("identity"),
+            result_identity=result_identity,
+            relation=result.get("relation"),
+        )
+        if mismatches and isinstance(expected_result, dict)
+        else None
+    )
+    scope_approved = not mismatches or adjudication is not None
     completed = inspected
     approval_reference_matches = False
-    if answer == "yes" and not mismatches:
+    if answer == "yes" and scope_approved:
         review_reference = review.get("identity")
         if not isinstance(review_reference, str) or not review_reference:
             mismatches = [
@@ -161,8 +190,6 @@ def _one(repo: Path, item: dict[str, Any], answer: str, output: Path) -> dict[st
     review_path.write_text(
         json.dumps(review, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    results = review.get("candidate", {}).get("proposal", {}).get("results", [])
-    result = results[0] if isinstance(results, list) and results else {}
     reported = result.get("reported", {}) if isinstance(result, dict) else {}
     return {
         "outcome": item["outcome"],
@@ -170,9 +197,11 @@ def _one(repo: Path, item: dict[str, Any], answer: str, output: Path) -> dict[st
         "answer": answer,
         "exit_code": completed.returncode,
         "scope_mismatches": mismatches,
+        "scope_adjudication": adjudication,
+        "result_identity": result_identity,
         "approved": (
             answer == "yes"
-            and not mismatches
+            and scope_approved
             and completed.returncode == 0
             and approval_reference_matches
         ),
@@ -199,15 +228,27 @@ def main() -> None:
     parser.add_argument("--index", type=Path, required=True)
     parser.add_argument("--answer", choices=("no", "yes"), default="no")
     parser.add_argument("--workers", type=int, default=6)
+    parser.add_argument(
+        "--scope-adjudications",
+        type=Path,
+        help=(
+            "source-backed decisions for equivalent or accepted broader/related "
+            "frozen Result scopes"
+        ),
+    )
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
     index_path = args.index.resolve(strict=True)
     index = json.loads(index_path.read_text(encoding="utf-8"))
+    scope_adjudications = load_scope_adjudications(args.scope_adjudications)
     output = index_path.parent / "proposal-reviews"
     output.mkdir(exist_ok=True)
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = [pool.submit(_one, repo, item, args.answer, output) for item in index["cases"]]
+        futures = [
+            pool.submit(_one, repo, item, args.answer, output, scope_adjudications)
+            for item in index["cases"]
+        ]
         for future in as_completed(futures):
             result = future.result()
             results.append(result)

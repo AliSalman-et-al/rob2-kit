@@ -24,7 +24,7 @@ from ..workflow_models import (
     AssessableResult,
     CapturedBatch,
     ExpectedRevision,
-    MissingDataSemantics,
+    MissingDataRow,
     ResultApplicability,
 )
 from ._state import (
@@ -141,6 +141,7 @@ def _valid_missing_data(
     question_id: object,
     evidence: dict[str, Any],
     trial_id: object,
+    result_identity: object,
 ) -> bool:
     """Validate the canonical reconciliation stored on Domain 3.1 answers."""
     if question_id != "sq:missing:data-available" or not isinstance(value, dict):
@@ -153,19 +154,40 @@ def _valid_missing_data(
     ):
         return False
 
+    legacy_required = {
+        "scope",
+        "randomized",
+        "observed",
+        "analyzed",
+        "imputed",
+        "exclusions",
+        "basis",
+        "missing",
+        "missing_fraction",
+    }
+    current_required = legacy_required | {
+        "eligible",
+        "treated",
+        "excluded",
+        "event_count",
+        "missing_bounds",
+    }
+    result_scope_fields = (
+        "result_identity",
+        "endpoint",
+        "severity",
+        "window",
+        "event_definition",
+    )
+    legacy_optional = {"semantics"}
+    current_optional = legacy_optional | set(result_scope_fields[1:]) | {"result_identity"}
+    current_schema = any(
+        isinstance(row, dict) and "missing_bounds" in row for row in value["rows"]
+    )
+    required = current_required if current_schema else legacy_required
+    optional = current_optional if current_schema else legacy_optional
+
     def valid_row(row: object) -> bool:
-        required = {
-            "scope",
-            "randomized",
-            "observed",
-            "analyzed",
-            "imputed",
-            "exclusions",
-            "basis",
-            "missing",
-            "missing_fraction",
-        }
-        optional = {"semantics"}
         if not isinstance(row, dict) or set(row) - required - optional or not required <= set(row):
             return False
         scope = row["scope"]
@@ -175,21 +197,23 @@ def _valid_missing_data(
             or any(not _nonblank(scope[key]) for key in scope)
         ):
             return False
-        for key in ("randomized", "observed", "analyzed", "imputed", "missing"):
-            item = row[key]
-            if item is not None and (
-                isinstance(item, bool) or not isinstance(item, int) or item < 0
-            ):
-                return False
+        numeric_fields = ["randomized", "observed", "analyzed", "imputed"]
+        if current_schema:
+            numeric_fields.extend(["eligible", "treated", "excluded", "event_count"])
+        if any(
+            row.get(key) is not None
+            and (
+                isinstance(row[key], bool)
+                or not isinstance(row[key], int)
+                or row[key] < 0
+            )
+            for key in numeric_fields
+        ):
+            return False
         if not isinstance(row["exclusions"], list) or not all(
             _nonblank(item) for item in row["exclusions"]
         ):
             return False
-        if "semantics" in row:
-            try:
-                MissingDataSemantics.model_validate(row["semantics"])
-            except (TypeError, ValueError, ValidationError):
-                return False
         if (
             not isinstance(row["basis"], list)
             or not row["basis"]
@@ -201,6 +225,42 @@ def _valid_missing_data(
             )
         ):
             return False
+        if (
+            row.get("result_identity") is not None
+            and row["result_identity"] != result_identity
+        ):
+            return False
+
+        # Persisted rows use canonical Evidence identities, but the input model
+        # accepts only submitted handles. Validate the other source fields with
+        # the strict model and check those identities independently above.
+        source_fields = (
+            "randomized",
+            "eligible",
+            "treated",
+            "observed",
+            "analyzed",
+            "imputed",
+            "excluded",
+            "event_count",
+            "endpoint",
+            "severity",
+            "window",
+            "event_definition",
+            "exclusions",
+            "semantics",
+            "result_identity",
+        )
+        source_row = {
+            **scope,
+            **{key: row[key] for key in source_fields if key in row},
+            "basis": [],
+        }
+        try:
+            MissingDataRow.model_validate(source_row)
+        except (TypeError, ValueError, ValidationError):
+            return False
+
         randomized, observed = row["randomized"], row["observed"]
         expected_missing = (
             randomized - observed
@@ -211,7 +271,11 @@ def _valid_missing_data(
             and randomized >= observed
             else None
         )
-        if row["missing"] != expected_missing:
+        missing = row["missing"]
+        if (
+            (missing is not None and (isinstance(missing, bool) or not isinstance(missing, int) or missing < 0))
+            or missing != expected_missing
+        ):
             return False
         expected_fraction = (
             expected_missing / randomized
@@ -220,38 +284,102 @@ def _valid_missing_data(
             if expected_missing is not None
             else None
         )
-        return row["missing_fraction"] == expected_fraction
+        fraction = row["missing_fraction"]
+        if (
+            (
+                fraction is not None
+                and (
+                    isinstance(fraction, bool)
+                    or not isinstance(fraction, (int, float))
+                    or not math.isfinite(fraction)
+                )
+            )
+            or fraction != expected_fraction
+        ):
+            return False
+        if current_schema:
+            imputed = row["imputed"]
+            imputed_is_int = isinstance(imputed, int) and not isinstance(imputed, bool)
+            randomized_is_int = isinstance(randomized, int) and not isinstance(randomized, bool)
+            observed_is_int = isinstance(observed, int) and not isinstance(observed, bool)
+            expected_bounds: dict[str, object] | None = None
+            if expected_missing is not None:
+                expected_bounds = {
+                    "lower": expected_missing,
+                    "upper": expected_missing,
+                    "kind": "exact",
+                }
+            elif randomized_is_int and observed_is_int and observed > randomized:
+                expected_bounds = None
+            elif randomized_is_int and (not imputed_is_int or imputed <= randomized):
+                expected_bounds = {
+                    "lower": imputed if imputed_is_int else 0,
+                    "upper": randomized,
+                    "kind": "bound",
+                }
+            bounds = row["missing_bounds"]
+            if expected_bounds is None:
+                return bounds is None
+            if (
+                not isinstance(bounds, dict)
+                or set(bounds) != {"lower", "upper", "kind"}
+                or any(
+                    isinstance(bounds.get(key), bool)
+                    or not isinstance(bounds.get(key), int)
+                    or bounds[key] < 0
+                    for key in ("lower", "upper")
+                )
+                or bounds.get("kind") not in {"exact", "bound"}
+                or bounds != expected_bounds
+            ):
+                return False
+        return True
 
     if not all(valid_row(row) for row in value["rows"]):
         return False
-    for conflict in value["conflicts"]:
-        if (
-            not isinstance(conflict, dict)
-            or set(conflict) != {"scope", "reports"}
-            or not isinstance(conflict["reports"], list)
-            or len(conflict["reports"]) < 2
-            or not all(valid_row(row) for row in conflict["reports"])
-            or any(row["scope"] != conflict["scope"] for row in conflict["reports"])
-        ):
-            return False
     compared_fields = (
-        "randomized",
-        "observed",
-        "analyzed",
-        "imputed",
-        "exclusions",
-        "semantics",
+        (
+            "result_identity",
+            "endpoint",
+            "severity",
+            "window",
+            "randomized",
+            "eligible",
+            "treated",
+            "observed",
+            "analyzed",
+            "imputed",
+            "excluded",
+            "event_count",
+            "event_definition",
+            "exclusions",
+            "semantics",
+        )
+        if current_schema
+        else ("randomized", "observed", "analyzed", "imputed", "exclusions", "semantics")
     )
     expected_conflicts: list[dict[str, object]] = []
     seen: dict[tuple[object, ...], dict[str, object]] = {}
     for row in value["rows"]:
         scope = row["scope"]
-        key = tuple(scope[field] for field in ("arm", "population", "unit", "time_point"))
+        participant_scope = tuple(
+            scope[field] for field in ("arm", "population", "unit", "time_point")
+        )
+        result_scope = tuple(row.get(field) for field in result_scope_fields) if current_schema else ()
+        key = (*participant_scope, *result_scope)
         prior = seen.get(key)
-        if prior is not None and tuple(prior[field] for field in compared_fields) != tuple(
-            row[field] for field in compared_fields
+        if prior is not None and tuple(prior.get(field) for field in compared_fields) != tuple(
+            row.get(field) for field in compared_fields
         ):
-            expected_conflicts.append({"scope": scope, "reports": [prior, row]})
+            conflict_scope = (
+                {
+                    **scope,
+                    **{field: row.get(field) for field in result_scope_fields},
+                }
+                if current_schema
+                else scope
+            )
+            expected_conflicts.append({"scope": conflict_scope, "reports": [prior, row]})
         else:
             seen[key] = row
     return value["conflicts"] == expected_conflicts
@@ -3976,6 +4104,7 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                                 answer.get("question_id"),
                                 evidence_by_identity,
                                 record.get("trial_id"),
+                                current_result_identities.get(record.get("trial_id")),
                             )
                         )
                         or not isinstance(answer.get("bases"), list)
@@ -4314,6 +4443,8 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                                     answer.get("question_id"),
                                     evidence_by_identity,
                                     item.get("trial_id"),
+                                    item.get("result_identity")
+                                    or current_result_identities.get(item.get("trial_id")),
                                 )
                             )
                         ):

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import os
 import runpy
 import subprocess
 import sys
 import tempfile
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -105,6 +107,27 @@ def _invoke_failed_run(
     runner_globals = runner["main"].__globals__
     runner_globals["__file__"] = str(scripts / "run_rsi_case.py")
     runner_globals["prepare_workspace"] = prepare_workspace
+
+    def probe_server_inventory(command: Path, workspace: Path) -> dict[str, Any]:
+        names = sorted(runner_globals["EXPECTED_TOOL_INVENTORY"])
+        binding = {
+            "server": "rob2",
+            "command": str(command.resolve()),
+            "args": ["mcp"],
+            "workspace_sha256": hashlib.sha256(
+                str(workspace.resolve()).encode("utf-8")
+            ).hexdigest(),
+        }
+        return {
+            "status": "verified",
+            "source": "stdio tools/list",
+            "server": "rob2",
+            "names": names,
+            "tool_count": len(names),
+            "server_binding": binding,
+        }
+
+    runner_globals["probe_server_advertised_inventory"] = probe_server_inventory
     if simulate_posix_isolation:
         runner_globals["_is_windows"] = lambda: False
         runner_globals["_preflight_isolation"] = lambda _command, _required: {
@@ -263,7 +286,7 @@ def _invoke_failed_run(
         with pytest.raises(SystemExit) as error:
             runner["main"]()
         assert error.value.code == 17
-    assert calls == 3
+    assert calls == 2
     assert auth_source.read_text(encoding="utf-8") == '{"fake":"test-only"}'
     metadata = json.loads((run_dir / "phase-1.meta.json").read_text(encoding="utf-8"))
     return run_dir, metadata
@@ -387,12 +410,21 @@ def test_runner_resolves_relative_run_directory(
     assert Path(metadata["command"][metadata["command"].index("-C") + 1]).is_absolute()
 
 
-def test_runner_gives_the_local_mcp_server_a_realistic_startup_budget(
+def test_runner_gives_the_local_mcp_server_realistic_timeouts(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _run_dir, metadata = _invoke_failed_run(tmp_path, monkeypatch, mode="exit")
 
-    assert "mcp_servers.rob2.startup_timeout_sec=120" in metadata["command"]
+    codex_config = Path(metadata["codex_mcp_config"]["path"])
+    config = tomllib.loads(codex_config.read_text(encoding="utf-8"))
+    server = config["mcp_servers"]["rob2"]
+    assert server["startup_timeout_sec"] == 120
+    assert server["tool_timeout_sec"] == 600
+    assert metadata["codex_mcp_config"]["snapshot_path"] == "phase-1.codex-config.toml"
+    assert metadata["codex_mcp_config"]["snapshot_sha256"] == hashlib.sha256(
+        codex_config.read_bytes()
+    ).hexdigest()
+    assert metadata["runtime_inputs"]["codex_mcp_tool_timeout_sec"] == 600
 
 
 @pytest.mark.skipif(os.name == "nt", reason="strict host isolation requires a POSIX host")

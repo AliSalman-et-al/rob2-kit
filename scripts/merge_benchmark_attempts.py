@@ -8,7 +8,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from benchmark_contract import _case_key, validate_replacement_case
+from benchmark_contract import (
+    _case_key,
+    _execution_build_transition_for_rows,
+    validate_replacement_case,
+)
 
 
 def main() -> None:
@@ -64,6 +68,9 @@ def main() -> None:
             continue
         replacement_path, original_row, replacement_row = replacement
         selected_row = dict(replacement_row)
+        build_transition = _execution_build_transition_for_rows(original_row, replacement_row)
+        if build_transition is not None:
+            selected_row["execution_build_transition"] = build_transition
         selected_row["attempt_history"] = [
             {
                 "attempt": _index_attempt(merged, original_row),

@@ -40,8 +40,15 @@ def _load_rows(path: Path) -> list[dict[str, str]]:
         raise ValueError(
             f"metadata must contain exactly {sorted(required)} or those fields plus expected_result"
         )
-    if any(row["reference_label_available"].lower() != "yes" for row in rows):
-        raise ValueError("fresh benchmark metadata must contain labelled cases only")
+    invalid_label_flags = {
+        row["reference_label_available"].lower()
+        for row in rows
+        if row["reference_label_available"].lower() not in {"yes", "no"}
+    }
+    if invalid_label_flags:
+        raise ValueError(
+            "reference_label_available must be 'yes' or 'no' for every case"
+        )
     seen: set[tuple[str, str]] = set()
     for row in rows:
         key = (

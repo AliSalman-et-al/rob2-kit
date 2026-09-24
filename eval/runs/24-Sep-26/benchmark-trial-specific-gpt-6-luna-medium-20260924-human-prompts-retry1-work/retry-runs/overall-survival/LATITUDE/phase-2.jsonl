@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a0d1bd-6da4-7cd0-97ca-b6bfd9891ced"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll record your approval of the saved Result proposal, then continue from the workflow’s current action."}}
+{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Your “Continue” confirms approval. I can’t record it because the required `request_proposal_approval` tool isn’t callable in this session. The Batch remains at Proposal Review, so I can’t start the domain assessments yet. No assessment state changed."}}
+{"type":"turn.completed","usage":{"input_tokens":1535322,"cached_input_tokens":1288704,"cache_write_input_tokens":0,"output_tokens":4261,"reasoning_output_tokens":1343}}
