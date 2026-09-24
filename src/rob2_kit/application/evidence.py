@@ -186,6 +186,11 @@ def _source_navigation(
     next_offset = offset + len(selected)
     has_more = next_offset < len(entries)
     unreadable_pages = [page for page, text in enumerate(pages, 1) if not text.strip()]
+    render_pages = set(unreadable_pages)
+    if source.get("media_type") == "application/pdf":
+        render_pages.update(
+            item["page"] for item in selected if item.get("kind") == "page_excerpt"
+        )
     render_recovery = [
         {
             "operation": "render_page",
@@ -194,7 +199,7 @@ def _source_navigation(
             "page": page,
             "inline": True,
         }
-        for page in unreadable_pages
+        for page in sorted(render_pages)
         if trial_id is not None and source.get("media_type") == "application/pdf"
     ]
     # These are navigation metadata, not a second unbounded index.  Keep them
@@ -219,7 +224,16 @@ def _source_navigation(
         "unreadable_pages": unreadable_pages,
         "truncated": has_more,
         "next_cursor": (_source_navigation_cursor(source, next_offset) if has_more else None),
-        "condition": "no_text_projection" if not entries else None,
+        "condition": (
+            "no_text_projection"
+            if not entries
+            else (
+                "layout_inspection_available"
+                if source.get("media_type") == "application/pdf"
+                and any(item.get("kind") == "page_excerpt" for item in selected)
+                else None
+            )
+        ),
         "render_recovery": render_recovery,
         "version_spans": version_spans,
         "date_spans": date_spans,
@@ -355,6 +369,30 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
                     (
                         kind
                         for words, kind in (
+                            (
+                                (
+                                    "unblinded access",
+                                    "accessed unblinded",
+                                    "unblinded to",
+                                    "unblinded on",
+                                    "unblinding date",
+                                ),
+                                "unblinded_access",
+                            ),
+                            (("finaliz", "finalis"), "finalization"),
+                            (("approv", "approved by", "approval"), "approval"),
+                            (
+                                ("registry submission", "submitted to registry", "submitted"),
+                                "submission",
+                            ),
+                            (
+                                (
+                                    "posted",
+                                    "posting",
+                                ),
+                                "posting",
+                            ),
+                            (("retriev", "downloaded"), "retrieval"),
                             (("capture", "captured"), "capture"),
                             (("version", "revision", "edition"), "version"),
                             (("amend", "amended"), "amendment"),

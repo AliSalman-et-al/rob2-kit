@@ -17,9 +17,9 @@ active comparison card lists every captured Source, including supplements and
 combined protocol documents with no selected passages. Compare
 their version, date, intervention groups, and cohort with the approved Result.
 In `comparison_cards[].passage_groups`, inspect the Source label, role, logical
-path, page count, and content and projection hashes. A protocol, SAP, or registry
-group may have no selected passages yet. Use the Source to resolve missing
-premises; an empty passage list does not establish absent plan content.
+path, and page count. A protocol, SAP, or registry group may have no selected
+passages yet. Use the Source to resolve missing premises; an empty passage list
+does not establish absent plan content.
 `source_origin`, `registry_url`, and `registry_retrieved_at` describe captured
 provenance; they do not establish when a plan was finalized or which Trial
 comparison it covered.
@@ -39,6 +39,12 @@ recruitment, and unblinded access dates distinct. A registry's first-posted date
 does not date the endpoint content in its current record; current registry content
 does not establish unseen historical intent. A data cutoff is not
 investigator unblinding.
+
+Paired chronology example: one Source locates SAP finalization on 1 June and
+actual access to unblinded outcome data on 1 July; another gives a registry
+posting date of 1 June but does not date the plan or investigators' access to
+unblinded outcomes. Preserve the second chronology as unknown. Posting,
+approval, retrieval, and cutoff dates do not fill in a missing access date.
 
 The selected plan passage establishes plan content. A registry identifier,
 endpoint label, or report-level prespecification claim alone leaves plan timing
@@ -96,8 +102,11 @@ a severity category when applicability or chronology is unresolved.
 ## Paired premise check
 
 Contrast an applicable SAP that names the exact comparison and cohort with a
-platform plan that names a different phase or cohort. Separately contrast
-multiplicity with actual evidence that a favorable analysis was selected. The
-changed premise is applicability, chronology, or result dependence; document
-availability, dates, and the existence of eligible alternatives do not answer
-the selection question by themselves.
+platform plan that names a different phase or cohort. For result-based selection,
+keep the three eligible analyses, the analyses conducted, and the single reported
+analysis fixed in both examples. In one, dated correspondence before unblinded
+results documents the reporting plan; in the other, dated minutes after access
+state that the reported analysis was chosen because its estimate was favorable
+and the other analyses were withheld. The changed premise is applicability,
+chronology, or result dependence; document availability, dates, and the existence
+of eligible alternatives do not answer the selection question by themselves.

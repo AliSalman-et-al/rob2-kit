@@ -22,7 +22,7 @@ from support.rob2 import (
     _workspace,
 )
 
-from rob2_kit.application._state import _state
+from rob2_kit.application._state import _identity, _state
 from rob2_kit.application.domains import reconcile_missing_data
 from rob2_kit.application.finalization import verify_bundle
 from rob2_kit.packs import SCIENTIFIC_PACK
@@ -560,7 +560,15 @@ def test_domain_context_missing_data_preview_is_typed_read_only_and_scope_bounde
         for card in context["data"]["comparison_cards"]
         if card["question_id"] == "sq:missing:data-available"
     )
-    expected_rows = [row | {"basis": [evidence["identity"]]} for row in rows]
+    approved_result = _state(workspace)["proposal"]["payload"]["results"][0]
+    expected_rows = [
+        row
+        | {
+            "basis": [evidence["identity"]],
+            "result_identity": _identity(approved_result),
+        }
+        for row in rows
+    ]
     assert card["missing_data"] == reconcile_missing_data(expected_rows)
     preview_by_scope = {
         tuple(item["scope"][key] for key in ("arm", "population", "unit", "time_point")): item

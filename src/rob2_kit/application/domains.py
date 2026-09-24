@@ -695,6 +695,7 @@ def _comparison_cards(
     preview_missing_data: list[dict[str, Any]] | None = None,
     registry_navigation: dict[str, dict[str, Any]] | None = None,
     registry_capture: dict[str, Any] | None = None,
+    participant_flow_data: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Return a small deterministic read projection for D2/D3/D5.
 
@@ -876,19 +877,38 @@ def _comparison_cards(
     paired_examples_by_domain = {
         "domain:deviations": (
             {
-                "pair_id": "d2-permitted-versus-context-caused",
-                "changed_premise": "protocol consistency and trial-context cause",
+                "pair_id": "d2-protocol-status-same-trial-context",
+                "changed_premise": (
+                    "whether the same trial-context conduct was protocol-consistent"
+                ),
                 "left_facts": (
-                    "Rescue treatment was permitted after progression.",
-                    "The later treatment was not caused by trial participation.",
+                    "Trial staff encouraged rescue treatment during participation; "
+                    "the protocol permitted it.",
                 ),
                 "right_facts": (
-                    "Rescue treatment was prohibited by the protocol.",
-                    "Trial staff encouraged the change during participation.",
+                    "Trial staff encouraged the same rescue treatment during participation; "
+                    "the protocol prohibited it.",
                 ),
                 "reasoning_focus": (
-                    "Require both protocol inconsistency and a trial-context cause before "
-                    "classifying the deviation."
+                    "Hold trial-context conduct fixed while changing protocol consistency."
+                ),
+            },
+            {
+                "pair_id": "d2-cause-same-protocol-inconsistency",
+                "changed_premise": (
+                    "whether the same prohibited conduct was caused by trial participation"
+                ),
+                "left_facts": (
+                    "The protocol prohibited rescue treatment. A clinician independently "
+                    "provided it as ordinary care; trial staff did not direct the change.",
+                ),
+                "right_facts": (
+                    "The protocol prohibited rescue treatment. Trial staff directed the same "
+                    "change during participation.",
+                ),
+                "reasoning_focus": (
+                    "Hold the protocol inconsistency and conduct fixed while changing the "
+                    "source of the change."
                 ),
             },
         ),
@@ -925,6 +945,42 @@ def _comparison_cards(
                     "the true outcome."
                 ),
             },
+            {
+                "pair_id": "d3-mitigation-evidence",
+                "changed_premise": (
+                    "whether a credible analysis addresses bias from missing outcomes"
+                ),
+                "left_facts": (
+                    "A prespecified sensitivity analysis covers plausible missing outcomes and its "
+                    "estimate remains compatible with the primary result.",
+                ),
+                "right_facts": (
+                    "The report gives no analysis or evidence addressing possible bias from "
+                    "missing outcomes.",
+                ),
+                "reasoning_focus": (
+                    "Assess evidence about mitigation separately from the number or proportion "
+                    "of observed outcomes."
+                ),
+            },
+            {
+                "pair_id": "d3-possible-versus-likely-dependence",
+                "changed_premise": (
+                    "strength of evidence that missingness depends on the true outcome"
+                ),
+                "left_facts": (
+                    "The reported reason for loss could be related to the unobserved outcome, "
+                    "but the link is unresolved.",
+                ),
+                "right_facts": (
+                    "Source records show that worsening outcome status commonly preceded and "
+                    "explained follow-up loss.",
+                ),
+                "reasoning_focus": (
+                    "Keep a plausible pathway distinct from evidence that makes dependence "
+                    "likely; neither follows from missing counts alone."
+                ),
+            },
         ),
         "domain:measurement": (
             {
@@ -945,7 +1001,9 @@ def _comparison_cards(
             },
             {
                 "pair_id": "d4-equal-versus-differential-detection",
-                "changed_premise": "whether the opportunity to detect the approved outcome differs",
+                "changed_premise": (
+                    "whether the opportunity to detect the approved outcome differs"
+                ),
                 "left_facts": ("Both groups use the same ascertainment method and schedule.",),
                 "right_facts": (
                     "One intervention causes additional visits that can detect the approved "
@@ -954,6 +1012,41 @@ def _comparison_cards(
                 "reasoning_focus": (
                     "A different opportunity matters only through an explicit pathway to "
                     "differential detection; do not infer a risk label automatically."
+                ),
+            },
+            {
+                "pair_id": "d4-assessor-awareness",
+                "changed_premise": (
+                    "whether the outcome assessor knew intervention assignment"
+                ),
+                "left_facts": (
+                    "The outcome assessor was masked to assignment through assessment.",
+                ),
+                "right_facts": (
+                    "The assessor was told each participant's assignment before judging the "
+                    "outcome.",
+                ),
+                "reasoning_focus": (
+                    "Record assessor awareness separately from measurement suitability and any "
+                    "resulting detection or influence."
+                ),
+            },
+            {
+                "pair_id": "d4-possible-versus-likely-influence",
+                "changed_premise": (
+                    "whether awareness likely changed a susceptible measurement"
+                ),
+                "left_facts": (
+                    "An assessor knew assignment and rated a judgment-dependent symptom scale; "
+                    "no differential ratings are documented.",
+                ),
+                "right_facts": (
+                    "An assessor knew assignment and source records document ratings shifting "
+                    "toward the expected intervention effect.",
+                ),
+                "reasoning_focus": (
+                    "Separate the possibility of influence from evidence that influence likely "
+                    "affected recorded outcomes."
                 ),
             },
         ),
@@ -976,15 +1069,19 @@ def _comparison_cards(
                 "pair_id": "d5-multiplicity-versus-selection",
                 "changed_premise": "whether reporting choice depended on the result",
                 "left_facts": (
-                    "Adjusted and complete-case analyses were both reported with no evidence of "
-                    "selective choice.",
+                    "The SAP lists three eligible analyses. All three were conducted, but only "
+                    "the adjusted model was reported. Dated correspondence made before "
+                    "unblinded results confirms that reporting plan.",
                 ),
                 "right_facts": (
-                    "Several eligible analyses were performed but only the favorable analysis "
-                    "was reported.",
+                    "The SAP lists the same three eligible analyses. All three were conducted, "
+                    "but only the adjusted model was reported. Dated minutes after unblinding "
+                    "state it was chosen because its estimate was favorable and the other two "
+                    "were withheld.",
                 ),
                 "reasoning_focus": (
-                    "Multiplicity alone does not establish likely results-based selection."
+                    "Hold the eligible analyses and reporting pattern fixed; inspect the "
+                    "evidence about why the reporting decision was made."
                 ),
             },
         ),
@@ -1073,7 +1170,6 @@ def _comparison_cards(
                 "logical_path": source.get("logical_path", source_id),
                 "page_count": source.get("page_count", 1),
                 "sha256": source.get("sha256"),
-                "projection_hash": source.get("projection_hash"),
                 "source_origin": source.get("origin", "local_dossier"),
                 "registry_url": (
                     registry_capture.get("url")
@@ -1275,14 +1371,28 @@ def _comparison_cards(
     # Expose every stage so the host cannot silently substitute analysis or
     # event membership for outcome availability.
     participant_flow: list[dict[str, Any]] = []
-    if isinstance(missing_data, dict):
-        rows = [row for row in missing_data.get("rows", []) if isinstance(row, dict)]
+    flow_data: Any = participant_flow_data if participant_flow_data is not None else missing_data
+    if domain_id in {"domain:deviations", "domain:missing"} and isinstance(flow_data, dict):
+        rows = [row for row in flow_data.get("rows", []) if isinstance(row, dict)]
         conflict_fields: dict[tuple[Any, ...], set[str]] = {}
-        for conflict in missing_data.get("conflicts", []):
+        for conflict in flow_data.get("conflicts", []):
             if not isinstance(conflict, dict) or not isinstance(conflict.get("scope"), dict):
                 continue
             scope = conflict["scope"]
-            row_scope = tuple(scope.get(key) for key in ("arm", "population", "unit", "time_point"))
+            row_scope = tuple(
+                scope.get(key)
+                for key in (
+                    "arm",
+                    "population",
+                    "unit",
+                    "time_point",
+                    "result_identity",
+                    "endpoint",
+                    "severity",
+                    "window",
+                    "event_definition",
+                )
+            )
             reports = [item for item in conflict.get("reports", []) if isinstance(item, dict)]
             conflict_fields[row_scope] = {
                 field
@@ -1313,12 +1423,28 @@ def _comparison_cards(
             ("excluded", "excluded"),
             ("event", "event_count"),
         )
-        projected_unknown_stages: set[str] = set()
         for row in rows:
             scope = row.get("scope")
             if not isinstance(scope, dict):
                 continue
-            row_scope = tuple(scope.get(key) for key in ("arm", "population", "unit", "time_point"))
+            row_scope = tuple(
+                (
+                    scope.get(key)
+                    if key in scope
+                    else row.get(key)
+                )
+                for key in (
+                    "arm",
+                    "population",
+                    "unit",
+                    "time_point",
+                    "result_identity",
+                    "endpoint",
+                    "severity",
+                    "window",
+                    "event_definition",
+                )
+            )
             basis_passages = [
                 {
                     key: evidence[key]
@@ -1334,33 +1460,27 @@ def _comparison_cards(
             ]
             for kind, field in flow_fields:
                 value = row.get(field)
-                # The reconciled row already preserves a null for every
-                # unreported stage. Repeat each unknown stage once in this
-                # explanatory projection instead of duplicating the same
-                # empty fact for every arm/window.
-                if not isinstance(value, int):
-                    if kind in projected_unknown_stages:
-                        continue
-                    projected_unknown_stages.add(kind)
+                status = (
+                    "conflicted"
+                    if field in conflict_fields.get(row_scope, set())
+                    or (
+                        kind == "event"
+                        and "event_count" in conflict_fields.get(row_scope, set())
+                    )
+                    else "supported"
+                    if isinstance(value, int)
+                    else "unknown"
+                )
                 participant_flow.append(
                     {
                         "kind": kind,
                         "value": value,
-                        "status": (
-                            "conflicted"
-                            if field in conflict_fields.get(row_scope, set())
-                            or (
-                                kind == "event"
-                                and "event_count" in conflict_fields.get(row_scope, set())
-                            )
-                            else "supported"
-                            if isinstance(value, int)
-                            else "unknown"
-                        ),
+                        "status": status,
                         "result_identity": row.get("result_identity"),
                         "endpoint": row.get("endpoint"),
                         "severity": row.get("severity"),
                         "window": row.get("window", scope.get("time_point")),
+                        "event_definition": row.get("event_definition"),
                         "scope": scope,
                         "passages": basis_passages,
                     }
@@ -1630,7 +1750,10 @@ def reconcile_missing_data(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _canonical_preview_rows(
-    rows: list[dict[str, Any]], catalog: dict[str, dict[str, Any]], trial_id: str
+    rows: list[dict[str, Any]],
+    catalog: dict[str, dict[str, Any]],
+    trial_id: str,
+    result_identity: str,
 ) -> list[dict[str, Any]]:
     """Resolve preview Evidence handles to same-Trial canonical identities."""
 
@@ -1645,6 +1768,10 @@ def _canonical_preview_rows(
     for index, row in enumerate(rows):
         if not isinstance(row, dict):
             raise ValueError(f"missing_data preview row {index} is invalid")
+        if row.get("result_identity") not in {None, result_identity}:
+            raise ValueError(
+                f"missing_data preview row {index} belongs to another approved Result"
+            )
         basis = row.get("basis")
         if not isinstance(basis, list) or not basis:
             raise ValueError(f"missing_data preview row {index} requires Evidence basis")
@@ -1656,7 +1783,9 @@ def _canonical_preview_rows(
                     f"missing_data preview row {index} has unknown or cross-Trial Evidence"
                 )
             identities.append(str(selected["identity"]))
-        normalized.append({**row, "basis": identities})
+        normalized.append(
+            {**row, "result_identity": result_identity, "basis": identities}
+        )
     return normalized
 
 
@@ -2174,6 +2303,7 @@ def save_domain_judgment(
             )
     if parsed.domain_id not in {item.id for item in SCIENTIFIC_PACK.domains}:
         raise ValueError("unknown Domain")
+    approved_result_identity = _identity(_approved_result(state, parsed.trial_id))
 
     questions_by_id = {
         question.id: question
@@ -2307,6 +2437,17 @@ def save_domain_judgment(
             missing_data_rows: list[dict[str, Any]] = []
             for row_index, row_model in enumerate(answer_item.missing_data):
                 row = row_model.model_dump(mode="json", exclude_none=True)
+                if row.get("result_identity") not in {None, approved_result_identity}:
+                    repairs.append(
+                        _repair(
+                            f"/answers/{answer_index}/missing_data/{row_index}/result_identity",
+                            "missing_data_result_mismatch",
+                            "This participant-flow row names another approved Result. Remove the "
+                            "field to bind it to the current approved Result, or submit the "
+                            "current Result identity.",
+                        )
+                    )
+                row["result_identity"] = approved_result_identity
                 handles = list(dict.fromkeys(row["basis"] or answer_evidence))
                 resolved: list[str] = []
                 for handle in handles:
@@ -2915,6 +3056,7 @@ def validate_domain_assessment(
             ),
         },
         sufficiency=_investigation_sufficiency(checkpoint.get("evidence_sufficiency")),
+        active_question_ids=tuple(checkpoint.get("active_questions", ())),
     )
     return receipt
 
@@ -3088,6 +3230,62 @@ def get_domain_context(
         for answer in (existing.get("answers", []) if isinstance(existing, dict) else [])
         if isinstance(answer, dict)
     ]
+    current_result_identity = _identity(result)
+    flow_answers: list[dict[str, Any]] = []
+    flow_rows: list[dict[str, Any]] = []
+    if preview_missing_data is None:
+        all_domain_records = state.get("domain_records") or {}
+        for flow_domain in ("domain:deviations", "domain:missing"):
+            flow_record = all_domain_records.get(f"{trial_id}:{flow_domain}")
+            if (
+                not isinstance(flow_record, dict)
+                or flow_record.get("result_identity") != current_result_identity
+            ):
+                continue
+            for answer in flow_record.get("answers", []):
+                if not isinstance(answer, dict):
+                    continue
+                missing = answer.get("missing_data")
+                rows = missing.get("rows", []) if isinstance(missing, dict) else []
+                if not isinstance(rows, list):
+                    continue
+                flow_answers.append(answer)
+                for row in rows:
+                    if not isinstance(row, dict):
+                        continue
+                    row_result_identity = row.get("result_identity")
+                    # Older typed rows inherit only their exact checkpoint's
+                    # Result binding; a row from a stale Result is not projected.
+                    row_result_identity = row_result_identity or flow_record.get("result_identity")
+                    if row_result_identity == current_result_identity:
+                        scope = row.get("scope")
+                        if not isinstance(scope, dict):
+                            continue
+                        source_row = dict(scope)
+                        for field in (
+                            "endpoint",
+                            "severity",
+                            "window",
+                            "result_identity",
+                            "event_definition",
+                            "randomized",
+                            "eligible",
+                            "treated",
+                            "observed",
+                            "analyzed",
+                            "imputed",
+                            "excluded",
+                            "event_count",
+                            "event_definition",
+                            "exclusions",
+                            "basis",
+                            "semantics",
+                        ):
+                            if field in row:
+                                source_row[field] = row[field]
+                        flow_rows.append(
+                            {**source_row, "result_identity": current_result_identity}
+                        )
     checkpoint_identities = {
         basis.get("evidence")
         for answer in checkpoint_answers
@@ -3097,6 +3295,14 @@ def get_domain_context(
     checkpoint_identities.update(
         evidence_identity
         for answer in checkpoint_answers
+        for row in (answer.get("missing_data") or {}).get("rows", [])
+        if isinstance(row, dict) and isinstance(row.get("basis"), list)
+        for evidence_identity in row["basis"]
+        if isinstance(evidence_identity, str)
+    )
+    checkpoint_identities.update(
+        evidence_identity
+        for answer in flow_answers
         for row in (answer.get("missing_data") or {}).get("rows", [])
         if isinstance(row, dict) and isinstance(row.get("basis"), list)
         for evidence_identity in row["basis"]
@@ -3586,10 +3792,13 @@ def get_domain_context(
             "revision_basis",
         ]
     canonical_preview = (
-        _canonical_preview_rows(preview_missing_data, catalog, trial_id)
+        _canonical_preview_rows(
+            preview_missing_data, catalog, trial_id, current_result_identity
+        )
         if preview_missing_data
         else None
     )
+    participant_flow_rows = canonical_preview if canonical_preview is not None else flow_rows
     context = {
         "outcome": "success",
         "trial_id": trial_id,
@@ -3618,6 +3827,9 @@ def get_domain_context(
                     "establish scientific sufficiency."
                 ),
             },
+            active_question_ids=tuple(
+                item.id for item in SCIENTIFIC_PACK.questions if item.id in active
+            ),
         ),
         "working_checkpoint": _domain_premise_status(premise_status),
         "evidence_sufficiency": _host_asserted_sufficiency(
@@ -3709,6 +3921,11 @@ def get_domain_context(
             if domain_id == "domain:selection"
             else None,
             trial_registry if isinstance(trial_registry, dict) else None,
+            participant_flow_data=(
+                reconcile_missing_data(participant_flow_rows)
+                if participant_flow_rows
+                else None
+            ),
         ),
         "coverage": _source_coverage(
             trial_id,

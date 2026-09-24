@@ -256,10 +256,11 @@ def _review(workspace: Path) -> None:
     )
 
 
-def _workspace(tmp_path: Path) -> Path:
+def _workspace(tmp_path: Path, requested_outcome: str = "requested outcome") -> Path:
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True, exist_ok=True)
     (trial / "main.txt").write_text(
+        f"The {requested_outcome} was measured in the analyzed population.; "
         "The requested outcome was not reported; "
         "only an alternate endpoint was measured. "
         "death ascertainment; end of follow-up; "
@@ -271,7 +272,9 @@ def _workspace(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def _result(_evidence: dict[str, Any]) -> dict[str, Any]:
+def _result(
+    _evidence: dict[str, Any], requested_outcome: str = "requested outcome"
+) -> dict[str, Any]:
     result: dict[str, Any] = {
         "kind": "assessable",
         "trial_id": "trial",
@@ -303,8 +306,10 @@ def _result(_evidence: dict[str, Any]) -> dict[str, Any]:
             "form": "group_bound_values",
             "analysis_population": "randomized population",
             "endpoint": {
-                "name": "requested outcome",
-                "definition": "The requested outcome was measured in the analyzed population.",
+                "name": requested_outcome,
+                "definition": (
+                    f"The {requested_outcome} was measured in the analyzed population."
+                ),
             },
             "group_values": [
                 {"group_id": "a", "statistic": "risk", "value": "1", "unit": "events"},
@@ -382,11 +387,13 @@ def _domain_draft(
     }
 
 
-def _prepared_evidence(workspace: Path) -> dict[str, Any]:
+def _prepared_evidence(
+    workspace: Path, requested_outcome: str = "requested outcome"
+) -> dict[str, Any]:
     _call(
         workspace,
         "prepare_batch",
-        {"requested_outcome": "requested outcome", "expected_revision": 0},
+        {"requested_outcome": requested_outcome, "expected_revision": 0},
     )
     _read_required_main_reports(workspace)
     source = next(
@@ -531,9 +538,15 @@ def _unavailable_result(evidence: dict[str, Any], fact: str) -> dict[str, Any]:
     }
 
 
-def _assessed_artifact(workspace: Path) -> Path:
-    evidence = _prepared_evidence(workspace)
-    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+def _assessed_artifact(
+    workspace: Path, requested_outcome: str = "requested outcome"
+) -> Path:
+    evidence = _prepared_evidence(workspace, requested_outcome)
+    proposed = _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(workspace, [_result(evidence, requested_outcome)]),
+    )
     assert proposed["outcome"] == "review_required"
     _review(workspace)
     _read_required_main_reports(workspace)

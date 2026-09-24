@@ -1,5 +1,6 @@
 """Reviewable and immutable Trial lifecycle transitions."""
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,8 @@ _REVIEW_CONFLICT_MARKERS = {
     "window_mismatch": ("window mismatch", "different window", "window differs"),
     "chronology_conflict": ("chronology conflict", "chronology mismatch", "chronology differs"),
 }
+_REVIEW_FACT_TEXT_LIMIT = 4_000
+_REVIEW_FACT_EXCERPT_MARKER = " … [excerpt; use evidence_expansions to inspect full Evidence]"
 
 
 def _approved_result(state: dict[str, Any], trial_id: str) -> dict[str, Any]:
@@ -79,7 +82,7 @@ def _review_domain_findings(
 ) -> list[dict[str, Any]]:
     """Project current checkpoint support without creating a second answer authority."""
 
-    from .evidence import _evidence_catalog
+    from .evidence import _evidence_catalog, _search_receipt
 
     try:
         evidence_by_identity = _evidence_catalog(root, trial_id=trial_id)
@@ -123,27 +126,36 @@ def _review_domain_findings(
     def evidence_text(identity: object, basis: dict[str, Any]) -> str | None:
         source = basis.get("source")
         if isinstance(source, str) and source.strip():
-            return source
-        evidence = evidence_by_identity.get(identity) if isinstance(identity, str) else None
-        if not isinstance(evidence, dict):
+            text = source
+        else:
+            evidence = evidence_by_identity.get(identity) if isinstance(identity, str) else None
+            if not isinstance(evidence, dict):
+                return None
+            values: list[str] = []
+            for key in (
+                "quote",
+                "transcription",
+                "title",
+                "scope",
+                "cohort",
+                "row",
+                "value",
+                "event_definition",
+            ):
+                value = evidence.get(key)
+                if isinstance(value, str) and value.strip():
+                    values.append(value)
+            for key in ("columns", "group_or_category_axes", "cells", "units", "denominators"):
+                values.extend(value for value in evidence.get(key, ()) if isinstance(value, str))
+            text = " | ".join(values)
+        if not text:
             return None
-        values: list[str] = []
-        for key in (
-            "quote",
-            "transcription",
-            "title",
-            "scope",
-            "cohort",
-            "row",
-            "value",
-            "event_definition",
-        ):
-            value = evidence.get(key)
-            if isinstance(value, str) and value.strip():
-                values.append(value)
-        for key in ("columns", "group_or_category_axes", "cells", "units", "denominators"):
-            values.extend(value for value in evidence.get(key, ()) if isinstance(value, str))
-        return " | ".join(values) or None
+        if len(text) > _REVIEW_FACT_TEXT_LIMIT:
+            text = (
+                text[: _REVIEW_FACT_TEXT_LIMIT - len(_REVIEW_FACT_EXCERPT_MARKER)].rstrip()
+                + _REVIEW_FACT_EXCERPT_MARKER
+            )
+        return text
 
     def report_evidence(reports: list[dict[str, Any]]) -> tuple[dict[str, str], ...]:
         references: list[dict[str, str]] = []
@@ -241,6 +253,67 @@ def _review_domain_findings(
             if any(marker in joined for marker in markers)
         ]
 
+    def participant_flow_scope_conflicts(answer: dict[str, Any]) -> list[dict[str, Any]]:
+        """Flag source-bound flow rows that visibly differ from the approved Result scope."""
+
+        missing_data = answer.get("missing_data")
+        rows = missing_data.get("rows", ()) if isinstance(missing_data, dict) else ()
+        if not isinstance(rows, (list, tuple)):
+            return []
+        try:
+            approved = _approved_result(state, trial_id)
+        except ValueError:
+            return []
+        target_value = approved.get("target")
+        target = target_value if isinstance(target_value, dict) else {}
+        timing = target.get("time_point_or_window")
+        expected_values = {
+            "result identity": _identity(approved),
+            "population": target.get("intended_analysis_population"),
+            "endpoint": target.get("outcome_definition"),
+            "window": timing.get("description") if isinstance(timing, dict) else None,
+        }
+
+        def comparable(value: object) -> str | None:
+            if not isinstance(value, str) or not value.strip():
+                return None
+            return " ".join(value.casefold().split())
+
+        conflicts: list[dict[str, Any]] = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            scope = row.get("scope") if isinstance(row.get("scope"), dict) else {}
+            observed_values = {
+                "result identity": row.get("result_identity"),
+                "population": scope.get("population"),
+                "endpoint": row.get("endpoint") or row.get("event_definition"),
+                "window": row.get("window") or scope.get("time_point"),
+            }
+            differences = [
+                field
+                for field, expected in expected_values.items()
+                if comparable(expected) is not None
+                and comparable(observed_values[field]) is not None
+                and comparable(expected) != comparable(observed_values[field])
+            ]
+            row_references = report_evidence([{"basis": row.get("basis", ())}])
+            if differences and row_references:
+                conflicts.append(
+                    {
+                        "kind": "potential_scope_mismatch",
+                        "detail": (
+                            "The server found source-bound participant-flow text differing from "
+                            "the approved Result on: "
+                            + ", ".join(differences)
+                            + ". Interpret the cited passages before relying on these quantities."
+                        ),
+                        "assertion": "server_derived",
+                        "evidence": row_references,
+                    }
+                )
+        return conflicts
+
     def premise_routes(
         domain_id: str,
         answer: dict[str, Any],
@@ -249,6 +322,28 @@ def _review_domain_findings(
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         routes: list[dict[str, Any]] = []
         conflicts: list[dict[str, Any]] = []
+        incomplete_searches: set[str] = set()
+        for basis in answer.get("bases", ()):
+            if not isinstance(basis, dict):
+                continue
+            handle = basis.get("search_receipt")
+            if not isinstance(handle, str):
+                continue
+            receipt_handle = (
+                "sr_" + handle.removeprefix("sha256:")[:16]
+                if handle.startswith("sha256:")
+                else handle
+            )
+            try:
+                receipt = _search_receipt(root, receipt_handle)
+            except (KeyError, ValueError):
+                continue
+            if (
+                receipt.get("truncated")
+                or receipt.get("next_cursor")
+                or receipt.get("exhausted") is False
+            ):
+                incomplete_searches.add(handle)
         unresolved = any(
             isinstance(item, dict)
             and item.get("question_id") in {None, answer.get("question_id")}
@@ -261,7 +356,7 @@ def _review_domain_findings(
             if not isinstance(basis, dict) or basis.get("kind") != "limitation":
                 continue
             receipt = basis.get("search_receipt")
-            if isinstance(receipt, str):
+            if isinstance(receipt, str) and receipt in incomplete_searches:
                 routes.append(
                     {
                         "operation": "search_sources",
@@ -272,7 +367,7 @@ def _review_domain_findings(
                         "search_receipt": receipt,
                     }
                 )
-        if unresolved:
+        if unresolved and (unread_ranges or incomplete_searches):
             for premise in premise_records:
                 if not isinstance(premise, dict):
                     continue
@@ -421,20 +516,21 @@ def _review_domain_findings(
                                         ],
                                     }
                                 )
-                            elif (
-                                evidence.get("kind") == "figure"
-                                and isinstance(source_id, str)
-                                and isinstance(page, int)
-                            ):
-                                expansions.append(
-                                    {
-                                        "operation": "render_page",
-                                        "evidence": handle,
-                                        "trial_id": trial_id,
-                                        "source_id": source_id,
-                                        "page": page,
-                                    }
+                            elif evidence.get("kind") == "figure" and isinstance(source_id, str):
+                                render = evidence.get("render")
+                                figure_page = (
+                                    render.get("page") if isinstance(render, dict) else None
                                 )
+                                if isinstance(figure_page, int):
+                                    expansions.append(
+                                        {
+                                            "operation": "render_page",
+                                            "evidence": handle,
+                                            "trial_id": trial_id,
+                                            "source_id": source_id,
+                                            "page": figure_page,
+                                        }
+                                    )
                         fact_text = evidence_text(evidence_identity, basis)
                         if fact_text is not None:
                             facts.append(
@@ -470,8 +566,10 @@ def _review_domain_findings(
                         basis_finding[key] = basis[key]
                 basis_findings.append(basis_finding)
             review_references = tuple(references)
-            conflicts = structured_scope_conflicts(answer) + host_scope_conflicts(
-                answer, review_references
+            conflicts = (
+                structured_scope_conflicts(answer)
+                + host_scope_conflicts(answer, review_references)
+                + participant_flow_scope_conflicts(answer)
             )
             if any(
                 basis.get("kind") in {"direct_support", "indirect_support", "contradiction"}
@@ -640,11 +738,26 @@ def _review_output(review: dict[str, Any]) -> dict[str, Any]:
 def review_trial(
     workspace: str | Path,
     request: TrialReviewRequest,
+    *,
+    precommit_validator: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Bind the current Result and Domain checkpoint set for explicit review."""
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    def validated_retry(review_record: dict[str, Any]) -> dict[str, Any]:
+        response = _result(
+            "success",
+            state,
+            review=_review_output(review_record),
+            result=_approved_result(state, request.trial_id),
+            domain_findings=_review_domain_findings(root, state, request.trial_id),
+            retry=True,
+        )
+        if precommit_validator is not None:
+            precommit_validator(response)
+        return response
+
     if not _valid_proposal_gate(
         state.get("proposal_review"),
         state.get("proposal_acknowledgment"),
@@ -664,15 +777,7 @@ def review_trial(
             and isinstance(closure, dict)
             and current_review.get("identity") == closure.get("review_identity")
         ):
-            result = _approved_result(state, request.trial_id)
-            return _result(
-                "success",
-                state,
-                review=_review_output(current_review),
-                result=result,
-                domain_findings=_review_domain_findings(root, state, request.trial_id),
-                retry=True,
-            )
+            return validated_retry(current_review)
         raise ValueError("Trial is not available for review")
     active_trial, _ = _active_trial_and_domain(state)
     if request.trial_id != active_trial:
@@ -716,20 +821,25 @@ def review_trial(
     review["identity"] = _identity(review)
     existing = (state.get("trial_reviews") or {}).get(request.trial_id)
     if isinstance(existing, dict) and existing.get("identity") == review["identity"]:
-        return _result(
-            "success",
-            state,
-            review=_review_output(existing),
-            result=result,
-            domain_findings=_review_domain_findings(root, state, request.trial_id),
-            retry=True,
-        )
+        return validated_retry(existing)
     if request.expected_revision != state.get("revision", 0):
         raise WorkflowConflict(request.expected_revision, int(state.get("revision", 0)))
     reviews = dict(state.get("trial_reviews", {}))
     reviews[request.trial_id] = review
     next_state = {**state, "trial_reviews": reviews}
     records: dict[str, dict[str, Any]] = {f"trial_review:{review['identity']}": review}
+    if precommit_validator is not None:
+        pending_state = {**next_state, "revision": int(state.get("revision", 0)) + 1}
+        precommit_validator(
+            _result(
+                "success",
+                pending_state,
+                review=_review_output(review),
+                result=result,
+                domain_findings=_review_domain_findings(root, pending_state, request.trial_id),
+                continuation=_continuation(pending_state),
+            )
+        )
     state = _commit_records(
         root,
         next_state,

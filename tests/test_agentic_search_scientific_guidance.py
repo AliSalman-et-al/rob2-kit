@@ -351,3 +351,38 @@ def test_comparison_cards_keep_premise_specific_slots_and_question_bindings() ->
         assert {slot["name"] for slot in card["slots"]} == slot_names
         assert all(slot["status"] == "unknown" for slot in card["slots"])
         assert "empty passage group is unopened" in card["prompt"]
+
+
+def test_domain_cards_hold_d2_and_d5_paired_controls_constant() -> None:
+    d2 = _comparison_cards("domain:deviations", {}, {}, [], [])[0]["paired_examples"]
+    d2_by_id = {item["pair_id"]: item for item in d2}
+    protocol_pair = d2_by_id["d2-protocol-status-same-trial-context"]
+    protocol_left = " ".join(protocol_pair["left_facts"]).casefold()
+    protocol_right = " ".join(protocol_pair["right_facts"]).casefold()
+    assert "trial staff encouraged" in protocol_left and "permitted" in protocol_left
+    assert "trial staff encouraged the same" in protocol_right and "prohibited" in protocol_right
+
+    cause_pair = d2_by_id["d2-cause-same-protocol-inconsistency"]
+    cause_left = " ".join(cause_pair["left_facts"]).casefold()
+    cause_right = " ".join(cause_pair["right_facts"]).casefold()
+    assert "protocol prohibited rescue treatment" in cause_left
+    assert "protocol prohibited rescue treatment" in cause_right
+    assert "ordinary care" in cause_left
+    assert "trial staff directed" in cause_right
+
+    d5 = _comparison_cards("domain:selection", {}, {}, [], [])[0]["paired_examples"]
+    selection_pair = next(
+        item for item in d5 if item["pair_id"] == "d5-multiplicity-versus-selection"
+    )
+    selection_left = " ".join(selection_pair["left_facts"]).casefold()
+    selection_right = " ".join(selection_pair["right_facts"]).casefold()
+    for phrase in (
+        "three eligible analyses",
+        "all three were conducted",
+        "only the adjusted model was reported",
+    ):
+        assert phrase in selection_left
+        assert phrase in selection_right
+    assert "before unblinded results" in selection_left
+    assert "after unblinding" in selection_right
+    assert "because its estimate was favorable" in selection_right

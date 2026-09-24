@@ -13,7 +13,10 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from benchmark_contract import artifact_manifest_identity
+from benchmark_contract import artifact_manifest_identity, missing_result_scope_dimensions
+from verify_bundle import verify as verify_bundle_independently
+
+from rob2_kit.application._state import _identity as _canonical_identity
 
 DOMAINS = ("D1", "D2", "D3", "D4", "D5")
 DOMAIN_KEYS = {
@@ -157,6 +160,10 @@ def _expected_result(item: dict[str, Any]) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
+def _missing_result_scope(expected: dict[str, Any], _trial: object) -> list[str]:
+    return missing_result_scope_dimensions(expected)
+
+
 def _expected_dimensions(expected: dict[str, Any], trial: str) -> dict[str, Any]:
     endpoint = expected.get("endpoint")
     if not isinstance(endpoint, dict):
@@ -192,8 +199,16 @@ def _expected_dimensions(expected: dict[str, Any], trial: str) -> dict[str, Any]
                 expected.get("cutoff", expected.get("time_point_or_window", _MISSING)),
             ),
         ),
-        "estimate": expected.get("estimate", _MISSING),
-        "precision": expected.get("precision", _MISSING),
+        "estimate": (
+            expected_reported.get("estimate", _MISSING)
+            if expected_reported.get("form") == "comparative_effect"
+            else None
+        ),
+        "precision": (
+            expected_reported.get("precision", _MISSING)
+            if expected_reported.get("form") == "comparative_effect"
+            else None
+        ),
         "reported_scope": _reported_scope(expected_reported),
     }
     return values
@@ -261,6 +276,8 @@ def _bundle_snapshot(
     *,
     expected_result: dict[str, Any] | None = None,
     expected_trial: str | None = None,
+    require_attempt_history: bool = False,
+    require_independent_verification: bool = False,
 ) -> tuple[dict[str, Any] | None, str | None]:
     execution_path = run_dir / "execution.json"
     if not execution_path.exists():
@@ -274,6 +291,41 @@ def _bundle_snapshot(
         return None, f"execution state={state}" + (f", last phase={detail}" if detail else "")
     artifact = execution.get("artifact")
     authoritative = execution.get("schema") == "rob2-kit.rsi-execution.v1" or artifact is not None
+    selected_attempt_id = None
+    expected_result_hash = (
+        hashlib.sha256(
+            json.dumps(expected_result, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        if expected_result is not None
+        else None
+    )
+    qualified_attempts = isinstance(execution.get("attempts"), list)
+    if authoritative and isinstance(execution.get("attempts"), list):
+        attempts = execution["attempts"]
+        if not attempts or any(
+            not isinstance(item, dict)
+            or not isinstance(item.get("attempt_id"), str)
+            or not item["attempt_id"].strip()
+            or not isinstance(item.get("phase"), int)
+            for item in attempts
+        ):
+            return None, "execution attempt history is malformed"
+        selection = execution.get("selection_policy")
+        selected_attempt_id = (
+            selection.get("selected_attempt_id") if isinstance(selection, dict) else None
+        )
+        selected_rows = [item for item in attempts if item.get("attempt_id") == selected_attempt_id]
+        if not selected_rows:
+            return None, "execution selected attempt is missing or inconsistent"
+        if not isinstance(artifact, dict) or artifact.get("attempt_id") != selected_attempt_id:
+            return None, "execution artifact is not bound to the selected attempt"
+        if expected_result is not None and (
+            execution.get("expected_result_sha256") != expected_result_hash
+            or any(
+                row.get("expected_result_sha256") != expected_result_hash for row in selected_rows
+            )
+        ):
+            return None, "expected Result differs from the pre-execution attempt binding"
     bundles = sorted(run_dir.rglob("*.rob2.zip"))
     if len(bundles) != 1:
         return None, f"expected one verified bundle, found {len(bundles)}"
@@ -308,25 +360,33 @@ def _bundle_snapshot(
     if not isinstance(snapshot, dict):
         return None, "canonical snapshot is not an object"
     trial_key = next(iter(snapshots))
+    if expected_trial is not None and _norm_identity(trial_key) != _norm_identity(expected_trial):
+        return None, _SnapshotFailure(
+            f"trial scope mismatch: expected {expected_trial}, observed {trial_key}"
+        )
     proposal = canonical.get("proposal") if isinstance(canonical, dict) else None
     results = proposal.get("payload", {}).get("results") if isinstance(proposal, dict) else None
-    result = (
-        next(
-            (
-                item
-                for item in results
-                if isinstance(item, dict)
-                and (
-                    expected_trial is None
-                    or _norm_identity(item.get("trial_id"))
-                    in {_norm_identity(expected_trial), _norm_identity(trial_key)}
-                )
-            ),
-            None,
-        )
+    trial_results = (
+        [
+            item
+            for item in results
+            if isinstance(item, dict)
+            and _norm_identity(item.get("trial_id"))
+            in {_norm_identity(expected_trial or trial_key), _norm_identity(trial_key)}
+        ]
         if isinstance(results, list)
-        else None
+        else []
     )
+    snapshot_result_identity = snapshot.get("result_identity")
+    if isinstance(snapshot_result_identity, str):
+        trial_results = [
+            item for item in trial_results if _canonical_identity(item) == snapshot_result_identity
+        ]
+    elif authoritative and isinstance(execution.get("attempts"), list):
+        return None, "canonical snapshot is not bound to an approved Result identity"
+    result = trial_results[0] if len(trial_results) == 1 else None
+    if expected_result is not None and len(trial_results) != 1:
+        return None, "result scope mismatch: approved Result identity is missing or ambiguous"
     if expected_result is not None:
         if not isinstance(result, dict):
             return None, "result scope mismatch: approved Result is unavailable"
@@ -336,6 +396,20 @@ def _bundle_snapshot(
         )
         if mismatches:
             return None, _scope_mismatch_failure(mismatches)
+    if (
+        require_attempt_history
+        and authoritative
+        and not isinstance(execution.get("attempts"), list)
+    ):
+        return None, "execution attempt history is missing for a fresh benchmark"
+    if require_independent_verification:
+        verified, verification_message = verify_bundle_independently(bundles[0])
+        if not verified:
+            return None, f"independent bundle verification failed: {verification_message}"
+    if expected_result is not None and authoritative and not qualified_attempts:
+        return None, (
+            "historical run is unqualified because immutable attempt identity was not recorded"
+        )
     judgments = snapshot.get("domain_judgments")
     if not isinstance(judgments, dict):
         return None, "canonical domain_judgments is missing"
@@ -398,6 +472,7 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
     references = _load_reference(reference_root)
     scored: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
+    hard_failures: list[dict[str, Any]] = []
     for item in rows:
         if not isinstance(item, dict):
             excluded.append(
@@ -413,15 +488,62 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
         trial = item.get("trial")
         expected_result = _expected_result(item)
         if expected_result is None:
+            unresolved = item.get("scope_unresolved")
+            if isinstance(unresolved, str) and unresolved.strip():
+                excluded.append(
+                    {
+                        "outcome": outcome,
+                        "trial": trial,
+                        "primary_status": item.get("primary_status"),
+                        "result_scope": "scope_unresolved",
+                        "reason": unresolved.strip(),
+                    }
+                )
+            elif manifest.get("schema") == "rob2-kit.benchmark-manifest.v2":
+                excluded.append(
+                    {
+                        "outcome": outcome,
+                        "trial": trial,
+                        "primary_status": item.get("primary_status"),
+                        "result_scope": "historical_unscored",
+                        "reason": "expected_result is missing; historical run is unscored",
+                    }
+                )
+            else:
+                hard_failures.append(
+                    {
+                        "outcome": outcome,
+                        "trial": trial,
+                        "reason": (
+                            "new benchmark row has no frozen Result scope or "
+                            "scope_unresolved marker"
+                        ),
+                    }
+                )
+                excluded.append(
+                    {
+                        "outcome": outcome,
+                        "trial": trial,
+                        "result_scope": "missing_frozen_scope",
+                        "reason": (
+                            "new benchmark row has no frozen Result scope or "
+                            "scope_unresolved marker"
+                        ),
+                    }
+                )
+            continue
+        missing_scope = _missing_result_scope(expected_result, trial)
+        if missing_scope:
+            reason = "expected_result is incomplete; missing " + ", ".join(missing_scope)
             excluded.append(
                 {
                     "outcome": outcome,
                     "trial": trial,
-                    "primary_status": item.get("primary_status"),
-                    "result_scope": "historical_unscored",
-                    "reason": "expected_result is missing; historical run is unscored",
+                    "result_scope": "incomplete_frozen_scope",
+                    "reason": reason,
                 }
             )
+            hard_failures.append({"outcome": outcome, "trial": trial, "reason": reason})
             continue
         if (outcome, trial) not in references:
             excluded.append(
@@ -433,11 +555,14 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
             run_dir,
             expected_result=expected_result,
             expected_trial=trial,
+            require_attempt_history=(
+                manifest.get("schema") == "rob2-kit.trial-benchmark-manifest.v3"
+            ),
+            require_independent_verification=expected_result is not None,
         )
         if bundle is None:
-            failure_details = getattr(reason, "details", None) if isinstance(reason, str) else None
-            excluded.append(
-                {
+            failure_details = getattr(reason, "details", None)
+            exclusion = {
                     "outcome": outcome,
                     "trial": trial,
                     "primary_status": item.get("primary_status"),
@@ -448,7 +573,28 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
                         else {}
                     ),
                 }
-            )
+            excluded.append(exclusion)
+            if isinstance(item.get("expected_result"), dict):
+                try:
+                    execution_path = Path(item["run_dir"]) / "execution.json"
+                    execution = json.loads(execution_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError, TypeError):
+                    execution = {}
+                if (
+                    isinstance(execution, dict)
+                    and execution.get("schema") == "rob2-kit.rsi-execution.v1"
+                    and execution.get("state") == "succeeded"
+                    and (
+                        isinstance(execution.get("attempts"), list)
+                        or manifest.get("schema") != "rob2-kit.benchmark-manifest.v2"
+                    )
+                ):
+                    hard_failure = {
+                        key: exclusion[key] for key in ("outcome", "trial", "reason")
+                    }
+                    if failure_details is not None:
+                        hard_failure["result_scope_details"] = failure_details
+                    hard_failures.append(hard_failure)
             continue
         expected = references[(outcome, trial)]
         scored.append(
@@ -502,6 +648,7 @@ def score(manifest_path: Path, reference_root: Path) -> dict[str, Any]:
         "by_outcome_domain": by_outcome_domain,
         "by_primary_status": by_role,
         "excluded": excluded,
+        "hard_failures": hard_failures,
         "cases": scored,
     }
 
@@ -687,7 +834,7 @@ def main() -> int:
         print(f"benchmark scoring failed: {error}", file=sys.stderr)
         return 2
     print(json.dumps(result["scope"], sort_keys=True))
-    return 0
+    return 2 if result.get("hard_failures") else 0
 
 
 if __name__ == "__main__":

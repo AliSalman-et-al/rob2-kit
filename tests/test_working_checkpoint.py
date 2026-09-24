@@ -175,8 +175,10 @@ def test_working_checkpoint_yields_to_a_newer_canonical_domain_commit(tmp_path: 
     status = _call(workspace, "get_status", {})["data"]["working_checkpoint"]
     assert status["status"] == "stale"
     assert status["reason"] == "canonical_newer"
-    assert status["checkpoint"] is None
-    assert status["recovery"] == "resume_from_canonical_checkpoint"
+    assert status["checkpoint"] is not None
+    assert status["checkpoint"]["observations"]
+    assert status["stale_domains"] == [SCIENTIFIC_PACK.domains[0].id]
+    assert status["recovery"] == "resume_from_checkpoint"
 
 
 @pytest.mark.parametrize(
@@ -483,6 +485,22 @@ def test_investigation_projection_tracks_domain_dependency_and_unread_coverage(
             "unresolved_component": "The sequence and concealment procedure are not reported.",
             "stopping_rationale": "The captured report does not resolve this premise.",
             "domain_id": "domain:randomization",
+            "question_id": "sq:randomization:concealment",
+        },
+        {
+            "proposition": "The sequence was generated without foreknowledge.",
+            "status": "support",
+            "observations": [
+                {
+                    "text": "A separate observation was recorded for sequence generation.",
+                    "sources": [
+                        {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 1}
+                    ],
+                }
+            ],
+            "inference": "The reported sequence method supports unpredictability.",
+            "domain_id": "domain:randomization",
+            "question_id": "sq:randomization:sequence",
         }
     ]
     saved = _call(workspace, "save_working_checkpoint", {"checkpoint": checkpoint})
@@ -492,6 +510,10 @@ def test_investigation_projection_tracks_domain_dependency_and_unread_coverage(
     status = _call(workspace, "get_status", {})
     investigation = status["data"]["investigation"]
     assert investigation["status"] == "bounded"
+    assert [item["question_id"] for item in investigation["premises"]] == [
+        "sq:randomization:concealment",
+        "sq:randomization:sequence",
+    ]
     assert (
         investigation["stopping_rationale"]
         == checkpoint["premise_records"][0]["stopping_rationale"]
@@ -547,6 +569,66 @@ def test_investigation_projection_tracks_domain_dependency_and_unread_coverage(
         "premise_inference",
         "drafts",
         "stopping_rationale",
+    }
+
+
+def test_public_domain_context_foregrounds_active_unresolved_premise(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _proposal_waiting_for_review(workspace)
+    source_id = evidence["source_id"]
+    checkpoint = _checkpoint(source_id)
+    checkpoint["premise_records"] = [
+        {
+            "proposition": "Baseline groups were balanced.",
+            "status": "support",
+            "observations": [
+                {
+                    "text": "The baseline table reports comparable groups.",
+                    "sources": [
+                        {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 1}
+                    ],
+                }
+            ],
+            "inference": "The reported values suggest similar baseline characteristics.",
+            "domain_id": "domain:randomization",
+            "question_id": "sq:randomization:baseline-imbalance",
+        },
+        {
+            "proposition": "The allocation process remained concealed.",
+            "status": "unresolved",
+            "observations": [
+                {
+                    "text": "The accessible report does not describe allocation concealment.",
+                    "sources": [
+                        {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 1}
+                    ],
+                }
+            ],
+            "unresolved_component": "The concealment process is not described.",
+            "domain_id": "domain:randomization",
+            "question_id": "sq:randomization:concealment",
+        },
+    ]
+    saved = _call(workspace, "save_working_checkpoint", {"checkpoint": checkpoint})
+    assert saved["outcome"] == "success", saved
+    _review(workspace)
+
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )
+
+    investigation = context["data"]["investigation"]
+    assert investigation["proposition"] == "The allocation process remained concealed."
+    assert investigation["status"] == "unresolved"
+    assert {
+        item["question_id"] for item in investigation["premises"]
+    } == {
+        "sq:randomization:baseline-imbalance",
+        "sq:randomization:concealment",
     }
 
 

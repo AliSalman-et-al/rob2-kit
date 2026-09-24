@@ -1014,6 +1014,8 @@ def _valid_selected_evidence(
             expected |= {"start_line", "end_line"}
     elif kind == "figure" and "delivery_receipt" in item:
         expected.add("delivery_receipt")
+    if kind == "figure" and "uncertainty" in item:
+        expected.add("uncertainty")
     if set(item) != expected:
         return False
     source = sources.get(str(item.get("source_id")))
@@ -1082,6 +1084,15 @@ def _valid_selected_evidence(
         and bool(item["transcription"])
         and item["transcription"] == item["transcription"].strip()
         and item.get("provenance") in {"text_corroborated", "host_visual"}
+        and (
+            "uncertainty" not in item
+            or (
+                isinstance(item.get("uncertainty"), str)
+                and bool(item["uncertainty"].strip())
+                and item["uncertainty"] == item["uncertainty"].strip()
+                and len(item["uncertainty"]) <= 2_000
+            )
+        )
         and (
             "delivery_receipt" not in item
             or item.get("delivery_receipt")

@@ -85,6 +85,160 @@ def test_image_only_vector_page_needs_a_returned_image_before_selection(tmp_path
     assert selected["delivery_receipt"] == receipt
 
 
+def test_extractable_pdf_excerpt_has_exact_visual_layout_recovery(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    page = document.new_page()
+    page.insert_text((48, 48), "Outcome assessment")
+    page.insert_text((48, 96), "Arm A       10 events       Arm B       20 events")
+    document.save(workspace / "input" / "trial" / "table.pdf")
+    document.close()
+    source = _prepare(workspace)["table.pdf"]
+
+    listed = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": source["id"]},
+    )
+    navigation = listed["data"]["navigation"]
+    assert navigation["condition"] == "layout_inspection_available"
+    route = next(item for item in navigation["render_recovery"] if item["page"] == 1)
+    assert route == {
+        "operation": "render_page",
+        "trial_id": "trial",
+        "source_id": source["id"],
+        "page": 1,
+        "inline": True,
+    }
+
+    page = _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [1]},
+    )["data"]["pages"][0]
+    assert "10 events" in page["numbered_text"]
+    text_evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+
+    rendered = _call(
+        workspace,
+        "render_page",
+        {"trial_id": "trial", "source_id": route["source_id"], "page": route["page"]},
+    )
+    evidence = _call(
+        workspace,
+        "select_visual_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": route["source_id"],
+            "delivery_receipt": rendered["data"]["delivery_receipt"],
+            "transcription": "Arm A has 20 events and Arm B has 10 events.",
+            "region": [0.0, 0.0, 1.0, 1.0],
+        },
+    )["data"]["evidence"]
+
+    assert evidence["provenance"] == "host_visual"
+    assert evidence["render"]["page"] == 1
+    assert evidence["render"]["source_id"] == source["id"]
+    assert "Arm A" in text_evidence["quote"] and "10 events" in text_evidence["quote"]
+    assert "Arm A" in evidence["transcription"] and "20 events" in evidence["transcription"]
+    assert text_evidence["handle"] != evidence["handle"]
+
+
+def test_amended_repeated_section_keeps_conflicting_text_and_render_sources(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    visible_document = pymupdf.open()
+    original = visible_document.new_page()
+    original.insert_text((48, 48), "Outcome Definitions - original plan")
+    original.insert_text((48, 96), "Arm A 8 events; Arm B 12 events")
+    amended = visible_document.new_page()
+    amended.insert_text((48, 48), "Outcome Definitions - amended plan")
+    amended.insert_text((48, 96), "Arm A 20 events; Arm B 10 events")
+    visible_pages = [
+        page.get_pixmap(matrix=pymupdf.Matrix(2, 2)).tobytes("png")
+        for page in visible_document
+    ]
+    visible_document.close()
+
+    document = pymupdf.open()
+    for page_number, visible_png in enumerate(visible_pages, 1):
+        page = document.new_page()
+        page.insert_image(page.rect, stream=visible_png)
+        page.insert_text(
+            (48, 48),
+            "Outcome Definitions - original plan"
+            if page_number == 1
+            else "Outcome Definitions - amended plan",
+            render_mode=3,
+        )
+        page.insert_text(
+            (48, 96),
+            "Arm A 8 events; Arm B 12 events"
+            if page_number == 1
+            else "Arm A 10 events; Arm B 20 events",
+            render_mode=3,
+        )
+    document.save(workspace / "input" / "trial" / "amended-report.pdf")
+    document.close()
+    source = _prepare(workspace)["amended-report.pdf"]
+
+    pages = _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [1, 2]},
+    )["data"]["pages"]
+    assert "original plan" in pages[0]["numbered_text"]
+    assert "amended plan" in pages[1]["numbered_text"]
+    assert "Arm A 8 events" in pages[0]["numbered_text"]
+    assert "Arm A 10 events" in pages[1]["numbered_text"]
+
+    text_evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 2,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+    rendered = _call(
+        workspace,
+        "render_page",
+        {"trial_id": "trial", "source_id": source["id"], "page": 2},
+    )
+    visual_evidence = _call(
+        workspace,
+        "select_visual_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "delivery_receipt": rendered["data"]["delivery_receipt"],
+            "transcription": "Arm A 20 events; Arm B 10 events.",
+            "region": [0.0, 0.0, 1.0, 1.0],
+        },
+    )["data"]["evidence"]
+
+    assert text_evidence["quote"] == "Arm A 10 events; Arm B 20 events"
+    assert text_evidence["page"] == 2
+    assert visual_evidence["provenance"] == "host_visual"
+    assert visual_evidence["render"]["page"] == 2
+    assert visual_evidence["delivery_receipt"] == rendered["data"]["delivery_receipt"]
+    assert text_evidence["handle"] != visual_evidence["handle"]
+
+
 def test_narrative_and_vector_figure_remain_separate_evidence(
     tmp_path: Path,
 ) -> None:
@@ -212,6 +366,7 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
                 "risk ratio; risk; 1; events; 2."
             ),
             "region": [0.0, 0.2, 1.0, 1.0],
+            "uncertainty": "The event-count label is partly obscured by the diagram line.",
         },
     )["data"]["evidence"]
     assert selected["provenance"] == "host_visual"
@@ -251,4 +406,8 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
     result_records = canonical["proposal"]["payload"]["results"][0]["evidence"]
     result_record = next(item for item in result_records if item["kind"] == "figure")
     assert selected_record["delivery_receipt"] == rendered["data"]["delivery_receipt"]
+    assert selected_record["uncertainty"] == (
+        "The event-count label is partly obscured by the diagram line."
+    )
     assert result_record["delivery_receipt"] == selected_record["delivery_receipt"]
+    assert result_record["handle"] == selected["handle"]

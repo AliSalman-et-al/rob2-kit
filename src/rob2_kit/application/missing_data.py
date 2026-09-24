@@ -9,6 +9,7 @@ from typing import Any
 from ..workflow_models import MissingDataRow
 
 _BASIS = re.compile(r"^(?:eh_[0-9a-f]{16}|sha256:[0-9a-f]{64})$")
+_RESULT_SCOPE_FIELDS = ("result_identity", "endpoint", "severity", "window", "event_definition")
 
 
 def normalize_missing_data_row(row: MissingDataRow | Mapping[str, Any]) -> dict[str, Any]:
@@ -102,7 +103,9 @@ def reconcile_missing_data(
             else:
                 item["missing_bounds"] = None
 
-        key = scope
+        # Reports for different approved Results or endpoint definitions are
+        # separate scopes even when their participant-flow labels coincide.
+        key = (*scope, *(item.get(field) for field in _RESULT_SCOPE_FIELDS))
         fields = (
             "result_identity",
             "endpoint",
@@ -123,7 +126,15 @@ def reconcile_missing_data(
         comparable = tuple(item.get(field) for field in fields)
         prior = seen.get(key)
         if prior is not None and tuple(prior.get(field) for field in fields) != comparable:
-            conflicts.append({"scope": item["scope"], "reports": [prior, item]})
+            conflicts.append(
+                {
+                    "scope": {
+                        **item["scope"],
+                        **{field: item.get(field) for field in _RESULT_SCOPE_FIELDS},
+                    },
+                    "reports": [prior, item],
+                }
+            )
         else:
             seen[key] = item
         normalized.append(item)

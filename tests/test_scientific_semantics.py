@@ -55,7 +55,7 @@ def test_missing_data_exposes_only_scope_compatible_bounds() -> None:
     assert row["endpoint"] == "all-cause mortality"
 
 
-def test_incompatible_endpoint_reports_remain_conflicts() -> None:
+def test_different_endpoint_scopes_are_not_reconciled_as_conflicts() -> None:
     base = {
         "arm": "active",
         "population": "all randomized participants",
@@ -69,11 +69,51 @@ def test_incompatible_endpoint_reports_remain_conflicts() -> None:
         [base | {"endpoint": "mortality"}, base | {"endpoint": "hospitalization"}]
     )
 
-    assert len(result["conflicts"]) == 1
-    assert {row["endpoint"] for row in result["conflicts"][0]["reports"]} == {
-        "mortality",
-        "hospitalization",
+    assert result["conflicts"] == []
+
+
+def test_conflicting_reports_within_one_result_scope_are_retained() -> None:
+    base = {
+        "arm": "active",
+        "population": "all randomized participants",
+        "unit": "participants",
+        "time_point": "day 90",
+        "result_identity": "sha256:" + "d" * 64,
+        "endpoint": "mortality",
+        "window": "day 90",
+        "randomized": 100,
+        "basis": ["sha256:" + "b" * 64],
     }
+    result = reconcile_missing_data([base | {"observed": 95}, base | {"observed": 92}])
+
+    assert len(result["conflicts"]) == 1
+    assert result["conflicts"][0]["scope"]["result_identity"] == base["result_identity"]
+
+
+def test_unknown_participant_flow_stages_remain_visible_per_result_scope() -> None:
+    rows = [
+        {
+            "arm": "active",
+            "population": "all randomized participants",
+            "unit": "participants",
+            "time_point": "day 90",
+            "result_identity": "sha256:" + marker * 64,
+            "endpoint": endpoint,
+            "window": "day 90",
+            "randomized": 100,
+        }
+        for marker, endpoint in (("e", "mortality"), ("f", "hospitalization"))
+    ]
+
+    cards = _comparison_cards("domain:missing", _result(), {}, [], [], preview_missing_data=rows)
+    unknown_observed = [
+        row
+        for row in cards[0]["participant_flow"]
+        if row["kind"] == "observed" and row["status"] == "unknown"
+    ]
+
+    assert len(unknown_observed) == 2
+    assert {row["endpoint"] for row in unknown_observed} == {"mortality", "hospitalization"}
 
 
 def test_incompatible_counts_do_not_produce_a_bound() -> None:

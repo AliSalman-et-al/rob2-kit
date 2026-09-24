@@ -360,6 +360,7 @@ def investigation_projection(
     *,
     workflow_permission: dict[str, Any] | None = None,
     sufficiency: tuple[str, str] | None = None,
+    active_question_ids: tuple[str, ...] | None = None,
 ) -> dict[str, Any] | None:
     """Project the existing working checkpoint into a host-facing investigation view.
 
@@ -470,13 +471,32 @@ def investigation_projection(
             "stale": (),
             "checkpoint_identity": None,
             "legacy": "supported",
+            "premises": (),
         }
     records = tuple(
         item.model_dump(mode="json", exclude_none=True)
         for item in (checkpoint.premise_records or ())
         if domain_id is None or item.domain_id in {None, domain_id}
     )
-    premise = records[0] if records else None
+    records = tuple(
+        sorted(records, key=lambda item: (str(item.get("question_id") or ""), item["proposition"]))
+    )
+    active_order = {
+        question_id: index
+        for index, question_id in enumerate(active_question_ids or ())
+    }
+    unresolved_status = {"unresolved": 0, "bounded": 1, "contradiction": 2}
+    premise = min(
+        records,
+        key=lambda item: (
+            0 if item.get("question_id") in active_order else 1,
+            unresolved_status.get(item.get("status"), 3),
+            active_order.get(item.get("question_id"), len(active_order)),
+            str(item.get("question_id") or ""),
+            str(item["proposition"]),
+        ),
+        default=None,
+    )
     if premise is None:
         # A legacy/general checkpoint may still contain useful observations even
         # before a Domain-specific proposition has been written.
@@ -546,9 +566,15 @@ def investigation_projection(
         item.model_dump(mode="json", exclude_none=True) for item in checkpoint.observations
     )
     premise_observations = tuple(premise.get("observations", ())) if premise else ()
+    all_premise_observations = tuple(
+        note
+        for record in records
+        for note in record.get("observations", ())
+        if isinstance(note, dict)
+    )
     support = premise_observations if premise and premise.get("status") == "support" else ()
     counterevidence = tuple(premise.get("counterevidence", ())) if premise else ()
-    observed = set(_note_source_ids(tuple(observations) + tuple(premise_observations)))
+    observed = set(_note_source_ids(tuple(observations) + all_premise_observations))
     unread = tuple(sorted({item.source_id for item in checkpoint.unread_ranges}))
     coverage_state = (
         "invalidated"
@@ -653,7 +679,7 @@ def investigation_projection(
             "source_scope": source_scope,
             "observed_sources": tuple(sorted(observed)),
             "unread_sources": unread,
-            "observed_note_count": len(observations) + len(premise_observations),
+            "observed_note_count": len(observations) + len(all_premise_observations),
             "state": coverage_state,
         },
         "observations": observations,
@@ -665,6 +691,7 @@ def investigation_projection(
         "stale": stale,
         "checkpoint_identity": checkpoint.identity,
         "legacy": "reorientation_required" if legacy else "supported",
+        "premises": records,
     }
 
 
@@ -722,18 +749,39 @@ def working_checkpoint_status(
         reason = "result_changed"
     elif checkpoint.source_scope != _source_scope(state, trial_id):
         reason = "source_changed"
-    elif (
-        checkpoint.domain_checkpoint_identities is not None
-        and checkpoint.domain_checkpoint_identities
-        != _domain_checkpoint_identities(state, trial_id)
-    ):
+    current_bindings = {
+        item.domain_id: item.checkpoint_identity
+        for item in _domain_checkpoint_bindings(state, trial_id)
+    }
+    saved_bindings = {
+        item.domain_id: item.checkpoint_identity
+        for item in (checkpoint.domain_checkpoint_bindings or ())
+    }
+    stale_domains = tuple(
+        sorted(
+            key
+            for key in set(current_bindings) | set(saved_bindings)
+            if current_bindings.get(key) != saved_bindings.get(key)
+        )
+    )
+    canonical_changed = (
+        bool(stale_domains)
+        if checkpoint.domain_checkpoint_bindings is not None
+        else (
+            checkpoint.domain_checkpoint_identities is not None
+            and checkpoint.domain_checkpoint_identities
+            != _domain_checkpoint_identities(state, trial_id)
+        )
+    )
+    if reason is None and canonical_changed:
         return {
             "status": "stale",
             "reason": "canonical_newer",
             "trial_id": trial_id,
             "checkpoint_identity": checkpoint.identity,
-            "checkpoint": None,
-            "recovery": "resume_from_canonical_checkpoint",
+            "checkpoint": checkpoint.model_dump(mode="json", exclude_none=True),
+            "stale_domains": stale_domains,
+            "recovery": "resume_from_checkpoint",
         }
     if reason is not None:
         return {
@@ -742,6 +790,7 @@ def working_checkpoint_status(
             "trial_id": trial_id,
             "checkpoint_identity": checkpoint.identity,
             "checkpoint": None,
+            "stale_domains": (),
             "recovery": "reorient_from_sources",
         }
     return {
@@ -750,5 +799,6 @@ def working_checkpoint_status(
         "trial_id": trial_id,
         "checkpoint_identity": checkpoint.identity,
         "checkpoint": checkpoint.model_dump(mode="json", exclude_none=True),
+        "stale_domains": (),
         "recovery": "resume_from_checkpoint",
     }

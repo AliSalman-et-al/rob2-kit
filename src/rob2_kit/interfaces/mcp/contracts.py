@@ -224,6 +224,7 @@ class DomainContextRecovery(PublicModel):
 class ConditionData(PublicModel):
     code: str = Field(min_length=1)
     detail: str = Field(min_length=1)
+    action: str | None = Field(default=None, min_length=1)
 
 
 class DomainContextDeliveryCondition(ConditionData):
@@ -697,6 +698,7 @@ class WorkingCheckpointStatus(PublicModel):
     trial_id: TrialId | None = None
     checkpoint_identity: Identity | None = None
     checkpoint: WorkingCheckpointData | None = None
+    stale_domains: tuple[DomainId, ...] = ()
     recovery: Literal[
         "reorient_from_sources",
         "resume_from_checkpoint",
@@ -769,6 +771,7 @@ class InvestigationView(PublicModel):
     observations: tuple[WorkingNoteData, ...] = ()
     support: tuple[WorkingNoteData, ...] = ()
     counterevidence: tuple[WorkingNoteData, ...] = ()
+    premises: tuple[WorkingPremiseRecordData, ...] = ()
     unresolved: str | None = Field(default=None, min_length=1, max_length=4_000)
     recovery_choices: tuple[InvestigationRecoveryChoice, ...] = ()
     stopping_rationale: str | None = Field(default=None, min_length=1, max_length=4_000)
@@ -893,11 +896,24 @@ class SourceNavigationEntry(PublicModel):
         "date_lead",
         "cross_reference_lead",
     ]
-    date_kind: Literal["capture", "version", "amendment", "cutoff", "template"] | None = Field(
+    date_kind: Literal[
+        "capture",
+        "version",
+        "amendment",
+        "cutoff",
+        "template",
+        "submission",
+        "posting",
+        "approval",
+        "finalization",
+        "retrieval",
+        "unblinded_access",
+    ] | None = Field(
         default=None,
         description=(
-            "Explicit date context copied from the Source when it is lexically present; "
-            "null means no date classification was made."
+            "Explicit lexical date context copied from the Source. Posting, approval, "
+            "finalization, retrieval, and actual unblinded access are distinct events; null "
+            "means no date classification was made."
         ),
     )
     logical_section: str | None = Field(
@@ -964,12 +980,19 @@ class SourceNavigationData(PublicModel):
     )
     truncated: StrictBool
     next_cursor: str | None = None
-    condition: Literal["no_text_projection"] | None = None
+    condition: Literal["no_text_projection", "layout_inspection_available"] | None = Field(
+        default=None,
+        description=(
+            "no_text_projection marks pages without extracted text; layout_inspection_available "
+            "marks a PDF page excerpt with an exact render route for optional direct inspection."
+        ),
+    )
     render_recovery: tuple[RenderRecovery, ...] = Field(
         default=(),
         description=(
-            "Exact render_page operations for pages without a text projection. Rendering proves "
-            "pixel delivery only; the host must inspect or transcribe the result."
+            "Exact render_page operations for pages without extracted text and for page excerpts "
+            "where direct layout inspection may help. Rendering proves pixel delivery only; the "
+            "host must inspect or transcribe the result."
         ),
     )
     version_spans: tuple[SourceNavigationEntry, ...] = Field(
@@ -2006,7 +2029,6 @@ class ComparisonPassageGroup(PublicModel):
     logical_path: str = Field(min_length=1)
     page_count: PageNumber
     sha256: Identity
-    projection_hash: Identity
     source_origin: SourceOrigin
     registry_url: str | None = None
     registry_retrieved_at: str | None = None
@@ -2146,6 +2168,17 @@ class MissingDataScope(PublicModel):
     population: str = Field(min_length=1)
     unit: str = Field(min_length=1)
     time_point: str = Field(min_length=1)
+    result_identity: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
+    endpoint: str | None = Field(
+        default=None, min_length=1, exclude_if=lambda value: value is None
+    )
+    severity: str | None = Field(
+        default=None, min_length=1, exclude_if=lambda value: value is None
+    )
+    window: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
+    event_definition: str | None = Field(
+        default=None, min_length=1, exclude_if=lambda value: value is None
+    )
 
 
 class ParticipantFlowProjection(PublicModel):
@@ -2163,10 +2196,17 @@ class ParticipantFlowProjection(PublicModel):
     ]
     value: StrictInt | None = Field(default=None, ge=0)
     status: Literal["supported", "unknown", "conflicted"] = "unknown"
-    result_identity: Identity | None = None
-    endpoint: str | None = Field(default=None, min_length=1)
-    severity: str | None = Field(default=None, min_length=1)
-    window: str | None = Field(default=None, min_length=1)
+    result_identity: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
+    endpoint: str | None = Field(
+        default=None, min_length=1, exclude_if=lambda value: value is None
+    )
+    severity: str | None = Field(
+        default=None, min_length=1, exclude_if=lambda value: value is None
+    )
+    window: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
+    event_definition: str | None = Field(
+        default=None, min_length=1, exclude_if=lambda value: value is None
+    )
     scope: MissingDataScope
     passages: tuple[ComparisonPassageRef, ...] = ()
 
@@ -2411,7 +2451,14 @@ class ReviewEvidenceReference(PublicModel):
 class ReviewFact(PublicModel):
     """One source-bound fact shown before the host's answer warrant."""
 
-    text: str = Field(min_length=1, max_length=4_000)
+    text: str = Field(
+        min_length=1,
+        max_length=4_000,
+        description=(
+            "Bounded source excerpt, at most 4,000 characters. Use evidence_expansions for exact "
+            "recovery when more context is needed."
+        ),
+    )
     evidence: ReviewEvidenceReference | None = None
     role: Literal["support", "counterevidence", "context"] = "support"
 
@@ -2435,9 +2482,17 @@ class ReviewConflict(PublicModel):
         "contradiction",
         "unsupported_link",
         "accessible_uninvestigated_route",
+        "potential_scope_mismatch",
     ]
     detail: str = Field(min_length=1, max_length=4_000)
-    assertion: Literal["host_asserted"] = "host_asserted"
+    assertion: Literal["host_asserted", "server_derived"] = Field(
+        default="host_asserted",
+        description=(
+            "Whether a conflict was reported by the host or derived by comparing typed, "
+            "source-bound records. A server-derived scope difference is a review signal, "
+            "not an assessor judgment."
+        ),
+    )
     evidence: tuple[ReviewEvidenceReference, ...] = ()
 
 
@@ -2704,6 +2759,16 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
 def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
     """Drop only context fields that are inapplicable in this projection."""
 
+    def clean_conditions(node: object) -> None:
+        if isinstance(node, dict):
+            if "code" in node and "detail" in node and node.get("action") is None:
+                node.pop("action", None)
+            for child in node.values():
+                clean_conditions(child)
+        elif isinstance(node, list):
+            for child in node:
+                clean_conditions(child)
+
     def clean_search_actions(node: object) -> None:
         if isinstance(node, dict):
             if node.get("operation") == "search_sources" and node.get("purpose_domain_id") is None:
@@ -2734,6 +2799,8 @@ def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
     if isinstance(data, dict) and data.get("evidence_sufficiency") is None:
         data.pop("evidence_sufficiency", None)
     clean_search_actions(data)
+    clean_conditions(value.get("condition"))
+    clean_conditions(data)
     return value
 
 

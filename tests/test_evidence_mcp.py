@@ -33,6 +33,48 @@ from rob2_kit.application.source_handles import resolve_source_handle
 from rob2_kit.packs import SCIENTIFIC_PACK
 
 
+def test_source_navigation_distinguishes_posting_approval_retrieval_and_unblinding_dates(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "dates.txt").write_text(
+        "Registry submitted: January 1, 2024.\n"
+        "Registry posted: January 15, 2024.\n"
+        "Protocol approved: February 2, 2024.\n"
+        "SAP finalized: March 3, 2024.\n"
+        "Registry content retrieved: April 4, 2024.\n"
+        "Investigators were unblinded to outcomes on May 5, 2024.\n",
+        encoding="utf-8",
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "dates.txt"
+    )
+
+    navigation = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": source["id"]},
+    )["data"]["navigation"]
+
+    date_kinds = {item["date_kind"] for item in navigation["date_spans"]}
+    assert date_kinds >= {
+        "posting",
+        "submission",
+        "approval",
+        "finalization",
+        "retrieval",
+        "unblinded_access",
+    }
+    submission = next(
+        item for item in navigation["date_spans"] if item["date_kind"] == "submission"
+    )
+    posting = next(item for item in navigation["date_spans"] if item["date_kind"] == "posting")
+    assert submission["text"] != posting["text"]
+
+
 def test_broad_truncated_any_search_continues_the_issued_query(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").unlink()

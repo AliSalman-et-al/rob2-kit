@@ -407,7 +407,10 @@ class MissingDataRow(StrictModel):
     time_point: NonBlankText = Field(description="Outcome time point represented by this row.")
     result_identity: Identity | None = Field(
         default=None,
-        description="Identity of the exact approved Result represented by this row, when known.",
+        description=(
+            "Identity of the exact approved Result represented by this row. Omit when drafting; "
+            "the server binds the row to the approved Result."
+        ),
     )
     endpoint: NonBlankText | None = Field(
         default=None,
@@ -1742,8 +1745,10 @@ class DomainAnswer(StrictModel):
         default=None,
         min_length=1,
         description=(
-            "Optional scope-matched randomized/observed counts for the Domain 3.1 "
-            "outcome-availability question."
+            "Optional source-bound participant-flow facts for the always-active Domain 2.6 "
+            "analysis question, the Domain 2.3 deviation question, or the Domain 3.1 "
+            "outcome-availability question. Counts remain descriptive and do not answer "
+            "any question."
         ),
     )
     justification: str | None = Field(
@@ -1818,9 +1823,15 @@ class DomainAnswer(StrictModel):
         return value
 
     @model_validator(mode="after")
-    def missing_data_is_domain_3_only(self) -> DomainAnswer:
-        if self.missing_data is not None and self.question_id != "sq:missing:data-available":
-            raise ValueError("missing_data is only valid for question 'sq:missing:data-available'")
+    def missing_data_has_flow_question(self) -> DomainAnswer:
+        if self.missing_data is not None and self.question_id not in {
+            "sq:deviations:context-deviations",
+            "sq:deviations:appropriate-analysis",
+            "sq:missing:data-available",
+        }:
+            raise ValueError(
+                "missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1"
+            )
         return self
 
 
@@ -1875,8 +1886,10 @@ class DomainSaveAnswer(StrictModel):
         default=None,
         min_length=1,
         description=(
-            "Optional scope-matched randomized/observed counts for the Domain 3.1 "
-            "outcome-availability question."
+            "Optional source-bound participant-flow facts for the always-active Domain 2.6 "
+            "analysis question, the Domain 2.3 deviation question, or the Domain 3.1 "
+            "outcome-availability question. Counts remain descriptive and do not answer "
+            "any question."
         ),
     )
     justification: str | None = Field(
@@ -1895,9 +1908,15 @@ class DomainSaveAnswer(StrictModel):
         return value
 
     @model_validator(mode="after")
-    def missing_data_is_domain_3_only(self) -> DomainSaveAnswer:
-        if self.missing_data is not None and self.question_id != "sq:missing:data-available":
-            raise ValueError("missing_data is only valid for question 'sq:missing:data-available'")
+    def missing_data_has_flow_question(self) -> DomainSaveAnswer:
+        if self.missing_data is not None and self.question_id not in {
+            "sq:deviations:context-deviations",
+            "sq:deviations:appropriate-analysis",
+            "sq:missing:data-available",
+        }:
+            raise ValueError(
+                "missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1"
+            )
         return self
 
 

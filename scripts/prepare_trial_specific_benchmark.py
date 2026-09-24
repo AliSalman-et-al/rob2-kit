@@ -6,9 +6,17 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import os
+import uuid
 from pathlib import Path
 from typing import Any
+
+from benchmark_contract import (
+    ATTEMPT_POLICY,
+    contradictory_result_scope_dimensions,
+    missing_result_scope_dimensions,
+)
 
 
 def _relative_source(case_parent: Path, source_root: Path, relative_name: str) -> str:
@@ -28,10 +36,40 @@ def _load_rows(path: Path) -> list[dict[str, str]]:
         "source_locator",
         "reference_label_available",
     }
-    if not rows or set(rows[0]) != required:
-        raise ValueError(f"metadata must contain exactly {sorted(required)}")
+    if not rows or set(rows[0]) not in (required, required | {"expected_result"}):
+        raise ValueError(
+            f"metadata must contain exactly {sorted(required)} or those fields plus expected_result"
+        )
     if any(row["reference_label_available"].lower() != "yes" for row in rows):
         raise ValueError("fresh benchmark metadata must contain labelled cases only")
+    seen: set[tuple[str, str]] = set()
+    for row in rows:
+        key = (
+            "".join(character for character in row["outcome"].casefold() if character.isalnum()),
+            "".join(character for character in row["trial"].casefold() if character.isalnum()),
+        )
+        if key in seen:
+            raise ValueError(f"duplicate fresh benchmark case: {row['outcome']}/{row['trial']}")
+        seen.add(key)
+        raw_expected = row.get("expected_result", "")
+        if raw_expected.strip():
+            expected = json.loads(raw_expected)
+            if not isinstance(expected, dict):
+                raise ValueError(f"expected_result must be a JSON object for {row['trial']}")
+            if expected.get("trial", expected.get("trial_id")) != row["trial"]:
+                raise ValueError(f"expected_result trial must match metadata trial {row['trial']}")
+            missing = missing_result_scope_dimensions(expected)
+            if missing:
+                raise ValueError(
+                    f"expected_result for {row['trial']} does not freeze complete scope; missing "
+                    + ", ".join(missing)
+                )
+            contradictory = contradictory_result_scope_dimensions(expected)
+            if contradictory:
+                raise ValueError(
+                    f"expected_result for {row['trial']} has conflicting scope fields: "
+                    + ", ".join(contradictory)
+                )
     return rows
 
 
@@ -40,6 +78,8 @@ def _case_manifest(
     source_case: dict[str, Any],
     outcome: str,
     manifest_path: Path,
+    campaign_id: str,
+    expected_result: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     case_parent = manifest_path.parent
     sources = []
@@ -58,20 +98,41 @@ def _case_manifest(
         registry["sha256"] = hashlib.sha256(
             (source_dir / source_case["registry_capture"]["path"]).read_bytes()
         ).hexdigest()
-    return {
+    case = {
         "registry_capture": registry,
         "requested_outcome": outcome,
         "schema": source_case["schema"],
         "sources": sources,
         "trial": source_case["trial"],
+        "campaign_id": campaign_id,
     }
+    if expected_result is not None:
+        case["expected_result"] = expected_result
+    else:
+        case["scope_unresolved"] = (
+            "The supplied benchmark metadata did not freeze a complete trial-specific "
+            "Result before model execution."
+        )
+    return case
+
+
+def _load_source_case(path: Path, trial: str) -> dict[str, Any]:
+    source_case = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(source_case, dict) or source_case.get("trial") != trial:
+        raise ValueError(f"source qualification case trial must match metadata trial {trial}")
+    return source_case
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--metadata", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--timeout-seconds", type=float)
     args = parser.parse_args()
+    if args.timeout_seconds is not None and (
+        not math.isfinite(args.timeout_seconds) or args.timeout_seconds <= 0
+    ):
+        parser.error("--timeout-seconds must be a positive finite number")
 
     repo = Path(__file__).resolve().parents[1]
     metadata_path = args.metadata.resolve(strict=True)
@@ -79,26 +140,39 @@ def main() -> None:
     if output.exists():
         raise SystemExit(f"refusing to overwrite existing fresh benchmark root: {output}")
     rows = _load_rows(metadata_path)
+    campaign_id = uuid.uuid4().hex
     output.mkdir(parents=True)
     (output / "cases").mkdir()
     (output / "prompts").mkdir()
     (output / "runs").mkdir()
     (output / "continuation.txt").write_text("Continue.\n", encoding="utf-8")
 
-    index: list[dict[str, str]] = []
+    index: list[dict[str, Any]] = []
     for row in rows:
         outcome_slug = row["outcome"].lower().replace(" ", "-")
         source_dir = repo / "eval" / "reference" / "sources" / row["trial"]
         source_case_path = source_dir / "qualification-case.json"
-        source_case = json.loads(source_case_path.read_text(encoding="utf-8"))
+        source_case = _load_source_case(source_case_path, row["trial"])
         case_path = output / "cases" / outcome_slug / f"{row['trial']}.json"
         prompt_path = output / "prompts" / outcome_slug / f"{row['trial']}.txt"
         run_dir = output / "runs" / outcome_slug / row["trial"]
         case_path.parent.mkdir(parents=True, exist_ok=True)
         prompt_path.parent.mkdir(parents=True, exist_ok=True)
+        expected_result = None
+        if "expected_result" in row and row["expected_result"].strip():
+            expected_result = json.loads(row["expected_result"])
+            if not isinstance(expected_result, dict):
+                raise ValueError(f"expected_result must be a JSON object for {row['trial']}")
         case_path.write_text(
             json.dumps(
-                _case_manifest(source_dir, source_case, row["outcome"], case_path),
+                _case_manifest(
+                    source_dir,
+                    source_case,
+                    row["outcome"],
+                    case_path,
+                    campaign_id,
+                    expected_result,
+                ),
                 ensure_ascii=False,
                 indent=2,
                 sort_keys=True,
@@ -113,24 +187,42 @@ def main() -> None:
             f"{definition}, {effect_size} in {row['trial']}."
         )
         prompt_path.write_text(prompt + "\n", encoding="utf-8")
-        index.append(
-            {
-                **row,
-                "case": str(case_path),
-                "prompt": str(prompt_path),
-                "run_dir": str(run_dir),
-            }
-        )
+        index_row: dict[str, Any] = {
+            **row,
+            "campaign_id": campaign_id,
+            **(
+                {
+                    "scope_unresolved": (
+                        "The supplied benchmark metadata did not freeze a complete "
+                        "trial-specific Result before model execution."
+                    )
+                }
+                if expected_result is None
+                else {}
+            ),
+            "case": str(case_path),
+            "prompt": str(prompt_path),
+            "run_dir": str(run_dir),
+        }
+        index_row.pop("expected_result", None)
+        if expected_result is not None:
+            index_row["expected_result"] = expected_result
+        index.append(index_row)
 
+    index_payload: dict[str, Any] = {
+        "schema": "rob2-kit.fresh-benchmark-index.v1",
+        "campaign_id": campaign_id,
+        "model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+        "attempt_policy": ATTEMPT_POLICY,
+        "metadata": str(metadata_path),
+        "cases": index,
+    }
+    if args.timeout_seconds is not None:
+        index_payload["timeout_seconds"] = args.timeout_seconds
     (output / "index.json").write_text(
         json.dumps(
-            {
-                "schema": "rob2-kit.fresh-benchmark-index.v1",
-                "model": "gpt-5.6-luna",
-                "effort": "medium",
-                "metadata": str(metadata_path),
-                "cases": index,
-            },
+            index_payload,
             ensure_ascii=False,
             indent=2,
         )

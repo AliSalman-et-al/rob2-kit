@@ -565,6 +565,38 @@ def test_finalize_requires_an_explicit_trial_closure(tmp_path: Path) -> None:
         finalization.finalize_batch(workspace, revision)
 
 
+def test_finalize_reports_independent_verification_failure_and_action(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace, _evidence, revision = _complete_assessment(tmp_path)
+    revision = _close_trials(workspace, revision)
+
+    def reject_bundle(_path: Path, *, diagnostic: dict[str, object] | None = None) -> bool:
+        if diagnostic is not None:
+            diagnostic.update(
+                {
+                    "code": "bundle_independent_verification_failed",
+                    "failed_check_line": 123,
+                    "detail": "The independent verifier rejected canonical evidence lineage.",
+                    "action": "Inspect the lineage and retry finalize_batch; do not override.",
+                }
+            )
+        return False
+
+    monkeypatch.setattr(finalization, "verify_bundle", reject_bundle)
+
+    response = _call(workspace, "finalize_batch", {"expected_revision": revision})
+
+    assert response["outcome"] == "condition", response
+    assert response["condition"]["code"] == "bundle_independent_verification_failed"
+    assert response["condition"]["detail"] == (
+        "The independent verifier rejected canonical evidence lineage."
+    )
+    assert "retry finalize_batch" in response["condition"]["action"]
+    assert response["head"]["state_revision"] == revision
+    assert not list((workspace / ".rob2-kit" / "finalized").glob("*.rob2.zip"))
+
+
 def test_finalize_response_projects_frozen_assessment_summary_and_retry(
     tmp_path: Path,
 ) -> None:

@@ -192,6 +192,16 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
         }
         for trial_id, item in raw_reading.items()
     }
+    active_record = (
+        (state.get("domain_records") or {}).get(f"{active_trial}:{_active_domain}")
+        if active_trial is not None and _active_domain is not None
+        else None
+    )
+    active_question_ids = (
+        tuple(active_record.get("active_questions", ()))
+        if isinstance(active_record, dict)
+        else None
+    )
     return _result(
         "success",
         state,
@@ -199,7 +209,13 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
         terminal_counts=public["counts"],
         continuation=_continuation(state),
         working_checkpoint=working_checkpoint_status(root, state, active_trial),
-        investigation=investigation_projection(root, state, active_trial, _active_domain),
+        investigation=investigation_projection(
+            root,
+            state,
+            active_trial,
+            _active_domain,
+            active_question_ids=active_question_ids,
+        ),
         trial_review=_current_trial_review(state),
         selected_evidence=_selected_evidence(root) if state.get("phase") == "proposal" else [],
         main_report_reading=main_report_reading,

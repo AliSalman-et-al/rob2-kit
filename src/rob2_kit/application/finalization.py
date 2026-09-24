@@ -4,6 +4,7 @@ import math
 import os
 import posixpath
 import re
+import sys
 import tempfile
 import unicodedata
 import zipfile
@@ -1104,6 +1105,8 @@ def _valid_selected_evidence(
             expected |= {"start_line", "end_line"}
     elif kind == "figure" and "delivery_receipt" in item:
         expected.add("delivery_receipt")
+    if kind == "figure" and "uncertainty" in item:
+        expected.add("uncertainty")
     if set(item) != expected:
         return False
     source = sources.get(str(item.get("source_id")))
@@ -1173,6 +1176,15 @@ def _valid_selected_evidence(
         and bool(item["transcription"])
         and item["transcription"] == item["transcription"].strip()
         and item.get("provenance") in {"text_corroborated", "host_visual"}
+        and (
+            "uncertainty" not in item
+            or (
+                isinstance(item.get("uncertainty"), str)
+                and bool(item["uncertainty"].strip())
+                and item["uncertainty"] == item["uncertainty"].strip()
+                and len(item["uncertainty"]) <= 2_000
+            )
+        )
         and (
             "delivery_receipt" not in item
             or item.get("delivery_receipt")
@@ -3349,14 +3361,19 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
+    verification_diagnostic: dict[str, object] = {}
     try:
-        verified = verify_bundle(target)
+        verified = verify_bundle(target, diagnostic=verification_diagnostic)
     except Exception:
         target.unlink(missing_ok=True)
         raise
     if not verified:
         target.unlink(missing_ok=True)
-        raise ValueError("finalized bundle failed independent verification")
+        raise ValueError(
+            json.dumps(verification_diagnostic, sort_keys=True)
+            if verification_diagnostic
+            else "finalized bundle failed independent verification"
+        )
     return {
         "path": target.relative_to(root).as_posix(),
         "identity": identity,
@@ -3500,8 +3517,28 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
     )
 
 
-def verify_bundle(path: str | Path) -> bool:
+def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None) -> bool:
     """Independently check a finalized bundle without opening the workspace."""
+
+    def fail() -> bool:
+        frame = sys._getframe(1)
+        if diagnostic is not None:
+            diagnostic.update(
+                {
+                    "code": "bundle_independent_verification_failed",
+                    "failed_check_line": frame.f_lineno,
+                    "detail": (
+                        "The independent verifier rejected a canonical bundle invariant at "
+                        f"finalization.py:{frame.f_lineno}."
+                    ),
+                    "action": (
+                        "Keep the artifact rejected. Inspect the named canonical invariant, "
+                        "correct its source-bound data through the normal workflow, then retry "
+                        "finalize_batch; the host cannot override verification."
+                    ),
+                }
+            )
+        return False
 
     def independent_identity(value: object) -> str:
         """Deliberately local identity implementation for artifact verification."""
@@ -3620,14 +3657,14 @@ def verify_bundle(path: str | Path) -> bool:
         with zipfile.ZipFile(path) as archive:
             names = archive.namelist()
             if names != sorted(names) or len(names) != len(set(names)):
-                return False
+                return fail()
             for info in archive.infolist():
                 if info.date_time != (1980, 1, 1, 0, 0, 0):
-                    return False
+                    return fail()
                 if info.external_attr != 0o644 << 16:
-                    return False
+                    return fail()
                 if info.compress_type != zipfile.ZIP_DEFLATED:
-                    return False
+                    return fail()
             if any(
                 name.startswith("/")
                 or ".." in Path(name).parts
@@ -3635,40 +3672,40 @@ def verify_bundle(path: str | Path) -> bool:
                 or posixpath.normpath(name) != name
                 for name in names
             ):
-                return False
+                return fail()
             forbidden = {".bin", "source_bytes", "prompts", "traces"}
             if any(
                 Path(name).suffix == ".bin" or any(part in forbidden for part in Path(name).parts)
                 for name in names
             ):
-                return False
+                return fail()
             manifest = json.loads(archive.read("manifest.json"))
             if not isinstance(manifest, dict) or set(manifest) != {"schema", "identity", "files"}:
-                return False
+                return fail()
             if manifest.get("schema") != "rob2-kit.bundle.v0.3":
-                return False
+                return fail()
             rows = manifest.get("files")
             if not isinstance(rows, list) or any(
                 not isinstance(row, dict) or set(row) != {"path", "sha256"} for row in rows
             ):
-                return False
+                return fail()
             row_paths = [row["path"] for row in rows]
             if len(row_paths) != len(set(row_paths)) or row_paths != sorted(row_paths):
-                return False
+                return fail()
             expected = set(row_paths) | {"manifest.json"}
             if set(names) != expected:
-                return False
+                return fail()
             for row in rows:
                 data = archive.read(row["path"])
                 if "sha256:" + hashlib.sha256(data).hexdigest() != row["sha256"]:
-                    return False
+                    return fail()
                 if str(row["path"]).endswith(".json"):
                     try:
                         parsed = json.loads(data)
                     except json.JSONDecodeError:
-                        return False
+                        return fail()
                     if _contains_forbidden_paths(parsed):
-                        return False
+                        return fail()
             canonical = archive.read("canonical.json")
             canonical_value = json.loads(canonical)
             legacy_canonical_fields = {
@@ -3693,7 +3730,7 @@ def verify_bundle(path: str | Path) -> bool:
                 "trial_closures" in canonical_value if isinstance(canonical_value, dict) else False
             )
             if has_trial_reviews != has_trial_closures:
-                return False
+                return fail()
             canonical_shapes = {
                 frozenset(legacy_canonical_fields),
                 frozenset(legacy_canonical_fields | {"proposal_history"}),
@@ -3711,10 +3748,10 @@ def verify_bundle(path: str | Path) -> bool:
             if not isinstance(canonical_value, dict) or set(canonical_value) not in (
                 *canonical_shapes,
             ):
-                return False
+                return fail()
             scientific_pack = canonical_value.get("scientific_pack")
             if not _valid_scientific_contract_descriptor(scientific_pack):
-                return False
+                return fail()
             semantics_version = (
                 scientific_pack.get(
                     "result_semantics_version", _HISTORICAL_RESULT_SEMANTICS_VERSION
@@ -3727,7 +3764,7 @@ def verify_bundle(path: str | Path) -> bool:
                 "rob2-kit.result-semantics.v0.7",
             }
             if not _valid_batch(canonical_value["batch"]):
-                return False
+                return fail()
             dispositions = canonical_value.get("dispositions")
             snapshots = canonical_value.get("snapshots")
             domains = canonical_value.get("domain_records")
@@ -3738,12 +3775,12 @@ def verify_bundle(path: str | Path) -> bool:
                 or not isinstance(domains, dict)
                 or not isinstance(terminals, dict)
             ):
-                return False
+                return fail()
             valid_dispositions = {"assessed", "needs_input", "failed"}
             if has_trial_reviews:
                 valid_dispositions.add("unsupported_design")
             if any(value not in valid_dispositions for value in dispositions.values()):
-                return False
+                return fail()
             batch_trial_ids = {trial["id"] for trial in canonical_value["batch"]["trials"]}
             current_proposal = canonical_value.get("proposal")
             current_payload = (
@@ -3788,7 +3825,7 @@ def verify_bundle(path: str | Path) -> bool:
                         independent_identity(result)
                     )
             if set(dispositions) != batch_trial_ids:
-                return False
+                return fail()
             terminal_trials: dict[str, int] = {}
             if not has_trial_reviews:
                 for identity, terminal in terminals.items():
@@ -3813,19 +3850,19 @@ def verify_bundle(path: str | Path) -> bool:
                         )
                         != identity
                     ):
-                        return False
+                        return fail()
                     trial_id = terminal["trial_id"]
                     if (
                         trial_id not in dispositions
                         or terminal.get("disposition") != dispositions[trial_id]
                         or trial_id in terminal_trials
                     ):
-                        return False
+                        return fail()
                     terminal_trials[trial_id] = 1
                 for trial_id, disposition in dispositions.items():
                     has_terminal = trial_id in terminal_trials
                     if (disposition in {"needs_input", "failed"}) != has_terminal:
-                        return False
+                        return fail()
 
             def domain_identity_payload(record: dict[str, Any]) -> dict[str, Any]:
                 fields = _domain_identity_fields(record, legacy_semantics=legacy_semantics)
@@ -3869,10 +3906,10 @@ def verify_bundle(path: str | Path) -> bool:
                         and "result_identity" not in record
                     )
                 ):
-                    return False
+                    return fail()
                 accounts = record.get("search_accounts")
                 if not isinstance(record.get("answers"), list) or not isinstance(accounts, list):
-                    return False
+                    return fail()
                 active_questions = record.get("active_questions")
                 inactive_questions = record.get("inactive_questions")
                 answers = record.get("answers")
@@ -3884,7 +3921,7 @@ def verify_bundle(path: str | Path) -> bool:
                     or len(set(inactive_questions)) != len(inactive_questions)
                     or set(active_questions) & set(inactive_questions)
                 ):
-                    return False
+                    return fail()
                 answer_map: dict[str, str] = {}
                 for answer in answers:
                     if (
@@ -3946,7 +3983,7 @@ def verify_bundle(path: str | Path) -> bool:
                         or not _valid_reasoning_annotations(answer)
                         or answer["question_id"] in answer_map
                     ):
-                        return False
+                        return fail()
                     answer_map[answer["question_id"]] = answer["answer"]
                 allowed_questions = {
                     item.id
@@ -3960,19 +3997,19 @@ def verify_bundle(path: str | Path) -> bool:
                         if question_id in allowed_questions
                     }
                 except ValueError:
-                    return False
+                    return fail()
                 if (
                     set(active_questions) | set(inactive_questions) != allowed_questions
                     or set(active_questions) != derived_active
                 ):
-                    return False
+                    return fail()
                 if set(answer_map) != set(active_questions):
-                    return False
+                    return fail()
                 account_by_identity = {
                     item.get("identity"): item for item in accounts if isinstance(item, dict)
                 }
                 if len(account_by_identity) != len(accounts):
-                    return False
+                    return fail()
                 sources = {
                     item.get("id"): item
                     for item in batch_trials.get(record.get("trial_id"), [])
@@ -3986,13 +4023,13 @@ def verify_bundle(path: str | Path) -> bool:
                         sources,
                         independent_identity,
                     ):
-                        return False
+                        return fail()
                 for answer in answers:
                     direct_basis = False
                     uncertainty_basis = False
                     for use in answer["bases"]:
                         if not isinstance(use, dict):
-                            return False
+                            return fail()
                         if use.get("kind") in {
                             "direct_support",
                             "indirect_support",
@@ -4003,22 +4040,22 @@ def verify_bundle(path: str | Path) -> bool:
                             if not _valid_limitation_basis(
                                 use, account_by_identity, record.get("trial_id")
                             ):
-                                return False
+                                return fail()
                             uncertainty_basis = True
                             continue
                         if use.get("kind") == "absence":
                             if set(use) != {"kind", "search_receipt"}:
-                                return False
+                                return fail()
                             receipt = use.get("search_receipt")
                             if not isinstance(receipt, str) or receipt not in account_by_identity:
-                                return False
+                                return fail()
                             account = account_by_identity[receipt]
                             if (
                                 account.get("truncated") is not False
                                 or account.get("total_matches") != 0
                                 or account.get("condition") != "no_hits"
                             ):
-                                return False
+                                return fail()
                             uncertainty_basis = True
                             continue
                         if use.get("kind") not in {
@@ -4028,28 +4065,28 @@ def verify_bundle(path: str | Path) -> bool:
                             "context",
                             "inference",
                         }:
-                            return False
+                            return fail()
                         if use.get("kind") in {"context", "inference"}:
                             uncertainty_basis = True
                         if set(use) != {"kind", "evidence", "source"}:
-                            return False
+                            return fail()
                         evidence = evidence_by_identity.get(use.get("evidence"))
                         if not isinstance(evidence, dict) or evidence.get("trial_id") != record.get(
                             "trial_id"
                         ):
-                            return False
+                            return fail()
                         source = use.get("source")
                         if not isinstance(source, str) or not source:
-                            return False
+                            return fail()
                         material = str(evidence.get("quote") or evidence.get("transcription") or "")
                         if material != source:
-                            return False
+                            return fail()
                     if answer["answer"] in {"yes", "no"} and not direct_basis:
-                        return False
+                        return fail()
                     if answer["answer"] in {"probably_yes", "probably_no"} and not (
                         direct_basis or uncertainty_basis
                     ):
-                        return False
+                        return fail()
                 if "evidence_sufficiency" in record:
                     summary = record.get("evidence_sufficiency")
                     claims = summary.get("claims") if isinstance(summary, dict) else None
@@ -4060,7 +4097,7 @@ def verify_bundle(path: str | Path) -> bool:
                         or not claims
                         or summary.get("identity") != independent_identity({"claims": claims})
                     ):
-                        return False
+                        return fail()
                     claim_ids: list[str] = []
                     for claim in claims:
                         if (
@@ -4104,10 +4141,10 @@ def verify_bundle(path: str | Path) -> bool:
                                 for value in claim["unresolved_premises"]
                             )
                         ):
-                            return False
+                            return fail()
                         claim_ids.append(claim["question_id"])
                     if set(claim_ids) != set(answer_map):
-                        return False
+                        return fail()
             domain_history = canonical_value.get("domain_history")
             domain_history_records = canonical_value.get("domain_history_records")
             snapshot_history = canonical_value.get("snapshot_history")
@@ -4118,14 +4155,14 @@ def verify_bundle(path: str | Path) -> bool:
                 or not isinstance(snapshot_history, dict)
                 or not isinstance(snapshot_history_records, dict)
             ):
-                return False
+                return fail()
             if (
                 set(domain_history) != set(domains)
                 or set(domain_history_records) != set(domains)
                 or set(snapshot_history) != set(snapshots)
                 or set(snapshot_history_records) != set(snapshots)
             ):
-                return False
+                return fail()
             if not _verify_domain_lineage(
                 domain_history,
                 domain_history_records,
@@ -4134,11 +4171,11 @@ def verify_bundle(path: str | Path) -> bool:
                 independent_identity,
                 legacy_semantics=legacy_semantics,
             ):
-                return False
+                return fail()
             for key, historical in domain_history_records.items():
                 history = domain_history[key]
                 if not isinstance(history, list) or not history or not isinstance(historical, list):
-                    return False
+                    return fail()
                 for item, digest in zip(historical, history, strict=True):
                     item_identity_fields = (
                         _domain_identity_fields(item, legacy_semantics=legacy_semantics)
@@ -4169,7 +4206,7 @@ def verify_bundle(path: str | Path) -> bool:
                         or not isinstance(item.get("active_questions"), list)
                         or not isinstance(item.get("inactive_questions"), list)
                     ):
-                        return False
+                        return fail()
                     answer_map = {
                         answer.get("question_id"): answer.get("answer")
                         for answer in item["answers"]
@@ -4188,7 +4225,7 @@ def verify_bundle(path: str | Path) -> bool:
                         }
                         judgment = local_domain_judgment(item["domain_id"], answer_map)
                     except (KeyError, TypeError, ValueError):
-                        return False
+                        return fail()
                     if (
                         set(answer_map) != set(item["active_questions"])
                         or set(item["active_questions"]) != derived
@@ -4196,10 +4233,10 @@ def verify_bundle(path: str | Path) -> bool:
                         != allowed
                         or item.get("judgment") != judgment
                     ):
-                        return False
+                        return fail()
                     accounts = item["search_accounts"]
                     if not isinstance(accounts, list):
-                        return False
+                        return fail()
                     trial_sources = {
                         source.get("id"): source
                         for source in batch_trials.get(item.get("trial_id"), [])
@@ -4213,14 +4250,14 @@ def verify_bundle(path: str | Path) -> bool:
                             trial_sources,
                             independent_identity,
                         ):
-                            return False
+                            return fail()
                     history_account_by_identity = {
                         account.get("identity"): account
                         for account in accounts
                         if isinstance(account, dict)
                     }
                     if len(history_account_by_identity) != len(accounts):
-                        return False
+                        return fail()
                     account_ids = {
                         account.get("identity") for account in accounts if isinstance(account, dict)
                     }
@@ -4280,12 +4317,12 @@ def verify_bundle(path: str | Path) -> bool:
                                 )
                             )
                         ):
-                            return False
+                            return fail()
                         direct_basis = False
                         uncertainty_basis = False
                         for use in answer["bases"]:
                             if not isinstance(use, dict):
-                                return False
+                                return fail()
                             if use.get("kind") in {
                                 "direct_support",
                                 "indirect_support",
@@ -4296,7 +4333,7 @@ def verify_bundle(path: str | Path) -> bool:
                                 if not _valid_limitation_basis(
                                     use, history_account_by_identity, item.get("trial_id")
                                 ):
-                                    return False
+                                    return fail()
                                 uncertainty_basis = True
                                 continue
                             if use.get("kind") == "absence":
@@ -4304,14 +4341,14 @@ def verify_bundle(path: str | Path) -> bool:
                                     set(use) != {"kind", "search_receipt"}
                                     or use["search_receipt"] not in account_ids
                                 ):
-                                    return False
+                                    return fail()
                                 account = history_account_by_identity[use["search_receipt"]]
                                 if (
                                     account.get("truncated") is not False
                                     or account.get("total_matches") != 0
                                     or account.get("condition") != "no_hits"
                                 ):
-                                    return False
+                                    return fail()
                                 uncertainty_basis = True
                                 continue
                             if use.get("kind") not in {
@@ -4321,7 +4358,7 @@ def verify_bundle(path: str | Path) -> bool:
                                 "context",
                                 "inference",
                             } or set(use) != {"kind", "evidence", "source"}:
-                                return False
+                                return fail()
                             if use.get("kind") in {"context", "inference"}:
                                 uncertainty_basis = True
                             evidence = evidence_by_identity.get(use.get("evidence"))
@@ -4331,18 +4368,18 @@ def verify_bundle(path: str | Path) -> bool:
                                 or evidence.get("trial_id") != item.get("trial_id")
                                 or not isinstance(source, str)
                             ):
-                                return False
+                                return fail()
                             material = str(
                                 evidence.get("quote") or evidence.get("transcription") or ""
                             )
                             if material != source:
-                                return False
+                                return fail()
                         if answer["answer"] in {"yes", "no"} and not direct_basis:
-                            return False
+                            return fail()
                         if answer["answer"] in {"probably_yes", "probably_no"} and not (
                             direct_basis or uncertainty_basis
                         ):
-                            return False
+                            return fail()
                     if "evidence_sufficiency" in item and not _valid_evidence_sufficiency(
                         item["evidence_sufficiency"],
                         item["answers"],
@@ -4352,11 +4389,11 @@ def verify_bundle(path: str | Path) -> bool:
                         independent_identity,
                         legacy_semantics=legacy_semantics,
                     ):
-                        return False
+                        return fail()
             for trial_id, historical in snapshot_history_records.items():
                 history = snapshot_history[trial_id]
                 if not isinstance(history, list) or not history or not isinstance(historical, list):
-                    return False
+                    return fail()
                 for item, digest in zip(historical, history, strict=True):
                     expected_shape = {
                         "trial_id",
@@ -4407,7 +4444,7 @@ def verify_bundle(path: str | Path) -> bool:
                             )
                         )
                     ):
-                        return False
+                        return fail()
                     expected_overall = evaluate_overall(item["domain_judgments"])
                     if (
                         "overall_trace" in item
@@ -4416,7 +4453,7 @@ def verify_bundle(path: str | Path) -> bool:
                         "overall_driver_domains" in item
                         and item["overall_driver_domains"] != list(expected_overall.driver_domains)
                     ):
-                        return False
+                        return fail()
                     historical_records: dict[str, Any] = {}
                     for domain, checkpoint in zip(
                         SCIENTIFIC_PACK.domains, item["checkpoints"], strict=True
@@ -4435,10 +4472,10 @@ def verify_bundle(path: str | Path) -> bool:
                         if not isinstance(matching, dict) or item["domain_judgments"].get(
                             domain.id
                         ) != matching.get("judgment"):
-                            return False
+                            return fail()
                         historical_records[f"{trial_id}:{domain.id}"] = matching
                         if item.get("result_identity") != matching.get("result_identity"):
-                            return False
+                            return fail()
                     if (
                         not legacy_semantics
                         and "overall_receipt" in item
@@ -4446,9 +4483,9 @@ def verify_bundle(path: str | Path) -> bool:
                             item["overall_receipt"], item, historical_records, expected_overall
                         )
                     ):
-                        return False
+                        return fail()
                     if item.get("overall") != expected_overall.judgment.value:
-                        return False
+                        return fail()
             for key, record in domains.items():
                 history = domain_history.get(key)
                 historical = domain_history_records.get(key)
@@ -4466,7 +4503,7 @@ def verify_bundle(path: str | Path) -> bool:
                         for item, digest in zip(historical, history, strict=True)
                     )
                 ):
-                    return False
+                    return fail()
             for trial_id, snapshot in snapshots.items():
                 history = snapshot_history.get(trial_id)
                 historical = snapshot_history_records.get(trial_id)
@@ -4483,7 +4520,7 @@ def verify_bundle(path: str | Path) -> bool:
                         for item, digest in zip(historical, history, strict=True)
                     )
                 ):
-                    return False
+                    return fail()
             for trial_id, disposition in dispositions.items():
                 snapshot = snapshots.get(trial_id)
                 if disposition == "assessed" and (
@@ -4492,10 +4529,10 @@ def verify_bundle(path: str | Path) -> bool:
                     or len(snapshot["domain_judgments"]) != len(SCIENTIFIC_PACK.domains)
                     or snapshot.get("overall") not in {"low", "some_concerns", "high"}
                 ):
-                    return False
+                    return fail()
                 if disposition == "assessed":
                     if snapshot.get("identity") != snapshot_identity(snapshot):
-                        return False
+                        return fail()
                     if (
                         "result_identity" in snapshot
                         and snapshot.get("result_identity")
@@ -4504,18 +4541,18 @@ def verify_bundle(path: str | Path) -> bool:
                         len(approved_result_identities.get(trial_id, set())) > 1
                         and "result_identity" not in snapshot
                     ):
-                        return False
+                        return fail()
                     expected_checkpoints: list[str] = []
                     expected_judgments: dict[str, str] = {}
                     for domain in SCIENTIFIC_PACK.domains:
                         record = domains.get(f"{trial_id}:{domain.id}")
                         if not isinstance(record, dict) or record.get("domain_id") != domain.id:
-                            return False
+                            return fail()
                         if record.get("result_identity") != snapshot.get("result_identity"):
-                            return False
+                            return fail()
                         answers = record.get("answers")
                         if not isinstance(answers, list):
-                            return False
+                            return fail()
                         answer_map = {
                             item["question_id"]: item["answer"]
                             for item in answers
@@ -4524,7 +4561,7 @@ def verify_bundle(path: str | Path) -> bool:
                             and isinstance(item.get("answer"), str)
                         }
                         if len(answer_map) != len(answers):
-                            return False
+                            return fail()
                         active = active_for_domain(domain.id, answer_map)
                         ordered_active = [
                             question.id
@@ -4535,7 +4572,7 @@ def verify_bundle(path: str | Path) -> bool:
                             set(answer_map) != active
                             or record.get("active_questions") != ordered_active
                         ):
-                            return False
+                            return fail()
                         if (
                             set(record.get("inactive_questions", []))
                             != {
@@ -4545,17 +4582,17 @@ def verify_bundle(path: str | Path) -> bool:
                             }
                             - active
                         ):
-                            return False
+                            return fail()
                         judgment = local_domain_judgment(domain.id, answer_map)
                         if record.get("judgment") != judgment:
-                            return False
+                            return fail()
                         expected_checkpoints.append(str(record.get("identity")))
                         expected_judgments[domain.id] = judgment
                     if (
                         snapshot.get("checkpoints") != expected_checkpoints
                         or snapshot.get("domain_judgments") != expected_judgments
                     ):
-                        return False
+                        return fail()
                     expected_overall = evaluate_overall(expected_judgments)
                     if (
                         (
@@ -4578,10 +4615,10 @@ def verify_bundle(path: str | Path) -> bool:
                             )
                         )
                     ):
-                        return False
+                        return fail()
                     overall = expected_overall.judgment.value
                     if snapshot.get("overall") != overall:
-                        return False
+                        return fail()
             if has_trial_reviews and not _valid_trial_review_closures(
                 canonical_value.get("trial_reviews"),
                 canonical_value.get("trial_closures"),
@@ -4592,12 +4629,12 @@ def verify_bundle(path: str | Path) -> bool:
                 domains,
                 independent_identity,
             ):
-                return False
+                return fail()
             expected_identity = independent_identity(
                 {"schema": "rob2-kit.bundle.v0.3", "canonical": canonical_value}
             )
             if manifest.get("identity") != expected_identity:
-                return False
+                return fail()
             report = archive.read("report.html").decode("utf-8")
             claims = json.loads(archive.read("claims.json"))
             if has_trial_reviews:
@@ -4628,9 +4665,9 @@ def verify_bundle(path: str | Path) -> bool:
                 },
             }
             if not isinstance(claims, dict) or claims != expected_claims:
-                return False
+                return fail()
             if json.dumps(claims, sort_keys=True) not in report:
-                return False
+                return fail()
             proposal = canonical_value.get("proposal") or {}
             proposal_review = canonical_value.get("proposal_review")
             proposal_acknowledgment = canonical_value.get("proposal_acknowledgment")
@@ -4655,11 +4692,11 @@ def verify_bundle(path: str | Path) -> bool:
                     independent_identity,
                 )
             ):
-                return False
+                return fail()
             proposal_history = canonical_value.get("proposal_history")
             if proposal_history is not None:
                 if not isinstance(proposal_history, list) or not proposal_history:
-                    return False
+                    return fail()
                 historical_proposal_ids: set[str] = set()
                 for version in proposal_history:
                     if not isinstance(version, dict) or set(version) != {
@@ -4667,7 +4704,7 @@ def verify_bundle(path: str | Path) -> bool:
                         "review",
                         "acknowledgment",
                     }:
-                        return False
+                        return fail()
                     historical_proposal = version.get("proposal")
                     historical_payload = (
                         historical_proposal.get("payload")
@@ -4695,13 +4732,13 @@ def verify_bundle(path: str | Path) -> bool:
                         )
                         or historical_proposal["identity"] in historical_proposal_ids
                     ):
-                        return False
+                        return fail()
                     historical_proposal_ids.add(historical_proposal["identity"])
                     if any(
                         bound_catalog.get(identity) != item
                         for identity, item in historical_evidence.items()
                     ):
-                        return False
+                        return fail()
                 latest_version = proposal_history[-1]
                 latest_proposal = latest_version["proposal"]
                 if (
@@ -4710,25 +4747,25 @@ def verify_bundle(path: str | Path) -> bool:
                     or latest_version.get("review") != proposal_review
                     or latest_version.get("acknowledgment") != proposal_acknowledgment
                 ):
-                    return False
+                    return fail()
             if (
                 semantics_version == _LEGACY_RESULT_SEMANTICS_VERSION
                 and not _valid_main_report_scopes(
                     payload.get("main_report_scopes"), canonical_value["batch"], bound_catalog
                 )
             ):
-                return False
+                return fail()
             evidence_members = {name for name in names if name.startswith("evidence/")}
             expected_evidence_members = {
                 f"evidence/{catalog_identity.removeprefix('sha256:')}.json"
                 for catalog_identity in bound_catalog
             }
             if evidence_members != expected_evidence_members:
-                return False
+                return fail()
             for catalog_identity, item in bound_catalog.items():
                 member = f"evidence/{catalog_identity.removeprefix('sha256:')}.json"
                 if json.loads(archive.read(member)) != item:
-                    return False
+                    return fail()
             if any(
                 not isinstance(item, dict)
                 or item.get("identity") != catalog_identity
@@ -4739,7 +4776,7 @@ def verify_bundle(path: str | Path) -> bool:
                 or item.get("handle") != "eh_" + catalog_identity.removeprefix("sha256:")[:16]
                 for catalog_identity, item in bound_catalog.items()
             ):
-                return False
+                return fail()
             expected_visual_paths = {
                 f"visual/{str(item['render']['identity']).removeprefix('sha256:')}.png"
                 for item in bound_catalog.values()
@@ -4749,21 +4786,21 @@ def verify_bundle(path: str | Path) -> bool:
             }
             actual_visual_paths = {name for name in names if name.startswith("visual/")}
             if actual_visual_paths != expected_visual_paths:
-                return False
+                return fail()
             for item in bound_catalog.values():
                 if not isinstance(item, dict) or item.get("kind") != "figure":
                     continue
                 render = item.get("render")
                 if not isinstance(render, dict):
-                    return False
+                    return fail()
                 visual_path = f"visual/{str(render['identity']).removeprefix('sha256:')}.png"
                 if "sha256:" + hashlib.sha256(archive.read(visual_path)).hexdigest() != render.get(
                     "png_sha256"
                 ):
-                    return False
+                    return fail()
             batch_trials = canonical_value["batch"].get("trials")
             if not isinstance(batch_trials, list):
-                return False
+                return fail()
             requested_outcomes: dict[str, str] = {}
             sources: dict[str, dict[str, object]] = {}
             for trial in batch_trials:
@@ -4775,7 +4812,7 @@ def verify_bundle(path: str | Path) -> bool:
                     or trial["id"] in requested_outcomes
                     or not isinstance(trial.get("sources"), list)
                 ):
-                    return False
+                    return fail()
                 requested_outcomes[trial["id"]] = trial["requested_outcome"]
                 for item in trial["sources"]:
                     if isinstance(item, dict) and isinstance(item.get("id"), str):
@@ -4786,7 +4823,7 @@ def verify_bundle(path: str | Path) -> bool:
                 or not _valid_selected_evidence(item, sources, independent_identity)
                 for item in bound_catalog.values()
             ):
-                return False
+                return fail()
             results = payload.get("results") if isinstance(payload, dict) else None
             if (
                 not isinstance(results, list)
@@ -4806,13 +4843,13 @@ def verify_bundle(path: str | Path) -> bool:
                     for item in results
                 )
             ):
-                return False
+                return fail()
             terminal_by_trial = {terminal["trial_id"]: terminal for terminal in terminals.values()}
             for result in results:
                 trial_id = result["trial_id"]
                 disposition = dispositions[trial_id]
                 if disposition == "assessed" and result.get("kind") != "assessable":
-                    return False
+                    return fail()
                 if has_trial_reviews:
                     continue
                 if result.get("kind") == "unavailable":
@@ -4823,13 +4860,13 @@ def verify_bundle(path: str | Path) -> bool:
                         or not isinstance(terminal, dict)
                         or terminal.get("missing_facts") != facts
                     ):
-                        return False
+                        return fail()
                 applicability = result.get("applicability")
                 unsupported_design = isinstance(applicability, dict) and applicability.get(
                     "design"
                 ) in {"cluster_randomized", "crossover", "unclear"}
                 if unsupported_design and disposition != "needs_input":
-                    return False
+                    return fail()
             # verification.json is informational only; this verifier recomputes
             # hashes and derivations itself and never trusts a producer claim.
             verification = json.loads(archive.read("verification.json"))
@@ -4850,4 +4887,4 @@ def verify_bundle(path: str | Path) -> bool:
                 ]
             )
     except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError, zipfile.BadZipFile):
-        return False
+        return fail()

@@ -12,6 +12,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from benchmark_contract import (
+    contradictory_result_scope_dimensions,
+    missing_result_scope_dimensions,
+)
+
 SCHEMA = "rob2-kit.rsi-case.v1"
 ROLES = {"main_article", "registry", "supplement", "sap", "protocol", "other"}
 SUPPORTED = {".pdf", ".docx", ".txt", ".md", ".csv", ".json"}
@@ -28,7 +33,14 @@ def _load_case(case_path: Path) -> dict[str, Any]:
     if not isinstance(case, dict) or case.get("schema") != SCHEMA:
         raise ValueError(f"case must use schema {SCHEMA}")
     required = {"schema", "trial", "requested_outcome", "sources"}
-    if set(case) - (required | {"registry_capture", "approved_scope"}) or not required <= set(case):
+    optional = {
+        "registry_capture",
+        "approved_scope",
+        "expected_result",
+        "scope_unresolved",
+        "campaign_id",
+    }
+    if set(case) - (required | optional) or not required <= set(case):
         raise ValueError("case has missing or unknown fields")
     if not isinstance(case["trial"], str) or not re.fullmatch(
         r"[A-Za-z0-9][A-Za-z0-9._-]*", case["trial"]
@@ -36,8 +48,35 @@ def _load_case(case_path: Path) -> dict[str, Any]:
         raise ValueError("trial must be a safe directory name")
     if not isinstance(case["requested_outcome"], str) or not case["requested_outcome"].strip():
         raise ValueError("requested_outcome must be non-empty")
+    if "campaign_id" in case and (
+        not isinstance(case["campaign_id"], str) or not case["campaign_id"].strip()
+    ):
+        raise ValueError("campaign_id must be a non-empty string when supplied")
     if not isinstance(case["sources"], list) or not case["sources"]:
         raise ValueError("sources must be a non-empty allowlist")
+    if "expected_result" in case and not isinstance(case["expected_result"], dict):
+        raise ValueError("expected_result must be an object when supplied")
+    if "scope_unresolved" in case and (
+        not isinstance(case["scope_unresolved"], str) or not case["scope_unresolved"].strip()
+    ):
+        raise ValueError("scope_unresolved must explain the missing pre-run Result scope")
+    if "expected_result" in case and "scope_unresolved" in case:
+        raise ValueError("case must provide either expected_result or scope_unresolved, not both")
+    if isinstance(case.get("expected_result"), dict):
+        expected = case["expected_result"]
+        expected_trial = expected.get("trial", expected.get("trial_id"))
+        if expected_trial != case["trial"]:
+            raise ValueError("expected_result trial must match case trial")
+        missing = missing_result_scope_dimensions(expected)
+        if missing:
+            raise ValueError(
+                "expected_result does not freeze complete scope; missing " + ", ".join(missing)
+            )
+        contradictory = contradictory_result_scope_dimensions(expected)
+        if contradictory:
+            raise ValueError(
+                "expected_result has conflicting scope fields: " + ", ".join(contradictory)
+            )
     return case
 
 
@@ -49,7 +88,7 @@ def _registry_identifier(value: object) -> str | None:
     return value
 
 
-def _source_path(base: Path, value: object) -> Path:
+def _source_path(base: Path, value: object, trial: str) -> Path:
     if not isinstance(value, str) or not value:
         raise ValueError("source path must be a non-empty relative path")
     path = Path(value)
@@ -68,9 +107,13 @@ def _source_path(base: Path, value: object) -> Path:
         ),
         base,
     )
-    if not resolved.is_file() or not resolved.is_relative_to(evaluation_root):
+    allowed_root = evaluation_root
+    if evaluation_root != base:
+        allowed_root = (evaluation_root / "reference" / "sources" / trial).resolve()
+    if not resolved.is_file() or not resolved.is_relative_to(allowed_root):
         raise ValueError(
-            "source path must resolve to a file under the case manifest or evaluation root"
+            "source path must resolve to a file under the case manifest or declared trial "
+            "source directory"
         )
     return resolved
 
@@ -84,15 +127,19 @@ def prepare_workspace(case_file: Path, workspace: Path) -> dict[str, Any]:
     case_file = case_file.resolve(strict=True)
     case = _load_case(case_file)
     workspace = workspace.resolve()
-    if workspace.exists():
-        raise ValueError("refusing to overwrite an existing assessment workspace")
+    run_dir_was_absent = not workspace.parent.exists()
+    workspace.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        workspace.mkdir()
+    except FileExistsError as error:
+        raise ValueError("refusing to overwrite an existing assessment workspace") from error
 
     inputs = workspace / "input" / case["trial"]
-    inputs.mkdir(parents=True)
     file_records: list[dict[str, str]] = []
     role_by_name: dict[str, str] = {}
     used_names: set[str] = set()
     try:
+        inputs.mkdir(parents=True)
         for source in case["sources"]:
             if not isinstance(source, dict) or set(source) != {"path", "name", "role"}:
                 raise ValueError("each source must contain exactly path, name, and role")
@@ -108,7 +155,7 @@ def prepare_workspace(case_file: Path, workspace: Path) -> dict[str, Any]:
                 raise ValueError("source role is invalid or source filename is duplicated")
             used_names.add(name)
             role_by_name[name] = role
-            source_path = _source_path(case_file.parent, source["path"])
+            source_path = _source_path(case_file.parent, source["path"], case["trial"])
             content = source_path.read_bytes()
             (inputs / name).write_bytes(content)
             file_records.append({"name": name, "role": role, "sha256": _sha256(content)})
@@ -138,7 +185,7 @@ def prepare_workspace(case_file: Path, workspace: Path) -> dict[str, Any]:
                 raise ValueError("registry captured_at must include a timezone")
             if "registry.json" in used_names:
                 raise ValueError("registry capture conflicts with an allowlisted source filename")
-            path = _source_path(case_file.parent, registry["path"])
+            path = _source_path(case_file.parent, registry["path"], case["trial"])
             data = path.read_bytes()
             digest = _sha256(data)
             if not isinstance(registry["sha256"], str) or digest != registry["sha256"].lower():
@@ -191,6 +238,9 @@ def prepare_workspace(case_file: Path, workspace: Path) -> dict[str, Any]:
             "schema": "rob2-kit.rsi-run-inputs.v1",
             "trial": case["trial"],
             "requested_outcome": case["requested_outcome"],
+            "expected_result": case.get("expected_result"),
+            "scope_unresolved": case.get("scope_unresolved"),
+            "campaign_id": case.get("campaign_id"),
             "approved_scope": approved_scope,
             "sources": sorted(file_records, key=lambda item: item["name"]),
             "registry_capture": registry_record,
@@ -198,6 +248,11 @@ def prepare_workspace(case_file: Path, workspace: Path) -> dict[str, Any]:
         return manifest
     except BaseException:
         shutil.rmtree(workspace, ignore_errors=True)
+        if run_dir_was_absent:
+            try:
+                workspace.parent.rmdir()
+            except OSError:
+                pass
         raise
 
 

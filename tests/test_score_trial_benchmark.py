@@ -2,11 +2,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import runpy
+import sys
 import zipfile
 from pathlib import Path
 
-from scripts.score_trial_benchmark import _result_dimensions, _result_mismatches, score
+SCRIPTS = Path(__file__).parents[1] / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
 
+_scorer = runpy.run_path(str(SCRIPTS / "score_trial_benchmark.py"))
+_result_dimensions = _scorer["_result_dimensions"]
+_result_mismatches = _scorer["_result_mismatches"]
+score = _scorer["score"]
 
 def _write_reference(root: Path) -> None:
     catalog = root / "catalog"
@@ -97,10 +105,19 @@ def _expected_result() -> dict[str, object]:
         "window": {"kind": "fixed", "description": "36 months"},
         "estimate": "HR 1.01",
         "precision": "95% CI 0.75 to 1.36",
+        "reported_scope": {
+            "form": "comparative_effect",
+            "analysis_population": "all randomized participants",
+            "endpoint": {"definition": "death from any cause"},
+            "effect_measure": "hazard_ratio",
+            "estimate": "HR 1.01",
+            "precision": "95% CI 0.75 to 1.36",
+            "group_values": [],
+        },
     }
 
 
-def test_score_uses_trial_aliases_and_excludes_unfinished_cases(tmp_path: Path) -> None:
+def test_score_keeps_legacy_case_unscored_and_excludes_unfinished_cases(tmp_path: Path) -> None:
     reference = tmp_path / "reference"
     _write_reference(reference)
     run_dir = _write_case(tmp_path, state="succeeded")
@@ -122,7 +139,6 @@ def test_score_uses_trial_aliases_and_excludes_unfinished_cases(tmp_path: Path) 
                         "outcome": "Overall Survival",
                         "trial": "GETUG-AFU-15",
                         "run_dir": str(run_dir),
-                        "expected_result": _expected_result(),
                     },
                     {
                         "outcome": "Overall Survival",
@@ -139,18 +155,52 @@ def test_score_uses_trial_aliases_and_excludes_unfinished_cases(tmp_path: Path) 
 
     assert result["scope"] == {
         "manifest_rows": 2,
-        "finalized_scored_cases": 1,
-        "finalized_domain_cells": 5,
-        "excluded_cases": 1,
+        "finalized_scored_cases": 0,
+        "finalized_domain_cells": 0,
+        "excluded_cases": 2,
     }
-    assert result["pooled"]["pooled_domains"]["exact"] == {
-        "correct": 5,
-        "total": 5,
-        "rate": 1.0,
+
+
+def test_reported_scope_alone_supplies_comparative_estimate_and_precision() -> None:
+    result = {
+        "trial_id": "GETUG-AFU-15",
+        "target": {
+            "comparison_groups": [
+                {"id": "A", "assignment": "A"},
+                {"id": "B", "assignment": "B"},
+            ],
+            "outcome_definition": "death from any cause",
+            "intended_analysis_population": "all randomized participants",
+            "time_point_or_window": {"kind": "fixed", "description": "36 months"},
+        },
+        "reported": {
+            "analysis_population": "all randomized participants",
+            "effect_measure": "hazard_ratio",
+            "endpoint": {"definition": "death from any cause"},
+            "estimate": "HR 1.01",
+            "precision": "95% CI 0.75 to 1.36",
+        },
     }
-    assert result["excluded"][0]["reason"] == (
-        "expected_result is missing; historical run is unscored"
-    )
+    expected = {
+        "trial": "GETUG-AFU-15",
+        "comparison": result["target"]["comparison_groups"],
+        "endpoint_definition": "death from any cause",
+        "population": "all randomized participants",
+        "window": {"kind": "fixed", "description": "36 months"},
+        "reported_scope": {
+            "form": "comparative_effect",
+            "analysis_population": "all randomized participants",
+            "endpoint": {"definition": "death from any cause"},
+            "effect_measure": "hazard_ratio",
+            "estimate": "HR 1.01",
+            "precision": "95% CI 0.75 to 1.36",
+            "group_values": [],
+        },
+    }
+
+    assert _result_mismatches(
+        expected, _result_dimensions(result, "GETUG-AFU-15"), "GETUG-AFU-15"
+    ) == []
 
 
 def test_score_requires_exact_result_scope_before_reading_labels(tmp_path: Path) -> None:
@@ -190,6 +240,7 @@ def test_score_requires_exact_result_scope_before_reading_labels(tmp_path: Path)
                             "time_point_or_window": {"kind": "fixed", "description": "36 months"},
                         },
                         "reported": {
+                            "effect_measure": "hazard_ratio",
                             "endpoint": {"definition": "death from any cause"},
                             "estimate": "HR 1.01",
                             "precision": "95% CI 0.75 to 1.36",
@@ -209,8 +260,18 @@ def test_score_requires_exact_result_scope_before_reading_labels(tmp_path: Path)
         "endpoint_definition": "death from any cause",
         "population": "wrong population",
         "window": {"kind": "fixed", "description": "36 months"},
+        "effect_measure": "hazard_ratio",
         "estimate": "HR 1.01",
         "precision": "95% CI 0.75 to 1.36",
+        "reported_scope": {
+            "form": "comparative_effect",
+            "analysis_population": "all randomized participants",
+            "endpoint": {"definition": "death from any cause"},
+            "effect_measure": "hazard_ratio",
+            "estimate": "HR 1.01",
+            "precision": "95% CI 0.75 to 1.36",
+            "group_values": [],
+        },
     }
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
@@ -262,12 +323,17 @@ def test_result_scope_mismatch_preserves_bounded_field_details(tmp_path: Path) -
                     {
                         "trial_id": "GETUG-AFU-15",
                         "target": {
-                            "comparison_groups": [{"id": "A"}, {"id": "B"}],
+                            "comparison_groups": [
+                                {"id": "A", "assignment": "A"},
+                                {"id": "B", "assignment": "B"},
+                            ],
                             "outcome_definition": "PRIVATE_SOURCE_TEXT_OBSERVED",
                             "intended_analysis_population": "all randomized participants",
                             "time_point_or_window": {"kind": "fixed", "description": "36 months"},
                         },
                         "reported": {
+                            "analysis_population": "all randomized participants",
+                            "effect_measure": "hazard_ratio",
                             "endpoint": {"definition": "PRIVATE_SOURCE_TEXT_OBSERVED"},
                             "estimate": "HR 1.01",
                             "precision": "95% CI 0.75 to 1.36",
@@ -300,12 +366,26 @@ def test_result_scope_mismatch_preserves_bounded_field_details(tmp_path: Path) -
     )
     expected = {
         "trial": "GETUG-AFU-15",
-        "comparison": [{"id": "A"}, {"id": "B"}],
+        "comparison": [
+            {"id": "A", "assignment": "A"},
+            {"id": "B", "assignment": "B"},
+        ],
         "endpoint_definition": "PRIVATE_SOURCE_TEXT_EXPECTED",
         "population": "all randomized participants",
+        "reported_analysis_population": "all randomized participants",
         "window": {"kind": "fixed", "description": "36 months"},
+        "effect_measure": "hazard_ratio",
         "estimate": "HR 1.01",
         "precision": "95% CI 0.75 to 1.36",
+        "reported_scope": {
+            "form": "comparative_effect",
+            "analysis_population": "all randomized participants",
+            "endpoint": {"definition": "PRIVATE_SOURCE_TEXT_EXPECTED"},
+            "effect_measure": "hazard_ratio",
+            "estimate": "HR 1.01",
+            "precision": "95% CI 0.75 to 1.36",
+            "group_values": [],
+        },
     }
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
@@ -414,3 +494,39 @@ def test_legacy_manifest_row_without_expected_result_is_visible_and_unscored(
             "reason": "expected_result is missing; historical run is unscored",
         }
     ]
+
+
+def test_new_manifest_requires_frozen_scope_or_explicit_scope_unresolved(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference"
+    _write_reference(reference)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.fresh-benchmark-index.v1",
+                "rows": [
+                    {"outcome": "Overall Survival", "trial": "GETUG-AFU-15"},
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "scope_unresolved": "The source metadata omitted the endpoint window.",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = score(manifest, reference)
+
+    assert result["hard_failures"] == [
+        {
+            "outcome": "Overall Survival",
+            "trial": "GETUG-AFU-15",
+            "reason": "new benchmark row has no frozen Result scope or scope_unresolved marker",
+        }
+    ]
+    assert result["excluded"][1]["result_scope"] == "scope_unresolved"
+    assert result["excluded"][1]["reason"] == "The source metadata omitted the endpoint window."
