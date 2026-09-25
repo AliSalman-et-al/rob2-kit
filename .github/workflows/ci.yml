@@ -26,6 +26,7 @@ jobs:
       - name: Run checks independently without changing sources
         shell: bash
         run: |
+          set +e
           set -uo pipefail
           mkdir -p "$RUNNER_TEMP/audit-verification"
           git rev-parse HEAD > "$RUNNER_TEMP/audit-verification/COMMIT.txt"
