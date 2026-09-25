@@ -1,36 +1,36 @@
-name: CI
+name: Package pinned repository for audit
 
 on:
   push:
-  pull_request:
+    branches: [audit/package-c2b88ee3]
+
+permissions:
+  contents: read
 
 jobs:
-  verify:
-    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.11", "3.12", "3.13"]
-    env:
-      UV_PYTHON: ${{ matrix.python-version }}
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
+          ref: c2b88ee3caa0201cdc1f67b33ac46c834148c796
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Archive the exact audited commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = c2b88ee3caa0201cdc1f67b33ac46c834148c796
+          mkdir -p "$RUNNER_TEMP/audit-package"
+          git archive --format=zip --output="$RUNNER_TEMP/audit-package/rob2-kit-c2b88ee3.zip" HEAD
+          git rev-parse HEAD > "$RUNNER_TEMP/audit-package/COMMIT.txt"
+          cd "$RUNNER_TEMP/audit-package"
+          sha256sum rob2-kit-c2b88ee3.zip > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
         with:
-          python-version: "${{ matrix.python-version }}"
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --locked --all-groups --python "${{ matrix.python-version }}"
-      - run: uv run --no-sync python --version
-      - run: uv run --no-sync python -c "import os, sys; expected=tuple(map(int, os.environ['EXPECTED_PYTHON'].split('.'))); assert sys.version_info[:2] == expected, (sys.version, expected)"
-        env:
-          EXPECTED_PYTHON: ${{ matrix.python-version }}
-      - run: uv run --no-sync ruff format --check src tests docs/release
-      - run: uv run --no-sync ruff check src tests docs/release
-      - run: uv run --no-sync ty check src tests docs/release
-      - run: uv run --no-sync pytest
-      - run: uv build --wheel --out-dir .release-dist
-      - run: uv run --no-sync python docs/release/verify.py --wheel .release-dist/rob2_kit-0.9.0-py3-none-any.whl
+          name: rob2-audit-c2b88ee3
+          path: ${{ runner.temp }}/audit-package/
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
