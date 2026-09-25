@@ -1,0 +1,5 @@
+The ENZAMET overall-survival proposal is saved and awaiting **Proposal Review**. No RoB 2 domain judgments have been made yet; the workflow requires researcher approval before that assessment can begin.
+
+The proposed result matches the reported primary endpoint: death from any cause from randomization, with last known alive as the censoring point. It reports HR 0.67 (95% CI 0.52–0.86; P=.002), with 3-year OS of 80% versus 72%.
+
+Proposal Review reference: `sha256:7fc19538c35f57e70f643ac0f1e97448dfba1e12118833b75e4902c37195809b`.

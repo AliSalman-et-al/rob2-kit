@@ -1,0 +1,70 @@
+{
+  "approved_scope": null,
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "ADT + docetaxel + abiraterone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "ADT + docetaxel without abiraterone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Toxicity graded using NCI-CTCAE v4.0",
+    "population": "Patients in the ADT plus docetaxel population with safety data.",
+    "reported_scope": {
+      "analysis_population": "Patients in the ADT plus docetaxel population with safety data.",
+      "endpoint": {
+        "name": "Grade 3 or worse adverse events in the ADT+docetaxel population"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "patients with grade 3 or worse adverse events",
+          "unit": "patients (percent)",
+          "value": "217/347 (63%)"
+        },
+        {
+          "group_id": "control",
+          "statistic": "patients with grade 3 or worse adverse events",
+          "unit": "patients (percent)",
+          "value": "181/350 (52%)"
+        }
+      ]
+    },
+    "trial": "PEACE-1",
+    "window": "Safety follow-up reported in the main article."
+  },
+  "registry_capture": {
+    "capture_provenance": "captured response retained from PFS baseline",
+    "captured_at": "2026-09-13T19:12:18.837315Z",
+    "registry_id": "NCT01957436",
+    "replay_provenance": "copied byte-for-byte from the case manifest; no registry request made",
+    "replayed_at": "2026-09-24T18:35:36.458591+00:00",
+    "sha256": "4647033fd2ac8a105955c0942c93f13de01d1357dd8c8799cb42c14f41c17ec8"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-run-inputs.v1",
+  "scope_unresolved": null,
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "role": "main_article",
+      "sha256": "ef2b97c17798aa6a4edc2191ce7d8e7bbac1dc365679da9040d8a9d61279b738"
+    },
+    {
+      "name": "registry.json",
+      "role": "registry",
+      "sha256": "4647033fd2ac8a105955c0942c93f13de01d1357dd8c8799cb42c14f41c17ec8"
+    },
+    {
+      "name": "supplement.pdf",
+      "role": "supplement",
+      "sha256": "386e7a698b437cb8335fb27203dbc69767023f6b1479a498e912b980a25f4f69"
+    }
+  ],
+  "trial": "PEACE-1"
+}

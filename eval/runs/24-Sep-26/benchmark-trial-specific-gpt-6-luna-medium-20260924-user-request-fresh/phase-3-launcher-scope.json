@@ -1,0 +1,144 @@
+{
+  "schema": "rob2-kit.benchmark-phase-scope.v1",
+  "phase": 3,
+  "benchmark_index": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\index.json",
+  "benchmark_index_sha256": "2931bc4d7f29e504cb7a6a90453b9b47bbc52f9958a7bf2ef8d0a3ae7d11ed59",
+  "selection_mode": "include",
+  "included_count": 2,
+  "included_cases": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE"
+    }
+  ],
+  "submitted_count": 2,
+  "excluded_count": 28,
+  "submitted_cases": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE"
+    }
+  ],
+  "excluded_cases": [
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARASENS"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARASENS"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARASENS"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARCHES"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARCHES"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARCHES"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "CHAARTED"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "CHAARTED"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "CHAARTED"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ENZAMET"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ENZAMET"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "LATITUDE"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "PEACE-1"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "PEACE-1"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "PEACE-1"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "STAMPEDE"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "STAMPEDE"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "SWOG-1216"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "SWOG-1216"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "SWOG-1216"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "TITAN"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "TITAN"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "TITAN"
+    }
+  ]
+}

@@ -1,0 +1,1206 @@
+{
+  "schema": "rob2-kit.trial-benchmark-manifest.v3",
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "prompt_policy": "Minimal user prompt: /rob2-assess Assess risk of bias for {concept} defined as {definition}, {effect size} in {trial}.",
+  "rows": [
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARASENS",
+      "primary_status": "primary",
+      "role": "primary endpoint",
+      "source_locator": "eTable 1 p64; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\ARASENS",
+      "expected_result": {
+        "trial": "ARASENS",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Darolutamide + ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT + docetaxel"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.68",
+          "precision": "95% CI, 0.57 to 0.80; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARASENS",
+      "primary_status": "secondary",
+      "role": "secondary time-to-CRPC endpoint; catalog maps it under PFS",
+      "source_locator": "eTable 1 p64; article abstract p1; matching result article Table 2 p6",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\ARASENS",
+      "expected_result": {
+        "trial": "ARASENS",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Darolutamide + ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT + docetaxel"
+          }
+        ],
+        "endpoint_definition": "Time to castration-resistant prostate cancer: from randomization to PSA progression with castrate testosterone (<0.5 ng/mL) or radiological progression of soft-tissue, visceral, or bone lesions; soft-tissue/visceral progression by RECIST 1.1 and bone progression by PCWG3",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Time to castration-resistant prostate cancer"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.36",
+          "precision": "95% CI, 0.30 to 0.42; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARASENS",
+      "primary_status": "secondary",
+      "role": "safety endpoint",
+      "source_locator": "eTable 1 p65; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\ARASENS",
+      "expected_result": {
+        "trial": "ARASENS",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Darolutamide + ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT + docetaxel"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded with NCI-CTCAE v4.0.3",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "66.1%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "63.5%",
+              "unit": "percent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARCHES",
+      "primary_status": "secondary",
+      "role": "secondary endpoint",
+      "source_locator": "eTable 1 p61; article abstract p1; matching result article Table 2 p7",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\ARCHES",
+      "expected_result": {
+        "trial": "ARCHES",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.81",
+          "precision": "95% CI, 0.53 to 1.25; P=.3361",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARCHES",
+      "primary_status": "primary",
+      "role": "primary endpoint",
+      "source_locator": "eTable 1 pp61–62; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\ARCHES",
+      "expected_result": {
+        "trial": "ARCHES",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "endpoint_definition": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease assessed by independent central review, or death from any cause within 24 weeks of drug discontinuation; progression defined by RECIST 1.1",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.39",
+          "precision": "95% CI, 0.30 to 0.50; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARCHES",
+      "primary_status": "secondary",
+      "role": "safety outcome; treated as secondary for stratification",
+      "source_locator": "eTable 1 p62; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\ARCHES",
+      "expected_result": {
+        "trial": "ARCHES",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded with NCI-CTCAE v4.0.3",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or greater adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or greater adverse events",
+              "value": "24.3%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or greater adverse events",
+              "value": "25.6%",
+              "unit": "percent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "CHAARTED",
+      "primary_status": "primary",
+      "role": "primary endpoint",
+      "source_locator": "eTable 1 pp63–64; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\CHAARTED",
+      "expected_result": {
+        "trial": "CHAARTED",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.61",
+          "precision": "95% CI, 0.47 to 0.80; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "CHAARTED",
+      "primary_status": "secondary",
+      "role": "secondary endpoint",
+      "source_locator": "eTable 1 p64; article abstract p1; exact clinical-progression result article Table 2 p8",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\CHAARTED",
+      "expected_result": {
+        "trial": "CHAARTED",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Clinical PFS: time to symptomatic bone metastases, progression by RECIST 1.0, or clinical deterioration due to cancer in the investigator’s opinion",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Time to clinical progression"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.61",
+          "precision": "95% CI, 0.50 to 0.75; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "CHAARTED",
+      "primary_status": "secondary",
+      "role": "safety outcome; treated as secondary for stratification; no eTable AE definition",
+      "source_locator": "eTable 1 p64 (no AE entry); article abstract p1 and Methods p4",
+      "reference_label_available": "no",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\CHAARTED",
+      "expected_result": {
+        "trial": "CHAARTED",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "No AE definition is listed in eTable 1; the main article says toxic effects were graded using NCI-CTCAE v4.0",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "single_group_category_profile",
+          "analysis_population": "Patients in the ADT plus docetaxel group reported in the abstract.",
+          "endpoint": {
+            "name": "Selected adverse events in the docetaxel group"
+          },
+          "group_id": "treatment",
+          "denominator_basis": "Docetaxel plus ADT treatment group",
+          "category_axis_names": [
+            "Adverse event"
+          ],
+          "categories": [
+            {
+              "category_axes": [
+                "Grade 3 or 4 febrile neutropenia"
+              ],
+              "value": "6.2%"
+            },
+            {
+              "category_axes": [
+                "Grade 3 or 4 infection with neutropenia"
+              ],
+              "value": "2.3%"
+            },
+            {
+              "category_axes": [
+                "Grade 3 sensory neuropathy"
+              ],
+              "value": "0.5%"
+            },
+            {
+              "category_axes": [
+                "Grade 3 motor neuropathy"
+              ],
+              "value": "0.5%"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ENZAMET",
+      "primary_status": "primary",
+      "role": "primary endpoint",
+      "source_locator": "eTable 1 p63; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\ENZAMET",
+      "expected_result": {
+        "trial": "ENZAMET",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen + testosterone suppression"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause or date last known alive",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.67",
+          "precision": "95% CI, 0.52 to 0.86; P=.002",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ENZAMET",
+      "primary_status": "secondary",
+      "role": "secondary endpoint; clinical PFS chosen from two eTable variants",
+      "source_locator": "eTable 1 p63; article abstract p1; clinical PFS CI article p5",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\ENZAMET",
+      "expected_result": {
+        "trial": "ENZAMET",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen + testosterone suppression"
+          }
+        ],
+        "endpoint_definition": "Clinical PFS: time to earliest radiographic progression (PCWG2 for bone, RECIST 1.1 for soft tissue), cancer-attributable symptoms, or initiation of another anticancer treatment",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Clinical progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.33 to 0.49; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET",
+      "primary_status": "secondary",
+      "role": "secondary endpoint",
+      "source_locator": "eTable 1 p63; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\ENZAMET",
+      "expected_result": {
+        "trial": "ENZAMET",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen + testosterone suppression"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded with NCI-CTCAE v4.0.2",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Treatment discontinuation due to adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "treatment discontinuations due to adverse events",
+              "value": "33",
+              "unit": "events"
+            },
+            {
+              "group_id": "control",
+              "statistic": "treatment discontinuations due to adverse events",
+              "value": "14",
+              "unit": "events"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "GETUG-AFU-15",
+      "primary_status": "primary",
+      "role": "primary endpoint",
+      "source_locator": "eTable 1 p64; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\GETUG-AFU-15",
+      "expected_result": {
+        "trial": "GETUG-AFU-15",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "1.01",
+          "precision": "95% CI, 0.75 to 1.36",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "GETUG-AFU-15",
+      "primary_status": "secondary",
+      "role": "secondary endpoint; clinical PFS chosen from clinical and biochemical variants",
+      "source_locator": "eTable 1 p64; article abstract p1; matching clinical PFS result article p5, Figure 3",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\GETUG-AFU-15",
+      "expected_result": {
+        "trial": "GETUG-AFU-15",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Clinical PFS: progression of pre-existing lesions by RECIST 1.0 or occurrence of new bone lesions, whichever happened first",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Clinical progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.75",
+          "precision": "95% CI, 0.59 to 0.94; P=.015",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "GETUG-AFU-15",
+      "primary_status": "secondary",
+      "role": "safety endpoint; no reference label",
+      "source_locator": "eTable 1 p64; article abstract p1; serious AE text article p6",
+      "reference_label_available": "no",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\GETUG-AFU-15",
+      "expected_result": {
+        "trial": "GETUG-AFU-15",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded with NCI-CTCAE v3.0",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Serious adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "serious adverse-event events",
+              "value": "72",
+              "unit": "events"
+            },
+            {
+              "group_id": "control",
+              "statistic": "serious adverse-event events",
+              "value": "0",
+              "unit": "events"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE",
+      "primary_status": "primary",
+      "role": "co-primary endpoint",
+      "source_locator": "eTable 1 p62; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\LATITUDE",
+      "expected_result": {
+        "trial": "LATITUDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Abiraterone + prednisone + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Matched abiraterone and prednisone placebos + ADT"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.62",
+          "precision": "95% CI, 0.51 to 0.76; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "LATITUDE",
+      "primary_status": "primary",
+      "role": "co-primary endpoint",
+      "source_locator": "eTable 1 pp62–63; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\LATITUDE",
+      "expected_result": {
+        "trial": "LATITUDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Abiraterone + prednisone + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Matched abiraterone and prednisone placebos + ADT"
+          }
+        ],
+        "endpoint_definition": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; soft-tissue lesions assessed by CT/MRI using RECIST 1.1 and new bone lesions by PCWG2",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.47",
+          "precision": "95% CI, 0.39 to 0.55; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE",
+      "primary_status": "secondary",
+      "role": "safety outcome; treated as secondary for stratification",
+      "source_locator": "eTable 1 p63; article abstract p1; matching group values article Table 2 p8",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\LATITUDE",
+      "expected_result": {
+        "trial": "LATITUDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Abiraterone + prednisone + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Matched abiraterone and prednisone placebos + ADT"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded with NCI-CTCAE v4.0",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "374 (63%)",
+              "unit": "patients (percent)"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "287 (48%)",
+              "unit": "patients (percent)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "PEACE-1",
+      "primary_status": "primary",
+      "role": "co-primary endpoint",
+      "source_locator": "eTable 1 p60; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\PEACE-1",
+      "expected_result": {
+        "trial": "PEACE-1",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Standard of care + abiraterone (pooled across radiotherapy/docetaxel strata)"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard of care without abiraterone (pooled across radiotherapy/docetaxel strata)"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death from any cause; patients without events censored at last follow-up",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival in the overall population"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.82",
+          "precision": "95.1% CI, 0.69 to 0.98; P=.030",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "PEACE-1",
+      "primary_status": "primary",
+      "role": "co-primary endpoint",
+      "source_locator": "eTable 1 p60; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\PEACE-1",
+      "expected_result": {
+        "trial": "PEACE-1",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Standard of care + abiraterone (pooled across radiotherapy/docetaxel strata)"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard of care without abiraterone (pooled across radiotherapy/docetaxel strata)"
+          }
+        ],
+        "endpoint_definition": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; progression includes increasing soft-tissue lesions or new bone lesions by PCWG2",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival in the overall population"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.54",
+          "precision": "99.9% CI, 0.41 to 0.71; P<0.0001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "PEACE-1",
+      "primary_status": "secondary",
+      "role": "secondary safety endpoint",
+      "source_locator": "eTable 1 p60; article abstract p1; docetaxel subgroup safety result",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1",
+      "expected_result": {
+        "trial": "PEACE-1",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel + abiraterone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT + docetaxel without abiraterone"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded using NCI-CTCAE v4.0",
+        "population": "Patients in the ADT plus docetaxel population with safety data.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients in the ADT plus docetaxel population with safety data.",
+          "endpoint": {
+            "name": "Grade 3 or worse adverse events in the ADT+docetaxel population"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "patients with grade 3 or worse adverse events",
+              "value": "217/347 (63%)",
+              "unit": "patients (percent)"
+            },
+            {
+              "group_id": "control",
+              "statistic": "patients with grade 3 or worse adverse events",
+              "value": "181/350 (52%)",
+              "unit": "patients (percent)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "primary_status": "primary",
+      "role": "primary endpoint",
+      "source_locator": "eTable 1 p60; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\STAMPEDE",
+      "expected_result": {
+        "trial": "STAMPEDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + abiraterone + prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.63",
+          "precision": "95% CI, 0.52 to 0.76; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "STAMPEDE",
+      "primary_status": "secondary",
+      "role": "secondary efficacy endpoint; failure-free survival was intermediate primary",
+      "source_locator": "eTable 1 p60; article abstract p1; matching PFS result article p6",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\STAMPEDE",
+      "expected_result": {
+        "trial": "STAMPEDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + abiraterone + prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Failure-free survival excluding patients with biochemical (PSA progression) failure",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.34 to 0.47; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "STAMPEDE",
+      "primary_status": "secondary",
+      "role": "safety outcome; treated as secondary for stratification",
+      "source_locator": "eTable 1 p60; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\STAMPEDE",
+      "expected_result": {
+        "trial": "STAMPEDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + abiraterone + prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded with NCI-CTCAE, initially v3.0 and later v4.0",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 to 5 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 to 5 adverse events",
+              "value": "47%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 to 5 adverse events",
+              "value": "33%",
+              "unit": "percent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "SWOG-1216",
+      "primary_status": "primary",
+      "role": "primary endpoint",
+      "source_locator": "eTable 1 p65; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\SWOG-1216",
+      "expected_result": {
+        "trial": "SWOG-1216",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Orteronel + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Bicalutamide + ADT"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.86",
+          "precision": "95% CI, 0.72 to 1.02; P=.040 (one-sided)",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "SWOG-1216",
+      "primary_status": "secondary",
+      "role": "secondary endpoint",
+      "source_locator": "eTable 1 p65; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\SWOG-1216",
+      "expected_result": {
+        "trial": "SWOG-1216",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Orteronel + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Bicalutamide + ADT"
+          }
+        ],
+        "endpoint_definition": "From randomization to first PSA or radiographic progression, symptomatic deterioration, or death due to any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.58",
+          "precision": "95% CI, 0.51 to 0.67; P<0.0001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "SWOG-1216",
+      "primary_status": "secondary",
+      "role": "secondary endpoint",
+      "source_locator": "eTable 1 p65; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\retry-swog1216-adverse-events\\runs\\adverse-events\\SWOG-1216",
+      "expected_result": {
+        "trial": "SWOG-1216",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Orteronel + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Bicalutamide + ADT"
+          }
+        ],
+        "endpoint_definition": "The eTable says the toxicity outcome definition was not reported",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "43%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "14%",
+              "unit": "percent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "TITAN",
+      "primary_status": "primary",
+      "role": "co-primary endpoint",
+      "source_locator": "eTable 1 p61; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\overall-survival\\TITAN",
+      "expected_result": {
+        "trial": "TITAN",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "endpoint_definition": "Time from randomization to death resulting from any cause",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.67",
+          "precision": "95% CI, 0.51 to 0.89; P=.005",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "TITAN",
+      "primary_status": "primary",
+      "role": "co-primary endpoint; radiographic PFS chosen from two eTable variants",
+      "source_locator": "eTable 1 pp60–61; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\progression-free-survival\\TITAN",
+      "expected_result": {
+        "trial": "TITAN",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "endpoint_definition": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; progressive soft-tissue lesions or new bone lesions by PCWG2",
+        "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.48",
+          "precision": "95% CI, 0.39 to 0.60; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "TITAN",
+      "primary_status": "secondary",
+      "role": "safety outcome; treated as secondary for stratification",
+      "source_locator": "eTable 1 p61; article abstract p1",
+      "reference_label_available": "yes",
+      "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\TITAN",
+      "expected_result": {
+        "trial": "TITAN",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "endpoint_definition": "Toxicity graded with NCI-CTCAE v4.0.3",
+        "population": "Patients with safety data in the main article safety analysis.",
+        "window": "Safety follow-up reported in the main article.",
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "42.2%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "40.8%",
+              "unit": "percent"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

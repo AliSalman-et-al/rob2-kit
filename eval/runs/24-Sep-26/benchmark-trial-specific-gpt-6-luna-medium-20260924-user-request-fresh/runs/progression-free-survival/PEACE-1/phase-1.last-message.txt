@@ -1,0 +1,11 @@
+## Proposal Review — PEACE-1
+
+**Proposed Result:** Overall-population radiographic progression-free survival, comparing assignment to SOC plus abiraterone with SOC without abiraterone, pooling across radiotherapy assignments.
+
+- **Endpoint:** Time from randomization to radiographic progression or death from any cause. Soft-tissue lesions were assessed by CT or MRI using RECIST 1.1; bone lesions by bone scan using adapted PCWG2 criteria.
+- **Estimate:** HR 0.54; 99.9% CI 0.41–0.71; *P*<0.0001.
+- **Analysis population:** 1,172 randomized participants. One of 1,173 randomized patients withdrew consent for analysis.
+- **Proposed relation:** Narrower than all randomized participants because of that post-randomization exclusion.
+- **Material context:** The protocol changed the co-primary endpoint from PFS, which included radiographic and PSA progression, to radiographic PFS. The report states these changes were made without reference to collected outcome data. Radiographic PFS is the endpoint matching your request.
+
+The proposal is saved and awaits your review. **Do you approve this Result for RoB 2 assessment?**

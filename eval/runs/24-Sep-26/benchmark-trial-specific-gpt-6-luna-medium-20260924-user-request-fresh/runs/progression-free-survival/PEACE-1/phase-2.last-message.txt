@@ -1,0 +1,15 @@
+**PEACE-1 radiographic PFS: overall risk of bias is High.** The assessment is finalized.
+
+| RoB 2 domain | Judgment |
+|---|---|
+| Randomization process | Low |
+| Deviations from intended interventions | Some concerns |
+| Missing outcome data | High |
+| Measurement of the outcome | High |
+| Selection of the reported result | Low |
+
+The measurement concern comes from the supplement’s provision for additional imaging when progression was suspected. In an open-label trial, that could have created different opportunities to detect progression between groups. The imaging criteria themselves were appropriate, and planned imaging time points were the same.
+
+The missing-data concern reflects the lack of PFS-specific information on outcome availability, censoring reasons, and sensitivity analyses. The reported HR was 0.54 (99.9% CI 0.41–0.71; P<0.0001).
+
+[Finalized assessment artifact](<C:\Users\Ali-Salman\Documents\Code\rob2-kit\eval\runs\24-Sep-26\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\runs\progression-free-survival\PEACE-1\workspace\.rob2-kit\finalized\288681e91e1d0a91bba90cc1f53660edea448be7332f72898ff593e453cc89a0.rob2.zip>)

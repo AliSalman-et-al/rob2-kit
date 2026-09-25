@@ -1,0 +1,7 @@
+[mcp_servers.rob2]
+command = "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\.venv\\Scripts\\rob2.exe"
+args = ["mcp"]
+env = { ROB2_WORKSPACE = "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\ARASENS\\workspace" }
+required = true
+startup_timeout_sec = 120
+tool_timeout_sec = 600

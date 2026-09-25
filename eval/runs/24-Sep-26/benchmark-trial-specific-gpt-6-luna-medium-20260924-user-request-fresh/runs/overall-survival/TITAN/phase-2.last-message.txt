@@ -1,0 +1,9 @@
+**TITAN Overall Survival: overall risk of bias is High.** The result assessed was 24-month OS of 82.4% versus 73.5% (HR 0.67, 95% CI 0.51–0.89; P=.005).
+
+- **Randomization:** Low
+- **Deviations from intended interventions:** Low
+- **Missing outcome data:** High — 39 participants were lost to follow-up or withdrew from further data collection; their arm-specific counts and OS handling were not reported.
+- **Outcome measurement:** Low
+- **Selection of the reported result:** Some concerns — the SAP describes OS methods, but its approval date follows the interim data cutoff, and the timing of investigators’ access to unblinded OS data is unclear.
+
+The missing-data domain drives the High overall judgment. The assessment is finalized; its report and evidence are packaged in [the finalized RoB 2 artifact](.rob2-kit/finalized/c24883309dfa2845a806493eb4324f11da04895bd09a6a160569f79e32bc2eb9.rob2.zip).

@@ -1,0 +1,3 @@
+The ARASENS sources report a comparative **time to castration-resistant prostate cancer** result: HR 0.36 (95% CI 0.30–0.42). The supplement’s endpoint definition matches the one you gave. The abstract omits the result, but the main article’s secondary-endpoint table reports it.
+
+I submitted this as the proposed Result. The analysis included 1,305 of 1,306 randomized participants, so I classified its population as slightly narrower than the randomized target. **Proposal Review is pending**; the RoB 2 assessment cannot proceed until you accept this candidate.

@@ -1,0 +1,10 @@
+The CHAARTED Overall Survival Result is prepared and awaiting your Proposal Review. The assessment has not started because this workflow requires your review of the proposed Result before domain judgments.
+
+**Proposed Result**
+
+- **Outcome:** Overall survival, defined as time from randomization to death from any cause.
+- **Comparison:** ADT plus docetaxel vs ADT alone; 397 vs 393 participants.
+- **Effect:** Median OS 57.6 vs 44.0 months; HR 0.61 (95% CI 0.47–0.80), *P*<.001.
+- **Analysis:** All 790 randomized participants, analyzed in their assigned groups.
+
+The report supports this as an exact match to the requested outcome and comparison. The Proposal Review is pending under reference `sha256:fcb988ef8b0459644de6c738dc55a95a0dccf03208e8df20a270d5436d975f7c`.

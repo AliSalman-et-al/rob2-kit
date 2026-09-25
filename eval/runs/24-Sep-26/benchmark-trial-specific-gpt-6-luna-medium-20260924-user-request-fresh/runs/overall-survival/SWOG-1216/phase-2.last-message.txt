@@ -1,0 +1,9 @@
+## SWOG-1216 Overall Survival
+
+**Overall risk of bias: High**, driven by **Domain 3 (missing outcome data)**. The report does not establish whether vital-status data remained available for participants who withdrew consent, were lost to follow-up, or had a long gap since last contact. Whether any OS data were actually missing—and whether missingness depended on survival—remains unresolved. The high judgment reflects that uncertainty; it does not establish that deaths were missed.
+
+The other domains were judged **Low risk**: randomization, deviations from intended interventions, outcome measurement, and selection of the reported result. The protocol and report support the prespecified OS endpoint and event-driven final analysis. The endpoint is objective all-cause mortality, though the report does not identify who determined vital status.
+
+The result was HR **0.86** (95% CI **0.72–1.02**), with median OS **81.1 vs 70.2 months**. The one-sided P value of **.040** did not meet the protocol’s stated one-sided alpha of **.022**.
+
+The assessment is finalized: [Download the RoB 2 assessment artifact](</C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/overall-survival/SWOG-1216/workspace/.rob2-kit/finalized/2a44e431e095bb3baf7bdd3a1c42964aa5ca8108bcfa50c6c8b25f71c63d4a5a.rob2.zip>).

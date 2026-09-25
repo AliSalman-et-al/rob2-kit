@@ -1,0 +1,3 @@
+Saved the corrected Result Proposal. It represents the reported serious-adverse-event counts as a narrower result: **72 events** with ADT+docetaxel and **0 reported events** with ADT alone. The proposal records that these are event counts, not counts of participants affected; the serious-event capture window is also unclear. The report does not provide a broad any-grade AE estimate.
+
+The corrected Proposal Review is pending. I stopped before approval and did not start RoB 2 domain judgments.

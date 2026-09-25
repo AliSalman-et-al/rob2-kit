@@ -1,0 +1,3 @@
+LATITUDE’s full report contains the overall “Any adverse event” values, even though the abstract only highlights selected grade 3 toxicities: 558/597 (93%) with abiraterone and 557/602 (93%) with placebo. The report says adverse events were graded using NCI CTCAE v4.0.
+
+I’ve submitted this as the proposed Result. **Proposal Review is pending**, so the RoB 2 assessment cannot proceed until you accept this candidate or request another one. The report does not clearly specify the table’s analysis population or the adverse-event collection window.

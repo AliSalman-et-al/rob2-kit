@@ -1,0 +1,2 @@
+2026-09-24T20:58:09.766859Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell
+2026-09-24T20:58:13.157071Z  WARN codex_core::session::rollout_reconstruction: ignored world-state patch without a full snapshot

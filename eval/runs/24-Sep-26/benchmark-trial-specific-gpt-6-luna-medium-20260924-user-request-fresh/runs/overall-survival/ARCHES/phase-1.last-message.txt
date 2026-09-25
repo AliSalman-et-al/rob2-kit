@@ -1,0 +1,9 @@
+## Proposal Review — ARCHES overall survival
+
+The proposed Result is the interim overall-survival comparison at the October 14, 2018 cutoff. The supplement defines OS as time from randomization to death from any cause. The main report gives an HR of 0.81 (95% CI 0.53–1.25; *P* = .3361), based on 84 deaths: 39 in the enzalutamide-plus-ADT group and 45 in the placebo-plus-ADT group. The OS result is absent from the abstract but reported in the full article and supplement.
+
+The match is **exact** for the requested event set, time origin, and randomized comparison. The result is interim and described as immature; the report says the final OS analysis was planned after approximately 342 deaths.
+
+**Unresolved:** The cited passages do not give the full OS risk set, censoring counts, or completeness of death ascertainment at the interim cutoff.
+
+The Proposal is saved and awaits your review. Reply with approval to proceed, or tell me what to revise.

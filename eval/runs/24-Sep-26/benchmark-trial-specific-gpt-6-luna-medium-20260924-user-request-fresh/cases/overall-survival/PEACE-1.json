@@ -1,0 +1,52 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Standard of care + abiraterone (pooled across radiotherapy/docetaxel strata)",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Standard of care without abiraterone (pooled across radiotherapy/docetaxel strata)",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Time from randomization to death from any cause; patients without events censored at last follow-up",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Overall survival in the overall population"
+      },
+      "estimate": "0.82",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95.1% CI, 0.69 to 0.98; P=.030"
+    },
+    "trial": "PEACE-1",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:18.837315Z",
+    "path": "../../../../../reference/sources/PEACE-1/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT01957436",
+    "sha256": "4647033fd2ac8a105955c0942c93f13de01d1357dd8c8799cb42c14f41c17ec8"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/PEACE-1/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/PEACE-1/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "PEACE-1"
+}

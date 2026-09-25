@@ -1,0 +1,7 @@
+**SWOG-1216 Adverse Events: overall risk of bias is High.** Four domains were judged **some concerns**—randomization, deviations from intended interventions, outcome measurement, and selection of the reported result. Missing outcome data was **low risk**.
+
+For measurement, standardized CTCAE grading and scheduled toxicity assessments support the method’s suitability and comparability. However, the trial was open-label, participants recorded side effects themselves, and the registry’s related-event outcome required judgment about attribution. The approved 43% versus 14% result’s precise event definition remains unclear.
+
+The report gives 43% versus 14% in the abstract and 43% versus 13% in its Safety section; Table 2 and the registry describe Grade 3–5 treatment-related events, which are not established as the same outcome.
+
+The assessment is finalized in [the RoB 2 artifact](C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/adverse-events/SWOG-1216/workspace/.rob2-kit/finalized/1c7bd5a6524caa635b2e734ccb031c0371c50d62559898602a573493dd4d9bbd.rob2.zip).

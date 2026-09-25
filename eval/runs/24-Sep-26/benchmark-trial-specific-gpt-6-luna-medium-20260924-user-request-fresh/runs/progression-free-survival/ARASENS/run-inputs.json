@@ -1,0 +1,75 @@
+{
+  "approved_scope": null,
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Darolutamide + ADT + docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo + ADT + docetaxel",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Time to castration-resistant prostate cancer: from randomization to PSA progression with castrate testosterone (<0.5 ng/mL) or radiological progression of soft-tissue, visceral, or bone lesions; soft-tissue/visceral progression by RECIST 1.1 and bone progression by PCWG3",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Time to castration-resistant prostate cancer"
+      },
+      "estimate": "0.36",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.30 to 0.42; P<0.001"
+    },
+    "trial": "ARASENS",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "capture_provenance": "captured response retained from OS baseline",
+    "captured_at": "2026-09-13T19:31:14.538796Z",
+    "registry_id": "NCT02799602",
+    "replay_provenance": "copied byte-for-byte from the case manifest; no registry request made",
+    "replayed_at": "2026-09-24T18:22:45.773616+00:00",
+    "sha256": "5a6a378e5aaeeb083e17276f3c06ccc3129d734151c4699ddd607a8e72c9b6b6"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-run-inputs.v1",
+  "scope_unresolved": null,
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "role": "main_article",
+      "sha256": "31fa6ce53f1a9f75560edcabd004c4882a010e6ede933370b9e00a67c99b793e"
+    },
+    {
+      "name": "other-2.pdf",
+      "role": "other",
+      "sha256": "1d0373b747205cc73e5e11dbca4769ef95a9f002effa695e30712c17624b26aa"
+    },
+    {
+      "name": "other.pdf",
+      "role": "other",
+      "sha256": "4dd9419f853329f08fc88c85757516177c1ed5255a91cfbdcb822732f57789a3"
+    },
+    {
+      "name": "protocol.pdf",
+      "role": "protocol",
+      "sha256": "6570aa6f772789170f4fb7d29863918b4f85f57b1940291b53434a9c51e3ce88"
+    },
+    {
+      "name": "registry.json",
+      "role": "registry",
+      "sha256": "5a6a378e5aaeeb083e17276f3c06ccc3129d734151c4699ddd607a8e72c9b6b6"
+    },
+    {
+      "name": "supplement.pdf",
+      "role": "supplement",
+      "sha256": "7d4dbdda5497a4e9eb58af6b698faf8530669820598e6f9f212632bc4cb97085"
+    }
+  ],
+  "trial": "ARASENS"
+}

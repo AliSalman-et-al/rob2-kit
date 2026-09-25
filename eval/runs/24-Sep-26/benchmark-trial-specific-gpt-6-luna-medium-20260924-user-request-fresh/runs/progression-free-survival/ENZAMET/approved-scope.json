@@ -1,0 +1,17 @@
+{
+  "approval_identity": "sha256:3a2e0ccae1e66920712d53268155af229ed985f889a968700d0a98a427b0bc53",
+  "approved_at": "2026-09-24T19:24:53.176550Z",
+  "case_requested_scope": null,
+  "proposal_identity": "sha256:572c46c86d48a1fd39c8bced5828ad27930e7272a7289d7f52658795132c847e",
+  "results": [
+    {
+      "identity": "sha256:6253dc8a05341c4f89eb17e7bda6ba73fe934216ac8b0e7bd0dea530f50c3e8d",
+      "kind": "assessable",
+      "reported_scope_identity": "sha256:41b0a30186eeffcc25b3a9ff15e3549fdca65121c9a2d9f8fa1d55d8f7f13cd3",
+      "target_scope_identity": "sha256:e325a604611377f4d4a5712e302712e06aec675277270665009fedcf86bb5b46",
+      "trial_id": "enzamet"
+    }
+  ],
+  "review_identity": "sha256:d4e0b70c31fa1538f1aaf5690f16217d578ea638a0e18ad26687fb27254f969f",
+  "schema": "rob2-kit.rsi-approved-scope.v1"
+}

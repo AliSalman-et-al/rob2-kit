@@ -1,0 +1,15 @@
+[
+  {
+    "outcome": "Adverse Events",
+    "trial": "PEACE-1",
+    "phase": 4,
+    "exit_code": 0,
+    "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1",
+    "launcher_stdout_path": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1\\launcher-phase-4-a2ef6bde7de84dec804c8b4303beb27a.stdout.txt",
+    "launcher_stdout_sha256": "4935f69c32f4d904042cfb40901851e45b4f8d31df150ccfb3d8ea27764269dd",
+    "launcher_stderr_path": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1\\launcher-phase-4-a2ef6bde7de84dec804c8b4303beb27a.stderr.txt",
+    "launcher_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "launcher_invocation_id": "a2ef6bde7de84dec804c8b4303beb27a",
+    "benchmark_index_sha256": "2931bc4d7f29e504cb7a6a90453b9b47bbc52f9958a7bf2ef8d0a3ae7d11ed59"
+  }
+]

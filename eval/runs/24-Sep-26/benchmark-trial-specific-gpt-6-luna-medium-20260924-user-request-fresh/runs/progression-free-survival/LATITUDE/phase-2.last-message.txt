@@ -1,0 +1,13 @@
+**LATITUDE radiographic PFS assessment is complete. Overall risk of bias: High**, driven by Domain 3, missing outcome data.
+
+| RoB 2 domain | Judgment |
+|---|---|
+| Randomization process | Low |
+| Deviations from intended interventions | Low |
+| Missing outcome data | High |
+| Outcome measurement | Low |
+| Selection of the reported result | Low |
+
+The main uncertainty is that the sources do not report arm-specific PFS outcome availability or actual censoring totals. The SAP specifies censoring after treatment discontinuation and after two missed scans; the registry reports some withdrawals for adverse events and physician decisions. I judged this could make censoring depend on prognosis, but that pathway is not confirmed by participant-level follow-up data. The overall judgment is therefore sensitive to the missingness assessment.
+
+The finalized record is [available here](</C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/progression-free-survival/LATITUDE/workspace/.rob2-kit/finalized/bc765fc7da31c2ab5b648131c30a6520bedcb92218b46a16bbdf42814af695cf.rob2.zip>).

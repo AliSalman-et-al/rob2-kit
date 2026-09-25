@@ -1,0 +1,7 @@
+**Proposal Review is pending** for ENZAMET’s Clinical PFS result. The workflow requires your review before domain assessment can begin.
+
+The proposed result is the randomized comparison of enzalutamide plus testosterone suppression versus standard nonsteroidal antiandrogen plus testosterone suppression. It uses the report’s Clinical PFS composite and time origin of randomization. The full article reports HR 0.40 (95% CI 0.33–0.49; P<0.001), with 167/563 and 320/562 events. The abstract reports the HR and P value but gives no CI.
+
+The proposal notes that the article centrally reviewed imaging reports, not the images themselves. Review reference: `sha256:d4e0b70c31fa1538f1aaf5690f16217d578ea638a0e18ad26687fb27254f969f`.
+
+Please accept this candidate or tell me what to change.

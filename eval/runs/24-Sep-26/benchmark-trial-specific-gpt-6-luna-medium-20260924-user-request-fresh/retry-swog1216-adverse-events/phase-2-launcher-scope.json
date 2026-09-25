@@ -1,0 +1,23 @@
+{
+  "schema": "rob2-kit.benchmark-phase-scope.v1",
+  "phase": 2,
+  "benchmark_index": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\retry-swog1216-adverse-events\\index.json",
+  "benchmark_index_sha256": "2cd88ea0739169d66bc9f513bf860ea934c8b2867c6e62f8baf3e0e350635f06",
+  "selection_mode": "all",
+  "included_count": 1,
+  "included_cases": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "SWOG-1216"
+    }
+  ],
+  "submitted_count": 1,
+  "excluded_count": 0,
+  "submitted_cases": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "SWOG-1216"
+    }
+  ],
+  "excluded_cases": []
+}

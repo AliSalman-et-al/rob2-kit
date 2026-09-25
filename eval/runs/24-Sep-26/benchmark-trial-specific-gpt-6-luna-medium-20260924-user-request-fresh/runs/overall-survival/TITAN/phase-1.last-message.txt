@@ -1,0 +1,7 @@
+## TITAN Overall Survival: Proposal Review
+
+The proposed result matches your requested outcome: overall survival is defined as time from randomization to death from any cause. At 24 months, survival was 82.4% with apalutamide plus ADT and 73.5% with placebo plus ADT; HR 0.67 (95% CI 0.51–0.89), P=.005.
+
+The trial randomized 525 and 527 participants, respectively. The report also says 39 participants were lost to follow-up or withdrew from all data collection, but does not give arm-specific counts or explain their handling in the OS analysis. I’ve recorded that uncertainty for the assessment.
+
+**Please approve this proposed result to continue, or ask me to revise it.** Proposal Review reference: `sha256:0ce5e096e73b5ced57303cff22f49937da5976fd12842f1a6a30381e4c87c606`.

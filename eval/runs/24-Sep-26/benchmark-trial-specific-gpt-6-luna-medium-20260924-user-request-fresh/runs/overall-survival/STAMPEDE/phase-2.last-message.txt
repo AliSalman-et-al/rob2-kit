@@ -1,0 +1,17 @@
+## STAMPEDE overall survival
+
+**Overall risk of bias: High**, driven by the measurement domain.
+
+| Domain | Judgment |
+|---|---|
+| Randomization | Low |
+| Deviations from intended interventions | Some concerns |
+| Missing outcome data | Low |
+| Outcome measurement | High |
+| Selection of the reported result | Some concerns |
+
+The main concern is that the combination group had additional assessments at least every three months, while survival time could be censored at last contact. This may have created different opportunities to detect or record deaths. The protocol describes supplementing site data with national death records when available, but the report does not establish whether that linkage was used for this analysis.
+
+The result is **HR 0.63 (95% CI 0.52–0.76; P<0.001)** for time from randomization to death from any cause. The outcome is objective, but the assessment schedule raises concern about ascertainment comparability.
+
+The assessment is finalized. The workflow’s diagnostic summary flags that the deviations-domain judgment could change under an alternative interpretation of 10 participants who did not receive abiraterone; the overall judgment remains high because the measurement domain is the driver. [Finalized RoB 2 artifact](</C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/overall-survival/STAMPEDE/workspace/.rob2-kit/finalized/274ef6ce91e2cb8ebda88f2f86611bb9d284f5e5bfdaa9b8577fae98dffb9cb1.rob2.zip>)

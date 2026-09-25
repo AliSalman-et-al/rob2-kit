@@ -1,0 +1,3 @@
+The requested Clinical PFS result is available in the full report, even though the abstract omits both PFS variants. The report defines cPFS as time to clinical progression or death and gives a comparative estimate: **HR 0.75 (95% CI 0.59–0.94; p=0.015)**. Median cPFS was 23.5 months with ADT plus docetaxel and 15.4 months with ADT alone.
+
+I saved this as the proposed Result for GETUG-AFU-15. **Proposal Review** `sha256:439d7f4bab551235d697bd9e770add097e0cb322700538865fbb47fa10bced51` is pending. Please approve this Result to continue to the RoB 2 domains, or tell me what to correct.

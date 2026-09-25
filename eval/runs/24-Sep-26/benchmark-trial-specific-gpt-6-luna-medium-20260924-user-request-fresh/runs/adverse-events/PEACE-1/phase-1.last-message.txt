@@ -1,0 +1,5 @@
+The main-article reading reached its 65,536-byte limit with only page 13, lines 41–55 unread. I haven’t submitted a Result Proposal or saved any RoB 2 judgments, so this assessment is not complete.
+
+The available report confirms the requested comparison in the docetaxel safety population: grade 3 or worse adverse events affected 217/347 (63%) with abiraterone and 181/350 (52%) without; severe hypertension affected 76/347 (22%) and 45/350 (13%). The report says adverse events were graded using NCI-CTCAE v4.0 and that safety analysis used the highest grade recorded from treatment initiation to castration resistance. Safety analyses were based on treatment received, and patients who received no investigational treatment were excluded.
+
+The assessment workflow still needs to select and review this Result, then complete the five RoB 2 domains and trial review.

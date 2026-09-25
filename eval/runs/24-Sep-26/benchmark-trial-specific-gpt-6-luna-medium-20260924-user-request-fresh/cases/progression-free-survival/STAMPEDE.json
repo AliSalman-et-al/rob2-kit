@@ -1,0 +1,62 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "ADT + abiraterone + prednisolone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "ADT alone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Failure-free survival excluding patients with biochemical (PSA progression) failure",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Progression-free survival"
+      },
+      "estimate": "0.40",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.34 to 0.47; P<0.001"
+    },
+    "trial": "STAMPEDE",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:14:13.902255Z",
+    "path": "../../../../../reference/sources/STAMPEDE/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT00268476",
+    "sha256": "f17d24fac49c26e7cd9ae51ce52ef6b9568cf440f8792b52aede034eb98914c9"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "STAMPEDE"
+}

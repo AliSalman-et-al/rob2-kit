@@ -1,0 +1,10 @@
+**Proposal Review — PEACE-1, Overall Survival**
+
+- **Selected result:** Overall-population comparison of assignment to standard care plus abiraterone versus standard care without abiraterone, pooling radiotherapy groups.
+- **Outcome:** Time from randomization to death from any cause; patients without events were censored at last follow-up.
+- **Result:** HR 0.82 (95.1% CI 0.69–0.98), *p*=.030; median follow-up 4.41 years, with data cutoff June 1, 2021.
+- **Population:** 583 versus 589 analyzed (n=1172). One of 1173 randomized participants withdrew consent for analysis.
+- **Relation to your requested Result:** Narrower only because that one randomized participant was excluded; the endpoint, time origin, and comparison otherwise match.
+- **Review reference:** `sha256:21bcd5def5070abf36162bb46052c4e2aeaa9279c745b130460408c264f27ac2`
+
+The proposal is saved and awaiting your review. Reply with approval to continue the RoB 2 assessment, or tell me what Result scope to reconsider.

@@ -1,0 +1,5 @@
+ARCHES is assessed for the October 14, 2018 interim OS result (HR 0.81, 95% CI 0.53–1.25). Although OS was omitted from the abstract, the full report provides the result.
+
+**Overall risk of bias: High**, driven by **Domain 3 (missing outcome data)**: the report does not establish how many randomized participants had known vital status at the cutoff or whether unavailable survival data could be related to true survival. The other domains were Low, including **Domain 5 (selection of the reported result)**.
+
+The finalized assessment is [ARCHES RoB 2 artifact](C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/overall-survival/ARCHES/workspace/.rob2-kit/finalized/d9cd6dafc9f01d5ec4a41820eeb4d7031f6ff8149ed233b86ede9067b0bd426f.rob2.zip).

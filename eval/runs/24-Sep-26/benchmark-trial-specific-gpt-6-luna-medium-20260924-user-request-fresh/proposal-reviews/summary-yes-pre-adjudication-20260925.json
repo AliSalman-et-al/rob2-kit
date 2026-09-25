@@ -1,0 +1,2955 @@
+[
+  {
+    "outcome": "Adverse Events",
+    "trial": "ARASENS",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Darolutamide + ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT + docetaxel"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+            "id": "darolutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded with NCI-CTCAE v4.0.3",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "During treatment",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "66.1%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "63.5%",
+              "unit": "percent"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety analysis set: patients who received at least one dose of darolutamide or placebo, analyzed according to treatment actually received; N=652 and N=650. Three randomized placebo-assigned patients received no trial treatment; one placebo-assigned patient who received darolutamide was analyzed in the darolutamide group.",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "darolutamide",
+              "statistic": "percent",
+              "unit": "%",
+              "value": "66.1"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "percent",
+              "unit": "%",
+              "value": "63.5"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:71a9b5b17d2e75f777c672db38e2044b9732aa7845700907988b6b16f30d38dd",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\ARASENS.json",
+    "review_identity": "sha256:4b79e4dbf6fe8ab81f64ca02ce368fe1f015125fe99d528370e737e3c7d12c14",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "arasens",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Grade 3 or 4 adverse events",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "ARCHES",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Enzalutamide plus androgen deprivation therapy",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen deprivation therapy",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded with NCI-CTCAE v4.0.3",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "Trial safety summary; specific adverse-event observation window not stated in the report.",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or greater adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or greater adverse events",
+              "value": "24.3%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or greater adverse events",
+              "value": "25.6%",
+              "unit": "percent"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety population: randomized patients who received at least one dose of study drug (enzalutamide plus ADT n=572; placebo plus ADT n=574). Two randomized patients in each arm did not receive study drug.",
+          "endpoint": {
+            "definition": null,
+            "name": "AEs"
+          },
+          "group_values": [
+            {
+              "group_id": "enzalutamide",
+              "statistic": "No. (%)",
+              "unit": "%",
+              "value": "139 (24.3)"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "No. (%)",
+              "unit": "%",
+              "value": "147 (25.6)"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:bee85fa4c7f2500f5577ec9e3ad90e563e04645d6a9c8f8ce6bc35f52cee78d5",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\ARCHES.json",
+    "review_identity": "sha256:0e954d7c7e66cd26d117895bd8c6b93e8584bc79ec8563adc8601b097fe56ec9",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "arches",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "AEs",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "CHAARTED",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": null
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "No AE definition is listed in eTable 1; the main article says toxic effects were graded using NCI-CTCAE v4.0",
+        "observed": null
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": null
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": null
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "single_group_category_profile",
+          "analysis_population": "Patients in the ADT plus docetaxel group reported in the abstract.",
+          "endpoint": {
+            "name": "Selected adverse events in the docetaxel group"
+          },
+          "group_id": "treatment",
+          "denominator_basis": "Docetaxel plus ADT treatment group",
+          "category_axis_names": [
+            "Adverse event"
+          ],
+          "categories": [
+            {
+              "category_axes": [
+                "Grade 3 or 4 febrile neutropenia"
+              ],
+              "value": "6.2%"
+            },
+            {
+              "category_axes": [
+                "Grade 3 or 4 infection with neutropenia"
+              ],
+              "value": "2.3%"
+            },
+            {
+              "category_axes": [
+                "Grade 3 sensory neuropathy"
+              ],
+              "value": "0.5%"
+            },
+            {
+              "category_axes": [
+                "Grade 3 motor neuropathy"
+              ],
+              "value": "0.5%"
+            }
+          ]
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": null,
+          "endpoint": null,
+          "effect_measure": null,
+          "estimate": null,
+          "precision": null,
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:c6537a89b99ef1841f37c837a46bec5fa3c84ba0e05bf2f0fab8574be4ca4a56",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\CHAARTED.json",
+    "review_identity": "sha256:e3c218a830485aeb9e3717016a63d38064d86559d302c7cb7363ac43a1e8d432",
+    "requested_outcome": "adverse events",
+    "trial_id": "chaarted",
+    "kind": "unavailable",
+    "relation": "unavailable",
+    "endpoint": null,
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "ENZAMET",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen + testosterone suppression"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Enzalutamide plus testosterone suppression",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression",
+            "id": "standard_care"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded with NCI-CTCAE v4.0.2",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "At any time during adverse-event follow-up; the final safety assessment was 30 to 42 days after cessation of the trial regimen.",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Treatment discontinuation due to adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "treatment discontinuations due to adverse events",
+              "value": "33",
+              "unit": "events"
+            },
+            {
+              "group_id": "control",
+              "statistic": "treatment discontinuations due to adverse events",
+              "value": "14",
+              "unit": "events"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety population: randomized participants who received a dose of any trial drug; N=563 enzalutamide and N=558 standard care.",
+          "endpoint": {
+            "definition": null,
+            "name": "Adverse event leading to treatment discontinuation at any time"
+          },
+          "group_values": [
+            {
+              "group_id": "enzalutamide",
+              "statistic": "no. of patients",
+              "unit": "patients",
+              "value": "33"
+            },
+            {
+              "group_id": "standard_care",
+              "statistic": "no. of patients",
+              "unit": "patients",
+              "value": "14"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:25563dc018c54221546625348df1c07d9c538b608754c51423045e4aae836ad9",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\ENZAMET.json",
+    "review_identity": "sha256:2cd7297ef7f75d540430a27c764aa408c027ab5613d373c4dcfe78da27395625",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "enzamet",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Adverse event leading to treatment discontinuation at any time",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "GETUG-AFU-15",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded with NCI-CTCAE v3.0",
+        "observed": "adverse events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "During trial follow-up; exact serious-adverse-event capture window not stated",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Serious adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "serious adverse-event events",
+              "value": "72",
+              "unit": "events"
+            },
+            {
+              "group_id": "control",
+              "statistic": "serious adverse-event events",
+              "value": "0",
+              "unit": "events"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety population exposed to assigned treatment; 189 in the ADT plus docetaxel group and 186 in the ADT-alone group. The serious-adverse-event counts are events, not participants with at least one event.",
+          "endpoint": {
+            "definition": null,
+            "name": "Serious adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "adt_docetaxel",
+              "statistic": "serious adverse events",
+              "unit": "events",
+              "value": "72"
+            },
+            {
+              "group_id": "adt_alone",
+              "statistic": "serious adverse events",
+              "unit": "events",
+              "value": "0"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:27db9665084c6144841448d76d37573eb12269c8b5d4bfe2b1bdbfc3bb2b12e0",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\GETUG-AFU-15.json",
+    "review_identity": "sha256:b2276e8b41dd327e17778ee42cdbf566f773c19531dce62575a2164b6490716a",
+    "requested_outcome": "adverse events",
+    "trial_id": "getug-afu-15",
+    "kind": "assessable",
+    "relation": "component",
+    "endpoint": "Serious adverse events",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "LATITUDE",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Abiraterone + prednisone + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Matched abiraterone and prednisone placebos + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded with NCI-CTCAE v4.0",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "Reported safety results; specific adverse-event assessment window not stated",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "374 (63%)",
+              "unit": "patients (percent)"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "287 (48%)",
+              "unit": "patients (percent)"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Table 2 reports denominators of 597 in the abiraterone group and 602 in the placebo group; the article does not explicitly identify the analysis population for this row.",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3 or 4 adverse event"
+          },
+          "group_values": [
+            {
+              "group_id": "abiraterone",
+              "statistic": "number of patients (percent)",
+              "unit": "number of patients (percent)",
+              "value": "374 (63)"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "number of patients (percent)",
+              "unit": "number of patients (percent)",
+              "value": "287 (48)"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:3dae767b471c46868ff071fb120e1c73b0d6fc9a38112111f1a94e219f810158",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\LATITUDE.json",
+    "review_identity": "sha256:34b4ad7f654ea2b1e5b64175361f7a884706dbc24145749d74ab10537782d2b0",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "latitude",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Grade 3 or 4 adverse event",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "PEACE-1",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel + abiraterone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT + docetaxel without abiraterone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus docetaxel with abiraterone and prednisone (radiotherapy assignment pooled)",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "ADT plus docetaxel without abiraterone (radiotherapy assignment pooled)",
+            "id": "no_abiraterone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded using NCI-CTCAE v4.0",
+        "observed": "Adverse events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the ADT plus docetaxel population with safety data.",
+        "observed": "All randomized participants in the comparison groups; baseline subgroup: Docetaxel population (ADT with docetaxel as standard of care)"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "From treatment initiation to castration resistance",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients in the ADT plus docetaxel population with safety data.",
+          "endpoint": {
+            "name": "Grade 3 or worse adverse events in the ADT+docetaxel population"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "patients with grade 3 or worse adverse events",
+              "value": "217/347 (63%)",
+              "unit": "patients (percent)"
+            },
+            {
+              "group_id": "control",
+              "statistic": "patients with grade 3 or worse adverse events",
+              "value": "181/350 (52%)",
+              "unit": "patients (percent)"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety population in the ADT with docetaxel population, classified according to treatment actually received; patients who received no investigational treatment were excluded.",
+          "endpoint": {
+            "definition": null,
+            "name": "severe adverse event (grade 3 or worse)"
+          },
+          "group_values": [
+            {
+              "group_id": "abiraterone",
+              "statistic": "patients",
+              "unit": "patients",
+              "value": "217 (63%) of 347 patients"
+            },
+            {
+              "group_id": "no_abiraterone",
+              "statistic": "patients",
+              "unit": "patients",
+              "value": "181 (52%) of 350"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:635784c2524293d7d2368d5ed35e16d20b01464871abbb5c13d589530fac0c11",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\PEACE-1.json",
+    "review_identity": "sha256:81d0a2801c11487139694ccf4cd1c83780012af56d8c447c418bef293aabecd2",
+    "requested_outcome": "Adverse events",
+    "trial_id": "peace-1",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "severe adverse event (grade 3 or worse)",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "STAMPEDE",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + abiraterone + prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Androgen-deprivation therapy alone",
+            "id": "adt_alone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone",
+            "id": "combination"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded with NCI-CTCAE, initially v3.0 and later v4.0",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "During the entire time in the trial",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 to 5 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 to 5 adverse events",
+              "value": "47%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 to 5 adverse events",
+              "value": "33%",
+              "unit": "percent"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety population; safety analyses grouped patients according to the treatment they started.",
+          "endpoint": {
+            "definition": null,
+            "name": "Adverse events of grade 3 or higher during their entire time in the trial"
+          },
+          "group_values": [
+            {
+              "group_id": "adt_alone",
+              "statistic": "proportion",
+              "unit": "patients",
+              "value": "315 of 960 (33%)"
+            },
+            {
+              "group_id": "combination",
+              "statistic": "proportion",
+              "unit": "patients",
+              "value": "443 of 948 (47%)"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:a1e1140046130cd456ef4809dfbe447706e396919ab9e90fe10088f26a42c0b4",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\STAMPEDE.json",
+    "review_identity": "sha256:2d8d8c59edbb600d31597c8cd1be783bdb94659ac687efd92b470b7c059101a6",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "stampede",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Adverse events of grade 3 or higher during their entire time in the trial",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "SWOG-1216",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Orteronel + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Bicalutamide + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus orteronel",
+            "id": "orteronel"
+          },
+          {
+            "assignment": "ADT plus bicalutamide",
+            "id": "bicalutamide"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "The eTable says the toxicity outcome definition was not reported",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "During protocol treatment; exact observation window for the reported aggregate is not reported",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "43%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "14%",
+              "unit": "percent"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "The detailed safety table includes 627 orteronel and 629 bicalutamide patients; the denominators for the abstract percentages are not specified.",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3/4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "orteronel",
+              "statistic": "%",
+              "unit": "%",
+              "value": "43"
+            },
+            {
+              "group_id": "bicalutamide",
+              "statistic": "%",
+              "unit": "%",
+              "value": "14"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:cb44134a740be81be0f3546fa8a2ea528dd636f15d8cfdb56011e7cf900e3bc0",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\SWOG-1216.json",
+    "review_identity": "sha256:c14d264b11139ec0cc54556c7be76a417db8a29e21e538c4b4631d93375b8875",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "swog-1216",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Grade 3/4 adverse events",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Adverse Events",
+    "trial": "TITAN",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Apalutamide plus ADT",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Toxicity graded with NCI-CTCAE v4.0.3",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "From first dose of trial intervention through 30 days after last dose",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "42.2%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "40.8%",
+              "unit": "percent"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety population receiving trial intervention: apalutamide N=524 (one randomized participant withdrew consent before treatment) and placebo N=527.",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3 or 4 adverse event"
+          },
+          "group_values": [
+            {
+              "group_id": "apalutamide",
+              "statistic": "patients (percent)",
+              "unit": "%",
+              "value": "221 (42.2)"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "patients (percent)",
+              "unit": "%",
+              "value": "215 (40.8)"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:5fdc6d9d59efdaa596736652931a55b707c7668e44fcf019c03cae862ab2a94a",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\adverse-events\\TITAN.json",
+    "review_identity": "sha256:fef633fdf3dbbaef51f30022fa7cd55cf3120a5320d907ef39720338c52c675a",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "titan",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Grade 3 or 4 adverse event",
+    "estimate": null,
+    "precision": null
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "ARASENS",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Darolutamide + ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT + docetaxel"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+            "id": "darolutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause",
+        "observed": "Overall Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Primary analysis at the October 25, 2021 data cutoff, after 533 deaths",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.57 to 0.80; P<0.001",
+        "observed": "95% confidence interval [CI], 0.57 to 0.80"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.68",
+          "precision": "95% CI, 0.57 to 0.80; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Full analysis set: 1305 of 1306 randomized participants (651 assigned darolutamide and 654 assigned placebo), analyzed according to randomized assignment; one placebo-randomized participant was excluded for a GCP violation.",
+          "endpoint": {
+            "definition": "Time from randomization until death from any cause",
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.68",
+          "precision": "95% confidence interval [CI], 0.57 to 0.80",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:f6ff5fdf37cb5fcb91b428f9298c6ce38df5d23c3eb54ba14b9677fca8cb2219",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\ARASENS.json",
+    "review_identity": "sha256:2eaf9086448f750ad1f1e1d37d726a988bb3eaeed4d1eeb43ab06615ab8306cc",
+    "requested_outcome": "Overall Survival",
+    "trial_id": "arasens",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Overall survival",
+    "estimate": "0.68",
+    "precision": "95% confidence interval [CI], 0.57 to 0.80"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "ARCHES",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Enzalutamide plus ADT",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause",
+        "observed": "overall survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Interim OS analysis at the October 14, 2018 data cutoff",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.53 to 1.25; P=.3361",
+        "observed": "95% CI, 0.53 to 1.25"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.81",
+          "precision": "95% CI, 0.53 to 1.25; P=.3361",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Intent-to-treat randomized population; 84 deaths at the interim analysis (39 with enzalutamide plus ADT and 45 with placebo plus ADT).",
+          "endpoint": {
+            "definition": null,
+            "name": "OS"
+          },
+          "effect_measure": "HR",
+          "estimate": "0.81",
+          "precision": "95% CI, 0.53 to 1.25",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:b3feaeedcfe20e593d3ae5d35146650a8d8d88170450d7be0302fc9e57df50ad",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\ARCHES.json",
+    "review_identity": "sha256:ddce85f4b1d60f691b06496d902c3ff02666a938e92d33516691518499cb06eb",
+    "requested_outcome": "overall survival",
+    "trial_id": "arches",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "OS",
+    "estimate": "0.81",
+    "precision": "95% CI, 0.53 to 1.25"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "CHAARTED",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause",
+        "observed": "Overall Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization until death from any cause; survival follow-up reported at median 28.9 months",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.47 to 0.80; P<0.001",
+        "observed": "95% confidence interval [CI], 0.47 to 0.80"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.61",
+          "precision": "95% CI, 0.47 to 0.80; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "All 790 randomized patients, analyzed in their assigned groups; 397 assigned to ADT plus docetaxel and 393 to ADT alone.",
+          "endpoint": {
+            "definition": null,
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.61",
+          "precision": "95% confidence interval [CI], 0.47 to 0.80",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:d590849e0f3a69f013ed633de874e3274f61469cdafeb56bd8c3edcb1b290e54",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\CHAARTED.json",
+    "review_identity": "sha256:fcb988ef8b0459644de6c738dc55a95a0dccf03208e8df20a270d5436d975f7c",
+    "requested_outcome": "Overall Survival",
+    "trial_id": "chaarted",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Overall survival",
+    "estimate": "0.61",
+    "precision": "95% confidence interval [CI], 0.47 to 0.80"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "ENZAMET",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen + testosterone suppression"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Enzalutamide plus continuous testosterone suppression",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen plus continuous testosterone suppression",
+            "id": "standard_care"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause or date last known alive",
+        "observed": "Overall survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Through the February 28, 2019 survival-status cutoff; median follow-up 34 months",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.52 to 0.86; P=.002",
+        "observed": "95% confidence interval [CI], 0.52 to 0.86; P = 0.002"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.67",
+          "precision": "95% CI, 0.52 to 0.86; P=.002",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "All 1125 randomized patients (563 assigned enzalutamide and 562 assigned standard care), analyzed according to intention to treat; 14 patients lost to follow-up or withdrawing consent remained included in time-to-event analyses with censoring as appropriate.",
+          "endpoint": {
+            "definition": "The primary end point of overall survival was measured as the interval from randomization to death from any cause or to the date at which the patient was last known to be alive.",
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.67",
+          "precision": "95% confidence interval [CI], 0.52 to 0.86; P = 0.002",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:2eb124b83e79bf922634eb0109e8fe45a3b7f35e4ea8c6e520995dfdbaa224b0",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\ENZAMET.json",
+    "review_identity": "sha256:7fc19538c35f57e70f643ac0f1e97448dfba1e12118833b75e4902c37195809b",
+    "requested_outcome": "Overall survival",
+    "trial_id": "enzamet",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Overall survival",
+    "estimate": "0.67",
+    "precision": "95% confidence interval [CI], 0.52 to 0.86; P = 0.002"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "GETUG-AFU-15",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause",
+        "observed": "Overall survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Follow-up to the July 31, 2011 data cutoff",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "estimate",
+        "expected": "1.01",
+        "observed": "1·01"
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.75 to 1.36",
+        "observed": "95% CI 0·75–1·36"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "1.01",
+          "precision": "95% CI, 0.75 to 1.36",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Intention-to-treat population: 192 assigned to ADT plus docetaxel and 193 assigned to ADT alone; all randomized participants were included in efficacy analyses.",
+          "endpoint": {
+            "definition": null,
+            "name": "overall survival"
+          },
+          "effect_measure": "HR",
+          "estimate": "1·01",
+          "precision": "95% CI 0·75–1·36",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:9eae7e0fe08fd25e6404d652e02800377ed73f242754d8363a7735340b067201",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\GETUG-AFU-15.json",
+    "review_identity": "sha256:b82cb88c5ba1e223ad6060cf62a4d17d9af7bfd64de928d18d60af46632b10ec",
+    "requested_outcome": "Overall survival",
+    "trial_id": "getug-afu-15",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "overall survival",
+    "estimate": "1·01",
+    "precision": "95% CI 0·75–1·36"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "LATITUDE",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Abiraterone + prednisone + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Matched abiraterone and prednisone placebos + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause",
+        "observed": "Overall Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Time-to-event follow-up from randomization; reported at first interim analysis after median follow-up of 30.4 months",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.51 to 0.76; P<0.001",
+        "observed": "0.51 to 0.76"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.62",
+          "precision": "95% CI, 0.51 to 0.76; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "All randomized patients (ITT population): 597 assigned to abiraterone and 602 to placebo; first interim analysis after 406 deaths (169/597 vs 237/602), with median follow-up 30.4 months.",
+          "endpoint": {
+            "definition": "Time from randomization to death from any cause",
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.62",
+          "precision": "0.51 to 0.76",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:f14d2d02dfd4ac70cfc9fa34f20dfca8841689d10a39eed38a61e049ba098ce1",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\LATITUDE.json",
+    "review_identity": "sha256:d0c05ae4a9692583cf32d3371c78fb7da2a21be385578c1984ad0bddf7214151",
+    "requested_outcome": "Overall Survival",
+    "trial_id": "latitude",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Overall survival",
+    "estimate": "0.62",
+    "precision": "0.51 to 0.76"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "PEACE-1",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Standard of care + abiraterone (pooled across radiotherapy/docetaxel strata)"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard of care without abiraterone (pooled across radiotherapy/docetaxel strata)"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Standard of care plus abiraterone, with or without radiotherapy",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Standard of care without abiraterone, with or without radiotherapy",
+            "id": "no_abiraterone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death from any cause; patients without events censored at last follow-up",
+        "observed": "Overall Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization through the June 1, 2021 overall-survival data cutoff (median follow-up 4.41 years in the overall population).",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "estimate",
+        "expected": "0.82",
+        "observed": "0·82"
+      },
+      {
+        "field": "precision",
+        "expected": "95.1% CI, 0.69 to 0.98; P=.030",
+        "observed": "95·1% CI 0·69–0·98; p=0·030"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival in the overall population"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.82",
+          "precision": "95.1% CI, 0.69 to 0.98; P=.030",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "The overall efficacy population: 583 assigned to standard of care plus abiraterone (with or without radiotherapy) and 589 assigned to standard of care without abiraterone (with or without radiotherapy), n=1172. One of 1173 randomized patients withdrew consent for analysis and was excluded.",
+          "endpoint": {
+            "definition": null,
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0·82",
+          "precision": "95·1% CI 0·69–0·98; p=0·030",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:9b33972afd60aaded751cb951a490a06d8fb5afc315bd0bd25b1daa6046d4e71",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\PEACE-1.json",
+    "review_identity": "sha256:21bcd5def5070abf36162bb46052c4e2aeaa9279c745b130460408c264f27ac2",
+    "requested_outcome": "Overall Survival",
+    "trial_id": "peace-1",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Overall survival",
+    "estimate": "0·82",
+    "precision": "95·1% CI 0·69–0·98; p=0·030"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "STAMPEDE",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + abiraterone + prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Androgen-deprivation therapy alone",
+            "id": "adt"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone",
+            "id": "abiraterone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death from any cause",
+        "observed": "Overall Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization through available follow-up",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.52 to 0.76; P<0.001",
+        "observed": "95% confidence interval [CI], 0.52 to 0.76; P<0.001"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.63",
+          "precision": "95% CI, 0.52 to 0.76; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "All randomized patients analyzed under assigned treatment on an intention-to-treat basis; 957 assigned to ADT alone and 960 to combination therapy.",
+          "endpoint": {
+            "definition": "Time from randomization to death from any cause",
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.63",
+          "precision": "95% confidence interval [CI], 0.52 to 0.76; P<0.001",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:888ebc07eda64873e29e5c7ade9b513b6de8e3376845026824aafea704d18da1",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\STAMPEDE.json",
+    "review_identity": "sha256:a683e0e768a4e1236e45d784c424b813ac16c662aafac0fbe11a26ffdbf515af",
+    "requested_outcome": "Overall Survival",
+    "trial_id": "stampede",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Overall survival",
+    "estimate": "0.63",
+    "precision": "95% confidence interval [CI], 0.52 to 0.76; P<0.001"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "SWOG-1216",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Orteronel + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Bicalutamide + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus orteronel",
+            "id": "orteronel"
+          },
+          {
+            "assignment": "ADT plus bicalutamide",
+            "id": "bicalutamide"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause",
+        "observed": "Overall Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Final overall-survival analysis after 525 deaths; median follow-up 4.9 years",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.72 to 1.02; P=.040 (one-sided)",
+        "observed": "95% CI 0.72 to 1.02"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.86",
+          "precision": "95% CI, 0.72 to 1.02; P=.040 (one-sided)",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Intention-to-treat analysis of 1,279 patients: 638 assigned to orteronel and 641 assigned to control, among 1,313 randomized. Thirty-two patients were ineligible and two withdrew all consent before starting treatment.",
+          "endpoint": {
+            "definition": "Time from random assignment to the date of death from any cause.",
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.86",
+          "precision": "95% CI 0.72 to 1.02",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:3640f08ad3c8a8d9cf6bd56aac7feb4bca02c4831967028c4761e61bb1ed0296",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\SWOG-1216.json",
+    "review_identity": "sha256:f3d335be0a57e94da5cd0607f62104794229a3490c7d0ff839243c2c1831fe8d",
+    "requested_outcome": "Overall Survival",
+    "trial_id": "swog-1216",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Overall survival",
+    "estimate": "0.86",
+    "precision": "95% CI 0.72 to 1.02"
+  },
+  {
+    "outcome": "Overall Survival",
+    "trial": "TITAN",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Apalutamide plus ADT",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time from randomization to death resulting from any cause",
+        "observed": "Overall Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "24 months after randomization",
+          "kind": "quantified",
+          "unit": "months",
+          "value": "24"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.51 to 0.89; P=.005",
+        "observed": "95% CI, 0.51 to 0.89"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.67",
+          "precision": "95% CI, 0.51 to 0.89; P=.005",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Randomized groups: apalutamide (N=525) and placebo (N=527). The report states that 39 participants across the two groups were lost to follow-up or withdrew from all further data collection; arm-specific counts and handling for the OS analysis are not specified.",
+          "endpoint": {
+            "definition": "Time from randomization to the date of death from any cause.",
+            "name": "Overall survival"
+          },
+          "effect_measure": "Hazard ratio for death",
+          "estimate": "0.67",
+          "precision": "95% CI, 0.51 to 0.89",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:e27c03103a79c2086cace8508d62901b8f842c1d04c20d1236ce7e2407f84bf1",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\overall-survival\\TITAN.json",
+    "review_identity": "sha256:0ce5e096e73b5ced57303cff22f49937da5976fd12842f1a6a30381e4c87c606",
+    "requested_outcome": "Overall Survival",
+    "trial_id": "titan",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Overall survival",
+    "estimate": "0.67",
+    "precision": "95% CI, 0.51 to 0.89"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "ARASENS",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Darolutamide + ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT + docetaxel"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+            "id": "darolutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Time to castration-resistant prostate cancer: from randomization to PSA progression with castrate testosterone (<0.5 ng/mL) or radiological progression of soft-tissue, visceral, or bone lesions; soft-tissue/visceral progression by RECIST 1.1 and bone progression by PCWG3",
+        "observed": "Progression-free survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Time to event from randomization; patients without an event were censored under the endpoint-specific rules.",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.30 to 0.42; P<0.001",
+        "observed": "95% CI, 0.30 to 0.42"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Time to castration-resistant prostate cancer"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.36",
+          "precision": "95% CI, 0.30 to 0.42; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Full analysis set: all patients who underwent randomization and were assessed according to assigned treatment; 1305 patients were included (651 assigned darolutamide and 654 assigned placebo), from 1306 randomized. One randomized placebo-assigned patient was excluded from the full analysis set.",
+          "endpoint": {
+            "definition": null,
+            "name": "Time to castration-resistant prostate cancer"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.36",
+          "precision": "95% CI, 0.30 to 0.42",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:8a9faf05c7c7ba52f07fab58f864fce79108a610fcd70f50a4c6635a55c4fd42",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\ARASENS.json",
+    "review_identity": "sha256:198732fdf321b89c6bca1fda933ae01ebab2913a36488f4c3807e5380946de21",
+    "requested_outcome": "Progression-free survival",
+    "trial_id": "arasens",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Time to castration-resistant prostate cancer",
+    "estimate": "0.36",
+    "precision": "95% CI, 0.30 to 0.42"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "ARCHES",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Enzalutamide plus androgen deprivation therapy",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Placebo plus androgen deprivation therapy",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease assessed by independent central review, or death from any cause within 24 weeks of drug discontinuation; progression defined by RECIST 1.1",
+        "observed": "Progression-free survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization to first radiographic progression or death from any cause within 24 weeks after study drug discontinuation",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.30 to 0.50; P<0.001",
+        "observed": "95% CI, 0.30 to 0.50"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.39",
+          "precision": "95% CI, 0.30 to 0.50; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Intent-to-treat population: all 1,150 randomized patients (574 assigned enzalutamide plus ADT; 576 assigned placebo plus ADT).",
+          "endpoint": {
+            "definition": null,
+            "name": "rPFS"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.39",
+          "precision": "95% CI, 0.30 to 0.50",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:05b092456d26e3968930de14aed59402207f7fff8d415366317b22d967408ca9",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\ARCHES.json",
+    "review_identity": "sha256:bc57a226dc9e1f91457b4bd3dff9b7663347c882fb2a7ad9c592da5dda7d6b5d",
+    "requested_outcome": "Progression-free survival",
+    "trial_id": "arches",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "rPFS",
+    "estimate": "0.39",
+    "precision": "95% CI, 0.30 to 0.50"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "CHAARTED",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Clinical PFS: time to symptomatic bone metastases, progression by RECIST 1.0, or clinical deterioration due to cancer in the investigator’s opinion",
+        "observed": "Progression-Free Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization until clinical progression",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.50 to 0.75; P<0.001",
+        "observed": "0.50-0.75"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Time to clinical progression"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.61",
+          "precision": "95% CI, 0.50 to 0.75; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "All 790 randomly assigned patients; the article reports intention-to-treat analysis including all randomly assigned patients regardless of eligibility and treatment status.",
+          "endpoint": {
+            "definition": null,
+            "name": "Time to clinical progression"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.61",
+          "precision": "0.50-0.75",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:2bf8789d68e407755cfad259723412b884066b45f134b12d05172b29b149d5ad",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\CHAARTED.json",
+    "review_identity": "sha256:191eb76d01f44e014d1314a21f7924b17b0cac3acb41ad1833088047e6ddf4b1",
+    "requested_outcome": "Progression-Free Survival",
+    "trial_id": "chaarted",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Time to clinical progression",
+    "estimate": "0.61",
+    "precision": "0.50-0.75"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "ENZAMET",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide + testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen + testosterone suppression"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Enzalutamide plus testosterone suppression",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen plus testosterone suppression",
+            "id": "standard_care"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Clinical PFS: time to earliest radiographic progression (PCWG2 for bone, RECIST 1.1 for soft tissue), cancer-attributable symptoms, or initiation of another anticancer treatment",
+        "observed": "Progression-Free Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization until the earliest qualifying clinical progression event; event-free follow-up reported through a median of 34 months.",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.33 to 0.49; P<0.001",
+        "observed": "95% CI, 0.33 to 0.49"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Clinical progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.33 to 0.49; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "All randomized patients (563 assigned to enzalutamide and 562 to standard care), analyzed on an intention-to-treat basis.",
+          "endpoint": {
+            "definition": null,
+            "name": "Clinical progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.33 to 0.49",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:6253dc8a05341c4f89eb17e7bda6ba73fe934216ac8b0e7bd0dea530f50c3e8d",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\ENZAMET.json",
+    "review_identity": "sha256:d4e0b70c31fa1538f1aaf5690f16217d578ea638a0e18ad26687fb27254f969f",
+    "requested_outcome": "Progression-Free Survival",
+    "trial_id": "enzamet",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Clinical progression-free survival",
+    "estimate": "0.40",
+    "precision": "95% CI, 0.33 to 0.49"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "GETUG-AFU-15",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Clinical PFS: progression of pre-existing lesions by RECIST 1.0 or occurrence of new bone lesions, whichever happened first",
+        "observed": "Progression-Free Survival (Clinical PFS)"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization through the common data cutoff (July 31, 2011); median follow-up was 50 months.",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.59 to 0.94; P=.015",
+        "observed": "0·59-0·94; p=0·015"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Clinical progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.75",
+          "precision": "95% CI, 0.59 to 0.94; P=.015",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Intention-to-treat efficacy analysis; 192 patients allocated to ADT plus docetaxel and 193 allocated to ADT alone.",
+          "endpoint": {
+            "definition": null,
+            "name": "cPFS"
+          },
+          "effect_measure": "HR",
+          "estimate": "0.75",
+          "precision": "0·59-0·94; p=0·015",
+          "group_values": []
+        }
+      },
+      {
+        "field": "requested_outcome",
+        "expected": "Progression-Free Survival",
+        "observed": "Progression-Free Survival (Clinical PFS)"
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:42ed7704f2707ef905325d6f08824ba687032e2ea7a7b47e4575a8db57800ded",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\GETUG-AFU-15.json",
+    "review_identity": "sha256:439d7f4bab551235d697bd9e770add097e0cb322700538865fbb47fa10bced51",
+    "requested_outcome": "Progression-Free Survival (Clinical PFS)",
+    "trial_id": "getug-afu-15",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "cPFS",
+    "estimate": "0.75",
+    "precision": "0·59-0·94; p=0·015"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "LATITUDE",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Abiraterone + prednisone + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Matched abiraterone and prednisone placebos + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; soft-tissue lesions assessed by CT/MRI using RECIST 1.1 and new bone lesions by PCWG2",
+        "observed": "Progression-Free Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization until radiographic progression or death",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.39 to 0.55; P<0.001",
+        "observed": "95% CI, 0.39 to 0.55"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.47",
+          "precision": "95% CI, 0.39 to 0.55; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "The supplementary CONSORT diagram identifies the intention-to-treat population as all 1199 randomized patients (597 abiraterone group; 602 placebo group); endpoint-specific analysis membership is not separately stated.",
+          "endpoint": {
+            "definition": null,
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio for disease progression or death",
+          "estimate": "0.47",
+          "precision": "95% CI, 0.39 to 0.55",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:eb68bec6dc4d094ee413c22f133992ec30a9de8c54dd40fd2743216aeb27c04e",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\LATITUDE.json",
+    "review_identity": "sha256:a7c19cd1b8396ee9eba418f6bb150ded5ce41f80e4119c3a616fbc447b114a84",
+    "requested_outcome": "Progression-Free Survival",
+    "trial_id": "latitude",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Radiographic progression-free survival",
+    "estimate": "0.47",
+    "precision": "95% CI, 0.39 to 0.55"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "PEACE-1",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Standard of care + abiraterone (pooled across radiotherapy/docetaxel strata)"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard of care without abiraterone (pooled across radiotherapy/docetaxel strata)"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Assignment to SOC plus abiraterone (with or without radiotherapy)",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Assignment to SOC without abiraterone (with or without radiotherapy)",
+            "id": "control"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; progression includes increasing soft-tissue lesions or new bone lesions by PCWG2",
+        "observed": "Progression-free survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "From randomization until radiographic progression or death from any cause; participants without events were censored at last follow-up.",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "estimate",
+        "expected": "0.54",
+        "observed": "0·54"
+      },
+      {
+        "field": "precision",
+        "expected": "99.9% CI, 0.41 to 0.71; P<0.0001",
+        "observed": "99·9% CI 0·41–0·71"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival in the overall population"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.54",
+          "precision": "99.9% CI, 0.41 to 0.71; P<0.0001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Overall intention-to-treat efficacy population: 1172 randomized participants; one of 1173 randomized patients withdrew consent for analysis.",
+          "endpoint": {
+            "definition": null,
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "HR",
+          "estimate": "0·54",
+          "precision": "99·9% CI 0·41–0·71",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:dcdfdd737433a9f2931e00d156433e3b7e90fabbe2ff9fdc2c41d5739fe93352",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\PEACE-1.json",
+    "review_identity": "sha256:0e800f59d1897ef25215334da3dd357f2fc81161a1c326748ce76640b289c134",
+    "requested_outcome": "Progression-free survival",
+    "trial_id": "peace-1",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Radiographic progression-free survival",
+    "estimate": "0·54",
+    "precision": "99·9% CI 0·41–0·71"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "STAMPEDE",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "ADT + abiraterone + prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "ADT alone"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Androgen-deprivation therapy (ADT) alone",
+            "id": "adt_alone"
+          },
+          {
+            "assignment": "ADT plus abiraterone acetate and prednisolone",
+            "id": "combination"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Failure-free survival excluding patients with biochemical (PSA progression) failure",
+        "observed": "Progression-Free Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "3 years after randomization",
+          "kind": "quantified",
+          "unit": "years",
+          "value": "3"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.34 to 0.47; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "All randomized patients analyzed under their assigned treatment on an intention-to-treat basis (957 assigned to ADT alone and 960 assigned to combination therapy).",
+          "endpoint": {
+            "definition": "Clinical or radiologic progression or death from prostate cancer",
+            "name": "Progression-free survival"
+          },
+          "effect_measure": "Hazard ratio for clinical or radiologic progression or death from prostate cancer",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.34 to 0.47; P<0.001",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:45b4f6f94fa12639fe750dc7b9d9310a221239e2e39631eb5a4f0700655032ae",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\STAMPEDE.json",
+    "review_identity": "sha256:00932c40a23d4a6d72b073acf44016cd31191366fcff8b56c916eef881951bbb",
+    "requested_outcome": "Progression-Free Survival",
+    "trial_id": "stampede",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Progression-free survival",
+    "estimate": "0.40",
+    "precision": "95% CI, 0.34 to 0.47; P<0.001"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "SWOG-1216",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Orteronel + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Bicalutamide + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus orteronel",
+            "id": "orteronel"
+          },
+          {
+            "assignment": "ADT plus bicalutamide",
+            "id": "bicalutamide"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "From randomization to first PSA or radiographic progression, symptomatic deterioration, or death due to any cause",
+        "observed": "Progression-Free Survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "Time-to-event from random assignment through the final analysis; median follow-up 4.9 years.",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.51 to 0.67; P<0.0001",
+        "observed": "95% CI, 0.51 to 0.67"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.58",
+          "precision": "95% CI, 0.51 to 0.67; P<0.0001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "1,279 participants included in the intention-to-treat analysis: 638 assigned to orteronel and 641 assigned to control; 32 randomized patients were ineligible and two withdrew all consent before starting treatment. PFS analysis followed 787 events (343 orteronel, 444 control); median follow-up was 4.9 years.",
+          "endpoint": {
+            "definition": null,
+            "name": "PFS"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.58",
+          "precision": "95% CI, 0.51 to 0.67",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:651abb4b32a589ce194b8f64ba62feb23046f91ab164d838785b97f94583dc34",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\SWOG-1216.json",
+    "review_identity": "sha256:20e2d240ff04651eab5401993b606e0ad88779d469af89e2035b2851d1cc35de",
+    "requested_outcome": "Progression-Free Survival",
+    "trial_id": "swog-1216",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "PFS",
+    "estimate": "0.58",
+    "precision": "95% CI, 0.51 to 0.67"
+  },
+  {
+    "outcome": "Progression-Free Survival",
+    "trial": "TITAN",
+    "answer": "yes",
+    "exit_code": 1,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "Apalutamide plus androgen-deprivation therapy (ADT)",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; progressive soft-tissue lesions or new bone lesions by PCWG2",
+        "observed": "Progression-free survival"
+      },
+      {
+        "field": "population",
+        "expected": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article.",
+        "observed": {
+          "description": "24 months after randomization",
+          "kind": "quantified",
+          "unit": "months",
+          "value": "24"
+        }
+      },
+      {
+        "field": "precision",
+        "expected": "95% CI, 0.39 to 0.60; P<0.001",
+        "observed": "95% confidence interval [CI], 0.39 to 0.60"
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "comparative_effect",
+          "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio",
+          "estimate": "0.48",
+          "precision": "95% CI, 0.39 to 0.60; P<0.001",
+          "group_values": []
+        },
+        "observed": {
+          "form": "comparative_effect",
+          "analysis_population": "Randomized TITAN groups: 525 assigned apalutamide plus ADT and 527 assigned placebo plus ADT; median follow-up at the first interim analysis was 22.7 months.",
+          "endpoint": {
+            "definition": "Time from randomization to first imaging-based documentation of progressive disease or death, whichever occurred first.",
+            "name": "Radiographic progression-free survival"
+          },
+          "effect_measure": "Hazard ratio for radiographic progression or death",
+          "estimate": "0.48",
+          "precision": "95% confidence interval [CI], 0.39 to 0.60",
+          "group_values": []
+        }
+      }
+    ],
+    "scope_adjudication": null,
+    "result_identity": "sha256:f4dd0cf7d63fd81c19b38621c7f3ce5030536c481b1ac09a5f3ff85b79330440",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\proposal-reviews\\progression-free-survival\\TITAN.json",
+    "review_identity": "sha256:36a0646321259f6e10969c115d5b8ce7fdb112bdcaee33a50c4e2ea0c001f84b",
+    "requested_outcome": "Progression-free survival",
+    "trial_id": "titan",
+    "kind": "assessable",
+    "relation": "exact",
+    "endpoint": "Radiographic progression-free survival",
+    "estimate": "0.48",
+    "precision": "95% confidence interval [CI], 0.39 to 0.60"
+  }
+]

@@ -1,0 +1,151 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:35847859a3a51f24b77a4778a256d9aa29d19177164a792d30290abe56142138": {
+        "end": 4722,
+        "end_line": 106,
+        "handle": "eh_35847859a3a51f24",
+        "identity": "sha256:35847859a3a51f24b77a4778a256d9aa29d19177164a792d30290abe56142138",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n341\nAbiraterone for Prostate Cancer\nADT-alone group for both failure-free survival\n(hazard ratio for treatment failure, 0.75) and\noverall survival (hazard ratio for death, 0.75).\nThe main analysis for the comparison of combi-\nnation therapy against control for survival could\nbe performed after the occurrence of approxi-\nmately 267 deaths in the control group for 90%\npower and a one-sided alpha level of 2.5%, after\nwe accounted for three intermediate lack-of-\nbenefit analyses of failure-free survival. An inde-\npendent data monitoring committee reviewed\naccumulating data, guided by lack-of-benefit\nstopping guidelines.\nData on patients without an event of interest\nwere censored when they were last known to be\nevent-free. The median follow-up was determined\nthrough reversing death and censoring indica-\ntors. Standard survival-analysis methods were\nused to analyze time-to-event data in Stata soft-\nware, version 14, with Kaplan-Meier estimates\nfor survival curves and Cox proportional-hazards\nmodels to estimate relative treatment effects.\nThese estimates were adjusted for stratification\nfactors (except randomizing center and ADT\nmethod) and were stratified according to time\nperiods defined by corecruiting groups. A hazard\nratio of less than 1.00 favored the combination\ngroup. The restricted mean survival time (restrict-\ned to 54 months) was calculated from flexible\nparametric models (5 degrees of freedom). The\nproportional-hazards assumption was tested; the\nrestricted mean survival time was emphasized in\nthe presence of nonproportionality. All the con-\nfidence intervals are at the 95% level. Prespeci-\nfied subgroup analyses looked at the consistency\nof treatment effect according to stratification\nfactors, time period, categorized Gleason score,\nand quintiles of PSA levels that were measured\nbefore the initiation of long-term ADT. Key sub-\ngroup analyses according to metastatic status\nwere prespecified. Exploratory analyses considered\nprostate cancer-specific survival and progression-\nfree survival according to the age at random-\nization.\nAll the patients were included in the efficacy\nanalyses under their assigned treatment on an\nintention-to-treat basis. For safety analyses, pa-\ntients were grouped according to the treatment\nthat they started. In the analysis of the median\nduration of abiraterone treatment, data were cen-\nsored at the date of last contact with the patient\nif the patient had not reported stopping the drug.\nResults\nPatients\nBetween November 15, 2011, and January 17,\n2014, a total of 1917 consenting patients at 111\nU.K. and 5 Swiss sites underwent randomization\n(957 to ADT alone and 960 to combination\ntherapy). Data were frozen on February 10, 2017.\nThe flow of patients through the trial is shown\nin Figure S1 in the Supplementary Appendix,\navailable at NEJM.org; the baseline characteris-\ntics of the patients are shown in Table 1, and in\nTable S1 in the Supplementary Appendix. The\nmedian PSA level was 53 ng per milliliter. The\nmedian follow-up was 40 months.\nTreatment\nThe median time from randomization to the ini-\ntiation of abiraterone was 1.3 weeks, and the\nmedian time from the initiation of ADT to the\ninitiation of abiraterone was 8.0 weeks (most pa-\ntients started ADT before randomization) (Table\nS2 in the Supplementary Appendix). Of the 960\npatients in the combination group, 10 (1%) did\nnot receive abiraterone, mostly because they de-\nclined treatment. The median duration of abira\nterone treatment was 23.7 months in the patients\nfor whom the duration was capped at 2 years\n(67% reported stopping for treatment comple-\ntion) and 33.2 months in the patients who could\ncontinue through progression (51% reported per-\nmanent stopping for progression and 20% for\nexcessive toxic effects) (Table S2 and Fig. S2 in\nthe Supplementary Appendix). A total of 265\npatients (28%) had not yet permanently stopped\ntreatment with abiraterone at the time of this\nreport.\nThe planned rate of use of radiotherapy was\n41% in the combination group and in the ADT-\nalone group. The reported rate of use of radio-\ntherapy was 39% in the combination group and\n40% in the ADT-alone group.\nOverall Survival\nThere were 184 deaths in the combination group\nand 262 in the ADT-alone group. There was\nstrong evidence of a survival advantage in the\ncombination group, with a 3-year survival of\n83% as compared with 76% in the ADT-alone\ngroup (hazard ratio for death, 0.63; 95% confi-\ndence interval [CI], 0.52 to 0.76; P<0.001) (Fig. 1A).\nThere was no evidence of nonproportional haz-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_9afc68ba425c150094aff9bf5dc5796cb2d69f2e2065d3cd225037f17fbc0c19",
+        "source_version": "sha256:f991f56e03b6b4faa1aa5cb2f32bdea79f0b5170316be82414b70dae4d7a428e",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "stampede"
+      },
+      "sha256:6ab7f542ca8207cf7ffba509d3d5165afb854109e780ef01ee2b4b8d580b9450": {
+        "end": 4785,
+        "end_line": 105,
+        "handle": "eh_6ab7f542ca8207cf",
+        "identity": "sha256:6ab7f542ca8207cf7ffba509d3d5165afb854109e780ef01ee2b4b8d580b9450",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n339\nAbiraterone for Prostate Cancer\nT\nhe Systemic Therapy in Advancing\nor Metastatic Prostate Cancer: Evaluation\nof Drug Efficacy (STAMPEDE) trial recruits\npatients commencing long-term androgen-depri-\nvation therapy (ADT; orchiectomy or gonadotropin-\nreleasing hormone [GnRH] agonists or antago-\nnists) for the first time for locally advanced or\nmetastatic prostate cancer. Several agents have\nimproved overall survival (docetaxel, abiraterone\nacetate, enzalutamide, cabazitaxel, radium-223,\nand sipuleucel-T)1-8 or reduced morbidity (zole-\ndronic acid and denosumab)9-11 among such pa-\ntients. These agents were initially investigated in\nmen with very advanced disease whose tumors\nhad progressed during first-line ADT, a disease\nstate now termed castration-resistant prostate\ncancer.\nThe STAMPEDE trial uses a novel multigroup,\nmultistage (also called multiarm, multistage\n[MAMS]) platform design12-14 to test whether the\naddition of further treatments to ADT improves\noverall survival if used in the first-line setting. It\nuses intermediate activity analyses, based on\nfailure-free survival, to cease randomization to\nresearch groups that are insufficiently active.12-14\nWe have previously reported that treatment with\ndocetaxel at the inception of ADT increased me-\ndian survival from 71 months to 81 months as\nwell as overall survival (hazard ratio for death,\n0.76).15,16 These results, along with those of a\nsystematic review that included other trials17-19\nand of a meta-analysis,16 led to docetaxel becom-\ning a part of the standard of care for suitable\npatients with prostate cancer who had not re-\nceived previous hormone therapy.\nAn important mechanism for escape from\ntumor control by androgen ablation includes the\nintracellular conversion of steroid precursors to\nandrogenic steroids by prostate-cancer cells.\nAbiraterone acetate is a selective, irreversible in-\nhibitor of CYP17, an enzyme that is critical in the\nproduction of androgens in the testes, adrenal\nglands, and prostate-tumor tissue. Inhibition of\nCYP17 in combination with ADT results in a\nmore effective androgen depletion than can be\ninduced by surgical castration or by GnRH ana-\nlogues alone.20 Two large, phase 3 trials showed\nthat the addition of abiraterone acetate with pred-\nnisolone to standard-of-care therapy prolonged\nsurvival among men with castration-resistant\nprostate cancer.4,5,21 The STAMPEDE trial is inves-\ntigating whether the earlier use of abiraterone in\nmen who are initiating long-term ADT could\nimprove survival.\nMethods\nTrial Design and Patients\nWe used a multigroup, multistage platform de-\nsign, incorporating a seamless phase 2-3 com-\nponent. The primary outcome was overall sur-\nvival, defined as the time from randomization to\ndeath from any cause. The intermediate primary\noutcome was failure-free survival, defined as the\ntime to the first of the following forms of treat-\nment failure: biochemical (prostate-specific anti-\ngen [PSA]) failure (see the protocol, available\nwith the full text of this article at NEJM.org);\nprogression of local, lymph-node, or distant\nmetastases; or death from prostate cancer. Second\nary outcome measures included adverse events,\nsymptomatic skeletal events, progression-free\nsurvival (i.e., failure-free survival excluding bio-\nchemical failure), prostate cancer-specific sur-\nvival, and (data not shown) quality of life.\nThe rationale and design were described pre-\nviously.12-14,22 Full details are provided in the pro-\ntocol. In summary, eligible patients had prostate\ncancer that was newly diagnosed and metastatic,\nnode-positive, or high-risk locally advanced (with\nat least two of following: a tumor stage of T3 or\nT4, a Gleason score of 8 to 10, and a PSA level\n≥40 ng per milliliter) or disease that was previ-\nously treated with radical surgery or radiother\napy and was now relapsing with high-risk fea-\ntures (in men no longer receiving therapy, a PSA\nlevel >4 ng per milliliter with a doubling time of\n<6 months, a PSA level >20 ng per milliliter,\nnodal or metastatic relapse, or <12 months of\ntotal ADT with an interval of >12 months with-\nout treatment). Patients were intended for treat-\nment with long-term ADT that started no longer\nthan 12 weeks before randomization. There were\nno age restrictions. Patients with clinically sig-\nnificant cardiovascular disease (e.g., severe angi-\nna, recent myocardial infarction, or a history of\ncardiac failure) were excluded.\nTrial Oversight and Conduct\nThe trial was sponsored by the U.K. Medical\nResearch Council (MRC) and conducted by the\nMRC Clinical Trials Unit at University College\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_9afc68ba425c150094aff9bf5dc5796cb2d69f2e2065d3cd225037f17fbc0c19",
+        "source_version": "sha256:f991f56e03b6b4faa1aa5cb2f32bdea79f0b5170316be82414b70dae4d7a428e",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "stampede"
+      }
+    },
+    "identity": "sha256:ba539a5027cb736b4cbfaba241b2761b2ce0ea4f0a30e6fd381ec125a728d78d",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_6ab7f542ca8207cf",
+              "eh_35847859a3a51f24"
+            ],
+            "rationale": "Patients were randomized 1:1 to concurrent treatment groups."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:66ec1302fb296d1537a176e931b8ef8a454141ba92190d314eea8273856590ab"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:9de0592828d89e7da4d3b144aa107258acdedd6fdfe473890d68fd022ad7cd45"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/definition"
+              },
+              "value_digest": "sha256:15ddb8ddfe7e6e771ff5763261a3ddad0a1dd59267ae9aa1ababa12579b16687"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_35847859a3a51f24",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_6ab7f542ca8207cf",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The report defines overall survival as time from randomization to death from any cause, matching the requested outcome and origin. The comparison is ADT plus abiraterone and prednisolone versus ADT alone, and the efficacy analysis includes all patients according to assigned treatment on an intention-to-treat basis. The reported time-to-event hazard ratio covers follow-up (median 40 months) without a narrower event or baseline subgroup.",
+          "reported": {
+            "analysis_population": "All randomized patients analyzed under assigned treatment on an intention-to-treat basis; 957 assigned to ADT alone and 960 to combination therapy.",
+            "effect_measure": "Hazard ratio",
+            "endpoint": {
+              "definition": "Time from randomization to death from any cause",
+              "name": "Overall survival"
+            },
+            "estimate": "0.63",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% confidence interval [CI], 0.52 to 0.76; P<0.001"
+          },
+          "requested_outcome": "Overall Survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Androgen-deprivation therapy alone",
+                "id": "adt"
+              },
+              {
+                "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone",
+                "id": "abiraterone"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from randomization to death from any cause",
+              "metric": "Overall Survival"
+            },
+            "outcome_definition": "Overall Survival",
+            "time_point_or_window": {
+              "description": "From randomization through available follow-up",
+              "kind": "described"
+            }
+          },
+          "trial_id": "stampede"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:a683e0e768a4e1236e45d784c424b813ac16c662aafac0fbe11a26ffdbf515af",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

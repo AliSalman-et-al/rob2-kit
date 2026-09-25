@@ -1,0 +1,10 @@
+The proposal is saved, and RoB 2 is waiting for your review before domain scoring.
+
+**Proposed Result — STAMPEDE**
+
+- **Outcome:** Grade 3 or higher adverse events, assessed over the entire time in the trial using NCI-CTCAE (initially v3.0, later v4.0).
+- **ADT alone:** 315/960 (33%); **ADT + abiraterone and prednisolone:** 443/948 (47%).
+- **Grade 5 events:** 3 versus 9, respectively.
+- **Analysis population:** Safety population, grouped by treatment started. The report notes 10 assigned combination participants did not receive abiraterone; it does not explain the full difference between randomized and safety-population denominators.
+
+Please approve this proposed Result or tell me what to correct.

@@ -1,0 +1,3 @@
+The Result Proposal is saved and awaiting researcher review. No RoB 2 domain judgments were started.
+
+It selects PEACE-1’s docetaxel safety population result for grade 3 or worse adverse events: 217/347 (63%) with abiraterone versus 181/350 (52%) without. The Proposal records the outcome as narrower than all NCI-CTCAE v4.0 graded adverse events because the selected result is restricted to grade 3 or worse, and notes the safety population was classified by treatment received. The workflow is now at the researcher review gate.

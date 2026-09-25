@@ -1,0 +1,67 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Enzalutamide + testosterone suppression",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Standard nonsteroidal antiandrogen + testosterone suppression",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Time from randomization to death resulting from any cause or date last known alive",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Overall survival"
+      },
+      "estimate": "0.67",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.52 to 0.86; P=.002"
+    },
+    "trial": "ENZAMET",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:13:27.679130Z",
+    "path": "../../../../../reference/sources/ENZAMET/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02446405",
+    "sha256": "ba84ecaa795516d6c69815b6a340786f28eb39bf303ad4de8ad3dd8ac06d9d4e"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/ENZAMET/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "../../../../../reference/sources/ENZAMET/other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../reference/sources/ENZAMET/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../reference/sources/ENZAMET/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/ENZAMET/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ENZAMET"
+}

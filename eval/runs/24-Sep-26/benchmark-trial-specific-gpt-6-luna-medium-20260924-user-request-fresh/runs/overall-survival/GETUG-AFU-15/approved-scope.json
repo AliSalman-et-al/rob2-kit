@@ -1,0 +1,17 @@
+{
+  "approval_identity": "sha256:62e3fa491ee80f689ce1aa04854883019c78ae5740f1428f3a80c1eabfc05848",
+  "approved_at": "2026-09-24T19:24:53.286564Z",
+  "case_requested_scope": null,
+  "proposal_identity": "sha256:f012b4d8efd875e5b0d9a5a26b38d97392f362bce9d92418f180f1c5bc7ee5b9",
+  "results": [
+    {
+      "identity": "sha256:9eae7e0fe08fd25e6404d652e02800377ed73f242754d8363a7735340b067201",
+      "kind": "assessable",
+      "reported_scope_identity": "sha256:9b44f781b0c476142f8b6b83e58cdd6be92917342db960cc1b4e5866980722b9",
+      "target_scope_identity": "sha256:cc1d0f712c859d6e86a902becc3aba938e0c338c6dc99b1b0bfbfe475fe3b3ee",
+      "trial_id": "getug-afu-15"
+    }
+  ],
+  "review_identity": "sha256:b82cb88c5ba1e223ad6060cf62a4d17d9af7bfd64de928d18d60af46632b10ec",
+  "schema": "rob2-kit.rsi-approved-scope.v1"
+}

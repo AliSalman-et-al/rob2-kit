@@ -1,0 +1,211 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:5e7e3a2c003d7b0e3adc554623bec4906688a4ff7ba6e06f07345f5576d46ddc": {
+        "end": 1093,
+        "end_line": 15,
+        "handle": "eh_5e7e3a2c003d7b0e",
+        "identity": "sha256:5e7e3a2c003d7b0e3adc554623bec4906688a4ff7ba6e06f07345f5576d46ddc",
+        "kind": "narrative",
+        "page": 13,
+        "quote": "12\n\nSUPPLEMENTARY RESULTS\nRash Management\nSkin rash associated with apalutamide was commonly described as generalized or maculo-papular.\nTreatment-emergent skin rash was reported by 27.1% of patients in the apalutamide group versus 8.5% in\nthe placebo group. Grade 3 rashes were reported with apalutamide (6.3%) and placebo (0.6%) treatment.\nNo Stevens-Johnson syndrome or toxic epidermal necrolysis was reported. Skin rash led to treatment\ndiscontinuation, dose reduction, and dose interruption in 12 (2.3%), 28 (5.3%), and 44 (8.4%), patients,\nrespectively, in the apalutamide group, and 1 (0.2%), 4 (0.8%), and 5 (0.9%), patients, respectively, in the\nplacebo group. Grade ≥3 rash led to discontinuation in 7 (1.3%) and 1 (0.2%) patients in the apalutamide\nand placebo groups, respectively (Table S4, Supplementary Appendix). For patients who had a skin rash,\ntreatment included topical corticosteroids, oral antihistamines, systemic corticosteroids, drug interruption,\nand dose reduction. Median time to onset of rash was 81 days in the apalutamide group and 141 days in\nthe placebo group.",
+        "source_id": "source_1a1558a16536d4f405fffaf5b36554d4dbefe5574cbb3238ccee6beed15a12c3",
+        "source_version": "sha256:9bcdf321db6f09b17a2292bdaf2980793831ab18a97cf4cc7ed4d7cd84cc9b7a",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "titan"
+      },
+      "sha256:6ae8c200f349370ff18ac404fd307c551bb0193c96c2b04658540c8c9a7f2043": {
+        "end": 5015,
+        "end_line": 107,
+        "handle": "eh_6ae8c200f349370f",
+        "identity": "sha256:6ae8c200f349370ff18ac404fd307c551bb0193c96c2b04658540c8c9a7f2043",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 381;1 nejm.org July 4, 2019\n15\nApalutamide for Castration-Sensitive Prostate Cancer\nstatic disease, and other localized treatments (e.g.,\nradiation therapy or prostatectomy) completed at\nleast 1 year before randomization. Patients who\nhad received a gonadotropin-releasing hormone\nagonist within 28 days before randomization\nwere required to take a first-generation anti\nandrogen13 (i.e., bicalutamide, flutamide, or nilu-\ntamide) for 14 or more days before randomiza-\ntion. Antiandrogen therapy must have been\ndiscontinued before randomization. Patients with\nsevere angina, myocardial infarction, congestive\nheart failure, arterial or venous thromboembolic\nevents, a history of or predisposition to seizure,\nor recent ventricular arrhythmias were excluded.\nPatients were randomly assigned in a 1:1 ratio\nto receive apalutamide (240 mg) or matched\nplacebo administered orally once daily, in addi-\ntion to continuous ADT. Patients were stratified\naccording to Gleason score at diagnosis (≤7 vs. >7,\non a scale of 2 to 10, with higher scores indicat-\ning higher-grade cancer that may be more ag-\ngressive), geographic region (North America and\nEuropean Union vs. all other countries), and\nprevious treatment with docetaxel (yes vs. no).\nEnd Points\nThe primary end points were radiographic pro-\ngression-free survival and overall survival. Radio-\ngraphic progression-free survival was defined as\nthe time from randomization to first imaging-\nbased documentation of progressive disease or\ndeath, whichever occurred first. A patient was\nconsidered to have radiographic progressive dis-\nease if he had either progression of soft-tissue\nlesions measured by means of computed tomog-\nraphy (CT) or magnetic resonance imaging (MRI)\nor new bone lesions on bone scanning. Overall\nsurvival was defined as the time from random-\nization to the date of death from any cause.\nSecondary end points were the time to cyto-\ntoxic chemotherapy, time to pain progression as\nassessed by the Brief Pain Inventory-Short Form\n(BPI-SF; worst pain [item 3] was used for this\nend point; scores range from 0 to 10, with lower\nscores representing lower levels of pain intensity;\na change of 2 was the minimally important dif-\nference14), time to chronic opioid use, and time\nto skeletal-related event. Definitions of second-\nary and exploratory end points are provided in\nthe Methods section in the Supplementary Ap-\npendix, available at NEJM.org. A prespecified\nanalysis of data from patients with low-volume\nor high-volume metastatic, castration-sensitive\nprostate cancer was planned, and evaluation of\nthe efficacy of the intervention in these groups\nwas a secondary objective. The definition of\nhigh-volume disease was adapted from the Che-\nmohormonal Therapy versus Androgen Ablation\nRandomized Trial for Extensive Disease in Pros-\ntate Cancer (CHAARTED)7: visceral metastases\nand at least one bone lesion, or at least four bone\nlesions with at least one outside the axial skele-\nton. Low-volume disease was defined as the\npresence of bone lesions not meeting the defini-\ntion of high-volume disease.\nExploratory end points included the time to\nprostate-specific antigen (PSA) progression, sec-\nond progression-free survival, and the time to\nsymptomatic local progression. Second progres-\nsion-free survival was defined as the time from\nrandomization to the first occurrence of investi-\ngator-determined disease progression (PSA pro-\ngression, progression on imaging, or clinical\nprogression) while the patient was receiving first\nsubsequent therapy for prostate cancer or death\ndue to any cause, whichever occurred first. Patient-\nreported outcomes for health-related quality of\nlife were assessed by means of the Functional\nAssessment of Cancer Therapy-Prostate (FACT-P)\nquestionnaire.15-17 Raw FACT-P scores range from\n0 to 156, with higher scores indicating more\nfavorable health-related quality of life. A change\nof 6 to 10 points in the FACT-P total score is the\nminimally important difference.15\nAssessments\nPatients were assessed for efficacy according to\nmodified Response Evaluation Criteria in Solid\nTumors, version 1.1, with the use of CT or MRI\nof the chest, abdomen, and pelvis during screen-\ning (≤6 weeks before randomization) and accord-\ning to Prostate Cancer Working Group 2 criteria18\n(see the Methods section in the Supplementary\nAppendix) with the use of bone scanning during\ncycles 3 and 5 and every fourth cycle thereafter.\nEvents of progression were assessed by the in-\nvestigator. Scans from approximately 60% of the\npatients were randomly selected for independent\ncentral review. Adverse events were assessed\nmonthly and graded according to National Can-\ncer Institute Common Terminology Criteria for\nAdverse Events, version 4.0.3. FACT-P assessments\nwere collected on day 1 of cycles 2 through 7,\nthen every other cycle, at the end of the interven-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_d2a76997c77be51a7f62e4c42a13956ce50b9af1163170c05d315c75df62d928",
+        "source_version": "sha256:a971fe310379188effb8b93f0e335412e0ef667464e2214964ef9c137c8c8f6f",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "titan"
+      },
+      "sha256:80b0f00615f26d1e42b4878ca9a42f7e4d19f05fb2198e6d71ffe86ac8b8e6bb": {
+        "end": 5718,
+        "end_line": 191,
+        "handle": "eh_80b0f00615f26d1e",
+        "identity": "sha256:80b0f00615f26d1e42b4878ca9a42f7e4d19f05fb2198e6d71ffe86ac8b8e6bb",
+        "kind": "narrative",
+        "page": 10,
+        "quote": "n engl j med 381;1 nejm.org July 4, 2019\n22\nThe new engl and jour nal of medicine\nEvent\nApalutamide (N = 524)\nPlacebo (N = 527)\nAll Grades\nGrade ≥3\nAll Grades\nGrade ≥3\nnumber of patients (percent)\nEvents reported in ≥10% of patients in either group or events\nof grade ≥3 reported in ≥10 patients in either group\nHot flush\n119 (22.7)\n0\n 86 (16.3)\n0\nFatigue\n103 (19.7)\n8 (1.5)\n 88 (16.7)\n6 (1.1)\nHypertension\n 93 (17.7)\n44 (8.4)\n 82 (15.6)\n48 (9.1)\nBack pain\n 91 (17.4)\n12 (2.3)\n102 (19.4)\n14 (2.7)\nArthralgia\n 91 (17.4)\n2 (0.4)\n 78 (14.8)\n5 (0.9)\nPain in an arm or leg\n 64 (12.2)\n3 (0.6)\n 67 (12.7)\n5 (0.9)\nPruritus\n 56 (10.7)\n1 (0.2)\n24 (4.6)\n1 (0.2)\nWeight increased\n 54 (10.3)\n6 (1.1)\n 89 (16.9)\n10 (1.9)\nAnemia\n48 (9.2)\n9 (1.7)\n 71 (13.5)\n17 (3.2)\nConstipation\n47 (9.0)\n0\n 57 (10.8)\n0\nAsthenia\n37 (7.1)\n10 (1.9)\n44 (8.3)\n3 (0.6)\nBone pain\n34 (6.5)\n6 (1.1)\n 53 (10.1)\n9 (1.7)\nRash, generalized\n34 (6.5)\n14 (2.7)\n 5 (0.9)\n2 (0.4)\nBlood alkaline phosphatase increased\n16 (3.1)\n2 (0.4)\n28 (5.3)\n13 (2.5)\nUrinary retention\n13 (2.5)\n4 (0.8)\n19 (3.6)\n10 (1.9)\nAdverse events of special interest\nRash†\n142 (27.1)\n33 (6.3)\n45 (8.5)\n3 (0.6)\nFall\n39 (7.4)\n4 (0.8)\n37 (7.0)\n4 (0.8)\nFracture‡\n33 (6.3)\n7 (1.3)\n24 (4.6)\n4 (0.8)\nHypothyroidism§\n34 (6.5)\n0\n 6 (1.1)\n0\nSeizure¶\n 3 (0.6)\n1 (0.2)\n 2 (0.4)\n0\n* Shown are adverse events of any cause that occurred from the time of the first dose of the trial intervention through 30 days after the last\ndose. Adverse events were graded according to National Cancer Institute Common Terminology Criteria for Adverse Events, version 4.0.3.\nOne patient who was assigned to the apalutamide group withdrew consent before treatment.\n† Rash was a grouped term including rash, butterfly rash, erythematous rash, exfoliative rash, follicular rash, generalized rash, macular rash, maculo-\npapular rash, papules, papular rash, pruritic rash, pustular rash, genital rash, blister, skin exfoliation, exfoliative dermatitis, skin reaction, system-\nic lupus erythematosus rash, toxic skin eruption, mouth ulceration, drug eruption, conjunctivitis, erythema multiforme, stomatitis, and urticaria.\n‡ Fracture was a grouped term including acetabulum fracture, ankle fracture, clavicle fracture, femoral neck fracture, femur fracture, fibula fracture,\nfoot fracture, forearm fracture, fracture, fractured ischium, fracture pain, hand fracture, hip fracture, lower limb fracture, patella fracture, radius\nfracture, rib fracture, skull fracture, spinal compression fracture, spinal fracture, sternal fracture, thoracic vertebral fracture, tibia fracture,\ntraumatic fracture, ulna fracture, upper limb fracture, and wrist fracture.\n§ Hypothyroidism was a grouped term including autoimmune thyroiditis, blood thyrotropin increased, and hypothyroidism.\n¶ Seizure was a grouped term including seizure and tongue biting.\nTable 4. Individual Adverse Events.*\nEvent\nApalutamide (N = 524)\nPlacebo (N = 527)\nnumber of patients (percent)\nAny adverse event\n507 (96.8)\n509 (96.6)\nGrade 3 or 4 adverse event\n221 (42.2)\n215 (40.8)\nAny serious adverse event\n104 (19.8)\n107 (20.3)\nAny adverse event leading to discontinuation of the trial intervention\n42 (8.0)\n28 (5.3)\nAdverse event leading to death\n10 (1.9)\n16 (3.0)\n* Shown are adverse events of any cause that occurred from the time of the first dose of the trial intervention through 30 days\nafter the last dose. Adverse events were graded according to National Cancer Institute Common Terminology Criteria for\nAdverse Events, version 4.0.3. One patient who was assigned to the apalutamide group withdrew consent before treatment.\nTable 3. Summary of Adverse Events.*\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Table 3. Summary of Adverse Events.*|||\n|Event Apalutamide (N = 524) Placebo (N = 527)<br>number of patients (percent)|||\n|Any adverse event|507 (96.8)|509 (96.6)|\n|Grade 3 or 4 adverse event 221 (42.2) 215 (40.8)|||\n|Any serious adverse event|104 (19.8)|107 (20.3)|\n|Any adverse event leading to discontinuation of the trial intervention 42 (8.0) 28 (5.3)|||\n|Adverse event leading to death|10 (1.9)|16 (3.0)|\n\n[Extracted table 2]\n|Column 1|Column 2|Column 3|Column 4|Column 5|Column 6|\n|---|---|---|---|---|---|\n|Table 4. Individual Adverse Events.*||||||\n|Event Apalutamide (N = 524) Placebo (N = 527)<br>All Grades Grade ≥3 All Grades Grade ≥3<br>number of patients (percent)||||||\n|Events reported in ≥10% of patients in either group or events<br>of grade ≥3 reported in ≥10 patients in either group||||||\n|Hot flush 119 (22.7) 0 86 (16.3) 0||||||\n|Fatigue|103 (19.7)|8 (1.5)||88 (16.7)|6 (1.1)|\n|Hypertension 93 (17.7) 44 (8.4) 82 (15.6) 48 (9.1)||||||\n|Back pain|91 (17.4)|12 (2.3)||102 (19.4)|14 (2.7)|\n|Arthralgia 91 (17.4) 2 (0.4) 78 (14.8) 5 (0.9)||||||\n|Pain in an arm or leg|64 (12.2)|3 (0.6)||67 (12.7)|5 (0.9)|\n|Pruritus 56 (10.7) 1 (0.2) 24 (4.6) 1 (0.2)||||||\n|Weight increased|54 (10.3)|6 (1.1)||89 (16.9)|10 (1.9)|\n|Anemia 48 (9.2) 9 (1.7) 71 (13.5) 17 (3.2)||||||\n|Constipation|47 (9.0)|0||57 (10.8)|0|\n|Asthenia 37 (7.1) 10 (1.9) 44 (8.3) 3 (0.6)||||||\n|Bone pain|34 (6.5)|6 (1.1)||53 (10.1)|9 (1.7)|\n|Rash, generalized 34 (6.5) 14 (2.7) 5 (0.9) 2 (0.4)||||||\n|Blood alkaline phosphatase increased|16 (3.1)|2 (0.4)||28 (5.3)|13 (2.5)|\n|Urinary retention 13 (2.5) 4 (0.8) 19 (3.6) 10 (1.9)||||||\n|Adverse events of special interest||||||\n|Rash† 142 (27.1) 33 (6.3) 45 (8.5) 3 (0.6)||||||\n|Fall|39 (7.4)|4 (0.8)||37 (7.0)|4 (0.8)|\n|Fracture‡ 33 (6.3) 7 (1.3) 24 (4.6) 4 (0.8)||||||\n|Hypothyroidism§|34 (6.5)|0||6 (1.1)|0|\n|Seizure¶ 3 (0.6) 1 (0.2) 2 (0.4) 0||||||",
+        "source_id": "source_d2a76997c77be51a7f62e4c42a13956ce50b9af1163170c05d315c75df62d928",
+        "source_version": "sha256:a971fe310379188effb8b93f0e335412e0ef667464e2214964ef9c137c8c8f6f",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "titan"
+      },
+      "sha256:ca8c02f8cff96ff22d59d22c2f6f6e89b97c553b8350612cb373c018eac8289f": {
+        "end": 4911,
+        "end_line": 110,
+        "handle": "eh_ca8c02f8cff96ff2",
+        "identity": "sha256:ca8c02f8cff96ff22d59d22c2f6f6e89b97c553b8350612cb373c018eac8289f",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "n engl j med 381;1 nejm.org July 4, 2019\n14\nThe new engl and jour nal of medicine\nT\nhe initial treatment for metastat-\nic prostate cancer is androgen-deprivation\ntherapy (ADT) through medical or surgical\ncastration. In the past few years, results from\nseveral large, randomized, phase 3 clinical trials\nhave shown longer survival, particularly among\npatients with high-risk or high-volume disease,\nwhen ADT was combined with either abiraterone\nacetate plus prednisone or docetaxel for meta-\nstatic prostate cancer at the time of initial ADT\nadministration when the disease is castration\nsensitive.1-7 However, patient age, coexisting con-\nditions, extent of disease, and preferences may\naffect decisions to initiate chemotherapy such as\ndocetaxel.8,9 Treatment with abiraterone acetate\nrequires coadministration of prednisone to pre-\nvent increases in corticotropin and may cause ad-\nverse events related to mineralocorticoid excess\nand liver toxicity.\nDirect inhibition of the androgen receptor in\naddition to ADT may provide more a complete\nblockade of androgen signaling than ADT alone,\nleading to improved patient outcomes. Apaluta\nmide, an oral nonsteroidal antiandrogen agent\nthat binds directly to the ligand-binding domain\nof the androgen receptor and prevents androgen-\nreceptor translocation, DNA binding, and andro-\ngen receptor-mediated transcription,10 has been\napproved in the United States and European\nUnion for the treatment of patients with non-\nmetastatic, castration-resistant prostate cancer.\nThe Targeted Investigational Treatment Analysis\nof Novel Anti-androgen (TITAN) trial was con-\nducted to determine whether apalutamide would\nresult in longer radiographic progression-free\nsurvival and overall survival than placebo with\nan acceptable safety profile and health-related\nquality of life among patients with metastatic,\ncastration-sensitive prostate cancer who were\nreceiving concomitant ADT.\nMethods\nTrial Design and Conduct\nThe TITAN trial was a phase 3, randomized,\ndouble-blind, placebo-controlled, multinational\ntrial involving patients with metastatic, castration-\nsensitive prostate cancer. The protocol and the\nstatistical analysis plan are available with the\nfull text of this article at NEJM.org. The trial was\ndesigned by the sponsor, Janssen Research and\nDevelopment, with input from the first author\nand the protocol steering committee and was\nconducted at 260 sites in 23 countries. Review\nboards at all participating institutions approved\nthe trial, which was conducted in accordance\nwith current International Conference on Har-\nmonisation guidelines for Good Clinical Practice\nand according to Declaration of Helsinki princi-\nples. All the patients provided written informed\nconsent. Patients underwent randomization be-\ntween December 15, 2015, and July 25, 2017. An\nindependent data-monitoring committee was\ncommissioned by the sponsor to monitor safety\nand efficacy before unblinding and to make rec-\nommendations regarding trial conduct. Data were\ntranscribed by personnel at each site from source\ndocuments into sponsor-prepared electronic case-\nreport forms.\nAll the authors assume responsibility for the\ncompleteness and accuracy of the data and\nanalyses and for the fidelity of the trial to the\nprotocol. The first author developed the first\ndraft of the manuscript with editorial assistance\nfunded by Janssen Research and Development.\nAll the authors had full access to the data, par-\nticipated in data interpretation, and reviewed\nand approved the manuscript before submission.\nThe investigators, patients, trial-site personnel,\nand sponsor trial team were unaware of the ran-\ndomization codes until trial completion, recom-\nmendation by the independent data-monitoring\ncommittee, or individual-patient medical need.\nPatients and Interventions\nEligible patients were required to have document-\ned adenocarcinoma of the prostate and distant\nmetastatic disease documented on the basis of at\nleast one lesion on bone scanning, with or with-\nout visceral or lymph-node involvement. All the\npatients had an Eastern Cooperative Oncology\nGroup performance-status score of 0 or 1 (on a\nscale of 0 to 5, with higher scores reflecting\ngreater disability). Patients were castration sen-\nsitive (i.e., patients were not receiving ADT at the\ntime of disease progression11,12). Previous treat-\nment for prostate cancer was limited to previous\ndocetaxel use (for a maximum of six cycles, with\nno evidence of progression during treatment or\nbefore randomization), ADT for no more than\n6 months for metastatic, castration-sensitive pros-\ntate cancer or no more than 3 years for localized\nprostate cancer, one course of radiation or surgi-\ncal therapy for symptoms associated with meta-\nA Quick Take\nis available at\nNEJM.org\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_d2a76997c77be51a7f62e4c42a13956ce50b9af1163170c05d315c75df62d928",
+        "source_version": "sha256:a971fe310379188effb8b93f0e335412e0ef667464e2214964ef9c137c8c8f6f",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "titan"
+      }
+    },
+    "identity": "sha256:a8e0a9c15c203fd25d2b7abc951faeea9dbb67932e49cfd688c81337b1da9c76",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_ca8c02f8cff96ff2",
+              "eh_6ae8c200f349370f"
+            ],
+            "rationale": "The report describes individual patients randomly assigned 1:1 to apalutamide or placebo in parallel groups."
+          },
+          "bindings": [
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:09eecdd6bba6c639ffd7368a3ce6727fd1e927e7dc5bd27d581875cba300fcf5"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/0/statistic"
+              },
+              "value_digest": "sha256:81e071c46fa1d704a86ed61fb878d81f43864e17930edd3f8228a6bbda0d4ceb"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/0/value"
+              },
+              "value_digest": "sha256:13e57f61c6b4ba14a40dda628842c5222c259e50d0103c86cdbeb9003d8ba94f"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/0/unit"
+              },
+              "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/1/statistic"
+              },
+              "value_digest": "sha256:81e071c46fa1d704a86ed61fb878d81f43864e17930edd3f8228a6bbda0d4ceb"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/1/value"
+              },
+              "value_digest": "sha256:7dfbeac7ad175322fe8c8c8dfcb8dafd9b7096a82ee994b918a534076ccf422a"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/1/unit"
+              },
+              "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_5e7e3a2c003d7b0e",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_6ae8c200f349370f",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_80b0f00615f26d1e",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_ca8c02f8cff96ff2",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The report gives the requested overall Grade 3/4 adverse-event result, using NCI-CTCAE v4.0.3 from first dose through 30 days after last dose. The report includes any-cause adverse events, while its safety population excludes one randomized apalutamide participant who withdrew before treatment (524/525; placebo 527/527), so it is narrower than the randomized target.",
+          "reported": {
+            "analysis_population": "Safety population receiving trial intervention: apalutamide N=524 (one randomized participant withdrew consent before treatment) and placebo N=527.",
+            "endpoint": {
+              "definition": null,
+              "name": "Grade 3 or 4 adverse event"
+            },
+            "form": "group_bound_values",
+            "group_values": [
+              {
+                "group_id": "apalutamide",
+                "statistic": "patients (percent)",
+                "unit": "%",
+                "value": "221 (42.2)"
+              },
+              {
+                "group_id": "placebo",
+                "statistic": "patients (percent)",
+                "unit": "%",
+                "value": "215 (40.8)"
+              }
+            ]
+          },
+          "requested_outcome": "Adverse Events",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Apalutamide plus ADT",
+                "id": "apalutamide"
+              },
+              {
+                "assignment": "Placebo plus ADT",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Risk ratio",
+            "measurement": {
+              "method": "Any-cause adverse events graded according to National Cancer Institute Common Terminology Criteria for Adverse Events, version 4.0.3",
+              "metric": "Adverse Events"
+            },
+            "outcome_definition": "Adverse Events",
+            "time_point_or_window": {
+              "description": "From first dose of trial intervention through 30 days after last dose",
+              "kind": "described"
+            }
+          },
+          "trial_id": "titan"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:fef633fdf3dbbaef51f30022fa7cd55cf3120a5320d907ef39720338c52c675a",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

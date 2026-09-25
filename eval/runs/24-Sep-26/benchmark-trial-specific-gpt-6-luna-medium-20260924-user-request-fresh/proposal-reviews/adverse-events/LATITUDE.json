@@ -1,0 +1,188 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:11652a10e2b8873f90f399540d33988219b5871c75abaa6d7d85666d6e836db8": {
+        "end": 4600,
+        "end_line": 102,
+        "handle": "eh_11652a10e2b8873f",
+        "identity": "sha256:11652a10e2b8873f90f399540d33988219b5871c75abaa6d7d85666d6e836db8",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n355\nAbiraterone plus Prednisone in Prostate Cancer\nPain progression was defined as an increase of\nat least 30% from baseline in the worst pain\ncategory on the Brief Pain Inventory-Short Form\nas observed at two consecutive evaluations per-\nformed at least 4 weeks apart.\nAssessments\nEfficacy assessments included sequential radio-\ngraphic imaging to assess radiographic progres-\nsion-free survival (CT or MRI and bone scan-\nning) performed every 4 months, starting at\nweek 16. PSA levels were measured at baseline,\nmonthly in the first year, and then every 2 months\nuntil end-of-trial treatment. Patients underwent\nserial monitoring of vital signs, serum hemato-\nlogic and chemical findings, liver-function tests,\nand serum testosterone levels. Adverse events\nwere graded with the use of the Common Termi-\nnology Criteria for Adverse Events of the Na-\ntional Cancer Institute, version 4.0.\nStatistical Analysis\nThe overall level of significance was 0.05, with\nallocation between the two primary end points\nof overall survival (0.049) and radiographic\nprogression-free survival (0.001) (Table S2 in\nthe Supplementary Appendix). For overall sur-\nvival, 852 events were required at the final\nanalysis to detect a hazard ratio of 0.81 at a\ntwo-tailed significance level of 0.049, with a\nstatistical power of 85%. An analysis of radio-\ngraphic progression-free survival was planned\nwhen 565 progressions or deaths had been ob-\nserved, which would provide a statistical power\nof 94% to detect a hazard ratio of 0.667 at a\ntwo-tailed significance level of 0.001. Two in-\nterim analyses were included (Table S2 in the\nSupplementary Appendix). The overall survival\nanalyses incorporated the group sequential de-\nsign with an alpha spending function that was\ncalculated as Wang-Tsiatis power boundaries\nof shape parameter 0.2 (which shape the prob-\nability distribution). Secondary end points were\ntested with the use of the Hochberg test proce-\ndure to control the familywise type I error rate.\nThe primary statistical method of comparison\nfor time-to-event end points was the stratified\nlog-rank test, according to the stratification\nfactors. The Cox proportional-hazards model\nwas used to estimate the hazard ratio and its\nassociated 95% confidence interval.\nResults\nPatients and Treatments\nA total of 1199 patients underwent randomiza-\ntion from February 12, 2013, through December\n11, 2014. Of these patients, 597 were assigned to\nthe abiraterone group and 602 to the placebo\ngroup (Fig. S1 in the Supplementary Appendix).\nThe baseline demographic and disease charac-\nteristics were well balanced between the two\ngroups (Table S3 in the Supplementary Appen-\ndix). The results presented here are based on the\nclinical cutoff date of October 31, 2016, for the\nfirst interim analysis of overall survival, at which\ntime 406 deaths and 593 radiographic progres-\nsions or deaths had occurred. At a median follow-\nup of 30.4 months, the median time that the\npatients received the intervention was 24 months\nin the abiraterone group and 14 months in the\nplacebo group. As a result of the findings at the\ntime of the interim analysis, the independent data\nand safety monitoring committee unanimously\nrecommended on January 12, 2017, that the trial\nbe unblinded to allow crossover among the pa-\ntients in the placebo group to receive abiraterone.\nEnd Points\nOverall Survival\nThe first interim analysis was performed after\n406 deaths (48% of the 852 deaths that were\nincluded in the final analysis) and a median\nfollow-up of 30.4 months. Of these deaths, 169 of\n597 (28%) occurred in the abiraterone group and\n237 of 602 (39%) in the placebo group. The over-\nall rate of survival at 3 years was 66% in the\nabiraterone group and 49% in the placebo group\n(Fig. 1A). The rate of death from any cause was\n28% in the abiraterone group and 39% in the\nplacebo group (Table S4 in the Supplementary\nAppendix). The relative risk of death was 38%\nlower in the abiraterone group than in the pla-\ncebo group (hazard ratio, 0.62; 95% confidence\ninterval [CI], 0.51 to 0.76; P<0.001). The treatment\neffect of abiraterone on overall survival was consis-\ntently favorable across nearly all prespecified sub-\ngroups (Fig. S2 in the Supplementary Appendix).\nRadiographic Progression-free Survival\nAt the time of the analysis, the median progression-\nfree survival was 33.0 months in the abiraterone\ngroup and 14.8 months in the placebo group\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "latitude"
+      },
+      "sha256:49470043821a4e6dbe7e1fe67f91a3999355afd3ea37d05d747c042ecf45ae16": {
+        "end": 4959,
+        "end_line": 183,
+        "handle": "eh_49470043821a4e6d",
+        "identity": "sha256:49470043821a4e6dbe7e1fe67f91a3999355afd3ea37d05d747c042ecf45ae16",
+        "kind": "narrative",
+        "page": 8,
+        "quote": "Adverse Event\nAbiraterone Group\n(N = 597)\nPlacebo Group\n(N = 602)\nnumber of patients (percent)\nAny adverse event\n558 (93)\n557 (93)\nGrade 3 or 4 adverse event\n374 (63)\n287 (48)\nAny serious adverse event\n165 (28)\n146 (24)\nAny adverse event leading to treat-\nment discontinuation\n 73 (12)\n 61 (10)\nAdverse event leading to death\n28 (5)\n24 (4)\nAll Grades\nGrade 3\nGrade 4\nAll Grades\nGrade 3\nGrade 4\nGraded adverse events†\nHypertension\n219 (37)\n121 (20)\n0\n133 (22)\n 59 (10)\n1 (<1)\nHypokalemia\n122 (20)\n 57 (10)\n5 (1)\n22 (4)\n 7 (1)\n1 (<1)\nALT increased\n 98 (16)\n31 (5)\n 2 (<1)\n 77 (13)\n 8 (1)\n0\nHyperglycemia\n 75 (13)\n26 (4)\n 1 (<1)\n 68 (11)\n18 (3)\n0\nAST increased\n 87 (15)\n25 (4)\n 1 (<1)\n 68 (11)\n 9 (1)\n0\nBone pain\n 74 (12)\n20 (3)\n0\n 88 (15)\n17 (3)\n0\nCardiac disorder\nAny\n 74 (12)\n15 (3)\n5 (1)\n47 (8)\n 6 (1)\n0\nAtrial fibrillation\n 8 (1)\n 2 (<1)\n0\n 2 (<1)\n 1 (<1)\n0\nAnemia\n54 (9)\n12 (2)\n3 (1)\n 85 (14)\n26 (4)\n1 (<1)\nBack pain\n110 (18)\n14 (2)\n0\n123 (20)\n19 (3)\n0\nFatigue\n 77 (13)\n10 (2)\n0\n 86 (14)\n14 (2)\n0\nSpinal-cord compression\n14 (2)\n12 (2)\n0\n12 (2)\n 7 (1)\n3 (<1)\n* Listed are the most common adverse events and events of special interest. The latter were selected on the basis of the safety profile of phase 2\nand phase 3 studies of abiraterone. ALT denotes alanine aminotransferase, and AST aspartate aminotransferase.\n† Listed in descending order are events that were reported in at least 2% of the patients in either group. Among other events of special interest,\ngrade 3 peripheral edema was reported in 0.3% of the patients in the abiraterone group and in 0.5% of those in the placebo group; grade 3\nor 4 fluid retention or congestive heart failure was not reported in either group. Grade 3 hot flush was reported in one patient in the placebo\ngroup, and grade 1 irritability was reported in three patients in the abiraterone group.\nTable 2. Adverse Events.*\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|Column 5|Column 6|Column 7|\n|---|---|---|---|---|---|---|\n|Table 2. Adverse Events.*|||||||\n|Abiraterone Group Placebo Group<br>Adverse Event (N = 597) (N = 602)<br>number of patients (percent)|||||||\n|Any adverse event|558 (93)|||557 (93)|||\n|Grade 3 or 4 adverse event 374 (63) 287 (48)|||||||\n|Any serious adverse event|165 (28)|||146 (24)|||\n|Any adverse event leading to treat- 73 (12) 61 (10)<br>ment discontinuation|||||||\n|Adverse event leading to death|28 (5)|||24 (4)|||\n|All Grades Grade 3 Grade 4 All Grades Grade 3 Grade 4|||||||\n|Graded adverse events†|||||||\n|Hypertension 219 (37) 121 (20) 0 133 (22) 59 (10) 1 (<1)|||||||\n|Hypokalemia|122 (20)|57 (10)|5 (1)|22 (4)|7 (1)|1 (<1)|\n|ALT increased 98 (16) 31 (5) 2 (<1) 77 (13) 8 (1) 0|||||||\n|Hyperglycemia|75 (13)|26 (4)|1 (<1)|68 (11)|18 (3)|0|\n|AST increased 87 (15) 25 (4) 1 (<1) 68 (11) 9 (1) 0|||||||\n|Bone pain|74 (12)|20 (3)|0|88 (15)|17 (3)|0|\n|Cardiac disorder|||||||\n|Any|74 (12)|15 (3)|5 (1)|47 (8)|6 (1)|0|\n|Atrial fibrillation 8 (1) 2 (<1) 0 2 (<1) 1 (<1) 0|||||||\n|Anemia|54 (9)|12 (2)|3 (1)|85 (14)|26 (4)|1 (<1)|\n|Back pain 110 (18) 14 (2) 0 123 (20) 19 (3) 0|||||||\n|Fatigue|77 (13)|10 (2)|0|86 (14)|14 (2)|0|\n|Spinal-cord compression 14 (2) 12 (2) 0 12 (2) 7 (1) 3 (<1)|||||||",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 1627,
+        "start_line": 35,
+        "trial_id": "latitude"
+      },
+      "sha256:c83b903766d74f8650fbf0636730035c6d1f0d02012f917b0435105eee1fb240": {
+        "end": 4865,
+        "end_line": 105,
+        "handle": "eh_c83b903766d74f86",
+        "identity": "sha256:c83b903766d74f8650fbf0636730035c6d1f0d02012f917b0435105eee1fb240",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n354\nThe new engl and jour nal of medicine\nwas designed by the senior academic authors and\nemployees of the sponsor. Data were transcribed\nby trial personnel from source documents onto\nan electronic data-capture system prepared by the\nsponsor. The data analyses were performed by\nstatisticians employed by the sponsor. All the\nauthors assume responsibility for the complete-\nness and integrity of the data and for the fidel-\nity of the trial to the protocol. All the academic\nauthors had full access to all parts of the data\nand drafted the manuscript with sponsor input,\nand all the coauthors subsequently provided in-\nput. The sponsor provided funding for editorial\nassistance. All the authors and participating in-\nstitutions have agreements with the sponsor re-\ngarding data confidentiality.\nPatients and Treatments\nEligible patients were required to be at least 18\nyears of age and to have an Eastern Cooperative\nOncology Group (ECOG) performance-status\nscore of 0 to 2 (on a 5-point scale, with higher\nnumbers indicating greater disability) with new-\nly diagnosed (≤3 months before randomization),\npathologically confirmed prostate cancer with-\nout neuroendocrine differentiation or small-cell\nhistologic features. All the patients had high-risk,\nmetastatic, castration-sensitive prostate cancer,\nas documented by a positive bone scan or meta-\nstatic lesions at the time of diagnosis on com-\nputed tomography (CT) or magnetic resonance\nimaging (MRI), according to Response Evaluation\nCriteria in Solid Tumors (RECIST), version 1.1.\nIn addition, the patients were required to have at\nleast two of the three following high-risk factors\nassociated with poor prognosis: a Gleason score\nof 8 or more (on a scale of 2 to 10, with higher\nscores indicating more aggressive disease), at\nleast three bone lesions, and the presence of\nmeasurable visceral metastasis. Patients were\nexcluded if they had received previous chemo-\ntherapy, radiation therapy, or surgery for meta-\nstatic prostate cancer, with the exception of\n3 months or less of androgen-deprivation ther\napy with luteinizing hormone-releasing hormone\nanalogues or orchiectomy with or without con-\ncurrent first-generation androgen-receptor antag-\nonists before baseline or one course of palliative\nradiation or surgical therapy to treat symptoms\nassociated with metastatic disease.\nPatients were randomly assigned in a 1:1 ratio\nto receive androgen-deprivation therapy and abira\nterone acetate (1000 mg daily, given once daily\nas four 250-mg tablets) and prednisone (5 mg\ndaily) (the abiraterone group) or androgen-depri-\nvation therapy and placebos (the placebo group).\nPatients were stratified according to the presence\nor absence of measurable visceral disease and\nECOG performance-status score (0 or 1 vs. 2).\nAbiraterone or placebo was administered at least\n1 hour before or 2 hours after a meal. All the\npatients who had not undergone surgical castra-\ntion received ongoing androgen-deprivation ther-\napy to reach or maintain a serum testosterone\nlevel of less than 50 ng per deciliter (1.7 nmol\nper liter). Safety and dosing adherence were\nevaluated during each trial visit, at treatment\ndiscontinuation (if applicable), and at the end-of-\ntrial visit.\nEnd Points\nThe two primary efficacy end points were overall\nsurvival and radiographic progression-free sur-\nvival. Overall survival was defined as the time\nfrom randomization to death from any cause,\nand radiographic progression-free survival as the\ntime from randomization to the occurrence of\nradiographic progression or death from any\ncause. Radiographic progression of soft-tissue\nlesions was evaluated by either CT or MRI on the\nbasis of RECIST, version 1.1. Progression on\nbone scanning was assessed by adaptation of\nProstate Cancer Working Group 2 criteria (Table\nS1 in the Supplementary Appendix, available at\nNEJM.org).25 Potential bias favoring the abirater\none group in the assessment of radiographic\nprogression by investigators was audited with the\nuse of the method of the Pharmaceutical Re-\nsearch and Manufacturers Association26 in a sam-\nple of 202 randomly selected patients with blind-\ned central review.\nPrespecified secondary end points were the\ntime to the next \"skeletal-related event\" (described\nhere as a \"symptomatic skeletal event,\" which\nwas defined as a clinical or pathological frac-\nture, spinal-cord compression, palliative radia-\ntion to bone, or surgery involving bone), time to\nprogression with respect to prostate-specific\nantigen (PSA) level on the basis of Prostate Can-\ncer Working Group 2 criteria,25 time to the next\ntherapy for prostate cancer, time to initiation of\nchemotherapy, and time to pain progression.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "latitude"
+      }
+    },
+    "identity": "sha256:870c71ac28ce315d018c67c606a543840e7e0af6e111f3d8aba24cfdfd7dfef8",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_c83b903766d74f86"
+            ],
+            "rationale": "Patients were individually randomized in a 1:1 ratio to abiraterone plus prednisone or placebo, each with androgen-deprivation therapy."
+          },
+          "bindings": [
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:09eecdd6bba6c639ffd7368a3ce6727fd1e927e7dc5bd27d581875cba300fcf5"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/statistic"
+              },
+              "value_digest": "sha256:975986ba312df3bc85fa3f470e76d8a387a7fa05eb30d2538b5b212b1a3f5a03"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/value"
+              },
+              "value_digest": "sha256:10f41f5d714e04d226b96bdb85e71bf3b816b98bf627f044f608d3594e0b9fca"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/unit"
+              },
+              "value_digest": "sha256:975986ba312df3bc85fa3f470e76d8a387a7fa05eb30d2538b5b212b1a3f5a03"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/statistic"
+              },
+              "value_digest": "sha256:975986ba312df3bc85fa3f470e76d8a387a7fa05eb30d2538b5b212b1a3f5a03"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/value"
+              },
+              "value_digest": "sha256:847e2a611df57d2701a721c34514bd98a94fd48ca669c49f07d62ffc9720fea1"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/unit"
+              },
+              "value_digest": "sha256:975986ba312df3bc85fa3f470e76d8a387a7fa05eb30d2538b5b212b1a3f5a03"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_11652a10e2b8873f",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_49470043821a4e6d",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The requested outcome is participants with grade 3 or 4 adverse events. Table 2 reports that exact category by randomized treatment group, using NCI CTCAE version 4.0 for adverse-event grading. The abstract reports selected grade 3 toxicities but not this overall severity-defined category.",
+          "reported": {
+            "analysis_population": "Table 2 reports denominators of 597 in the abiraterone group and 602 in the placebo group; the article does not explicitly identify the analysis population for this row.",
+            "endpoint": {
+              "definition": null,
+              "name": "Grade 3 or 4 adverse event"
+            },
+            "form": "group_bound_values",
+            "group_values": [
+              {
+                "group_id": "abiraterone",
+                "statistic": "number of patients (percent)",
+                "unit": "number of patients (percent)",
+                "value": "374 (63)"
+              },
+              {
+                "group_id": "placebo",
+                "statistic": "number of patients (percent)",
+                "unit": "number of patients (percent)",
+                "value": "287 (48)"
+              }
+            ]
+          },
+          "requested_outcome": "Adverse Events",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+                "id": "abiraterone"
+              },
+              {
+                "assignment": "Androgen-deprivation therapy plus dual placebos",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Between-group comparison of participants with grade 3 or 4 adverse events",
+            "measurement": {
+              "method": "Occurrence of at least one grade 3 or 4 adverse event; adverse events graded using NCI CTCAE version 4.0",
+              "metric": "Adverse Events"
+            },
+            "outcome_definition": "Adverse Events",
+            "time_point_or_window": {
+              "description": "Reported safety results; specific adverse-event assessment window not stated",
+              "kind": "described"
+            }
+          },
+          "trial_id": "latitude"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:34b4ad7f654ea2b1e5b64175361f7a884706dbc24145749d74ab10537782d2b0",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 4
+}

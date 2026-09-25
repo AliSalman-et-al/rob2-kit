@@ -1,0 +1,65 @@
+{
+  "approved_scope": null,
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Orteronel + ADT",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Bicalutamide + ADT",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "From randomization to first PSA or radiographic progression, symptomatic deterioration, or death due to any cause",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Progression-free survival"
+      },
+      "estimate": "0.58",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.51 to 0.67; P<0.0001"
+    },
+    "trial": "SWOG-1216",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "capture_provenance": "captured response retained from PFS baseline",
+    "captured_at": "2026-09-13T19:12:39.480131Z",
+    "registry_id": "NCT01809691",
+    "replay_provenance": "copied byte-for-byte from the case manifest; no registry request made",
+    "replayed_at": "2026-09-24T18:38:24.551219+00:00",
+    "sha256": "f864b7938c5b1367427bb47bf96623f9b4da51ec7268a25425396250f69e0ad1"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-run-inputs.v1",
+  "scope_unresolved": null,
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "role": "main_article",
+      "sha256": "b5e233864cbfc9ab96762cb5a7d04b075c522cd645acdc245dbeea708eadcb8e"
+    },
+    {
+      "name": "other.pdf",
+      "role": "other",
+      "sha256": "005f3495e08fb22251fea3dbba18c8ca7542d47f3839d6d60a11d3f943c6f36c"
+    },
+    {
+      "name": "protocol.pdf",
+      "role": "protocol",
+      "sha256": "cdee242421919043d07578ff70d20b3ab26603d34ee5dd78bd4dbcd912853166"
+    },
+    {
+      "name": "registry.json",
+      "role": "registry",
+      "sha256": "f864b7938c5b1367427bb47bf96623f9b4da51ec7268a25425396250f69e0ad1"
+    }
+  ],
+  "trial": "SWOG-1216"
+}

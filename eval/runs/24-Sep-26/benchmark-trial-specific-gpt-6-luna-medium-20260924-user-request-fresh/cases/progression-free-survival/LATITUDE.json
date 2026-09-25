@@ -1,0 +1,62 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Abiraterone + prednisone + ADT",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Matched abiraterone and prednisone placebos + ADT",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; soft-tissue lesions assessed by CT/MRI using RECIST 1.1 and new bone lesions by PCWG2",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Radiographic progression-free survival"
+      },
+      "estimate": "0.47",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.39 to 0.55; P<0.001"
+    },
+    "trial": "LATITUDE",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:41.004240Z",
+    "path": "../../../../../reference/sources/LATITUDE/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT01715285",
+    "sha256": "4e7dba9abd0ea357d6e4161a340d49980c6d8d927f27946f06ff710075384f1c"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/LATITUDE/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../reference/sources/LATITUDE/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../reference/sources/LATITUDE/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/LATITUDE/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "LATITUDE"
+}

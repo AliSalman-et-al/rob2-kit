@@ -1,0 +1,3 @@
+The GETUG-AFU-15 assessment for clinical PFS is complete. Overall risk of bias is **High**, driven by Some concerns in deviations from intended interventions, outcome measurement, and selection of the reported result. Randomization and missing outcome data were rated Low risk.
+
+The abstract did not report either PFS variant; the full report provided the clinical PFS definition and results used in this assessment. The finalized report is [available here](.rob2-kit/finalized/73f79987a79028611fb77c7a0a003ad429d71cd1c7c0214bfd1e62c133dc0b01.rob2.zip).

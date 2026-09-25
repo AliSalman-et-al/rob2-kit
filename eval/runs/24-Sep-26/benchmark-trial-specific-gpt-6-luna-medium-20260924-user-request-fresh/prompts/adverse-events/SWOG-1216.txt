@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Adverse Events defined as The eTable says the toxicity outcome definition was not reported, Grade 3/4 AEs 43% vs 14% in SWOG-1216.

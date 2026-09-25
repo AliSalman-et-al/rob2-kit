@@ -1,0 +1,7 @@
+**Proposal Review — GETUG-AFU-15, Overall Survival**
+
+The selected result is the intention-to-treat comparison of ADT plus docetaxel versus ADT alone. The report defines overall survival as time from randomization to death from any cause and reports median OS of 58.9 versus 54.2 months; HR 1.01 (95% CI 0.75–1.36).
+
+The result matches the requested outcome, time origin, event set, and randomized groups. The report states that efficacy analyses used intention to treat and shows all 192 and 193 randomized participants in their respective ITT populations. It also states that no patients were lost to follow-up. Treatment-group-specific censoring counts are not reported.
+
+The Proposal is saved and awaiting your review. **Approve this Result to continue to the RoB 2 Domains**, or tell me if you want a different candidate assessed.

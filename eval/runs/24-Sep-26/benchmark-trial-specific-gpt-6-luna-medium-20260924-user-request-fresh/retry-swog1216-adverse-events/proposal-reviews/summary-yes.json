@@ -1,0 +1,120 @@
+[
+  {
+    "outcome": "Adverse Events",
+    "trial": "SWOG-1216",
+    "answer": "yes",
+    "exit_code": 0,
+    "scope_mismatches": [
+      {
+        "field": "comparison",
+        "expected": [
+          {
+            "id": "treatment",
+            "assignment": "Orteronel + ADT"
+          },
+          {
+            "id": "control",
+            "assignment": "Bicalutamide + ADT"
+          }
+        ],
+        "observed": [
+          {
+            "assignment": "ADT plus orteronel",
+            "id": "orteronel"
+          },
+          {
+            "assignment": "ADT plus bicalutamide",
+            "id": "bicalutamide"
+          }
+        ]
+      },
+      {
+        "field": "endpoint_definition",
+        "expected": "The eTable says the toxicity outcome definition was not reported",
+        "observed": "Adverse Events"
+      },
+      {
+        "field": "population",
+        "expected": "Patients with safety data in the main article safety analysis.",
+        "observed": "All randomized participants in the comparison groups"
+      },
+      {
+        "field": "window_or_cutoff",
+        "expected": "Safety follow-up reported in the main article.",
+        "observed": {
+          "description": "During protocol treatment and follow-up",
+          "kind": "described"
+        }
+      },
+      {
+        "field": "reported_scope",
+        "expected": {
+          "form": "group_bound_values",
+          "analysis_population": "Patients with safety data in the main article safety analysis.",
+          "endpoint": {
+            "name": "Grade 3 or 4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "43%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "participants with grade 3 or 4 adverse events",
+              "value": "14%",
+              "unit": "percent"
+            }
+          ]
+        },
+        "observed": {
+          "form": "group_bound_values",
+          "analysis_population": "The abstract reports 1,279 patients included in the analysis (638 assigned to ADT plus orteronel and 641 to ADT plus bicalutamide); the AE table and registry report evaluable AE denominators of 627 and 629 treated participants.",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3/4 adverse events"
+          },
+          "group_values": [
+            {
+              "group_id": "orteronel",
+              "statistic": "%",
+              "unit": "%",
+              "value": "43"
+            },
+            {
+              "group_id": "bicalutamide",
+              "statistic": "%",
+              "unit": "%",
+              "value": "14"
+            }
+          ]
+        }
+      }
+    ],
+    "scope_adjudication": {
+      "outcome": "Adverse Events",
+      "trial": "SWOG-1216",
+      "expected_result_sha256": "3f3c13248e5ea8fbd25f8650e16f3f1158af61fd1cace10b1168e5855cc9db09",
+      "review_identity": "sha256:0fce8f1dc83e38b731e683ce404cdfe1da4bbe1a486c1bd569f2d91ab515b189",
+      "result_identity": "sha256:a63099d00a76cda5450b596a35b7e1c5143246f7f438e0fc13caa2b765434ab7",
+      "observed_relation": "narrower",
+      "decision": "equivalent",
+      "rationale": "The prompt follows eTable 1, which states the toxicity outcome definition was not reported, and the article abstract reports grade 3/4 adverse-event rates of 43% and 14%. The proposal identifies the same two randomized arms using equivalent arm names, endpoint, and values. Its treatment-exposed safety denominators (627 and 629) refine the more general safety-population wording in the frozen scope. “Grade 3/4 adverse events” is shorter than the prompt definition but is the exact severity-specific abstract result frozen for this case; the proposal relation narrower reflects the selected result within the broader adverse-event concept.",
+      "source_citation": "SWOG-1216 main article abstract p. 1 and supplement eTable 1 p. 65"
+    },
+    "result_identity": "sha256:a63099d00a76cda5450b596a35b7e1c5143246f7f438e0fc13caa2b765434ab7",
+    "approved": true,
+    "approval_reference_matches": true,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\retry-swog1216-adverse-events\\proposal-reviews\\adverse-events\\SWOG-1216.json",
+    "review_identity": "sha256:0fce8f1dc83e38b731e683ce404cdfe1da4bbe1a486c1bd569f2d91ab515b189",
+    "requested_outcome": "Adverse Events",
+    "trial_id": "swog-1216",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Grade 3/4 adverse events",
+    "estimate": null,
+    "precision": null
+  }
+]

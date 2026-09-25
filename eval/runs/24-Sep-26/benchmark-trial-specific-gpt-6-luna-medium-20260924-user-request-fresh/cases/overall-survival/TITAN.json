@@ -1,0 +1,67 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Apalutamide + ADT",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo + ADT",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Time from randomization to death resulting from any cause",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Overall survival"
+      },
+      "estimate": "0.67",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.51 to 0.89; P=.005"
+    },
+    "trial": "TITAN",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:13:24.527861Z",
+    "path": "../../../../../reference/sources/TITAN/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02489318",
+    "sha256": "85bfbc7f388edd6690cf4d19d388da64548afe0426bf89b11a8a2e21e604282c"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/TITAN/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "../../../../../reference/sources/TITAN/other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../reference/sources/TITAN/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../reference/sources/TITAN/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/TITAN/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "TITAN"
+}

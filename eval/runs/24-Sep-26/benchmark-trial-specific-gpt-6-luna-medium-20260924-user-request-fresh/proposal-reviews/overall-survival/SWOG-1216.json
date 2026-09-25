@@ -1,0 +1,168 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:5cc58112af2bbc90027ad3911d865f3d1c41570de0643adf9935750709daaede": {
+        "end": 4902,
+        "end_line": 92,
+        "handle": "eh_5cc58112af2bbc90",
+        "identity": "sha256:5cc58112af2bbc90027ad3911d865f3d1c41570de0643adf9935750709daaede",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "We hypothesized that the addition of orteronel to ADT would\nimprove overall survival (OS), progression-free survival\n(PFS), and prostate-specific antigen (PSA) response rela-\ntive to bicalutamide with ADT among men with mHSPC.\nMETHODS\nTrial Design and Conduct\nThe S1216 trial was a phase III, randomized, open-label,\nmulticenter trial involving patients with mHSPC. The trial\nwas designed by the SWOG study team and was approved\nby the National Cancer Institute (NCI). Patients were en-\nrolled\nfrom\n248\nacademic\nand\ncommunity\ncenters\nthroughout the United States, incorporating three other\nNCI-funded cooperative groups (ECOG-ACRIN, ALLIANCE,\nand NRG). The NCI Central Institutional Review Board\napproved the initial version of the Protocol (online only) and\nall subsequent amendments. The study was conducted in\naccordance with the International Conference on Harmo-\nnization of Good Clinical Practice guidelines and the\nprinciples of the Declaration of Helsinki. Signed written\nconsent was obtained from all patients. First and last au-\nthors (N.A. and D.I.Q.) and the statisticians (C.M.T. and\nM.P.) among the authors assume responsibility for the\ncompleteness and accuracy of the data and analyses and\nfor the fidelity of the trial to the Protocol.\nPatients and Interventions\nEligible patients were required to have histologically con-\nfirmed adenocarcinoma of the prostate and metastatic\ndisease as evidenced by soft tissue and/or bony metasta-\nses. Enrolled patients had a Zubrod performance status of\n0-2; a Zubrod performance status of 3 was allowed if from\nbone pain only and a PSA $ 2.0 ng/mL. No other prior\nsystemic therapy for metastatic prostate cancer was\nallowed (with the exception of up to 30 days of ADT for\nmetastatic disease before registration), and at least 6 months\nmust have elapsed since completion of prior neoadjuvant\nand/or adjuvant ADT. Concomitant radiotherapy was allowed\nonly for baseline symptoms per investigator's clinical judg-\nment during the first 4 months of protocol treatment. Patients\nwho had not started any therapy with luteinizing hormone-\nreleasing hormone (LHRH) agonist, antagonist, or orchi-\nectomy (early induction group) and patients who had already\nstarted therapy with LHRH agonist, antagonist, or orchi-\nectomy within 30 days before registration (late induction\ngroup) were eligible. Patients who were deemed to have\nextensive mHSPC were eligible for enrollment if, on the basis\nof the judgment of the treating physician, they were un-\nsuitable candidates for docetaxel or if they declined doce-\ntaxel therapy.11\nExclusion criteria included brain metastases; prior therapy\nwith ketoconazole, abiraterone acetate, or enzalutamide;\nNew York Heart Association class III or IV heart failure at\nscreening or thromboembolic event; unstable angina\npectoris; myocardial infarction; or serious uncontrolled\ncardiac arrhythmia # 6 months before registration.\nPatients were randomly assigned in a 1:1 ratio to receive\norteronel (300 mg) orally twice daily or bicalutamide (50\nmg) administered orally once daily, in addition to contin-\nuous ADT. Patient assignment was dynamically balanced\non three stratification factors: severity of disease (minimal v\nextensive), Zubrod performance status (0-1 v 2-3), and\npreregistration treatment status (early v late induction).\nSeverity (or risk) of disease criteria in this study was orig-\ninally reported in 1989, and since then, it has been used in\nall SWOG trials in the mHSPC setting to date.11-13 Minimal\ndisease was defined as involvement of vertebrae and/or\npelvic bones and/or lymph nodes, and extensive disease\nwas defined as that with greater than minimal involvement.\nDynamic balancing is a general procedure for treatment\nCONTEXT\nKey Objective\nWe examined if adding orteronel, a novel androgen axis inhibitor, to androgen deprivation therapy (ADT) would improve\noutcomes compared with ADT plus bicalutamide in men with metastatic hormone-sensitive prostate cancer in a phase III\ntrial.\nKnowledge Generated\nAddition of orteronel to ADT resulted in a significant improvement in progression-free survival and prostate-specific antigen\nresponse but not in overall survival (OS), the primary end point. Interestingly, the median OS of patients in the control arm\nof SWOG-1216 was 24 months higher than that in patients with metastatic hormone-sensitive prostate cancer on the\nSWOG-9346 trial (reported in 2013) who had similar disease severity and also received ADT plus bicalutamide (70.2 v 46\nmonths).\nRelevance\nThese results indicate that orteronel is likely not an effective androgen axis inhibitor compared with recently approved agents\nin this setting. Higher than anticipated OS of patients in the control arm is reflective of therapeutic advancements made\nover the past decade in men with metastatic prostate cancer.\n3302 © 2022 by American Society of Clinical Oncology\nVolume 40, Issue 28\nAgarwal et al",
+        "source_id": "source_a9b208285fbf7ea4740dfa7e6ffb0c5ecc6251373dd56f2613eeb4043277794f",
+        "source_version": "sha256:ff983e655d6ae893cb49d4623e6d7e99534b2497e7bd4d4693a448bd65d4bb1d",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "swog-1216"
+      },
+      "sha256:86881173aa03e23939714e4b56c08880bd36e35c057130828de2b4ba62eac110": {
+        "end": 3645,
+        "end_line": 103,
+        "handle": "eh_86881173aa03e239",
+        "identity": "sha256:86881173aa03e23939714e4b56c08880bd36e35c057130828de2b4ba62eac110",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "assignment, which concentrates on minimizing imbalance\nin the distribution of treatment assignment within the levels\nof each individual prognostic factor.14\nEnd Points\nThe primary end point was OS, which was defined as the time\nfrom random assignment to the date of death from any cause.\nSecondary end points were PFS, PSA response rates, and\nadverse events (AEs) rate. PFS was defined as the time from\nrandom assignment to first documentation of PSA progression\n($ 25% increase and an absolute increase of at least 2 ng/mL\nfrom the nadir PSA), radiologic progression (two or more new\nlesions on radionuclide bone scans, per Prostate Cancer\nWorking Group 2 [PCWG2] criteria, and/or soft tissue pro-\ngression per RECIST version 1.1), clinical progression\n(symptomatic deterioration) or death, whichever occurred\nfirst. PSA response rates were divided into complete response\n(CR; PSA , 0.2 ng/mL), partial response (PR; PSA between\n0.2 and 4.0 ng/mL), and no response (NR; PSA . 4.0 ng/mL)\nat a 7-month landmark after random assignment.\nAssessments\nPatients were assessed for efficacy according to the\nmodified RECIST version 1.1 with the use of computed\ntomography or magnetic resonance imaging of the chest,\nabdomen, and pelvis during screening (# 6 weeks be-\nfore random assignment) and according to PCWG2\ncriteria with the use of bone scanning.15 Progression\nevents were assessed by the treating investigator.\nStatistical Analysis\nThe median survival of patients randomly assigned to ADT\nplus bicalutamide was assumed to be 54 months on the\nbasis of revised estimates from previous SWOG studies\n(48 months on the basis of the median from SWOG-S9346,\nthe intermittent v continuous ADT phase III trial, and an\nadditional 6 months from the newer drug approvals in the\ncastrate-resistant setting, which may extend survival).11\nWith 2.75 years to accrue 1,186 eligible patients and an\nadditional follow-up of 3 years, we had a 90% power to\ndetermine a 33% improvement in median OS from 54 to\n72 months (one-sided a 5 .025). A final analysis was\nprespecified after 523 deaths in the combined arms using a\none-sided a 5 .022 to account for interim analyses.\nDemographic and clinical characteristics at baseline were\nsummarized with the use of descriptive statistics. The\nprimary statistical method comparing time-to-event end\npoints was a stratified log-rank test, with stratification\naccording to prespecified factors. The Kaplan-Meier\nproduct-limit method was used to generate the survival\nand PFS curves in Figures 1, 2, Appendix Figure A2\n(online only), and the Cox proportional hazards model\nwith covariate adjustment for stratification factors was\nused to estimate treatment hazard ratios (HRs) and as-\nsociated CIs for survival and PFS. Homogeneity of treat-\nment effect was descriptively evaluated with a forest plot\nshowing the survival HR and 95% CI for each subgroup\ndefined by the stratification factors and race using a Cox\nregression model with no covariate adjustment. The\n20\n40\n60\n80\n100\n0\n24\n48\n72\n96\nTime Since Random Assignment (months)\nPercent\nNo. at risk:\n641\n509\n321\n92\nLHRHa plus bicalutamide\n638\nLHRHa plus orteronel\n524\n323\n115\nLHRHa plus bicalutamide\nLHRHa plus orteronel\nAt Risk\n641\n638\nDeaths\n274\n251\n5-Year\nEstimate\n58%\n59%\nLHRH agonist plus orteronel:\nmedian 81.1 months\nLHRH agonist plus bicalutamide:\nmedian 70.2 months\nHR 0.86, 95% CI 0.72 to 1.02;\nP = .040, one-sided\nMedian follow-up: 4.9 years\nFIG 1. Intention-to-treat comparison of overall survival by arm. HR, hazard ratio; LHRH, luteinizing\nhormone-releasing hormone.\nJournal of Clinical Oncology\n3303\nOrteronel for Metastatic Hormone-Sensitive Prostate Cancer",
+        "source_id": "source_a9b208285fbf7ea4740dfa7e6ffb0c5ecc6251373dd56f2613eeb4043277794f",
+        "source_version": "sha256:ff983e655d6ae893cb49d4623e6d7e99534b2497e7bd4d4693a448bd65d4bb1d",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "swog-1216"
+      },
+      "sha256:cc67eb17b4cacc674d9f71eb4f53c5f12158b24418e869381b4f874a7f6bc8fc": {
+        "end": 3354,
+        "end_line": 106,
+        "handle": "eh_cc67eb17b4cacc67",
+        "identity": "sha256:cc67eb17b4cacc674d9f71eb4f53c5f12158b24418e869381b4f874a7f6bc8fc",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "interaction of the stratification factor with treatment,\nevaluating heterogeneity between levels of a factor, was\ntested using a residual chi-square from the Cox model. A\ntwo-sided Cochrane-Mantel-Haenszel test was used to\ncompare three-category PSA response rates between the\ntwo treatment arms.\nRESULTS\nPatients\nBetween March 1, 2013, and July 15, 2017, 1,313 patients\nwere randomly assigned and 1,279 were included in the\nintention-to-treat analysis (32 patients were ineligible, and\ntwo\npatients\nwithdrew\nall\nconsent\nbefore\nstarting\ntreatment-see Appendix Fig A1 [online only] for details).\nSix hundred thirty-eight patients were randomly assigned to\nthe orteronel arm, and 641 were randomly assigned to the\ncontrol arm. At the cutoff date (February 5, 2021) for the\nfinal analysis after 525 deaths (and 787 PFS events), the\nmedian follow-up time was 4.9 years. Demographic and\nclinical characteristics at baseline were well balanced\n(Table 1). The median age of the patients for the orteronel\nand control arms was 67.6 and 68.1 years, respectively.\nAcross both groups, approximately 10% of the patients\nwere African American, 49% had extensive disease, and\n96% had a Zubrod performance status of 0 or 1.\nPrimary End Point\nAnalysis for OS occurred after the prespecified 525 deaths\nwere observed (251 in the orteronel group and 274 in the\ncontrol group). The median OS in the orteronel group was\n81.1 months as compared with 70.2 months in the control\ngroup. The OS rate at 5 years was 59.7% in the orteronel\ngroup and 57.9% in the control group (HR for death 0.86;\n95% CI, 0.72 to 1.02; P 5 .040, one-sided). No statistically\nsignificant improvement in OS was observed with orteronel\ncompared with control (Fig 1). This lack of treatment effect\non OS seemed consistent across stratification factors, in-\ncluding disease severity, and by race (Fig 3 and Appendix\nTable A3, online only).\nSecondary End Points\nAnalysis of PFS occurred after 787 events were observed\n(343 in the orteronel group and 444 in the control group).\nThe median PFS in the orteronel group was 47.6 months\ncompared with 23.0 months in the control group (Fig 2).\nThe PFS at 4 years was 50.2% in the orteronel group and\n33.9% in the control group (HR, 0.58; 95% CI, 0.51 to\n0.67; P , .001).\nThe PSA response rates at month 7 were significantly im-\nproved with orteronel (CR 58%; PR: 22%, NR: 19%) versus\nbicalutamide (CR: 44%; PR: 31%; NR: 25%; P , .0001).\nSafety\nMore grade 3 and 4 AEs occurred in the orteronel group\nversus the control group (43% v 13%). Notable differences\nincluded the frequency of hypertension (20% with orteronel\nv 5% with control) and fatigue (5% in orteronel v 2% in the\ncontrol group). Five patients in the experimental arm and\n20\n40\n60\n80\n100\n0\n24\n48\n72\n96\nTime Since Random Assignment (months)\nPercent\nNo. at risk:\n641\n295\n164\n42\nLHRHa plus bicalutamide\n638\n401\n244\n84\nLHRHa plus orteronel\nLHRHa plus bicalutamide\nLHRHa plus orteronel\nAt Risk\n641\n638\nEvent\n444\n343\n4-Year\nEstimate\n34%\n50%\nLHRH agonist plus orteronel:\nmedian 47.6 months\nLHRH agonist plus bicalutamide:\nmedian 23.0 months\nHR 0.58, 95% CI 0.51 to 0.67;\nP = .0001\nFIG 2. Intention-to-treat comparison of progression-free survival by arm. HR, hazard ratio; LHRH, lutei-\nnizing hormone-releasing hormone.\n3304 © 2022 by American Society of Clinical Oncology\nVolume 40, Issue 28\nAgarwal et al",
+        "source_id": "source_a9b208285fbf7ea4740dfa7e6ffb0c5ecc6251373dd56f2613eeb4043277794f",
+        "source_version": "sha256:ff983e655d6ae893cb49d4623e6d7e99534b2497e7bd4d4693a448bd65d4bb1d",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "swog-1216"
+      }
+    },
+    "identity": "sha256:49068196feba4cd1bfd929ef38e5f8558a0c52057545849c22277634d7ca0052",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_5cc58112af2bbc90"
+            ],
+            "rationale": "Patients were individually randomly assigned 1:1 to parallel orteronel plus ADT or bicalutamide plus ADT groups."
+          },
+          "bindings": [
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:83c428e244a1a8180f341753a9c094b674725e0f2ae8ab227a267199091133c5"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:97241b2b72aa7a03a6c9b44c61161ee9bd2fcfcf4897da1c76285b34ce92d94b"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/definition"
+              },
+              "value_digest": "sha256:e805f9bb86910423fca525e17b40b27f6a1b57af0762bd44d7467db7512d6b8f"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_5cc58112af2bbc90",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_86881173aa03e239",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_cc67eb17b4cacc67",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The reported OS endpoint matches all-cause death from random assignment and compares the two randomized treatment groups at the final analysis. The analysis was narrower than the full randomized population: 1,279 of 1,313 randomized patients were included, with 32 ineligible patients and two who withdrew all consent before treatment excluded.",
+          "reported": {
+            "analysis_population": "Intention-to-treat analysis of 1,279 patients: 638 assigned to orteronel and 641 assigned to control, among 1,313 randomized. Thirty-two patients were ineligible and two withdrew all consent before starting treatment.",
+            "effect_measure": "Hazard ratio",
+            "endpoint": {
+              "definition": "Time from random assignment to the date of death from any cause.",
+              "name": "Overall survival"
+            },
+            "estimate": "0.86",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% CI 0.72 to 1.02"
+          },
+          "requested_outcome": "Overall Survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "ADT plus orteronel",
+                "id": "orteronel"
+              },
+              {
+                "assignment": "ADT plus bicalutamide",
+                "id": "bicalutamide"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from random assignment to death from any cause",
+              "metric": "Overall Survival"
+            },
+            "outcome_definition": "Overall Survival",
+            "time_point_or_window": {
+              "description": "Final overall-survival analysis after 525 deaths; median follow-up 4.9 years",
+              "kind": "described"
+            }
+          },
+          "trial_id": "swog-1216"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:f3d335be0a57e94da5cd0607f62104794229a3490c7d0ff839243c2c1831fe8d",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

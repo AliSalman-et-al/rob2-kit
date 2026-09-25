@@ -1,0 +1,5 @@
+The ARASENS assessment for Grade 3/4 adverse events is finalized. **Overall risk of bias: High**, driven by Domain 3 (missing outcome data). The other judgments are low risk for randomization, measurement, and selection of the reported result, and some concerns for deviations from intended interventions.
+
+The High judgment reflects uncertainty about grade 3/4 AE data for participants absent from the safety analysis set. The reported rates were 66.1% versus 63.5%; grade 3/4 neutropenia was 33.7% versus 34.2%.
+
+The finalized report is [available here](.rob2-kit/finalized/72c3a01306421f12aa9c281bbc31ddbd39bb5b58f94b6f9abc8a2dd2c8b845.rob2.zip).

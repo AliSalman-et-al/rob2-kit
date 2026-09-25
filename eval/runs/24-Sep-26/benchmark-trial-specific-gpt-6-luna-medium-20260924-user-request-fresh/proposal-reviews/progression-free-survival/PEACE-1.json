@@ -1,0 +1,197 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:2fe64985d55038a9531dbf02ede3898ee7908286425521984ce586935df69bad": {
+        "end": 778,
+        "end_line": 20,
+        "handle": "eh_2fe64985d55038a9",
+        "identity": "sha256:2fe64985d55038a9531dbf02ede3898ee7908286425521984ce586935df69bad",
+        "kind": "narrative",
+        "page": 5,
+        "quote": "Between Nov 27, 2013, and Dec 20, 2018, 1173 patients\nwere enrolled (one patient subsequently withdrew\nconsent for analysis of his data) and assigned to receive\nSOC (n=296), SOC plus radiotherapy (n=293), SOC plus\nabiraterone (n=292), or SOC plus radiotherapy plus\nabiraterone (n=291; figure 1). SOC was ADT alone in\n462 patients and ADT with docetaxel in 710 patients\n(table 1).",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 399,
+        "start_line": 13,
+        "trial_id": "peace-1"
+      },
+      "sha256:37ac09f5b38051bb95601aac5567184fa7790950707424dea40334a869148598": {
+        "end": 1147,
+        "end_line": 23,
+        "handle": "eh_37ac09f5b38051bb",
+        "identity": "sha256:37ac09f5b38051bb95601aac5567184fa7790950707424dea40334a869148598",
+        "kind": "narrative",
+        "page": 6,
+        "quote": "In the overall population, the addition of abiraterone to\nSOC (with or without docetaxel and with or without\nradiotherapy) decreased the number of radiographic\nprogression events or deaths from 371 to 252, improved\nthe median progression-free survival from 2·22 years\n(IQR 1·09-6·03) to 4·46 years (1·72-not reached), and\nreduced the relative risk of radiographic progression or\ndeath by 46% compared with patients who did not receive\nabiraterone (adjusted HR for radiographic progression-\nfree survival 0·54, 99·9% CI 0·41-0·71; p<0·0001;\nfigure 2A, table 2). The addition of abiraterone to SOC",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 552,
+        "start_line": 13,
+        "trial_id": "peace-1"
+      },
+      "sha256:822b22a6f8e728af887f45c74cd82863940687619a6c96cb449b8fc9e417609b": {
+        "end": 3114,
+        "end_line": 44,
+        "handle": "eh_822b22a6f8e728af",
+        "identity": "sha256:822b22a6f8e728af887f45c74cd82863940687619a6c96cb449b8fc9e417609b",
+        "kind": "narrative",
+        "page": 9,
+        "quote": "Update the nature of the co-primary endpoint from PFS to radiographic PFS (rPFS): In initial protocol PFS\nwas based on rPFS and PSA progression events. However, post PEACE-1 initiation, various studies showed that\nPSA progression had poor prognosis value as a surrogate endpoint. In contrast, rPFS was demonstrated to be a\nvalid surrogate endpoint for OS in metastatic prostate cancer and was an FDA-validated registration endpoint in\nhormone sensitive metastatic prostate cancer settings (PEACE-1 study indication). Hence, rPFS was requalified as\na co-primary endpoint while PFS events already well defined and collected during the trial were used along with\nPSA progression to characterize and evaluate CRPC-free survival as a secondary endpoint.\n•\nChange the distribution of the type I error between the co-primary endpoints in order to prioritize the overall\nsurvival analysis. Thus, the type I error for OS was set at 4.9% instead of 4%, and at 0.1% instead of 1% for rPFS.",
+        "source_id": "source_a7e60b887782ac1e0939091fc1fe34a36ad3be71d4d3c640eef0be6699424281",
+        "source_version": "sha256:48e28b6efd1b4e0811890b10b448104c70359d72c01ae93773bba311d16a9a2a",
+        "start": 2136,
+        "start_line": 35,
+        "trial_id": "peace-1"
+      },
+      "sha256:cf9792ce5a139789d98db1cb2af2f0e81b468ee351587ec76cbf4165ee28f795": {
+        "end": 2234,
+        "end_line": 45,
+        "handle": "eh_cf9792ce5a139789",
+        "identity": "sha256:cf9792ce5a139789d98db1cb2af2f0e81b468ee351587ec76cbf4165ee28f795",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "Randomisation and masking\nEligible patients were centrally randomly assigned in the\nAlea Clinical Portal), in a 1:1:1:1 ratio, to SOC, SOC plus\nradiotherapy, SOC plus abiraterone (abiraterone plus\nprednisone), or SOC plus radiotherapy plus abiraterone.\nThis randomisation process was performed via the\nTenalea autonomous software, solely accessed by the trial\ndata manager within the Epidemioloy and Biostatistics\nfacility of the Gustave Roussy Center in Villejuif, France\nuntil 2015, then by each investigator.\nRandomisation was done using a minimisation\nalgorithm, stratified by study site, ECOG performance\nstatus (0 vs 1-2), type of ADT (gonadotropin-releasing\nhormone agonist vs antagonist vs bilateral orchiectomy),\nplanned administration of docetaxel (yes vs no), and\ndisease extent or burden based on metastatic status\n(lymph node metastases only vs bone metastases [with or\nwithout lymph node metastases] vs visceral metastases).\nA similar weight was given to each of the five\nstratification factors, with 80% probability to minimise\nimbalance in the number of patients assigned to each\ntreatment group. As the case report form gathered\ninformation for patient stratification according to\nhigh-volume versus low-volume metastatic burden\nclassification (as defined in the CHAARTED study2 [high\nvolume was defined as the presence of visceral\nmetastases or at least four bone lesions with one beyond\nthe vertebral bodies and pelvis]), this later classification\nwas retained to enable inter-trial comparisons. No\nmasking was performed in this study.",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 680,
+        "start_line": 16,
+        "trial_id": "peace-1"
+      },
+      "sha256:dc1dfbefa811c953374084c4b76d945720e23e4e864b1d0738ff68ee62c70dc8": {
+        "end": 5269,
+        "end_line": 104,
+        "handle": "eh_dc1dfbefa811c953",
+        "identity": "sha256:dc1dfbefa811c953374084c4b76d945720e23e4e864b1d0738ff68ee62c70dc8",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "Outcomes\nThe coprimary endpoints were radiographic progression-\nfree survival and overall survival. Radiographical pro\ngression of soft-tissue lesions was evaluated by either CT\nor MRI, on the basis of RECIST version 1.1. Progression\nof bone lesions was assessed by bone scan according to\nthe adapted version of Prostate Cancer Working Group 2\ncriteria,21 with no secondary bone scan required to\nconfirm progression. Radiographic progression-free\nsurvival was defined as the time between randomisation\nand the occurrence of radiographical progression or\ndeath from any cause. Overall survival was defined as the\ntime between randomisation and death from any cause.\nPatients without events were censored at the date of last\nfollow-up.",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 4536,
+        "start_line": 90,
+        "trial_id": "peace-1"
+      }
+    },
+    "identity": "sha256:0be0d0ef50cb2f7697464923dc57cba82e1bc946608d39247b6e9866b5a8b815",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_cf9792ce5a139789"
+            ],
+            "rationale": "Participants were centrally randomized in a 1:1:1:1 ratio to four treatment arms; this is an individually randomized parallel factorial trial."
+          },
+          "bindings": [
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a11e81437d4d11810475bbc8aabc9c188fd75d103e0b607260252d4a406d157a"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:b420604fb703cb8f182e678369e1df311a9bd114e73a5cb5ae5b4cf9688ba20b"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:aac1fc5dd4f3892ba3a31ec23e84f7dc7bb4874ba20b33aaba5837f2b070bde8"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:61a9144b6a63fce52f213eaaa65118111b10a043c590b1face32cc1fb221f36b"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_2fe64985d55038a9",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_37ac09f5b38051bb",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_822b22a6f8e728af",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_cf9792ce5a139789",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_dc1dfbefa811c953",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The report directly assesses the requested radiographic progression-free survival from randomization, with radiographic progression or death as events, comparing assignment to abiraterone plus SOC (with or without radiotherapy) against SOC without abiraterone. This is the overall population, but one randomized patient withdrew consent for analysis, so the analyzed population is slightly narrower than all randomized participants.",
+          "reported": {
+            "analysis_population": "Overall intention-to-treat efficacy population: 1172 randomized participants; one of 1173 randomized patients withdrew consent for analysis.",
+            "effect_measure": "HR",
+            "endpoint": {
+              "definition": null,
+              "name": "Radiographic progression-free survival"
+            },
+            "estimate": "0·54",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "99·9% CI 0·41–0·71"
+          },
+          "requested_outcome": "Progression-free survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Assignment to SOC plus abiraterone (with or without radiotherapy)",
+                "id": "abiraterone"
+              },
+              {
+                "assignment": "Assignment to SOC without abiraterone (with or without radiotherapy)",
+                "id": "control"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "HR",
+            "measurement": {
+              "method": "Soft-tissue progression assessed by CT or MRI using RECIST 1.1 and bone progression assessed by bone scan using adapted PCWG2 criteria.",
+              "metric": "Progression-free survival"
+            },
+            "outcome_definition": "Progression-free survival",
+            "time_point_or_window": {
+              "description": "From randomization until radiographic progression or death from any cause; participants without events were censored at last follow-up.",
+              "kind": "described"
+            }
+          },
+          "trial_id": "peace-1"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:0e800f59d1897ef25215334da3dd357f2fc81161a1c326748ce76640b289c134",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

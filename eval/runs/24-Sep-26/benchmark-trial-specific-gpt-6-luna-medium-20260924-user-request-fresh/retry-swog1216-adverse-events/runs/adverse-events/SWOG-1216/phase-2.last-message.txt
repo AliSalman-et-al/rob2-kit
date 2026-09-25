@@ -1,0 +1,13 @@
+**SWOG-1216 Adverse Events assessment finalized. Overall risk of bias: High**, driven by measurement of the outcome.
+
+| RoB 2 domain | Judgment |
+|---|---|
+| Randomization process | Some concerns |
+| Deviations from intended interventions | Some concerns |
+| Missing outcome data | Low |
+| Measurement of the outcome | High |
+| Selection of the reported result | Some concerns |
+
+The eTable’s statement that the toxicity definition was unreported is qualified by the registry, which specifies related Grade 3–5 AEs using CTCAE v4.0. However, the report gives differing descriptions of the endpoint: the abstract reports Grade 3/4 AEs (43% vs 14%), while Table 2 reports Grade 3–5 AEs (43% vs 13%). The measurement concern also reflects the possibility of unequal AE observation time: collection was tied to treatment, and median progression-free survival differed between groups. That concern is an inference from the reported follow-up procedures and treatment duration, rather than direct evidence of differential ascertainment.
+
+Finalized artifact: `.rob2-kit/finalized/43e5ccda7336cda753f6159e58979dadf8989f16ff64de11689ad7fa293487cd.rob2.zip`.

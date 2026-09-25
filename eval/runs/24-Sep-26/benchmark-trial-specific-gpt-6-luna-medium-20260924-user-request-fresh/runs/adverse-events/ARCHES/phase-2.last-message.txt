@@ -1,0 +1,9 @@
+## ARCHES adverse events
+
+**Overall risk of bias: High.** The main driver was the missing-outcome-data domain: the report gives safety-population denominators but does not establish how many participants had observed Grade ≥3 AE outcomes or whether any missingness depended on true toxicity. This is uncertainty, not evidence that missing outcomes were biased.
+
+The deviations domain had **Some concerns** because the safety analysis excluded two randomized participants per arm who received no study drug. Randomization, measurement, and selection were judged **Low risk**. The dated SAP prespecified Grade 3–5 AE summaries using CTCAE v4.03, matching the reported result.
+
+The assessed result was **139/572 (24.3%)** with enzalutamide plus ADT versus **147/574 (25.6%)** with placebo plus ADT.
+
+The RoB 2 batch is finalized: [ARCHES assessment artifact](</C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/adverse-events/ARCHES/workspace/.rob2-kit/finalized/c88fc656ad76252ca4499afcd4c31de05a24d03080ae6817112efe9f51f262a0.rob2.zip>).

@@ -1,0 +1,17 @@
+## STAMPEDE: Progression-free survival
+
+**Overall risk of bias: High**, driven by the missing-outcome-data domain.
+
+The article’s body reports the 3-year PFS as 80% with ADT plus abiraterone and 62% with ADT alone (HR 0.40, 95% CI 0.34–0.47). It defines PFS as failure-free survival excluding biochemical (PSA) failure.
+
+| RoB 2 domain | Judgment |
+|---|---|
+| Randomization process | Low |
+| Deviations from intended interventions | Low |
+| Missing outcome data | **High** |
+| Measurement of the outcome | Some concerns |
+| Selection of the reported result | Some concerns |
+
+For missing data, the report gives event counts and a general censoring rule, but no PFS-specific availability or censoring counts and reasons for this comparison. The supplement’s follow-up counts are for overall survival, so they cannot establish PFS completeness. The evidence therefore does not resolve whether PFS data were available for nearly all participants or whether missingness depended on the outcome.
+
+The assessment is finalized: [download the RoB 2 artifact](</C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/progression-free-survival/STAMPEDE/workspace/.rob2-kit/finalized/3f8faa0cfbe3bd443e449d7449b738e8cfdff250c3d5f47fd207037ee2027386.rob2.zip>).

@@ -1,0 +1,3 @@
+Saved the corrected Result Proposal. It preserves only the reported docetaxel-group rates: febrile neutropenia 6.2%, infection with neutropenia 2.3%, and sensory and motor neuropathy 0.5% each. No ADT-alone estimates or comparative effect were added.
+
+The Result remains **unavailable for comparative RoB 2 assessment** because the corresponding ADT-alone results are missing. Proposal Review is pending; I did not start domain judgments.

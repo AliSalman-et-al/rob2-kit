@@ -1,0 +1,16 @@
+[
+  {
+    "outcome": "Adverse Events",
+    "trial": "PEACE-1",
+    "phase": 2,
+    "exit_code": 2,
+    "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1",
+    "diagnosis": {
+      "code": "host_delivery_phase_binding_mismatch",
+      "detail": "Prior phase metadata does not bind the verified trace hash and Codex session.",
+      "recovery": "Retain this phase as resumable and repair its phase metadata before continuing."
+    },
+    "benchmark_index_sha256": "2931bc4d7f29e504cb7a6a90453b9b47bbc52f9958a7bf2ef8d0a3ae7d11ed59",
+    "launcher_invocation_id": "fe277944ded84125920e6e507427438e"
+  }
+]

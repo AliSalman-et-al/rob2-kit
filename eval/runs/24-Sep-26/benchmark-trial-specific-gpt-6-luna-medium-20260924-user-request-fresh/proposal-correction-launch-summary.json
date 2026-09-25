@@ -1,0 +1,38 @@
+[
+  {
+    "exit_code": 0,
+    "outcome": "Adverse Events",
+    "phase": 2,
+    "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\CHAARTED",
+    "stderr": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\CHAARTED\\correction-launch-phase-2.stderr.txt",
+    "stdout": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\CHAARTED\\correction-launch-phase-2.stdout.txt",
+    "trial": "CHAARTED"
+  },
+  {
+    "exit_code": 0,
+    "outcome": "Adverse Events",
+    "phase": 2,
+    "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\GETUG-AFU-15",
+    "stderr": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\GETUG-AFU-15\\correction-launch-phase-2.stderr.txt",
+    "stdout": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\GETUG-AFU-15\\correction-launch-phase-2.stdout.txt",
+    "trial": "GETUG-AFU-15"
+  },
+  {
+    "exit_code": 0,
+    "outcome": "Adverse Events",
+    "phase": 2,
+    "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\LATITUDE",
+    "stderr": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\LATITUDE\\correction-launch-phase-2.stderr.txt",
+    "stdout": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\LATITUDE\\correction-launch-phase-2.stdout.txt",
+    "trial": "LATITUDE"
+  },
+  {
+    "exit_code": 0,
+    "outcome": "Adverse Events",
+    "phase": 3,
+    "run_dir": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1",
+    "stderr": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1\\correction-launch-phase-3.stderr.txt",
+    "stdout": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\PEACE-1\\correction-launch-phase-3.stdout.txt",
+    "trial": "PEACE-1"
+  }
+]

@@ -1,0 +1,8 @@
+**Proposal Review required for ARCHES.** The selected Result is the comparative Grade ≥3 adverse-event result, graded by investigators using NCI CTCAE v4.03:
+
+- Enzalutamide plus ADT: **139/572 (24.3%)**
+- Placebo plus ADT: **147/574 (25.6%)**
+
+This uses the safety population—all randomized patients who received at least one dose. Two patients in each randomized arm did not receive study drug, so the reported population is slightly narrower than all randomized participants. The report does not specify the adverse-event observation window.
+
+The Proposal is saved and awaits your review. **Approve this Result to continue the RoB 2 assessment, or tell me to reconsider the candidate.**

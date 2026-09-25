@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Progression-Free Survival defined as Radiographic PFS: time from randomization to first radiological evidence of progressive disease or death; progression includes increasing soft-tissue lesions or new bone lesions by PCWG2, Overall population HR 0.54 (99.9% CI 0.41–0.71), P<.0001 in PEACE-1.

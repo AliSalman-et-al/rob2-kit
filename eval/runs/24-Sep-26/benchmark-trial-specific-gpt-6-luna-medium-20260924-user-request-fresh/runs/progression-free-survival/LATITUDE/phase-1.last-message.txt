@@ -1,0 +1,7 @@
+## Proposal Review — LATITUDE radiographic PFS
+
+The submitted candidate matches the requested result: radiographic PFS from randomization to radiographic progression or death, assessed using RECIST 1.1 for soft-tissue lesions and PCWG2-adapted bone-scan criteria. The report gives median PFS of 33.0 versus 14.8 months and HR 0.47 (95% CI 0.39–0.55; P<0.001). The supplementary CONSORT diagram identifies all 1,199 randomized participants as the ITT population.
+
+One detail remains uncertain: endpoint-specific analysis membership and censoring or exclusion details are not separately stated in the passages reviewed.
+
+**Proposal Review is pending.** Please accept this candidate or ask me to choose another; I’ll continue the RoB 2 assessment after your decision.

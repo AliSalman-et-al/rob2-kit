@@ -1,0 +1,15 @@
+The CHAARTED Clinical PFS assessment is complete and finalized.
+
+**Overall risk of bias: High**, driven by **Domain 4 (measurement of the outcome)**. Follow-up schedules differed between treatment arms, and the investigators acknowledged possible ascertainment bias.
+
+| RoB 2 domain | Judgment |
+|---|---|
+| Randomization process | Low |
+| Deviations from intended interventions | Some concerns |
+| Missing outcome data | Low |
+| Measurement of the outcome | High |
+| Selection of the reported result | Some concerns |
+
+The assessed result was clinical PFS: time from randomization to symptomatic bone metastases, RECIST 1.0 progression, or investigator-assessed cancer-related clinical deterioration. The exact estimate was **not reported in the abstract**, so the assessment used the exact clinical PFS result available in the full report.
+
+Finalized artifact: `.rob2-kit/finalized/748403b6dcc4b359489a7c3850a94ba7e53be5f302fefc1bea3f556d5af62f20.rob2.zip`

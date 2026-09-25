@@ -1,0 +1,67 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Darolutamide + ADT + docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo + ADT + docetaxel",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Time to castration-resistant prostate cancer: from randomization to PSA progression with castrate testosterone (<0.5 ng/mL) or radiological progression of soft-tissue, visceral, or bone lesions; soft-tissue/visceral progression by RECIST 1.1 and bone progression by PCWG3",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Time to castration-resistant prostate cancer"
+      },
+      "estimate": "0.36",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.30 to 0.42; P<0.001"
+    },
+    "trial": "ARASENS",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:31:14.538796Z",
+    "path": "../../../../../reference/sources/ARASENS/registry.json",
+    "provenance": "captured response retained from OS baseline",
+    "registry_id": "NCT02799602",
+    "sha256": "5a6a378e5aaeeb083e17276f3c06ccc3129d734151c4699ddd607a8e72c9b6b6"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/ARASENS/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "../../../../../reference/sources/ARASENS/other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../reference/sources/ARASENS/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../reference/sources/ARASENS/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/ARASENS/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ARASENS"
+}

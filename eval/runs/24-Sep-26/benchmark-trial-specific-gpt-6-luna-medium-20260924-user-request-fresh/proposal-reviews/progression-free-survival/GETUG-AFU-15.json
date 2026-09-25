@@ -1,0 +1,154 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:179c6a4e0198fcd67437682b56f9d2b8660237c68069967a20f9e92863ebc190": {
+        "end": 6388,
+        "end_line": 124,
+        "handle": "eh_179c6a4e0198fcd6",
+        "identity": "sha256:179c6a4e0198fcd67437682b56f9d2b8660237c68069967a20f9e92863ebc190",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "www.thelancet.com/oncology Vol 14 February 2013\n149\nArticles\nAndrogen-deprivation therapy alone or with docetaxel in\nnon-castrate metastatic prostate cancer (GETUG-AFU 15):\na randomised, open-label, phase 3 trial\nGwenaelle Gravis, Karim Fizazi, Florence Joly, Stéphane Oudard, Franck Priou, Benjamin Esterni, Igor Latorzeff , Remy Delva, Ivan Krakowski,\nBrigitte Laguerre, Fréderic Rolland, Christine Théodore, Gael Deplanque, Jean Marc Ferrero, Damien Pouessel, Loïc Mourey, Philippe Beuzeboc,\nSylvie Zanetta, Muriel Habibian, Jean François Berdah, Jerome Dauba, Marjorie Baciuchka, Christian Platini, Claude Linassier, Jean Luc Labourey,\nJean Pascal Machiels, Claude El Kouri, Alain Ravaud, Etienne Suc, Jean Christophe Eymard, Ali Hasbini, Guilhem Bousquet, Michel Soulie\nSummary\nBackground Early chemotherapy might improve the overall outcomes of patients with metastatic non-castrate (ie,\nhormone-sensitive) prostate cancer. We investigated the eff ects of the addition of docetaxel to androgen-deprivation\ntherapy (ADT) for patients with metastatic non-castrate prostate cancer.\nMethods In this randomised, open-label, phase 3 study, we enrolled patients in 29 centres in France and one in\nBelgium. Eligible patients were older than 18 years and had histologically confi rmed adenocarcinoma of the prostate\nand radiologically proven metastatic disease; a Karnofsky score of at least 70%; a life expectancy of at least 3 months;\nand adequate hepatic, haematological, and renal function. They were randomly assigned to receive to ADT (orchiectomy\nor luteinising hormone-releasing hormone agonists, alone or combined with non-steroidal antiandrogens) alone or in\ncombination with docetaxel (75 mg/m2 intravenously on the fi rst day of each 21-day cycle; up to nine cycles). Patients\nwere randomised in a 1:1 ratio, with dynamic minimisation to minimise imbalances in previous systemic treatment\nwith ADT, chemotherapy for local disease or isolated rising concentration of serum prostate-specifi c antigen, and\nGlass risk groups. Patients, physicians, and data analysts were not masked to treatment allocation. The primary\nendpoint was overall survival. Effi cacy analyses were done by intention to treat. This trial is registered with ClinicalTrials.\ngov, number NCT00104715.\nFindings Between Oct 18, 2004, and Dec 31, 2008, 192 patients were randomly allocated to receive ADT plus docetaxel\nand 193 to receive ADT alone. Median follow-up was 50 months (IQR 39-63). Median overall survival was 58·9 months\n(95% CI 50·8-69·1) in the group given ADT plus docetaxel and 54·2 months (42·2-not reached) in that given ADT\nalone (hazard ratio 1·01, 95% CI 0·75-1·36). 72 serious adverse events were reported in the group given ADT plus\ndocetaxel, of which the most frequent were neutropenia (40 [21%]), febrile neutropenia (six [3%]), abnormal liver\nfunction tests (three [2%]), and neutropenia with infection (two [1%]). Four treatment-related deaths occurred in the\nADT plus docetaxel group (two of which were neutropenia-related), after which the data monitoring committee\nrecommended treatment with granulocyte colony-stimulating factor. After this recommendation, no further\ntreatment-related deaths occurred. No serious adverse events were reported in the ADT alone group.\nInterpretation Docetaxel should not be used as part of fi rst-line treatment for patients with non-castrate metastatic\nprostate cancer.\nFunding French Health Ministry and Institut National du Cancer (PHRC), Sanofi -Aventis, AstraZeneca, and Amgen.\nIntroduction\nWorldwide, prostate cancer is the second most common\nmalignancy1 and is the third most common cause of\ncancer death in men in developed countries.2 Metastases\nare rare at the time of diagnosis-at least in developed\ncountries3-but can eventually develop after failure of\nlocal\ntreatment.\nBi lateral\norchiectomy\n(medical\ncastration) is recommended for initial treatment of non-\ncastrate (ie, hormone-sensitive) metastatic prostate\ncancer.4,5 Median duration of sensitivity to androgen-\ndeprivation therapy (ADT) is usually 24-36 months;6\nbefore new active drugs were introduced, median\nsurvival was about 30 months (95% CI 12-53).7 However,\nthe outcome of this treatment varies widely. A set of\nprognostic groups was developed that separated patients\non the basis of appendicular versus axial disease, an\nEastern Cooperative Oncology Group performance status\nof 0 versus 1-3, concen tration of prostate-specifi c antigen\n(PSA) of less than 65 ng/mL versus 65 ng/mL or more,\nand a Gleason score less than 8 versus 8 or more.8 With\nthese criteria, three groups were identifi ed: good (42% of\npatients survive to 5 years), intermediate (21%), and poor\n(9%) prognosis.8\nMetastatic prostate cancer eventually becomes resistant\nto castration. Until 2004, docetaxel with prednisone was\nthe only treatment that could improve survival.9,10 The\nbenefi t of these drugs in castration-resistant prostate\ncancer suggested that early chemotherapy might improve\nLancet Oncol 2013; 14: 149-58\nPublished Online\nJanuary 8, 2013\nhttp://dx.doi.org/10.1016/\nS1470-2045(12)70560-0\nSee Comment page 104\nMedical Oncology (G Gravis MD)\nand Biostatistics\n(B Esterni MSc), Institut\nPaoli-Calmettes, Marseille,\nFrance; Department of Cancer\nMedicine, Institut Gustave\nRoussy, University of Paris Sud,\nVillejuif, France\n(Prof K Fizazi MD); Medical\nOncology, Centre François\nBaclesse, Centre Hospitalier\nUniversitaire Côte de Nacre,\nCaen, France (Prof F Joly MD);\nMedical Oncology Department,\nGeorges Pompidou Hospital\nand Rene Descartes University,\nParis, France\n(Prof S Oudard MD); Medical\nOncology, Centre Hospitalier\nLes Oudairies, La Roche-sur-\nYon, France (F Priou MD);\nRadiotherapy Department,\nClinique Pasteur, Toulouse,\nFrance (I Latorzeff MD);\nDepartment of Medical\nOncology, Centre Paul Papin,\nAngers, France (R Delva MD);\nMedical Oncology, Centre\nAlexis Vautrin, Vandoeuvre-lès-\nNancy, France\n(Prof I Krakowski MD); Medical\nOncology, Centre Eugène\nMarquis, Rennes, France\n(B Laguerre MD); Medical\nOncology, Centre René\nGauducheau, Saint-Herblain,\nFrance (F Rolland MD); Medical\nOncology, Hôpital Foch,\nSuresnes, France\n(C Théodore MD); Medical\nOncology, Groupe Hospitalier\nSaint Joseph, Paris, France\n(G Deplanque MD); Medical\nOncology, Centre Antoine\nLacassagne, Nice, France\n(Prof J M Ferrero MD); Medical\nOncology, Centre\nVal d'Aurelle-Paul Lamarque,\nMontpellier, France",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "getug-afu-15"
+      },
+      "sha256:ca6da06d4e9524627cbdf8aaa9393a9edffea47d66f5e9d651336d9dc2e03ffb": {
+        "end": 7615,
+        "end_line": 181,
+        "handle": "eh_ca6da06d4e952462",
+        "identity": "sha256:ca6da06d4e9524627cbdf8aaa9393a9edffea47d66f5e9d651336d9dc2e03ffb",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "Articles\n150\nwww.thelancet.com/oncology Vol 14 February 2013\nthe overall outcome of patients with metastatic non-\ncastrate prostate cancer. Thus, we aimed to assess the\neffi cacy and safety of docetaxel combined with ADT\nversus ADT alone in patients with metastatic non-\ncastrate prostate cancer.\nMethods\nParticipants\nIn this randomised, open-label, phase 3 trial, we enrolled\nparticipants from 29 centres in France and one in\nBelgium. Indi viduals aged more than 18 years were\neligible if they had histologically confi rmed adeno-\ncarcinoma of the prostate and radiologically proven\nmetastatic disease; a Karnofsky score of at least 70%; a life\nexpectancy of at least 3 months; and adequate hepatic,\nhaematological, and renal func tion. Patients who had\nreceived previous chemotherapy for metastatic disease\nwere excluded, but ADT for patients with metastatic\ndisease could have been initiated no more than 2 months\nbefore enrolment. In the neo adjuvant and adjuvant\nsettings or in the context of isolated PSA increase, previous\nchemo therapy or ADT, or both, were allowed, with the\ncondition that the treatment had been discontinued at\nleast 12 months before inclusion in the study and no\nmetastases or PSA increase had been documented during\nthis period. Radiotherapy for metastatic disease was to be\ncompleted at least 4 weeks before enrolment.\nPatients were excluded from study entry when they had\nsevere cardiac disease, had had surgical castration before\nmetastatic disease occurred, had evidence of brain\nmetastasis, had peripheral neuropathy (at least grade 2),\na history of another cancer in the past 5 years (except\nbasal-cell or squamous-cell skin cancer), or another\nserious condition that could jeopardise their participation.\nThe protocol was reviewed by the internal review\nboards of all participating institutions and the study\nwas approved by a central national ethics committee. The\nstudy was done in accordance with Good Clinical Practice\nguidelines and the Declaration of Helsinki. All patients\nprovided written informed consent.\nRandomisation and masking\nRandomisation was done by a clinical research organ-\nisation and was centralised nationally. Patients were\nrandomly allocated in a 1:1 ratio to receive ADT plus\ndocetaxel or ADT alone. Dynamic minimisation was\nused to minimise the imbalance of three criteria:\nprevious systemic treatment with ADT; chemotherapy\nfor local disease or isolated rising PSA; and Glass risk\ngroups.8 Patients, physicians, and data analysts were not\nmasked to treatment allocation.\nProcedures\nAll patients received ADT, which consisted of orchi ectomy\nor luteinising hormone-releasing hormone agonists,\nalone or combined with non-steroidal antiandrogens.\nADT was given continuously until unaccept able toxic\neff ects or discontinuation on patients' request. In the\ngroup given ADT plus docetaxel, patients received\n75 mg/m2 intravenous docetaxel in a 250 cm3 5% glucose\nsolution in the course of 1 h on the fi rst day of each 21-day\ncycle. Treatment with docetaxel continued for up to nine\ncycles on the basis of the median exposure reported in the\nTAX 327 trial,9 or was discontinued prematurely in the\ncase of progression, unacceptable toxic eff ects, or patients'\nrequest. Premedication with a corticosteroid (8 mg\ndexamethasone or equivalent) was given orally in the\nevening before the infusion of docetaxel, on the day of\ndocetaxel infusion, and on the next day.\nIf predefi ned toxic eff ects occurred (haematological or\nnon-haematological eff ects; gastrointestinal, skin, and\nliver toxic eff ects; peripheral neuropathy; or docetaxel-\nspecifi c adverse events), docetaxel could be delayed until\nrecovery or the dose could be reduced by up to 25%.\nBisphosphonates were allowed with fi rst-line treatment.\nWe assessed clinical history, weight, and Karnofsky\nperformance status, and did a physical examination\nbefore treatment began. We did a CT scan, a bone scan,\nelectrocardiography, and blood tests (including meas ure-\nment of serum PSA) within 30 days before initiation of\ntreatment. We repeated physical examinations and blood\ntests every 3 weeks during treatment in the group given\nADT plus docetaxel and every 3 months in the group\ngiven ADT alone. We did imaging studies every 3 months;\nradiological response was to be confi rmed within\n4 weeks. After 42 months, we did clinical, labora tory, and\nradiological examinations every 6 months.\nThe primary endpoint was overall survival (ie, time\nbetween randomisation and death from any cause).\nSecondary endpoints were time to clinical progression or\ndeath (clinical progression-free survival; cPFS) and time\nto PSA progression, clinical progression, or death\n(biochemical progression-free survival; bPFS).\nWe defi ned biochemical progression with the PSA\nWorking Group defi nition:11 a previous confi rmed PSA\ndecrease of at least 50% and an increase of at least 50%\nabove the nadir, with a minimum increase of 5 ng/mL.\nFor patients without a previous PSA decrease of 50%,\nprogression was defi ned as a PSA increase of at least\n25% above the nadir and of at least 5 ng/mL.\nA confi rmatory PSA test was mandatory in all cases.\nIn patients with measurable lesions, we defi ned clinical\nprogression as the progression of pre-existing lesions\nwith Response Evaluation Criteria in Solid Tumors\n(RECIST; version 1.0)12 or the occurrence of (new) bone\nlesions, whichever happened fi rst. In patients with only\nbone lesions, progression was defi ned as one or more\nnew bone lesions on bone scan or occurrence of a new\nsoft-tissue lesion, whichever happened fi rst. Death was\njudged as an event; causes of deaths were reported by\ninvestigators rather than by central review.\nWe assessed adverse events with the Common Toxicity\nCriteria of the National Cancer Institute (version 3).\nQuality of life was assessed with the self-administered\n(D Pouessel MD); Medical\nOncology, Institut Claudius\nRégaud, Toulouse, France\n(L Mourey MD); Medical\nOncology, Institut Curie,\nParis,France (P Beuzeboc MD);\nMedical Oncology, Centre\nGeorges François Leclerc, Dijon,\nFrance (S Zanetta MD); R&D\nUNICANCER, Paris, France\n(M Habibian); Medical\nOncology, Clinique Sainte\nMarguerite, Hyeres, France\n(J F Berdah MD); Medical\nOncology, Hôpital Layné,\nMont-de-Marsan, France\n(J Dauba MD); Medical\nOncology, Centre Hospitalier La\nTimone, Marseille, France\n(M Baciuchka MD); Medical\nOncology, Centre Régional\nHospitalier Metz-Thionville,\nThionville, France\n(C Platini MD); Medical\nOncology, Hôpital Bretonneau,\nTours, France\n(Prof C Linassier MD); Medical\nOncology, Centre Hospitalier\nDupuytren, Limoges, France\n(J L Labourey MD); Medical\nOncology, Cliniques\nUniversitaires Saint-Luc,\nUniversité Catholique de\nLouvain, Brussels, Belgium\n(Prof J P Machiels MD); Medical\nOncology, Centre Catherine de\nSienne, Nantes, France\n(C El Kouri MD); Medical\nOncology, Hôpital Saint-André,\nBordeaux, France\n(Prof A Ravaud MD); Medical\nOncology, Clinique Saint-Jean\nLanguedoc, Toulouse, France\n(E Suc MD); Medical Oncology,\nInstitut Jean Godinot, Reims,\nFrance (J C Eymard MD); Medical\nOncology, Clinique Armoricaine\nde Radiologie, Saint-Brieuc,\nFrance (A Hasbini MD); Medical\nOncology, Hôpital Saint-Louis,\nParis, France (G Bousquet MD);\nand Urology Department,\nCentre Hospitalier Universitaire\nRangueil, Toulouse, France\n(Prof M Soulie MD)\nCorrespondence to:\nDr Gwenaelle Gravis, Medical\nOncology, Institut Paoli-\nCalmettes, Centre de Recherche\nen Cancérologie de Marseille,\nUMR891 Inserm,\n13009 Marseille, France\ngravisg@ipc.unicancer.fr\nFor the trial protocol see http://\nwww.unicancer.fr/sites/default/\nfi les/UNICANCER_Protocole_\nGETUG_15.pdf",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "getug-afu-15"
+      },
+      "sha256:d74ce31dd633a7467cfb6c31ca95251ac189b2d1b98faa3fbf0114e371fe8c56": {
+        "end": 534,
+        "end_line": 13,
+        "handle": "eh_d74ce31dd633a746",
+        "identity": "sha256:d74ce31dd633a7467cfb6c31ca95251ac189b2d1b98faa3fbf0114e371fe8c56",
+        "kind": "narrative",
+        "page": 5,
+        "quote": "153\nMedian bPFS was signifi cantly longer in the group\ngiven ADT plus docetaxel (22·9 months, 95% CI\n19·6-28·4) than in the group given ADT alone\n(12·9 months, 11·9-17·7; HR 0·72, 0·57-0·91; p=0·005;\nfi gure 3). Similarly, median cPFS was signifi cantly longer\nin the group given ADT plus docetaxel (23·5 months,\n20·5-31·9) than in the group given ADT alone\n(15·4 months, 12·5-19·8; HR 0.75, 0·59-0·94; p=0·015;\nfi gure 3).\nMedian overall survival and bPFS in subgroups did not",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 57,
+        "start_line": 3,
+        "trial_id": "getug-afu-15"
+      }
+    },
+    "identity": "sha256:972cf34e2b59f2d29a0ea105774b96adf1dc586b6c48938573bbdce285ceeec8",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_ca6da06d4e952462",
+              "eh_179c6a4e0198fcd6"
+            ],
+            "rationale": "Patients were individually randomized 1:1 to ADT plus docetaxel or ADT alone using centralized randomization and dynamic minimisation."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a11e81437d4d11810475bbc8aabc9c188fd75d103e0b607260252d4a406d157a"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:cd25d98bc46f0904843e380f823836869892bb1dcf0acdacd0c681ad94a0f3b1"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:683613d99cb4332a320e000390ad3c12d8c656d7539f128ab16de5cf4d3b7a67"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:195743f819589a61cb44786773779fccf8de661a47df995ff9e44b30119f6b80"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_d74ce31dd633a746",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The full report gives the requested clinical progression-free survival (cPFS) comparison, defined as time to clinical progression or death. Clinical progression uses radiologic progression criteria, with a separate rule for patients who had only bone lesions. The analysis was intention to treat through the common study cutoff.",
+          "reported": {
+            "analysis_population": "Intention-to-treat efficacy analysis; 192 patients allocated to ADT plus docetaxel and 193 allocated to ADT alone.",
+            "effect_measure": "HR",
+            "endpoint": {
+              "definition": null,
+              "name": "cPFS"
+            },
+            "estimate": "0.75",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "0·59-0·94; p=0·015"
+          },
+          "requested_outcome": "Progression-Free Survival (Clinical PFS)",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "ADT plus docetaxel",
+                "id": "adt_docetaxel"
+              },
+              {
+                "assignment": "ADT alone",
+                "id": "adt_alone"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time to clinical progression or death; for measurable lesions, progression of pre-existing lesions by RECIST 1.0 or occurrence of new bone lesions, whichever came first.",
+              "metric": "Progression-Free Survival (Clinical PFS)"
+            },
+            "outcome_definition": "Progression-Free Survival (Clinical PFS)",
+            "time_point_or_window": {
+              "description": "From randomization through the common data cutoff (July 31, 2011); median follow-up was 50 months.",
+              "kind": "described"
+            }
+          },
+          "trial_id": "getug-afu-15"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:439d7f4bab551235d697bd9e770add097e0cb322700538865fbb47fa10bced51",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

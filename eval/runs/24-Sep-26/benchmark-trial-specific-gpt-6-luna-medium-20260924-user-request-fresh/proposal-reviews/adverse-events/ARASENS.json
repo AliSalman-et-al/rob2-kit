@@ -1,0 +1,174 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:0bdc1a657ced083d437a7a0c38e6dee8b7822a9d33a738e4d4a72ae1285b60b4": {
+        "end": 3948,
+        "end_line": 133,
+        "handle": "eh_0bdc1a657ced083d",
+        "identity": "sha256:0bdc1a657ced083d437a7a0c38e6dee8b7822a9d33a738e4d4a72ae1285b60b4",
+        "kind": "narrative",
+        "page": 8,
+        "quote": "n engl j med 386;12 nejm.org March 24, 2022\n1139\nDarolutamide in Metastatic Prostate Cancer\nThe incidences of the most common adverse\nevents (in ≥10% of the patients), many of which\nare known toxic effects related to docetaxel\ntherapy, were highest in both groups during the\nperiod when the patients received both docetaxel\nand either darolutamide or placebo, and these\neffects progressively decreased thereafter, with\ngrade 3 or 4 adverse events in 66.1% of the pa-\ntients in the darolutamide group and 63.5% of\nthose in the placebo group; neutropenia was the\nmost common grade 3 or 4 event (in 33.7% and\n34.2%, respectively). Serious adverse events oc-\ncurred in 44.8% of the patients in the darolu-\ntamide group and in 42.3% of those in the pla-\ncebo group. The frequency of death due to\nadverse events was low and similar in the two\ngroups (27 of 652 patients in the darolutamide\ngroup [4.1%] and 26 of 650 patients in the pla-\ncebo group [4.0%]) (Table S4). Few patients\ndiscontinued darolutamide or placebo as a result\nof adverse events (13.5% of the patients in the\ndarolutamide group and 10.6% of those in the\nplacebo group). The most frequently reported\nadverse events were alopecia (in 40.5% of the\nTable 3. Adverse Events.*\nEvent\nDarolutamide-ADT-Docetaxel\n(N = 652)†\nPlacebo-ADT-Docetaxel\n(N = 650)†\nnumber of patients (percent)\nAny adverse event\n649 (99.5)\n643 (98.9)\nWorst grade\nGrade 1\n28 (4.3)\n35 (5.4)\nGrade 2\n162 (24.8)\n169 (26.0)\nGrade 3\n248 (38.0)\n232 (35.7)\nGrade 4\n183 (28.1)\n181 (27.8)\nGrade 5\n27 (4.1)\n26 (4.0)\nSerious adverse event\n292 (44.8)\n275 (42.3)\nAdverse event leading to permanent discontinuation\nof trial agent\nDarolutamide or placebo\n88 (13.5)\n69 (10.6)\nDocetaxel\n52 (8.0)\n67 (10.3)\nSelected grade 3 or 4 adverse events‡\nNeutropenia§\n220 (33.7)\n222 (34.2)\nFebrile neutropenia\n51 (7.8)\n48 (7.4)\nHypertension\n42 (6.4)\n21 (3.2)\nAnemia\n31 (4.8)\n33 (5.1)\nPneumonia\n21 (3.2)\n20 (3.1)\nHyperglycemia\n18 (2.8)\n24 (3.7)\nIncreased ALT level\n18 (2.8)\n11 (1.7)\nIncreased AST level\n17 (2.6)\n7 (1.1)\nIncreased weight\n14 (2.1)\n8 (1.2)\nUrinary tract infection\n13 (2.0)\n12 (1.8)\n* ALT denotes alanine aminotransferase, and AST aspartate aminotransferase.\n† Three patients who underwent randomization never received the assigned trial treatment; all three patients were in the\nplacebo group. One patient who was assigned to the placebo group but received darolutamide was included in the\ndarolutamide group of the safety analysis set.\n‡ In the column of data for patients who received darolutamide, ADT, and docetaxel, listed are all grade 3 or 4 events\nthat occurred in at least 2% of the patients.\n§ The neutropenia category includes the preferred terms of leukopenia, neutropenia, decreased neutrophil count, and\ndecreased white-cell count.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Table 3. Adverse Events.*|||\n|Darolutamide-ADT-Docetaxel Placebo-ADT-Docetaxel<br>Event (N = 652)† (N = 650)†<br>number of patients (percent)|||\n|Any adverse event|649 (99.5)|643 (98.9)|\n|Worst grade|||\n|Grade 1|28 (4.3)|35 (5.4)|\n|Grade 2 162 (24.8) 169 (26.0)|||\n|Grade 3|248 (38.0)|232 (35.7)|\n|Grade 4 183 (28.1) 181 (27.8)|||\n|Grade 5|27 (4.1)|26 (4.0)|\n|Serious adverse event 292 (44.8) 275 (42.3)|||\n|Adverse event leading to permanent discontinuation<br>of trial agent|||\n|Darolutamide or placebo 88 (13.5) 69 (10.6)|||\n|Docetaxel|52 (8.0)|67 (10.3)|\n|Selected grade 3 or 4 adverse events‡|||\n|Neutropenia§|220 (33.7)|222 (34.2)|\n|Febrile neutropenia 51 (7.8) 48 (7.4)|||\n|Hypertension|42 (6.4)|21 (3.2)|\n|Anemia 31 (4.8) 33 (5.1)|||\n|Pneumonia|21 (3.2)|20 (3.1)|\n|Hyperglycemia 18 (2.8) 24 (3.7)|||\n|Increased ALT level|18 (2.8)|11 (1.7)|\n|Increased AST level 17 (2.6) 7 (1.1)|||\n|Increased weight|14 (2.1)|8 (1.2)|\n|Urinary tract infection 13 (2.0) 12 (1.8)|||",
+        "source_id": "source_af73c685a66a1e1f34d994e7752d638100df8193c5e6e79b620580483afb7fca",
+        "source_version": "sha256:2be77b09047ae533278a3f15b0c06404f816b47855708ca7d2d714767a4bd00c",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "arasens"
+      },
+      "sha256:4b41e089e7e41c4fce3118fb939e65bc1267f3ba6be71d1a3cee95648339e28f": {
+        "end": 4707,
+        "end_line": 104,
+        "handle": "eh_4b41e089e7e41c4f",
+        "identity": "sha256:4b41e089e7e41c4fce3118fb939e65bc1267f3ba6be71d1a3cee95648339e28f",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 386;12 nejm.org March 24, 2022\n1134\nThe new engl and jour nal of medicine\ninhibitors, chemotherapy, or immunotherapy for\nprostate cancer before randomization, or radio-\ntherapy within 2 weeks before randomization.\nFull eligibility criteria are provided in the Sup-\nplementary Appendix, available at NEJM.org.\nAll the patients received androgen-depriva-\ntion therapy (a luteinizing hormone-releasing\nhormone [LHRH] agonist or an LHRH antago-\nnist) or underwent orchiectomy within 12 weeks\nbefore randomization and received six cycles of\ndocetaxel (75 mg per square meter of body-sur-\nface area on day 1 and every 21 days), with pred-\nnisone or prednisolone administered at the in-\nvestigator's discretion, initiated within 6 weeks\nafter randomization. The recommended pre-\nmedication to prevent docetaxel-related hyper-\nsensitivity reactions and fluid retention was oral\ndexamethasone, administered at a dose of 8 mg\nat 12 hours, 3 hours, and 1 hour before infusion.\nFor patients receiving LHRH agonists, the use of\nthese agonists in combination with a first-gen-\neration antiandrogen for at least 4 weeks before\nrandomization was recommended. First-genera-\ntion antiandrogen therapy was discontinued be-\nfore randomization.\nPatients were randomly assigned in a 1:1 ratio\nto receive either darolutamide (at a dose of 600 mg\n[two 300-mg tablets] twice daily with food) or\nmatched placebo. Randomization was stratified\naccording to the metastasis stage in the tumor-\nnode-metastasis system (nonregional lymph-node\nmetastases only [M1a], bone metastases with or\nwithout lymph-node metastases [M1b], or vis-\nceral metastases with or without lymph-node or\nbone metastases [M1c]) and according to wheth-\ner the alkaline phosphatase level was below or at\nor above the upper limit of the normal range.\nPatients continued to receive darolutamide or\nplacebo until symptomatic disease progression,\na change in antineoplastic therapy, unacceptable\ntoxic effects, patient or physician decision, death,\nor nonadherence.\nEnd Points\nThe primary end point was overall survival,\nwhich was defined as the time from randomiza-\ntion until death from any cause. The secondary\nend points were time to castration-resistant\nprostate cancer, time to pain progression, symp-\ntomatic skeletal event-free survival, time to a\nfirst symptomatic skeletal event, time to initia-\ntion of subsequent systemic antineoplastic ther-\napy, time to worsening of disease-related physi-\ncal symptoms, time to initiation of opioid\ntreatment for 7 or more consecutive days, and\nsafety. Definitions of the secondary efficacy\nend points are provided in the Supplementary\nAppendix.\nAssessments\nDuring the trial, patients were evaluated every\n12 weeks for evidence of castration resistance,\nthe initiation of subsequent antineoplastic ther-\napy, symptomatic skeletal events, opioid use for\n7 or more consecutive days, pain progression,\nthe worsening of physical symptoms of disease,\nand adverse events and serious adverse events\nthat occurred during treatment. Patients under-\nwent contrast-enhanced chest, abdomen, and pel-\nvic CT or MRI and bone scanning at baseline,\nwithin 30 days after the last cycle of docetaxel,\nand yearly thereafter during trial treatment. Pain\nwas assessed with the use of the Brief Pain In-\nventory Short-Form questionnaire, and disease-\nrelated physical symptoms were assessed with\nthe use of the Functional Assessment of Cancer\nTherapy-Prostate (National Comprehensive Can-\ncer Network) symptom index 17-item question-\nnaire. In safety assessments, adverse events were\ngraded with the use of the National Cancer In-\nstitute Common Terminology Criteria for Adverse\nEvents, version 4.03.\nStatistical Analysis\nThe sample size was calculated on the basis of\nthe primary end point, overall survival. We esti-\nmated that approximately 1300 patients would\nbe required to observe approximately 509 deaths,\nallowing for a 5% dropout rate, which would\nprovide the trial with 90% power to detect a 25%\ndecrease in the risk of death in the darolutamide\ngroup versus the placebo group, at a two-sided\nalpha level of 0.05. The secondary end points\nwere tested with a hierarchical gatekeeping pro-\ncedure in the order described above only if the\nprimary end point and each preceding secondary\nend point in the hierarchy were statistically sig-\nnificant. If the primary end point or a secondary\nend point did not reach significance, the hierar-\nchical procedure was stopped, and subsequent\nanalyses were considered to be exploratory.\nThe full analysis set (all the patients who\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_af73c685a66a1e1f34d994e7752d638100df8193c5e6e79b620580483afb7fca",
+        "source_version": "sha256:2be77b09047ae533278a3f15b0c06404f816b47855708ca7d2d714767a4bd00c",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "arasens"
+      }
+    },
+    "identity": "sha256:acee7c3ac8f218507f3d6eb2587bbbbcda809c6af9bde927588e93445b855a0f",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_4b41e089e7e41c4f"
+            ],
+            "rationale": "Patients were randomly assigned individually in a 1:1 ratio to darolutamide or matching placebo."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:7b4f60684e43b2ffd63706d4dd27ed8b69629f502b781f42809cb2aa0f445be8"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/0/statistic"
+              },
+              "value_digest": "sha256:927f113e4d1abc30c0ccb562d93d679ec99e0cdf8a2bb0da22473874574bba34"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/0/value"
+              },
+              "value_digest": "sha256:6ec1eecdde7ac9c38db4f7441f2cd33092096b1a38db986ba6d6ff4a20eddcca"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/0/unit"
+              },
+              "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/1/statistic"
+              },
+              "value_digest": "sha256:927f113e4d1abc30c0ccb562d93d679ec99e0cdf8a2bb0da22473874574bba34"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/1/value"
+              },
+              "value_digest": "sha256:26e81d0485c3953fd150a19844648fb160afb75b076c251d9e83bd4dadfb8b49"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/1/unit"
+              },
+              "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_0bdc1a657ced083d",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_4b41e089e7e41c4f",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The target is grade 3/4 toxicities among randomized participants in the assigned groups during treatment. The report grades adverse events using NCI CTCAE v4.03 and reports the proportion with grade 3 or 4 adverse events in the safety analysis set; this is the closest complete comparative result, but the safety set excludes three randomized participants who received no trial treatment and analyzes one placebo-assigned participant under darolutamide as treated.",
+          "reported": {
+            "analysis_population": "Safety analysis set: patients who received at least one dose of darolutamide or placebo, analyzed according to treatment actually received; N=652 and N=650. Three randomized placebo-assigned patients received no trial treatment; one placebo-assigned patient who received darolutamide was analyzed in the darolutamide group.",
+            "endpoint": {
+              "definition": null,
+              "name": "Grade 3 or 4 adverse events"
+            },
+            "form": "group_bound_values",
+            "group_values": [
+              {
+                "group_id": "darolutamide",
+                "statistic": "percent",
+                "unit": "%",
+                "value": "66.1"
+              },
+              {
+                "group_id": "placebo",
+                "statistic": "percent",
+                "unit": "%",
+                "value": "63.5"
+              }
+            ]
+          },
+          "requested_outcome": "Adverse Events",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+                "id": "darolutamide"
+              },
+              {
+                "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Percentage of participants with at least one grade 3 or 4 adverse event",
+            "measurement": {
+              "method": "Toxicity severity graded with the National Cancer Institute Common Terminology Criteria for Adverse Events, version 4.03",
+              "metric": "Adverse Events"
+            },
+            "outcome_definition": "Adverse Events",
+            "time_point_or_window": {
+              "description": "During treatment",
+              "kind": "described"
+            }
+          },
+          "trial_id": "arasens"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:4b79e4dbf6fe8ab81f64ca02ce368fe1f015125fe99d528370e737e3c7d12c14",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

@@ -1,0 +1,7 @@
+## ARCHES radiographic PFS
+
+**Overall risk of bias: Some concerns**, driven by the measurement domain. The approved result was the primary rPFS comparison: enzalutamide plus ADT versus placebo plus ADT, HR 0.39 (95% CI 0.30–0.50; P<.001), median not reached versus 19.0 months.
+
+The measurement concern is that the report describes independent central radiology review but does not say whether those reviewers were blinded. The other four domains were judged Low risk. The missing-data judgment was Low: the flow diagram reported only one participant lost to follow-up, and imaging continued after treatment discontinuation when progression was unconfirmed.
+
+The assessment is finalized. The artifact is [available here](C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/progression-free-survival/ARCHES/workspace/.rob2-kit/finalized/7d67ddf28af3805b970b6d614a5c949a53ed02ce3b89bbe8519ce9491f8648ee.rob2.zip).

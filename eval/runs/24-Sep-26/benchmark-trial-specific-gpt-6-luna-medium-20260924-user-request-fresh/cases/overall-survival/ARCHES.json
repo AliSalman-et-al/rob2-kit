@@ -1,0 +1,57 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Enzalutamide + ADT",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo + ADT",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Time from randomization to death resulting from any cause",
+    "population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+    "reported_scope": {
+      "analysis_population": "Patients in the randomized intention-to-treat or primary efficacy analysis population.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "name": "Overall survival"
+      },
+      "estimate": "0.81",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.53 to 1.25; P=.3361"
+    },
+    "trial": "ARCHES",
+    "window": "From randomization to the outcome event or last follow-up at the analysis cutoff reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:44.999378Z",
+    "path": "../../../../../reference/sources/ARCHES/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02677896",
+    "sha256": "101c1f3852c211ee5946b7d008c38a4ec6a7c0e8bf5f5d8c94f6ed1151f87a67"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/ARCHES/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../reference/sources/ARCHES/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/ARCHES/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ARCHES"
+}

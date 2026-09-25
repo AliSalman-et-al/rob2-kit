@@ -1,0 +1,13 @@
+## Proposal Review — SWOG-1216 PFS
+
+The selected Result is the trial’s final PFS comparison:
+
+- **Definition:** Time from random assignment to first PSA progression, radiographic progression, symptomatic deterioration, or death.
+- **Comparison:** ADT plus orteronel versus ADT plus bicalutamide.
+- **Reported result:** Median PFS 47.6 versus 23.0 months; HR 0.58 (95% CI 0.51–0.67). The abstract reports *P*<.0001. The analysis followed 787 PFS events, with median follow-up of 4.9 years.
+- **Population qualification:** 1,313 participants were randomized; 1,279 were included in the reported analysis. The article says 32 were ineligible and two withdrew all consent before treatment, so the analyzed population is narrower than all randomized participants.
+- **Unresolved:** The PFS-specific handling of missing assessments, withdrawals, and loss to follow-up is not clear from the report.
+
+The main article’s endpoint definition and result, and the protocol’s PFS definition, support this choice. The protocol also specifies censoring participants without progression at last contact. No materially competing PFS candidate was identified in the captured sources.
+
+The Proposal Review is pending under reference `sha256:20e2d240ff04651eab5401993b606e0ad88779d469af89e2035b2851d1cc35de`. **Do you approve this Result so I can continue the RoB 2 assessment?**

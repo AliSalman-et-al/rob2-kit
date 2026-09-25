@@ -1,0 +1,161 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:3e5a6a83e6647825e51c8bb7228c0fd4c4951ac83b27c6d160314b4cf341e5a7": {
+        "end": 5719,
+        "end_line": 108,
+        "handle": "eh_3e5a6a83e6647825",
+        "identity": "sha256:3e5a6a83e6647825e51c8bb7228c0fd4c4951ac83b27c6d160314b4cf341e5a7",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "Of the patients who initiated new antineoplastic therapy, the\nmost common therapy was abiraterone (n = 13; 28.3%)\nfollowed by docetaxel (n = 11; 23.9%) in the enzalutamide\nplus ADT group and docetaxel (n = 52; 39.1%) followed by\nabiraterone and enzalutamide (n = 28 each; 21.1%) in the\nplacebo plus ADT group (Data Supplement Table A3). At\nthis interim OS analysis, data were immature, with\n84 deaths (enzalutamide plus ADT, n = 39; placebo plus ADT,\nn = 45); median duration of OS was NR in either treatment\ngroup (HR, 0.81; 95% CI, 0.53 to 1.25; P = .3361; Table 2;\nData Supplement Fig A2). Enzalutamide plus ADT also\nsignificantly reduced the risk of a first symptomatic skeletal\n2976 © 2019 by American Society of Clinical Oncology\nVolume 37, Issue 32",
+        "source_id": "source_770becc5dd691866e8c21be3d1a71e1c2e5fd98eeab889ea0d65439b89aad194",
+        "source_version": "sha256:b5eb36cdb66d9f69a65a8707d2518c57c3f43a37a91aa63fc7941c7285354600",
+        "start": 4964,
+        "start_line": 95,
+        "trial_id": "arches"
+      },
+      "sha256:c4d08ac72187c28fef12a1be463bc74db9ff792cfca78b54831586b233440b0d": {
+        "end": 6024,
+        "end_line": 118,
+        "handle": "eh_c4d08ac72187c28f",
+        "identity": "sha256:c4d08ac72187c28fef12a1be463bc74db9ff792cfca78b54831586b233440b0d",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "have demonstrated significant clinical benefits, including\nsignificantly improved overall survival (OS), and these\ncombinations are now included in treatment guidelines as\npart of the SOC.12,13 Abiraterone plus ADT is approved in\ncombination with prednisone for men with metastatic\nhigh-risk castration-sensitive prostate cancer,14,15 on the\nbasis of the LATITUDE trial (ClinicalTrials.gov identifier:\nNCT01715285),10 which exclusively enrolled men with\nhigh-risk mHSPC and excluded previous chemotherapy.\nThe efficacy and safety of enzalutamide, a potent\nandrogen-receptor (AR) inhibitor,16 has been demon-\nstrated across the spectrum of castration-resistant\nprostate cancer (CRPC) by numerous, large-scale,\nrandomized, controlled clinical trials.17-21 In addition,\na phase II, open-label, single-arm study investigating\nenzalutamide monotherapy in patients with hormone-\nna ̈ıve\nprostate\ncancer\ndemonstrated\nlong-term\nre-\nductions in prostate-specific antigen (PSA) levels, with\nminimal changes in overall bone mineral density and\nglobal health status.22-24\nTwo recent studies that investigated abiraterone in addition\nto ADT excluded men with prior docetaxel chemotherapy\nand did not include prospective evaluation of results by\ndisease volume (high v low).10,11 ARCHES (Clinical-\nTrials.gov identifier: NCT02677896) aimed to assess\nefficacy and safety of enzalutamide plus ADT in men with\nmHSPC, regardless of prior docetaxel or disease volume.\nWe hypothesized that enzalutamide, in combination with\nADT, would prolong radiographic progression-free sur-\nvival (rPFS) in men with mHSPC, compared with\nADT alone.\nMETHODS\nStudy Design and Conduct\nARCHES is a multinational, double-blind, randomized,\nplacebo-controlled, phase III trial. The study protocol was\napproved by local independent review boards and con-\nducted according to provisions of the Declaration of\nHelsinki and Good Clinical Practice Guidelines of the\nInternational Conference on Harmonisation. All patients\nprovided written informed consent. An independent Data\nSafety Monitoring Board (DSMB) evaluated unblinded\nsafety data on an ongoing basis. Please refer to the Dis-\nclosures for full information on data sharing.\nPatients and Treatments\nEligible patients were adult (defined according to local\nregulation) males with pathologically confirmed prostate\nadenocarcinoma, without neuroendocrine differentiation,\nsignet-cell, or small-cell features, and an Eastern Co-\noperative Oncology Group performance status score of 0 or\n1. Eligible patients had hormone-sensitive metastatic dis-\nease, either de novo or after recurrence after prior local\ntherapy, documented by a positive bone scan, or metastatic\nlesions on computed tomography or magnetic resonance\nimaging. Enrollment was based on investigator-assessed\nmetastases; after study entry, metastasis was evaluated by\nindependent central review. Prior ADT and up to six cycles\nof prior docetaxel chemotherapy were permitted. Patients\nwho experienced disease progression prior to randomiza-\ntion while receiving ADT and/or docetaxel were excluded.\nAdditional details regarding inclusion/exclusion criteria are\nprovided in the Data Supplement.\nPatients were centrally randomized 1:1 to enzalutamide\n(160 mg/day) plus ADT or placebo plus ADT, stratified by\ndisease volume (low v high) and prior docetaxel chemo-\ntherapy for prostate cancer (no cycles, one to five cycles, or\nsix cycles). High-volume disease was defined as presence\nof metastases involving the viscera, or in the absence of\nvisceral lesions, four or more bone lesions, one or more of\nwhich must have been in a bony structure beyond the\nvertebral column and pelvic bone, per CHAARTED (Clin-\nicalTrials.gov identifier: NCT00309985) criteria.6 Treat-\nment continued until occurrence of unacceptable toxicity,\nradiographic progression (confirmed by independent cen-\ntral review), or initiation of an investigational agent or\nnew prostate cancer therapy. Subsequent therapy after\ntreatment discontinuation was permitted per local practice.\nOn the basis of the primary analysis results and DSMB\nrecommendation of study continuation, eligible patients\nwere offered the opportunity to transition to an open-label\nextension.\nEnd Points\nThe primary end point was rPFS, defined as the time from\nrandomization to the first objective evidence of radiographic\ndisease progression, as assessed by independent central\nreview or death (defined as death from any cause within\n24 weeks from study drug discontinuation), whichever\noccurred first. The cutoff of 24 weeks from study drug\ndiscontinuation (ie, the second long-term follow-up visit) for\ndeaths (in the absence of disease progression) ensured\na similar follow-up period as for monitoring of radiographic\nprogression (ie, two 12-week radiologic assessment cycles\npost-treatment discontinuation). In addition, sensitivity\nanalyses for rPFS were performed, including all deaths (in\nthe absence of evidence of radiographic progression) re-\ngardless of timing, and radiographic progression docu-\nmented by central review according to Prostate Cancer\nWorking Group 2 criteria,25 to assess the robustness of the\nprimary analysis; additional details are provided in Data\nSupplement Table A1. Key secondary end points were time\nto PSA progression, time to initiation of new antineoplastic\ntherapy (including cytotoxic and hormone therapies), PSA\nundetectable rate, objective response rate, time to de-\nterioration in urinary symptoms, and OS. Other secondary\nend points included time to first symptomatic skeletal\nevent, time to castration resistance, patient-reported out-\ncomes (PROs), time to deterioration of quality of life (QoL),\nand time to pain progression. Additional prespecified an-\nalyses, per a separate PRO statistical analysis plan (SAP),\nJournal of Clinical Oncology\n2975\nEnzalutamide in Metastatic Hormone-Sensitive Prostate Cancer\nDownloaded from ascopubs.org by 129.80.136.13 on May 8, 2026 from 129.080.136.013\nCopyright © 2026 American Society of Clinical Oncology. All rights reserved.",
+        "source_id": "source_770becc5dd691866e8c21be3d1a71e1c2e5fd98eeab889ea0d65439b89aad194",
+        "source_version": "sha256:b5eb36cdb66d9f69a65a8707d2518c57c3f43a37a91aa63fc7941c7285354600",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "arches"
+      },
+      "sha256:c6ca5d9e1f8c6e1b4ab2630c840e91d87562b4bcbd542874b3a605432f285e45": {
+        "end": 1792,
+        "end_line": 44,
+        "handle": "eh_c6ca5d9e1f8c6e1b",
+        "identity": "sha256:c6ca5d9e1f8c6e1b4ab2630c840e91d87562b4bcbd542874b3a605432f285e45",
+        "kind": "narrative",
+        "page": 16,
+        "quote": "16\nundetectable (< 0.2 ng/mL) during study treatment.\nOnly PSA assessments taken prior to the initiation of\nnew antineoplastic therapy were evaluated\nA stratified Cochran-Mantel-Haenszel score test was\nused to compare the response rates between treatment\ngroups with a significance level of 0.01\nORR\nThe percentage of patients with measureable disease at\nbaseline who achieved a complete or partial response in\ntheir soft tissue disease using the RECIST, version 1.1,\ncriteria2 (see Table A2)\nThe analysis method was the same as for PSA\nundetectable rate\nTime to deterioration in urinary\nsymptoms\nTime from randomization to the first deterioration in\nurinary symptoms, defined as an increase in urinary\nsymptoms scores, using a modified urinary symptoms\nscale derived from a selected subset of symptoms from\nthe QLQ-PR25 questionnaire module4 (including three\nitems, Q31-Q33) by ≥ 50% of the standard deviation\nobserved in the modified urinary symptoms scale at\nbaseline\nThe analysis method was the same as the primary\nanalysis for rPFS with a significance level of 0.01\nOS\nTime from randomization to death from any cause\nAll patients will be followed for survival until death,\nloss to follow-up, withdrawal of consent, or study\ntermination by the sponsor\nThe O'Brien-Fleming alpha spending function was used\nto account for the interim analysis of OS, which was\nperformed at the time of the final rPFS analysis\nThe analysis method was the same as the primary\nanalysis for rPFS\nThe final analysis of OS will be tested at 0.04, as time\nto deterioration in urinary symptoms was not significant\nSecondary\nTime to first SSE\nTime from randomization to the occurrence of the first\nSSE, defined as radiation or surgery to bone, clinically\napparent pathologic bone fracture, or spinal cord\ncompression",
+        "source_id": "source_613fd23e71d1e5ca94d5de3d9d936c7e12e9f1e06e7054aed4690cedcabcedc7",
+        "source_version": "sha256:02272b3ab5972933047003826a6fde3bfba900f825c7b0c26c3ae57c8d341be4",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "arches"
+      }
+    },
+    "identity": "sha256:18382e37bb922fd2839aaefff23f159f79f92913418d0cbf8075cf6678bb0ca4",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_c4d08ac72187c28f"
+            ],
+            "rationale": "The trial randomized participants 1:1 to enzalutamide plus ADT or placebo plus ADT."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a11e81437d4d11810475bbc8aabc9c188fd75d103e0b607260252d4a406d157a"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:8c5b0609edb624432ea342f9cc24e035c1e15cb0fe3fa93e6d78e7150b9ec53a"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:51a6988205b8f1600df692a3dfb689637c554fe5f21927f199370f93651a6568"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:f45957303d925e251b0fd71a0f188b97a3a0e8ef44c7547c71bedf13fbcf00d4"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_3e5a6a83e6647825",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_c4d08ac72187c28f",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_c6ca5d9e1f8c6e1b",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The selected interim overall-survival result matches the requested event set (death from any cause), time origin (randomization), and randomized comparison. It is the report's interim analysis at the October 14, 2018 cutoff; the abstract omits OS, but the full report provides a comparative HR and confidence interval.",
+          "reported": {
+            "analysis_population": "Intent-to-treat randomized population; 84 deaths at the interim analysis (39 with enzalutamide plus ADT and 45 with placebo plus ADT).",
+            "effect_measure": "HR",
+            "endpoint": {
+              "definition": null,
+              "name": "OS"
+            },
+            "estimate": "0.81",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% CI, 0.53 to 1.25"
+          },
+          "requested_outcome": "overall survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Enzalutamide plus ADT",
+                "id": "enzalutamide"
+              },
+              {
+                "assignment": "Placebo plus ADT",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from randomization to death from any cause",
+              "metric": "overall survival"
+            },
+            "outcome_definition": "overall survival",
+            "time_point_or_window": {
+              "description": "Interim OS analysis at the October 14, 2018 data cutoff",
+              "kind": "described"
+            }
+          },
+          "trial_id": "arches"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:ddce85f4b1d60f691b06496d902c3ff02666a938e92d33516691518499cb06eb",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

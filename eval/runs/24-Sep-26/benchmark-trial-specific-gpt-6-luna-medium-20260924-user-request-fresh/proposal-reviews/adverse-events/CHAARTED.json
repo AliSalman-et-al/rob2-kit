@@ -1,0 +1,45 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:5da5b4034e1797379de409800598ed460c4aa7c092ad33557b9853f01143716c": {
+        "end": 2847,
+        "end_line": 63,
+        "handle": "eh_5da5b4034e179737",
+        "identity": "sha256:5da5b4034e1797379de409800598ed460c4aa7c092ad33557b9853f01143716c",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "For the reporting of serious adverse events to the\nNCI and to guide dose modifications, CTCAE\nversion 3.0 was used until September 2011, at\nwhich time the study began using version 4.0. To\nensure consistency, case-report forms for toxic\neffects that were recorded in the study database\nretained the use of version 3.0. All grade 3 or\nhigher toxic effects in the combination group\nwere captured, and an attribution of relatedness\nto study therapy was made by the local investiga-\ntors. Adverse events among patients assigned to\nADT alone were not routinely documented, al-\nthough major adverse events were to be reported.",
+        "source_id": "source_68e2faaec1cdd72b35eb1205070f010d3ff0ae5d96731e9f4988752fe1344803",
+        "source_version": "sha256:6d2a1d6a35c93227e6af017958627a09544f6a882f0ba6d96caa64e0da599271",
+        "start": 2227,
+        "start_line": 51,
+        "trial_id": "chaarted"
+      }
+    },
+    "identity": "sha256:0b2610517fb9cf78832fbc6f9f067f7a6469bbe7de026ecf6d5892f67e3d5936",
+    "proposal": {
+      "results": [
+        {
+          "kind": "unavailable",
+          "missing_facts": [
+            {
+              "basis": {
+                "evidence": "sha256:5da5b4034e1797379de409800598ed460c4aa7c092ad33557b9853f01143716c",
+                "kind": "missing_reporting",
+                "source": "For the reporting of serious adverse events to the\nNCI and to guide dose modifications, CTCAE\nversion 3.0 was used until September 2011, at\nwhich time the study began using version 4.0. To\nensure consistency, case-report forms for toxic\neffects that were recorded in the study database\nretained the use of version 3.0. All grade 3 or\nhigher toxic effects in the combination group\nwere captured, and an attribution of relatedness\nto study therapy was made by the local investiga-\ntors. Adverse events among patients assigned to\nADT alone were not routinely documented, al-\nthough major adverse events were to be reported."
+              },
+              "fact": "Comparable ADT-alone results for the four reported docetaxel-group categories: grade 3/4 febrile neutropenia, grade 3/4 infection with neutropenia, grade 3 sensory neuropathy, and grade 3 motor neuropathy"
+            }
+          ],
+          "relation": "unavailable",
+          "requested_outcome": "adverse events",
+          "trial_id": "chaarted"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:e3c218a830485aeb9e3717016a63d38064d86559d302c7cb7363ac43a1e8d432",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 4
+}

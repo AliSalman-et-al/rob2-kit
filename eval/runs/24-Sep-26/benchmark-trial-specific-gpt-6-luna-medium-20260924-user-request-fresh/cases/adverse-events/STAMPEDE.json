@@ -1,0 +1,72 @@
+{
+  "campaign_id": "f80600fc6d614d9492fe227718835637",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "ADT + abiraterone + prednisolone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "ADT alone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Toxicity graded with NCI-CTCAE, initially v3.0 and later v4.0",
+    "population": "Patients with safety data in the main article safety analysis.",
+    "reported_scope": {
+      "analysis_population": "Patients with safety data in the main article safety analysis.",
+      "endpoint": {
+        "name": "Grade 3 to 5 adverse events"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "participants with grade 3 to 5 adverse events",
+          "unit": "percent",
+          "value": "47%"
+        },
+        {
+          "group_id": "control",
+          "statistic": "participants with grade 3 to 5 adverse events",
+          "unit": "percent",
+          "value": "33%"
+        }
+      ]
+    },
+    "trial": "STAMPEDE",
+    "window": "Safety follow-up reported in the main article."
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:14:13.902255Z",
+    "path": "../../../../../reference/sources/STAMPEDE/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT00268476",
+    "sha256": "f17d24fac49c26e7cd9ae51ce52ef6b9568cf440f8792b52aede034eb98914c9"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../reference/sources/STAMPEDE/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "STAMPEDE"
+}

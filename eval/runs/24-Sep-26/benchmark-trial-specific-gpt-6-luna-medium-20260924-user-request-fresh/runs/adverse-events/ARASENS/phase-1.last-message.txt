@@ -1,0 +1,9 @@
+The ARASENS Proposal is saved and awaiting your review. The selected result is **grade 3/4 adverse events** during treatment, graded using NCI-CTCAE v4.03:
+
+- Darolutamide + ADT + docetaxel: **66.1%**
+- Placebo + ADT + docetaxel: **63.5%**
+- Reported population: the safety analysis set (652 vs 650), which differs slightly from randomized assignment.
+
+Grade 3/4 neutropenia (33.7% vs 34.2%) is reported as a component; the broader adverse-event result was selected to match the requested outcome.
+
+The Proposal Review is pending. Approve it to continue to the RoB 2 domains, or tell me which Result detail you’d like changed.
