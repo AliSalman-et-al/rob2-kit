@@ -143,9 +143,18 @@ example in [Specify the Result](references/result.md), replace every fictional
 value, and then make one validation call. In particular, `applicability`,
 `target`, and `reported` are typed objects rather than prose shortcuts.
 
-For an assessable Result, the server reconstructs the captured outcome and
-closed effect of interest, then derives clarity, retained Evidence, and bindings.
-Do not send those derived fields or put Evidence objects inside `reported`.
+For an assessable Result, classify `clarity` for the outcome definition,
+measurement, time point, analysis population, comparison groups, effect measure,
+source table meaning, and candidate choice. Use `time_point` for time-window and
+data-cut chronology, and `source_table_meaning` for whether the selected estimate
+and precision agree across the relevant source material. Use `specified`,
+`unclear`, `unavailable`, or `conflicting` to keep unknowns and disagreements
+visible.
+Omitted clarity is stored as `unclear`; use `exact` only when every facet is
+specified. Clarity is your report of the scope, not a server-verified scientific
+conclusion. The server reconstructs the captured outcome and closed effect of
+interest, then derives retained Evidence and bindings. Do not put Evidence
+objects inside `reported`.
 Copy `reported.endpoint.name`, `reported.precision`, and other Source-owned
 quantities from the quantitative passage. Include `reported.endpoint.definition`
 only when one selected passage explicitly joins that name and definition.
@@ -331,10 +340,12 @@ recovery or discharge alone does not establish later vital status. Use
 [Missing outcome data](references/missing.md) to reconcile outcome-specific
 counts, follow-up, and censoring.
 
-Only question 3.1 may carry `missing_data` rows. Keep randomized, observed,
-analyzed, imputed, and excluded counts distinct. The server reuses answer
-Evidence as row provenance and performs only scope-matched arithmetic.
-For an optional count preview before saving D3, follow
+Questions 2.3, 2.6, and 3.1 may carry `missing_data` rows for deviations,
+analysis, and outcome availability. Keep randomized, observed, analyzed,
+imputed, excluded, and event counts distinct; an analyzed or safety count does
+not establish outcome availability. The server reuses answer Evidence as row
+provenance and performs only scope-matched arithmetic. For an optional count
+preview before saving, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
 Commit the exact draft stored by `validate_domain_assessment`. Supply its

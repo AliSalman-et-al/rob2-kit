@@ -81,17 +81,23 @@ judgment.
 
 Distinguish administrative censoring at a common data cutoff from censoring
 caused by missing follow-up before the outcome could be observed. Treatment
-discontinuation or last-known-alive censoring does not by itself establish that
-outcome observation stopped. For time-to-event Results, censoring may still
-create missing outcome information; assess its timing, reason, actual follow-up
-pathway, and relation to treatment or prognosis instead of treating every
-censored participant as either fully observed or missing by default.
+discontinuation does not establish loss to follow-up: participants who stop
+assigned treatment may still have the approved outcome collected. Conversely,
+an analysis denominator does not establish that follow-up continued for those
+excluded before endpoint ascertainment. Last-known-alive status only supports
+mortality availability through that date. For time-to-event Results, censoring
+may still create missing outcome information; assess its timing, reason, actual
+follow-up pathway, and relation to treatment or prognosis instead of treating
+every censored participant as either fully observed or missing by default.
 
-Question 3.1 may include compact `missing_data` rows. Give each row a comparable
-arm, population, unit, and time point. Use a row-level `basis` only to narrow or
-add to the answer's Evidence. The server calculates differences and fractions
-only after scopes match and preserves conflicting reports without choosing the
-scientific answer.
+Questions 2.3, 2.6, and 3.1 may include compact `missing_data` rows. Give each
+row a comparable arm, population, unit, and time point. Use a row-level `basis`
+only to narrow or add to the answer's Evidence. The server calculates
+differences and fractions only after scopes match and preserves conflicting
+reports without choosing the scientific answer. For D2.3 and D2.6, these rows
+describe deviations or analysis populations; they do not become observed
+outcomes. Only an explicit `observed` count participates in missing-count
+arithmetic.
 
 When a count comparison would help before answering, call `get_domain_context`
 with `missing_data` rows. Every preview row needs a nonempty `basis` containing
@@ -148,3 +154,15 @@ D3.2 does not allow `no_information`. When no bias-correcting evidence is found,
 use the question card to choose a permitted negative or probably-negative answer
 with the appropriate limitation or Evidence basis. Do not fabricate direct
 support for the absence of bias.
+
+## Paired premise check
+
+Use neutral pairs to keep the seams separate: after treatment stops, compare
+continued collection of the approved outcome with loss to follow-up before that
+outcome; compare a common administrative cutoff after the approved window with
+prognosis-related censoring before it. Keep the randomized, observed, analyzed,
+imputed, and event quantities tied to the same arm and time point. The changed
+premise is whether and why outcome information became unavailable, not a
+percentage threshold. The pair supplies no answer or risk label; ground each
+proposition in exact Evidence and retain No information or High where the
+official path requires it.

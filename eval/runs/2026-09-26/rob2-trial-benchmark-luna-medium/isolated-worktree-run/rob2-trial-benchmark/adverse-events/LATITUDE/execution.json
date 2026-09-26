@@ -1,0 +1,633 @@
+{
+  "artifact": {
+    "attempt_id": "attempt_01bf199b72eb4b3eb237cd2399662080",
+    "identity": "sha256:625bf56c9b2d9d7e8479ef1d0a782fcd6438efabb673a6811a1cdd0ae09fb1b1",
+    "path": "workspace\\.rob2-kit\\finalized\\625bf56c9b2d9d7e8479ef1d0a782fcd6438efabb673a6811a1cdd0ae09fb1b1.rob2.zip",
+    "sha256": "b7d3a2216d42f59c86718b5ceb88cff7d0deba5d0ed033f32cf8794ca76fabf3",
+    "verification": "bundle verified",
+    "verified": true
+  },
+  "attempt": 1,
+  "attempt_id": "attempt_01bf199b72eb4b3eb237cd2399662080",
+  "attempts": [
+    {
+      "attempt": 1,
+      "attempt_id": "attempt_01bf199b72eb4b3eb237cd2399662080",
+      "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+      "kind": "initial",
+      "overrides": {},
+      "phase": 1,
+      "retry": 0,
+      "running_at": "2026-09-26T11:13:16.822518+00:00",
+      "runtime_inputs_sha256": "ba3f6014e94bd2b31b2f4c11905b5fea71e2e82e633eb8c240bf241f0075f064",
+      "scope_status": "frozen",
+      "state": "waiting_for_user"
+    },
+    {
+      "attempt": 1,
+      "attempt_id": "attempt_01bf199b72eb4b3eb237cd2399662080",
+      "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+      "kind": "resumption",
+      "overrides": {},
+      "phase": 2,
+      "retry": 0,
+      "running_at": "2026-09-26T12:46:04.803725+00:00",
+      "runtime_inputs_sha256": "ba3f6014e94bd2b31b2f4c11905b5fea71e2e82e633eb8c240bf241f0075f064",
+      "scope_status": "frozen",
+      "state": "succeeded"
+    }
+  ],
+  "child_exit_code": 0,
+  "codex_session_id": "01a0dd6b-6d81-71b0-87f2-f08ea0cf8736",
+  "continuation": {
+    "lineage": [
+      {
+        "phase": 1,
+        "session": null
+      },
+      {
+        "phase": 2,
+        "session": "01a0dd6b-6d81-71b0-87f2-f08ea0cf8736"
+      }
+    ],
+    "parent_phase": 1,
+    "session": "01a0dd6b-6d81-71b0-87f2-f08ea0cf8736"
+  },
+  "created_at": "2026-09-26T11:13:16.720305+00:00",
+  "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+  "expected_tool_inventory": [
+    "prepare_batch",
+    "get_status",
+    "save_working_checkpoint",
+    "list_sources",
+    "search_sources",
+    "search_sources_batch",
+    "read_pages",
+    "select_text_evidence",
+    "render_page",
+    "select_visual_evidence",
+    "validate_proposal",
+    "save_proposal",
+    "request_proposal_approval",
+    "get_domain_context",
+    "validate_domain_assessment",
+    "save_domain_judgment",
+    "review_trial",
+    "close_trial",
+    "finalize_batch"
+  ],
+  "identity": {
+    "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+    "case_id": "4430112f58fb492ab6ea27f8025a2df4-adverseevents-latitude",
+    "outcome": "Adverse Events",
+    "trial_id": "LATITUDE"
+  },
+  "manifest_sha256": "151de16d4006b0ddb61db660052f4acc316f554dfebcda0e8bddc00bd4c43a9d",
+  "model": "gpt-6-luna",
+  "overrides": {},
+  "phases": [
+    {
+      "artifact_sha256": null,
+      "attempt_id": "attempt_01bf199b72eb4b3eb237cd2399662080",
+      "codex_session_id": "01a0dd6b-6d81-71b0-87f2-f08ea0cf8736",
+      "exit_code": 0,
+      "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+      "finished_at": "2026-09-26T11:16:46.537260+00:00",
+      "host_delivery_observed": {
+        "get_status_call": true,
+        "same_session": true,
+        "session_id_sha256": "bfd543addeb625f2b847bbe68ae91b265493c48eeb78d1d8879467349eac19a7",
+        "status": "observed",
+        "status_head_observed": true,
+        "tools": [
+          "get_status",
+          "prepare_batch",
+          "read_pages",
+          "save_proposal",
+          "validate_proposal"
+        ],
+        "typed_call": true
+      },
+      "phase": 1,
+      "prompt_sha256": "0b191fc91e50f4b938b7c30f52a5e8f19acb8f517a1c99629a7961a3f545b12c",
+      "retry": 0,
+      "running_at": "2026-09-26T11:13:16.822518+00:00",
+      "runtime_inputs": {
+        "benchmark_index": {
+          "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+          "case_sha256": "9ca8e95e23d71440fad464f33da0f085656d254456b13afa32c9a0456c193e16",
+          "path": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\index.json",
+          "sha256": "46cfbc3c9f66e0c100c8b5dbd5bcf4e373a0cb877a3dd7f8f983960d8f6ae9bb"
+        },
+        "build_sha256": "c5f1e562ea74c4b70e3d26081bdf36b2b72e652421a31227a87606e3ad47d3f1",
+        "campaign_attempt_number": 1,
+        "codex_home_path": "C:\\Users\\ALI-SA~1\\AppData\\Local\\Temp\\rob2-kit-codex-home\\0fb7bcc00ff5756ed70c1ecd",
+        "codex_mcp_tool_timeout_sec": 600,
+        "codex_registered_mcp": {
+          "args": [
+            "mcp"
+          ],
+          "command": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\.venv\\Scripts\\rob2.exe",
+          "server": "rob2",
+          "workspace_sha256": "ea2ea25f3afa2f21c2c64d7f66449c40562dd8eec73ebe4e51041050e36ad426"
+        },
+        "contract": "0.9.0",
+        "expected_tool_inventory": [
+          "prepare_batch",
+          "get_status",
+          "save_working_checkpoint",
+          "list_sources",
+          "search_sources",
+          "search_sources_batch",
+          "read_pages",
+          "select_text_evidence",
+          "render_page",
+          "select_visual_evidence",
+          "validate_proposal",
+          "save_proposal",
+          "request_proposal_approval",
+          "get_domain_context",
+          "validate_domain_assessment",
+          "save_domain_judgment",
+          "review_trial",
+          "close_trial",
+          "finalize_batch"
+        ],
+        "host": {
+          "os_name": "nt",
+          "platform": "win32"
+        },
+        "host_isolation_required": false,
+        "pack": "2019.1",
+        "scope_status": "frozen",
+        "server_advertised_inventory": {
+          "contract_sha256": "13d80cb43c621f7a10cf0abf6ca7c34fcd6a08bc05ba2fa313671295e5f3c815",
+          "contract_version": "0.9.0",
+          "inventory_sha256": "c9b49c0e56acf4f00a6342119d570f172506b0278a9f7710a6e21a3d7d51a8f4",
+          "names": [
+            "close_trial",
+            "finalize_batch",
+            "get_domain_context",
+            "get_status",
+            "list_sources",
+            "prepare_batch",
+            "read_pages",
+            "render_page",
+            "request_proposal_approval",
+            "review_trial",
+            "save_domain_judgment",
+            "save_proposal",
+            "save_working_checkpoint",
+            "search_sources",
+            "search_sources_batch",
+            "select_text_evidence",
+            "select_visual_evidence",
+            "validate_domain_assessment",
+            "validate_proposal"
+          ],
+          "server": "rob2",
+          "server_binding": {
+            "args": [
+              "mcp"
+            ],
+            "command": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\.venv\\Scripts\\rob2.exe",
+            "server": "rob2",
+            "workspace_sha256": "ea2ea25f3afa2f21c2c64d7f66449c40562dd8eec73ebe4e51041050e36ad426"
+          },
+          "server_binding_sha256": "9521f9ddae50bbf671ef9d58bf196d641143683478a2b49c7e6191ef3e54f698",
+          "server_info": {
+            "name": "rob2-kit",
+            "version": "0.9.0",
+            "websiteUrl": "https://github.com/AliSalman-et-al/rob2-kit"
+          },
+          "source": "stdio tools/list",
+          "status": "verified",
+          "tool_count": 19
+        },
+        "skill_sha256": "98a533cd2c006d933c6402c8734f2f9b4ff39f07083e7da46eddf64c73957f55",
+        "timeout_seconds": null,
+        "tool_inventory": {
+          "contract_sha256": "13d80cb43c621f7a10cf0abf6ca7c34fcd6a08bc05ba2fa313671295e5f3c815",
+          "contract_version": "0.9.0",
+          "names": [
+            "prepare_batch",
+            "get_status",
+            "save_working_checkpoint",
+            "list_sources",
+            "search_sources",
+            "search_sources_batch",
+            "read_pages",
+            "select_text_evidence",
+            "render_page",
+            "select_visual_evidence",
+            "validate_proposal",
+            "save_proposal",
+            "request_proposal_approval",
+            "get_domain_context",
+            "validate_domain_assessment",
+            "save_domain_judgment",
+            "review_trial",
+            "close_trial",
+            "finalize_batch"
+          ],
+          "source": "docs/release/public-contract.json",
+          "version": "rob2-kit.mcp-tools.v1"
+        },
+        "tool_inventory_version": "rob2-kit.mcp-tools.v1"
+      },
+      "runtime_inputs_sha256": "ba3f6014e94bd2b31b2f4c11905b5fea71e2e82e633eb8c240bf241f0075f064",
+      "scope_status": "frozen",
+      "session": null,
+      "started_at": "2026-09-26T11:13:16.720305+00:00",
+      "state": "waiting_for_user",
+      "timed_out_rob2_calls": [],
+      "trace_sha256": "3d0a8287e750f8e4144ceab2804052dc237dbdca3738d6785555ae11f04a0888"
+    },
+    {
+      "artifact_sha256": "b7d3a2216d42f59c86718b5ceb88cff7d0deba5d0ed033f32cf8794ca76fabf3",
+      "attempt_id": "attempt_01bf199b72eb4b3eb237cd2399662080",
+      "codex_session_id": "01a0dd6b-6d81-71b0-87f2-f08ea0cf8736",
+      "exit_code": 0,
+      "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+      "finished_at": "2026-09-26T12:59:47.557184+00:00",
+      "host_delivery_observed": {
+        "get_status_call": true,
+        "same_session": true,
+        "session_id_sha256": "bfd543addeb625f2b847bbe68ae91b265493c48eeb78d1d8879467349eac19a7",
+        "status": "observed",
+        "status_head_observed": true,
+        "tools": [
+          "close_trial",
+          "finalize_batch",
+          "get_domain_context",
+          "get_status",
+          "read_pages",
+          "request_proposal_approval",
+          "review_trial",
+          "save_domain_judgment",
+          "search_sources",
+          "select_text_evidence",
+          "validate_domain_assessment"
+        ],
+        "typed_call": true
+      },
+      "phase": 2,
+      "prompt_sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e",
+      "retry": 0,
+      "running_at": "2026-09-26T12:46:04.803725+00:00",
+      "runtime_inputs": {
+        "benchmark_index": {
+          "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+          "case_sha256": "9ca8e95e23d71440fad464f33da0f085656d254456b13afa32c9a0456c193e16",
+          "path": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\index.json",
+          "sha256": "46cfbc3c9f66e0c100c8b5dbd5bcf4e373a0cb877a3dd7f8f983960d8f6ae9bb"
+        },
+        "build_sha256": "c5f1e562ea74c4b70e3d26081bdf36b2b72e652421a31227a87606e3ad47d3f1",
+        "campaign_attempt_number": 1,
+        "codex_home_path": "C:\\Users\\ALI-SA~1\\AppData\\Local\\Temp\\rob2-kit-codex-home\\0fb7bcc00ff5756ed70c1ecd",
+        "codex_mcp_tool_timeout_sec": 600,
+        "codex_registered_mcp": {
+          "args": [
+            "mcp"
+          ],
+          "command": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\.venv\\Scripts\\rob2.exe",
+          "server": "rob2",
+          "workspace_sha256": "ea2ea25f3afa2f21c2c64d7f66449c40562dd8eec73ebe4e51041050e36ad426"
+        },
+        "contract": "0.9.0",
+        "expected_tool_inventory": [
+          "prepare_batch",
+          "get_status",
+          "save_working_checkpoint",
+          "list_sources",
+          "search_sources",
+          "search_sources_batch",
+          "read_pages",
+          "select_text_evidence",
+          "render_page",
+          "select_visual_evidence",
+          "validate_proposal",
+          "save_proposal",
+          "request_proposal_approval",
+          "get_domain_context",
+          "validate_domain_assessment",
+          "save_domain_judgment",
+          "review_trial",
+          "close_trial",
+          "finalize_batch"
+        ],
+        "host": {
+          "os_name": "nt",
+          "platform": "win32"
+        },
+        "host_isolation_required": false,
+        "pack": "2019.1",
+        "scope_status": "frozen",
+        "server_advertised_inventory": {
+          "contract_sha256": "13d80cb43c621f7a10cf0abf6ca7c34fcd6a08bc05ba2fa313671295e5f3c815",
+          "contract_version": "0.9.0",
+          "inventory_sha256": "c9b49c0e56acf4f00a6342119d570f172506b0278a9f7710a6e21a3d7d51a8f4",
+          "names": [
+            "close_trial",
+            "finalize_batch",
+            "get_domain_context",
+            "get_status",
+            "list_sources",
+            "prepare_batch",
+            "read_pages",
+            "render_page",
+            "request_proposal_approval",
+            "review_trial",
+            "save_domain_judgment",
+            "save_proposal",
+            "save_working_checkpoint",
+            "search_sources",
+            "search_sources_batch",
+            "select_text_evidence",
+            "select_visual_evidence",
+            "validate_domain_assessment",
+            "validate_proposal"
+          ],
+          "server": "rob2",
+          "server_binding": {
+            "args": [
+              "mcp"
+            ],
+            "command": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\.venv\\Scripts\\rob2.exe",
+            "server": "rob2",
+            "workspace_sha256": "ea2ea25f3afa2f21c2c64d7f66449c40562dd8eec73ebe4e51041050e36ad426"
+          },
+          "server_binding_sha256": "9521f9ddae50bbf671ef9d58bf196d641143683478a2b49c7e6191ef3e54f698",
+          "server_info": {
+            "name": "rob2-kit",
+            "version": "0.9.0",
+            "websiteUrl": "https://github.com/AliSalman-et-al/rob2-kit"
+          },
+          "source": "stdio tools/list",
+          "status": "verified",
+          "tool_count": 19
+        },
+        "skill_sha256": "98a533cd2c006d933c6402c8734f2f9b4ff39f07083e7da46eddf64c73957f55",
+        "timeout_seconds": null,
+        "tool_inventory": {
+          "contract_sha256": "13d80cb43c621f7a10cf0abf6ca7c34fcd6a08bc05ba2fa313671295e5f3c815",
+          "contract_version": "0.9.0",
+          "names": [
+            "prepare_batch",
+            "get_status",
+            "save_working_checkpoint",
+            "list_sources",
+            "search_sources",
+            "search_sources_batch",
+            "read_pages",
+            "select_text_evidence",
+            "render_page",
+            "select_visual_evidence",
+            "validate_proposal",
+            "save_proposal",
+            "request_proposal_approval",
+            "get_domain_context",
+            "validate_domain_assessment",
+            "save_domain_judgment",
+            "review_trial",
+            "close_trial",
+            "finalize_batch"
+          ],
+          "source": "docs/release/public-contract.json",
+          "version": "rob2-kit.mcp-tools.v1"
+        },
+        "tool_inventory_version": "rob2-kit.mcp-tools.v1"
+      },
+      "runtime_inputs_sha256": "ba3f6014e94bd2b31b2f4c11905b5fea71e2e82e633eb8c240bf241f0075f064",
+      "scope_status": "frozen",
+      "session": "01a0dd6b-6d81-71b0-87f2-f08ea0cf8736",
+      "started_at": "2026-09-26T12:46:04.710742+00:00",
+      "state": "succeeded",
+      "timed_out_rob2_calls": [],
+      "trace_sha256": "15f8501ecb257c4406be151f97308304f69e0a61eab653da688bbd408f11fdf5"
+    }
+  ],
+  "prompt_sha256": "0b191fc91e50f4b938b7c30f52a5e8f19acb8f517a1c99629a7961a3f545b12c",
+  "prompt_sha256_by_phase": {
+    "1": "0b191fc91e50f4b938b7c30f52a5e8f19acb8f517a1c99629a7961a3f545b12c",
+    "2": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+  },
+  "provenance": {
+    "build": {
+      "kit_commit": "d5528044066bc0300bd96ea4e99c25a35d58f6b0",
+      "sha256": "c5f1e562ea74c4b70e3d26081bdf36b2b72e652421a31227a87606e3ad47d3f1"
+    },
+    "case": {
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case_id": "4430112f58fb492ab6ea27f8025a2df4-adverseevents-latitude",
+      "outcome": "Adverse Events",
+      "run_inputs_sha256": "d11b4e9219210389905ac96d6ad671c661740eaeea89ae22536b3d605a8057ef",
+      "sources": [
+        {
+          "name": "main_article.pdf",
+          "role": "main_article",
+          "sha256": "fa487c93f065fc27d4694111a355a8ebe00c9d9053f26acc6ab3930605664dc8"
+        },
+        {
+          "name": "other.pdf",
+          "role": "other",
+          "sha256": "5ac98f1698638f8bdd830fdf71b8d958381f6ec900a0758bf7c07fd9b0955909"
+        },
+        {
+          "name": "protocol.pdf",
+          "role": "protocol",
+          "sha256": "9150ebb98ca24742dc55baebf8a2d00c3c8552cd01c7e77bdc014668391c263f"
+        },
+        {
+          "name": "registry.json",
+          "role": "registry",
+          "sha256": "4e7dba9abd0ea357d6e4161a340d49980c6d8d927f27946f06ff710075384f1c"
+        },
+        {
+          "name": "supplement.pdf",
+          "role": "supplement",
+          "sha256": "b3d3058759a12967b2fd434d5aced486b88425bcf3ec3a22ce01e473189e1a9a"
+        }
+      ],
+      "trial": "LATITUDE"
+    },
+    "contract": "0.9.0",
+    "host": {
+      "os_name": "nt",
+      "platform": "win32"
+    },
+    "model": "gpt-6-luna",
+    "overrides": {},
+    "pack": "2019.1",
+    "prompt": {
+      "path": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\continuation.txt",
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    "reasoning_effort": "medium",
+    "skill": {
+      "sha256": "98a533cd2c006d933c6402c8734f2f9b4ff39f07083e7da46eddf64c73957f55"
+    },
+    "tool_inventory": {
+      "expected": [
+        "prepare_batch",
+        "get_status",
+        "save_working_checkpoint",
+        "list_sources",
+        "search_sources",
+        "search_sources_batch",
+        "read_pages",
+        "select_text_evidence",
+        "render_page",
+        "select_visual_evidence",
+        "validate_proposal",
+        "save_proposal",
+        "request_proposal_approval",
+        "get_domain_context",
+        "validate_domain_assessment",
+        "save_domain_judgment",
+        "review_trial",
+        "close_trial",
+        "finalize_batch"
+      ],
+      "version": "rob2-kit.mcp-tools.v1"
+    }
+  },
+  "reasoning_effort": "medium",
+  "retry": 0,
+  "run_input_sha256": "d11b4e9219210389905ac96d6ad671c661740eaeea89ae22536b3d605a8057ef",
+  "runtime_inputs": {
+    "benchmark_index": {
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case_sha256": "9ca8e95e23d71440fad464f33da0f085656d254456b13afa32c9a0456c193e16",
+      "path": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\index.json",
+      "sha256": "46cfbc3c9f66e0c100c8b5dbd5bcf4e373a0cb877a3dd7f8f983960d8f6ae9bb"
+    },
+    "build_sha256": "c5f1e562ea74c4b70e3d26081bdf36b2b72e652421a31227a87606e3ad47d3f1",
+    "campaign_attempt_number": 1,
+    "codex_home_path": "C:\\Users\\ALI-SA~1\\AppData\\Local\\Temp\\rob2-kit-codex-home\\0fb7bcc00ff5756ed70c1ecd",
+    "codex_mcp_tool_timeout_sec": 600,
+    "codex_registered_mcp": {
+      "args": [
+        "mcp"
+      ],
+      "command": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\.venv\\Scripts\\rob2.exe",
+      "server": "rob2",
+      "workspace_sha256": "ea2ea25f3afa2f21c2c64d7f66449c40562dd8eec73ebe4e51041050e36ad426"
+    },
+    "contract": "0.9.0",
+    "expected_tool_inventory": [
+      "prepare_batch",
+      "get_status",
+      "save_working_checkpoint",
+      "list_sources",
+      "search_sources",
+      "search_sources_batch",
+      "read_pages",
+      "select_text_evidence",
+      "render_page",
+      "select_visual_evidence",
+      "validate_proposal",
+      "save_proposal",
+      "request_proposal_approval",
+      "get_domain_context",
+      "validate_domain_assessment",
+      "save_domain_judgment",
+      "review_trial",
+      "close_trial",
+      "finalize_batch"
+    ],
+    "host": {
+      "os_name": "nt",
+      "platform": "win32"
+    },
+    "host_isolation_required": false,
+    "pack": "2019.1",
+    "scope_status": "frozen",
+    "server_advertised_inventory": {
+      "contract_sha256": "13d80cb43c621f7a10cf0abf6ca7c34fcd6a08bc05ba2fa313671295e5f3c815",
+      "contract_version": "0.9.0",
+      "inventory_sha256": "c9b49c0e56acf4f00a6342119d570f172506b0278a9f7710a6e21a3d7d51a8f4",
+      "names": [
+        "close_trial",
+        "finalize_batch",
+        "get_domain_context",
+        "get_status",
+        "list_sources",
+        "prepare_batch",
+        "read_pages",
+        "render_page",
+        "request_proposal_approval",
+        "review_trial",
+        "save_domain_judgment",
+        "save_proposal",
+        "save_working_checkpoint",
+        "search_sources",
+        "search_sources_batch",
+        "select_text_evidence",
+        "select_visual_evidence",
+        "validate_domain_assessment",
+        "validate_proposal"
+      ],
+      "server": "rob2",
+      "server_binding": {
+        "args": [
+          "mcp"
+        ],
+        "command": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\.venv\\Scripts\\rob2.exe",
+        "server": "rob2",
+        "workspace_sha256": "ea2ea25f3afa2f21c2c64d7f66449c40562dd8eec73ebe4e51041050e36ad426"
+      },
+      "server_binding_sha256": "9521f9ddae50bbf671ef9d58bf196d641143683478a2b49c7e6191ef3e54f698",
+      "server_info": {
+        "name": "rob2-kit",
+        "version": "0.9.0",
+        "websiteUrl": "https://github.com/AliSalman-et-al/rob2-kit"
+      },
+      "source": "stdio tools/list",
+      "status": "verified",
+      "tool_count": 19
+    },
+    "skill_sha256": "98a533cd2c006d933c6402c8734f2f9b4ff39f07083e7da46eddf64c73957f55",
+    "timeout_seconds": null,
+    "tool_inventory": {
+      "contract_sha256": "13d80cb43c621f7a10cf0abf6ca7c34fcd6a08bc05ba2fa313671295e5f3c815",
+      "contract_version": "0.9.0",
+      "names": [
+        "prepare_batch",
+        "get_status",
+        "save_working_checkpoint",
+        "list_sources",
+        "search_sources",
+        "search_sources_batch",
+        "read_pages",
+        "select_text_evidence",
+        "render_page",
+        "select_visual_evidence",
+        "validate_proposal",
+        "save_proposal",
+        "request_proposal_approval",
+        "get_domain_context",
+        "validate_domain_assessment",
+        "save_domain_judgment",
+        "review_trial",
+        "close_trial",
+        "finalize_batch"
+      ],
+      "source": "docs/release/public-contract.json",
+      "version": "rob2-kit.mcp-tools.v1"
+    },
+    "tool_inventory_version": "rob2-kit.mcp-tools.v1"
+  },
+  "runtime_inputs_sha256": "ba3f6014e94bd2b31b2f4c11905b5fea71e2e82e633eb8c240bf241f0075f064",
+  "schema": "rob2-kit.rsi-execution.v1",
+  "scope_status": "frozen",
+  "selected_attempt_rule": "select the declared attempt before execution; retain every attempt; never select a best-scoring retry",
+  "selection_policy": {
+    "declared_before_execution": true,
+    "rule": "select the declared attempt before execution; retain every attempt; never select a best-scoring retry",
+    "selected_attempt_id": "attempt_01bf199b72eb4b3eb237cd2399662080"
+  },
+  "state": "succeeded",
+  "tool_inventory_version": "rob2-kit.mcp-tools.v1",
+  "updated_at": "2026-09-26T12:59:47.668025+00:00"
+}

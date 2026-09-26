@@ -32,6 +32,8 @@ from .harness import (
     COMPARISON_RUN_SCHEMA,
     COMPARISON_SCHEMA,
     EVENT_TYPES,
+    QUALIFICATION_COMPARISON_RUN_SCHEMA,
+    QUALIFICATION_COMPARISON_SCHEMA,
     SCHEMA,
     evaluate_fixture,
     run_comparison,
@@ -48,16 +50,21 @@ from .observations import (
     load_manifest,
 )
 from .qualification_report import (
+    QUALIFICATION_SCHEMA,
+    promotion_decision,
+)
+from .qualification_report import (
     SCHEMA as QUALIFICATION_REPORT_SCHEMA,
 )
 from .qualification_report import identity as qualification_identity
-from .qualification_report import promotion_decision
 from .qualification_report import validate as validate_qualification_report
 
 __all__ = [
     "EVENT_TYPES",
     "COMPARISON_SCHEMA",
     "COMPARISON_RUN_SCHEMA",
+    "QUALIFICATION_COMPARISON_SCHEMA",
+    "QUALIFICATION_COMPARISON_RUN_SCHEMA",
     "SCHEMA",
     "OBSERVATION_MANIFEST_SCHEMA",
     "ObservationImportError",
@@ -69,6 +76,7 @@ __all__ = [
     "validate_split_isolation",
     "validate_comparison_config",
     "QUALIFICATION_REPORT_SCHEMA",
+    "QUALIFICATION_SCHEMA",
     "qualification_identity",
     "promotion_decision",
     "validate_qualification_report",

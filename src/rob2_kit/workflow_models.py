@@ -156,7 +156,7 @@ class WorkingDraft(StrictModel):
     )
 
 
-WorkingPremiseStatus = Literal["support", "contradiction", "unresolved"]
+WorkingPremiseStatus = Literal["support", "contradiction", "unresolved", "bounded"]
 
 
 class WorkingPremiseRecord(StrictModel):
@@ -201,6 +201,14 @@ class WorkingPremiseRecord(StrictModel):
         validation_alias=AliasChoices("next_action", "next_discriminating_action"),
         description="Next discriminating investigative action, when one is useful.",
     )
+    stopping_rationale: NonBlankText | None = Field(
+        default=None,
+        max_length=4_000,
+        description=(
+            "Why the host stopped investigating this premise while retaining any unresolved "
+            "component; this is a host assertion, not a server sufficiency finding."
+        ),
+    )
     domain_id: DomainId | None = Field(
         default=None, description="Related RoB 2 Domain, when known."
     )
@@ -210,8 +218,10 @@ class WorkingPremiseRecord(StrictModel):
 
     @model_validator(mode="after")
     def unresolved_status_has_component(self) -> WorkingPremiseRecord:
-        if self.status == "unresolved" and self.unresolved_component is None:
-            raise ValueError("unresolved premise status requires unresolved_component")
+        if self.status in {"unresolved", "bounded"} and self.unresolved_component is None:
+            raise ValueError(f"{self.status} premise status requires unresolved_component")
+        if self.status == "bounded" and self.stopping_rationale is None:
+            raise ValueError("bounded premise status requires stopping_rationale")
         return self
 
 
@@ -259,6 +269,13 @@ class WorkingSourceBinding(StrictModel):
     projection_hash: Identity
 
 
+class WorkingDomainBinding(StrictModel):
+    """The canonical Domain head observed when a working checkpoint was saved."""
+
+    domain_id: DomainId
+    checkpoint_identity: Identity
+
+
 class WorkingCheckpoint(StrictModel):
     identity: Identity | None = None
     batch_id: Identity
@@ -278,6 +295,9 @@ class WorkingCheckpoint(StrictModel):
     # ``None`` preserves the canonical bytes and identity of checkpoints saved
     # before premise records existed. New saves always write an explicit tuple.
     premise_records: tuple[WorkingPremiseRecord, ...] | None = None
+    # ``None`` identifies checkpoints written before per-Domain dependency
+    # bindings existed. New saves always write an explicit tuple.
+    domain_checkpoint_bindings: tuple[WorkingDomainBinding, ...] | None = None
     next_action: NonBlankText | None = None
 
     @model_validator(mode="after")
@@ -358,8 +378,26 @@ class MissingDataSemantics(StrictModel):
         return self
 
 
+ParticipantFlowKind = Literal[
+    "randomized",
+    "eligible",
+    "treated",
+    "observed",
+    "analyzed",
+    "imputed",
+    "excluded",
+    "event",
+]
+
+
 class MissingDataRow(StrictModel):
-    """One scope-matched participant-flow count supplied for Domain 3."""
+    """One scope-matched participant-flow record supplied for Domain 2 or 3.
+
+    The legacy randomized/observed/analyzed/imputed fields remain the compact
+    D3 form.  The additional fields make the other participant transitions
+    explicit without allowing an analysis, treatment, exclusion, or event
+    count to masquerade as outcome availability.
+    """
 
     arm: NonBlankText = Field(description="Trial arm for this participant-flow row.")
     population: NonBlankText = Field(
@@ -367,8 +405,33 @@ class MissingDataRow(StrictModel):
     )
     unit: NonBlankText = Field(description="Unit counted, such as participants.")
     time_point: NonBlankText = Field(description="Outcome time point represented by this row.")
+    result_identity: Identity | None = Field(
+        default=None,
+        description=(
+            "Identity of the exact approved Result represented by this row. Omit when drafting; "
+            "the server binds the row to the approved Result."
+        ),
+    )
+    endpoint: NonBlankText | None = Field(
+        default=None,
+        description="Result-specific endpoint or event definition, when reported.",
+    )
+    severity: NonBlankText | None = Field(
+        default=None,
+        description="Outcome severity or threshold represented by this row, when relevant.",
+    )
+    window: NonBlankText | None = Field(
+        default=None,
+        description="Result-specific outcome window; time_point remains the legacy alias.",
+    )
     randomized: NonNegativeInt | None = Field(
         default=None, description="Number randomized when reported."
+    )
+    eligible: NonNegativeInt | None = Field(
+        default=None, description="Number eligible under the reported analysis or outcome scope."
+    )
+    treated: NonNegativeInt | None = Field(
+        default=None, description="Number receiving or starting the assigned intervention."
     )
     observed: NonNegativeInt | None = Field(
         default=None, description="Number with observed outcome data when reported."
@@ -378,6 +441,17 @@ class MissingDataRow(StrictModel):
     )
     imputed: NonNegativeInt | None = Field(
         default=None, description="Number whose outcome data were imputed when reported."
+    )
+    excluded: NonNegativeInt | None = Field(
+        default=None, description="Number excluded from a reported analysis or participant flow."
+    )
+    event_count: NonNegativeInt | None = Field(
+        default=None,
+        description="Event numerator; never a participant availability count.",
+    )
+    event_definition: NonBlankText | None = Field(
+        default=None,
+        description="Definition or severity threshold for event_count, when supplied.",
     )
     exclusions: tuple[NonBlankText, ...] = Field(
         default=(), description="Reported reasons for exclusion or missingness."
@@ -397,6 +471,12 @@ class MissingDataRow(StrictModel):
             "event, analysis, and safety counts never establish outcome availability."
         ),
     )
+
+    @model_validator(mode="after")
+    def event_count_has_definition(self) -> MissingDataRow:
+        if self.event_count is not None and self.event_definition is None:
+            raise ValueError("event_count requires event_definition")
+        return self
 
 
 RelativePath = Annotated[
@@ -815,14 +895,39 @@ class AssessableTargetRelation(StrEnum):
 
 
 class ResultClarity(StrictModel):
-    outcome_definition: Literal["specified", "unclear", "unavailable"]
-    measurement: Literal["specified", "unclear", "unavailable"]
-    time_point: Literal["specified", "unclear", "unavailable"]
-    analysis_population: Literal["specified", "unclear", "unavailable"]
-    comparison_groups: Literal["specified", "unclear", "unavailable"]
-    effect_measure: Literal["specified", "unclear", "unavailable"]
-    source_table_meaning: Literal["specified", "unclear", "unavailable"]
-    eligible_result_choice: Literal["specified", "unclear", "unavailable"]
+    """Host's explicit account of which requested and reported Result facets are known."""
+
+    outcome_definition: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported outcome definition is established.",
+    )
+    measurement: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported measurement is established.",
+    )
+    time_point: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description=(
+            "Whether the requested and reported time point or window, including any material "
+            "data-cut chronology, is established."
+        ),
+    )
+    analysis_population: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported analysis population is established.",
+    )
+    comparison_groups: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported comparison groups are established.",
+    )
+    effect_measure: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported effect measure is established.",
+    )
+    source_table_meaning: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description=(
+            "Whether source-reported values and table cells have a clear meaning, including "
+            "whether the selected estimate and precision are consistent across the relevant "
+            "source material."
+        ),
+    )
+    eligible_result_choice: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the chosen reported result is established as the target candidate.",
+    )
 
 
 MISSING_GROUP_VALUE_UNIT = "__rob2_missing_group_unit__"
@@ -1237,6 +1342,15 @@ class FigureEvidence(StrictModel):
     provenance: Literal["text_corroborated", "host_visual"] = Field(
         description="Whether the transcription has text corroboration or host visual review."
     )
+    uncertainty: NonBlankText | None = Field(
+        default=None,
+        max_length=2_000,
+        exclude_if=lambda value: value is None,
+        description=(
+            "Optional host-observed uncertainty about the transcription. This records the "
+            "observation provenance; it does not assert that the transcription is correct."
+        ),
+    )
 
 
 class FigureEvidenceDraft(StrictModel):
@@ -1383,6 +1497,15 @@ class AssessableResultDraft(StrictModel):
             "Explain how the reported Result relates to the complete target, including material "
             "differences in outcome, measurement, time, population, comparison, or analysis "
             "scope. Matching endpoint names alone do not establish exact correspondence."
+        ),
+    )
+    clarity: ResultClarity | None = Field(
+        default=None,
+        description=(
+            "For each facet, report specified, unclear, unavailable, or conflicting. If omitted, "
+            "the server records every facet as unclear. Include data-cut chronology in "
+            "time_point and estimate/precision consistency in source_table_meaning. Exact "
+            "relation requires every Result scope facet to be specified."
         ),
     )
     applicability: ResultApplicabilityDraft = Field(
@@ -1615,6 +1738,14 @@ DomainBasis = Annotated[
     Field(discriminator="kind"),
 ]
 
+MISSING_DATA_QUESTION_IDS = frozenset(
+    {
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:missing:data-available",
+    }
+)
+
 
 class DomainCounterevidence(StrictModel):
     basis_index: NonNegativeInt = Field(
@@ -1656,8 +1787,10 @@ class DomainAnswer(StrictModel):
         default=None,
         min_length=1,
         description=(
-            "Optional scope-matched randomized/observed counts for the Domain 3.1 "
-            "outcome-availability question."
+            "Optional source-bound participant-flow facts for the always-active Domain 2.6 "
+            "analysis question, the Domain 2.3 deviation question, or the Domain 3.1 "
+            "outcome-availability question. Counts remain descriptive and do not answer "
+            "any question."
         ),
     )
     justification: str | None = Field(
@@ -1694,8 +1827,25 @@ class DomainAnswer(StrictModel):
 
         if not isinstance(value, dict) or not isinstance(value.get("bases"), list):
             return value
+        original_bases = value["bases"]
+        counterevidence = value.get("counterevidence")
+        if isinstance(counterevidence, list):
+            for item in counterevidence:
+                if not isinstance(item, dict):
+                    continue
+                basis_index = item.get("basis_index")
+                if (
+                    not isinstance(basis_index, int)
+                    or isinstance(basis_index, bool)
+                    or not 0 <= basis_index < len(original_bases)
+                ):
+                    raise ValueError(
+                        "counterevidence basis_index must reference an original answer basis"
+                    )
         normalized: list[Any] = []
-        for raw_basis in value["bases"]:
+        original_to_normalized: list[int] = []
+        for raw_basis in original_bases:
+            original_to_normalized.append(len(normalized))
             if not isinstance(raw_basis, dict) or raw_basis.get("kind") != "limitation":
                 normalized.append(raw_basis)
                 continue
@@ -1715,7 +1865,21 @@ class DomainAnswer(StrictModel):
                 normalized.extend({"kind": "context", "evidence": item} for item in evidence)
             else:
                 normalized.append(raw_basis)
-        return {**value, "bases": normalized}
+        result = {**value, "bases": normalized}
+        if isinstance(counterevidence, list):
+            # An expanded limitation remains the original target; its added
+            # context bases do not acquire original answer-basis indices.
+            result["counterevidence"] = [
+                (
+                    {**item, "basis_index": original_to_normalized[item["basis_index"]]}
+                    if isinstance(item, dict)
+                    and isinstance(item.get("basis_index"), int)
+                    and 0 <= item["basis_index"] < len(original_to_normalized)
+                    else item
+                )
+                for item in counterevidence
+            ]
+        return result
 
     @field_validator("justification")
     @classmethod
@@ -1732,9 +1896,9 @@ class DomainAnswer(StrictModel):
         return value
 
     @model_validator(mode="after")
-    def missing_data_is_domain_3_only(self) -> DomainAnswer:
-        if self.missing_data is not None and self.question_id != "sq:missing:data-available":
-            raise ValueError("missing_data is only valid for question 'sq:missing:data-available'")
+    def missing_data_has_flow_question(self) -> DomainAnswer:
+        if self.missing_data is not None and self.question_id not in MISSING_DATA_QUESTION_IDS:
+            raise ValueError("missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1")
         return self
 
 
@@ -1789,8 +1953,10 @@ class DomainSaveAnswer(StrictModel):
         default=None,
         min_length=1,
         description=(
-            "Optional scope-matched randomized/observed counts for the Domain 3.1 "
-            "outcome-availability question."
+            "Optional source-bound participant-flow facts for the always-active Domain 2.6 "
+            "analysis question, the Domain 2.3 deviation question, or the Domain 3.1 "
+            "outcome-availability question. Counts remain descriptive and do not answer "
+            "any question."
         ),
     )
     justification: str | None = Field(
@@ -1809,9 +1975,9 @@ class DomainSaveAnswer(StrictModel):
         return value
 
     @model_validator(mode="after")
-    def missing_data_is_domain_3_only(self) -> DomainSaveAnswer:
-        if self.missing_data is not None and self.question_id != "sq:missing:data-available":
-            raise ValueError("missing_data is only valid for question 'sq:missing:data-available'")
+    def missing_data_has_flow_question(self) -> DomainSaveAnswer:
+        if self.missing_data is not None and self.question_id not in MISSING_DATA_QUESTION_IDS:
+            raise ValueError("missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1")
         return self
 
 

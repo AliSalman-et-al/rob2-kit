@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Progression-Free Survival defined as Clinical progression-free survival: progression of pre-existing lesions according to RECIST version 1.0 or occurrence of new bone lesions, whichever occurred first, hazard ratio 0.75; 95% CI, 0.59 to 0.94; P=0.015 in GETUG-AFU-15.

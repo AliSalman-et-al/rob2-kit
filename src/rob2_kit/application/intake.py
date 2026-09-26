@@ -21,6 +21,8 @@ from ..workflow_models import (
 )
 from ._state import (
     _PAGE_PROJECTION_VERSION,
+    _SEARCH_DERIVATIVE_VERSION,
+    _SEARCH_PROFILE,
     _commit_records,
     _db,
     _ensure,
@@ -434,8 +436,7 @@ def prepare_batch_for_outcome(
     trial_labels: list[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     """Discover selected Trial dossiers and prepare one Batch for one outcome."""
-    if not isinstance(requested_outcome, str) or not requested_outcome.strip():
-        raise ValueError("requested_outcome must contain non-whitespace content")
+    requested_outcome = validate_requested_outcome(requested_outcome)
     root = _root(workspace)
     _ensure(root)
     directories = _trial_directories(root)
@@ -473,6 +474,18 @@ def prepare_batch_for_outcome(
     return prepare_batch(root, declarations, expected_revision)
 
 
+def validate_requested_outcome(value: str) -> str:
+    """Keep Result-specific definitions out of the Batch outcome concept."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("requested_outcome must contain non-whitespace content")
+    if " defined as " in f" {value.casefold()} ":
+        raise ValueError(
+            "requested_outcome must contain only the outcome concept; move its definition and "
+            "other Result-specific facets to the Proposal"
+        )
+    return value
+
+
 def prepare_batch(
     workspace: str | Path,
     trials: list[TrialDeclaration] | tuple[TrialDeclaration, ...],
@@ -499,6 +512,11 @@ def prepare_batch(
         raise ValueError("intake state is missing declaration identity")
     if current.get("phase") != "empty":
         raise ValueError("prepare_batch is not the current operation")
+    with _db(root, "derivative.sqlite3") as derivative:
+        derivative.execute("DELETE FROM source_index")
+        derivative.execute("DELETE FROM pages")
+        derivative.execute("DELETE FROM pages_fts")
+        derivative.execute("DELETE FROM search_projection_meta")
     # This recipe version is canonical workspace metadata rather than a
     # disposable derivative flag.  It survives deletion/rebuild of the
     # derivative database and lets a later code version reject old page
@@ -641,8 +659,9 @@ def prepare_batch(
                 continue
             digest = "sha256:" + hashlib.sha256(data).hexdigest()
             source_id = _source_id(trial_id, relative, digest)
+            table_extraction_failures: list[int] = []
             try:
-                pages = _pages(path, data)
+                pages = _pages(path, data, table_extraction_failures=table_extraction_failures)
             except (UnicodeDecodeError, ValueError, pymupdf.FileDataError, OSError) as error:
                 conditions.append(
                     {
@@ -686,7 +705,9 @@ def prepare_batch(
                 "trial_id": trial_id,
                 "role": role,
                 "declared_role": declared_role,
-                "label": path.name,
+                # Keep root filenames pleasantly short while preserving a
+                # stable, human-readable label for nested combined dossiers.
+                "label": relative,
                 "logical_path": relative,
                 "sha256": digest,
                 "media_type": media_type,
@@ -699,6 +720,23 @@ def prepare_batch(
                 ),
             }
             records.append(record)
+            conditions.extend(
+                {
+                    "code": "optional_table_extraction_failed",
+                    "trial_id": trial_id,
+                    "path": relative,
+                    "role": role,
+                    "declared_role": declared_role,
+                    "sha256": digest,
+                    "source_id": source_id,
+                    "page": page,
+                    "reason": (
+                        "Optional PDF table extraction failed; captured narrative text remains "
+                        "searchable. Render this Source page to inspect its layout."
+                    ),
+                }
+                for page in table_extraction_failures
+            )
             with _db(root, "derivative.sqlite3") as derivative:
                 derivative.executemany(
                     "INSERT OR REPLACE INTO pages VALUES (?,?,?)",
@@ -876,6 +914,14 @@ def prepare_batch(
     }
     records: dict[str, dict[str, Any]] = {"batch": batch}
     state = _commit_records(root, state, expected_revision, records)
+    with _db(root, "derivative.sqlite3") as derivative:
+        derivative.executemany(
+            "INSERT OR REPLACE INTO search_projection_meta(name,value) VALUES (?,?)",
+            (
+                ("version", _SEARCH_DERIVATIVE_VERSION),
+                ("profile", _SEARCH_PROFILE),
+            ),
+        )
     result = _result(
         "success",
         state,

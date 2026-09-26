@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0abed-27b1-7430-ac64-f35bb4a3e213"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The replacement Proposal is approved by your “Continue” instruction. I’m moving into assessment and will complete each RoB 2 domain before closing the trial."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m unable to continue because the rob2-kit workflow tools are unavailable in this turn. The replacement Proposal remains saved and pending approval; no Domains have been assessed."}}
-{"type":"turn.completed","usage":{"input_tokens":2395569,"cached_input_tokens":2234112,"cache_write_input_tokens":0,"output_tokens":7698,"reasoning_output_tokens":2217}}

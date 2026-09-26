@@ -1,0 +1,15 @@
+[
+  {
+    "outcome": "Adverse Events",
+    "trial": "ENZAMET",
+    "phase": 1,
+    "exit_code": 2,
+    "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\adverse-events\\ENZAMET-grade3-final",
+    "diagnosis": {
+      "code": "campaign_binding_mismatch",
+      "detail": "case campaign_id differs from the frozen benchmark index"
+    },
+    "benchmark_index_sha256": "e327cafac30e0bf395cb51f8385e129b43813a68fffa12ae01103497e91f1172",
+    "launcher_invocation_id": "56e8fda390d44679bf84256da4c91759"
+  }
+]

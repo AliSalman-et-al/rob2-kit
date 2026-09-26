@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Adverse Events defined as Grade 3 or higher adverse events; NCI-CTCAE initially version 3.0 and later version 4.0 was used, 443/948 (47%) vs 315/960 (33%) had grade 3 or higher adverse events in STAMPEDE.

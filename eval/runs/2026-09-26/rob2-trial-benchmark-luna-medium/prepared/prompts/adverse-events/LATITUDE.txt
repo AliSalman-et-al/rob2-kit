@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Adverse Events defined as Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0, 63% vs 48% had grade 3 or 4 adverse events in LATITUDE.

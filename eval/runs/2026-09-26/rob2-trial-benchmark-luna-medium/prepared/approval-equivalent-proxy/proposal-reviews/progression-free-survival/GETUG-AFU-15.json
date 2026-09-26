@@ -1,0 +1,216 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:046990341fa536dcfd67a22ab1b8030f3b41d270f612cb83bbba15cdd51b1972": {
+        "end": 5678,
+        "end_line": 111,
+        "handle": "eh_046990341fa536dc",
+        "identity": "sha256:046990341fa536dcfd67a22ab1b8030f3b41d270f612cb83bbba15cdd51b1972",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "We assessed clinical history, weight, and Karnofsky\nperformance status, and did a physical examination\nbefore treatment began. We did a CT scan, a bone scan,\nelectrocardiography, and blood tests (including meas ure-\nment of serum PSA) within 30 days before initiation of\ntreatment. We repeated physical examinations and blood\ntests every 3 weeks during treatment in the group given\nADT plus docetaxel and every 3 months in the group\ngiven ADT alone. We did imaging studies every 3 months;\nradiological response was to be confi rmed within\n4 weeks. After 42 months, we did clinical, labora tory, and\nradiological examinations every 6 months.\nThe primary endpoint was overall survival (ie, time\nbetween randomisation and death from any cause).\nSecondary endpoints were time to clinical progression or\ndeath (clinical progression-free survival; cPFS) and time\nto PSA progression, clinical progression, or death\n(biochemical progression-free survival; bPFS).\nWe defi ned biochemical progression with the PSA\nWorking Group defi nition:11 a previous confi rmed PSA\ndecrease of at least 50% and an increase of at least 50%\nabove the nadir, with a minimum increase of 5 ng/mL.\nFor patients without a previous PSA decrease of 50%,\nprogression was defi ned as a PSA increase of at least\n25% above the nadir and of at least 5 ng/mL.\nA confi rmatory PSA test was mandatory in all cases.\nIn patients with measurable lesions, we defi ned clinical\nprogression as the progression of pre-existing lesions\nwith Response Evaluation Criteria in Solid Tumors\n(RECIST; version 1.0)12 or the occurrence of (new) bone\nlesions, whichever happened fi rst. In patients with only\nbone lesions, progression was defi ned as one or more\nnew bone lesions on bone scan or occurrence of a new\nsoft-tissue lesion, whichever happened fi rst. Death was\njudged as an event; causes of deaths were reported by\ninvestigators rather than by central review.",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 3764,
+        "start_line": 76,
+        "trial_id": "getug-afu-15"
+      },
+      "sha256:2e6f361cf4958dea9c839485ad2ba2d788985a0b98646583d1029f450b1dbcbb": {
+        "end": 340,
+        "end_line": 8,
+        "handle": "eh_2e6f361cf4958dea",
+        "identity": "sha256:2e6f361cf4958dea9c839485ad2ba2d788985a0b98646583d1029f450b1dbcbb",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "patients developed metastases after local treatment.\nMetastatic sites were mainly bone, nodes, and lungs\n(table 1). Metastases in extrapelvic nodes were reported in\nonly 55 (14%) patients. No patients were lost to follow-up.\nOne patient in the group assigned to receive ADT alone",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 61,
+        "start_line": 4,
+        "trial_id": "getug-afu-15"
+      },
+      "sha256:3ee8d50a50914948ab0bcd96f94f97447afa597470f99586586833cd1c7b987d": {
+        "end": 2534,
+        "end_line": 52,
+        "handle": "eh_3ee8d50a50914948",
+        "identity": "sha256:3ee8d50a50914948ab0bcd96f94f97447afa597470f99586586833cd1c7b987d",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "Randomisation and masking\nRandomisation was done by a clinical research organ-\nisation and was centralised nationally. Patients were\nrandomly allocated in a 1:1 ratio to receive ADT plus\ndocetaxel or ADT alone. Dynamic minimisation was\nused to minimise the imbalance of three criteria:\nprevious systemic treatment with ADT; chemotherapy\nfor local disease or isolated rising PSA; and Glass risk\ngroups.8 Patients, physicians, and data analysts were not\nmasked to treatment allocation.",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 2051,
+        "start_line": 43,
+        "trial_id": "getug-afu-15"
+      },
+      "sha256:4a6e60f0e2f638b3c61b800023ad43af00e3fec9b65d299dbb68d1adb27a65a0": {
+        "end": 2278,
+        "end_line": 25,
+        "handle": "eh_4a6e60f0e2f638b3",
+        "identity": "sha256:4a6e60f0e2f638b3c61b800023ad43af00e3fec9b65d299dbb68d1adb27a65a0",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "Methods In this randomised, open-label, phase 3 study, we enrolled patients in 29 centres in France and one in\nBelgium. Eligible patients were older than 18 years and had histologically confi rmed adenocarcinoma of the prostate\nand radiologically proven metastatic disease; a Karnofsky score of at least 70%; a life expectancy of at least 3 months;\nand adequate hepatic, haematological, and renal function. They were randomly assigned to receive to ADT (orchiectomy\nor luteinising hormone-releasing hormone agonists, alone or combined with non-steroidal antiandrogens) alone or in\ncombination with docetaxel (75 mg/m2 intravenously on the fi rst day of each 21-day cycle; up to nine cycles). Patients\nwere randomised in a 1:1 ratio, with dynamic minimisation to minimise imbalances in previous systemic treatment\nwith ADT, chemotherapy for local disease or isolated rising concentration of serum prostate-specifi c antigen, and\nGlass risk groups. Patients, physicians, and data analysts were not masked to treatment allocation. The primary\nendpoint was overall survival. Effi cacy analyses were done by intention to treat. This trial is registered with ClinicalTrials.\ngov, number NCT00104715.",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 1085,
+        "start_line": 15,
+        "trial_id": "getug-afu-15"
+      },
+      "sha256:4a9377756a0ed850cbace5315d6bfe9e628c9d48878ee597e730f09468fdc564": {
+        "end": 480,
+        "end_line": 12,
+        "handle": "eh_4a9377756a0ed850",
+        "identity": "sha256:4a9377756a0ed850cbace5315d6bfe9e628c9d48878ee597e730f09468fdc564",
+        "kind": "narrative",
+        "page": 5,
+        "quote": "Median bPFS was signifi cantly longer in the group\ngiven ADT plus docetaxel (22·9 months, 95% CI\n19·6-28·4) than in the group given ADT alone\n(12·9 months, 11·9-17·7; HR 0·72, 0·57-0·91; p=0·005;\nfi gure 3). Similarly, median cPFS was signifi cantly longer\nin the group given ADT plus docetaxel (23·5 months,\n20·5-31·9) than in the group given ADT alone\n(15·4 months, 12·5-19·8; HR 0.75, 0·59-0·94; p=0·015;\nfi gure 3).",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 61,
+        "start_line": 4,
+        "trial_id": "getug-afu-15"
+      },
+      "sha256:aa9cdb2f0fa46c1abad1e0e068869749c58e09fdce4792db3bce93df1efd8ed4": {
+        "end": 1590,
+        "end_line": 32,
+        "handle": "eh_aa9cdb2f0fa46c1a",
+        "identity": "sha256:aa9cdb2f0fa46c1abad1e0e068869749c58e09fdce4792db3bce93df1efd8ed4",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "with only 36 months of follow-up for all patients. To\nreach the number of necessary events, the sponsor\ndecided to follow up all enrolled patients until one cutoff\ndate, namely July 31, 2011. Patients with no event at the\nlast visit or on July 31, 2011, were censored.\nWe did the effi cacy analyses by intention to treat. Safety\nanalyses were based on the population exposed to the\nassigned treatment. We did post-hoc subgroup analyses\nto assess whether specifi c baseline characteristics\naff ected overall survival and bPFS. We estimated\ndistributions of time-to-event variables and associated\n95% CIs with the Kaplan-Meier product-limit method.\nThe log-rank test was the primary analysis for comparison\nof treat ment groups. We estimated adjusted and\nunadjusted treatment eff ects with the Cox proportional-",
+        "source_id": "source_4922f546e1a529eb5c6ccf7ec3f7cc954f50a9fbe8eea3b8082a18e0ace61f7b",
+        "source_version": "sha256:18ba085aa90e493b871d590fb4cbf1d6db0c8eb3dda5f10e34054ad7350c4bed",
+        "start": 781,
+        "start_line": 18,
+        "trial_id": "getug-afu-15"
+      }
+    },
+    "identity": "sha256:2c41c209bbdfe07edbb5d0b7284afef6a845c39c9f59ab05907d7e6bd25381c1",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_4a6e60f0e2f638b3",
+              "eh_3ee8d50a50914948"
+            ],
+            "rationale": "Patients were randomly allocated 1:1 to parallel ADT plus docetaxel and ADT-alone groups."
+          },
+          "bindings": [
+            {
+              "evidence_index": 4,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a11e81437d4d11810475bbc8aabc9c188fd75d103e0b607260252d4a406d157a"
+            },
+            {
+              "evidence_index": 4,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:cd25d98bc46f0904843e380f823836869892bb1dcf0acdacd0c681ad94a0f3b1"
+            },
+            {
+              "evidence_index": 4,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:683613d99cb4332a320e000390ad3c12d8c656d7539f128ab16de5cf4d3b7a67"
+            },
+            {
+              "evidence_index": 4,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:195743f819589a61cb44786773779fccf8de661a47df995ff9e44b30119f6b80"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_046990341fa536dc",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_2e6f361cf4958dea",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_3ee8d50a50914948",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_4a6e60f0e2f638b3",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_4a9377756a0ed850",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_aa9cdb2f0fa46c1a",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The report labels its secondary endpoint cPFS and defines it as time to clinical progression or death, measured from randomization. The lesion-specific progression criteria include RECIST 1.0 progression of pre-existing measurable lesions or new bone lesions and a separate definition for bone-only disease. Death is an event. The report compares the two randomized groups using the intention-to-treat population and reports the cPFS hazard ratio.",
+          "reported": {
+            "analysis_population": "Intention-to-treat population: 192 patients allocated to ADT plus docetaxel and 193 allocated to ADT alone; no patients were lost to follow-up.",
+            "effect_measure": "HR",
+            "endpoint": {
+              "definition": null,
+              "name": "cPFS"
+            },
+            "estimate": "0.75",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "0·59-0·94; p=0·015"
+          },
+          "requested_outcome": "Progression-free survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Androgen-deprivation therapy plus docetaxel",
+                "id": "adt_docetaxel"
+              },
+              {
+                "assignment": "Androgen-deprivation therapy alone",
+                "id": "adt_alone"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Clinical progression-free survival: time to clinical progression or death. Clinical progression was progression of pre-existing measurable lesions by RECIST version 1.0 or new bone lesions, whichever occurred first; for bone-only disease, one or more new bone lesions or a new soft-tissue lesion, whichever occurred first.",
+              "metric": "Progression-free survival"
+            },
+            "outcome_definition": "Progression-free survival",
+            "time_point_or_window": {
+              "description": "From randomization until clinical progression or death; patients without an event were censored at last visit or July 31, 2011.",
+              "kind": "described"
+            }
+          },
+          "trial_id": "getug-afu-15"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:6aa32fea1d3f33ccf64017dc3bcb01979a06666eadf6d545fd10930a13edb887",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

@@ -1,0 +1,187 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:2860b570ccf34ec8895beaf017171520adce107e2303ce91545d49a483168f35": {
+        "end": 2578,
+        "end_line": 53,
+        "handle": "eh_2860b570ccf34ec8",
+        "identity": "sha256:2860b570ccf34ec8895beaf017171520adce107e2303ce91545d49a483168f35",
+        "kind": "narrative",
+        "page": 102,
+        "quote": "Type of control\nPlacebo\nData Monitoring Committee\nYes\nNumber of subjects\nApproximately 1,300 subjects in total are to be randomized\nPrimary variable(s)\nOverall survival, defined as the time (in days) from date of randomization\nuntil death from any cause.\nTime point/frame of\nmeasurement for primary\nvariable(s)\nThe primary analysis will be performed when approximately 509 deaths\noccur in the 2 treatment arms combined. The expected study duration for\n509 deaths is approximately 70 months.",
+        "source_id": "source_5e324053fa0ea3010332109928db142b8e72be40ea171873d18366b587f3d2bd",
+        "source_version": "sha256:c35fcccc9196ec602eb79ec1e5ec5547c13f0d4db445562df96481657658cbc3",
+        "start": 2088,
+        "start_line": 39,
+        "trial_id": "arasens"
+      },
+      "sha256:4b41e089e7e41c4fce3118fb939e65bc1267f3ba6be71d1a3cee95648339e28f": {
+        "end": 4707,
+        "end_line": 104,
+        "handle": "eh_4b41e089e7e41c4f",
+        "identity": "sha256:4b41e089e7e41c4fce3118fb939e65bc1267f3ba6be71d1a3cee95648339e28f",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 386;12 nejm.org March 24, 2022\n1134\nThe new engl and jour nal of medicine\ninhibitors, chemotherapy, or immunotherapy for\nprostate cancer before randomization, or radio-\ntherapy within 2 weeks before randomization.\nFull eligibility criteria are provided in the Sup-\nplementary Appendix, available at NEJM.org.\nAll the patients received androgen-depriva-\ntion therapy (a luteinizing hormone-releasing\nhormone [LHRH] agonist or an LHRH antago-\nnist) or underwent orchiectomy within 12 weeks\nbefore randomization and received six cycles of\ndocetaxel (75 mg per square meter of body-sur-\nface area on day 1 and every 21 days), with pred-\nnisone or prednisolone administered at the in-\nvestigator's discretion, initiated within 6 weeks\nafter randomization. The recommended pre-\nmedication to prevent docetaxel-related hyper-\nsensitivity reactions and fluid retention was oral\ndexamethasone, administered at a dose of 8 mg\nat 12 hours, 3 hours, and 1 hour before infusion.\nFor patients receiving LHRH agonists, the use of\nthese agonists in combination with a first-gen-\neration antiandrogen for at least 4 weeks before\nrandomization was recommended. First-genera-\ntion antiandrogen therapy was discontinued be-\nfore randomization.\nPatients were randomly assigned in a 1:1 ratio\nto receive either darolutamide (at a dose of 600 mg\n[two 300-mg tablets] twice daily with food) or\nmatched placebo. Randomization was stratified\naccording to the metastasis stage in the tumor-\nnode-metastasis system (nonregional lymph-node\nmetastases only [M1a], bone metastases with or\nwithout lymph-node metastases [M1b], or vis-\nceral metastases with or without lymph-node or\nbone metastases [M1c]) and according to wheth-\ner the alkaline phosphatase level was below or at\nor above the upper limit of the normal range.\nPatients continued to receive darolutamide or\nplacebo until symptomatic disease progression,\na change in antineoplastic therapy, unacceptable\ntoxic effects, patient or physician decision, death,\nor nonadherence.\nEnd Points\nThe primary end point was overall survival,\nwhich was defined as the time from randomiza-\ntion until death from any cause. The secondary\nend points were time to castration-resistant\nprostate cancer, time to pain progression, symp-\ntomatic skeletal event-free survival, time to a\nfirst symptomatic skeletal event, time to initia-\ntion of subsequent systemic antineoplastic ther-\napy, time to worsening of disease-related physi-\ncal symptoms, time to initiation of opioid\ntreatment for 7 or more consecutive days, and\nsafety. Definitions of the secondary efficacy\nend points are provided in the Supplementary\nAppendix.\nAssessments\nDuring the trial, patients were evaluated every\n12 weeks for evidence of castration resistance,\nthe initiation of subsequent antineoplastic ther-\napy, symptomatic skeletal events, opioid use for\n7 or more consecutive days, pain progression,\nthe worsening of physical symptoms of disease,\nand adverse events and serious adverse events\nthat occurred during treatment. Patients under-\nwent contrast-enhanced chest, abdomen, and pel-\nvic CT or MRI and bone scanning at baseline,\nwithin 30 days after the last cycle of docetaxel,\nand yearly thereafter during trial treatment. Pain\nwas assessed with the use of the Brief Pain In-\nventory Short-Form questionnaire, and disease-\nrelated physical symptoms were assessed with\nthe use of the Functional Assessment of Cancer\nTherapy-Prostate (National Comprehensive Can-\ncer Network) symptom index 17-item question-\nnaire. In safety assessments, adverse events were\ngraded with the use of the National Cancer In-\nstitute Common Terminology Criteria for Adverse\nEvents, version 4.03.\nStatistical Analysis\nThe sample size was calculated on the basis of\nthe primary end point, overall survival. We esti-\nmated that approximately 1300 patients would\nbe required to observe approximately 509 deaths,\nallowing for a 5% dropout rate, which would\nprovide the trial with 90% power to detect a 25%\ndecrease in the risk of death in the darolutamide\ngroup versus the placebo group, at a two-sided\nalpha level of 0.05. The secondary end points\nwere tested with a hierarchical gatekeeping pro-\ncedure in the order described above only if the\nprimary end point and each preceding secondary\nend point in the hierarchy were statistically sig-\nnificant. If the primary end point or a secondary\nend point did not reach significance, the hierar-\nchical procedure was stopped, and subsequent\nanalyses were considered to be exploratory.\nThe full analysis set (all the patients who\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_af73c685a66a1e1f34d994e7752d638100df8193c5e6e79b620580483afb7fca",
+        "source_version": "sha256:2be77b09047ae533278a3f15b0c06404f816b47855708ca7d2d714767a4bd00c",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "arasens"
+      },
+      "sha256:6f703b8d70168af714ab4695c49994dfdefe8ebc667a40092fdcf1b59da4915e": {
+        "end": 3807,
+        "end_line": 68,
+        "handle": "eh_6f703b8d70168af7",
+        "identity": "sha256:6f703b8d70168af714ab4695c49994dfdefe8ebc667a40092fdcf1b59da4915e",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "The new engl and jour nal of medicine\nn engl j med 386;12 nejm.org March 24, 2022\n1132\nThe authors' affiliations are listed in the\nAppendix. Dr. Smith can be contacted\nat mrsmith@mgh.harvard.edu or at the\nGenitourinary Malignancies Program,\nMassachusetts General Hospital Cancer\nCenter and Harvard Medical School,\nYawkey 7030, 55 Fruit St., Boston, MA\n02114.\n* A full list of investigators in the ARASENS\ntrial is provided in the Supplementary\nAppendix, available at NEJM.org.\nThis article was published on February\n17, 2022, at NEJM.org.\nN Engl J Med 2022;386:1132-42.\nDOI: 10.1056/NEJMoa2119115\nCopyright © 2022 Massachusetts Medical Society.\nBACKGROUND\nDarolutamide is a potent androgen-receptor inhibitor that has been associated\nwith increased overall survival among patients with nonmetastatic, castration-\nresistant prostate cancer. Whether a combination of darolutamide, androgen-\ndeprivation therapy, and docetaxel would increase survival among patients with\nmetastatic, hormone-sensitive prostate cancer is unknown.\nMETHODS\nIn this international, phase 3 trial, we randomly assigned patients with meta-\nstatic, hormone-sensitive prostate cancer in a 1:1 ratio to receive darolutamide (at\na dose of 600 mg [two 300-mg tablets] twice daily) or matching placebo, both in\ncombination with androgen-deprivation therapy and docetaxel. The primary end\npoint was overall survival.\nRESULTS\nThe primary analysis involved 1306 patients (651 in the darolutamide group and\n655 in the placebo group); 86.1% of the patients had disease that was metastatic\nat the time of the initial diagnosis. At the data cutoff date for the primary analysis\n(October 25, 2021), the risk of death was significantly lower, by 32.5%, in the\ndarolutamide group than in the placebo group (hazard ratio 0.68; 95% confidence\ninterval, 0.57 to 0.80; P<0.001). Darolutamide was also associated with consistent\nbenefits with respect to the secondary end points and prespecified subgroups.\nAdverse events were similar in the two groups, and the incidences of the most\ncommon adverse events (occurring in ≥10% of the patients) were highest during\nthe overlapping docetaxel treatment period in both groups. The frequency of grade\n3 or 4 adverse events was 66.1% in the darolutamide group and 63.5% in the pla-\ncebo group; neutropenia was the most common grade 3 or 4 adverse event (in\n33.7% and 34.2%, respectively).\nCONCLUSIONS\nIn this trial involving patients with metastatic, hormone-sensitive prostate cancer,\noverall survival was significantly longer with the combination of darolutamide,\nandrogen-deprivation therapy, and docetaxel than with placebo plus androgen-\ndeprivation therapy and docetaxel, and the addition of darolutamide led to improve-\nment in key secondary end points. The frequency of adverse events was similar in\nthe two groups. (Funded by Bayer and Orion Pharma; ARASENS ClinicalTrials.gov\nnumber, NCT02799602.)\nABSTR ACT\nDarolutamide and Survival in Metastatic,\nHormone-Sensitive Prostate Cancer\nMatthew R. Smith, M.D., Ph.D., Maha Hussain, M.D., Fred Saad, M.D.,\nKarim Fizazi, M.D., Ph.D., Cora N. Sternberg, M.D., E. David Crawford, M.D.,\nEvgeny Kopyltsov, M.D., Chandler H. Park, M.D., Boris Alekseev, M.D.,\nÁlvaro Montesa-Pino, M.D., Dingwei Ye, M.D., Francis Parnis, M.B., B.S.,\nFelipe Cruz, M.D., Teuvo L.J. Tammela, M.D., Ph.D., Hiroyoshi Suzuki, M.D., Ph.D.,\nTapio Utriainen, M.D., Cheng Fu, M.D., Motohide Uemura, M.D., Ph.D.,\nMaría J. Méndez-Vidal, M.D., Benjamin L. Maughan, M.D., Pharm.D.,\nHeikki Joensuu, M.D., Silke Thiele, M.D., Rui Li, M.S., Iris Kuss, M.D.,\nand Bertrand Tombal, M.D., Ph.D., for the ARASENS Trial Investigators*\nOriginal Article\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_af73c685a66a1e1f34d994e7752d638100df8193c5e6e79b620580483afb7fca",
+        "source_version": "sha256:2be77b09047ae533278a3f15b0c06404f816b47855708ca7d2d714767a4bd00c",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "arasens"
+      },
+      "sha256:f0440b4a9e97a6a868a012bab1b3916caafd34bfbb5c96b2ab8a6c55c5852e0c": {
+        "end": 4773,
+        "end_line": 104,
+        "handle": "eh_f0440b4a9e97a6a8",
+        "identity": "sha256:f0440b4a9e97a6a868a012bab1b3916caafd34bfbb5c96b2ab8a6c55c5852e0c",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 386;12 nejm.org March 24, 2022\n1135\nDarolutamide in Metastatic Prostate Cancer\nunderwent randomization and were assessed ac-\ncording to the treatment to which they were as-\nsigned) was included in the analysis of the pri-\nmary and secondary efficacy end points with the\nuse of a stratified log-rank test, with randomiza-\ntion stratification factors. Hazard ratios for the\ncomparison of darolutamide with placebo and\n95% confidence intervals were calculated with\nthe Cox proportional-hazards model stratified\naccording to the randomization factors. A log-\nlog survival plot, which was produced to assess\nwhether application of the Cox proportional-\nhazards model was appropriate, confirmed that\nthe proportional-hazards assumption was met\nfor all time-to-event end points. Kaplan-Meier\nestimates for overall survival are presented for\nboth treatment groups. For the analysis of over-\nall survival, data on patients in whom death had\nnot been confirmed were censored as of the last\nknown date the patients were alive. For sub-\ngroup analyses, intervals were not adjusted for\nmultiplicity and cannot be used to infer effects.\nDescriptive statistics were used to summarize\nbaseline characteristics in the full analysis set,\nand safety end points were assessed in the safety\nanalysis set (i.e., all the patients who received at\nleast one dose of darolutamide or placebo and\nwere assessed in accordance with the treatment\nthat they actually received). For the primary effi-\ncacy end point, subgroup analyses were prespeci-\nfied to assess the consistency of treatment ef-\nfect. Statistical analyses were performed with the\nuse of SAS software, version 9.4 (SAS Institute).\nResults\nPatients\nBetween November 2016 and June 2018, a total\nof 1306 patients underwent randomization at\n286 centers in 23 countries. A total of 651 pa-\ntients were assigned to receive darolutamide and\n655 patients were assigned to receive placebo,\nboth in combination with androgen-deprivation\ntherapy and docetaxel (Fig. S1 and Table S1 in\nthe Supplementary Appendix). Of these patients,\n1305 patients (651 in the darolutamide group\nand 654 in the placebo group) were included in\nthe full analysis set, and 1302 patients (652 in\nthe darolutamide group and 650 in the placebo\ngroup) were included in the safety analysis set.\nDemographic and baseline characteristics\nwere well balanced in the two groups (Tables 1\nand S2). The median age was 67 years in both\ngroups, most patients (71.1%) had an ECOG\nperformance-status score of 0, and 78.2% of the\npatients had a Gleason score of 8 or greater\n(scores range from 6 to 10, with higher scores\nindicating a more aggressive form of prostate\ncancer). All the patients had metastatic disease\nat baseline; 79.5% had bone metastases (metas-\ntasis stage M1b) and 17.5% had visceral me-\ntastases (metastasis stage M1c). Most patients\n(86.1%) had disease that was metastatic at the\ntime of the initial diagnosis.\nAt the data cutoff date for the primary analy-\nsis (October 25, 2021), the median treatment\nduration was longer in the darolutamide group\n(41.0 months) than in the placebo group (16.7\nmonths), and a higher percentage of patients in\nthe darolutamide group (45.9% [299 of 651 pa-\ntients]) than in the placebo group (19.1% [125 of\n654 patients]) were still receiving the assigned\ntrial treatment. Six cycles of docetaxel were\ncompleted in 571 of 652 patients (87.6%) in the\ndarolutamide group and in 556 of 650 patients\n(85.5%) in the placebo group. The reasons for\ndiscontinuation of the trial agent are provided in\nFigure S1. The median follow-up for overall sur-\nvival was 43.7 months in the darolutamide group\nand 42.4 months in the placebo group.\nPrimary End Point\nThe primary analysis of overall survival was per-\nformed after 533 patients had died (229 patients\nin the darolutamide group and 304 patients in\nthe placebo group). The risk of death was 32.5%\nlower in the darolutamide group than in the\nplacebo group (hazard ratio, 0.68; 95% confi-\ndence interval [CI], 0.57 to 0.80; P<0.001) (Fig. 1).\nA significant improvement in overall survival was\nobserved despite a high percentage of patients\nwho received subsequent life-prolonging systemic\ntherapies, primarily different androgen-receptor\npathway inhibitors, among those who entered\nfollow-up in the placebo group (374 of 495 pa-\ntients [75.6%]) (Table S3). The overall survival at\n4 years was 62.7% (95% CI, 58.7 to 66.7) in the\ndarolutamide group and 50.4% (95% CI, 46.3 to\n54.6) in the placebo group. The treatment effect\nof darolutamide with respect to overall survival\nwas favorable across most subgroups (Figs. S2\nand S3).\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_af73c685a66a1e1f34d994e7752d638100df8193c5e6e79b620580483afb7fca",
+        "source_version": "sha256:2be77b09047ae533278a3f15b0c06404f816b47855708ca7d2d714767a4bd00c",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "arasens"
+      }
+    },
+    "identity": "sha256:7d0acf81584c2263374e2bc97dda0afa92ef5207b46612466ead9ce01d9aaca6",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_6f703b8d70168af7",
+              "eh_4b41e089e7e41c4f"
+            ],
+            "rationale": "Participants were randomly assigned in a 1:1 ratio to darolutamide or matching placebo."
+          },
+          "bindings": [
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:d8b7f424799c624c61942ef7df35b28b4b71ac60294c5dee19718f086804e1aa"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:0150c9f42a00a6c8f02b5ab5230f8645b388d291ebd59be282eba03f080ec90c"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/definition"
+              },
+              "value_digest": "sha256:2c90e82d641c51d588015e0e520fa2c754fe03e7d3cc87692a6de0d2fd7b9275"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "unclear",
+            "comparison_groups": "unclear",
+            "effect_measure": "unclear",
+            "eligible_result_choice": "unclear",
+            "measurement": "unclear",
+            "outcome_definition": "unclear",
+            "source_table_meaning": "unclear",
+            "time_point": "unclear"
+          },
+          "evidence": [
+            {
+              "handle": "eh_2860b570ccf34ec8",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_4b41e089e7e41c4f",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_6f703b8d70168af7",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_f0440b4a9e97a6a8",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The reported primary analysis is the full analysis set: 1305 participants (651 darolutamide and 654 placebo) from 1306 randomized participants, so it excludes one randomized participant. The endpoint is otherwise the requested time from randomization to death from any cause, comparing the requested assigned regimens; the primary analysis was at 533 deaths and the reported HR and CI match the requested result.",
+          "reported": {
+            "analysis_population": "Full analysis set: 1305 participants (651 assigned darolutamide and 654 assigned placebo), compared with 1306 randomized; one randomized participant was not included in this set.",
+            "effect_measure": "Hazard ratio",
+            "endpoint": {
+              "definition": "Time from randomization until death from any cause",
+              "name": "Overall survival"
+            },
+            "estimate": "0.68",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% confidence interval, 0.57 to 0.80"
+          },
+          "requested_outcome": "Overall Survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+                "id": "darolutamide"
+              },
+              {
+                "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from randomization until death from any cause",
+              "metric": "Overall Survival"
+            },
+            "outcome_definition": "Overall Survival",
+            "time_point_or_window": {
+              "description": "From randomization until death from any cause; primary analysis at 533 deaths (data cutoff October 25, 2021)",
+              "kind": "described"
+            }
+          },
+          "trial_id": "arasens"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:c78e38dad3850906ea4b5650716c72c2e8ae3ea726df90fef15a608ad4ddea45",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

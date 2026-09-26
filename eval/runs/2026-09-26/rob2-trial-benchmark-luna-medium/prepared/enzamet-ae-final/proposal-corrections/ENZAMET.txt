@@ -1,0 +1,1 @@
+Please revise the proposed Result to cover the complete requested grade 3 or higher adverse-events outcome. The source reports Grade 3, Grade 4, and Grade 5 rows separately. Include all three rows as separate group values; do not add them together or report only Grade 3.

@@ -8,7 +8,8 @@ import sqlite3
 import unicodedata
 from bisect import bisect_right
 from collections import Counter, OrderedDict
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 from threading import RLock
@@ -42,11 +43,11 @@ _SEARCH_PREVIEW_MAX_BYTES = 512
 _SEARCH_CANDIDATE_MAX_BYTES = 2_048
 _TERM_FEEDBACK_MAX_TERMS = 16
 _TERM_FEEDBACK_MAX_SOURCES = 64
-_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.1"
+_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.2"
 _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
-_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v0.9"
+_SEARCH_SESSION_VERSION = "rob2-kit.search-session.v1.0"
 _SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.9"
 _SEARCH_NORMALIZATION_VERSION = "rob2-kit.search-normalization.v1"
 _SEARCH_RANKING_VERSION = "fts5-bm25-scoped-page-source-tiebreak.v1"
@@ -138,6 +139,7 @@ def list_sources(
         navigation = _source_navigation(
             source,
             pages,
+            trial_id=trial["id"],
             cursor=cursor,
             limit=limit,
         )
@@ -161,6 +163,7 @@ def _source_navigation(
     source: dict[str, Any],
     pages: tuple[str, ...],
     *,
+    trial_id: str | None = None,
     cursor: str | None,
     limit: int,
 ) -> dict[str, Any]:
@@ -184,8 +187,29 @@ def _source_navigation(
     next_offset = offset + len(selected)
     has_more = next_offset < len(entries)
     unreadable_pages = [page for page, text in enumerate(pages, 1) if not text.strip()]
+    render_pages = set(unreadable_pages)
+    if source.get("media_type") == "application/pdf":
+        render_pages.update(item["page"] for item in selected if item.get("kind") == "page_excerpt")
+    render_recovery = [
+        {
+            "operation": "render_page",
+            "trial_id": trial_id,
+            "source_id": source["id"],
+            "page": page,
+            "inline": True,
+        }
+        for page in sorted(render_pages)
+        if trial_id is not None and source.get("media_type") == "application/pdf"
+    ]
+    # These are navigation metadata, not a second unbounded index.  Keep them
+    # page-local so a caller following the existing cursor never receives the
+    # complete version/date catalogue over and over again.
+    version_spans = [item for item in selected if item.get("embedded_version") is not None]
+    date_spans = [item for item in selected if item.get("kind") == "date_lead"]
     return {
         "source_id": source["id"],
+        "source_label": source["label"],
+        "logical_path": source["logical_path"],
         "projection_hash": source["projection_hash"],
         "navigation_version": _SOURCE_NAVIGATION_VERSION,
         "entries": selected,
@@ -199,7 +223,19 @@ def _source_navigation(
         "unreadable_pages": unreadable_pages,
         "truncated": has_more,
         "next_cursor": (_source_navigation_cursor(source, next_offset) if has_more else None),
-        "condition": "no_text_projection" if not entries else None,
+        "condition": (
+            "no_text_projection"
+            if not entries
+            else (
+                "layout_inspection_available"
+                if source.get("media_type") == "application/pdf"
+                and any(item.get("kind") == "page_excerpt" for item in selected)
+                else None
+            )
+        ),
+        "render_recovery": render_recovery,
+        "version_spans": version_spans,
+        "date_spans": date_spans,
     }
 
 
@@ -240,11 +276,6 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
     """Index literal headings, leads, and cross-references without inferring meaning."""
 
     page_lines = [page.splitlines() for page in pages]
-    first_lines = [
-        next((line.strip() for line in lines if line.strip()), "") for lines in page_lines
-    ]
-    repeated = Counter(line for line in first_lines if line)
-    repeated_furniture = {line for line, count in repeated.items() if count >= 2}
     page_marker = re.compile(r"^(?:page\s+\d+(?:\s+of\s+\d+)?|version\s+\S+)$", re.I)
     numbered_heading = re.compile(r"^(?:\d+[.)]\s*|\d+(?:\.\d+)+\s+)[A-Z][^.!?:;]{0,119}$")
     contents_row = re.compile(r"^.{2,180}?\.{2,}\s*\d{1,4}\s*$")
@@ -255,6 +286,27 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
         r"July|August|September|October|November|December)\s+\d{1,2},\s+\d{4})\b",
         re.I,
     )
+    furniture_signature = re.compile(
+        r"\bpage\s+\d+(?:\s+of\s+\d+)?\b|"
+        r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b|"
+        r"\b\d{4}[/-]\d{1,2}[/-]\d{1,2}\b|"
+        r"\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|"
+        r"September|October|November|December)\s+\d{4}\b|"
+        r"\b(?:January|February|March|April|May|June|July|August|September|October|"
+        r"November|December)\s+\d{1,2},\s+\d{4}\b",
+        re.I,
+    )
+    edge_signatures: dict[str, set[int]] = {}
+    for page_number, lines in enumerate(page_lines, 1):
+        nonempty = [(number, line.strip()) for number, line in enumerate(lines, 1) if line.strip()]
+        edge_lines = nonempty[:2] + nonempty[-2:]
+        for _line_number, text in edge_lines:
+            signature = " ".join(furniture_signature.sub("#", text).casefold().split())
+            edge_signatures.setdefault(signature, set()).add(page_number)
+    repeated_furniture = {
+        signature for signature, page_numbers in edge_signatures.items() if len(page_numbers) >= 2
+    }
+    emitted_furniture: set[str] = set()
     cross_reference = re.compile(
         r"\b(?:see|refer\s+to|described\s+in|reported\s+in|according\s+to)\s+"
         r"(?:section|subsection|appendix|table|figure|page|pages|the\s+protocol|the\s+sap)\b",
@@ -270,12 +322,15 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
         useful: list[tuple[int, str]] = []
         for line_number, raw in enumerate(lines, 1):
             text = raw.strip()
+            signature = " ".join(furniture_signature.sub("#", text).casefold().split())
             if (
                 not text
                 or (page_marker.fullmatch(text) and version_lead.search(text) is None)
-                or text in repeated_furniture
+                or (signature in repeated_furniture and signature in emitted_furniture)
             ):
                 continue
+            if signature in repeated_furniture:
+                emitted_furniture.add(signature)
             useful.append((line_number, text))
         if useful:
             start_line, excerpt = useful[0]
@@ -332,6 +387,30 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
                     (
                         kind
                         for words, kind in (
+                            (
+                                (
+                                    "unblinded access",
+                                    "accessed unblinded",
+                                    "unblinded to",
+                                    "unblinded on",
+                                    "unblinding date",
+                                ),
+                                "unblinded_access",
+                            ),
+                            (("finaliz", "finalis"), "finalization"),
+                            (("approv", "approved by", "approval"), "approval"),
+                            (
+                                ("registry submission", "submitted to registry", "submitted"),
+                                "submission",
+                            ),
+                            (
+                                (
+                                    "posted",
+                                    "posting",
+                                ),
+                                "posting",
+                            ),
+                            (("retriev", "downloaded"), "retrieval"),
                             (("capture", "captured"), "capture"),
                             (("version", "revision", "edition"), "version"),
                             (("amend", "amended"), "amendment"),
@@ -342,16 +421,16 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
                     ),
                     None,
                 )
-                item = {
-                    "text": text,
-                    "page": page_number,
-                    "start_line": line_number,
-                    "end_line": line_number,
-                    "kind": "date_lead",
-                }
                 if date_kind is not None:
+                    item = {
+                        "text": text,
+                        "page": page_number,
+                        "start_line": line_number,
+                        "end_line": line_number,
+                        "kind": "date_lead",
+                    }
                     item["date_kind"] = date_kind
-                entries.append(item)
+                    entries.append(item)
             if is_cross_reference:
                 entries.append(
                     {
@@ -369,10 +448,9 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
                 continue
             blank_before = line_number == 1 or not lines[line_number - 2].strip()
             blank_after = line_number == len(lines) or not lines[line_number].strip()
-            if numbered_heading.fullmatch(text):
-                if not (blank_before or blank_after):
-                    continue
-            elif not (blank_before and blank_after and len(text.split()) <= 10):
+            if not numbered_heading.fullmatch(text) and not (
+                blank_before and blank_after and len(text.split()) <= 10
+            ):
                 continue
             entries.append(
                 {
@@ -423,7 +501,15 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
     # the transport boundary and is the only place that should apply the
     # response limit; truncating this list would make late sections
     # unreachable while reporting a false terminal page.
-    return sorted(ordered, key=lambda item: (item["page"], item["start_line"], item["kind"]))
+    ordered = sorted(ordered, key=lambda item: (item["page"], item["start_line"], item["kind"]))
+    current_section: str | None = None
+    for item in ordered:
+        if item["kind"] == "heading_candidate":
+            current_section = item["text"]
+        item["logical_section"] = current_section
+        if item["kind"] == "version_lead":
+            item["embedded_version"] = item["text"]
+    return ordered
 
 
 def _verified_source_projections(
@@ -620,6 +706,7 @@ def _source_navigation_diagnostic(
     navigation = _source_navigation(
         source,
         pages,
+        trial_id=trial_id,
         cursor=None,
         limit=_SOURCE_NAVIGATION_MAX_ENTRIES,
     )
@@ -822,7 +909,6 @@ def search_sources(
         }
     ordered_sources = _ordered_sources(sources)
     ordered_source_ids = [str(source["id"]) for source in ordered_sources]
-    feedback_source_ids = ordered_source_ids[:_TERM_FEEDBACK_MAX_SOURCES]
     term_feedback_sources_truncated = len(ordered_source_ids) > _TERM_FEEDBACK_MAX_SOURCES
     placeholders = ",".join("?" for _ in allowed)
     with _db(root, "derivative.sqlite3") as connection:
@@ -840,7 +926,7 @@ def search_sources(
         if [tuple(row) for row in cached_rows] != expected_rows:
             raise ValueError("text search projection is corrupt")
     page_map = {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids}
-    scope_key, search_corpus = _search_corpus(root, ordered_sources, page_map)
+    scope_key = _search_scope_key(root, ordered_sources)
     feedback_terms = list(dict.fromkeys(terms))
     session_spec = {
         "version": _SEARCH_SESSION_VERSION,
@@ -933,33 +1019,32 @@ def search_sources(
                     _SEARCH_RANKING_CACHE[cache_key] = cached_projection
             COUNTERS["search_ranking_validations"] += 1
             if cached_projection is not None:
-                try:
-                    cached_pairs = cached_projection["all_pairs"]
-                    cached_feedback = cached_projection["term_feedback"]
-                    cached_candidates = cached_projection["candidates"]
-                    if all_pairs != cached_pairs:
-                        raise ValueError("search session ranking is stale or corrupt")
-                    if term_feedback != cached_feedback:
-                        raise ValueError("search session term feedback is stale or corrupt")
-                    if candidates != cached_candidates:
-                        raise ValueError("search session candidates are stale or corrupt")
-                    COUNTERS["search_ranking_cache_hits"] += 1
-                finally:
-                    # A warm ranking hit does not enter the recomputation
-                    # helper, so release the corpus lease here.
-                    _release_search_corpus(search_corpus)
+                cached_pairs = cached_projection["all_pairs"]
+                cached_feedback = cached_projection["term_feedback"]
+                cached_candidates = cached_projection["candidates"]
+                if all_pairs != cached_pairs:
+                    raise ValueError("search session ranking is stale or corrupt")
+                if term_feedback != cached_feedback:
+                    raise ValueError("search session term feedback is stale or corrupt")
+                if candidates != cached_candidates:
+                    raise ValueError("search session candidates are stale or corrupt")
+                COUNTERS["search_ranking_cache_hits"] += 1
             else:
                 # A process restart drops only this disposable cache.  Rebuild
                 # from the verified durable session and source projections,
                 # then repopulate it without changing the session identity.
                 COUNTERS["search_ranking_recomputations"] += 1
-                expected_all_pairs, expected_term_pages = _recomputed_search_projection(
+                expected_all_pairs, expected_term_pages = _recompute_search_projection(
+                    root,
+                    ordered_sources,
                     page_map,
                     normalized_query,
                     mode,
                     ordered_source_ids,
                     tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
-                    connection=search_corpus,
+                )
+                feedback_source_ids = _feedback_source_prefix(
+                    ordered_source_ids, expected_all_pairs, expected_term_pages
                 )
                 if all_pairs != expected_all_pairs:
                     raise ValueError("search session ranking is stale or corrupt")
@@ -991,14 +1076,16 @@ def search_sources(
             raise ValueError("search session derivative is corrupt; restart the search") from error
     else:
         COUNTERS["search_ranking_builds"] += 1
-        all_pairs, term_pages = _recomputed_search_projection(
+        all_pairs, term_pages = _recompute_search_projection(
+            root,
+            ordered_sources,
             page_map,
             normalized_query,
             mode,
             ordered_source_ids,
             tuple(feedback_terms[:_TERM_FEEDBACK_MAX_TERMS]),
-            connection=search_corpus,
         )
+        feedback_source_ids = _feedback_source_prefix(ordered_source_ids, all_pairs, term_pages)
         term_feedback = _term_page_feedback(
             page_map,
             feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
@@ -1358,14 +1445,18 @@ def _search_corpus(
             COUNTERS["search_fts_corpus_cache_hits"] += 1
             return key, cached
         connection = sqlite3.connect(":memory:", check_same_thread=False)
-        _create_search_fts_for_profile(connection, profile)
-        source_order = [str(source["id"]) for source in sources]
-        rows = [
-            (source_id, page, *_discovery_search_derivative(text))
-            for source_id in source_order
-            for page, text in enumerate(pages[source_id], 1)
-        ]
-        connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
+        try:
+            _create_search_fts_for_profile(connection, profile)
+            source_order = [str(source["id"]) for source in sources]
+            rows = [
+                (source_id, page, *_discovery_search_derivative(text))
+                for source_id in source_order
+                for page, text in enumerate(pages[source_id], 1)
+            ]
+            connection.executemany("INSERT INTO pages_fts VALUES (?,?,?,?)", rows)
+        except BaseException:
+            connection.close()
+            raise
         _SEARCH_CORPUS_CACHE[key] = connection
         _SEARCH_CORPUS_LEASES[id(connection)] = 1
         _SEARCH_CORPUS_KEYS[id(connection)] = key
@@ -1401,6 +1492,43 @@ def _release_search_corpus(connection: sqlite3.Connection) -> None:
         if retired is not None:
             retired.close()
             _SEARCH_CORPUS_KEYS.pop(connection_id, None)
+
+
+@contextmanager
+def _leased_search_corpus(
+    root: Path,
+    sources: list[dict[str, Any]],
+    pages: dict[str, tuple[str, ...]],
+    profile: str = _SEARCH_PROFILE,
+) -> Iterator[sqlite3.Connection]:
+    """Release a scoped FTS corpus lease when its caller finishes ranking."""
+    _key, connection = _search_corpus(root, sources, pages, profile)
+    try:
+        yield connection
+    finally:
+        _release_search_corpus(connection)
+
+
+def _recompute_search_projection(
+    root: Path,
+    sources: list[dict[str, Any]],
+    pages: dict[str, tuple[str, ...]],
+    query: str,
+    mode: str,
+    source_order: list[str],
+    feedback_terms: tuple[str, ...],
+) -> tuple[list[tuple[str, int]], dict[str, dict[str, set[int]]]]:
+    if mode == "literal":
+        return _recomputed_search_projection(pages, query, mode, source_order, feedback_terms)
+    with _leased_search_corpus(root, sources, pages) as connection:
+        return _recomputed_search_projection(
+            pages,
+            query,
+            mode,
+            source_order,
+            feedback_terms,
+            connection=connection,
+        )
 
 
 def _spelling_catalogue(
@@ -1851,9 +1979,17 @@ def _recomputed_search_projection(
             for page, text in enumerate(pages[source_id], 1)
             if _literal_match_spans(text, query)
         ]
-        return pairs, {
+        term_pages = {
             term: {source_id: set() for source_id in source_order} for term in feedback_terms
         }
+        for term in feedback_terms:
+            for source_id in source_order:
+                term_pages[term][source_id] = {
+                    page
+                    for page, text in enumerate(pages[source_id], 1)
+                    if _literal_match_spans(text, term)
+                }
+        return pairs, term_pages
     expression = _search_expression(query, mode)
     owns_connection = connection is None
     current = connection or sqlite3.connect(":memory:")
@@ -1887,7 +2023,6 @@ def _recomputed_search_projection(
                 term_pages[term][str(source_id)].add(int(page))
     finally:
         if not owns_connection:
-            _release_search_corpus(current)
             _SEARCH_CORPUS_LOCK.release()
         else:
             current.close()
@@ -1921,6 +2056,25 @@ def _term_page_feedback(
         }
         for source_id in source_order
     ]
+
+
+def _feedback_source_prefix(
+    source_order: list[str],
+    query_pairs: list[tuple[str, int]],
+    term_pages: dict[str, dict[str, set[int]]],
+) -> list[str]:
+    """Keep matching Sources visible before the bounded no-hit feedback prefix."""
+    matched_queries = list(dict.fromkeys(source_id for source_id, _page in query_pairs))
+    matched_terms = [
+        source_id
+        for source_id in source_order
+        if source_id not in matched_queries
+        and any(term_sources[source_id] for term_sources in term_pages.values())
+    ]
+    selected = set(matched_queries) | set(matched_terms)
+    return (
+        matched_queries + matched_terms + [item for item in source_order if item not in selected]
+    )[:_TERM_FEEDBACK_MAX_SOURCES]
 
 
 def _literal_match_spans(text: str, query: str) -> list[tuple[int, int]]:
@@ -2625,15 +2779,24 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         for source_id in source_ids
     ]
     profile = _SEARCH_PROFILE if modern else _LEGACY_SEARCH_PROFILE
-    _scope_key, search_corpus = _search_corpus(root, corpus_sources, pages, profile)
-    all_pairs = _recomputed_all_pairs(
-        pages,
-        receipt["normalized_query"],
-        mode,
-        source_ids,
-        profile=profile,
-        connection=search_corpus,
-    )
+    if mode == "literal":
+        all_pairs = _recomputed_all_pairs(
+            pages,
+            receipt["normalized_query"],
+            mode,
+            source_ids,
+            profile=profile,
+        )
+    else:
+        with _leased_search_corpus(root, corpus_sources, pages, profile) as search_corpus:
+            all_pairs = _recomputed_all_pairs(
+                pages,
+                receipt["normalized_query"],
+                mode,
+                source_ids,
+                profile=profile,
+                connection=search_corpus,
+            )
     expected_candidates = _session_candidates(
         pages,
         receipt["normalized_query"],
@@ -3423,6 +3586,8 @@ def _validate_selected_evidence(
         else set()
     )
     allowed_shapes = {frozenset(expected)}
+    if kind == "figure":
+        allowed_shapes.add(frozenset({*expected, "uncertainty"}))
     if kind == "narrative":
         for source_version in (False, True):
             for line_bounds in (False, True):
@@ -3526,6 +3691,15 @@ def _validate_selected_evidence(
             }
         )
         or item.get("provenance") not in {"text_corroborated", "host_visual"}
+        or (
+            "uncertainty" in item
+            and (
+                not isinstance(item.get("uncertainty"), str)
+                or not item["uncertainty"].strip()
+                or item["uncertainty"] != item["uncertainty"].strip()
+                or len(item["uncertainty"]) > 2_000
+            )
+        )
         or not isinstance(region, list)
         or len(region) != 4
         or not all(
@@ -4254,12 +4428,19 @@ def select_visual_evidence(
     delivery_receipt: str,
     transcription: str,
     region: list[float],
+    uncertainty: str | None = None,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     transcription = transcription.strip()
     if not transcription:
         raise ValueError("visual transcription must contain non-whitespace text")
+    if uncertainty is not None:
+        uncertainty = uncertainty.strip()
+        if not uncertainty:
+            raise ValueError("visual uncertainty must contain non-whitespace text")
+        if len(uncertainty) > 2_000:
+            raise ValueError("visual uncertainty is too long")
     source = _find_source(root, trial_id, source_id)
     with _db(root, "derivative.sqlite3") as connection:
         delivery = connection.execute(
@@ -4304,6 +4485,15 @@ def select_visual_evidence(
         ]
         if _normalized_contains(page_text, transcription):
             provenance = "text_corroborated"
+    evidence = {
+        "render": render,
+        "delivery_receipt": delivery_receipt,
+        "transcription": transcription,
+        "region": region,
+        "provenance": provenance,
+    }
+    if uncertainty is not None:
+        evidence["uncertainty"] = uncertainty
     return {
         "outcome": "success",
         "evidence": _evidence(
@@ -4311,12 +4501,6 @@ def select_visual_evidence(
             trial_id,
             source_id,
             "figure",
-            {
-                "render": render,
-                "delivery_receipt": delivery_receipt,
-                "transcription": transcription,
-                "region": region,
-                "provenance": provenance,
-            },
+            evidence,
         ),
     }

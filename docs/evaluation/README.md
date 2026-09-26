@@ -216,13 +216,17 @@ The current search-work probe is similarly explicit:
 uv run python scripts/benchmark_search_cache.py `
   --workspace <workspace> --trial <trial> `
   --source-id <verified-source-id> `
+  --render-page <page> `
   --query "endpoint query" --query "event term" `
   --output search-cache-benchmark.json
 ```
 
 Each phase retains before/after counter snapshots and deltas. Inspect actual
 work and latency across cold, warm, new-query, and restart phases; do not
-promote a cache change from hit counts alone.
+promote a cache change from hit counts alone. The artifact also records
+candidate-row counts and compares returned locators across reuse phases. The
+optional render phase calls the same Source page twice; use a workspace where
+that page has no cached render to measure cold render work and reuse.
 
 ## Historical retained-evidence receipt
 

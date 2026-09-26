@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Adverse Events defined as Grade 3 or higher adverse events; NCI-CTCAE version 4.0.2 was used to grade adverse events, Grade 3: 277/563 (49%) vs 194/558 (35%); grade 4: 38/563 (7%) vs 40/558 (7%); grade 5: 6/563 (1%) vs 7/558 (1%). Combined grade 3-5: 321/563 (57%) vs 241/558 (43%) in ENZAMET.

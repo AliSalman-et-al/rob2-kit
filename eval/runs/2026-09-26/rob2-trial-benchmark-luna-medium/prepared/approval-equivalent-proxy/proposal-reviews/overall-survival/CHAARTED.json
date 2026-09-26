@@ -1,0 +1,237 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:136d3ad8aefdf2a85221967f16dfe5faba6c2316a33f861651d0c2eb07d80b7a": {
+        "end": 284777,
+        "end_line": 3372,
+        "handle": "eh_136d3ad8aefdf2a8",
+        "identity": "sha256:136d3ad8aefdf2a85221967f16dfe5faba6c2316a33f861651d0c2eb07d80b7a",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].value: \"393\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].units: \"Participants\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].description: \"Overall survival is defined as the time from randomization to death or date last known alive. Survival data reflects the database as of December 23, 2013.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].dispersionType: \"95% Confidence Interval\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"Patients receive androgen-deprivation therapy (including luteinizing hormone-releasing hormone \\\\[LHRH\\\\] agonist therapy, LHRH antagonist therapy, or surgical castration). Patients also receive docetaxel IV over 1 hour on day 1. Treatment with docetaxel repeats every 21 days for up to 6 courses in the absence of disease progression or unacceptable toxicity.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].id: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].title: \"Androgen-Deprivation Therapy and Docetaxel\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"Patients receive androgen-deprivation therapy (including luteinizing hormone-releasing hormone \\\\[LHRH\\\\] agonist therapy, LHRH antagonist therapy, or surgical castration).\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].id: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].title: \"Androgen-Deprivation Therapy Alone\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].paramType: \"MEDIAN\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].populationDescription: \"All randomized patients\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].reportingStatus: \"POSTED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].timeFrame: \"Assessed every 3 months if patient is < 2 years from study entry; every 6 months if patient is 2 - 5 years from study entry; then annually if patient is 5 - 10 years from study entry\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].title: \"Overall Survival\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].type: \"PRIMARY\"",
+        "source_id": "source_c33a4c6e9af5b1c255a7ac2ac5541f3ba917bf2096736254b4da0df81181ac16",
+        "source_version": "sha256:88ec9a39141cbd1ea7ed5cce630e809bbbe74c2587a3a85dc9e58aa5d2748e1d",
+        "start": 282528,
+        "start_line": 3357,
+        "trial_id": "chaarted"
+      },
+      "sha256:372528c7155ac632e517e5c9ff1a47b1752fb01c6eaf9ce8c4b4d91ce3cd78fc": {
+        "end": 2428,
+        "end_line": 106,
+        "handle": "eh_372528c7155ac632",
+        "identity": "sha256:372528c7155ac632e517e5c9ff1a47b1752fb01c6eaf9ce8c4b4d91ce3cd78fc",
+        "kind": "narrative",
+        "page": 6,
+        "quote": "n engl j med 373;8 nejm.org August 20, 2015\n742\nThe new engl and jour nal of medicine\ntive (rather than palliative) intent. Among pa-\ntients who started ADT before randomization,\nthe median time from the start of ADT to ran-\ndomization was 1.2 months (range, 0 to 3.9) in\nthe combination group and 1.3 months (range,\n0 to 3.9) in the ADT-alone group.\nSurvival\nThe median overall survival was 13.6 months\nlonger with the addition to ADT of early docetax-\nel than with ADT alone (57.6 months vs. 44.0\nmonths; hazard ratio for death in the combina-\ntion group, 0.61; 95% confidence interval [CI],\n0.47 to 0.80; P<0.001) (Fig. 1A). There were 85\nprostate-cancer deaths in the combination group\nand 114 prostate-cancer deaths in the ADT-alone\ngroup (Table S1 in the Supplementary Appen-\ndix). The benefit at the last analysis was more\napparent in the subgroup with high-volume dis-\nease than in the overall study population\n(Fig. 1B), with a median overall survival that was\n17.0 months longer in the combination group\nthan in the ADT-alone group (49.2 months vs.\n32.2 months; hazard ratio for death, 0.60; 95%\nCI, 0.45 to 0.81; P<0.001). The median survival\nat the time of the analysis had not been reached\nin the subgroup with low-volume disease in ei-\nther study group (Fig. 1C). A benefit of docetax-\nel treatment was detected in all the subgroups\nanalyzed (Fig. 2).\nSecondary End Points and Toxic Effects\nThe proportion of patients who had a decrease\nin the PSA level to less than 0.2 ng per milliliter\nat 12 months was 27.7% in the combination\ngroup, as compared with 16.8% in the ADT-\nalone group (P<0.001) (Table 2). The median\ntime to the development of castration-resistant\nprostate cancer (biochemical, symptomatic, or\nradiographic) was 20.2 months with combina-\ntion therapy, as compared with 11.7 months\nwith ADT alone (hazard ratio in the combina-\ntion group, 0.61; 95% CI, 0.51 to 0.72; P<0.001)\nPatients Surviving (%)\n100\n80\n60\n40\n20\n0\n0\n12\n24\n36\n48\n72\n60\n84\nMonths\nB Patients with High-Volume Disease\nA All Patients\nHazard ratio for death with ADT+docetaxel,\n0.61 (95% CI, 0.47-0.80) P<0.001\nNo. at Risk\nADT+docetaxel\nADT alone\n397\n393\n333\n318\n89\n71\n189\n168\n46\n27\n5\n3\n2\n1\n0\n0\nADT+docetaxel\n(median overall survival, 57.6 mo)\nADT alone\n(median overall\nsurvival, 44.0 mo)\nPatients Surviving (%)\n100\n80\n60\n40\n20\n0\n0\n12\n24\n36\n48\n72\n60\n84\nMonths\nHazard ratio for death with ADT+docetaxel,\n0.60 (95% CI, 0.45-0.81) P<0.001",
+        "source_id": "source_68e2faaec1cdd72b35eb1205070f010d3ff0ae5d96731e9f4988752fe1344803",
+        "source_version": "sha256:6d2a1d6a35c93227e6af017958627a09544f6a882f0ba6d96caa64e0da599271",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "chaarted"
+      },
+      "sha256:7e1195a32d58d34e09d2cfa0c81ed25c8feb1de896bf9ea25598d94a1019b2a2": {
+        "end": 4926,
+        "end_line": 106,
+        "handle": "eh_7e1195a32d58d34e",
+        "identity": "sha256:7e1195a32d58d34e09d2cfa0c81ed25c8feb1de896bf9ea25598d94a1019b2a2",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 373;8 nejm.org August 20, 2015\n740\nThe new engl and jour nal of medicine\nwas adjusted so that the study would have 80%\npower to detect a 33.3% difference in median\noverall survival between the combination group\nand the ADT-alone group, with the use of a\nstratified log-rank test at a one-sided alpha level\nof 2.5%. At study inception, only patients with\nhigh-volume disease were to be enrolled, and the\nsample size was to be 568 patients. After com-\npletion of enrollment in the NCI-sponsored\nS9346 trial,4 an amendment to the E3805 study\nwas made in July 2008, after 53 patients had been\nenrolled, to include patients with low-volume\ndisease. A prospective stratification of high vol-\nume versus low volume of metastatic disease\nwas added, and the sample size was increased to\n600 patients. The final amendment was made in\nDecember 2011, after 579 patients had been en-\nrolled, to reflect new data documenting an in-\ncrease in median overall survival owing to the\nuse of PSA in the detection and monitoring of\ndisease activity5 (initial projections were based\non studies from the pre-PSA era) and to address\nthe September 2011 report of the data and safety\nmonitoring committee, which noted that 70% of\nenrolled patients had high-volume disease. The\nfinal design required the enrollment of 780 pa-\ntients, with projections of median overall sur-\nvival with ADT alone of 33 months among pa-\ntients with high-volume disease and 67 months\namong patients with low-volume disease.\nInterim analyses were to be performed before\nall semiannual meetings of the data and safety\nmonitoring committee starting when approxi-\nmately 25% of the planned full information was\nobtained and continuing until either the criteria\nfor early stopping were met or full information\nwas obtained (after 399 deaths). The study was\nmonitored for early stopping for futility with the\nuse of repeated-confidence-interval methods.14 At\neach interim analysis, the nominal (1 - [2 × alpha])\nconfidence interval for the hazard ratio for death\nin the comparison of the combination-therapy\ngroup with the ADT-alone group was computed.\nFor a given analysis time (information fraction),\nalpha was set at the nominal one-sided signifi-\ncance level of the use function boundary. Infor-\nmation from interim analyses was reviewed by\nmembers of the independent data and safety\nmonitoring committee, who determined wheth-\ner efficacy or futility had been demonstrated and\nwho decided whether the study should be stopped\nand the results reported early.\nDescriptive statistics were used to characterize\npatients at study entry. Kaplan-Meier estimates15\nwere used for event-time distributions. Cox pro-\nportional-hazard models,16 stratified according\nto the factors described above, were used to esti-\nmate hazard ratios for time-to-event end points.\nStratified log-rank tests17 were used to compare\nevent-time distributions between the two groups.\nResponse rates were compared with the use of\nFisher's exact test.18 An intention-to-treat analy-\nsis was conducted that included all randomly\nassigned patients regardless of eligibility and\ntreatment status. P values are two-sided, and con-\nfidence intervals are at the 95% level.\nResults\nPatients\nFrom July 2006 through December 2012, a total\nof 790 patients were enrolled and underwent ran-\ndomization. Ten patients were ineligible, 7 had\nincomplete information to assess eligibility, and\n6 patients in the combination group did not\nstart the assigned therapy (Fig. S1 in the Supple-\nmentary Appendix, available at NEJM.org). All\nrandomly assigned patients were followed and\nincluded in the primary analysis of their assigned\ngroup. At the planned interim analysis in Octo-\nber 2013, a total of 53% of the planned full in-\nformation had been obtained, prespecified crite-\nria for significance had been met, and the data\nwere released by the data and safety monitoring\ncommittee. This report represents data with a\ncutoff date for survival of December 23, 2013;\nthe median follow-up was 28.9 months, with\n136 deaths in the ADT-alone group and 101\ndeaths in the combination group. All other data\nreflect the database as of December 23, 2014.\nPatient characteristics were well balanced be-\ntween the two groups (Table 1). The median age\nwas 64 years (range, 36 to 88) in the combina-\ntion group and 63 years (range, 39 to 91) in the\nADT-alone group. In both groups, approximately\n85% of the patients were white, approximately\n70% had an ECOG performance-status score of 0,\napproximately 65% had high-volume disease, and\napproximately 60% had a Gleason score of 8 or\nhigher (on a scale from 2 to 10, with higher\nscores indicating a more aggressive form of pros-\ntate cancer and a worse prognosis). In both\ngroups, 73% of the patients had received no\nprior local therapy for prostate cancer with cura-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.",
+        "source_id": "source_68e2faaec1cdd72b35eb1205070f010d3ff0ae5d96731e9f4988752fe1344803",
+        "source_version": "sha256:6d2a1d6a35c93227e6af017958627a09544f6a882f0ba6d96caa64e0da599271",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "chaarted"
+      },
+      "sha256:979b60cdeac343bc65e24f1ce57bf1c4aac42dc81711362914786213d498c542": {
+        "end": 4873,
+        "end_line": 106,
+        "handle": "eh_979b60cdeac343bc",
+        "identity": "sha256:979b60cdeac343bc65e24f1ce57bf1c4aac42dc81711362914786213d498c542",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 373;8 nejm.org August 20, 2015\n739\nChemohormonal Therapy in Prostate Cancer\ncycles, with premedication with 8 mg of oral\ndexamethasone at 12 hours, 3 hours, and 1 hour\nbefore docetaxel infusion. Daily prednisone was\nnot required. Patients were stratified according\nto age (<70 years vs. ≥70 years), ECOG perfor-\nmance-status score (0 or 1 vs. 2), and planned\nuse of combined androgen blockade for more\nthan 30 days (yes vs. no) or agents approved for\nprevention of skeletal-related events in castration-\nresistant disease (zoledronic acid or denosumab)\n(yes vs. no). Patients were also stratified accord-\ning to the duration of prior adjuvant ADT (<12\nmonths vs. ≥12 months) and the extent of metas-\ntases (high volume [defined as the presence of\nvisceral metastases or ≥4 bone lesions with ≥1\nbeyond the vertebral bodies and pelvis] vs. low\nvolume). Patients were required to take at least\n500 mg of oral calcium carbonate and at least\n400 IU of vitamin D per day.\nDose Modifications\nNo dose modifications of ADT were allowed,\nand the use of a nonsteroidal antiandrogen with\ncastration (medical or surgical) at the time of\ninitiation of therapy was at the discretion of the\ninvestigator. Intermittent hormonal therapy was\nnot allowed. For docetaxel, no more than two\ndose modifications (decreases to 65 mg per\nsquare meter and 55 mg per square meter) were\nallowed. Dose adjustments were made according\nto the organ system that showed the greatest de-\ngree of toxic effects, which were graded accord-\ning to the National Cancer Institute (NCI) Com-\nmon Terminology Criteria for Adverse Events\n(CTCAE; version 3.0 until September 2011 and\nversion 4.0 thereafter). Details on dosing are\nprovided in the protocol. If a dose was reduced\nowing to toxic effects, it was not increased sub-\nsequently, and docetaxel was discontinued if\nadministration was delayed longer than 3 weeks\nfrom the scheduled day of dosing. The use of\ngrowth factors was at the discretion of the inves-\ntigator.\nMonitoring of Toxic Effects and Efficacy\nPatients assigned to combination therapy were\nseen every 3 weeks during the period of docetaxel\nadministration and then every 3 months. Patients\nassigned to ADT alone were seen every 3 months.\nFor the reporting of serious adverse events to the\nNCI and to guide dose modifications, CTCAE\nversion 3.0 was used until September 2011, at\nwhich time the study began using version 4.0. To\nensure consistency, case-report forms for toxic\neffects that were recorded in the study database\nretained the use of version 3.0. All grade 3 or\nhigher toxic effects in the combination group\nwere captured, and an attribution of relatedness\nto study therapy was made by the local investiga-\ntors. Adverse events among patients assigned to\nADT alone were not routinely documented, al-\nthough major adverse events were to be reported.\nPSA levels were measured at each scheduled\nvisit. Imaging (computed tomography [CT] of\nthe abdomen and pelvis, technetium-99m bone\nscanning, and radiography or CT of the chest)\nwas performed at baseline and at the time of\ndocumented castration resistance or as clinically\nindicated. Disease progression on imaging was\ndetermined according to the Response Evaluation\nCriteria in Solid Tumors (RECIST), version 1.013\n(the criteria are summarized in the protocol). A\ncomplete serologic response was defined as a\nPSA level of less than 0.2 ng per milliliter on two\nconsecutive measurements at least 4 weeks apart.\nSerologic progression was defined as an increase\nin the PSA level of more than 50% above the\nnadir reached after the initiation of ADT, with\ntwo consecutive increases at least 2 weeks apart.\nThe date of a first recorded increase of more\nthan 50% above the nadir was deemed the date\nof progression. If the nadir level was less than\n2 ng per milliliter, a minimum increase of more\nthan 2 ng per milliliter was required.\nAll time-to-event end points were determined\nfrom the time of randomization. Overall survival\nwas defined as the time until death from any\ncause. The time to castration-resistant prostate\ncancer was defined as the time until document-\ned clinical or serologic progression with a testos-\nterone level of less than 50 ng per deciliter (or\nsource documentation of medical castration or\nsurgical castration). The time to clinical pro-\ngression was defined as the time until increas-\ning symptoms of bone metastases; progression\naccording to RECIST, version 1.0; or clinical\ndeterioration due to cancer according to the in-\nvestigator's opinion.\nStatistical Analysis\nThe study underwent two major amendments\n(details are provided in the protocol); in all ver-\nsions, an intention-to-treat analysis plan was\nused. With each amendment, the sample size\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_68e2faaec1cdd72b35eb1205070f010d3ff0ae5d96731e9f4988752fe1344803",
+        "source_version": "sha256:6d2a1d6a35c93227e6af017958627a09544f6a882f0ba6d96caa64e0da599271",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "chaarted"
+      },
+      "sha256:b81519e505f1865639dd90e49e9afdadbd2f9de5339629611b02f971ca1ff13c": {
+        "end": 2889,
+        "end_line": 45,
+        "handle": "eh_b81519e505f18656",
+        "identity": "sha256:b81519e505f1865639dd90e49e9afdadbd2f9de5339629611b02f971ca1ff13c",
+        "kind": "narrative",
+        "page": 164,
+        "quote": "ECOG-ACRIN\nE3805\nCancer Research Group\nVersion Date: December 23, 2014\n\nNCI Update Date: June 15, 2011\n48\nThe median overall survival for men with high volume disease is 33 months. This\nis probably due to active agents for castrate resistant prostate cancer and stage\nmigration. The study is designed to demonstrate a 25% reduction in the survival\nhazard rate, which corresponds to an improvement in median overall survival\nfrom 33 months to 44 months in patients with high volume disease and from 67\nmonths to 89.3 months in patients with low volume disease. After the activation\nof addendum 3, E3805 was enrolling approximately 12 patients per month and\nexceeds the anticipated accrual rate of 8 patients per month detailed in\naddendum 3. In addition, based on the preliminary data released from the DMC\nmeeting in September, 2011, about 70% of patients have high volume disease\non this study. With the assumptions above, the study will need 780 patients to\nmaintain adequate power, and the accrual will be completed in 5.5 years with\nadditional 1.5 years for follow-up.\n9.4\nPrimary Objective\nThe study will have 80% power to detect a 33.3% improvement in median overall\nsurvival across treatments, using a log-rank test stratified on age, ECOG PS, use\nof combined androgen blockade and FDA approved drugs for delaying skeletal\nrelated events, time of prior adjuvant hormonal therapy, and extent of disease\nwith a one-sided 0.025 significance level. The primary comparison will be an\nintent-to-treat analysis including all randomized patients.\nInterim analyses will be performed for all semi-annual ECOG-ACRIN DMC\nmeetings beginning when approximately 25% of the planned full information has\noccurred, about 35.5 months, continuing every 6 months until either criterion for\nearly stopping are met or full information is reached. Twenty-five percent of the\nfull information under the alternative hypothesis is equal to 100 failures. Full\ninformation will be achieved when 399 patients have died. The final analysis is\nscheduled for this time point. This study will be monitored for early stopping in\nfavor of the null hypothesis using repeated confidence interval methodology\nsimilar to that described by Jennison and Turnbull, 1990 (Statistical Science\n5:299-317). At each interim analysis the nominal (1-2 X alpha) confidence\ninterval on the overall survival hazard ratio comparing arm B to arm A will be\ncomputed, where alpha is the nominal one-sided significance level of the use\nfunction boundary at the information fraction for the particular analysis time. If the\nupper bound of the repeated confidence interval is smaller than 1.33, then the\ndata monitoring committee may consider closing an arm of the trial or stopping\nthe study early for overall lack of treatment differences. Under the accrual and\nfailure rate assumptions above, the following table gives the expected interim",
+        "source_id": "source_1a62aab6463b51c12ded70dcf4623a584d1f3d3ee43e6661270a50617c2d0fef",
+        "source_version": "sha256:bddd833e66244f1e9f07cfee10537f1513d71a50cb0f3eae6504037a6a1fcbb8",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "chaarted"
+      },
+      "sha256:be3106cebe8fa114b4c167edb3dc1ac5f9b857e032481bb48e16fd7a8eecfcea": {
+        "end": 210160,
+        "end_line": 2574,
+        "handle": "eh_be3106cebe8fa114",
+        "identity": "sha256:be3106cebe8fa114b4c167edb3dc1ac5f9b857e032481bb48e16fd7a8eecfcea",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "protocolSection.ipdSharingStatementModule.ipdSharing: \"YES\"\nprotocolSection.outcomesModule.primaryOutcomes[0].description: \"Overall survival is defined as the time from randomization to death or date last known alive. Survival data reflects the database as of December 23, 2013.\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Overall Survival\"",
+        "source_id": "source_c33a4c6e9af5b1c255a7ac2ac5541f3ba917bf2096736254b4da0df81181ac16",
+        "source_version": "sha256:88ec9a39141cbd1ea7ed5cce630e809bbbe74c2587a3a85dc9e58aa5d2748e1d",
+        "start": 209803,
+        "start_line": 2572,
+        "trial_id": "chaarted"
+      },
+      "sha256:e45c0d6bfac29f311c72225f9cac7d396fa32cfd8730bf13f2611e62edae6376": {
+        "end": 4697,
+        "end_line": 106,
+        "handle": "eh_e45c0d6bfac29f31",
+        "identity": "sha256:e45c0d6bfac29f311c72225f9cac7d396fa32cfd8730bf13f2611e62edae6376",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "n engl j med 373;8 nejm.org August 20, 2015\n738\nThe new engl and jour nal of medicine\nR\negressions of metastatic prostate\ncancer were first documented in the 1940s\nand were achieved with surgical castra-\ntion; subsequently, androgen-deprivation therapy\n(ADT) became the mainstay of therapy.1 Attempts\nto improve the efficacy or decrease the treatment\nburden of ADT have included the use of anti\nandrogens alone, intermittent dosing of ADT,\nand the use of an antiandrogen combined with\nmedical or surgical castration.2-4 A meta-analysis\nrevealed an increase in survival of 3 percentage\npoints at 5 years with concurrent use of a non-\nsteroidal antiandrogen at the time of initiation\nof ADT.2 However, resistance to ADT occurs in\nmost patients, with the result that the median\nsurvival among patients with metastatic prostate\ncancer is approximately 3 years.5,6 In patients\nwith resistance to ADT, docetaxel therapy re-\nsulted in a median survival that was approxi-\nmately 2.5 months longer than that with mito-\nxantrone and prednisone.7,8\nPrior studies of chemotherapy plus ADT, which\ndid not show a benefit, were small studies that\ninvolved primarily patients with a relatively low\ntumor burden.9,10 Definitions of a high burden of\ndisease have included the presence of visceral\nmetastases, a bone-metastasis burden categorized\nby site (beyond the axial skeleton) or by a high\nnumber of lesions, or a combination of these.9,11,12\nIn this study, the E3805 study, patients received\nADT alone or ADT plus docetaxel at the begin-\nning of ADT for metastatic hormone-sensitive\nprostate cancer, and stratification was performed\nprospectively according to high or low burden of\nmetastatic disease.\nMethods\nStudy Oversight\nThe primary objective of the E3805 study was to\ndetermine whether docetaxel therapy at the be-\nginning of ADT for metastatic hormone-sensitive\nprostate cancer would result in longer overall\nsurvival than that with ADT alone. The study was\ndesigned in 2005 by the Eastern Cooperative On-\ncology Group (ECOG; now part of ECOG-ACRIN)\nand was approved by the institutional review\nboard at each participating institution. The study\nwas coordinated by the ECOG-ACRIN Cancer\nResearch Group. The ECOG-ACRIN Statistical\nCenter collected the data and was the leading\ncooperative group and data coordinating center.\nThe first two authors attest that the study was\nconducted and monitored as specified by the\nprotocol. The first author wrote the first draft of\nthe manuscript, with subsequent contributions\nby all the coauthors. The authors vouch for the\naccuracy and completeness of the data presented.\nThe protocol with the statistical analysis plan\nis available with the full text of this article at\nNEJM.org. Sanofi donated the docetaxel for\nearly use (i.e., before progression during ADT)\nand provided a grant to ECOG-ACRIN but had\nno role in the design of the protocol, the collec-\ntion or analysis of the data, or the preparation of\nthe manuscript.\nPatients\nPatients were enrolled by ECOG-ACRIN, the\nSouthwest Oncology Group, the Alliance for\nClinical Trials in Oncology, and NRG Oncology\n(a merged group that includes the National Sur-\ngical Adjuvant Breast and Bowel Project, the Ra-\ndiation Therapy Oncology Group, and the Gyne-\ncologic Oncology Group) and through the Clinical\nTrials Support Unit. Eligible patients had a\npathological diagnosis of prostate cancer or a\nclinical scenario consistent with prostate cancer\nwith an elevated prostate-specific antigen (PSA)\nlevel; radiologic evidence of metastatic disease;\nand an ECOG performance-status score of 0, 1,\nor 2 (on a scale from 0 to 5, with higher scores\nindicating greater disability; patients with a score\nof 2 were eligible if the decrement in function-\ning was due to prostate cancer). Prior adjuvant\nADT was allowed if the duration of therapy was\n24 months or less and progression had occurred\nmore than 12 months after completion of ther-\napy. Patients who were receiving ADT for meta-\nstatic disease were eligible if there was no evidence\nof progression and treatment had commenced\nwithin 120 days before randomization. Organ\nfunction that was adequate for docetaxel treat-\nment was required (details are provided in the\nprotocol). All patients provided written informed\nconsent in accordance with institutional and\nfederal guidelines.\nTreatment Plan, Stratification,\nand Randomization\nPatients were randomly assigned to ADT alone\nor to combination therapy with ADT plus doce\ntaxel at a dose of 75 mg per square meter of\nbody-surface area given every 3 weeks for six\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_68e2faaec1cdd72b35eb1205070f010d3ff0ae5d96731e9f4988752fe1344803",
+        "source_version": "sha256:6d2a1d6a35c93227e6af017958627a09544f6a882f0ba6d96caa64e0da599271",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "chaarted"
+      }
+    },
+    "identity": "sha256:2a14eded0548d032b4f05834d574aecd9c7329ae22482fa43d0ae39248258620",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_e45c0d6bfac29f31",
+              "eh_979b60cdeac343bc"
+            ],
+            "rationale": "Patients were randomly assigned to ADT alone or ADT plus docetaxel in two parallel groups."
+          },
+          "bindings": [
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:8054f2b570ed51b2800f85d807de66bfe4bc9e0bfc5d1b4a4a2a3ec61cc6d3f3"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:58afe9423563827ad62b429fa3c71185ba06789fcb3d2fb38d95c1b2b1dd05ec"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:fe70be823c8f47171c3dddc4558e5910d96c6d1165a1d2ed9653ad2124a680e1"
+            },
+            {
+              "evidence_index": 3,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            },
+            {
+              "evidence_index": 3,
+              "field": {
+                "path": "/reported/endpoint/definition"
+              },
+              "value_digest": "sha256:ea07e6f00c41215f4f6d52997d7b54c4c03fc8e3747cdbcf8a4f62ff485d9f92"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_136d3ad8aefdf2a8",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_372528c7155ac632",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_7e1195a32d58d34e",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_979b60cdeac343bc",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_b81519e505f18656",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_be3106cebe8fa114",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The report evaluates overall survival from randomization until death from any cause, compares all randomized patients assigned to ADT plus docetaxel with those assigned to ADT alone, and reports the requested estimate at the December 23, 2013 survival data cutoff. The registry specifies last known alive as the censoring endpoint, compatible with the article's time-to-death outcome.",
+          "reported": {
+            "analysis_population": "All 790 randomly assigned patients, analyzed by assigned group regardless of eligibility or treatment status; all were followed and included in the primary analysis.",
+            "effect_measure": "Hazard ratio for death in the combination group",
+            "endpoint": {
+              "definition": "Time until death from any cause",
+              "name": "Overall survival"
+            },
+            "estimate": "0.61",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% confidence interval [CI], 0.47 to 0.80"
+          },
+          "requested_outcome": "Overall Survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "ADT plus docetaxel",
+                "id": "adt_docetaxel"
+              },
+              {
+                "assignment": "ADT alone",
+                "id": "adt_alone"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from randomization until death from any cause, with follow-up censored at date last known alive.",
+              "metric": "Overall Survival"
+            },
+            "outcome_definition": "Overall Survival",
+            "time_point_or_window": {
+              "description": "From randomization through the survival data cutoff of December 23, 2013; median follow-up was 28.9 months.",
+              "kind": "described"
+            }
+          },
+          "trial_id": "chaarted"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:e2ec32fcbcfa9fd464bb6f809d4ab0edf041bb08461cbf5ba3d266529cb7f281",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

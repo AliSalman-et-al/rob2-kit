@@ -1,0 +1,14 @@
+{
+  "schema": "rob2-kit.proposal-scope-difference-approvals.v1",
+  "approvals": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET",
+      "relation": "narrower",
+      "result_identity": "sha256:49a92b639a5dfa6127916edf72c8e2720f0f2f8b91b0b76765969cc8d3ff85fe",
+      "review_identity": "sha256:9692c84c0d89a08c027a1de5dfa95f8c7ae917bbdeaab21f3d34f8eab43345fb",
+      "approved": true,
+      "scope_note": "User-directed Grade 3-only result. The proposal selects the published Grade 3 row and its arm counts and percentages (277/563 [49%] vs 194/558 [35%]; main article Table 2, p. 9). The assessed target is all randomized participants; the reported result uses the safety population (received at least one dose), so include in the requested all-case score and mark as a scope-difference case. Researcher approval recorded in approved-scope.json: sha256:1dba0a6a593cd641ee9f79f2712c10a3158d9b71585ffa85a480f31973b5d5d7."
+    }
+  ]
+}

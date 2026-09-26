@@ -50,6 +50,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--workspace", default=os.environ.get("ROB2_WORKSPACE", "."))
     parser.add_argument(
+        "--review-reference",
+        help="require the currently displayed Proposal Review to have this exact identity",
+    )
+    parser.add_argument(
         "--output",
         help=("destination for archive-sources or the rob2-assess directory for export-skill"),
     )
@@ -71,6 +75,10 @@ def main(argv: list[str] | None = None) -> int:
         review = _state(_root(args.workspace)).get("review")
         if not isinstance(review, dict):
             raise ValueError("review state is corrupt")
+        if args.review_reference is not None and args.review_reference != review.get("identity"):
+            parser.error(
+                "Proposal Review changed after inspection; inspect the current review again"
+            )
         # The CLI is the researcher-authority seam.  Display the whole exact
         # candidate before accepting an acknowledgment reference.
         print(json.dumps(review, sort_keys=True, indent=2))

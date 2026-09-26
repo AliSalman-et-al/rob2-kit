@@ -1,0 +1,81 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.3.",
+    "population": "Patients receiving assigned treatment in the safety population.",
+    "reported_scope": {
+      "analysis_population": "Safety population; grade 3 or 4 adverse events were summarized by randomized group.",
+      "endpoint": {
+        "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.3.",
+        "name": "Patients with grade 3 or higher adverse events"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "Patients with grade 3 or higher adverse events",
+          "unit": "percent",
+          "value": "66.1%"
+        },
+        {
+          "group_id": "control",
+          "statistic": "Patients with grade 3 or higher adverse events",
+          "unit": "percent",
+          "value": "63.5%"
+        }
+      ]
+    },
+    "trial": "ARASENS",
+    "window_or_cutoff": {
+      "description": "Safety outcomes reported for the treatment period in the main article.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:31:14.538796Z",
+    "path": "../../../../../../reference/sources/ARASENS/registry.json",
+    "provenance": "captured response retained from OS baseline",
+    "registry_id": "NCT02799602",
+    "sha256": "5a6a378e5aaeeb083e17276f3c06ccc3129d734151c4699ddd607a8e72c9b6b6"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ARASENS"
+}

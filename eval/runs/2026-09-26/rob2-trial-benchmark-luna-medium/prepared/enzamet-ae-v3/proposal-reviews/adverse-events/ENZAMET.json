@@ -1,0 +1,192 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:199ee773e75359fbf6248e7901e6a6e12fd9aa6d6d4a0571493b3c123b9ac0c5": {
+        "end": 4562,
+        "end_line": 102,
+        "handle": "eh_199ee773e75359fb",
+        "identity": "sha256:199ee773e75359fbf6248e7901e6a6e12fd9aa6d6d4a0571493b3c123b9ac0c5",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 381;2 nejm.org July 11, 2019\n123\nEnzalutamide with Standard Therapy in Prostate Cancer\ncoexisting conditions rated as 0 [none] or 1 [mild]\nvs. 2 [moderate] or 3 [severe or multiple condi-\ntions]), and trial site.\nTrial Oversight\nThe trial was led by the Australian and New\nZealand Urogenital and Prostate Cancer Trials\nGroup (ANZUP) and the National Health and\nMedical Research Council (NHMRC) Clinical\nTrials Centre, University of Sydney. Regional\nsponsorship and coordination was performed by\nCancer Trials Ireland in Ireland and the United\nKingdom, the Canadian Cancer Trials Group in\nCanada, and the Dana-Farber Cancer Institute\nin the United States. The trial was designed by the\nANZUP investigators. Data were collected and\nanalyzed by the NHMRC Clinical Trials Centre.\nThe authors were solely responsible for the writ-\ning of the manuscript.\nAstellas Pharma provided enzalutamide and\nfinancial support for trial conduct; representa-\ntives of the company reviewed drafts of the pro-\ntocol and trial report but were not otherwise in-\nvolved in any aspects of the trial design, data\naccrual, data analysis, or manuscript preparation.\nTestosterone suppression, standard antiandrogen\ndrugs, docetaxel, and all subsequent treatments\nwere accessed according to local standard prac-\ntice. The authors vouch for the accuracy and\ncompleteness of the reported data and for the\nfidelity of the trial to the protocol.\nAn independent data and safety monitoring\ncommittee reviewed the progress and results of\nthe trial. The trial was conducted in accordance\nwith the principles of Good Clinical Practice\nguidelines and the Declaration of Helsinki. The\nprotocol was independently reviewed and ap-\nproved as required at each participating institu-\ntion. All the patients provided written informed\nconsent.\nEnd Points\nThe primary end point of overall survival was\nmeasured as the interval from randomization to\ndeath from any cause or to the date at which the\npatient was last known to be alive. The second-\nary end point of PSA progression-free survival\nwas measured as the interval from randomiza-\ntion to the earliest event of PSA progression ac-\ncording to the criteria of the Prostate Cancer\nWorking Group 2 (a confirmed relative increase\nin the PSA level from the nadir value by ≥25%\nand by ≥2 ng per milliliter),18 clinical progres-\nsion, death from any cause, or the last known\ndate of follow-up without PSA progression. The\nsecondary end point of clinical progression was\ndefined as the earliest sign of radiographic pro-\ngression according to the criteria of the Prostate\nCancer Working Group 2 for bone lesions and\nthe Response Evaluation Criteria in Solid Tu-\nmors, version 1.1,19 for soft-tissue lesions; the\ndevelopment of symptoms attributable to cancer\nprogression; or the initiation of another antican-\ncer treatment for prostate cancer. Imaging by\nmeans of CT and bone scanning was recom-\nmended to confirm clinical suspicion of pro-\ngressive disease. Imaging reports (but not the\nimages themselves) were reviewed centrally. Ad-\nverse events were graded according to the Na-\ntional Cancer Institute Common Terminology\nCriteria for Adverse Events, version 4.02. Ad-\nverse-event data were collected during the treat-\nment period, with a final safety assessment\nperformed 30 to 42 days after the cessation of\nthe trial regimen.\nStatistical Analysis\nWe determined that the enrollment of 1100 pa-\ntients (with 470 deaths) would provide a power\nof at least 80% to detect a 25% lower hazard of\ndeath in the enzalutamide group than in the\nstandard-care group (hazard ratio, 0.75), with a\ntwo-sided type I error rate of 0.05. In these cal-\nculations, we assumed a 3-year survival rate of\n65% in the standard-care group on the basis of\ntwo previous studies of enzalutamide in men\nwith metastatic, castration-resistant prostate\ncancer.15,16 Protocol versions 1 and 2 called for\nan interim analysis of overall survival after the\noccurrence of 67% of the prespecified 470\ndeaths with the use of the Lan-DeMets alpha-\nspending function. Protocol version 3, which\nwas written after external evidence became\navailable for improved overall survival with early\nabiraterone treatment,8,9 added interim analyses\nof overall survival after the occurrence of 50%\nand 80% of the prespecified 470 deaths. The\ntrial executive committee made these decisions\nwithout any knowledge of outcomes in each\ntreatment group.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_58a87851dddfedad0d50d57bb0aa8f9bc41ab5513b826b8bc4bcefb0220e7301",
+        "source_version": "sha256:3aeee7a2a12c00c2430db58103a815039dad118b7507cea9945ef74a11573e24",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "enzamet"
+      },
+      "sha256:2b19828113422d490d60c165f8eb12b0741f9d294f58275a774dfb7be03e561f": {
+        "end": 3871,
+        "end_line": 141,
+        "handle": "eh_2b19828113422d49",
+        "identity": "sha256:2b19828113422d490d60c165f8eb12b0741f9d294f58275a774dfb7be03e561f",
+        "kind": "narrative",
+        "page": 9,
+        "quote": "n engl j med 381;2 nejm.org July 11, 2019\n129\nEnzalutamide with Standard Therapy in Prostate Cancer\nobserved benefits of early enzalutamide therapy\nare not explained by differences in access to or\nuse of subsequent therapies.\nWe found that adding early enzalutamide to\ntestosterone suppression was associated with a\nhigher frequency of toxic effects, especially periph-\neral neuropathy associated with the concomitant\nuse of docetaxel. Patients who were treated with\nenzalutamide reported more fatigue and more\noften discontinued therapy before disease progres-\nsion. Seven patients (1%) in this group had seizures,\na known potential side effect of enzalutamide.\nAdverse Event\nEnzalutamide\n(N = 563)\nStandard Care\n(N = 558)\nAny adverse event - no. of patients (%)*\nGrade 1\n40 (7)\n77 (14)\nGrade 2\n202 (36)\n230 (41)\nGrade 3\n277 (49)\n194 (35)\nGrade 4\n38 (7)\n40 (7)\nGrade 5\n6 (1)\n7 (1)\nSerious adverse event\nNo. of patients (%)\n235 (42)\n189 (34)\nNo. of events\n385\n297\nRate during treatment exposure (95% CI) - no./yr†\n0.34 (0.29-0.40)\n0.33 (0.28-0.39)\nAdverse event leading to treatment discontinuation at any time\n- no. of patients\n33\n14\nGrade 3 to 5 adverse event - no. of patients (%)‡\nFebrile neutropenia\n37 (7)\n32 (6)\nHypertension\n43 (8)\n25 (4)\nNeutrophil count decreased\n31 (6)\n16 (3)\nFatigue\n31 (6)\n4 (1)\nSyncope\n20 (4)\n6 (1)\nSurgical or medical procedure\n13 (2)\n10 (2)\nAnemia\n4 (1)\n5 (1)\nFall\n6 (1)\n2 (<1)\nThromboembolic event\n4 (1)\n4 (1)\nAcute coronary syndrome\n3 (1)\n4 (1)\nMyocardial infarction\n5 (1)\n2 (<1)\nChest pain from cardiac cause\n3 (1)\n2 (<1)\nStroke\n1 (<1)\n2 (<1)\nSeizure§\n2 (<1)\n0\nDelirium\n0\n1 (<1)\n* When a patient had multiple events identified by a particular term, the worst grade is shown.\n† The rate of serious adverse events per year of treatment exposure was estimated with the use of a negative binomial\nregression model.\n‡ These adverse events occurred in at least 2% of the patients in either group or were selected as being events of special\ninterest. In the enzalutamide group, 6 grade 5 adverse events were reported: death from an unknown cause in 2 patients\nand 1 patient each with stroke, myocardial infarction, aspiration pneumonia, and acidosis. In the standard-care group,\n7 grade 5 adverse events were reported: sepsis in 2 patients and 1 patient each with cardiac arrest, sudden death from\nan unknown cause, gastric hemorrhage, urinary tract infection, and symptomatic progression of prostate cancer.\n§ Seizure of any grade occurred in 7 patients in the enzalutamide group and in no patients in the standard-care group.\nTable 2. Adverse Events.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Table 2. Adverse Events.|||\n|Enzalutamide Standard Care<br>Adverse Event (N = 563) (N = 558)|||\n|Any adverse event - no. of patients (%)*|||\n|Grade 1 40 (7) 77 (14)|||\n|Grade 2|202 (36)|230 (41)|\n|Grade 3 277 (49) 194 (35)|||\n|Grade 4|38 (7)|40 (7)|\n|Grade 5 6 (1) 7 (1)|||\n|Serious adverse event|||\n|No. of patients (%) 235 (42) 189 (34)|||\n|No. of events|385|297|\n|Rate during treatment exposure (95% CI) - no./yr† 0.34 (0.29-0.40) 0.33 (0.28-0.39)|||\n|Adverse event leading to treatment discontinuation at any time<br>- no. of patients|33|14|\n|Grade 3 to 5 adverse event - no. of patients (%)‡|||\n|Febrile neutropenia|37 (7)|32 (6)|\n|Hypertension 43 (8) 25 (4)|||\n|Neutrophil count decreased|31 (6)|16 (3)|\n|Fatigue 31 (6) 4 (1)|||\n|Syncope|20 (4)|6 (1)|\n|Surgical or medical procedure 13 (2) 10 (2)|||\n|Anemia|4 (1)|5 (1)|\n|Fall 6 (1) 2 (<1)|||\n|Thromboembolic event|4 (1)|4 (1)|\n|Acute coronary syndrome 3 (1) 4 (1)|||\n|Myocardial infarction|5 (1)|2 (<1)|\n|Chest pain from cardiac cause 3 (1) 2 (<1)|||\n|Stroke|1 (<1)|2 (<1)|\n|Seizure§ 2 (<1) 0|||\n|Delirium|0|1 (<1)|",
+        "source_id": "source_58a87851dddfedad0d50d57bb0aa8f9bc41ab5513b826b8bc4bcefb0220e7301",
+        "source_version": "sha256:3aeee7a2a12c00c2430db58103a815039dad118b7507cea9945ef74a11573e24",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "enzamet"
+      },
+      "sha256:3eb8b364b06f228f1d1b986242116305f73a2102cabdae942f462c2355da7da4": {
+        "end": 4753,
+        "end_line": 103,
+        "handle": "eh_3eb8b364b06f228f",
+        "identity": "sha256:3eb8b364b06f228f1d1b986242116305f73a2102cabdae942f462c2355da7da4",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "n engl j med 381;2 nejm.org July 11, 2019\n122\nThe new engl and jour nal of medicine\nS\neveral randomized trials have es-\ntablished the benefits of adding docetaxel\nor abiraterone to testosterone suppression\nin men with metastatic, hormone-sensitive pros-\ntate cancer.1-10 The survival benefits associated\nwith docetaxel early in the course of treatment,\nparticularly in men with high-volume metastatic\ndisease,7 are substantially larger than the survival\nbenefits associated with using docetaxel later af-\nter castration resistance has developed.11-13 The\naddition of abiraterone to testosterone suppression\nalso improved overall survival in hormone-sensi-\ntive prostate cancer, regardless of the burden of\nmetastatic disease.9,10 A recent post hoc compari-\nson indicated that men who were given abiraterone\nor docetaxel early in the course of treatment had\nsimilar outcomes with respect to overall survival.14\nEnzalutamide is an orally administered, small-\nmolecule inhibitor of the androgen receptor that\nis designed to overcome acquired resistance to\nfirst-generation nonsteroidal antiandrogens, in-\ncluding bicalutamide, nilutamide, and flutamide.\nPrevious trials have shown that enzalutamide\nimproved overall survival in castration-resistant\nprostate cancer, regardless of whether it was used\nbefore or after docetaxel chemotherapy.15,16\nWe hypothesized that adding enzalutamide to\nfirst-line therapy would delay the emergence of\ncastration resistance and thereby improve overall\nsurvival. In the ENZAMET (Enzalutamide in First\nLine Androgen Deprivation Therapy for Metastatic\nProstate Cancer) trial, our aim was to determine\nthe effects of adding enzalutamide to first-line\ntreatment that included testosterone suppression\nwith or without early docetaxel.\nMethods\nTrial Design\nThe primary objective of this multinational, open-\nlabel, randomized, phase 3 trial was to determine\nthe effects of early enzalutamide treatment on\noverall survival in men with metastatic, hormone-\nsensitive prostate cancer. Secondary objectives\nwere to determine the effects on progression-free\nsurvival as determined by the prostate-specific\nantigen (PSA) level, clinical progression-free sur-\nvival (based on imaging, symptoms, signs, or\nchanges in therapy), and adverse events. Effects\non health-related quality of life, resource use, and\nincremental cost-effectiveness will be reported\nseparately.\nPatients and Treatment\nEligible patients had prostatic adenocarcinoma\nwith metastases on computed tomography (CT),\nbone scanning with technetium-99, or both and\na score of 2 or less on the Eastern Cooperative\nOncology Group (ECOG) performance-status scale,\nwhich ranges from 0 (no disability) to 5 (death).\nTestosterone suppression was initiated up to 12\nweeks before randomization. Previous adjuvant\ntestosterone suppression for up to 24 months was\nallowed if the treatment had been completed at\nleast 12 months earlier. The trial protocol and\nSupplementary Appendix are available with the\nfull text of this article at NEJM.org.\nEligible patients were randomly assigned in a\n1:1 ratio to receive enzalutamide (at a dose of\n160 mg daily) or a standard nonsteroidal antian-\ndrogen drug (bicalutamide, nilutamide, or flu-\ntamide) (standard-care group) until the occur-\nrence of clinical disease progression or prohibitive\ntoxic effects. In the two groups, background ther-\napy included continuous testosterone suppression.\nAfter the enrollment of 88 patients (mainly from\nAustralia and New Zealand), the early adminis-\ntration of docetaxel with testosterone suppression\nwas permitted in protocol version 2 (as revised on\nNovember 2014) as a stratification factor before\nrandomization, according to evidence showing\nimproved survival with this approach.1 The deci-\nsion to initiate early treatment with docetaxel was\nleft up to the individual patients and their physi-\ncians. If docetaxel was administered, the regimen\nconsisted of 75 mg per square meter of body-\nsurface area, without prednisone or prednisolone,\ngiven every 3 weeks for a maximum of six cycles.\nUp to two cycles of docetaxel were permitted be-\nfore randomization.\nThe central randomization system implement-\ned minimization with a random component. Ran-\ndomization was stratified according to the volume\nof disease (high [defined as the presence of vis-\nceral metastases or at least four bone lesions with\nat least one lesion located beyond the vertebral\nbodies and pelvis] or low), planned use of early\ndocetaxel (yes or no), planned use of bone anti-\nresorptive therapy (yes or no), the score on the\nAdult Comorbidity Evaluation 27 (ACE-27)17 (with\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_58a87851dddfedad0d50d57bb0aa8f9bc41ab5513b826b8bc4bcefb0220e7301",
+        "source_version": "sha256:3aeee7a2a12c00c2430db58103a815039dad118b7507cea9945ef74a11573e24",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "enzamet"
+      }
+    },
+    "identity": "sha256:6f9e37aeed7158c01e04688898109fd5dd196e3fb8363998bcf1efbbb5544d37",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_3eb8b364b06f228f"
+            ],
+            "rationale": "Patients were individually randomized 1:1 to enzalutamide or standard nonsteroidal antiandrogen therapy."
+          },
+          "bindings": [
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:d9f21c29dffca1a4aa320c195e02a304c63e86ef9d0dd46ec8ddaab61bb18cce"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/statistic"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/value"
+              },
+              "value_digest": "sha256:26d4cd5355046ac40744ca89495810a5fe2e5d24ae431c889037d246568cd29f"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/unit"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/statistic"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/value"
+              },
+              "value_digest": "sha256:1b82229c48f15bf9d0cc65be5c7806a00a032ae7fb56891e0b4d03e3aad285c5"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/unit"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "unclear",
+            "comparison_groups": "unclear",
+            "effect_measure": "unclear",
+            "eligible_result_choice": "unclear",
+            "measurement": "unclear",
+            "outcome_definition": "unclear",
+            "source_table_meaning": "unclear",
+            "time_point": "unclear"
+          },
+          "evidence": [
+            {
+              "handle": "eh_199ee773e75359fb",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_2b19828113422d49",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_3eb8b364b06f228f",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "component",
+          "relation_rationale": "The requested outcome is any adverse event with Grade 3 or higher. The closest complete separately reported comparative category is Grade 3 adverse events, a component of that outcome. The article reports Grades 4 and 5 separately and does not report a combined Grade 3–5 patient total as a source-supported value. The safety population consists of randomized patients who received at least one dose of any trial drug.",
+          "reported": {
+            "analysis_population": "Patients randomized who received at least one dose of any trial drug: 563 in the enzalutamide group and 558 in the standard-care group.",
+            "endpoint": {
+              "definition": null,
+              "name": "Grade 3"
+            },
+            "form": "group_bound_values",
+            "group_values": [
+              {
+                "group_id": "enzalutamide",
+                "statistic": "patients",
+                "unit": "patients",
+                "value": "277"
+              },
+              {
+                "group_id": "standard_care",
+                "statistic": "patients",
+                "unit": "patients",
+                "value": "194"
+              }
+            ]
+          },
+          "requested_outcome": "Adverse events",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Enzalutamide plus testosterone suppression",
+                "id": "enzalutamide"
+              },
+              {
+                "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression",
+                "id": "standard_care"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Risk ratio",
+            "measurement": {
+              "method": "NCI Common Terminology Criteria for Adverse Events (CTCAE), version 4.0.2; adverse events graded 3 or higher",
+              "metric": "Adverse events"
+            },
+            "outcome_definition": "Adverse events",
+            "time_point_or_window": {
+              "description": "During the treatment period, with final safety assessment 30–42 days after cessation of the trial regimen",
+              "kind": "described"
+            }
+          },
+          "trial_id": "enzamet"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:13e2fc8ab9efb1ecf10d469e54401d5f5a8bf332fc87b889e49ba241fd2cbab4",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

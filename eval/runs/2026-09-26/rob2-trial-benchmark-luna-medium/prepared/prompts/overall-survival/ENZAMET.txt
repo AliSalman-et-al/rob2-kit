@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Overall Survival defined as The time from randomization to death resulting from any cause or to the date at which the patient was last known to be alive, hazard ratio 0.67; 95% CI, 0.52 to 0.86; P=0.002 in ENZAMET.

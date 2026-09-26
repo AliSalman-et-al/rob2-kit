@@ -1,0 +1,56 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy plus docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy alone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Clinical progression-free survival: progression of pre-existing lesions according to RECIST version 1.0 or occurrence of new bone lesions, whichever occurred first.",
+    "population": "All randomized patients analyzed by intention to treat.",
+    "reported_scope": {
+      "analysis_population": "The intention-to-treat population (192 docetaxel; 193 control).",
+      "effect_measure": "hazard ratio",
+      "endpoint": {
+        "definition": "Clinical progression-free survival: progression of pre-existing lesions according to RECIST version 1.0 or occurrence of new bone lesions, whichever occurred first.",
+        "name": "Clinical progression-free survival"
+      },
+      "estimate": "0.75",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.59 to 0.94; P=0.015"
+    },
+    "trial": "GETUG-AFU-15",
+    "window_or_cutoff": {
+      "description": "Primary report after median follow-up of 50 months.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:29:59.058686Z",
+    "path": "../../../../../../reference/sources/GETUG-AFU-15/registry.json",
+    "provenance": "captured response retained from OS baseline",
+    "registry_id": "NCT00104715",
+    "sha256": "e910407df99f863aefe3f0388f84e8d7bf4883222c879390830306e13c1f7fca"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/GETUG-AFU-15/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/GETUG-AFU-15/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "GETUG-AFU-15"
+}

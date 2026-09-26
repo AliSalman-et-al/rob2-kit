@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import os
 import re
 import sqlite3
@@ -250,6 +251,9 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         if metadata["index"] == 0:
             assert page["data"]["result"]
             assert page["data"]["evidence_workspace"]
+            assert page["data"]["questions"]
+            assert page["data"]["evidence"]
+            assert metadata["section"] == "complete"
         else:
             assert "result" not in page["data"]
             assert "evidence_workspace" not in page["data"]
@@ -268,6 +272,8 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert len(pages) > 1
     assert [page["data"]["context_page"]["index"] for page in pages] == list(range(len(pages)))
     assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
+    assert pages[1]["data"]["context_page"]["section"] == "questions"
+    assert pages[1]["data"]["context_page"]["item_start"] >= 1
     assert pages[-1]["head"]["next_action"]["operation"] == "validate_domain_assessment"
     question_ids = {
         question["id"] for page in pages for question in page["data"].get("questions", [])
@@ -289,6 +295,79 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         {"trial_id": "trial", "domain_id": "domain:deviations"},
     )
     assert reconstructed == full["data"]
+
+
+def test_public_context_previews_later_active_question_and_associated_evidence_first(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    context = domain_application.get_domain_context(
+        workspace, "trial", "domain:deviations", include_candidates=True
+    )
+    data = context
+    questions = data["questions"]
+    assert len(questions) > 1
+    for question in questions:
+        question["activation_status"] = "inactive_in_saved_checkpoint"
+    active_question = questions[-1]
+    active_question["activation_status"] = "active_in_saved_checkpoint"
+    expected_questions = [active_question, *questions[:-1]]
+
+    result_evidence = data["evidence"][0]
+    associated_evidence = {
+        **result_evidence,
+        "handle": "eh_1111111111111111",
+        "identity": "sha256:" + "1" * 64,
+        "inclusion_reason": "checkpoint",
+    }
+    original_evidence = [*data["evidence"], associated_evidence]
+    expected_evidence = [associated_evidence, *data["evidence"]]
+    data["evidence"].append(associated_evidence)
+    data["evidence_workspace"]["groups"].insert(
+        0,
+        {
+            "inclusion_reason": "checkpoint",
+            "question_ids": [active_question["id"]],
+            "evidence_handles": [associated_evidence["handle"]],
+        },
+    )
+    monkeypatch.setattr(mcp_server, "_get_domain_context", lambda *_args: copy.deepcopy(context))
+
+    first = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:deviations",
+            "max_response_bytes": 32_768,
+        },
+    )
+    assert first["outcome"] == "success", first
+    assert first["data"]["questions"][0]["id"] == active_question["id"]
+    assert first["data"]["evidence"][0]["handle"] == associated_evidence["handle"]
+
+    pages = [first]
+    cursor = first["data"]["context_page"]["next_cursor"]
+    while cursor is not None:
+        page = _call(workspace, "get_domain_context", {"cursor": cursor})
+        assert page["outcome"] == "success", page
+        pages.append(page)
+        cursor = page["data"]["context_page"]["next_cursor"]
+
+    questions_reconstructed = [item for page in pages for item in page["data"].get("questions", [])]
+    evidence_reconstructed = [item for page in pages for item in page["data"].get("evidence", [])]
+    assert [item["id"] for item in questions_reconstructed] == [
+        item["id"] for item in expected_questions
+    ]
+    assert [item["handle"] for item in evidence_reconstructed] == [
+        item["handle"] for item in expected_evidence
+    ]
+    assert original_evidence[1]["handle"] == associated_evidence["handle"]
+    assert all(
+        page["data"]["context_page"]["item_start"] == 1
+        for page in pages
+        if page["data"]["context_page"]["section"] in {"questions", "evidence"}
+    )
 
 
 def test_domain_context_cursor_rejects_revision_change(tmp_path: Path) -> None:
@@ -352,7 +431,7 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     pages = [first]
     while cursor is not None:
         page, _transport_bytes = _wire_context(workspace, {"cursor": cursor}, drain=False)
-        assert page["outcome"] == "success"
+        assert page["outcome"] == "success", page
         pages.append(page)
         cursor = page["data"]["context_page"]["next_cursor"]
 
@@ -575,6 +654,9 @@ def test_domain_context_cursor_rejects_changed_missing_data_preview(tmp_path: Pa
 
 def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
+    state = _state(workspace)
+    approved_result = state["proposal"]["payload"]["results"][0]
+    result_identity = _identity(approved_result)
     first_save = _call(
         workspace,
         "save_domain_judgment",
@@ -594,13 +676,14 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
     assert second_save["outcome"] == "success"
     preview = [
         {
-            "arm": f"intervention-{index}-" + ("a" * 160),
-            "population": "randomized participants " + ("p" * 160),
+            "arm": f"intervention-{index}-" + ("a" * 80),
+            "population": "randomized participants " + ("p" * 80),
             "unit": "participants",
             "time_point": f"week-{index + 1}",
             "randomized": 100 + index,
             "observed": 90 + index,
             "basis": [evidence["handle"]],
+            "result_identity": result_identity,
         }
         for index in range(18)
     ]
@@ -608,7 +691,7 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
     pages: list[tuple[dict, int]] = []
     while True:
         page, transport_bytes = _wire_context(workspace, arguments)
-        assert page["outcome"] == "success"
+        assert page["outcome"] == "success", page
         pages.append((page, transport_bytes))
         metadata = page["data"]["context_page"]
         assert transport_bytes <= metadata["max_response_bytes"]
@@ -616,7 +699,7 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
             break
         arguments = {"cursor": metadata["next_cursor"]}
 
-    assert len(pages) > 2
+    assert len(pages) > 1
     intermediate = pages[1][0]["data"]["context_page"]
     assert intermediate["cursor"] is not None
     assert intermediate["next_cursor"] is not None
@@ -671,8 +754,13 @@ def test_domain_context_text_is_compact_and_ordered(tmp_path: Path) -> None:
     context, _transport_bytes = _wire_context(workspace)
     data = context["data"]
     keys = list(data)
-    assert keys.index("result") < keys.index("questions") < keys.index("evidence")
-    assert keys.index("comparison_cards") < keys.index("evidence")
+    assert (
+        keys.index("result")
+        < keys.index("investigation")
+        < keys.index("questions")
+        < keys.index("evidence")
+        < keys.index("guidance")
+    )
     assert data["pack"]["version"] == SCIENTIFIC_PACK.version
     assert data["pack"]["content_hash"] == SCIENTIFIC_PACK.content_hash
     question = data["questions"][0]

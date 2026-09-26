@@ -1,0 +1,56 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Standard of care plus abiraterone and prednisone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Standard of care without abiraterone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Radiographic progression-free survival: time from randomization to the appearance of first radiological evidence of progressive disease or death; progressively increasing soft-tissue lesions or new bone lesions according to PCWG2.",
+    "population": "Overall randomized trial population, pooled across docetaxel and radiotherapy strata for the abiraterone comparison.",
+    "reported_scope": {
+      "analysis_population": "The overall population: 583 assigned to abiraterone and 589 not assigned to abiraterone.",
+      "effect_measure": "hazard ratio",
+      "endpoint": {
+        "definition": "Radiographic progression-free survival: time from randomization to the appearance of first radiological evidence of progressive disease or death; progressively increasing soft-tissue lesions or new bone lesions according to PCWG2.",
+        "name": "Radiographic progression-free survival"
+      },
+      "estimate": "0.54",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "99.9% CI, 0.41 to 0.71; p<0.0001"
+    },
+    "trial": "PEACE-1",
+    "window_or_cutoff": {
+      "description": "Overall-population analyses; median follow-up 3.5 years for rPFS and 4.4 years for OS.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:18.837315Z",
+    "path": "../../../../../../reference/sources/PEACE-1/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT01957436",
+    "sha256": "4647033fd2ac8a105955c0942c93f13de01d1357dd8c8799cb42c14f41c17ec8"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/PEACE-1/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/PEACE-1/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "PEACE-1"
+}

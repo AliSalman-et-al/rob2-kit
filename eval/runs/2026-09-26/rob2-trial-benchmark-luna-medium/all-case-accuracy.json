@@ -1,0 +1,1927 @@
+{
+  "schema": "rob2-kit.user-requested-all-case-accuracy.v1",
+  "manifest": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\trial-benchmark-manifest.v3.json",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "scope_policy": "All 26 requested outcome/trial cases are included after independent bundle verification, regardless of result-scope adjudication. A scope-matched sensitivity is calculated separately with the repository scorer.",
+  "cohort": {
+    "manifest_cases": 26,
+    "verified_scored_cases": 26,
+    "excluded_or_invalid": 0,
+    "outcome_cases": {
+      "Adverse Events": 7,
+      "Overall Survival": 10,
+      "Progression-Free Survival": 9
+    },
+    "primary_cases": 13,
+    "secondary_cases": 13
+  },
+  "accuracy": {
+    "pooled": {
+      "case_count": 26,
+      "overall": {
+        "exact": {
+          "correct": 4,
+          "total": 26,
+          "rate": 0.15384615384615385
+        },
+        "low_vs_non_low": {
+          "correct": 21,
+          "total": 26,
+          "rate": 0.8076923076923077
+        }
+      },
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 25,
+            "total": 26,
+            "rate": 0.9615384615384616
+          },
+          "low_vs_non_low": {
+            "correct": 25,
+            "total": 26,
+            "rate": 0.9615384615384616
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 16,
+            "total": 26,
+            "rate": 0.6153846153846154
+          },
+          "low_vs_non_low": {
+            "correct": 16,
+            "total": 26,
+            "rate": 0.6153846153846154
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 10,
+            "total": 26,
+            "rate": 0.38461538461538464
+          },
+          "low_vs_non_low": {
+            "correct": 16,
+            "total": 26,
+            "rate": 0.6153846153846154
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 20,
+            "total": 26,
+            "rate": 0.7692307692307693
+          },
+          "low_vs_non_low": {
+            "correct": 25,
+            "total": 26,
+            "rate": 0.9615384615384616
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 14,
+            "total": 26,
+            "rate": 0.5384615384615384
+          },
+          "low_vs_non_low": {
+            "correct": 14,
+            "total": 26,
+            "rate": 0.5384615384615384
+          }
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 85,
+          "total": 130,
+          "rate": 0.6538461538461539
+        },
+        "low_vs_non_low": {
+          "correct": 96,
+          "total": 130,
+          "rate": 0.7384615384615385
+        }
+      },
+      "domain_cells": 130
+    },
+    "by_outcome": {
+      "Adverse Events": {
+        "case_count": 7,
+        "overall": {
+          "exact": {
+            "correct": 0,
+            "total": 7,
+            "rate": 0.0
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "total": 7,
+            "rate": 0.8571428571428571
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 7,
+              "total": 7,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "total": 7,
+              "rate": 1.0
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 3,
+              "total": 7,
+              "rate": 0.42857142857142855
+            },
+            "low_vs_non_low": {
+              "correct": 3,
+              "total": 7,
+              "rate": 0.42857142857142855
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 2,
+              "total": 7,
+              "rate": 0.2857142857142857
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "total": 7,
+              "rate": 0.5714285714285714
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 3,
+              "total": 7,
+              "rate": 0.42857142857142855
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "total": 7,
+              "rate": 0.8571428571428571
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 2,
+              "total": 7,
+              "rate": 0.2857142857142857
+            },
+            "low_vs_non_low": {
+              "correct": 2,
+              "total": 7,
+              "rate": 0.2857142857142857
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 17,
+            "total": 35,
+            "rate": 0.4857142857142857
+          },
+          "low_vs_non_low": {
+            "correct": 22,
+            "total": 35,
+            "rate": 0.6285714285714286
+          }
+        },
+        "domain_cells": 35
+      },
+      "Overall Survival": {
+        "case_count": 10,
+        "overall": {
+          "exact": {
+            "correct": 2,
+            "total": 10,
+            "rate": 0.2
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "total": 10,
+            "rate": 0.6
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1.0
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 7,
+              "total": 10,
+              "rate": 0.7
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "total": 10,
+              "rate": 0.7
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 5,
+              "total": 10,
+              "rate": 0.5
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "total": 10,
+              "rate": 0.7
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1.0
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 7,
+              "total": 10,
+              "rate": 0.7
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "total": 10,
+              "rate": 0.7
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 39,
+            "total": 50,
+            "rate": 0.78
+          },
+          "low_vs_non_low": {
+            "correct": 41,
+            "total": 50,
+            "rate": 0.82
+          }
+        },
+        "domain_cells": 50
+      },
+      "Progression-Free Survival": {
+        "case_count": 9,
+        "overall": {
+          "exact": {
+            "correct": 2,
+            "total": 9,
+            "rate": 0.2222222222222222
+          },
+          "low_vs_non_low": {
+            "correct": 9,
+            "total": 9,
+            "rate": 1.0
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 8,
+              "total": 9,
+              "rate": 0.8888888888888888
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "total": 9,
+              "rate": 0.8888888888888888
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 6,
+              "total": 9,
+              "rate": 0.6666666666666666
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "total": 9,
+              "rate": 0.6666666666666666
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 3,
+              "total": 9,
+              "rate": 0.3333333333333333
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "total": 9,
+              "rate": 0.5555555555555556
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 7,
+              "total": 9,
+              "rate": 0.7777777777777778
+            },
+            "low_vs_non_low": {
+              "correct": 9,
+              "total": 9,
+              "rate": 1.0
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 5,
+              "total": 9,
+              "rate": 0.5555555555555556
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "total": 9,
+              "rate": 0.5555555555555556
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 29,
+            "total": 45,
+            "rate": 0.6444444444444445
+          },
+          "low_vs_non_low": {
+            "correct": 33,
+            "total": 45,
+            "rate": 0.7333333333333333
+          }
+        },
+        "domain_cells": 45
+      }
+    },
+    "by_domain": {
+      "D1": {
+        "exact": {
+          "correct": 25,
+          "total": 26,
+          "rate": 0.9615384615384616
+        },
+        "low_vs_non_low": {
+          "correct": 25,
+          "total": 26,
+          "rate": 0.9615384615384616
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 16,
+          "total": 26,
+          "rate": 0.6153846153846154
+        },
+        "low_vs_non_low": {
+          "correct": 16,
+          "total": 26,
+          "rate": 0.6153846153846154
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 10,
+          "total": 26,
+          "rate": 0.38461538461538464
+        },
+        "low_vs_non_low": {
+          "correct": 16,
+          "total": 26,
+          "rate": 0.6153846153846154
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 20,
+          "total": 26,
+          "rate": 0.7692307692307693
+        },
+        "low_vs_non_low": {
+          "correct": 25,
+          "total": 26,
+          "rate": 0.9615384615384616
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 14,
+          "total": 26,
+          "rate": 0.5384615384615384
+        },
+        "low_vs_non_low": {
+          "correct": 14,
+          "total": 26,
+          "rate": 0.5384615384615384
+        }
+      }
+    },
+    "by_primary_status": {
+      "primary": {
+        "case_count": 13,
+        "overall": {
+          "exact": {
+            "correct": 3,
+            "total": 13,
+            "rate": 0.23076923076923078
+          },
+          "low_vs_non_low": {
+            "correct": 9,
+            "total": 13,
+            "rate": 0.6923076923076923
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 13,
+              "total": 13,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 13,
+              "total": 13,
+              "rate": 1.0
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 10,
+              "total": 13,
+              "rate": 0.7692307692307693
+            },
+            "low_vs_non_low": {
+              "correct": 10,
+              "total": 13,
+              "rate": 0.7692307692307693
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 5,
+              "total": 13,
+              "rate": 0.38461538461538464
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "total": 13,
+              "rate": 0.5384615384615384
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 13,
+              "total": 13,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 13,
+              "total": 13,
+              "rate": 1.0
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 9,
+              "total": 13,
+              "rate": 0.6923076923076923
+            },
+            "low_vs_non_low": {
+              "correct": 9,
+              "total": 13,
+              "rate": 0.6923076923076923
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 50,
+            "total": 65,
+            "rate": 0.7692307692307693
+          },
+          "low_vs_non_low": {
+            "correct": 52,
+            "total": 65,
+            "rate": 0.8
+          }
+        },
+        "domain_cells": 65
+      },
+      "secondary": {
+        "case_count": 13,
+        "overall": {
+          "exact": {
+            "correct": 1,
+            "total": 13,
+            "rate": 0.07692307692307693
+          },
+          "low_vs_non_low": {
+            "correct": 12,
+            "total": 13,
+            "rate": 0.9230769230769231
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 12,
+              "total": 13,
+              "rate": 0.9230769230769231
+            },
+            "low_vs_non_low": {
+              "correct": 12,
+              "total": 13,
+              "rate": 0.9230769230769231
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 6,
+              "total": 13,
+              "rate": 0.46153846153846156
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "total": 13,
+              "rate": 0.46153846153846156
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 5,
+              "total": 13,
+              "rate": 0.38461538461538464
+            },
+            "low_vs_non_low": {
+              "correct": 9,
+              "total": 13,
+              "rate": 0.6923076923076923
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 7,
+              "total": 13,
+              "rate": 0.5384615384615384
+            },
+            "low_vs_non_low": {
+              "correct": 12,
+              "total": 13,
+              "rate": 0.9230769230769231
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 5,
+              "total": 13,
+              "rate": 0.38461538461538464
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "total": 13,
+              "rate": 0.38461538461538464
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 35,
+            "total": 65,
+            "rate": 0.5384615384615384
+          },
+          "low_vs_non_low": {
+            "correct": 44,
+            "total": 65,
+            "rate": 0.676923076923077
+          }
+        },
+        "domain_cells": 65
+      }
+    },
+    "by_outcome_and_primary_status": {
+      "Adverse Events / primary": {
+        "case_count": 0,
+        "overall": {
+          "exact": {
+            "correct": 0,
+            "total": 0,
+            "rate": null
+          },
+          "low_vs_non_low": {
+            "correct": 0,
+            "total": 0,
+            "rate": null
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            },
+            "low_vs_non_low": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            },
+            "low_vs_non_low": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            },
+            "low_vs_non_low": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            },
+            "low_vs_non_low": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            },
+            "low_vs_non_low": {
+              "correct": 0,
+              "total": 0,
+              "rate": null
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 0,
+            "total": 0,
+            "rate": null
+          },
+          "low_vs_non_low": {
+            "correct": 0,
+            "total": 0,
+            "rate": null
+          }
+        },
+        "domain_cells": 0
+      },
+      "Adverse Events / secondary": {
+        "case_count": 7,
+        "overall": {
+          "exact": {
+            "correct": 0,
+            "total": 7,
+            "rate": 0.0
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "total": 7,
+            "rate": 0.8571428571428571
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 7,
+              "total": 7,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "total": 7,
+              "rate": 1.0
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 3,
+              "total": 7,
+              "rate": 0.42857142857142855
+            },
+            "low_vs_non_low": {
+              "correct": 3,
+              "total": 7,
+              "rate": 0.42857142857142855
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 2,
+              "total": 7,
+              "rate": 0.2857142857142857
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "total": 7,
+              "rate": 0.5714285714285714
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 3,
+              "total": 7,
+              "rate": 0.42857142857142855
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "total": 7,
+              "rate": 0.8571428571428571
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 2,
+              "total": 7,
+              "rate": 0.2857142857142857
+            },
+            "low_vs_non_low": {
+              "correct": 2,
+              "total": 7,
+              "rate": 0.2857142857142857
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 17,
+            "total": 35,
+            "rate": 0.4857142857142857
+          },
+          "low_vs_non_low": {
+            "correct": 22,
+            "total": 35,
+            "rate": 0.6285714285714286
+          }
+        },
+        "domain_cells": 35
+      },
+      "Overall Survival / primary": {
+        "case_count": 9,
+        "overall": {
+          "exact": {
+            "correct": 2,
+            "total": 9,
+            "rate": 0.2222222222222222
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "total": 9,
+            "rate": 0.5555555555555556
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 9,
+              "total": 9,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 9,
+              "total": 9,
+              "rate": 1.0
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 6,
+              "total": 9,
+              "rate": 0.6666666666666666
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "total": 9,
+              "rate": 0.6666666666666666
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 5,
+              "total": 9,
+              "rate": 0.5555555555555556
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "total": 9,
+              "rate": 0.6666666666666666
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 9,
+              "total": 9,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 9,
+              "total": 9,
+              "rate": 1.0
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 7,
+              "total": 9,
+              "rate": 0.7777777777777778
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "total": 9,
+              "rate": 0.7777777777777778
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 36,
+            "total": 45,
+            "rate": 0.8
+          },
+          "low_vs_non_low": {
+            "correct": 37,
+            "total": 45,
+            "rate": 0.8222222222222222
+          }
+        },
+        "domain_cells": 45
+      },
+      "Overall Survival / secondary": {
+        "case_count": 1,
+        "overall": {
+          "exact": {
+            "correct": 0,
+            "total": 1,
+            "rate": 0.0
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "total": 1,
+            "rate": 1.0
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1.0
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1.0
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 0,
+              "total": 1,
+              "rate": 0.0
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1.0
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1.0
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 0,
+              "total": 1,
+              "rate": 0.0
+            },
+            "low_vs_non_low": {
+              "correct": 0,
+              "total": 1,
+              "rate": 0.0
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 3,
+            "total": 5,
+            "rate": 0.6
+          },
+          "low_vs_non_low": {
+            "correct": 4,
+            "total": 5,
+            "rate": 0.8
+          }
+        },
+        "domain_cells": 5
+      },
+      "Progression-Free Survival / primary": {
+        "case_count": 4,
+        "overall": {
+          "exact": {
+            "correct": 1,
+            "total": 4,
+            "rate": 0.25
+          },
+          "low_vs_non_low": {
+            "correct": 4,
+            "total": 4,
+            "rate": 1.0
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 4,
+              "total": 4,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "total": 4,
+              "rate": 1.0
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 4,
+              "total": 4,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "total": 4,
+              "rate": 1.0
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 0,
+              "total": 4,
+              "rate": 0.0
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "total": 4,
+              "rate": 0.25
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 4,
+              "total": 4,
+              "rate": 1.0
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "total": 4,
+              "rate": 1.0
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 2,
+              "total": 4,
+              "rate": 0.5
+            },
+            "low_vs_non_low": {
+              "correct": 2,
+              "total": 4,
+              "rate": 0.5
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 14,
+            "total": 20,
+            "rate": 0.7
+          },
+          "low_vs_non_low": {
+            "correct": 15,
+            "total": 20,
+            "rate": 0.75
+          }
+        },
+        "domain_cells": 20
+      },
+      "Progression-Free Survival / secondary": {
+        "case_count": 5,
+        "overall": {
+          "exact": {
+            "correct": 1,
+            "total": 5,
+            "rate": 0.2
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "total": 5,
+            "rate": 1.0
+          }
+        },
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 4,
+              "total": 5,
+              "rate": 0.8
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "total": 5,
+              "rate": 0.8
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 2,
+              "total": 5,
+              "rate": 0.4
+            },
+            "low_vs_non_low": {
+              "correct": 2,
+              "total": 5,
+              "rate": 0.4
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 3,
+              "total": 5,
+              "rate": 0.6
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "total": 5,
+              "rate": 0.8
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 3,
+              "total": 5,
+              "rate": 0.6
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "total": 5,
+              "rate": 1.0
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 3,
+              "total": 5,
+              "rate": 0.6
+            },
+            "low_vs_non_low": {
+              "correct": 3,
+              "total": 5,
+              "rate": 0.6
+            }
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 15,
+            "total": 25,
+            "rate": 0.6
+          },
+          "low_vs_non_low": {
+            "correct": 18,
+            "total": 25,
+            "rate": 0.72
+          }
+        },
+        "domain_cells": 25
+      }
+    }
+  },
+  "catalog_high_reference_count": 0,
+  "failures": [],
+  "cases": [
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARASENS",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.68; 95% CI, 0.57 to 0.80; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\ARASENS\\workspace\\.rob2-kit\\finalized\\81a9e82476da9ccf813fb5eaff848fd7005f97cc4e45e2766f651ab94c63d211.rob2.zip",
+      "bundle_sha256": "b939b79b70b69cba783949a5263e8454ce8da75ff3cc945bd581a30d3740d4b8",
+      "bundle_identity": "sha256:81a9e82476da9ccf813fb5eaff848fd7005f97cc4e45e2766f651ab94c63d211",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARCHES",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.81; 95% CI, 0.53 to 1.25; P=0.3361",
+      "source_locator": "Main article, interim overall-survival Results/Table 2, PDF pp. 4-5.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\ARCHES\\workspace\\.rob2-kit\\finalized\\4e5933c0a909a4e3e03f71da0c5b1c4e44eb97a8a4ad32a527007083de545163.rob2.zip",
+      "bundle_sha256": "170c8b5a33d8cec4277e115f078f046162784c34849b9a1e25a5a91a21cab8bb",
+      "bundle_identity": "sha256:4e5933c0a909a4e3e03f71da0c5b1c4e44eb97a8a4ad32a527007083de545163",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "CHAARTED",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.61; 95% CI, 0.47 to 0.80; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "high",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\CHAARTED\\workspace\\.rob2-kit\\finalized\\240245e03ac5a6258602717898238035e2e200c3235644ba75d99ef59405e8f3.rob2.zip",
+      "bundle_sha256": "13458b61f20bef5974d2f73b59e83f17a78d65db944c4be0f3bdc24e7012b68f",
+      "bundle_identity": "sha256:240245e03ac5a6258602717898238035e2e200c3235644ba75d99ef59405e8f3",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ENZAMET",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause or to the date at which the patient was last known to be alive.",
+      "effect_size": "hazard ratio 0.67; 95% CI, 0.52 to 0.86; P=0.002",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\ENZAMET\\workspace\\.rob2-kit\\finalized\\cee15dad808297d006176903546fcb31a575dacd8cdf2a8e8b9dc288625aef07.rob2.zip",
+      "bundle_sha256": "cff8e2c5dff0d4b1af81f3e799938501f60caa7e30d36efef90580179962f376",
+      "bundle_identity": "sha256:cee15dad808297d006176903546fcb31a575dacd8cdf2a8e8b9dc288625aef07",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "GETUG-AFU-15",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 1.01; 95% CI, 0.75 to 1.36",
+      "source_locator": "Main article abstract, Findings, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\GETUG-AFU-15\\workspace\\.rob2-kit\\finalized\\91f29b07d3d844ec8d7972629e14b07397017a5373d1bdb6d31191a3b1ce6be1.rob2.zip",
+      "bundle_sha256": "02b545c603c0d2bbf8287ea0b4950b0fb42dd6df401df83950cb85cbb0ddc144",
+      "bundle_identity": "sha256:91f29b07d3d844ec8d7972629e14b07397017a5373d1bdb6d31191a3b1ce6be1",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.62; 95% CI, 0.51 to 0.76; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\LATITUDE\\workspace\\.rob2-kit\\finalized\\34bea4fb27e9e29e0f226070089cb3a6d671e05a50eea4cdc2c5b41cb986db7f.rob2.zip",
+      "bundle_sha256": "88d0d330df6b7e5ddc537dea0e9251b5cdc2d4ecbd440eedd84acc0e0bbde777",
+      "bundle_identity": "sha256:34bea4fb27e9e29e0f226070089cb3a6d671e05a50eea4cdc2c5b41cb986db7f",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "PEACE-1",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "The time between randomization and death from any cause; patients without events were censored at the date of last follow-up.",
+      "effect_size": "hazard ratio 0.82; 95.1% CI, 0.69 to 0.98; P=0.030",
+      "source_locator": "Main article abstract, Findings, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\PEACE-1\\workspace\\.rob2-kit\\finalized\\7559adb3dabff651634f8c90f52e664e1bf1469ff0ed9a18f56f8090ff08dbcb.rob2.zip",
+      "bundle_sha256": "bc4b6182896d5846cfc0123d6089cfad25312cdce1c7f46594901ce066eee36a",
+      "bundle_identity": "sha256:7559adb3dabff651634f8c90f52e664e1bf1469ff0ed9a18f56f8090ff08dbcb",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death from any cause.",
+      "effect_size": "hazard ratio 0.63; 95% CI, 0.52 to 0.76; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\d0552d4d39bd4fdad34611b0161188f2859ca8fe5b9bd783953138be402bb595.rob2.zip",
+      "bundle_sha256": "ed1368f5e7c0331ec55f81c03ea39831a8b3b55adc2009b64209db7374611353",
+      "bundle_identity": "sha256:d0552d4d39bd4fdad34611b0161188f2859ca8fe5b9bd783953138be402bb595",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "SWOG-1216",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.86; 95% CI, 0.72 to 1.02; one-sided P=0.040",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\SWOG-1216\\workspace\\.rob2-kit\\finalized\\1b430b4c542bcd8eeaf872a8206b138095d322a96ba65b524fc8e2b0cb0968da.rob2.zip",
+      "bundle_sha256": "fcd4575c4e0b107dda4bb7d42427c479fc1e352f04a7f9e981bf5fa2d00d8dfb",
+      "bundle_identity": "sha256:1b430b4c542bcd8eeaf872a8206b138095d322a96ba65b524fc8e2b0cb0968da",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "TITAN",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.67; 95% CI, 0.51 to 0.89; P=0.005",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\TITAN\\workspace\\.rob2-kit\\finalized\\0f03815527c8cffd65d59f4c96963e8435d11ab123c144de7c17f22022bc34d7.rob2.zip",
+      "bundle_sha256": "54df3f9d06dce94ba9646467f148568116847e1d56b9bcc046f7d216d78ea181",
+      "bundle_identity": "sha256:0f03815527c8cffd65d59f4c96963e8435d11ab123c144de7c17f22022bc34d7",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARCHES",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to the appearance of first radiological evidence of progressive disease assessed by independent central review or death from any cause within 24 weeks of drug discontinuation; radiographic disease progression is defined as progressive disease by RECIST version 1.1.",
+      "effect_size": "hazard ratio 0.39; 95% CI, 0.30 to 0.50; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\ARCHES\\workspace\\.rob2-kit\\finalized\\c88e4899d7dc5885d91fe8d52aa4551a8e1c3770fbd741bbd81c4853c3b56f20.rob2.zip",
+      "bundle_sha256": "c900a2d94efae98ebcd90da6cf1ee27e7b61970b1c143bde584ccac220e94edc",
+      "bundle_identity": "sha256:c88e4899d7dc5885d91fe8d52aa4551a8e1c3770fbd741bbd81c4853c3b56f20",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "CHAARTED",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Clinical progression-free survival: time to the appearance of symptomatic bone metastases, progression according to RECIST version 1.0, or clinical deterioration due to cancer in the investigator’s opinion.",
+      "effect_size": "hazard ratio 0.61; 95% CI, 0.50 to 0.75; P<0.001",
+      "source_locator": "Main article Results/Table 2, secondary end points, PDF pp. 4-5.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\CHAARTED\\workspace\\.rob2-kit\\finalized\\cfd1b98f81dfd2923b53ba750cc08321cc0b02d2b900f58b6c3c25eefa240917.rob2.zip",
+      "bundle_sha256": "918eefd97c5015cc5cd1fcd13c1356ce55599c6babd704225ed75e2e9e2b7740",
+      "bundle_identity": "sha256:cfd1b98f81dfd2923b53ba750cc08321cc0b02d2b900f58b6c3c25eefa240917",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ENZAMET",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Clinical progression-free survival: time to the earliest sign of radiographic progression according to PCWG2 for bone lesions and RECIST version 1.1 for soft-tissue lesions; development of symptoms attributable to cancer progression; or initiation of another anticancer treatment for prostate cancer.",
+      "effect_size": "hazard ratio 0.40; 95% CI, 0.33 to 0.49; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\ENZAMET\\workspace\\.rob2-kit\\finalized\\75e03a8c962a920f681ae6b72c49d1c5df959736db2ac4b0a63ccdcc39a40c1e.rob2.zip",
+      "bundle_sha256": "50db19bfcafa27e011e7adada83270f2bf990df88ae58ce539ba092f2cc1c867",
+      "bundle_identity": "sha256:75e03a8c962a920f681ae6b72c49d1c5df959736db2ac4b0a63ccdcc39a40c1e",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "GETUG-AFU-15",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Clinical progression-free survival: progression of pre-existing lesions according to RECIST version 1.0 or occurrence of new bone lesions, whichever occurred first.",
+      "effect_size": "hazard ratio 0.75; 95% CI, 0.59 to 0.94; P=0.015",
+      "source_locator": "Main article Results, clinical progression-free survival, Figure 3, PDF p. 4.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\GETUG-AFU-15\\workspace\\.rob2-kit\\finalized\\f6c7f5c69c8f5b43cdf63147aabe980577b17d24e1bf0c3c81b586ad30060bcd.rob2.zip",
+      "bundle_sha256": "8a2bfd12ca90c8d0c3b51b702d3b80645460c2350d3fa893f468adb34f1f0002",
+      "bundle_identity": "sha256:f6c7f5c69c8f5b43cdf63147aabe980577b17d24e1bf0c3c81b586ad30060bcd",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "LATITUDE",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "Radiographic progression-free survival: time from randomization to the first radiological evidence of progressive disease or death; soft-tissue lesions were evaluated by CT or MRI using RECIST version 1.1, and new bone lesions by PCWG2.",
+      "effect_size": "hazard ratio 0.47; 95% CI, 0.39 to 0.55; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\LATITUDE\\workspace\\.rob2-kit\\finalized\\bd658144289ac768ded846185766c3ede3cdc717ff12b81a55f0c02555a6180e.rob2.zip",
+      "bundle_sha256": "c8fef10909b9cf07341c835c05438ebab48833d49e91af480fd2ec2000d847c0",
+      "bundle_identity": "sha256:bd658144289ac768ded846185766c3ede3cdc717ff12b81a55f0c02555a6180e",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "PEACE-1",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "Radiographic progression-free survival: time from randomization to the appearance of first radiological evidence of progressive disease or death; progressively increasing soft-tissue lesions or new bone lesions according to PCWG2.",
+      "effect_size": "hazard ratio 0.54; 99.9% CI, 0.41 to 0.71; p<0.0001",
+      "source_locator": "Main article abstract, Findings, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\PEACE-1\\workspace\\.rob2-kit\\finalized\\3b1fd75db5171f0e85c9e032f6740037e67d27b7140eba3cf69112df408049eb.rob2.zip",
+      "bundle_sha256": "a9d7c8b9f2e3a918d4fe353e233ffc10da48ff3b740fac894731784b3044726a",
+      "bundle_identity": "sha256:3b1fd75db5171f0e85c9e032f6740037e67d27b7140eba3cf69112df408049eb",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "STAMPEDE",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Progression-free survival defined as failure-free survival excluding patients with biochemical (PSA progression) failure.",
+      "effect_size": "hazard ratio 0.40; 95% CI, 0.34 to 0.47; P<0.001",
+      "source_locator": "Main article Results, Other Efficacy Outcome Measures, PDF p. 5.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\b7cd89bfe9f220b0a2495fad041a8946b4a2c95e01646d597db0ff7c0fb67612.rob2.zip",
+      "bundle_sha256": "101443bf05f40f579ebd028565a2c72ef4759324f13a5d2c7d0f7ef886debeed",
+      "bundle_identity": "sha256:b7cd89bfe9f220b0a2495fad041a8946b4a2c95e01646d597db0ff7c0fb67612",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "SWOG-1216",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Progression-free survival from the date of randomization to first occurrence of PSA or radiographic progression, symptomatic deterioration, or death due to any cause.",
+      "effect_size": "hazard ratio 0.58; 95% CI, 0.51 to 0.67; P<0.0001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "some_concerns",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\SWOG-1216\\workspace\\.rob2-kit\\finalized\\db4b13386094189316f1a58b4497976bf7ee537b6727d09bb1f06842799a9c4d.rob2.zip",
+      "bundle_sha256": "890e7605e14d3a8ce70c1c09acc9fb3db4f34e6691a5a327bea3f1b61e6ff8f8",
+      "bundle_identity": "sha256:db4b13386094189316f1a58b4497976bf7ee537b6727d09bb1f06842799a9c4d",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "TITAN",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "Radiographic progression-free survival: time from randomization to first imaging-based documentation of progressive disease or death, whichever occurred first.",
+      "effect_size": "hazard ratio 0.48; 95% CI, 0.39 to 0.60; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\TITAN\\workspace\\.rob2-kit\\finalized\\287822e504ab94f5617396d265a2dffc4a8b89e40387a7cd70419ed6952a3b13.rob2.zip",
+      "bundle_sha256": "31c22e4fab8a7680a2cb9133614766e4946dc12c37253fdcb089c7ee4d5d2c1b",
+      "bundle_identity": "sha256:287822e504ab94f5617396d265a2dffc4a8b89e40387a7cd70419ed6952a3b13",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARASENS",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.3.",
+      "effect_size": "66.1% vs 63.5% had grade 3 or 4 adverse events.",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\ARASENS\\workspace\\.rob2-kit\\finalized\\7ac11c76362f000744c70ea0248540ee16da72b38217c289e9a9192f1c8be4c5.rob2.zip",
+      "bundle_sha256": "6bc26fb431ea85e0b80118fe03af84e7dde5b0dccd6e7f6dc9474fff419e8336",
+      "bundle_identity": "sha256:7ac11c76362f000744c70ea0248540ee16da72b38217c289e9a9192f1c8be4c5",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARCHES",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.3.",
+      "effect_size": "24.3% vs 25.6% had grade 3 or higher adverse events.",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\ARCHES\\workspace\\.rob2-kit\\finalized\\970063237e426e4492ab6f02ffda4df91f574582b98db5927ce15b12371f154f.rob2.zip",
+      "bundle_sha256": "259c264f005bc52d2672717e90ffc2c6a2b9a7e3fbc6d58e6938b1980159e21b",
+      "bundle_identity": "sha256:970063237e426e4492ab6f02ffda4df91f574582b98db5927ce15b12371f154f",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 adverse events; NCI-CTCAE version 4.0.2 was used to grade adverse events.",
+      "effect_size": "Grade 3: 277/563 (49%) vs 194/558 (35%).",
+      "source_locator": "Main article Table 2, Any Adverse Event severity, Grade 3 row, PDF p. 9.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\ENZAMET-grade3-assessment\\workspace\\.rob2-kit\\finalized\\d9e442c11817bdbd340f9975af76bd9821d627f10f64f16e001a12b0470a0a69.rob2.zip",
+      "bundle_sha256": "32dc579cd5dccb1c2098b80649f5efcba6f04c29b861f1c6623ae9336947ca0a",
+      "bundle_identity": "sha256:d9e442c11817bdbd340f9975af76bd9821d627f10f64f16e001a12b0470a0a69",
+      "scope_note": "User-directed Grade 3-only result; approved proposal reports the safety population, narrower than the randomized target. Included in all-case score."
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.",
+      "effect_size": "63% vs 48% had grade 3 or 4 adverse events.",
+      "source_locator": "Main article Results, Safety, PDF p. 5.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\LATITUDE\\workspace\\.rob2-kit\\finalized\\625bf56c9b2d9d7e8479ef1d0a782fcd6438efabb673a6811a1cdd0ae09fb1b1.rob2.zip",
+      "bundle_sha256": "b7d3a2216d42f59c86718b5ceb88cff7d0deba5d0ed033f32cf8794ca76fabf3",
+      "bundle_identity": "sha256:625bf56c9b2d9d7e8479ef1d0a782fcd6438efabb673a6811a1cdd0ae09fb1b1",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "PEACE-1",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 or higher adverse events; NCI-CTCAE version 4.0 was used to grade adverse events.",
+      "effect_size": "In the docetaxel population, 217/347 (63%) with abiraterone vs 181/350 (52%) without abiraterone had grade 3 or worse adverse events.",
+      "source_locator": "Main article abstract, Findings, docetaxel population of interest, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\PEACE-1\\workspace\\.rob2-kit\\finalized\\b4c07c3020bf7e0ac28d5c676b0592843dc1dd1148471007e54854e324944d6c.rob2.zip",
+      "bundle_sha256": "852c0f836209db07821267f98d1f38e3f2ce4dfb5d0bee81359ebfa30751b26b",
+      "bundle_identity": "sha256:b4c07c3020bf7e0ac28d5c676b0592843dc1dd1148471007e54854e324944d6c",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "STAMPEDE",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 or higher adverse events; NCI-CTCAE initially version 3.0 and later version 4.0 was used.",
+      "effect_size": "443/948 (47%) vs 315/960 (33%) had grade 3 or higher adverse events.",
+      "source_locator": "Main article abstract and Results, Adverse Events, PDF pp. 1 and 6.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\b97c07f1f84684e499c1862fb65e0c8e105d7dd03592ada36f5aa7224518a6f0.rob2.zip",
+      "bundle_sha256": "313f573f951139086685e2b968a9438b99b0d7021ab2a34a15a930f90f095909",
+      "bundle_identity": "sha256:b97c07f1f84684e499c1862fb65e0c8e105d7dd03592ada36f5aa7224518a6f0",
+      "scope_note": ""
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "TITAN",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.3.",
+      "effect_size": "42.2% vs 40.8% had grade 3 or 4 adverse events.",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\TITAN\\workspace\\.rob2-kit\\finalized\\198100fc282d96b432c2afa39154052b9f1d98b76ff2d394fc5eb2535198aed2.rob2.zip",
+      "bundle_sha256": "26dbe3835189204a3197fab1b2b148e955b562623f0f9aecea0108487bf1c2cc",
+      "bundle_identity": "sha256:198100fc282d96b432c2afa39154052b9f1d98b76ff2d394fc5eb2535198aed2",
+      "scope_note": ""
+    }
+  ]
+}

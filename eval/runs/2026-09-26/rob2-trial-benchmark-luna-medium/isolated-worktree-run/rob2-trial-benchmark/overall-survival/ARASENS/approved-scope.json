@@ -1,0 +1,17 @@
+{
+  "approval_identity": "sha256:c310ec5302ebaedfdbb020da8ced36757de2ea0ae43d552df2f242f998f3ed7b",
+  "approved_at": "2026-09-26T11:57:41.023903Z",
+  "case_requested_scope": null,
+  "proposal_identity": "sha256:7d0acf81584c2263374e2bc97dda0afa92ef5207b46612466ead9ce01d9aaca6",
+  "results": [
+    {
+      "identity": "sha256:260eafee97cad11db21be572f022c75141e7441e10a381c81d83d8cf6709e75d",
+      "kind": "assessable",
+      "reported_scope_identity": "sha256:699ad4c88fd2260ed1dc35e09d269017c57f8ab15413210539be0c231e237579",
+      "target_scope_identity": "sha256:abf2ddf67ddff228806db1d513c02703e7298492372a87ec9106b48a739bef24",
+      "trial_id": "arasens"
+    }
+  ],
+  "review_identity": "sha256:c78e38dad3850906ea4b5650716c72c2e8ae3ea726df90fef15a608ad4ddea45",
+  "schema": "rob2-kit.rsi-approved-scope.v1"
+}

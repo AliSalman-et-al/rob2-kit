@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+from pydantic import ValidationError
 from support.rob2 import (
     _assessment_workspace,
     _call,
@@ -17,6 +20,7 @@ from support.rob2 import (
 
 from rob2_kit.application._state import _state
 from rob2_kit.packs import SCIENTIFIC_PACK
+from rob2_kit.workflow_models import DomainAnswer
 
 
 def test_proposal_reasoning_receipt_is_required_and_consumed(tmp_path: Path) -> None:
@@ -250,6 +254,66 @@ def test_domain_save_requires_a_validated_revision(tmp_path: Path) -> None:
     assert result.get("code") == "reasoning_stale" or result["condition"]["code"] == (
         "reasoning_stale"
     )
+
+
+def test_limitation_expansion_remaps_counterevidence_from_original_bases() -> None:
+    evidence = ["eh_" + digit * 16 for digit in "123"]
+    payload = {
+        "question_id": "sq:example",
+        "answer": "probably_yes",
+        "bases": [
+            {"kind": "direct_support", "evidence": evidence[0]},
+            {
+                "kind": "limitation",
+                "unresolved_premise": "One point remains unresolved.",
+                "stopping_rationale": "The relevant passages were inspected.",
+                "evidence": evidence[1:],
+            },
+            {"kind": "direct_support", "evidence": evidence[2]},
+        ],
+        "counterevidence": [
+            {"basis_index": index, "implication": f"Basis {index} is limited."}
+            for index in range(3)
+        ],
+    }
+
+    parsed = DomainAnswer.model_validate(payload)
+
+    assert [item.basis_index for item in parsed.counterevidence or ()] == [0, 1, 4]
+    assert [basis.kind for basis in parsed.bases] == [
+        "direct_support",
+        "limitation",
+        "context",
+        "context",
+        "direct_support",
+    ]
+
+    # This index exists only after expansion, so it must still be rejected as
+    # invalid relative to the caller's three original bases.
+    payload["counterevidence"][1]["basis_index"] = 3
+    with pytest.raises(ValidationError, match="original answer basis"):
+        DomainAnswer.model_validate(payload)
+
+    # A persisted pre-fix record is already expanded, so leave its stored index
+    # and canonical basis sequence intact instead of guessing its old target.
+    historical = {
+        **payload,
+        "bases": [
+            {
+                "kind": "limitation",
+                "unresolved_premise": "One point remains unresolved.",
+                "stopping_rationale": "The relevant passages were inspected.",
+            },
+            {"kind": "context", "evidence": evidence[1]},
+            {"kind": "direct_support", "evidence": evidence[2]},
+        ],
+        "counterevidence": [{"basis_index": 1, "implication": "Historical target."}],
+    }
+    historical_before = json.dumps(historical, sort_keys=True)
+    restored = DomainAnswer.model_validate(historical)
+    assert restored.counterevidence is not None
+    assert restored.counterevidence[0].basis_index == 1
+    assert json.dumps(historical, sort_keys=True) == historical_before
 
 
 def test_reasoning_requires_counterevidence_for_contradiction(tmp_path: Path) -> None:

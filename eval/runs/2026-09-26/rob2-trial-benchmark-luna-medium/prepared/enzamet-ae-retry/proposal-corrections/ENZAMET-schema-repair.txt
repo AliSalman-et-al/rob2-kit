@@ -1,0 +1,1 @@
+Please revise the proposal using one group_values entry per treatment arm, as required by the validator. Preserve that arm’s Grade 3, Grade 4, and Grade 5 counts and percentages separately within its value; do not sum the rows or omit a grade.

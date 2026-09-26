@@ -31,6 +31,212 @@ from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import DirectEvidenceUse, DomainAnswer
 
 
+def test_public_d2_and_d3_contexts_share_result_bound_source_flow(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    saved_d1 = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved_d1["outcome"] == "success", saved_d1
+    revision = int(saved_d1["head"]["state_revision"])
+
+    draft = _domain_draft("trial", "domain:deviations", revision, evidence)
+    answer = next(
+        item
+        for item in draft["answers"]
+        if item["question_id"] == "sq:deviations:context-deviations"
+    )
+    row = {
+        "arm": "active",
+        "population": "all randomized participants",
+        "unit": "participants",
+        "time_point": "end of follow-up",
+        "randomized": 100,
+        "observed": 92,
+        "basis": [evidence["handle"]],
+    }
+    second_arm_row = {
+        **row,
+        "arm": "control",
+        "randomized": 98,
+        "observed": 91,
+    }
+    preview = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:deviations",
+            "missing_data": [row, second_arm_row],
+        },
+    )
+    assert preview["outcome"] == "success", preview
+    preview_flow = preview["data"]["comparison_cards"][0]["participant_flow"]
+    assert {item["scope"]["arm"] for item in preview_flow} == {"active", "control"}
+    assert all(item["result_identity"] for item in preview_flow)
+    assert all(item["passages"] for item in preview_flow)
+
+    answer["missing_data"] = [{**row, "result_identity": "sha256:" + "f" * 64}]
+    rejected = _call(workspace, "save_domain_judgment", draft)
+    assert rejected["outcome"] == "repair", rejected
+    assert any(repair["code"] == "missing_data_result_mismatch" for repair in rejected["repairs"])
+    assert rejected["head"]["state_revision"] == revision
+
+    answer["missing_data"] = [row, second_arm_row]
+    saved_d2 = _call(workspace, "save_domain_judgment", draft)
+    assert saved_d2["outcome"] == "success", saved_d2
+    revision = int(saved_d2["head"]["state_revision"])
+
+    state = _state(workspace)
+    expected_identity = state["domain_records"]["trial:domain:deviations"]["result_identity"]
+    saved_row = state["domain_records"]["trial:domain:deviations"]["answers"]
+    saved_row = next(
+        item["missing_data"]["rows"][0]
+        for item in saved_row
+        if item["question_id"] == "sq:deviations:context-deviations"
+    )
+    assert saved_row["result_identity"] == expected_identity
+
+    for domain_id in ("domain:deviations", "domain:missing"):
+        context = _call(
+            workspace,
+            "get_domain_context",
+            {"trial_id": "trial", "domain_id": domain_id},
+        )
+        assert context["outcome"] == "success", context.get("condition", context)
+        card = context["data"]["comparison_cards"][0]
+        assert card["result_identity"] == expected_identity
+        rows = card["participant_flow"]
+        randomized = [item for item in rows if item["kind"] == "randomized"]
+        unknown_stage = [item for item in rows if item["kind"] == "analyzed"]
+        assert {item["value"] for item in randomized} == {98, 100}
+        assert all(item["result_identity"] == expected_identity for item in randomized)
+        assert {item["scope"]["arm"] for item in randomized} == {"active", "control"}
+        assert all(item["passages"] for item in randomized)
+        assert {item["scope"]["arm"] for item in unknown_stage} == {"active", "control"}
+        assert all(item["value"] is None for item in unknown_stage)
+        assert all(item["status"] == "unknown" for item in unknown_stage)
+        assert all(item["passages"] for item in unknown_stage)
+
+
+def test_public_cards_expose_neutral_paired_contrasts_without_answers(tmp_path: Path) -> None:
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    expected_pairs = {
+        "domain:deviations": {
+            "d2-protocol-status-same-trial-context",
+            "d2-cause-same-protocol-inconsistency",
+        },
+        "domain:missing": {
+            "d3-complete-versus-unresolved-availability",
+            "d3-mitigation-evidence",
+            "d3-possible-versus-likely-dependence",
+        },
+        "domain:measurement": {
+            "d4-objective-versus-judgment-dependent",
+            "d4-equal-versus-differential-detection",
+            "d4-assessor-awareness",
+            "d4-possible-versus-likely-influence",
+        },
+    }
+    for domain_id, required_pairs in expected_pairs.items():
+        context = _call(
+            workspace,
+            "get_domain_context",
+            {"trial_id": "trial", "domain_id": domain_id},
+        )
+        assert context["outcome"] == "success", context
+        card = context["data"]["comparison_cards"][0]
+        pairs = card["paired_examples"]
+        assert required_pairs <= {item["pair_id"] for item in pairs}
+        assert not any("answer" in item for item in pairs)
+        assert all(item["status"] == "unknown" for item in card["propositions"])
+
+
+def test_blinded_trial_d2_6_can_carry_flow_without_activating_d2_3(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:deviations",
+            "missing_data": [
+                {
+                    "arm": "active",
+                    "population": "all randomized participants",
+                    "unit": "participants",
+                    "time_point": "end of follow-up",
+                    "randomized": 100,
+                    "observed": 97,
+                    "basis": [evidence["handle"]],
+                }
+            ],
+        },
+    )
+    assert context["outcome"] == "success", context
+    flow = context["data"]["comparison_cards"][0]["participant_flow"]
+    assert {item["kind"] for item in flow if item["value"] is not None} == {
+        "randomized",
+        "observed",
+    }
+    questions = {item["id"]: item for item in context["data"]["questions"]}
+    assert questions["sq:deviations:appropriate-analysis"]["activation_status"] == "always_active"
+
+    draft = _domain_draft("trial", "domain:deviations", revision, evidence)
+    blinded_answers = {"sq:deviations:participants-aware", "sq:deviations:personnel-aware"}
+    for answer in draft["answers"]:
+        if answer["question_id"] in blinded_answers:
+            answer["answer"] = "no"
+    inactive_d2_3 = {
+        "sq:deviations:context-deviations",
+        "sq:deviations:affected-outcome",
+        "sq:deviations:balanced",
+    }
+    draft["answers"] = [
+        item for item in draft["answers"] if item["question_id"] not in inactive_d2_3
+    ]
+    d2_6 = next(
+        item
+        for item in draft["answers"]
+        if item["question_id"] == "sq:deviations:appropriate-analysis"
+    )
+    d2_6["missing_data"] = [
+        {
+            "arm": "active",
+            "population": "all randomized participants",
+            "unit": "participants",
+            "time_point": "end of follow-up",
+            "randomized": 100,
+            "observed": 97,
+            "basis": [evidence["handle"]],
+        }
+    ]
+    saved = _call(workspace, "save_domain_judgment", draft)
+
+    assert saved["outcome"] == "success", saved
+    state = _state(workspace)
+    saved_answers = state["domain_records"]["trial:domain:deviations"]["answers"]
+    assert "sq:deviations:context-deviations" not in {item["question_id"] for item in saved_answers}
+    saved_flow_answer = next(
+        item
+        for item in saved_answers
+        if item["question_id"] == "sq:deviations:appropriate-analysis"
+    )
+    assert saved_flow_answer["missing_data"]["rows"][0]["randomized"] == 100
+
+
+def _resolve_local(schema: dict[str, Any], node: dict[str, Any]) -> dict[str, Any]:
+    reference = node.get("$ref")
+    if not isinstance(reference, str) or not reference.startswith("#/"):
+        return node
+    resolved: Any = schema
+    for part in reference.removeprefix("#/").split("/"):
+        resolved = resolved[part.replace("~1", "/").replace("~0", "~")]
+    assert isinstance(resolved, dict)
+    return resolved
+
+
 def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
     async def invoke() -> dict[str, Any]:
         os.environ["ROB2_WORKSPACE"] = str(workspace)
@@ -79,7 +285,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     assert "clauses" not in draft["properties"]
     assert "evidence_uses" not in draft["properties"]
     assert "limitations" not in draft["properties"]
-    answer = draft["properties"]["answers"]["items"]
+    answer = _resolve_local(draft, draft["properties"]["answers"]["items"])
     assert set(answer["properties"]) == {
         "question_id",
         "answer",
@@ -89,7 +295,9 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         "unknowns",
         "counterevidence",
     }
-    bases = answer["properties"]["bases"]["items"]["oneOf"]
+    bases = [
+        _resolve_local(draft, item) for item in answer["properties"]["bases"]["items"]["oneOf"]
+    ]
     kinds = {
         item["properties"]["kind"].get("const") or item["properties"]["kind"]["enum"][0]
         for item in bases
@@ -122,7 +330,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     receipt_options = receipt_schema.get("anyOf", [receipt_schema])
     assert any(option.get("pattern") == r"^sr_[0-9a-f]{8,64}$" for option in receipt_options)
     assert "search_receipt" not in limitation.get("required", [])
-    missing_row = answer["properties"]["missing_data"]["anyOf"][0]["items"]
+    missing_row = _resolve_local(draft, answer["properties"]["missing_data"]["anyOf"][0]["items"])
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{8,64}$"
 
 
@@ -317,7 +525,7 @@ def test_missing_data_is_typed_and_only_allowed_for_domain_3_1() -> None:
                 "missing_data": [row | {"basis": ["copied quote"]}],
             }
         )
-    with pytest.raises(ValueError, match="only valid for question"):
+    with pytest.raises(ValueError, match="only valid for Domain 2.3, Domain 2.6, or Domain 3.1"):
         DomainAnswer.model_validate(
             {
                 "question_id": "sq:missing:evidence-unbiased",
@@ -351,7 +559,14 @@ def test_missing_data_reconciliation_derives_arithmetic_and_count_conflicts() ->
     assert [row["missing_fraction"] for row in reconciled["rows"]] == [0.05, 0.05]
     assert reconciled["conflicts"] == [
         {
-            "scope": reconciled["rows"][1]["scope"],
+            "scope": {
+                **reconciled["rows"][1]["scope"],
+                "result_identity": None,
+                "endpoint": None,
+                "severity": None,
+                "window": None,
+                "event_definition": None,
+            },
             "reports": reconciled["rows"],
         }
     ]

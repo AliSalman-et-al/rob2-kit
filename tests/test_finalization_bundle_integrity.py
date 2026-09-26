@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -13,6 +15,7 @@ from typing import Any
 
 import pymupdf
 import pytest
+from fastmcp import Client
 from pydantic import ValidationError
 from support.rob2 import (
     _answer_value,
@@ -37,6 +40,7 @@ from rob2_kit.application.evidence import search_sources
 from rob2_kit.application.finalization import _valid_overall_receipt, verify_bundle
 from rob2_kit.application.intake import prepare_batch
 from rob2_kit.interfaces.mcp.contracts import validate_output
+from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.logic.evaluator import evaluate_overall
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import TrialDeclaration
@@ -76,6 +80,15 @@ def _artifact(workspace: Path) -> Path:
     result = finalization.finalize_batch(workspace, revision)
     assert result["outcome"] == "success", result
     return workspace / result["artifact"]["path"]
+
+
+def _public_tool_result(workspace: Path, name: str, arguments: dict[str, Any]) -> Any:
+    async def invoke() -> Any:
+        os.environ["ROB2_WORKSPACE"] = str(workspace)
+        async with Client(mcp) as client:
+            return await client.call_tool(name, arguments, raise_on_error=False)
+
+    return asyncio.run(invoke())
 
 
 def _close_trials(workspace: Path, expected_revision: int) -> int:
@@ -565,6 +578,38 @@ def test_finalize_requires_an_explicit_trial_closure(tmp_path: Path) -> None:
         finalization.finalize_batch(workspace, revision)
 
 
+def test_finalize_reports_independent_verification_failure_and_action(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace, _evidence, revision = _complete_assessment(tmp_path)
+    revision = _close_trials(workspace, revision)
+
+    def reject_bundle(_path: Path, *, diagnostic: dict[str, object] | None = None) -> bool:
+        if diagnostic is not None:
+            diagnostic.update(
+                {
+                    "code": "bundle_independent_verification_failed",
+                    "failed_check_line": 123,
+                    "detail": "The independent verifier rejected canonical evidence lineage.",
+                    "action": "Inspect the lineage and retry finalize_batch; do not override.",
+                }
+            )
+        return False
+
+    monkeypatch.setattr(finalization, "verify_bundle", reject_bundle)
+
+    response = _call(workspace, "finalize_batch", {"expected_revision": revision})
+
+    assert response["outcome"] == "condition", response
+    assert response["condition"]["code"] == "bundle_independent_verification_failed"
+    assert response["condition"]["detail"] == (
+        "The independent verifier rejected canonical evidence lineage."
+    )
+    assert "retry finalize_batch" in response["condition"]["action"]
+    assert response["head"]["state_revision"] == revision
+    assert not list((workspace / ".rob2-kit" / "finalized").glob("*.rob2.zip"))
+
+
 def test_finalize_response_projects_frozen_assessment_summary_and_retry(
     tmp_path: Path,
 ) -> None:
@@ -923,3 +968,288 @@ def test_finalization_requires_direct_proposal_authorization(tmp_path: Path, fie
 
     with pytest.raises(ValueError, match="Proposal Review|Proposal acknowledgment"):
         finalization.finalize_batch(workspace, state["revision"])
+
+
+def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "protocol.txt").write_text(
+        "A distinct protocol passage describes trial procedures.\n", encoding="utf-8"
+    )
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    protocol = next(
+        row
+        for row in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if row["label"] == "protocol.txt"
+    )
+    second_evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": protocol["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+
+    domain_id = SCIENTIFIC_PACK.domains[0].id
+    draft = _domain_draft("trial", domain_id, revision, evidence)
+    for answer in draft["answers"]:
+        answer["justification"] = "The inspected passages are relevant to this answer."
+        answer["unknowns"] = []
+        answer["counterevidence"] = []
+    target = draft["answers"][0]
+    target["bases"] = [
+        {"kind": "direct_support", "evidence": evidence["handle"]},
+        {
+            "kind": "limitation",
+            "unresolved_premise": "One allocation detail remains unresolved.",
+            "stopping_rationale": "The relevant report and protocol passages were inspected.",
+            "evidence": [second_evidence["handle"], evidence["handle"]],
+        },
+        {"kind": "direct_support", "evidence": second_evidence["handle"]},
+    ]
+    target["counterevidence"] = [
+        {"basis_index": index, "implication": f"Original basis {index} limits this answer."}
+        for index in range(3)
+    ]
+
+    malformed = deepcopy(draft)
+    malformed["answers"][0]["counterevidence"][1]["basis_index"] = 3
+    before = _state(workspace)
+    rejected = _public_tool_result(workspace, "validate_domain_assessment", malformed)
+    assert rejected.is_error
+    assert _state(workspace)["revision"] == before["revision"]
+    assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
+
+    validated = _call(workspace, "validate_domain_assessment", draft)
+    assert validated["outcome"] == "success", validated
+    saved = _call(workspace, "save_domain_judgment", validated["data"]["next_action"])
+    assert saved["outcome"] == "success", saved
+    revision = int(saved["head"]["state_revision"])
+    stored = _state(workspace)["domain_records"][f"trial:{domain_id}"]["answers"][0]
+    expected_kinds = ["direct_support", "limitation", "context", "context", "direct_support"]
+    expected_indices = [0, 1, 4]
+    assert [basis["kind"] for basis in stored["bases"]] == expected_kinds
+    assert [point["basis_index"] for point in stored["counterevidence"]] == expected_indices
+    assert stored["bases"][2]["evidence"] == second_evidence["identity"]
+    assert stored["bases"][3]["evidence"] == evidence["identity"]
+    assert stored["bases"][4]["evidence"] == second_evidence["identity"]
+
+    for domain in SCIENTIFIC_PACK.domains[1:]:
+        result = _call(
+            workspace, "save_domain_judgment", _domain_draft("trial", domain.id, revision, evidence)
+        )
+        assert result["outcome"] == "success", result
+        revision = int(result["head"]["state_revision"])
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": revision},
+    )
+    assert reviewed["outcome"] == "success", reviewed
+    finding = next(
+        row for row in reviewed["data"]["domain_findings"] if row["domain_id"] == domain_id
+    )
+    reviewed_answer = next(
+        row for row in finding["answers"] if row["question_id"] == target["question_id"]
+    )
+    assert [
+        point["basis_index"] for point in reviewed_answer["counterevidence"]
+    ] == expected_indices
+    assert [reviewed_answer["bases"][index]["kind"] for index in expected_indices] == [
+        "direct_support",
+        "limitation",
+        "direct_support",
+    ]
+
+    closed = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["outcome"] == "success", closed
+    finalized = _call(
+        workspace,
+        "finalize_batch",
+        {"expected_revision": closed["head"]["state_revision"]},
+    )
+    assert finalized["outcome"] == "success", finalized
+    artifact = workspace / finalized["data"]["artifact"]["path"]
+    with zipfile.ZipFile(artifact) as archive:
+        canonical_before_verification = archive.read("canonical.json")
+    assert verify_bundle(artifact)
+    assert _standalone_verify(artifact).returncode == 0
+    with zipfile.ZipFile(artifact) as archive:
+        assert archive.read("canonical.json") == canonical_before_verification
+
+
+def test_d2_participant_flow_rows_pass_the_full_bundle_contract(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+
+    invalid_question = _domain_draft("trial", "domain:randomization", revision, evidence)
+    invalid_question["answers"][0]["missing_data"] = [
+        {
+            "arm": "assigned intervention",
+            "population": "all randomized participants",
+            "unit": "participants",
+            "time_point": "primary analysis",
+            "randomized": 100,
+            "analyzed": 96,
+            "basis": [evidence["handle"]],
+        }
+    ]
+    before = _state(workspace)
+    rejected = _public_tool_result(workspace, "validate_domain_assessment", invalid_question)
+    assert rejected.is_error
+    assert _state(workspace)["revision"] == before["revision"]
+    assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", SCIENTIFIC_PACK.domains[0].id, revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+    revision = int(saved["head"]["state_revision"])
+    draft = _domain_draft("trial", "domain:deviations", revision, evidence)
+    deviations_answer = next(
+        answer
+        for answer in draft["answers"]
+        if answer["question_id"] == "sq:deviations:context-deviations"
+    )
+    deviations_answer["missing_data"] = [
+        {
+            "arm": "assigned intervention",
+            "population": "safety population",
+            "unit": "participants",
+            "time_point": "during assigned treatment",
+            "randomized": 100,
+            "treated": 98,
+            "event_count": 12,
+            "event_definition": "grade 3 or higher adverse event",
+            "semantics": {
+                "population_role": "safety",
+                "event_count": 12,
+                "event_definition": "grade 3 or higher adverse event",
+            },
+            "basis": [evidence["handle"]],
+        }
+    ]
+    analysis_answer = next(
+        answer
+        for answer in draft["answers"]
+        if answer["question_id"] == "sq:deviations:appropriate-analysis"
+    )
+    analysis_answer["missing_data"] = [
+        {
+            "arm": "assigned intervention",
+            "population": "all randomized participants",
+            "unit": "participants",
+            "time_point": "primary analysis",
+            "randomized": 100,
+            "analyzed": 96,
+            "excluded": 4,
+            "semantics": {"population_role": "analyzed"},
+            "basis": [evidence["handle"]],
+        }
+    ]
+    bad_quantity = deepcopy(draft)
+    deviations_index = draft["answers"].index(deviations_answer)
+    bad_quantity["answers"][deviations_index]["missing_data"][0]["observed"] = 98.5
+    before = _state(workspace)
+    rejected_quantity = _public_tool_result(workspace, "validate_domain_assessment", bad_quantity)
+    assert rejected_quantity.is_error
+    assert _state(workspace)["revision"] == before["revision"]
+    assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
+
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    revision = int(saved["head"]["state_revision"])
+    deviations_record = _state(workspace)["domain_records"]["trial:domain:deviations"]
+    saved_deviations = next(
+        answer
+        for answer in deviations_record["answers"]
+        if answer["question_id"] == deviations_answer["question_id"]
+    )
+    saved_analysis = next(
+        answer
+        for answer in deviations_record["answers"]
+        if answer["question_id"] == analysis_answer["question_id"]
+    )
+    assert saved_deviations["missing_data"]["rows"][0]["treated"] == 98
+    assert saved_deviations["missing_data"]["rows"][0]["observed"] is None
+    assert saved_deviations["missing_data"]["rows"][0]["event_count"] == 12
+    assert saved_analysis["missing_data"]["rows"][0]["analyzed"] == 96
+    assert saved_analysis["missing_data"]["rows"][0]["observed"] is None
+
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:missing"},
+    )
+    participant_flow = context["data"]["comparison_cards"][0]["participant_flow"]
+    assert any(row["kind"] == "treated" and row["value"] == 98 for row in participant_flow)
+    assert any(row["kind"] == "event" and row["value"] == 12 for row in participant_flow)
+    assert any(row["kind"] == "analyzed" and row["value"] == 96 for row in participant_flow)
+    assert all(
+        row["status"] == "unknown" and row["value"] is None
+        for row in participant_flow
+        if row["kind"] == "observed"
+    )
+
+    for domain in SCIENTIFIC_PACK.domains[2:]:
+        result = _call(
+            workspace, "save_domain_judgment", _domain_draft("trial", domain.id, revision, evidence)
+        )
+        assert result["outcome"] == "success", result
+        revision = int(result["head"]["state_revision"])
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": revision},
+    )
+    assert reviewed["outcome"] == "success", reviewed
+    reviewed_deviations = next(
+        row
+        for row in reviewed["data"]["domain_findings"]
+        if row["domain_id"] == "domain:deviations"
+    )
+    assert {answer["question_id"] for answer in reviewed_deviations["answers"]} >= {
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+    }
+    closed = _call(
+        workspace,
+        "close_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": reviewed["head"]["state_revision"],
+            "review_reference": reviewed["data"]["review"]["identity"],
+        },
+    )
+    assert closed["outcome"] == "success", closed
+    finalized = _call(
+        workspace,
+        "finalize_batch",
+        {"expected_revision": closed["head"]["state_revision"]},
+    )
+    assert finalized["outcome"] == "success", finalized
+    artifact = workspace / finalized["data"]["artifact"]["path"]
+    with zipfile.ZipFile(artifact) as archive:
+        canonical = json.loads(archive.read("canonical.json"))
+    current_answers = canonical["domain_records"]["trial:domain:deviations"]["answers"]
+    historical_answers = canonical["domain_history_records"]["trial:domain:deviations"][-1][
+        "answers"
+    ]
+    for answers in (current_answers, historical_answers):
+        by_question = {answer["question_id"]: answer for answer in answers}
+        assert by_question["sq:deviations:context-deviations"]["missing_data"]["rows"]
+        assert by_question["sq:deviations:appropriate-analysis"]["missing_data"]["rows"]
+    assert verify_bundle(artifact)
+    assert _standalone_verify(artifact).returncode == 0

@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0abed-2856-7543-aaf9-fff270973b0e"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"Continuing with the approved Proposal Review. I’ll now activate the assessment workflow, complete the required post-approval reading checkpoint, and work through each RoB 2 domain using the live question cards and source evidence."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m unable to continue because the rob2-kit MCP tools are no longer available in the current session, so I can’t submit the approval or create canonical RoB 2 judgments. The Proposal Review remains pending; please restart or reconnect the rob2-kit session and say “Continue” again."}}
-{"type":"turn.completed","usage":{"input_tokens":1226242,"cached_input_tokens":1110272,"cache_write_input_tokens":0,"output_tokens":3942,"reasoning_output_tokens":1283}}

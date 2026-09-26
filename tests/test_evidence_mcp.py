@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import json
 import runpy
 import sqlite3
 from pathlib import Path
@@ -30,6 +31,48 @@ from rob2_kit.application.evidence import (
 )
 from rob2_kit.application.source_handles import resolve_source_handle
 from rob2_kit.packs import SCIENTIFIC_PACK
+
+
+def test_source_navigation_distinguishes_posting_approval_retrieval_and_unblinding_dates(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "dates.txt").write_text(
+        "Registry submitted: January 1, 2024.\n"
+        "Registry posted: January 15, 2024.\n"
+        "Protocol approved: February 2, 2024.\n"
+        "SAP finalized: March 3, 2024.\n"
+        "Registry content retrieved: April 4, 2024.\n"
+        "Investigators were unblinded to outcomes on May 5, 2024.\n",
+        encoding="utf-8",
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "dates.txt"
+    )
+
+    navigation = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": source["id"]},
+    )["data"]["navigation"]
+
+    date_kinds = {item["date_kind"] for item in navigation["date_spans"]}
+    assert date_kinds >= {
+        "posting",
+        "submission",
+        "approval",
+        "finalization",
+        "retrieval",
+        "unblinded_access",
+    }
+    submission = next(
+        item for item in navigation["date_spans"] if item["date_kind"] == "submission"
+    )
+    posting = next(item for item in navigation["date_spans"] if item["date_kind"] == "posting")
+    assert submission["text"] != posting["text"]
 
 
 def test_broad_truncated_any_search_continues_the_issued_query(tmp_path: Path) -> None:
@@ -246,6 +289,153 @@ def test_search_term_feedback_uses_source_handles_and_full_query_scope(tmp_path:
         {"randomisation": 1, "code": 0},
         {"randomisation": 0, "code": 1},
     ]
+
+
+def test_search_feedback_includes_matching_terms_beyond_source_prefix(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    for index in range(65):
+        text = "alpha only\n" if index == 64 else "control only\n"
+        (trial / f"source-{index:02d}.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    data = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "all"},
+    )["data"]
+
+    target = next(
+        source
+        for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if source["label"] == "source-64.txt"
+    )
+    source = next(item for item in data["term_feedback"] if item["source_id"] == target["id"])
+    assert data["total_matches"] == 0
+    assert data["term_feedback_sources_truncated"] is True
+    assert len(data["term_feedback"]) == 64
+    assert source["query_matching_page_count"] == 0
+    assert {row["term"]: row["matching_page_count"] for row in source["term_page_counts"]} == {
+        "alpha": 1,
+        "beta": 0,
+    }
+
+
+def test_literal_feedback_reports_single_term_counts_in_the_same_source_scope(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "alpha\nintervening wording\nbeta\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    data = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "literal"},
+    )["data"]
+
+    assert data["total_matches"] == 0
+    [source] = data["term_feedback"]
+    assert source["query_matching_page_count"] == 0
+    assert {row["term"]: row["matching_page_count"] for row in source["term_page_counts"]} == {
+        "alpha": 1,
+        "beta": 1,
+    }
+
+
+def test_navigation_suppresses_repeated_furniture_without_losing_late_locators(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for number in range(1, 13):
+        page = document.new_page()
+        page.insert_text((50, 40), f"Trial protocol 2024-06-01 | Page {number} of 12")
+        if number == 12:
+            body = (
+                "12. Statistical Analysis Plan\n\n"
+                "Embedded SAP Version 2.1\n\n"
+                "SAP finalized: June 3, 2023.\n\n"
+                "The primary model was prespecified."
+            )
+        else:
+            body = f"{number}. Protocol Section {number}\n\nThe trial procedures are described."
+        page.insert_textbox((50, 130, 550, 650), body)
+        page.insert_text((50, 760), f"Confidential | Page {number} of 12")
+    (workspace / "input" / "trial" / "combined.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "combined.pdf"
+    )
+
+    entries: list[dict[str, Any]] = []
+    version_spans: list[dict[str, Any]] = []
+    date_spans: list[dict[str, Any]] = []
+    cursor = None
+    while True:
+        args: dict[str, object] = {"trial_id": "trial", "source_id": source["id"], "limit": 4}
+        if cursor is not None:
+            args["cursor"] = cursor
+        navigation = _call(workspace, "list_sources", args)["data"]["navigation"]
+        entries.extend(navigation["entries"])
+        version_spans.extend(navigation["version_spans"])
+        date_spans.extend(navigation["date_spans"])
+        cursor = navigation["next_cursor"]
+        if cursor is None:
+            break
+
+    assert any(
+        entry["page"] == 12
+        and entry["kind"] == "heading_candidate"
+        and entry["text"] == "12. Statistical Analysis Plan"
+        for entry in entries
+    )
+    assert any(
+        entry["page"] == 12 and entry["text"] == "Embedded SAP Version 2.1"
+        for entry in version_spans
+    )
+    assert any(
+        entry["page"] == 12
+        and entry["text"] == "SAP finalized: June 3, 2023."
+        and entry["date_kind"] == "finalization"
+        for entry in date_spans
+    )
+    assert not any("2024-06-01" in entry["text"] for entry in date_spans)
+    assert sum("Trial protocol" in entry["text"] for entry in entries) == 1
+    assert sum("Confidential" in entry["text"] for entry in entries) <= 1
+
+    complete_page = _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [12]},
+    )["data"]["pages"][0]
+    assert "Trial protocol 2024-06-01 | Page 12 of 12" in complete_page["numbered_text"]
+    assert "Confidential | Page 12 of 12" in complete_page["numbered_text"]
+
+    heading = next(
+        entry for entry in entries if entry["page"] == 12 and entry["kind"] == "heading_candidate"
+    )
+    recovered = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": heading["page"],
+                    "start_line": heading["start_line"],
+                    "end_line": heading["end_line"],
+                }
+            ],
+        },
+    )["data"]["pages"][0]
+    assert recovered["numbered_text"] == f"{heading['start_line']}|{heading['text']}"
 
 
 def test_phrase_no_hit_feedback_distinguishes_terms_from_phrase_match(tmp_path: Path) -> None:
@@ -930,7 +1120,7 @@ def test_source_navigation_is_literal_bounded_and_cursor_stable(tmp_path: Path) 
     )["data"]["navigation"]
     assert first["source_id"] == source["id"]
     assert first["projection_hash"] == source["projection_hash"]
-    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.1"
+    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.2"
     assert first["pages_examined"] == 7
     assert all(len(entry["text"]) <= 512 for entry in first["entries"])
 
@@ -1063,6 +1253,86 @@ def test_source_navigation_paginates_complete_index_and_reports_terminal_state(
     assert headings == [f"{index}. Section {index}" for index in range(1, 16)]
     assert pages[-1]["remaining_entries"] == 0
     assert pages[-1]["terminal"] is True
+
+
+def test_source_navigation_pages_metadata_spans_and_preserves_exact_recovery(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    leads = [
+        f"Revision {index}.0; amended 2026-01-{(index % 28) + 1:02d}" for index in range(1, 201)
+    ]
+    (workspace / "input" / "trial" / "protocol.txt").write_text("\n".join(leads), encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "protocol.txt"
+    )
+
+    def span_key(span: dict[str, Any]) -> tuple[Any, ...]:
+        return tuple(
+            span.get(field) for field in ("page", "start_line", "end_line", "kind", "text")
+        )
+
+    entries: list[dict[str, Any]] = []
+    version_spans: list[dict[str, Any]] = []
+    date_spans: list[dict[str, Any]] = []
+    cursor = None
+    while True:
+        args: dict[str, object] = {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "limit": 12,
+        }
+        if cursor is not None:
+            args["cursor"] = cursor
+        page = _call(workspace, "list_sources", args)["data"]["navigation"]
+        page_entries = page["entries"]
+        entries.extend(page_entries)
+        version_spans.extend(page["version_spans"])
+        date_spans.extend(page["date_spans"])
+
+        assert len(page_entries) <= 12
+        assert page["returned_entries"] == len(page_entries)
+        assert len(page["version_spans"]) <= len(page_entries)
+        assert len(page["date_spans"]) <= len(page_entries)
+        entry_keys = {span_key(entry) for entry in page_entries}
+        assert {span_key(span) for span in page["version_spans"]} <= entry_keys
+        assert {span_key(span) for span in page["date_spans"]} <= entry_keys
+        assert (
+            len(json.dumps(page, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+            <= 24_000
+        )
+
+        cursor = page["next_cursor"]
+        if cursor is None:
+            assert page["terminal"] is True
+            break
+
+    assert len(version_spans) == 200
+    assert len(date_spans) == 200
+    assert len({span_key(span) for span in version_spans}) == 200
+    assert len({span_key(span) for span in date_spans}) == 200
+    assert len(entries) == 401
+
+    span = version_spans[-1]
+    recovered = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": span["page"],
+                    "start_line": span["start_line"],
+                    "end_line": span["end_line"],
+                }
+            ],
+        },
+    )["data"]["pages"][0]
+    assert recovered["numbered_text"] == f"{span['start_line']}|{span['text']}"
 
 
 def test_search_session_keeps_distinct_sibling_passages_through_cursor_traversal(

@@ -1,0 +1,76 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy plus dual placebos",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.",
+    "population": "Patients who received at least one dose and were included in the safety population.",
+    "reported_scope": {
+      "analysis_population": "Safety population; grade 3 or 4 adverse events reported by randomized group.",
+      "endpoint": {
+        "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.",
+        "name": "Patients with grade 3 or higher adverse events"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "Patients with grade 3 or higher adverse events",
+          "unit": "percent",
+          "value": "63%"
+        },
+        {
+          "group_id": "control",
+          "statistic": "Patients with grade 3 or higher adverse events",
+          "unit": "percent",
+          "value": "48%"
+        }
+      ]
+    },
+    "trial": "LATITUDE",
+    "window_or_cutoff": {
+      "description": "Safety outcomes reported for the treatment period in the main article.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:41.004240Z",
+    "path": "../../../../../../reference/sources/LATITUDE/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT01715285",
+    "sha256": "4e7dba9abd0ea357d6e4161a340d49980c6d8d927f27946f06ff710075384f1c"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "LATITUDE"
+}

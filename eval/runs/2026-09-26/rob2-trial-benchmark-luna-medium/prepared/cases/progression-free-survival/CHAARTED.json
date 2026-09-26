@@ -1,0 +1,66 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy plus docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy alone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Clinical progression-free survival: time to the appearance of symptomatic bone metastases, progression according to RECIST version 1.0, or clinical deterioration due to cancer in the investigator’s opinion.",
+    "population": "All randomized patients analyzed by intention to treat.",
+    "reported_scope": {
+      "analysis_population": "The intention-to-treat population (790 randomized patients).",
+      "effect_measure": "hazard ratio",
+      "endpoint": {
+        "definition": "Clinical progression-free survival: time to the appearance of symptomatic bone metastases, progression according to RECIST version 1.0, or clinical deterioration due to cancer in the investigator’s opinion.",
+        "name": "Clinical progression-free survival"
+      },
+      "estimate": "0.61",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.50 to 0.75; P<0.001"
+    },
+    "trial": "CHAARTED",
+    "window_or_cutoff": {
+      "description": "Primary report after median follow-up of 28.9 months.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:21.292151Z",
+    "path": "../../../../../../reference/sources/CHAARTED/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT00309985",
+    "sha256": "dc6172674e21c980ee609c7a7e8c1a3fadff31f5c32722986d99ece931cdd9b3"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/CHAARTED/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../reference/sources/CHAARTED/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/CHAARTED/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/CHAARTED/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "CHAARTED"
+}

@@ -1,0 +1,210 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:031caaf7f448cc7977257c0df9be8ff8035b7bf968f0f41d31dbe9c99d146c15": {
+        "end": 4838,
+        "end_line": 105,
+        "handle": "eh_031caaf7f448cc79",
+        "identity": "sha256:031caaf7f448cc7977257c0df9be8ff8035b7bf968f0f41d31dbe9c99d146c15",
+        "kind": "narrative",
+        "page": 6,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n343\nAbiraterone for Prostate Cancer\nards (P = 0.31) or of heterogeneity of the treat-\nment effect according to metastatic status at\nrandomization. A preplanned subgroup analysis\nof 1002 patients with metastatic disease at entry\nincluded 368 deaths (Fig. 1C). The same com-\nparisons in patients without metastatic disease\nat randomization are immature, currently with\n78 deaths in total (Fig. 1E). There was no evi-\ndence of heterogeneity of effect in other sub-\ngroups (Fig. 2A).\nFailure-free Survival\nThere were 248 events of treatment failure (radio-\nlogic, clinical, or PSA progression or death from\nprostate cancer) in the combination group and 535\nin the ADT-alone group. The 3-year failure-free\nsurvival was 75% in the combination group and\n45% in the ADT-alone group (hazard ratio for treat-\nment failure, 0.29; 95% CI, 0.25 to 0.34; P<0.001)\n(Fig. 1B). There was evidence of nonproportional\nhazards (P = 0.001), so we present restricted\nmean failure-free survival time: 43.9 months in\nthe combination group and 30.0 months in the\nADT-alone group in the first 54 months after\nrandomization, a difference of 13.9 months\n(95% CI, 12.3 to 15.4). The effect of abiraterone\non failure-free survival was noted in all sub-\ngroups (Fig. 1D and 1F and Fig. 2B).\nOther Efficacy Outcome Measures\nThere were 198 events of radiologic or clinical\nprogression or death from prostate cancer in the\ncombination group and 379 in the ADT-alone\ngroup. The 3-year progression-free survival was\n80% in the combination group and 62% in the\nADT-alone group (hazard ratio for clinical or\nradiologic progression or death from prostate\ncancer, 0.40; 95% CI, 0.34 to 0.47; P<0.001) (Fig.\nS3 in the Supplementary Appendix). There were\n113 symptomatic skeletal events reported so far\nin the combination group and 203 in the ADT-\nalone group. The 3-year rate without symptom-\natic skeletal events was 88% in the combination\ngroup and 78% in the ADT-alone group (hazard\nratio for symptomatic skeletal events, 0.46; 95%\nCI, 0.37 to 0.58; P<0.001) (Fig. S4A in the Supple-\nmentary Appendix). This difference was most\nmarked in the subgroup of patients with meta-\nstatic disease (Fig. S4B in the Supplementary\nAppendix). A total of 140 of the 184 deaths in\nthe combination group (76%) and 216 of the 262\ndeaths in the ADT-alone group (82%) were attrib-\nuted to prostate cancer on central review. The\ncompeting-risks subhazard ratio for death from\nprostate cancer was 0.58 (95% CI, 0.47 to 0.72).\nExploratory Analyses\nExploratory analyses that considered the outcomes\nof progression-free and prostate cancer-specific\nsurvival within subgroups of age at randomiza-\ntion suggested a favorable treatment effect re-\ngardless of age; proportionally fewer events were\nnoted in older patients. In patients younger than\n70 years of age, there were 113 events of radio-\nlogic or clinical progression or death from pros-\ntate cancer in the combination group and 263 in\nthe ADT-alone group (hazard ratio, 0.36; 95% CI,\n0.29 to 0.45); in patients 70 years of age or older,\nthere were 65 events in the combination group\nand 116 in the ADT-alone group (hazard ratio,\n0.50; 95% CI, 0.37 to 0.68; P = 0.10 for interac-\ntion). In patients younger than 70 years of age,\nthere were 93 deaths from prostate cancer in the\ncombination group and 154 in the ADT-alone\ngroup (subhazard ratio, 0.51; 95% CI, 0.39 to\n0.66); in patients 70 years of age or older, there\nwere 47 deaths from prostate cancer in the com-\nbination group and 62 in the ADT-alone group\n(subhazard ratio, 0.80; 95% CI, 0.54 to 1.17;\nP = 0.08 for interaction).\nAdverse Events\nPatients in the safety population who reported\nadverse events of grade 3 or higher during their\nentire time in the trial numbered 443 of 948\n(47%) in the combination group and 315 of 960\n(33%) in the ADT-alone group (Table 2). There\nwere 12 grade 5 adverse events, including 9 in\nthe combination group (2 events of pneumonia\n[1 including sepsis], 2 events of stroke, and 1 event\neach of dyspnea, lower respiratory tract infection,\nliver failure, pulmonary hemorrhage, and chest\ninfection) and 3 in the ADT-alone group (2 events\nof myocardial infarction and 1 event of broncho-\npneumonia). Among the 1476 patients in the\nsafety population in whom progression had not\noccurred within the first year, the prevalence of\nadverse events of grade 3 or higher was 15% in\nthe combination group and 11% in the ADT-\nalone group. The main additional adverse events\nover and above the control therapy were hyper-\ntension, mild increases in aminotransferase levels,\nand respiratory disorders. Further details, includ-\ning an overview according to age, are provided\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_9afc68ba425c150094aff9bf5dc5796cb2d69f2e2065d3cd225037f17fbc0c19",
+        "source_version": "sha256:f991f56e03b6b4faa1aa5cb2f32bdea79f0b5170316be82414b70dae4d7a428e",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "stampede"
+      },
+      "sha256:1c83d1513a2aab066a9cbf5b6d18fcf2f601d495673330461c0ca08d8427b6ca": {
+        "end": 3621,
+        "end_line": 141,
+        "handle": "eh_1c83d1513a2aab06",
+        "identity": "sha256:1c83d1513a2aab066a9cbf5b6d18fcf2f601d495673330461c0ca08d8427b6ca",
+        "kind": "narrative",
+        "page": 10,
+        "quote": "Safety population\nNo. of patients\n960\n948\nPatients with an adverse event - no. (%)\nAny grade\n950 (99)\n943 (99)\nGrade 3-5\n315 (33)\n443 (47)\nGrade 5 only†\n3 (<1)\n9 (1)\nGrade 3-5 adverse events - no. (%)\nEndocrine disorders‡\n133 (14)\n129 (14)\nCardiovascular disorders\n41 (4)\n92 (10)\nHypertension\n13 (1)\n44 (5)\nMyocardial infarction\n9 (1)\n10 (1)\nCardiac dysrhythmia\n2 (<1)\n14 (1)\nMusculoskeletal disorders\n46 (5)\n68 (7)\nGastrointestinal disorders\n40 (4)\n49 (5)\nHepatic disorders\n12 (1)\n70 (7)\nIncreased ALT level\n4 (<1)\n53 (6)\nIncreased AST level\n2 (<1)\n10 (1)\nGeneral disorders\n29 (3)\n45 (5)\nFatigue\n15 (2)\n21 (2)\nEdema\n0\n5 (1)\nRespiratory disorders\n23 (2)\n44 (5)\nDyspnea\n7 (1)\n18 (2)\nLaboratory abnormalities\n21 (2)\n34 (4)\nHypokalemia\n3 (<1)\n12 (1)\nIntention-to-treat population\nTotal no. of patients\n957\n960\nNo. of patients in safety analysis\n953\n955\nPatients with an adverse event - no. (%)\nAny grade\n943 (99)\n950 (99)\nGrade 3-5\n312 (33)\n446 (47)\nGrade 5 only†\n3 (<1)\n9 (1)\n* ALT denotes alanine aminotransferase, and AST aspartate aminotransferase.\n† In the ADT-alone group, there were two events of myocardial infarction and\none event of bronchopneumonia. In the combination group, there were two\nevents of pneumonia (one including sepsis), two events of stroke, and one\nevent each of dyspnea, lower respiratory tract infection, liver failure, pulmo-\nnary hemorrhage, and chest infection.\n‡ Endocrine disorders included hot flashes and impotence.\nTable 2. Worst Adverse-Event Grade Reported during Entire Time in the Trial.*",
+        "source_id": "source_9afc68ba425c150094aff9bf5dc5796cb2d69f2e2065d3cd225037f17fbc0c19",
+        "source_version": "sha256:f991f56e03b6b4faa1aa5cb2f32bdea79f0b5170316be82414b70dae4d7a428e",
+        "start": 2095,
+        "start_line": 51,
+        "trial_id": "stampede"
+      },
+      "sha256:35847859a3a51f24b77a4778a256d9aa29d19177164a792d30290abe56142138": {
+        "end": 4722,
+        "end_line": 106,
+        "handle": "eh_35847859a3a51f24",
+        "identity": "sha256:35847859a3a51f24b77a4778a256d9aa29d19177164a792d30290abe56142138",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n341\nAbiraterone for Prostate Cancer\nADT-alone group for both failure-free survival\n(hazard ratio for treatment failure, 0.75) and\noverall survival (hazard ratio for death, 0.75).\nThe main analysis for the comparison of combi-\nnation therapy against control for survival could\nbe performed after the occurrence of approxi-\nmately 267 deaths in the control group for 90%\npower and a one-sided alpha level of 2.5%, after\nwe accounted for three intermediate lack-of-\nbenefit analyses of failure-free survival. An inde-\npendent data monitoring committee reviewed\naccumulating data, guided by lack-of-benefit\nstopping guidelines.\nData on patients without an event of interest\nwere censored when they were last known to be\nevent-free. The median follow-up was determined\nthrough reversing death and censoring indica-\ntors. Standard survival-analysis methods were\nused to analyze time-to-event data in Stata soft-\nware, version 14, with Kaplan-Meier estimates\nfor survival curves and Cox proportional-hazards\nmodels to estimate relative treatment effects.\nThese estimates were adjusted for stratification\nfactors (except randomizing center and ADT\nmethod) and were stratified according to time\nperiods defined by corecruiting groups. A hazard\nratio of less than 1.00 favored the combination\ngroup. The restricted mean survival time (restrict-\ned to 54 months) was calculated from flexible\nparametric models (5 degrees of freedom). The\nproportional-hazards assumption was tested; the\nrestricted mean survival time was emphasized in\nthe presence of nonproportionality. All the con-\nfidence intervals are at the 95% level. Prespeci-\nfied subgroup analyses looked at the consistency\nof treatment effect according to stratification\nfactors, time period, categorized Gleason score,\nand quintiles of PSA levels that were measured\nbefore the initiation of long-term ADT. Key sub-\ngroup analyses according to metastatic status\nwere prespecified. Exploratory analyses considered\nprostate cancer-specific survival and progression-\nfree survival according to the age at random-\nization.\nAll the patients were included in the efficacy\nanalyses under their assigned treatment on an\nintention-to-treat basis. For safety analyses, pa-\ntients were grouped according to the treatment\nthat they started. In the analysis of the median\nduration of abiraterone treatment, data were cen-\nsored at the date of last contact with the patient\nif the patient had not reported stopping the drug.\nResults\nPatients\nBetween November 15, 2011, and January 17,\n2014, a total of 1917 consenting patients at 111\nU.K. and 5 Swiss sites underwent randomization\n(957 to ADT alone and 960 to combination\ntherapy). Data were frozen on February 10, 2017.\nThe flow of patients through the trial is shown\nin Figure S1 in the Supplementary Appendix,\navailable at NEJM.org; the baseline characteris-\ntics of the patients are shown in Table 1, and in\nTable S1 in the Supplementary Appendix. The\nmedian PSA level was 53 ng per milliliter. The\nmedian follow-up was 40 months.\nTreatment\nThe median time from randomization to the ini-\ntiation of abiraterone was 1.3 weeks, and the\nmedian time from the initiation of ADT to the\ninitiation of abiraterone was 8.0 weeks (most pa-\ntients started ADT before randomization) (Table\nS2 in the Supplementary Appendix). Of the 960\npatients in the combination group, 10 (1%) did\nnot receive abiraterone, mostly because they de-\nclined treatment. The median duration of abira\nterone treatment was 23.7 months in the patients\nfor whom the duration was capped at 2 years\n(67% reported stopping for treatment comple-\ntion) and 33.2 months in the patients who could\ncontinue through progression (51% reported per-\nmanent stopping for progression and 20% for\nexcessive toxic effects) (Table S2 and Fig. S2 in\nthe Supplementary Appendix). A total of 265\npatients (28%) had not yet permanently stopped\ntreatment with abiraterone at the time of this\nreport.\nThe planned rate of use of radiotherapy was\n41% in the combination group and in the ADT-\nalone group. The reported rate of use of radio-\ntherapy was 39% in the combination group and\n40% in the ADT-alone group.\nOverall Survival\nThere were 184 deaths in the combination group\nand 262 in the ADT-alone group. There was\nstrong evidence of a survival advantage in the\ncombination group, with a 3-year survival of\n83% as compared with 76% in the ADT-alone\ngroup (hazard ratio for death, 0.63; 95% confi-\ndence interval [CI], 0.52 to 0.76; P<0.001) (Fig. 1A).\nThere was no evidence of nonproportional haz-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_9afc68ba425c150094aff9bf5dc5796cb2d69f2e2065d3cd225037f17fbc0c19",
+        "source_version": "sha256:f991f56e03b6b4faa1aa5cb2f32bdea79f0b5170316be82414b70dae4d7a428e",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "stampede"
+      },
+      "sha256:d9eca33d93c0a247761f2e388377adf04304cd8a15ff3a9a85b2cd440790a67f": {
+        "end": 4884,
+        "end_line": 106,
+        "handle": "eh_d9eca33d93c0a247",
+        "identity": "sha256:d9eca33d93c0a247761f2e388377adf04304cd8a15ff3a9a85b2cd440790a67f",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n340\nThe new engl and jour nal of medicine\nLondon (UCL). MRC provided funding for the\ntrial through core funding to UCL. Cancer Re-\nsearch U.K. approved the trial design and subse-\nquent amendments and provided funding sup-\nport but had no further input. Janssen approved\nthe design for this comparison (ADT plus abira\nterone and prednisolone vs. ADT alone) and\nparticipated in discussions on the progress of\nthe trial. Janssen also provided grant funding,\nabiraterone acetate, and funds for drug distribu-\ntion. Representatives from Janssen were invited\nto comment on the manuscript. Further funding\nfor the platform was provided by Astellas Pharma,\nClovis Oncology, Novartis, Pfizer, and Sanofi\nAventis. The trial was conducted in accordance\nwith the principles of Good Clinical Practice\nguidelines and the Declaration of Helsinki, and\nthe appropriate regulatory and ethics approvals\nwere obtained. All the patients provided written\ninformed consent.\nThe analyses were driven by prespecified cri-\nteria, and the decision to submit the manuscript\nfor publication was made by the members of the\nTrial Management Group. Three authors at the\nMRC Clinical Trials Unit at UCL accessed the raw\ndata; processed data that were released by the\nindependent data monitoring committee and trial\nsteering committee were available to all the co-\nauthors. The authors vouch for the completeness\nand accuracy of the data and analyses and for the\nadherence of the trial to the protocol. No one\nwho is not an author contributed to the writing\nof the manuscript.\nRandomization and Masking\nRandomization was performed centrally by tele-\nphone with the use of a computerized algorithm,\nwhich was developed and maintained by the MRC\nClinical Trials Unit at UCL. Minimization with a\nrandom element of 80% was used, with stratifi-\ncation according to randomizing center, age at\nrandomization (<70 vs. ≥70 years), the presence\nor absence of metastases, planned use of pros-\ntate radiotherapy (yes vs. no), nodal involvement\n(negative vs. indeterminate vs. positive), World\nHealth Organization performance status (0 vs.\n1 or 2 [on a scale of 0 to 4, with higher numbers\nindicating greater disability]), type of ADT, and\nregular, long-term use of aspirin or nonsteroidal\nantiinflammatory drugs (yes vs. no). The assign-\nment ratio was 1:1 to standard of care alone or\nwith abiraterone acetate and prednisolone (combi-\nnation therapy). The comparison was open-label,\nbecause masking of the treatment assignment\nwas deemed impracticable. Eligible patients could\nbe assigned to any of the trial groups that were\nopen; we focus here on patients assigned con-\ntemporaneously to ADT alone or with abiraterone\nand prednisolone.\nProcedures\nADT was given for at least 2 years; radiotherapy\nat 6 to 9 months after randomization was man-\ndatory for patients with node-negative, nonmeta-\nstatic disease and optional for patients with node-\npositive, nonmetastatic disease. Abiraterone\n(1000 mg) with prednisolone (5 mg) was given\nonce daily. The treatment duration depended on\ndisease stage and intent for radical radiotherapy:\nfor patients with nonmetastatic disease with no\nradiotherapy planned and for patients with meta-\nstatic disease, treatment continued until PSA,\nradiologic, or clinical progression or until an-\nother treatment was started; for patients with\nnonmetastatic disease with radiotherapy planned,\ntreatment was to continue for 2 years or until\nany type of progression, whichever came first.\nDose modifications are described in the protocol.\nPatients were assessed every 6 weeks during\nthe first 6 months, then every 12 weeks until\n2 years, then every 6 months until 5 years, and\nthen annually; in addition, patients receiving\ncombination therapy were assessed at least every\n3 months. Assessments included PSA testing and\nascertainment of adverse events; further tests\nwere conducted at the discretion of the treating\nphysician. The nadir PSA level (for the definition\nof PSA progression) was defined as the lowest\nlevel within 24 weeks after randomization. There\nwas no protocol-mandated imaging except at\nbaseline. Adverse events were assessed with the\nuse of the National Cancer Institute Common\nTerminology Criteria for Adverse Events (initial-\nly, version 3.0; later, version 4.0). Serious adverse\nevents and reactions were reported accordingly.\nStatistical Analysis\nThe sample size was calculated with the use of\nStata nstage and predecessor programs that allow\nfor the design of multigroup, multistage trials.23\nAssuming a median failure-free survival of 2 years\nand a median overall survival between 4 and\n5 years for ADT, we targeted a 25% relative dif-\nference between the combination group and the\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_9afc68ba425c150094aff9bf5dc5796cb2d69f2e2065d3cd225037f17fbc0c19",
+        "source_version": "sha256:f991f56e03b6b4faa1aa5cb2f32bdea79f0b5170316be82414b70dae4d7a428e",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "stampede"
+      }
+    },
+    "identity": "sha256:8733c400a9ad32fe33b2947079b9dc3ef0a001491baa04e0dfa21c9bf78a6fbf",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_d9eca33d93c0a247"
+            ],
+            "rationale": "Individual patients were randomized 1:1 to parallel groups using central computerized randomization."
+          },
+          "bindings": [
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:168b094bacf8cc64f50abc0f676c3c914904b96239cdee0d6a17655da35e9a7a"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/statistic"
+              },
+              "value_digest": "sha256:5a60f9eff6f4cc2df845de81f865aed848bd36da9e654cde1b466c4568635cb9"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/value"
+              },
+              "value_digest": "sha256:50b63a2437b181f975a200c88b0043d767e8834d9cfbf2977955520072492122"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/0/unit"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/statistic"
+              },
+              "value_digest": "sha256:5a60f9eff6f4cc2df845de81f865aed848bd36da9e654cde1b466c4568635cb9"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/value"
+              },
+              "value_digest": "sha256:59d49833ba2d7f1cde6965dcd4e908195707f752248d7b7121b4d40814104b21"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/group_values/1/unit"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "unclear",
+            "comparison_groups": "unclear",
+            "effect_measure": "unclear",
+            "eligible_result_choice": "unclear",
+            "measurement": "unclear",
+            "outcome_definition": "unclear",
+            "source_table_meaning": "unclear",
+            "time_point": "unclear"
+          },
+          "evidence": [
+            {
+              "handle": "eh_031caaf7f448cc79",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_1c83d1513a2aab06",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_35847859a3a51f24",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_d9eca33d93c0a247",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The reported grade 3–5 adverse-event result during the entire trial matches the requested severity and time window and compares the contemporaneous randomized groups. The requested figures are from the safety population grouped by treatment started rather than all assigned participants.",
+          "reported": {
+            "analysis_population": "Safety population grouped by treatment started; 948 in combination group and 960 in ADT-alone group.",
+            "endpoint": {
+              "definition": null,
+              "name": "Worst Adverse-Event Grade Reported during Entire Time in the Trial"
+            },
+            "form": "group_bound_values",
+            "group_values": [
+              {
+                "group_id": "combination",
+                "statistic": "Grade 3-5",
+                "unit": "patients",
+                "value": "443"
+              },
+              {
+                "group_id": "control",
+                "statistic": "Grade 3-5",
+                "unit": "patients",
+                "value": "315"
+              }
+            ]
+          },
+          "requested_outcome": "Grade 3 or higher adverse events",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "ADT plus abiraterone acetate and prednisolone",
+                "id": "combination"
+              },
+              {
+                "assignment": "ADT alone",
+                "id": "control"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Number of participants with grade 3-5 adverse events",
+            "measurement": {
+              "method": "Adverse events graded using NCI Common Terminology Criteria for Adverse Events (initially version 3.0 and later version 4.0); grade 3 or higher",
+              "metric": "Grade 3 or higher adverse events"
+            },
+            "outcome_definition": "Grade 3 or higher adverse events",
+            "time_point_or_window": {
+              "description": "During the entire time in the trial",
+              "kind": "described"
+            }
+          },
+          "trial_id": "stampede"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:cc0362190b07ffc9a8fbbe18c96fbe2801fbd5330fd9c79010b4cd5895ee35e9",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

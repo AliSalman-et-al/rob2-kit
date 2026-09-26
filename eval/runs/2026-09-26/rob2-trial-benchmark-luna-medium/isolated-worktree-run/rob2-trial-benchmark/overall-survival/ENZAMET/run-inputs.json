@@ -1,0 +1,79 @@
+{
+  "approved_scope": null,
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Enzalutamide plus testosterone suppression",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "The time from randomization to death resulting from any cause or to the date at which the patient was last known to be alive.",
+    "population": "All randomized patients in the intention-to-treat efficacy population.",
+    "reported_scope": {
+      "analysis_population": "The intention-to-treat population (563 enzalutamide; 562 standard care).",
+      "effect_measure": "hazard ratio for death",
+      "endpoint": {
+        "definition": "The time from randomization to death resulting from any cause or to the date at which the patient was last known to be alive.",
+        "name": "Overall survival"
+      },
+      "estimate": "0.67",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.52 to 0.86; P=0.002"
+    },
+    "trial": "ENZAMET",
+    "window_or_cutoff": {
+      "description": "Primary report after median follow-up of 34 months.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "capture_provenance": "captured response retained from PFS baseline",
+    "captured_at": "2026-09-13T19:13:27.679130Z",
+    "registry_id": "NCT02446405",
+    "replay_provenance": "copied byte-for-byte from the case manifest; no registry request made",
+    "replayed_at": "2026-09-26T10:59:39.096468+00:00",
+    "sha256": "ba84ecaa795516d6c69815b6a340786f28eb39bf303ad4de8ad3dd8ac06d9d4e"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-run-inputs.v1",
+  "scope_unresolved": null,
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "role": "main_article",
+      "sha256": "989a84bc95df6101452958578a0eba51df8f1910966d6f09347a515f15145815"
+    },
+    {
+      "name": "other-2.pdf",
+      "role": "other",
+      "sha256": "54d6aa42532762106a03238dfd33cfc6534aef8ee0b0ef69527b43b2365fe04b"
+    },
+    {
+      "name": "other.pdf",
+      "role": "other",
+      "sha256": "934f874bc1e973ccc06715f1229c56bc0eeee8fba728ec2f282e22af688b1ced"
+    },
+    {
+      "name": "protocol.pdf",
+      "role": "protocol",
+      "sha256": "123da8f40789e78243c6146f6d28dd7dcb6caec0ec29e9ab06e5efd3457f5d9d"
+    },
+    {
+      "name": "registry.json",
+      "role": "registry",
+      "sha256": "ba84ecaa795516d6c69815b6a340786f28eb39bf303ad4de8ad3dd8ac06d9d4e"
+    },
+    {
+      "name": "supplement.pdf",
+      "role": "supplement",
+      "sha256": "83a86dc8ee8a03c2d4756f59f490f173247af91948b351509b9ac0a298591549"
+    }
+  ],
+  "trial": "ENZAMET"
+}

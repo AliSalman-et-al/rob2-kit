@@ -60,6 +60,25 @@
       }
     },
     {
+      "case_id": "d3-likelihood-unresolved-official-high-path",
+      "domain": "domain:missing",
+      "contrast": "no_information_to_high_official_path",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "time to clinical event by month 6 in all randomized participants",
+      "facts": [
+        "The randomized denominator is reported, but the Source gives only an analysis denominator and does not report comparable observed-outcome or censoring counts.",
+        "The report does not describe a bias-correcting or informative sensitivity analysis for unavailable outcomes.",
+        "Reported withdrawal reasons mention health status, but the Source does not establish whether or how those reasons related to the unobserved outcomes or whether the relationship was likely."
+      ],
+      "expected_answer_path": {
+        "sq:missing:data-available": "no_information",
+        "sq:missing:evidence-unbiased": "no",
+        "sq:missing:true-value-dependent": "no_information",
+        "sq:missing:likely-dependent": "no_information"
+      }
+    },
+    {
       "case_id": "d4-valid-standardized-measure",
       "domain": "domain:measurement",
       "contrast": "valid_reassurance",
@@ -204,6 +223,262 @@
       ],
       "expected_answer_path": {
         "sq:selection:multiple-analyses": "no_information"
+      }
+    },
+    {
+      "case_id": "d2-excluded-before-endpoint",
+      "pair_id": "d2-exclusion-timing",
+      "variant": "before_endpoint",
+      "changed_premise": "whether endpoint outcomes were observed before the assignment-effect analysis excluded participants",
+      "domain": "domain:deviations",
+      "contrast": "analysis_exclusion_timing",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "all-cause mortality by day 90 in all randomized participants",
+      "facts": [
+        "Twelve eligible randomized participants were excluded from the assignment-effect analysis after randomization because of prognostic deterioration; no participants were reassigned.",
+        "Death was uncommon, so excluding participants with prognostic deterioration could affect the mortality estimate.",
+        "The twelve participants were excluded before day 90, and their day-90 outcomes were not collected."
+      ],
+      "expected_answer_path": {
+        "sq:deviations:participants-aware": "no",
+        "sq:deviations:personnel-aware": "no",
+        "sq:deviations:appropriate-analysis": "no",
+        "sq:deviations:substantial-impact": "yes"
+      }
+    },
+    {
+      "case_id": "d2-excluded-after-endpoint",
+      "pair_id": "d2-exclusion-timing",
+      "variant": "after_endpoint",
+      "changed_premise": "whether endpoint outcomes were observed before the assignment-effect analysis excluded participants",
+      "domain": "domain:deviations",
+      "contrast": "analysis_exclusion_timing",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "all-cause mortality by day 90 in all randomized participants",
+      "facts": [
+        "Twelve eligible randomized participants were excluded from the assignment-effect analysis after randomization because of prognostic deterioration; no participants were reassigned.",
+        "Death was uncommon, so excluding participants with prognostic deterioration could affect the mortality estimate.",
+        "Their day-90 outcomes were recorded before the analyst excluded them from the assignment-effect analysis."
+      ],
+      "expected_answer_path": {
+        "sq:deviations:participants-aware": "no",
+        "sq:deviations:personnel-aware": "no",
+        "sq:deviations:appropriate-analysis": "no",
+        "sq:deviations:substantial-impact": "yes"
+      }
+    },
+    {
+      "case_id": "d3-treatment-stopped-followup-continued",
+      "pair_id": "d3-stop-treatment-versus-followup",
+      "variant": "outcomes_observed",
+      "changed_premise": "whether the approved outcome was collected after treatment stopped",
+      "domain": "domain:missing",
+      "contrast": "stopped_treatment_followup",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "relapse status at day 90 in all randomized participants",
+      "facts": [
+        "Twelve participants stopped assigned treatment after their symptoms worsened.",
+        "Only six relapses were observed among the participants with recorded day-90 status.",
+        "Registry follow-up obtained day-90 relapse status for all 200 randomized participants, including the twelve who stopped treatment."
+      ],
+      "expected_answer_path": {
+        "sq:missing:data-available": "yes"
+      }
+    },
+    {
+      "case_id": "d3-treatment-stopped-followup-lost",
+      "pair_id": "d3-stop-treatment-versus-followup",
+      "variant": "outcomes_unavailable",
+      "changed_premise": "whether the approved outcome was collected after treatment stopped",
+      "domain": "domain:missing",
+      "contrast": "stopped_treatment_followup",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "relapse status at day 90 in all randomized participants",
+      "facts": [
+        "Twelve participants stopped assigned treatment after their symptoms worsened.",
+        "Only six relapses were observed among the participants with recorded day-90 status.",
+        "Follow-up did not obtain day-90 relapse status for those twelve, leaving status observed for 188 of 200 randomized participants."
+      ],
+      "expected_answer_path": {
+        "sq:missing:data-available": "probably_no",
+        "sq:missing:evidence-unbiased": "no",
+        "sq:missing:true-value-dependent": "yes",
+        "sq:missing:likely-dependent": "yes"
+      }
+    },
+    {
+      "case_id": "d4-toxicity-monitoring-mortality-result",
+      "pair_id": "d4-endpoint-specific-toxicity-monitoring",
+      "variant": "mortality",
+      "changed_premise": "whether the approved endpoint is ascertained by toxicity monitoring",
+      "domain": "domain:measurement",
+      "contrast": "endpoint_specific_monitoring",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "all-cause mortality through week 24 in all randomized participants",
+      "facts": [
+        "The open-label intervention group received two extra visits for toxicity monitoring; the control group did not.",
+        "The same blinded national registry ascertained vital status for every randomized participant through week 24.",
+        "The approved Result is all-cause mortality through week 24, ascertained by the national registry."
+      ],
+      "expected_answer_path": {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "no",
+        "sq:measurement:assessor-aware": "no"
+      }
+    },
+    {
+      "case_id": "d4-toxicity-monitoring-laboratory-result",
+      "pair_id": "d4-endpoint-specific-toxicity-monitoring",
+      "variant": "laboratory_toxicity",
+      "changed_premise": "whether the approved endpoint is ascertained by toxicity monitoring",
+      "domain": "domain:measurement",
+      "contrast": "endpoint_specific_monitoring",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "grade 3 or higher neutropenia through week 24 in all randomized participants",
+      "facts": [
+        "The open-label intervention group received two extra visits for toxicity monitoring; the control group did not.",
+        "The same blinded national registry ascertained vital status for every randomized participant through week 24.",
+        "The approved Result is grade 3 or higher neutropenia through week 24, identified by blood tests at the toxicity-monitoring visits."
+      ],
+      "expected_answer_path": {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "yes"
+      }
+    },
+    {
+      "case_id": "d4-adverse-event-window-reported",
+      "pair_id": "d4-safety-observation-window",
+      "variant": "window_reported",
+      "changed_premise": "whether the source states the adverse-event observation period and schedule",
+      "domain": "domain:measurement",
+      "contrast": "safety_observation_window",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "grade 3 or higher adverse events through week 24 in all randomized participants",
+      "facts": [
+        "Median treatment duration was 12 weeks in the intervention group and 8 weeks in the control group; median progression-free survival was 16 and 12 weeks, respectively.",
+        "Blinded assessors applied the same laboratory thresholds in both groups.",
+        "The report states that both groups had the same laboratory schedule through week 24, including after treatment stopped."
+      ],
+      "expected_answer_path": {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "no",
+        "sq:measurement:assessor-aware": "no"
+      }
+    },
+    {
+      "case_id": "d4-adverse-event-window-unreported",
+      "pair_id": "d4-safety-observation-window",
+      "variant": "window_unreported",
+      "changed_premise": "whether the source states the adverse-event observation period and schedule",
+      "domain": "domain:measurement",
+      "contrast": "safety_observation_window",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "grade 3 or higher adverse events through week 24 in all randomized participants",
+      "facts": [
+        "Median treatment duration was 12 weeks in the intervention group and 8 weeks in the control group; median progression-free survival was 16 and 12 weeks, respectively.",
+        "Blinded assessors applied the same laboratory thresholds in both groups.",
+        "The report gives no adverse-event observation window or laboratory schedule."
+      ],
+      "expected_answer_path": {
+        "sq:measurement:method-inappropriate": "no",
+        "sq:measurement:differential": "no_information",
+        "sq:measurement:assessor-aware": "no"
+      }
+    },
+    {
+      "case_id": "d5-amendment-before-unblinded-access",
+      "pair_id": "d5-amendment-access-order",
+      "variant": "amendment_precedes_access",
+      "changed_premise": "whether investigators had access to unblinded results before the plan amendment took effect",
+      "domain": "domain:selection",
+      "contrast": "plan_event_chronology",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "progression status at day 90 in all randomized participants using the sole planned risk-ratio analysis",
+      "facts": [
+        "The study protocol was approved by an ethics committee on 1 January, and the original registry entry was posted on 10 January.",
+        "A dated amendment to the embedded analysis plan took effect on 1 June and specified the approved endpoint, population, and sole eligible analysis.",
+        "The data cutoff was 15 June and the database was locked on 1 August.",
+        "The reported Result matches the amended endpoint and analysis; no other eligible measurement or analysis was possible.",
+        "Investigators first accessed unblinded outcome data on 1 July."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "yes",
+        "sq:selection:multiple-measurements": "no",
+        "sq:selection:multiple-analyses": "no"
+      }
+    },
+    {
+      "case_id": "d5-amendment-after-unblinded-access",
+      "pair_id": "d5-amendment-access-order",
+      "variant": "access_precedes_amendment",
+      "changed_premise": "whether investigators had access to unblinded results before the plan amendment took effect",
+      "domain": "domain:selection",
+      "contrast": "plan_event_chronology",
+      "neutral": true,
+      "severity": "some_concerns",
+      "result_scope": "progression status at day 90 in all randomized participants using the sole planned risk-ratio analysis",
+      "facts": [
+        "The study protocol was approved by an ethics committee on 1 January, and the original registry entry was posted on 10 January.",
+        "A dated amendment to the embedded analysis plan took effect on 1 June and specified the approved endpoint, population, and sole eligible analysis.",
+        "The data cutoff was 15 June and the database was locked on 1 August.",
+        "The reported Result matches the amended endpoint and analysis; no other eligible measurement or analysis was possible.",
+        "Investigators first accessed unblinded outcome data on 1 May."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "no",
+        "sq:selection:multiple-measurements": "no",
+        "sq:selection:multiple-analyses": "no"
+      }
+    },
+    {
+      "case_id": "d5-single-analysis-pre-result-reporting-plan",
+      "pair_id": "d5-multiplicity-versus-results-based-reporting",
+      "variant": "pre_result_rationale",
+      "changed_premise": "whether the sole fully reported eligible analysis was chosen because of its result",
+      "domain": "domain:selection",
+      "contrast": "multiplicity_and_result_dependence",
+      "neutral": true,
+      "severity": "low",
+      "result_scope": "the approved endpoint and time window in all randomized participants",
+      "facts": [
+        "The SAP was finalized before investigators could access unblinded outcome data and lists three eligible analyses: adjusted, unadjusted, and complete case.",
+        "All three analyses were conducted, but only the adjusted model was fully reported.",
+        "Dated minutes written before access state that the adjusted model was selected for the report because it was the prespecified primary model, not because of its result."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "yes",
+        "sq:selection:multiple-measurements": "no",
+        "sq:selection:multiple-analyses": "no"
+      }
+    },
+    {
+      "case_id": "d5-favorable-result-based-reporting-choice",
+      "pair_id": "d5-multiplicity-versus-results-based-reporting",
+      "variant": "result_driven_rationale",
+      "changed_premise": "whether the sole fully reported eligible analysis was chosen because of its result",
+      "domain": "domain:selection",
+      "contrast": "multiplicity_and_result_dependence",
+      "neutral": true,
+      "severity": "high",
+      "result_scope": "the approved endpoint and time window in all randomized participants",
+      "facts": [
+        "The SAP was finalized before investigators could access unblinded outcome data and lists three eligible analyses: adjusted, unadjusted, and complete case.",
+        "All three analyses were conducted, but only the adjusted model was fully reported.",
+        "Dated minutes written after access state that the adjusted model was selected for the report because its estimate was favorable and the other analyses were withheld."
+      ],
+      "expected_answer_path": {
+        "sq:selection:prespecified-analysis": "yes",
+        "sq:selection:multiple-measurements": "no",
+        "sq:selection:multiple-analyses": "yes"
       }
     }
   ]

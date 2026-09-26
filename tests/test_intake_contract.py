@@ -140,13 +140,41 @@ def _prepare_schema() -> dict[str, object]:
     return asyncio.run(read_schema())
 
 
+def _dereference_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Expand local references for assertions about the logical tool shape."""
+
+    def visit(value: Any, active: frozenset[str] = frozenset()) -> Any:
+        if isinstance(value, list):
+            return [visit(item, active) for item in value]
+        if not isinstance(value, dict):
+            return value
+        reference = value.get("$ref")
+        if isinstance(reference, str) and reference.startswith("#/") and reference not in active:
+            target: Any = schema
+            for part in reference.removeprefix("#/").split("/"):
+                target = target[part.replace("~1", "/").replace("~0", "~")]
+            return visit(
+                {**target, **{key: item for key, item in value.items() if key != "$ref"}},
+                active | {reference},
+            )
+        return {
+            key: visit(item, active)
+            for key, item in value.items()
+            if key not in {"$defs", "definitions"}
+        }
+
+    resolved = visit(schema)
+    assert isinstance(resolved, dict)
+    return resolved
+
+
 def _tool_schema(name: str) -> dict[str, Any]:
     async def read_schema() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(item for item in await client.list_tools() if item.name == name)
             return dict(tool.input_schema)
 
-    return asyncio.run(read_schema())
+    return _dereference_schema(asyncio.run(read_schema()))
 
 
 def _tool_description(name: str) -> str:
@@ -164,7 +192,7 @@ def _tool_output_schema(name: str) -> dict[str, Any]:
             tool = next(item for item in await client.list_tools() if item.name == name)
             return dict(tool.output_schema)
 
-    return asyncio.run(read_schema())
+    return _dereference_schema(asyncio.run(read_schema()))
 
 
 def _walk_schema(schema: object, path: str = "$") -> list[tuple[str, dict[str, Any]]]:
@@ -221,7 +249,7 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
                             collect(item)
 
             collect(schema)
-        assert all("items" in array or "prefixItems" in array for array in arrays)
+            assert all("items" in array or "prefixItems" in array for array in arrays)
         output = cast(dict[str, Any], tool.output_schema)
         assert output["type"] == "object"
         expected_outcomes = {
@@ -252,6 +280,20 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
                 reference = str(definition["$ref"]).removeprefix("#/$defs/")
                 definition = output["$defs"][reference]
             assert set(("outcome", "head")) <= set(definition["required"])
+
+
+def test_optional_table_extraction_condition_exposes_a_typed_render_locator() -> None:
+    output = _tool_output_schema("prepare_batch")
+    condition_schemas = [
+        schema
+        for _, schema in _walk_schema(output)
+        if schema.get("properties", {}).get("code", {}).get("const")
+        == "optional_table_extraction_failed"
+    ]
+
+    assert len(condition_schemas) == 1
+    condition = condition_schemas[0]["properties"]
+    assert {"source_id", "page", "path", "role", "reason"} <= set(condition)
 
 
 def test_finalize_output_schema_requires_typed_assessment_summary() -> None:
@@ -436,6 +478,26 @@ def test_prepare_batch_rejects_empty_or_blank_trial_labels(
                     {
                         "requested_outcome": "requested outcome",
                         "trial_labels": labels,
+                        "expected_revision": 0,
+                    },
+                )
+
+    asyncio.run(prepare())
+
+
+def test_prepare_batch_rejects_result_definition_in_outcome_concept(tmp_path: Path) -> None:
+    (tmp_path / "input" / "Trial A").mkdir(parents=True)
+
+    async def prepare() -> None:
+        os.environ["ROB2_WORKSPACE"] = str(tmp_path)
+        async with Client(mcp) as client:
+            with pytest.raises(ToolError, match="only the outcome concept"):
+                await client.call_tool(
+                    "prepare_batch",
+                    {
+                        "requested_outcome": (
+                            "Overall Survival defined as time from randomization to death"
+                        ),
                         "expected_revision": 0,
                     },
                 )
@@ -898,7 +960,8 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     unavailable = cast(dict[str, Any], result_items["oneOf"][1])
     assert "only when no complete assessable candidate" in unavailable["description"]
     assert "bindings" not in assessable["properties"]
-    assert "clarity" not in assessable["properties"]
+    assert "clarity" in assessable["properties"]
+    assert "clarity" not in assessable["required"]
     assert "alternatives" not in assessable["properties"]
     assert "evidence" in assessable["properties"]
     evidence_items = assessable["properties"]["evidence"]["items"]
@@ -910,6 +973,15 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
         "derived",
     ]
     assert "relation_rationale" in assessable["required"]
+    assert "clarity" in assessable["properties"]
+    assert (
+        "server records every facet as unclear"
+        in assessable["properties"]["clarity"]["description"]
+    )
+    assert "data-cut chronology" in assessable["properties"]["clarity"]["description"]
+    clarity_fields = assessable["properties"]["clarity"]["anyOf"][0]["properties"]
+    assert "data-cut chronology" in clarity_fields["time_point"]["description"]
+    assert "estimate and precision" in clarity_fields["source_table_meaning"]["description"]
     target = cast(dict[str, Any], assessable["properties"]["target"])
     assert "effect_of_interest" not in target["properties"]
     assert "outcome_definition" not in target["properties"]
@@ -1081,6 +1153,19 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "trial_id": "trial",
         "relation": "related",
         "relation_rationale": ("Related endpoints use different captured names and definitions."),
+        "clarity": {
+            key: "specified"
+            for key in (
+                "outcome_definition",
+                "measurement",
+                "time_point",
+                "analysis_population",
+                "comparison_groups",
+                "effect_measure",
+                "source_table_meaning",
+                "eligible_result_choice",
+            )
+        },
         "applicability": {
             "design": "individual_parallel",
             "rationale": (

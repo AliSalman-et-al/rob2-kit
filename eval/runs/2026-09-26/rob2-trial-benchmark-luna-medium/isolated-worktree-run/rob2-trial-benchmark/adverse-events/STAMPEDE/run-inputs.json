@@ -1,0 +1,84 @@
+{
+  "approved_scope": null,
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy alone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Grade 3 or higher adverse events; NCI-CTCAE initially version 3.0 and later version 4.0 was used.",
+    "population": "Patients in the safety population who received trial treatment.",
+    "reported_scope": {
+      "analysis_population": "Safety population (948 combination; 960 ADT alone); adverse events of grade 3 or higher during the entire time in trial.",
+      "endpoint": {
+        "definition": "Grade 3 or higher adverse events; NCI-CTCAE initially version 3.0 and later version 4.0 was used.",
+        "name": "Patients with grade 3 or higher adverse events"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "Patients with grade 3 or higher adverse events",
+          "unit": "patients (%)",
+          "value": "443/948 (47%)"
+        },
+        {
+          "group_id": "control",
+          "statistic": "Patients with grade 3 or higher adverse events",
+          "unit": "patients (%)",
+          "value": "315/960 (33%)"
+        }
+      ]
+    },
+    "trial": "STAMPEDE",
+    "window_or_cutoff": {
+      "description": "Adverse events of the highest reported grade during the entire time in the trial.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "capture_provenance": "captured response retained from PFS baseline",
+    "captured_at": "2026-09-13T19:14:13.902255Z",
+    "registry_id": "NCT00268476",
+    "replay_provenance": "copied byte-for-byte from the case manifest; no registry request made",
+    "replayed_at": "2026-09-26T11:16:26.045256+00:00",
+    "sha256": "f17d24fac49c26e7cd9ae51ce52ef6b9568cf440f8792b52aede034eb98914c9"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-run-inputs.v1",
+  "scope_unresolved": null,
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "role": "main_article",
+      "sha256": "6b01048d4859f9dbd2c061e6e7c9de1bf0234e4a876c782c447626e5de6cda84"
+    },
+    {
+      "name": "other.pdf",
+      "role": "other",
+      "sha256": "6e0eeb79fe3892f67adb06b99cbbcb651931d2283e89d86a83f2de3cf39c14fa"
+    },
+    {
+      "name": "protocol.pdf",
+      "role": "protocol",
+      "sha256": "75c62b3ccefd19f6a336e4ae095deb9d38ec964749d1928cda46da56b8db2631"
+    },
+    {
+      "name": "registry.json",
+      "role": "registry",
+      "sha256": "f17d24fac49c26e7cd9ae51ce52ef6b9568cf440f8792b52aede034eb98914c9"
+    },
+    {
+      "name": "supplement.pdf",
+      "role": "supplement",
+      "sha256": "4e415f050007beb437cdc7dcd74347709ecf16dd30dc25107b46e9a5399d3477"
+    }
+  ],
+  "trial": "STAMPEDE"
+}

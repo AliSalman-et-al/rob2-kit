@@ -77,7 +77,12 @@ def test_rehashed_bundle_boundary_tampering_fails_product_and_standalone(
     for index, mutate in enumerate(cases):
         tampered = tmp_path / f"shape-tamper-{index}.rob2.zip"
         _rehashed_full_tamper(artifact, tampered, mutate)
-        assert not verify_bundle(tampered)
+        diagnostic: dict[str, object] = {}
+        assert not verify_bundle(tampered, diagnostic=diagnostic)
+        assert diagnostic["code"] == "bundle_independent_verification_failed"
+        assert isinstance(diagnostic["failed_check_line"], int)
+        assert isinstance(diagnostic["action"], str)
+        assert "retry finalize_batch" in diagnostic["action"]
         assert _standalone_verify(tampered).returncode == 1
 
     with zipfile.ZipFile(artifact) as archive:

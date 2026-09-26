@@ -1,0 +1,71 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "The time from randomization to death resulting from any cause.",
+    "population": "All randomized patients in the primary analysis, analyzed by assigned group.",
+    "reported_scope": {
+      "analysis_population": "The primary analysis population: 1,306 randomized patients (651 darolutamide; 655 placebo).",
+      "effect_measure": "hazard ratio for death",
+      "endpoint": {
+        "definition": "The time from randomization to death resulting from any cause.",
+        "name": "Overall survival"
+      },
+      "estimate": "0.68",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.57 to 0.80; P<0.001"
+    },
+    "trial": "ARASENS",
+    "window_or_cutoff": {
+      "description": "Primary analysis at the October 25, 2021 data cutoff.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:31:14.538796Z",
+    "path": "../../../../../../reference/sources/ARASENS/registry.json",
+    "provenance": "captured response retained from OS baseline",
+    "registry_id": "NCT02799602",
+    "sha256": "5a6a378e5aaeeb083e17276f3c06ccc3129d734151c4699ddd607a8e72c9b6b6"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/ARASENS/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ARASENS"
+}

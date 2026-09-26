@@ -1,0 +1,168 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:11652a10e2b8873f90f399540d33988219b5871c75abaa6d7d85666d6e836db8": {
+        "end": 4600,
+        "end_line": 102,
+        "handle": "eh_11652a10e2b8873f",
+        "identity": "sha256:11652a10e2b8873f90f399540d33988219b5871c75abaa6d7d85666d6e836db8",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n355\nAbiraterone plus Prednisone in Prostate Cancer\nPain progression was defined as an increase of\nat least 30% from baseline in the worst pain\ncategory on the Brief Pain Inventory-Short Form\nas observed at two consecutive evaluations per-\nformed at least 4 weeks apart.\nAssessments\nEfficacy assessments included sequential radio-\ngraphic imaging to assess radiographic progres-\nsion-free survival (CT or MRI and bone scan-\nning) performed every 4 months, starting at\nweek 16. PSA levels were measured at baseline,\nmonthly in the first year, and then every 2 months\nuntil end-of-trial treatment. Patients underwent\nserial monitoring of vital signs, serum hemato-\nlogic and chemical findings, liver-function tests,\nand serum testosterone levels. Adverse events\nwere graded with the use of the Common Termi-\nnology Criteria for Adverse Events of the Na-\ntional Cancer Institute, version 4.0.\nStatistical Analysis\nThe overall level of significance was 0.05, with\nallocation between the two primary end points\nof overall survival (0.049) and radiographic\nprogression-free survival (0.001) (Table S2 in\nthe Supplementary Appendix). For overall sur-\nvival, 852 events were required at the final\nanalysis to detect a hazard ratio of 0.81 at a\ntwo-tailed significance level of 0.049, with a\nstatistical power of 85%. An analysis of radio-\ngraphic progression-free survival was planned\nwhen 565 progressions or deaths had been ob-\nserved, which would provide a statistical power\nof 94% to detect a hazard ratio of 0.667 at a\ntwo-tailed significance level of 0.001. Two in-\nterim analyses were included (Table S2 in the\nSupplementary Appendix). The overall survival\nanalyses incorporated the group sequential de-\nsign with an alpha spending function that was\ncalculated as Wang-Tsiatis power boundaries\nof shape parameter 0.2 (which shape the prob-\nability distribution). Secondary end points were\ntested with the use of the Hochberg test proce-\ndure to control the familywise type I error rate.\nThe primary statistical method of comparison\nfor time-to-event end points was the stratified\nlog-rank test, according to the stratification\nfactors. The Cox proportional-hazards model\nwas used to estimate the hazard ratio and its\nassociated 95% confidence interval.\nResults\nPatients and Treatments\nA total of 1199 patients underwent randomiza-\ntion from February 12, 2013, through December\n11, 2014. Of these patients, 597 were assigned to\nthe abiraterone group and 602 to the placebo\ngroup (Fig. S1 in the Supplementary Appendix).\nThe baseline demographic and disease charac-\nteristics were well balanced between the two\ngroups (Table S3 in the Supplementary Appen-\ndix). The results presented here are based on the\nclinical cutoff date of October 31, 2016, for the\nfirst interim analysis of overall survival, at which\ntime 406 deaths and 593 radiographic progres-\nsions or deaths had occurred. At a median follow-\nup of 30.4 months, the median time that the\npatients received the intervention was 24 months\nin the abiraterone group and 14 months in the\nplacebo group. As a result of the findings at the\ntime of the interim analysis, the independent data\nand safety monitoring committee unanimously\nrecommended on January 12, 2017, that the trial\nbe unblinded to allow crossover among the pa-\ntients in the placebo group to receive abiraterone.\nEnd Points\nOverall Survival\nThe first interim analysis was performed after\n406 deaths (48% of the 852 deaths that were\nincluded in the final analysis) and a median\nfollow-up of 30.4 months. Of these deaths, 169 of\n597 (28%) occurred in the abiraterone group and\n237 of 602 (39%) in the placebo group. The over-\nall rate of survival at 3 years was 66% in the\nabiraterone group and 49% in the placebo group\n(Fig. 1A). The rate of death from any cause was\n28% in the abiraterone group and 39% in the\nplacebo group (Table S4 in the Supplementary\nAppendix). The relative risk of death was 38%\nlower in the abiraterone group than in the pla-\ncebo group (hazard ratio, 0.62; 95% confidence\ninterval [CI], 0.51 to 0.76; P<0.001). The treatment\neffect of abiraterone on overall survival was consis-\ntently favorable across nearly all prespecified sub-\ngroups (Fig. S2 in the Supplementary Appendix).\nRadiographic Progression-free Survival\nAt the time of the analysis, the median progression-\nfree survival was 33.0 months in the abiraterone\ngroup and 14.8 months in the placebo group\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "latitude"
+      },
+      "sha256:c83b903766d74f8650fbf0636730035c6d1f0d02012f917b0435105eee1fb240": {
+        "end": 4865,
+        "end_line": 105,
+        "handle": "eh_c83b903766d74f86",
+        "identity": "sha256:c83b903766d74f8650fbf0636730035c6d1f0d02012f917b0435105eee1fb240",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 377;4 nejm.org July 27, 2017\n354\nThe new engl and jour nal of medicine\nwas designed by the senior academic authors and\nemployees of the sponsor. Data were transcribed\nby trial personnel from source documents onto\nan electronic data-capture system prepared by the\nsponsor. The data analyses were performed by\nstatisticians employed by the sponsor. All the\nauthors assume responsibility for the complete-\nness and integrity of the data and for the fidel-\nity of the trial to the protocol. All the academic\nauthors had full access to all parts of the data\nand drafted the manuscript with sponsor input,\nand all the coauthors subsequently provided in-\nput. The sponsor provided funding for editorial\nassistance. All the authors and participating in-\nstitutions have agreements with the sponsor re-\ngarding data confidentiality.\nPatients and Treatments\nEligible patients were required to be at least 18\nyears of age and to have an Eastern Cooperative\nOncology Group (ECOG) performance-status\nscore of 0 to 2 (on a 5-point scale, with higher\nnumbers indicating greater disability) with new-\nly diagnosed (≤3 months before randomization),\npathologically confirmed prostate cancer with-\nout neuroendocrine differentiation or small-cell\nhistologic features. All the patients had high-risk,\nmetastatic, castration-sensitive prostate cancer,\nas documented by a positive bone scan or meta-\nstatic lesions at the time of diagnosis on com-\nputed tomography (CT) or magnetic resonance\nimaging (MRI), according to Response Evaluation\nCriteria in Solid Tumors (RECIST), version 1.1.\nIn addition, the patients were required to have at\nleast two of the three following high-risk factors\nassociated with poor prognosis: a Gleason score\nof 8 or more (on a scale of 2 to 10, with higher\nscores indicating more aggressive disease), at\nleast three bone lesions, and the presence of\nmeasurable visceral metastasis. Patients were\nexcluded if they had received previous chemo-\ntherapy, radiation therapy, or surgery for meta-\nstatic prostate cancer, with the exception of\n3 months or less of androgen-deprivation ther\napy with luteinizing hormone-releasing hormone\nanalogues or orchiectomy with or without con-\ncurrent first-generation androgen-receptor antag-\nonists before baseline or one course of palliative\nradiation or surgical therapy to treat symptoms\nassociated with metastatic disease.\nPatients were randomly assigned in a 1:1 ratio\nto receive androgen-deprivation therapy and abira\nterone acetate (1000 mg daily, given once daily\nas four 250-mg tablets) and prednisone (5 mg\ndaily) (the abiraterone group) or androgen-depri-\nvation therapy and placebos (the placebo group).\nPatients were stratified according to the presence\nor absence of measurable visceral disease and\nECOG performance-status score (0 or 1 vs. 2).\nAbiraterone or placebo was administered at least\n1 hour before or 2 hours after a meal. All the\npatients who had not undergone surgical castra-\ntion received ongoing androgen-deprivation ther-\napy to reach or maintain a serum testosterone\nlevel of less than 50 ng per deciliter (1.7 nmol\nper liter). Safety and dosing adherence were\nevaluated during each trial visit, at treatment\ndiscontinuation (if applicable), and at the end-of-\ntrial visit.\nEnd Points\nThe two primary efficacy end points were overall\nsurvival and radiographic progression-free sur-\nvival. Overall survival was defined as the time\nfrom randomization to death from any cause,\nand radiographic progression-free survival as the\ntime from randomization to the occurrence of\nradiographic progression or death from any\ncause. Radiographic progression of soft-tissue\nlesions was evaluated by either CT or MRI on the\nbasis of RECIST, version 1.1. Progression on\nbone scanning was assessed by adaptation of\nProstate Cancer Working Group 2 criteria (Table\nS1 in the Supplementary Appendix, available at\nNEJM.org).25 Potential bias favoring the abirater\none group in the assessment of radiographic\nprogression by investigators was audited with the\nuse of the method of the Pharmaceutical Re-\nsearch and Manufacturers Association26 in a sam-\nple of 202 randomly selected patients with blind-\ned central review.\nPrespecified secondary end points were the\ntime to the next \"skeletal-related event\" (described\nhere as a \"symptomatic skeletal event,\" which\nwas defined as a clinical or pathological frac-\nture, spinal-cord compression, palliative radia-\ntion to bone, or surgery involving bone), time to\nprogression with respect to prostate-specific\nantigen (PSA) level on the basis of Prostate Can-\ncer Working Group 2 criteria,25 time to the next\ntherapy for prostate cancer, time to initiation of\nchemotherapy, and time to pain progression.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "latitude"
+      },
+      "sha256:f2ee1cf67b0efe783b3e938332b9e4bb7e9e8a4b085ca44061ac7d98593b7a69": {
+        "end": 3963,
+        "end_line": 172,
+        "handle": "eh_f2ee1cf67b0efe78",
+        "identity": "sha256:f2ee1cf67b0efe783b3e938332b9e4bb7e9e8a4b085ca44061ac7d98593b7a69",
+        "kind": "narrative",
+        "page": 5,
+        "quote": "in 48% of those in the placebo group (Table 2).\nThe numbers of patients with serious adverse\nevents were similar in the two groups. The fre-\nquency of adverse events leading to treatment\ndiscontinuation was 12% in the abiraterone group\nand 10% in the placebo group (Table S6 in the\nSupplementary Appendix). Adverse events that\nled to a dose modification or interruption were\nreported in 32% of the patients in the abiraterone\ngroup and in 17% of those in the placebo group.\nGrade 3 mineralocorticoid-related toxic effects\nof special interest, including hypertension and\nhypokalemia, occurred at a higher frequency in\nthe abiraterone group than in the placebo group;\nrates of grade 3 and grade 4 hypertension were\n20% and 0%, respectively, in the abiraterone\ngroup and 10% and 0.2%, respectively, in the\nplacebo group, with corresponding rates of hypo-\nkalemia of 10% and 0.8% in the abiraterone\ngroup and of 1% and 0.2% in the placebo group\n(Table 2).\nDiscussion\nIn this phase 3 trial involving men with high-\nrisk, newly diagnosed, metastatic, castration-\nsensitive prostate cancer, the rate of overall\nsurvival was significantly higher among those\nwho received androgen-deprivation therapy plus\nabiraterone and prednisone than among those\nwho received androgen-deprivation therapy plus\nplacebos, with a 38% lower relative risk of death\n(hazard ratio, 0.62) in the abiraterone group.\nThe addition of abiraterone plus prednisone to\nandrogen-deprivation therapy also significantly\nprolonged radiographic progression-free survival\n(hazard ratio, 0.47) and all secondary end points.\nSince the between-group difference for overall\nsurvival was significant at the time of the first\ninterim analysis and unblinding of the trial, this\nanalysis is considered to be final.\nFigure 1. Kaplan-Meier Estimates of the Two Primary End Points.\nShown are data for overall survival (Panel A) and for radiographic progression-\nfree survival (Panel B). The dashed lines indicate the median. The median\nrate of overall survival was not reached in the abiraterone group and was\n34.7 months in the placebo group; the corresponding medians for progres-\nsion-free survival were 33.0 months and 14.8 months. CI denotes confidence\ninterval.\nOverall Survival (%)\n100\n80\n90\n70\n60\n40\n30\n10\n50\n20\n0\n0\n6\n12\n18\n24\n30\n42\n36\nMonths\nB Radiographic Progression-free Survival\nA Overall Survival\nHazard ratio, 0.62 (95% CI, 0.51-0.76)\nP<0.001\nNo. at Risk\nAbiraterone\nPlacebo\n597\n602\n565\n564\n529\n504\n479\n432\n388\n332\n233\n172\n9\n2\n93\n57\nPlacebo\nAbiraterone\nProgression-free Survival (%)\n100\n80\n90\n70\n60\n40\n30\n10\n50\n20\n0\n0\n4\n8\n16\n20\n24\n40\n36\n32\nMonths\nHazard ratio, 0.47 (95% CI, 0.39-0.55)\nP<0.001\nNo. at Risk\nAbiraterone\nPlacebo\n597\n602\n533\n488\n464\n367\n353\n214\n12\n400\n289\n316\n168\n251\n127\n177\n81\n102\n41\n51\n17\n21\n7\n28\nPlacebo\nAbiraterone\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 1017,
+        "start_line": 26,
+        "trial_id": "latitude"
+      }
+    },
+    "identity": "sha256:5132c32ac23fcc0515c3e93ca2ecafab52d4fd6b1eb44b5bcf6d726c0cce1569",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_c83b903766d74f86"
+            ],
+            "rationale": "Patients were individually randomized 1:1 to parallel abiraterone and placebo groups."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:25d5f1bd3f9d3143a2a177b7239056cef0ca63090d5b78a22913a2637cd18ba3"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:af6f487afe19e90d92388409952198d582de7c9510e1ea5935a9d2279e38fad0"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/definition"
+              },
+              "value_digest": "sha256:15ddb8ddfe7e6e771ff5763261a3ddad0a1dd59267ae9aa1ababa12579b16687"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_11652a10e2b8873f",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_c83b903766d74f86",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_f2ee1cf67b0efe78",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "This is the prespecified overall-survival comparison in the randomized groups, with death from any cause measured from randomization; the estimate is the hazard ratio at the first interim analysis, matching the requested outcome and estimate.",
+          "reported": {
+            "analysis_population": "All randomized patients (597 assigned to abiraterone and 602 to placebo); first interim analysis after 406 deaths.",
+            "effect_measure": "Hazard ratio",
+            "endpoint": {
+              "definition": "Time from randomization to death from any cause",
+              "name": "Overall survival"
+            },
+            "estimate": "0.62",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% confidence interval [CI], 0.51 to 0.76"
+          },
+          "requested_outcome": "Overall survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+                "id": "abiraterone"
+              },
+              {
+                "assignment": "Androgen-deprivation therapy plus dual placebos",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from randomization to death from any cause",
+              "metric": "Overall survival"
+            },
+            "outcome_definition": "Overall survival",
+            "time_point_or_window": {
+              "description": "From randomization through the first interim analysis (median follow-up 30.4 months)",
+              "kind": "described"
+            }
+          },
+          "trial_id": "latitude"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:5b20d4355820f3601e873d5230b01da45067e452f3e19ca67e5a727988841730",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

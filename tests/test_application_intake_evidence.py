@@ -9,7 +9,8 @@ import pymupdf
 import pytest
 
 from rob2_kit.application import intake
-from rob2_kit.application._state import _db, _reserved_role
+from rob2_kit.application._state import _db, _ensure, _reserved_role
+from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import (
     _evidence_for_handles,
     _search_receipt,
@@ -89,6 +90,63 @@ def test_registry_response_is_a_searchable_captured_source(
         "The method of permuted blocks will be used for randomization.",
     )
     assert "permuted blocks" in selected["evidence"]["quote"]
+
+
+def test_prepare_batch_populates_the_search_projection_once_and_rebuilds_after_loss(
+    tmp_path: Path,
+) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    document = pymupdf.open()
+    document.new_page().insert_text((72, 72), "Captured PDF evidence.")
+    (trial / "main_article.pdf").write_bytes(document.tobytes())
+    document.close()
+
+    intake._root(tmp_path)
+    _ensure(tmp_path)
+    with _db(tmp_path, "derivative.sqlite3") as connection:
+        connection.execute("INSERT INTO source_index VALUES ('stale', 'stale', 'stale', '{}')")
+        connection.execute("INSERT INTO pages VALUES ('stale', 1, 'stale page')")
+        connection.execute("INSERT INTO pages_fts VALUES ('stale', 1, 'stale page', '')")
+        connection.executemany(
+            "INSERT INTO search_projection_meta(name,value) VALUES (?,?)",
+            (("version", "stale-version"), ("profile", "stale-profile")),
+        )
+
+    extractions_before = COUNTERS["extraction_calls"]
+    rebuilds_before = COUNTERS["derivative_rebuilds"]
+    prepared = prepare_batch(
+        tmp_path,
+        [TrialDeclaration(id="trial", label="trial", requested_outcome="trial outcome")],
+        expected_revision=0,
+    )
+    [source] = prepared["trials"][0]["sources"]
+    extractions_after_prepare = COUNTERS["extraction_calls"]
+    assert extractions_after_prepare - extractions_before == 1
+
+    with _db(tmp_path, "derivative.sqlite3") as connection:
+        for table in ("source_index", "pages", "pages_fts"):
+            rows = connection.execute(f"SELECT source_id FROM {table}").fetchall()
+            assert {row[0] for row in rows} == {source["id"]}
+        metadata = {
+            row["name"]: row["value"]
+            for row in connection.execute(
+                "SELECT name,value FROM search_projection_meta"
+            ).fetchall()
+        }
+        assert set(metadata) == {"version", "profile"}
+
+    first_page = read_pages(tmp_path, "trial", source["id"], [1])["pages"][0]
+    assert COUNTERS["extraction_calls"] == extractions_after_prepare
+    assert COUNTERS["derivative_rebuilds"] == rebuilds_before
+
+    with _db(tmp_path, "derivative.sqlite3") as connection:
+        connection.execute("DELETE FROM search_projection_meta")
+
+    rebuilt_page = read_pages(tmp_path, "trial", source["id"], [1])["pages"][0]
+    assert rebuilt_page["text"] == first_page["text"]
+    assert COUNTERS["extraction_calls"] == extractions_after_prepare + 1
+    assert COUNTERS["derivative_rebuilds"] == rebuilds_before + 1
 
 
 def _source_for_text(tmp_path: Path, text: str) -> tuple[Path, dict[str, object]]:

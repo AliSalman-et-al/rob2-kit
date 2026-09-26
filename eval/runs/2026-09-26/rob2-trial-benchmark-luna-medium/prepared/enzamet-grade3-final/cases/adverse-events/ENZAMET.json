@@ -1,0 +1,80 @@
+{
+  "campaign_id": "4a1a735fa2a0404e94dc7e796da8b77b",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Enzalutamide plus testosterone suppression",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Grade 3 adverse events; NCI-CTCAE version 4.0.2 was used to grade adverse events.",
+    "population": "Patients who received at least one dose and were included in the safety population.",
+    "reported_scope": {
+      "analysis_population": "Safety population (563 enzalutamide; 558 standard care).",
+      "endpoint": {
+        "name": "Grade 3 adverse events"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "Grade 3 adverse events",
+          "unit": "patients (%)",
+          "value": "277/563 (49%)"
+        },
+        {
+          "group_id": "control",
+          "statistic": "Grade 3 adverse events",
+          "unit": "patients (%)",
+          "value": "194/558 (35%)"
+        }
+      ]
+    },
+    "trial": "ENZAMET",
+    "window_or_cutoff": {
+      "description": "Adverse events collected during treatment, with final safety assessment 30 to 42 days after treatment stopped.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:13:27.679130Z",
+    "path": "../../../../../../../reference/sources/ENZAMET/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02446405",
+    "sha256": "ba84ecaa795516d6c69815b6a340786f28eb39bf303ad4de8ad3dd8ac06d9d4e"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ENZAMET"
+}
