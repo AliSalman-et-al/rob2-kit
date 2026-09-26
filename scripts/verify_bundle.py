@@ -155,7 +155,7 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.8",
-    "content_hash": "sha256:1a2fde94dbfe7b8f1e696a98921c050943166136646efe7cc50d7883bef95a33",
+    "content_hash": "sha256:ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -1498,13 +1498,17 @@ def _valid_missing_data(
     trial_id: object,
     result_identity: object,
 ) -> bool:
-    """Validate the canonical Domain 3.1 count reconciliation.
+    """Validate canonical participant-flow rows for the permitted D2/D3 questions.
 
     The current row shape carries result scope and explicit participant-flow
     counts.  Keep the legacy shape accepted for older bundles, while checking
     current rows independently of the application models.
     """
-    if question_id != "sq:missing:data-available" or not isinstance(value, dict):
+    if question_id not in {
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:missing:data-available",
+    } or not isinstance(value, dict):
         return False
     if (
         set(value) != {"rows", "conflicts"}
@@ -1611,9 +1615,7 @@ def _valid_missing_data(
     )
     legacy_optional = {"semantics"}
     current_optional = legacy_optional | set(result_scope_fields[1:]) | {"result_identity"}
-    current_schema = any(
-        isinstance(row, dict) and "missing_bounds" in row for row in value["rows"]
-    )
+    current_schema = any(isinstance(row, dict) and "missing_bounds" in row for row in value["rows"])
     required = current_required if current_schema else legacy_required
     optional = current_optional if current_schema else legacy_optional
 
@@ -1653,10 +1655,7 @@ def _valid_missing_data(
             )
         ):
             return False
-        if (
-            row.get("result_identity") is not None
-            and row["result_identity"] != result_identity
-        ):
+        if row.get("result_identity") is not None and row["result_identity"] != result_identity:
             return False
         if current_schema:
             for key in ("endpoint", "severity", "window", "event_definition"):
@@ -1677,9 +1676,9 @@ def _valid_missing_data(
         )
         missing = row["missing"]
         if (
-            (missing is not None and (isinstance(missing, bool) or not isinstance(missing, int) or missing < 0))
-            or missing != expected_missing
-        ):
+            missing is not None
+            and (isinstance(missing, bool) or not isinstance(missing, int) or missing < 0)
+        ) or missing != expected_missing:
             return False
         expected_fraction = (
             expected_missing / randomized
@@ -1705,7 +1704,11 @@ def _valid_missing_data(
             observed_is_int = isinstance(observed, int) and not isinstance(observed, bool)
             expected_bounds: dict[str, object] | None = None
             if expected_missing is not None:
-                expected_bounds = {"lower": expected_missing, "upper": expected_missing, "kind": "exact"}
+                expected_bounds = {
+                    "lower": expected_missing,
+                    "upper": expected_missing,
+                    "kind": "exact",
+                }
             elif randomized_is_int and observed_is_int and observed > randomized:
                 expected_bounds = None
             elif randomized_is_int and (not imputed_is_int or imputed <= randomized):
@@ -1796,7 +1799,9 @@ def _valid_missing_data(
         participant_scope = tuple(
             scope[field] for field in ("arm", "population", "unit", "time_point")
         )
-        result_scope = tuple(row.get(field) for field in result_scope_fields) if current_schema else ()
+        result_scope = (
+            tuple(row.get(field) for field in result_scope_fields) if current_schema else ()
+        )
         key = (*participant_scope, *result_scope)
         prior = seen.get(key)
         if prior is not None and tuple(prior.get(field) for field in compared_fields) != tuple(
@@ -3056,7 +3061,8 @@ def _valid_result_shape(
             "eligible_result_choice",
         }
         or any(
-            not isinstance(value, str) or value not in {"specified", "unclear", "unavailable"}
+            not isinstance(value, str)
+            or value not in {"specified", "unclear", "unavailable", "conflicting"}
             for value in clarity.values()
         )
         or set(target)

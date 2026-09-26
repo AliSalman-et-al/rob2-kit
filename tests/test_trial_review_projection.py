@@ -88,13 +88,9 @@ def test_long_selected_evidence_has_bounded_review_fact_and_exact_expansion(
         if item.get("evidence", {}).get("handle") == long_visual["handle"]
     )
     assert len(fact["text"]) <= 4_000
-    assert fact["text"].endswith(
-        " … [excerpt; use evidence_expansions to inspect full Evidence]"
-    )
+    assert fact["text"].endswith(" … [excerpt; use evidence_expansions to inspect full Evidence]")
     expansion = next(
-        item
-        for item in answer["evidence_expansions"]
-        if item["evidence"] == long_visual["handle"]
+        item for item in answer["evidence_expansions"] if item["evidence"] == long_visual["handle"]
     )
     assert expansion == {
         "operation": "render_page",
@@ -201,9 +197,7 @@ def test_trial_review_only_keeps_search_routes_that_remain_open(
 
     note = {
         "text": "Allocation concealment was not resolved in the saved review.",
-        "sources": [
-            {"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1}
-        ],
+        "sources": [{"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1}],
         "domain_id": "domain:randomization",
         "question_id": "sq:randomization:concealment",
     }
@@ -304,9 +298,7 @@ def test_review_flags_source_bound_participant_flow_scope_without_host_marker(
         if item["question_id"] == "sq:deviations:context-deviations"
     )
     mismatch = next(
-        item
-        for item in answer["conflicts"]
-        if item["kind"] == "potential_scope_mismatch"
+        item for item in answer["conflicts"] if item["kind"] == "potential_scope_mismatch"
     )
     assert "population" in mismatch["detail"]
     assert mismatch["assertion"] == "server_derived"
@@ -315,3 +307,108 @@ def test_review_flags_source_bound_participant_flow_scope_without_host_marker(
     assert mismatch["evidence"] == [
         {"handle": evidence["handle"], "identity": evidence["identity"]}
     ]
+
+
+def test_trial_review_keeps_result_and_judgment_driving_question_with_its_basis(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    revision = _save_all_domains(workspace, evidence, revision)
+
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": revision},
+    )
+
+    assert reviewed["outcome"] == "success", reviewed
+    approved = _state(workspace)["proposal"]["payload"]["results"][0]
+    assert reviewed["data"]["result"] == approved
+    driver = next(
+        answer
+        for finding in reviewed["data"]["domain_findings"]
+        for answer in finding["answers"]
+        if answer["driver"]
+    )
+    question = next(item for item in SCIENTIFIC_PACK.questions if item.id == driver["question_id"])
+    assert driver["question"] == question.wording
+    assert driver["facts"]
+    assert driver["facts"][0]["evidence"]["handle"] == evidence["handle"]
+    assert driver["warrant"]
+    assert "counterevidence" in driver
+    assert "unknowns" in driver
+
+
+def test_trial_review_challenges_analysis_denominator_as_availability_without_changing_judgment(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    missing_draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    availability = next(
+        answer
+        for answer in missing_draft["answers"]
+        if answer["question_id"] == "sq:missing:data-available"
+    )
+    availability["answer"] = "yes"
+    availability["justification"] = (
+        "The analysis denominator shows outcome data were available for all participants."
+    )
+    availability["missing_data"] = [
+        {
+            "arm": "intervention",
+            "population": "randomized participants",
+            "unit": "participants",
+            "time_point": "end of follow-up",
+            "randomized": 100,
+            "analyzed": 100,
+            "event_count": 40,
+            "event_definition": "death",
+            "basis": [evidence["handle"]],
+        }
+    ]
+
+    findings = {}
+    for domain in SCIENTIFIC_PACK.domains:
+        saved = _call(
+            workspace,
+            "save_domain_judgment",
+            {
+                **(
+                    missing_draft
+                    if domain.id == "domain:missing"
+                    else _domain_draft("trial", domain.id, revision, evidence)
+                ),
+                "expected_revision": revision,
+            },
+        )
+        assert saved["outcome"] == "success", saved
+        revision = int(saved["head"]["state_revision"])
+        findings[domain.id] = saved["data"]["checkpoint"]["judgment"]
+
+    reviewed = _call(
+        workspace,
+        "review_trial",
+        {"trial_id": "trial", "expected_revision": revision},
+    )
+
+    assert reviewed["outcome"] == "success", reviewed
+    missing = next(
+        finding
+        for finding in reviewed["data"]["domain_findings"]
+        if finding["domain_id"] == "domain:missing"
+    )
+    availability = next(
+        answer
+        for answer in missing["answers"]
+        if answer["question_id"] == "sq:missing:data-available"
+    )
+    conflict = next(
+        item for item in availability["conflicts"] if item["kind"] == "unsupported_link"
+    )
+    assert conflict["assertion"] == "server_derived"
+    assert conflict["evidence"] == [
+        {"handle": evidence["handle"], "identity": evidence["identity"]}
+    ]
+    assert "do not establish outcome availability" in conflict["detail"]
+    assert availability["answer"] == "yes"
+    assert missing["judgment"] == findings["domain:missing"]

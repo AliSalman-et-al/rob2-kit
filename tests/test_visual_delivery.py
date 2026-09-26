@@ -166,8 +166,7 @@ def test_amended_repeated_section_keeps_conflicting_text_and_render_sources(
     amended.insert_text((48, 48), "Outcome Definitions - amended plan")
     amended.insert_text((48, 96), "Arm A 20 events; Arm B 10 events")
     visible_pages = [
-        page.get_pixmap(matrix=pymupdf.Matrix(2, 2)).tobytes("png")
-        for page in visible_document
+        page.get_pixmap(matrix=pymupdf.Matrix(2, 2)).tobytes("png") for page in visible_document
     ]
     visible_document.close()
 

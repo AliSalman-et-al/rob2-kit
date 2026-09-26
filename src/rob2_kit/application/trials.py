@@ -226,6 +226,59 @@ def _review_domain_findings(
                 )
         return conflicts
 
+    def availability_denominator_conflicts(answer: dict[str, Any]) -> list[dict[str, Any]]:
+        if answer.get("question_id") != "sq:missing:data-available":
+            return []
+        missing_data = answer.get("missing_data")
+        rows = missing_data.get("rows", ()) if isinstance(missing_data, dict) else ()
+        rows = [row for row in rows if isinstance(row, dict)]
+        if not rows:
+            return []
+
+        def reports_availability(row: dict[str, Any]) -> bool:
+            bounds = row.get("missing_bounds")
+            informative_bounds = isinstance(bounds, dict) and (
+                bounds.get("kind") == "exact"
+                or (isinstance(bounds.get("lower"), int) and bounds["lower"] > 0)
+            )
+            semantics = row.get("semantics")
+            return (
+                isinstance(row.get("observed"), int)
+                or isinstance(row.get("missing"), int)
+                or informative_bounds
+                or (
+                    isinstance(semantics, dict) and isinstance(semantics.get("outcome_status"), str)
+                )
+            )
+
+        has_availability_fact = any(reports_availability(row) for row in rows)
+        has_denominator_or_event = any(
+            any(
+                isinstance(row.get(field), int)
+                for field in ("randomized", "analyzed", "event_count")
+            )
+            for row in rows
+        )
+        if has_availability_fact or not has_denominator_or_event:
+            return []
+
+        references = report_evidence(rows)
+        if not references:
+            return []
+        return [
+            {
+                "kind": "unsupported_link",
+                "detail": (
+                    "The cited participant-flow rows report randomized, analyzed, or event "
+                    "quantities without an outcome-observed count or explicit outcome-status "
+                    "fact. Those quantities alone do not establish outcome availability for "
+                    "this Result; check the cited inference against the source passage."
+                ),
+                "assertion": "server_derived",
+                "evidence": references,
+            }
+        ]
+
     def host_scope_conflicts(
         answer: dict[str, Any], references: tuple[dict[str, str], ...]
     ) -> list[dict[str, Any]]:
@@ -568,6 +621,7 @@ def _review_domain_findings(
             review_references = tuple(references)
             conflicts = (
                 structured_scope_conflicts(answer)
+                + availability_denominator_conflicts(answer)
                 + host_scope_conflicts(answer, review_references)
                 + participant_flow_scope_conflicts(answer)
             )
@@ -605,6 +659,12 @@ def _review_domain_findings(
             answer_findings.append(
                 {
                     "question_id": answer["question_id"],
+                    "question": next(
+                        question.wording
+                        for question in SCIENTIFIC_PACK.questions
+                        if question.id == answer["question_id"]
+                    ),
+                    "driver": answer["question_id"] in record.get("driver_questions", ()),
                     "answer": answer.get("answer"),
                     "facts": facts,
                     "warrant": answer.get("justification"),
@@ -745,6 +805,7 @@ def review_trial(
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+
     def validated_retry(review_record: dict[str, Any]) -> dict[str, Any]:
         response = _result(
             "success",

@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from rob2_kit.evaluation.cohort import (
+    CohortCell,
     CohortManifest,
     ReviewerProvenance,
     read_cohort,
@@ -14,6 +15,41 @@ from rob2_kit.evaluation.cohort import (
 )
 
 COHORT_PATH = Path("eval/cohorts/2026-09-21.json")
+
+
+def _completed_cohort_payload() -> dict:
+    cohort = read_cohort(COHORT_PATH)
+    payload = cohort.model_dump(mode="json", by_alias=True)
+    payload.pop("identity")
+    payload["status"] = "adjudicated"
+    original_ids = {
+        cell["identity"]: (cell["case_identity"], cell["domain_id"]) for cell in payload["cells"]
+    }
+    for cell in payload["cells"]:
+        cell.pop("identity")
+        cell.update(
+            {
+                "adjudication_status": "complete",
+                "classification": "indeterminate",
+                "uncertainty": "moderate",
+                "reviewer_provenance": {
+                    "status": "complete",
+                    "reviewer_identity": "reviewer-one",
+                    "reviewer_role": "independent adjudicator",
+                    "reviewed_at": "2026-09-25T10:00:00Z",
+                    "note": "The source record was reviewed.",
+                },
+            }
+        )
+    completed_ids = {}
+    for cell in payload["cells"]:
+        completed = CohortCell.model_validate(cell)
+        cell["identity"] = completed.identity
+        completed_ids[(cell["case_identity"], cell["domain_id"])] = completed.identity
+    for entry in payload["agreement_sample"]:
+        key = original_ids[entry["cell_identity"]]
+        entry["cell_identity"] = completed_ids[key]
+    return payload
 
 
 def test_pinned_cohort_reproduces_audit_counts_and_published_totals() -> None:
@@ -120,6 +156,105 @@ def test_pending_reviewer_provenance_cannot_carry_identity() -> None:
             reviewer_identity="reviewer-a",
             note="pending",
         )
+
+
+def test_completed_cell_requires_completed_reviewer_provenance() -> None:
+    cell = read_cohort(COHORT_PATH).cells[0].model_dump(mode="json", by_alias=True)
+    cell.pop("identity")
+    cell.update(
+        {
+            "adjudication_status": "complete",
+            "classification": "agreement",
+            "uncertainty": "low",
+        }
+    )
+
+    with pytest.raises(ValueError, match="complete reviewer provenance"):
+        CohortCell.model_validate(cell)
+
+
+def test_complete_reviewer_provenance_cannot_use_empty_identity() -> None:
+    with pytest.raises(ValueError):
+        ReviewerProvenance.model_validate(
+            {
+                "status": "complete",
+                "reviewer_identity": "",
+                "reviewer_role": "independent adjudicator",
+                "reviewed_at": "2026-09-25T10:00:00Z",
+                "note": "The source record was reviewed.",
+            }
+        )
+
+
+def test_adjudicated_manifest_requires_complete_cells_and_full_domain_set() -> None:
+    payload = _completed_cohort_payload()
+    valid = CohortManifest.model_validate(payload)
+    assert valid.status == "adjudicated"
+
+    missing_domain = _completed_cohort_payload()
+    first = missing_domain["cells"][0]
+    missing_domain["cells"].remove(
+        next(
+            cell
+            for cell in missing_domain["cells"]
+            if cell["case_identity"] == first["case_identity"]
+        )
+    )
+    with pytest.raises(ValueError, match="complete Domain cell set"):
+        CohortManifest.model_validate(missing_domain)
+
+    incomplete = _completed_cohort_payload()
+    incomplete["cells"][0].update(
+        {
+            "adjudication_status": "pending_external_adjudication",
+            "classification": None,
+            "uncertainty": "pending",
+            "reviewer_provenance": {
+                "status": "pending_external_adjudication",
+                "note": "Review is pending.",
+            },
+        }
+    )
+    incomplete["cells"][0].pop("identity", None)
+    with pytest.raises(ValueError, match="require every cell to be complete"):
+        CohortManifest.model_validate(incomplete)
+
+
+def test_completed_adjudication_changes_keep_a_validated_revision_chain() -> None:
+    payload = _completed_cohort_payload()
+    first = CohortCell.model_validate(payload["cells"][0])
+    revised = first.model_dump(mode="json", by_alias=True)
+    revised.update(
+        {
+            "revision": 1,
+            "supersedes": first.identity,
+            "classification": "likely_model_error",
+            "uncertainty": "high",
+            "reviewer_provenance": {
+                "status": "complete",
+                "reviewer_identity": "reviewer-two",
+                "reviewer_role": "independent adjudicator",
+                "reviewed_at": "2026-09-25T11:00:00Z",
+                "note": "A second review changed the classification.",
+            },
+        }
+    )
+    revised.pop("identity")
+    revised_cell = CohortCell.model_validate(revised)
+    payload["cells"].append(revised_cell.model_dump(mode="json", by_alias=True))
+    payload["cohort_revision"] = 2
+
+    cohort = CohortManifest.model_validate(payload)
+    assert cohort.cells[-1].supersedes == first.identity
+    assert cohort.cells[-1].identity != first.identity
+    assert summarize(cohort)["domain_cells"] == 140
+
+    broken = cohort.model_dump(mode="json", by_alias=True)
+    broken.pop("identity")
+    broken["cells"][-1]["supersedes"] = "sha256:" + "f" * 64
+    broken["cells"][-1].pop("identity")
+    with pytest.raises(ValueError, match="must supersede the prior immutable cell"):
+        CohortManifest.model_validate(broken)
 
 
 def test_manifest_identity_detects_label_tampering() -> None:

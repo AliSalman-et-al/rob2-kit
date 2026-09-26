@@ -12,7 +12,7 @@ import hashlib
 import json
 import re
 from collections.abc import Mapping
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 SCHEMA = "rob2-kit.mcp-observations.v1"
@@ -52,7 +52,7 @@ _RESPONSE_OUTCOMES = frozenset(
 )
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
 _OPAQUE = re.compile(
-    r"^(?:sha256:[0-9a-fA-F]{64}|(?:eh|sr|opt|source|passage|call|op)_[A-Za-z0-9_.:-]{1,127})$"
+    r"^(?:sha256:[0-9a-fA-F]{64}|(?:eh|sr|opt|source|passage|call|op|sh|ss)_[A-Za-z0-9_.:-]{1,127}|sc_[0-9a-f]{16}_[0-9]+|dcp2\.[A-Za-z0-9_.:-]{1,127})$"
 )
 _TERMINAL = {"assessed", "needs_input", "failed", "unknown"}
 
@@ -293,18 +293,46 @@ def _structural_response(item: Mapping[str, Any]) -> dict[str, Any] | None:
     return None
 
 
+def _response_encoding(item: Mapping[str, Any]) -> str:
+    result = item.get("result")
+    if not isinstance(result, dict):
+        return "unavailable"
+    if isinstance(result.get("structured_content"), dict) or isinstance(
+        result.get("structuredContent"), dict
+    ):
+        return "structured_content"
+    content = result.get("content")
+    if isinstance(content, list) and any(
+        isinstance(part, dict) and part.get("type") == "text" for part in content
+    ):
+        return "text_fallback"
+    return "unavailable"
+
+
 def _scope(
     arguments: Mapping[str, Any], response: Mapping[str, Any] | None
 ) -> dict[str, str | None]:
     data = response.get("data") if isinstance(response, dict) else None
     data = data if isinstance(data, dict) else {}
     values: dict[str, str | None] = {}
-    for name in ("trial_id", "result_id", "domain_id", "question_id"):
+    for name in ("trial_id", "result_id", "domain_id", "question_id", "source_id"):
         candidate = arguments.get(name)
         if not isinstance(candidate, str):
             candidate = data.get(name)
+        if not isinstance(candidate, str) and name == "domain_id":
+            candidate = arguments.get("purpose_domain_id") or data.get("purpose_domain_id")
+        if not isinstance(candidate, str) and name == "question_id":
+            candidate = arguments.get("purpose_question_id") or data.get("purpose_question_id")
         values[name] = _id(candidate)
     return values
+
+
+def _purpose(value: Mapping[str, Any] | None) -> dict[str, str | None]:
+    value = value if isinstance(value, Mapping) else {}
+    return {
+        "domain_id": _id(value.get("purpose_domain_id")),
+        "question_id": _id(value.get("purpose_question_id")),
+    }
 
 
 def _identity_values(value: Any, key: str = "") -> set[str]:
@@ -337,6 +365,10 @@ def _identity_values(value: Any, key: str = "") -> set[str]:
         "passage_refs",
         "source_id",
         "passage_id",
+        "source_handle",
+        "cursor",
+        "next_cursor",
+        "session_handle",
     }:
         opaque = _opaque(value)
         if opaque:
@@ -388,6 +420,87 @@ def _committed_options(response: Mapping[str, Any] | None) -> list[str] | None:
         return None
     options = sorted(_answer_options(checkpoint))
     return options or None
+
+
+def _committed_answers(response: Mapping[str, Any] | None) -> list[dict[str, str]] | None:
+    if not isinstance(response, dict) or response.get("outcome") not in _ACCEPTED_OUTCOMES:
+        return None
+    data = response.get("data")
+    checkpoint = data.get("checkpoint") if isinstance(data, dict) else None
+    answers = checkpoint.get("answers") if isinstance(checkpoint, dict) else None
+    if not isinstance(answers, list):
+        return None
+    rows = [
+        {"question_id": answer["question_id"], "answer": answer["answer"]}
+        for answer in answers
+        if isinstance(answer, dict)
+        and isinstance(answer.get("question_id"), str)
+        and isinstance(answer.get("answer"), str)
+    ]
+    return rows or None
+
+
+def _logical_searches(
+    tool: str, arguments: Mapping[str, Any], response: Mapping[str, Any] | None
+) -> list[dict[str, Any]]:
+    """Project a transport search and any independent child queries."""
+    data = response.get("data") if isinstance(response, Mapping) else None
+    if tool == "search_sources_batch":
+        requests = arguments.get("requests")
+        results = data.get("results") if isinstance(data, dict) else None
+        requests = requests if isinstance(requests, list) else []
+        results_by_index = (
+            {
+                row.get("index"): row
+                for row in results
+                if isinstance(row, dict) and isinstance(row.get("index"), int)
+            }
+            if isinstance(results, list)
+            else {}
+        )
+        children = []
+        for index, request in enumerate(requests):
+            if not isinstance(request, dict):
+                continue
+            result = results_by_index.get(index)
+            nested = result.get("result") if isinstance(result, dict) else None
+            nested_data = nested.get("data") if isinstance(nested, dict) else None
+            children.append(
+                {
+                    "index": index,
+                    "scope": _scope(request, None),
+                    "purpose": _purpose(request),
+                    "mode": request.get("mode")
+                    if isinstance(request.get("mode"), str) and request["mode"] in SEARCH_MODES
+                    else None,
+                    "has_cursor": isinstance(request.get("cursor"), str),
+                    "outcome": nested.get("outcome") if isinstance(nested, dict) else None,
+                    "hit_count": len(nested_data["hits"])
+                    if isinstance(nested_data, dict) and isinstance(nested_data.get("hits"), list)
+                    else None,
+                    "has_next_cursor": isinstance(nested_data, dict)
+                    and isinstance(nested_data.get("next_cursor"), str),
+                }
+            )
+        return children
+    if tool != "search_sources":
+        return []
+    return [
+        {
+            "index": 0,
+            "scope": _scope(arguments, response),
+            "purpose": _purpose(arguments),
+            "mode": arguments.get("mode")
+            if isinstance(arguments.get("mode"), str) and arguments["mode"] in SEARCH_MODES
+            else None,
+            "has_cursor": isinstance(arguments.get("cursor"), str),
+            "outcome": response.get("outcome") if isinstance(response, Mapping) else None,
+            "hit_count": len(data["hits"])
+            if isinstance(data, dict) and isinstance(data.get("hits"), list)
+            else None,
+            "has_next_cursor": isinstance(data, dict) and isinstance(data.get("next_cursor"), str),
+        }
+    ]
 
 
 def _answer_observations(checkpoint: Mapping[str, Any] | None) -> list[dict[str, Any]]:
@@ -446,6 +559,7 @@ def _operation(
     arguments = item.get("arguments")
     arguments = arguments if isinstance(arguments, dict) else {}
     response = _structural_response(item)
+    data = response.get("data") if isinstance(response, dict) else None
     response_options = _answer_options(response)
     response_evidence = set(_evidence_refs(response))
     outcome = response.get("outcome") if response else None
@@ -457,15 +571,39 @@ def _operation(
         else "unmatched"
     )
     tool = item["tool"]
-    op_key = _canonical([transcript_id, item["id"]])
+    event_records = item.get("_event_records")
+    event_records = event_records if isinstance(event_records, list) else []
+    thread_identity = item.get("_thread_identity")
+    thread_instance = item.get("_thread_instance")
+    op_key = _canonical([transcript_id, thread_instance, thread_identity, item["id"]])
+    event_positions = [
+        {
+            "type": event["type"],
+            "event_ordinal": event["event_ordinal"],
+            "line": event["line"],
+        }
+        for event in event_records
+        if isinstance(event, dict)
+    ]
+    started_events = [event for event in event_positions if event["type"] == "item.started"]
+    completed_events = [event for event in event_positions if event["type"] == "item.completed"]
     operation: dict[str, Any] = {
         "operation_id": "op_" + hashlib.sha256(op_key).hexdigest(),
         "session_id": _id(session_id),
         "call_id": _id(item["id"]),
         "transcript_id": _id(transcript_id),
+        "thread_identity": _opaque(thread_identity),
+        "event_order": {
+            "started": started_events[0] if started_events else None,
+            "completed": completed_events[0] if completed_events else None,
+            "start_events": started_events,
+            "completion_events": completed_events,
+        },
         "tool": tool,
         "status": status,
         "scope": _scope(arguments, response),
+        "purpose": _purpose(arguments),
+        "request_identities": sorted(_identity_values(arguments)),
         "request_shape": {
             "has_search_term": isinstance(arguments.get("query"), str),
             "mode": arguments.get("mode") if isinstance(arguments.get("mode"), str) else None,
@@ -487,6 +625,12 @@ def _operation(
             "truncated": None,
             "zero_hits": None,
             "terminal_dispositions": [],
+            "encoding": _response_encoding(item),
+            "logical_searches": _logical_searches(tool, arguments, response),
+            "continuation": {
+                "requested": isinstance(arguments.get("cursor"), str),
+                "returned": isinstance(data, dict) and isinstance(data.get("next_cursor"), str),
+            },
         },
         "metrics": {
             "cost": None,
@@ -533,7 +677,10 @@ def _operation(
         refs = _evidence_refs(response) if status == "accepted" else []
         operation["selection"] = refs or None
     if outcome == "repair":
+        data = response.get("data") if isinstance(response, dict) else None
         raw_repairs = response.get("repairs") if isinstance(response, dict) else None
+        if not isinstance(raw_repairs, list) and isinstance(data, dict):
+            raw_repairs = data.get("repairs")
         repair_rows = raw_repairs if isinstance(raw_repairs, list) else []
         codes = sorted(
             {
@@ -551,11 +698,23 @@ def _operation(
                 and item["path"].startswith("/")
             }
         )
+        repair_observations = []
+        for item in repair_rows:
+            if not isinstance(item, Mapping):
+                continue
+            row = {
+                key: item[key]
+                for key in ("code", "path")
+                if isinstance(item.get(key), str) and item[key]
+            }
+            if row:
+                repair_observations.append(row)
         operation["repair"] = {
             "kind": "mechanical_validation",
             "count": len(repair_rows),
             "codes": codes,
             "paths": paths,
+            "rows": repair_observations,
         }
     if tool.startswith("save_") or tool in {
         "request_proposal_approval",
@@ -578,6 +737,7 @@ def _operation(
             "committed_evidence_ids": _committed_evidence(response),
             "submitted_option_ids": sorted(_answer_options(arguments) & observed_options) or None,
             "committed_option_ids": _committed_options(response),
+            "committed_answers": _committed_answers(response),
         }
         operation["mutation"] = mutation
         checkpoint = (
@@ -631,23 +791,120 @@ def _merge_call(previous: dict[str, Any], item: dict[str, Any], location: str) -
     return merged
 
 
-def _read_transcript(raw: bytes, transcript_id: str) -> tuple[list[dict[str, Any]], int, int]:
+def _relative_path(value: Any) -> str | None:
+    if not isinstance(value, str) or not value:
+        return None
+    path = PurePosixPath(value.replace("\\", "/"))
+    if path.is_absolute() or ".." in path.parts or (path.parts and path.parts[0].endswith(":")):
+        return None
+    return path.as_posix()
+
+
+def _read_transcript(
+    raw: bytes, transcript_id: str, path: Any = None
+) -> tuple[list[dict[str, Any]], int, int, dict[str, Any], list[dict[str, Any]]]:
     records = _jsonl_records(raw, transcript_id)
-    calls: dict[str, dict[str, Any]] = {}
-    order: list[str] = []
+    calls: dict[tuple[int, str], dict[str, Any]] = {}
+    call_events: dict[tuple[int, str], list[dict[str, Any]]] = {}
+    call_threads: dict[tuple[int, str], str | None] = {}
+    order: list[tuple[int, str]] = []
+    stream: list[dict[str, Any]] = []
+    thread_identities: list[str] = []
+    active_thread: str | None = None
+    thread_instance = 0
     imported_records = 0
-    for number, record in records:
+    for event_ordinal, (number, record) in enumerate(records, 1):
+        record_type = record.get("type")
+        if record_type == "thread.started":
+            thread_instance += 1
+            thread_id = record.get("thread_id")
+            active_thread = _digest(thread_id) if isinstance(thread_id, str) else None
+            if active_thread is not None:
+                thread_identities.append(active_thread)
+            stream.append(
+                {
+                    "type": "thread.started",
+                    "event_ordinal": event_ordinal,
+                    "line": number,
+                    "thread_identity": active_thread,
+                }
+            )
+        elif record_type in {"turn.started", "turn.completed"}:
+            stream.append(
+                {
+                    "type": record_type,
+                    "event_ordinal": event_ordinal,
+                    "line": number,
+                    "thread_identity": active_thread,
+                }
+            )
         item = _item(record, f"{transcript_id}:{number}")
         if item is None:
             continue
         imported_records += 1
         call_id = item["id"]
-        if call_id not in calls:
-            calls[call_id] = item
-            order.append(call_id)
+        existing_keys = [key for key in order if key[1] == call_id]
+        pending = next(
+            (
+                key
+                for key in reversed(existing_keys)
+                if not any(event["type"] == "item.completed" for event in call_events[key])
+            ),
+            None,
+        )
+        if record_type == "item.started" or pending is None and not existing_keys:
+            key = (thread_instance, call_id)
+        elif pending is not None:
+            key = pending
         else:
-            calls[call_id] = _merge_call(calls[call_id], item, f"{transcript_id}:{number}")
-    return [calls[call_id] for call_id in order], len(records), imported_records
+            key = existing_keys[-1]
+        event = {
+            "type": record_type,
+            "event_ordinal": event_ordinal,
+            "line": number,
+            "thread_identity": active_thread,
+            "thread_instance": thread_instance,
+        }
+        call_events.setdefault(key, []).append(event)
+        if key not in calls:
+            calls[key] = item
+            call_threads[key] = active_thread
+            order.append(key)
+        else:
+            calls[key] = _merge_call(calls[key], item, f"{transcript_id}:{number}")
+        thread_identity = call_threads[key]
+        operation_id = (
+            "op_"
+            + hashlib.sha256(
+                _canonical([transcript_id, key[0], thread_identity, call_id])
+            ).hexdigest()
+        )
+        stream.append(
+            {
+                **event,
+                "operation_id": operation_id,
+                "call_id": _id(call_id),
+                "tool": item["tool"],
+                "thread_identity": thread_identity,
+                "thread_instance": key[0],
+            }
+        )
+    merged_calls = []
+    for key in order:
+        item = dict(calls[key])
+        item["_event_records"] = call_events[key]
+        item["_thread_identity"] = call_threads[key]
+        item["_thread_instance"] = key[0]
+        merged_calls.append(item)
+    metadata = {
+        "transcript_id": _id(transcript_id),
+        "digest": "sha256:" + hashlib.sha256(raw).hexdigest(),
+        "path": _relative_path(path),
+        "records": len(records),
+        "event_count": len(stream),
+        "thread_identities": list(dict.fromkeys(thread_identities)),
+    }
+    return merged_calls, len(records), imported_records, metadata, stream
 
 
 def _manifest_transcript_bytes(
@@ -699,16 +956,29 @@ def import_observations(
         search_count = 0
         assessment_search_count = 0
         operations: list[dict[str, Any]] = []
+        imported_transcripts: list[dict[str, Any]] = []
+        event_stream: list[dict[str, Any]] = []
         for spec in grouped[attempt_id]:
             transcript_id = _string(spec.get("transcript_id"), "transcript mapping.transcript_id")
             session_id = _string(
                 spec.get("session_id", transcript_id), f"transcript {transcript_id}.session_id"
             )
-            calls, records, imported = _read_transcript(
-                _manifest_transcript_bytes(spec, transcripts), transcript_id
+            raw = _manifest_transcript_bytes(spec, transcripts)
+            calls, records, imported, transcript_receipt, events = _read_transcript(
+                raw, transcript_id, spec.get("path")
             )
             total_records += records
             imported_records += imported
+            transcript_receipt["phase"] = spec.get("phase")
+            imported_transcripts.append(transcript_receipt)
+            event_stream.extend(
+                {
+                    **event,
+                    "transcript_id": transcript_receipt["transcript_id"],
+                    "transcript_digest": transcript_receipt["digest"],
+                }
+                for event in events
+            )
             for item in calls:
                 operation = _operation(
                     item,
@@ -719,11 +989,11 @@ def import_observations(
                     committed_checkpoints,
                 )
                 operations.append(operation)
-                if operation["tool"] == "search_sources":
-                    search_count += 1
+                logical_search_count = len(operation["response"]["logical_searches"])
+                if logical_search_count:
+                    search_count += logical_search_count
                     if spec.get("phase") in {"assessment", "correction"}:
-                        assessment_search_count += 1
-        operations.sort(key=lambda row: row["operation_id"])
+                        assessment_search_count += logical_search_count
         all_operations += len(operations)
         all_searches += search_count
         phase_searches += assessment_search_count
@@ -776,10 +1046,14 @@ def import_observations(
             "kit_revision": _id(attempt.get("kit_revision")),
             "capture_status": capture_status,
             "terminal_disposition": terminal,
+            "transcripts": imported_transcripts,
+            "event_stream": event_stream,
             "reconciliation": {
                 "operations": len(operations),
                 "searches": search_count,
-                "assessment_searches": assessment_search_count,
+                "assessment_searches": assessment_search_count
+                if all(spec.get("phase") is not None for spec in grouped[attempt_id])
+                else None,
             },
             "attempted_mutations": attempted_mutations,
             "accepted_commits": accepted_commits,
@@ -791,7 +1065,8 @@ def import_observations(
         output_attempts.append(output_attempt)
     # The assessment search count is the issue's diagnostic count when phases are
     # declared; otherwise all observed search calls are the only available count.
-    searches = phase_searches if any(spec.get("phase") for spec in specs.values()) else all_searches
+    phases_known = all(spec.get("phase") is not None for spec in specs.values())
+    searches = phase_searches if phases_known else all_searches
     artifact = {
         "schema": SCHEMA,
         "manifest_identity": _digest(manifest),
@@ -803,7 +1078,7 @@ def import_observations(
             "ignored_host_records": total_records - imported_records,
             "mcp_calls": all_operations,
             "searches": searches,
-            "assessment_searches": phase_searches,
+            "assessment_searches": phase_searches if phases_known else None,
         },
     }
     return artifact

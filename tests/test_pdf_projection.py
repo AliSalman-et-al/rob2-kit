@@ -4,7 +4,9 @@ from pathlib import Path
 
 import pymupdf
 import pytest
+from support.rob2 import _call
 
+import rob2_kit.application._state as source_state
 from rob2_kit.application._state import (
     _db,
     _normalize_projected_text,
@@ -13,8 +15,15 @@ from rob2_kit.application._state import (
     _semantic_table_page,
     _table_gfm,
 )
-from rob2_kit.application.evidence import read_pages, search_sources, select_text_evidence
+from rob2_kit.application.evidence import (
+    list_sources,
+    read_pages,
+    render_page,
+    search_sources,
+    select_text_evidence,
+)
 from rob2_kit.application.intake import prepare_batch
+from rob2_kit.application.source_handles import resolve_source_handle
 from rob2_kit.projection_verify import reproduce_projection_identity
 from rob2_kit.workflow_models import TrialDeclaration
 
@@ -65,6 +74,68 @@ def test_pdf_projection_keeps_narrative_and_projects_table_axes() -> None:
     assert pages[1].startswith("Arm\nEvents\nRate\nADT\n12\n3%\n")
     assert "[Extracted table 1]" in pages[1]
     assert "|Docetaxel|22|5%|" in pages[1]
+
+
+def test_optional_table_extraction_failure_keeps_searchable_source_and_render_route(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    (trial / "article.pdf").write_bytes(_pdf_bytes())
+
+    table_extraction_attempts = 0
+
+    def fail_table(_table: object, _index: int) -> str:
+        nonlocal table_extraction_attempts
+        table_extraction_attempts += 1
+        raise ValueError("optional table extraction failed")
+
+    monkeypatch.setattr(source_state, "_table_gfm", fail_table)
+    prepared = _call(
+        tmp_path,
+        "prepare_batch",
+        {"requested_outcome": "result", "expected_revision": 0},
+    )
+    source = prepared["data"]["trials"][0]["sources"][0]
+    [failure] = [
+        item
+        for item in prepared["data"]["conditions"]
+        if item["code"] == "optional_table_extraction_failed"
+    ]
+    source_id = resolve_source_handle(tmp_path, "trial", source["id"])
+
+    assert prepared["outcome"] == "success"
+    assert failure["source_id"] == source["id"]
+    assert failure["page"] == 2
+    assert "narrative text remains searchable" in failure["reason"]
+    page = read_pages(tmp_path, "trial", source_id, [2])["pages"][0]
+    assert "Docetaxel" in page["text"]
+    assert "[Extracted table 1]" not in page["text"]
+    assert search_sources(tmp_path, "trial", "Docetaxel")["hits"][0]["page"] == 2
+
+    navigation = list_sources(tmp_path, "trial", source_id)["navigation"]
+    recovery = next(item for item in navigation["render_recovery"] if item["page"] == 2)
+    assert recovery == {
+        "operation": "render_page",
+        "trial_id": "trial",
+        "source_id": source_id,
+        "page": 2,
+        "inline": True,
+    }
+    assert render_page(tmp_path, "trial", source_id, 2)["_png_bytes"].startswith(b"\x89PNG")
+
+    attempts_at_capture = table_extraction_attempts
+    with _db(tmp_path, "derivative.sqlite3") as derivative:
+        derivative.execute("DELETE FROM pages WHERE source_id=?", (source_id,))
+    rebuilt_search = search_sources(tmp_path, "trial", "Docetaxel")
+    assert rebuilt_search["hits"][0]["page"] == 2
+    assert table_extraction_attempts == attempts_at_capture
+    assert "Docetaxel" in read_pages(tmp_path, "trial", source_id, [2])["pages"][0]["text"]
+
+    captured = tmp_path / ".rob2-kit" / "sources" / "trial" / f"{source_id}.bin"
+    captured.write_bytes(b"tampered source bytes")
+    with pytest.raises(ValueError, match="captured Source bytes do not match Canonical identity"):
+        search_sources(tmp_path, "trial", "Docetaxel")
 
 
 class _TableShape:

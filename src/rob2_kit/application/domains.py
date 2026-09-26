@@ -911,6 +911,28 @@ def _comparison_cards(
                     "source of the change."
                 ),
             },
+            {
+                "pair_id": "d2-exclusion-before-versus-after-outcome",
+                "changed_premise": (
+                    "when eligible participants were excluded relative to outcome assessment"
+                ),
+                "left_facts": (
+                    "The same 12 eligible randomized participants were excluded from analysis "
+                    "for the same recorded reasons.",
+                    "The approved endpoint was assessed for all 12 participants at day 90.",
+                    "The exclusions occurred before the day-90 endpoint assessment.",
+                ),
+                "right_facts": (
+                    "The same 12 eligible randomized participants were excluded from analysis "
+                    "for the same recorded reasons.",
+                    "The approved endpoint was assessed for all 12 participants at day 90.",
+                    "The exclusions occurred after the day-90 endpoint assessment.",
+                ),
+                "reasoning_focus": (
+                    "Keep exclusions fixed. Timing may distinguish observed-but-omitted outcomes "
+                    "from outcome availability, but does not set a risk label."
+                ),
+            },
         ),
         "domain:missing": (
             {
@@ -981,6 +1003,25 @@ def _comparison_cards(
                     "likely; neither follows from missing counts alone."
                 ),
             },
+            {
+                "pair_id": "d3-treatment-stop-with-followup-versus-loss",
+                "changed_premise": "whether outcome follow-up continued after treatment stopped",
+                "left_facts": (
+                    "Twelve participants stopped assigned treatment after documented worsening.",
+                    "The approved endpoint was due at day 90 for all randomized participants.",
+                    "All 12 participants were assessed at day 90 after stopping treatment.",
+                ),
+                "right_facts": (
+                    "Twelve participants stopped assigned treatment after documented worsening.",
+                    "The approved endpoint was due at day 90 for all randomized participants.",
+                    "Outcome follow-up ended before day 90 for all 12 participants after they "
+                    "stopped treatment.",
+                ),
+                "reasoning_focus": (
+                    "Treatment discontinuation alone does not establish missing outcomes. "
+                    "Check follow-up and the possible effect of unavailable outcomes."
+                ),
+            },
         ),
         "domain:measurement": (
             {
@@ -1016,9 +1057,7 @@ def _comparison_cards(
             },
             {
                 "pair_id": "d4-assessor-awareness",
-                "changed_premise": (
-                    "whether the outcome assessor knew intervention assignment"
-                ),
+                "changed_premise": ("whether the outcome assessor knew intervention assignment"),
                 "left_facts": (
                     "The outcome assessor was masked to assignment through assessment.",
                 ),
@@ -1033,9 +1072,7 @@ def _comparison_cards(
             },
             {
                 "pair_id": "d4-possible-versus-likely-influence",
-                "changed_premise": (
-                    "whether awareness likely changed a susceptible measurement"
-                ),
+                "changed_premise": ("whether awareness likely changed a susceptible measurement"),
                 "left_facts": (
                     "An assessor knew assignment and rated a judgment-dependent symptom scale; "
                     "no differential ratings are documented.",
@@ -1047,6 +1084,53 @@ def _comparison_cards(
                 "reasoning_focus": (
                     "Separate the possibility of influence from evidence that influence likely "
                     "affected recorded outcomes."
+                ),
+            },
+            {
+                "pair_id": "d4-toxicity-visits-by-endpoint",
+                "changed_premise": ("which endpoint is assessed under the same visit pattern"),
+                "left_facts": (
+                    "Blinded registry staff captured all deaths in both groups with the same "
+                    "complete follow-up method.",
+                    "Intervention-group participants received extra visits to monitor "
+                    "laboratory toxicity.",
+                    "The approved endpoint was all-cause mortality.",
+                ),
+                "right_facts": (
+                    "Blinded registry staff captured all deaths in both groups with the same "
+                    "complete follow-up method.",
+                    "Intervention-group participants received extra visits to monitor "
+                    "laboratory toxicity.",
+                    "The approved endpoint was lab-defined toxicity detected at those visits.",
+                ),
+                "reasoning_focus": (
+                    "Link extra visits to the selected endpoint. Complete equal death-registry "
+                    "ascertainment gives no mortality-specific path, while extra visits may "
+                    "create more opportunity to detect lab toxicity."
+                ),
+            },
+            {
+                "pair_id": "d4-safety-window-evidence",
+                "changed_premise": ("whether the adverse-event observation window was documented"),
+                "left_facts": (
+                    "The approved adverse-event endpoint includes events through 30 days "
+                    "after treatment ends.",
+                    "Median treatment duration was four months; median progression-free "
+                    "survival was seven months.",
+                    "The report specifies a safety visit 30 days after treatment ends in "
+                    "both groups.",
+                ),
+                "right_facts": (
+                    "The approved adverse-event endpoint includes events through 30 days "
+                    "after treatment ends.",
+                    "Median treatment duration was four months; median progression-free "
+                    "survival was seven months.",
+                    "The report does not say whether either group had a safety visit 30 days "
+                    "after treatment ended.",
+                ),
+                "reasoning_focus": (
+                    "Use visit and follow-up evidence to assess the safety window. Treatment "
+                    "duration and progression-free survival do not establish that schedule."
                 ),
             },
         ),
@@ -1082,6 +1166,41 @@ def _comparison_cards(
                 "reasoning_focus": (
                     "Hold the eligible analyses and reporting pattern fixed; inspect the "
                     "evidence about why the reporting decision was made."
+                ),
+            },
+            {
+                "pair_id": "d5-amendment-versus-unblinded-access",
+                "changed_premise": ("whether unblinded access preceded the amendment"),
+                "left_facts": (
+                    "Amended SAP signed June 15; cutoff and lock were August 1.",
+                    "Same cohort, endpoint, and analysis.",
+                    "Unblinded access began July 15.",
+                ),
+                "right_facts": (
+                    "Amended SAP signed June 15; cutoff and lock were August 1.",
+                    "Same cohort, endpoint, and analysis.",
+                    "Unblinded access began May 15.",
+                ),
+                "reasoning_focus": (
+                    "Compare access with amendment timing; chronology alone does not establish "
+                    "result-driven selection."
+                ),
+            },
+            {
+                "pair_id": "d5-embedded-versus-separate-sap",
+                "changed_premise": "where the same signed analysis plan is packaged",
+                "left_facts": (
+                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
+                    "Plan signed before unblinded access.",
+                    "Plan is protocol appendix 2.",
+                ),
+                "right_facts": (
+                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
+                    "Plan signed before unblinded access.",
+                    "Plan is a separate repository PDF.",
+                ),
+                "reasoning_focus": (
+                    "Find the plan by scope and chronology; packaging does not change its content."
                 ),
             },
         ),
@@ -1428,11 +1547,7 @@ def _comparison_cards(
             if not isinstance(scope, dict):
                 continue
             row_scope = tuple(
-                (
-                    scope.get(key)
-                    if key in scope
-                    else row.get(key)
-                )
+                (scope.get(key) if key in scope else row.get(key))
                 for key in (
                     "arm",
                     "population",
@@ -1463,10 +1578,7 @@ def _comparison_cards(
                 status = (
                     "conflicted"
                     if field in conflict_fields.get(row_scope, set())
-                    or (
-                        kind == "event"
-                        and "event_count" in conflict_fields.get(row_scope, set())
-                    )
+                    or (kind == "event" and "event_count" in conflict_fields.get(row_scope, set()))
                     else "supported"
                     if isinstance(value, int)
                     else "unknown"
@@ -1769,9 +1881,7 @@ def _canonical_preview_rows(
         if not isinstance(row, dict):
             raise ValueError(f"missing_data preview row {index} is invalid")
         if row.get("result_identity") not in {None, result_identity}:
-            raise ValueError(
-                f"missing_data preview row {index} belongs to another approved Result"
-            )
+            raise ValueError(f"missing_data preview row {index} belongs to another approved Result")
         basis = row.get("basis")
         if not isinstance(basis, list) or not basis:
             raise ValueError(f"missing_data preview row {index} requires Evidence basis")
@@ -1783,9 +1893,7 @@ def _canonical_preview_rows(
                     f"missing_data preview row {index} has unknown or cross-Trial Evidence"
                 )
             identities.append(str(selected["identity"]))
-        normalized.append(
-            {**row, "result_identity": result_identity, "basis": identities}
-        )
+        normalized.append({**row, "result_identity": result_identity, "basis": identities})
     return normalized
 
 
@@ -1842,7 +1950,6 @@ def _domain_context_basis_identity(
     trial_id: str,
     domain_id: str,
     preview_missing_data: list[dict[str, Any]] | None,
-    working_checkpoint: dict[str, Any] | None = None,
 ) -> str:
     batch = state.get("batch")
     current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
@@ -1854,11 +1961,9 @@ def _domain_context_basis_identity(
             "result_identity": _identity(_approved_result(state, trial_id)),
             "pack_identity": _pack_identity(),
             "checkpoint_identity": current.get("identity") if isinstance(current, dict) else None,
-            # A premise checkpoint is reusable only inside the exact Result and
-            # Source projection that produced it.  Include its full status in
-            # the context basis so a stale workspace cannot silently feed a
-            # new Domain view.
-            "working_checkpoint": working_checkpoint,
+            # Advisory note edits do not change this scientific cursor. The
+            # captured Batch/Source, approved Result, pack, Domain checkpoint,
+            # and preview remain the authority for invalidating the view.
             "preview_identity": _identity(preview_missing_data or []),
         }
     )
@@ -2899,13 +3004,11 @@ def validate_domain_assessment(
     delivery = _domain_context_delivery(root, parsed.trial_id, parsed.domain_id, None)
     if delivery is not None:
         preview_scope = delivery.get("preview_scope")
-        premise_status = working_checkpoint_status(root, state, parsed.trial_id)
         current_basis = _domain_context_basis_identity(
             state,
             parsed.trial_id,
             parsed.domain_id,
             preview_scope if isinstance(preview_scope, list) else None,
-            premise_status,
         )
         if delivery.get("basis_identity") != current_basis:
             return _result(
@@ -3283,9 +3386,7 @@ def get_domain_context(
                         ):
                             if field in row:
                                 source_row[field] = row[field]
-                        flow_rows.append(
-                            {**source_row, "result_identity": current_result_identity}
-                        )
+                        flow_rows.append({**source_row, "result_identity": current_result_identity})
     checkpoint_identities = {
         basis.get("evidence")
         for answer in checkpoint_answers
@@ -3792,9 +3893,7 @@ def get_domain_context(
             "revision_basis",
         ]
     canonical_preview = (
-        _canonical_preview_rows(
-            preview_missing_data, catalog, trial_id, current_result_identity
-        )
+        _canonical_preview_rows(preview_missing_data, catalog, trial_id, current_result_identity)
         if preview_missing_data
         else None
     )
@@ -3922,9 +4021,7 @@ def get_domain_context(
             else None,
             trial_registry if isinstance(trial_registry, dict) else None,
             participant_flow_data=(
-                reconcile_missing_data(participant_flow_rows)
-                if participant_flow_rows
-                else None
+                reconcile_missing_data(participant_flow_rows) if participant_flow_rows else None
             ),
         ),
         "coverage": _source_coverage(
@@ -3957,6 +4054,6 @@ def get_domain_context(
     }
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(
-        state, trial_id, domain_id, preview_missing_data, premise_status
+        state, trial_id, domain_id, preview_missing_data
     )
     return projected

@@ -348,6 +348,12 @@ class UnsupportedSourceCondition(FileVisibilityCondition):
     code: Literal["unsupported_source"]
 
 
+class OptionalTableExtractionCondition(FileVisibilityCondition):
+    code: Literal["optional_table_extraction_failed"]
+    source_id: SourceHandle
+    page: PageNumber
+
+
 class DeclaredSourceMissingCondition(FileVisibilityCondition):
     code: Literal["declared_source_missing"]
 
@@ -379,6 +385,7 @@ class NoSupportedSourcesCondition(PublicModel):
 IntakeCondition = Annotated[
     UnsupportedSourceCondition
     | UnreadableSourceCondition
+    | OptionalTableExtractionCondition
     | DeclaredSourceMissingCondition
     | InvalidRegistryCondition
     | RegistryReviewCondition
@@ -706,14 +713,34 @@ class WorkingCheckpointStatus(PublicModel):
     ]
 
 
+class InvestigationReadRange(PublicModel):
+    """Text range actually returned by read_pages for the active Trial."""
+
+    source_id: SourceHandle
+    page: PageNumber
+    start_line: NonNegativeInt
+    end_line: NonNegativeInt
+    phase: Literal["proposal", "assessment"]
+
+
 class InvestigationCoverage(PublicModel):
-    """Source coverage observed by a host-owned premise investigation."""
+    """Read delivery for captured Sources, independent of host-authored notes."""
 
     source_scope: tuple[SourceHandle, ...] = ()
-    observed_sources: tuple[SourceHandle, ...] = ()
-    unread_sources: tuple[SourceHandle, ...] = ()
-    observed_note_count: NonNegativeInt = 0
-    state: Literal["unobserved", "partial", "complete", "invalidated", "legacy"]
+    state: Literal["unobserved", "partial", "delivered"]
+    ranges: tuple[InvestigationReadRange, ...] = ()
+    range_count: NonNegativeInt = 0
+    delivered_sources: tuple[SourceHandle, ...] = ()
+    sources_without_delivery: tuple[SourceHandle, ...] = ()
+    ranges_truncated: StrictBool = False
+
+
+class InvestigationHostNotes(PublicModel):
+    """Host-authored source references and unread declarations, not delivery."""
+
+    referenced_sources: tuple[SourceHandle, ...] = ()
+    unread_ranges: tuple[WorkingSourceRangeData, ...] = ()
+    observation_count: NonNegativeInt = 0
 
 
 class InvestigationRecoveryChoice(PublicModel):
@@ -768,6 +795,7 @@ class InvestigationView(PublicModel):
     sufficiency: InvestigationSufficiency
     workflow_permission: InvestigationWorkflowPermission
     coverage: InvestigationCoverage
+    host_notes: InvestigationHostNotes
     observations: tuple[WorkingNoteData, ...] = ()
     support: tuple[WorkingNoteData, ...] = ()
     counterevidence: tuple[WorkingNoteData, ...] = ()
@@ -896,19 +924,22 @@ class SourceNavigationEntry(PublicModel):
         "date_lead",
         "cross_reference_lead",
     ]
-    date_kind: Literal[
-        "capture",
-        "version",
-        "amendment",
-        "cutoff",
-        "template",
-        "submission",
-        "posting",
-        "approval",
-        "finalization",
-        "retrieval",
-        "unblinded_access",
-    ] | None = Field(
+    date_kind: (
+        Literal[
+            "capture",
+            "version",
+            "amendment",
+            "cutoff",
+            "template",
+            "submission",
+            "posting",
+            "approval",
+            "finalization",
+            "retrieval",
+            "unblinded_access",
+        ]
+        | None
+    ) = Field(
         default=None,
         description=(
             "Explicit lexical date context copied from the Source. Posting, approval, "
@@ -947,7 +978,7 @@ class SourceNavigationData(PublicModel):
     source_label: str = Field(min_length=1)
     logical_path: str = Field(min_length=1)
     projection_hash: Identity
-    navigation_version: Literal["rob2-kit.source-navigation.v0.1"]
+    navigation_version: Literal["rob2-kit.source-navigation.v0.2"]
     entries: tuple[SourceNavigationEntry, ...] = Field(max_length=12)
     total_entries: NonNegativeInt = Field(
         description="Total entries in the complete deterministic Source navigation index."
@@ -2169,12 +2200,8 @@ class MissingDataScope(PublicModel):
     unit: str = Field(min_length=1)
     time_point: str = Field(min_length=1)
     result_identity: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
-    endpoint: str | None = Field(
-        default=None, min_length=1, exclude_if=lambda value: value is None
-    )
-    severity: str | None = Field(
-        default=None, min_length=1, exclude_if=lambda value: value is None
-    )
+    endpoint: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
+    severity: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
     window: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
     event_definition: str | None = Field(
         default=None, min_length=1, exclude_if=lambda value: value is None
@@ -2197,12 +2224,8 @@ class ParticipantFlowProjection(PublicModel):
     value: StrictInt | None = Field(default=None, ge=0)
     status: Literal["supported", "unknown", "conflicted"] = "unknown"
     result_identity: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
-    endpoint: str | None = Field(
-        default=None, min_length=1, exclude_if=lambda value: value is None
-    )
-    severity: str | None = Field(
-        default=None, min_length=1, exclude_if=lambda value: value is None
-    )
+    endpoint: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
+    severity: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
     window: str | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
     event_definition: str | None = Field(
         default=None, min_length=1, exclude_if=lambda value: value is None
@@ -2556,6 +2579,10 @@ ReviewEvidenceExpansion = Annotated[
 
 class ReviewAnswerFinding(PublicModel):
     question_id: QuestionId
+    question: str = Field(min_length=1)
+    driver: StrictBool = Field(
+        description="Whether this question contributed to the deterministic Domain judgment."
+    )
     answer: Answer
     facts: tuple[ReviewFact, ...] = ()
     warrant: str | None = Field(

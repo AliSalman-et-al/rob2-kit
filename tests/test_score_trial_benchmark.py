@@ -6,6 +6,7 @@ import runpy
 import sys
 import zipfile
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -18,6 +19,7 @@ _result_dimensions = _scorer["_result_dimensions"]
 _result_mismatches = _scorer["_result_mismatches"]
 score = _scorer["score"]
 render_markdown = _scorer["render_markdown"]
+
 
 def _write_reference(root: Path) -> None:
     catalog = root / "catalog"
@@ -164,6 +166,12 @@ def test_score_keeps_legacy_case_unscored_and_excludes_unfinished_cases(tmp_path
         "sensitivity_domain_cells": 0,
         "scope_difference_cases": 0,
         "excluded_cases": 2,
+        "result_scope_denominators": {
+            "exact": 0,
+            "approved_proxy": 0,
+            "unavailable": 0,
+            "mismatch": 0,
+        },
     }
 
 
@@ -204,12 +212,15 @@ def test_reported_scope_alone_supplies_comparative_estimate_and_precision() -> N
         },
     }
 
-    assert _result_mismatches(
-        expected, _result_dimensions(result, "GETUG-AFU-15"), "GETUG-AFU-15"
-    ) == []
+    assert (
+        _result_mismatches(expected, _result_dimensions(result, "GETUG-AFU-15"), "GETUG-AFU-15")
+        == []
+    )
 
 
-def test_score_requires_exact_result_scope_before_reading_labels(tmp_path: Path) -> None:
+def test_score_requires_exact_result_scope_before_reading_labels(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     reference = tmp_path / "reference"
     _write_reference(reference)
     run_dir = tmp_path / "runs" / "overall-survival" / "GETUG-AFU-15"
@@ -297,6 +308,11 @@ def test_score_requires_exact_result_scope_before_reading_labels(tmp_path: Path)
         ),
         encoding="utf-8",
     )
+
+    def labels_must_not_be_read(_root: Path) -> dict[tuple[str, str], object]:
+        raise AssertionError("labels were read before Result scope was validated")
+
+    monkeypatch.setitem(score.__globals__, "_load_reference", labels_must_not_be_read)
 
     result = score(manifest, reference)
 
@@ -421,6 +437,14 @@ def test_result_scope_mismatch_preserves_bounded_field_details(tmp_path: Path) -
     assert set(definition["expected"]) == {"present", "kind", "length", "sha256"}
     assert set(definition["observed"]) == {"present", "kind", "length", "sha256"}
     assert "PRIVATE_SOURCE_TEXT" not in json.dumps(excluded)
+    assert excluded["artifact"] == {
+        "path": "result.rob2.zip",
+        "sha256": hashlib.sha256((run_dir / "result.rob2.zip").read_bytes()).hexdigest(),
+        "identity": artifact_identity,
+        "verified": True,
+    }
+    assert result["scope"]["result_scope_denominators"]["mismatch"] == 1
+    assert result["hard_failures"][0]["result_scope_details"]["code"] == ("result_scope_mismatch")
 
 
 def test_result_scope_rejects_changed_group_bound_values() -> None:
@@ -562,14 +586,19 @@ def test_score_keeps_scope_difference_out_of_primary_and_adds_it_to_sensitivity(
     assert result["scope"]["finalized_scored_cases"] == 1
     assert result["scope"]["sensitivity_scored_cases"] == 2
     assert result["scope"]["scope_difference_cases"] == 1
+    assert result["scope"]["result_scope_denominators"] == {
+        "exact": 1,
+        "approved_proxy": 1,
+        "unavailable": 0,
+        "mismatch": 0,
+    }
     assert result["pooled"]["case_count"] == 1
     assert result["sensitivity"]["pooled"]["case_count"] == 2
     assert result["sensitivity"]["pooled"]["domain_cells"] == 10
     assert result["sensitivity"]["by_outcome"]["Overall Survival"]["case_count"] == 2
     assert result["sensitivity"]["by_domain"]["D1"]["exact"]["total"] == 2
     assert (
-        result["sensitivity"]["by_outcome_domain"]["Overall Survival"]["D1"]["exact"]["total"]
-        == 2
+        result["sensitivity"]["by_outcome_domain"]["Overall Survival"]["D1"]["exact"]["total"] == 2
     )
     assert result["sensitivity"]["by_primary_status"]["primary"]["case_count"] == 2
     assert (
@@ -579,6 +608,7 @@ def test_score_keeps_scope_difference_out_of_primary_and_adds_it_to_sensitivity(
     markdown = render_markdown(result)
     assert "Scope-difference sensitivity" in markdown
     assert "accepted_with_scope_difference" in markdown
+    assert "Result-scope cases: exact 1; approved proxy 1; unavailable 0; mismatch 0." in markdown
 
 
 def test_legacy_manifest_row_without_expected_result_is_visible_and_unscored(
@@ -617,6 +647,101 @@ def test_legacy_manifest_row_without_expected_result_is_visible_and_unscored(
             "reason": "expected_result is missing; historical run is unscored",
         }
     ]
+
+
+def test_missing_approved_result_has_its_own_unavailable_denominator(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference"
+    _write_reference(reference)
+    run_dir = _write_case(tmp_path, state="succeeded")
+    bundle = run_dir / "workspace" / ".rob2-kit" / "finalized" / "case.rob2.zip"
+    with zipfile.ZipFile(bundle) as archive:
+        canonical = json.loads(archive.read("canonical.json"))
+        verification = archive.read("verification.json")
+    canonical["snapshots"]["GETUG-AFU-15"] = canonical["snapshots"].pop("getug")
+    canonical["proposal"]["payload"]["results"] = []
+    with zipfile.ZipFile(bundle, "w") as archive:
+        archive.writestr("canonical.json", json.dumps(canonical))
+        archive.writestr("verification.json", verification)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.trial-benchmark-manifest.v3",
+                "rows": [
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "run_dir": str(run_dir),
+                        "expected_result": _expected_result(),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = score(manifest, reference)
+
+    assert result["scope"]["result_scope_denominators"] == {
+        "exact": 0,
+        "approved_proxy": 0,
+        "unavailable": 1,
+        "mismatch": 0,
+    }
+    assert result["excluded"][0]["result_scope_details"] == {"code": "approved_result_unavailable"}
+
+
+def test_historical_result_mismatch_keeps_artifact_and_explicit_unscored_reason(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference"
+    _write_reference(reference)
+    run_dir = _write_case(tmp_path, state="succeeded")
+    bundle = run_dir / "workspace" / ".rob2-kit" / "finalized" / "case.rob2.zip"
+    with zipfile.ZipFile(bundle) as archive:
+        canonical = json.loads(archive.read("canonical.json"))
+        verification = archive.read("verification.json")
+    canonical["snapshots"]["GETUG-AFU-15"] = canonical["snapshots"].pop("getug")
+    result_record = canonical["proposal"]["payload"]["results"][0]
+    result_record["target"]["outcome_definition"] = "a different endpoint"
+    result_record["reported"]["endpoint"]["definition"] = "a different endpoint"
+    with zipfile.ZipFile(bundle, "w") as archive:
+        archive.writestr("canonical.json", json.dumps(canonical))
+        archive.writestr("verification.json", verification)
+    expected = cast(dict[str, Any], _expected_result())
+    expected["endpoint_definition"] = "expected endpoint"
+    expected["reported_scope"]["endpoint"]["definition"] = "expected endpoint"
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.benchmark-manifest.v2",
+                "rows": [
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "run_dir": str(run_dir),
+                        "expected_result": expected,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = score(manifest, reference)
+
+    excluded = result["excluded"][0]
+    assert excluded["result_scope_details"]["code"] == "result_scope_mismatch"
+    assert excluded["artifact"] == {
+        "path": bundle.relative_to(run_dir).as_posix(),
+        "sha256": hashlib.sha256(bundle.read_bytes()).hexdigest(),
+        "identity": None,
+    }
+    assert result["hard_failures"] == []
+    assert result["scope"]["result_scope_denominators"]["mismatch"] == 1
 
 
 def test_new_manifest_requires_frozen_scope_or_explicit_scope_unresolved(

@@ -249,7 +249,7 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
                             collect(item)
 
             collect(schema)
-        assert all("items" in array or "prefixItems" in array for array in arrays)
+            assert all("items" in array or "prefixItems" in array for array in arrays)
         output = cast(dict[str, Any], tool.output_schema)
         assert output["type"] == "object"
         expected_outcomes = {
@@ -280,6 +280,20 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
                 reference = str(definition["$ref"]).removeprefix("#/$defs/")
                 definition = output["$defs"][reference]
             assert set(("outcome", "head")) <= set(definition["required"])
+
+
+def test_optional_table_extraction_condition_exposes_a_typed_render_locator() -> None:
+    output = _tool_output_schema("prepare_batch")
+    condition_schemas = [
+        schema
+        for _, schema in _walk_schema(output)
+        if schema.get("properties", {}).get("code", {}).get("const")
+        == "optional_table_extraction_failed"
+    ]
+
+    assert len(condition_schemas) == 1
+    condition = condition_schemas[0]["properties"]
+    assert {"source_id", "page", "path", "role", "reason"} <= set(condition)
 
 
 def test_finalize_output_schema_requires_typed_assessment_summary() -> None:
@@ -946,7 +960,8 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     unavailable = cast(dict[str, Any], result_items["oneOf"][1])
     assert "only when no complete assessable candidate" in unavailable["description"]
     assert "bindings" not in assessable["properties"]
-    assert "clarity" not in assessable["properties"]
+    assert "clarity" in assessable["properties"]
+    assert "clarity" not in assessable["required"]
     assert "alternatives" not in assessable["properties"]
     assert "evidence" in assessable["properties"]
     evidence_items = assessable["properties"]["evidence"]["items"]
@@ -958,6 +973,15 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
         "derived",
     ]
     assert "relation_rationale" in assessable["required"]
+    assert "clarity" in assessable["properties"]
+    assert (
+        "server records every facet as unclear"
+        in assessable["properties"]["clarity"]["description"]
+    )
+    assert "data-cut chronology" in assessable["properties"]["clarity"]["description"]
+    clarity_fields = assessable["properties"]["clarity"]["anyOf"][0]["properties"]
+    assert "data-cut chronology" in clarity_fields["time_point"]["description"]
+    assert "estimate and precision" in clarity_fields["source_table_meaning"]["description"]
     target = cast(dict[str, Any], assessable["properties"]["target"])
     assert "effect_of_interest" not in target["properties"]
     assert "outcome_definition" not in target["properties"]
@@ -1129,6 +1153,19 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         "trial_id": "trial",
         "relation": "related",
         "relation_rationale": ("Related endpoints use different captured names and definitions."),
+        "clarity": {
+            key: "specified"
+            for key in (
+                "outcome_definition",
+                "measurement",
+                "time_point",
+                "analysis_population",
+                "comparison_groups",
+                "effect_measure",
+                "source_table_meaning",
+                "eligible_result_choice",
+            )
+        },
         "applicability": {
             "design": "individual_parallel",
             "rationale": (

@@ -102,10 +102,146 @@ def test_comparative_result_population_labels_are_not_eligibility_gates(
     assert saved["outcome"] == "review_required", saved
 
 
+def test_exact_relation_requires_every_result_scope_facet_to_be_specified(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["clarity"]["time_point"] = "unavailable"
+    result["clarity"]["analysis_population"] = "conflicting"
+
+    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert repair["outcome"] == "repair", repair
+    assert {
+        (item["path"], item["code"])
+        for item in repair["repairs"]
+        if item["code"] == "exact_result_scope_not_established"
+    } == {
+        ("/results/0/clarity/time_point", "exact_result_scope_not_established"),
+        ("/results/0/clarity/analysis_population", "exact_result_scope_not_established"),
+    }
+    assert _state(workspace).get("proposal") is None
+
+
+@pytest.mark.parametrize(
+    ("scenario", "facet", "clarity"),
+    (
+        pytest.param(
+            "death included/excluded composite",
+            "outcome_definition",
+            "conflicting",
+            id="death-composite",
+        ),
+        pytest.param("cohort change", "analysis_population", "conflicting", id="cohort-change"),
+        pytest.param("grade range", "outcome_definition", "conflicting", id="grade-range"),
+        pytest.param("data-cut chronology", "time_point", "conflicting", id="data-cut"),
+        pytest.param("unknown AE window", "time_point", "unclear", id="unknown-ae-window"),
+        pytest.param(
+            "estimate and precision conflict",
+            "source_table_meaning",
+            "conflicting",
+            id="estimate-precision",
+        ),
+    ),
+)
+def test_exact_relation_does_not_hide_material_scope_conflicts(
+    tmp_path: Path, scenario: str, facet: str, clarity: str
+) -> None:
+    workspace = _workspace(tmp_path)
+    if scenario in {"data-cut chronology", "estimate and precision conflict"}:
+        (workspace / "input" / "trial" / "main.txt").write_text(
+            "The requested outcome was measured in the analyzed population.; "
+            "The requested outcome was not reported; only an alternate endpoint was measured. "
+            "death ascertainment; end of follow-up; follow-up through 30 June data cutoff; "
+            "assigned to intervention; assigned to control; randomized population; "
+            "risk ratio; hazard ratio; estimate 0.61; 95% CI, 0.47 to 0.80; "
+            "risk; 1; events; 2.\n",
+            encoding="utf-8",
+        )
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    if scenario == "data-cut chronology":
+        result["target"]["time_point_or_window"]["description"] = (
+            "follow-up through 30 June data cutoff"
+        )
+    elif scenario == "estimate and precision conflict":
+        result["target"]["intended_effect_measure"] = "hazard ratio"
+        result["reported"] = {
+            "form": "comparative_effect",
+            "effect_measure": "hazard ratio",
+            "estimate": "0.61",
+            "precision": "95% CI, 0.47 to 0.80",
+            "analysis_population": "randomized population",
+            "endpoint": result["reported"]["endpoint"],
+        }
+    result["clarity"][facet] = clarity
+
+    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert repair["outcome"] == "repair", repair
+    assert any(
+        item["path"] == f"/results/0/clarity/{facet}"
+        and item["code"] == "exact_result_scope_not_established"
+        for item in repair["repairs"]
+    )
+    assert _state(workspace).get("proposal") is None
+
+
+def test_nonexact_result_retains_unknown_and_conflicting_facets_for_review(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["relation"] = "related"
+    result["relation_rationale"] = (
+        "The reported endpoint overlaps the target, but its safety window and population "
+        "differ across source reports."
+    )
+    result["clarity"]["time_point"] = "unclear"
+    result["clarity"]["analysis_population"] = "conflicting"
+    result["clarity"]["source_table_meaning"] = "conflicting"
+
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert saved["outcome"] == "review_required", saved
+    canonical = _state(workspace)["proposal"]["payload"]["results"][0]
+    assert canonical["clarity"]["time_point"] == "unclear"
+    assert canonical["clarity"]["analysis_population"] == "conflicting"
+    assert canonical["clarity"]["source_table_meaning"] == "conflicting"
+
+
+def test_omitted_result_clarity_defaults_to_unknown_and_cannot_claim_exact(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result.pop("clarity")
+
+    repair = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+
+    assert repair["outcome"] == "repair", repair
+    assert all(item["code"] == "exact_result_scope_not_established" for item in repair["repairs"])
+    assert all("clarity" in item["path"] for item in repair["repairs"])
+
+    result["relation"] = "related"
+    result["relation_rationale"] = "The candidate is related, but scope remains uncertain."
+    accepted = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert accepted["outcome"] == "review_required", accepted
+    stored = _state(workspace)["proposal"]["payload"]["results"][0]["clarity"]
+    assert set(stored.values()) == {"unclear"}
+
+
 def test_corrected_approved_result_requires_renewed_review_and_fresh_domains(
     tmp_path: Path,
 ) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    workspace, evidence, revision = _assessment_workspace(
+        tmp_path,
+        initial_effect=("0.61", "95% CI, 0.47 to 0.80"),
+    )
     for domain in SCIENTIFIC_PACK.domains:
         saved = _call(
             workspace,
@@ -125,7 +261,25 @@ def test_corrected_approved_result_requires_renewed_review_and_fresh_domains(
         for domain in SCIENTIFIC_PACK.domains
     )
     revised = _result(evidence)
-    revised["target"]["time_point_or_window"]["description"] = "a corrected follow-up window"
+    revised["target"]["time_point_or_window"]["description"] = (
+        "follow-up through 30 June data cutoff"
+    )
+    revised["target"]["intended_effect_measure"] = "hazard ratio"
+    revised["reported"] = {
+        "form": "comparative_effect",
+        "effect_measure": "hazard ratio",
+        "estimate": "0.58",
+        "precision": "95% CI, 0.40 to 0.75",
+        "analysis_population": "randomized population",
+        "endpoint": revised["reported"]["endpoint"],
+    }
+    revised["relation"] = "related"
+    revised["relation_rationale"] = (
+        "The corrected report conflicts on the data cutoff and reported estimate, so its result "
+        "remains related."
+    )
+    revised["clarity"]["time_point"] = "conflicting"
+    revised["clarity"]["source_table_meaning"] = "conflicting"
 
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [revised]))
 
@@ -133,6 +287,16 @@ def test_corrected_approved_result_requires_renewed_review_and_fresh_domains(
     pending = _state(workspace)
     assert pending["phase"] == "proposal"
     assert pending["trial_dispositions"]["trial"] == "pending"
+    assert pending["proposal"]["payload"]["results"][0]["clarity"]["time_point"] == ("conflicting")
+    assert (
+        pending["proposal"]["payload"]["results"][0]["clarity"]["source_table_meaning"]
+        == "conflicting"
+    )
+    assert pending["proposal"]["payload"]["results"][0]["reported"]["estimate"] == "0.58"
+    assert (
+        pending["proposal"]["payload"]["results"][0]["reported"]["precision"]
+        == "95% CI, 0.40 to 0.75"
+    )
     assert not any(key.startswith("trial:") for key in pending["domain_records"])
     assert "trial" not in pending["snapshots"]
     assert pending["proposal_revision_trial_ids"] == ["trial"]
@@ -172,6 +336,7 @@ def test_corrected_approved_result_requires_renewed_review_and_fresh_domains(
     )
     assert resumed["domain_records"] == {}
     assert resumed["snapshots"] == {}
+    assert resumed["proposal"]["payload"]["results"][0]["reported"]["estimate"] == "0.58"
     first_domain = SCIENTIFIC_PACK.domains[0]
     fresh_revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
     fresh = _call(
@@ -181,6 +346,21 @@ def test_corrected_approved_result_requires_renewed_review_and_fresh_domains(
     )
     assert fresh["outcome"] == "success", fresh
     assert fresh["data"]["checkpoint"]["identity"] != prior_checkpoints[0]
+    fresh_revision = int(fresh["head"]["state_revision"])
+    for domain in SCIENTIFIC_PACK.domains[1:]:
+        fresh = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, fresh_revision, evidence),
+        )
+        assert fresh["outcome"] == "success", fresh
+        fresh_revision = int(fresh["head"]["state_revision"])
+
+    finalized = _finalize_assessment(workspace, fresh_revision)
+    assert finalized["outcome"] == "success", finalized
+    artifact = workspace / str(finalized["data"]["artifact"]["path"])
+    assert verify_bundle(artifact)
+    assert _standalone_verify(artifact).returncode == 0
 
 
 def test_result_draft_accepts_each_applicability_contract() -> None:

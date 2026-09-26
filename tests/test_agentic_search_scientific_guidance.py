@@ -1,11 +1,25 @@
-from typing import cast
+from typing import NotRequired, TypedDict, cast
 
 from rob2_kit.application.domains import _comparison_cards
+from rob2_kit.logic.evaluator import evaluate_domain
 from rob2_kit.models import ConditionalActivation
 from rob2_kit.packs import SCIENTIFIC_PACK
 
 
-def _fixture_cases() -> list[dict[str, object]]:
+class _GuidanceCase(TypedDict):
+    case_id: str
+    domain: str
+    contrast: str
+    severity: str
+    facts: list[str]
+    expected_answer_path: dict[str, str]
+    neutral: NotRequired[bool]
+    result_scope: NotRequired[str]
+    changed_premise: NotRequired[str]
+    pair_id: NotRequired[str]
+
+
+def _fixture_cases() -> list[_GuidanceCase]:
     import json
     from pathlib import Path
 
@@ -14,7 +28,7 @@ def _fixture_cases() -> list[dict[str, object]]:
             encoding="utf-8"
         )
     )
-    return fixture["cases"]
+    return cast(list[_GuidanceCase], fixture["cases"])
 
 
 def _question(question_id: str):
@@ -238,9 +252,110 @@ def test_issue_425_guidance_matches_exact_result_and_separates_chronology() -> N
         assert term in d5, term
 
 
+def test_issues_455_to_458_guidance_preserves_endpoint_specific_seams() -> None:
+    d2 = _guidance_text(("sq:deviations:appropriate-analysis", "sq:deviations:substantial-impact"))
+    for term in (
+        "after randomization",
+        "before the endpoint was measured",
+        "after an outcome value was recorded",
+        "not thereby missing outcome data",
+        "outcome rarity",
+        "prognostic relevance",
+    ):
+        assert term in d2, term
+
+    d3 = _guidance_text(
+        (
+            "sq:missing:data-available",
+            "sq:missing:true-value-dependent",
+            "sq:missing:likely-dependent",
+        )
+    )
+    for term in (
+        "discontinuation is not loss to follow-up",
+        "whether the outcome was observed",
+        "administrative cutoff",
+        "worsening",
+        "likely depend",
+        "no_information",
+    ):
+        assert term in d3, term
+
+    d4 = _guidance_text(
+        (
+            "sq:measurement:differential",
+            "sq:measurement:assessor-aware",
+            "sq:measurement:influence-possible",
+        )
+    )
+    for term in (
+        "extra visits for toxicity monitoring",
+        "complete registry",
+        "lab-detected toxicity",
+        "mortality-specific pathway",
+        "median progression-free survival",
+        "observation window",
+    ):
+        assert term in d4, term
+
+    d5 = _guidance_text(
+        (
+            "sq:selection:prespecified-analysis",
+            "sq:selection:multiple-measurements",
+            "sq:selection:multiple-analyses",
+        )
+    )
+    for term in (
+        "protocol or ethics approval",
+        "plan finalization",
+        "amendment effective dates",
+        "registry posting",
+        "data cutoff",
+        "database lock",
+        "investigators' access",
+        "separate sap file is not required",
+        "multiplicity alone",
+        "results-driven selection",
+    ):
+        assert term in d5, term
+
+
+def test_issue_455_to_458_paired_fixtures_change_one_premise_and_follow_the_evaluator() -> None:
+    cases = _fixture_cases()
+    expected_pairs = {
+        "d2-exclusion-timing",
+        "d3-stop-treatment-versus-followup",
+        "d4-endpoint-specific-toxicity-monitoring",
+        "d4-safety-observation-window",
+        "d5-amendment-access-order",
+        "d5-multiplicity-versus-results-based-reporting",
+    }
+    paired = {
+        pair_id: [case for case in cases if case.get("pair_id") == pair_id]
+        for pair_id in expected_pairs
+    }
+    assert all(len(pair) == 2 for pair in paired.values())
+
+    for pair_id, pair in paired.items():
+        left, right = pair
+        assert left["neutral"] and right["neutral"]
+        assert left["domain"] == right["domain"], pair_id
+        if pair_id == "d4-endpoint-specific-toxicity-monitoring":
+            assert left["result_scope"] != right["result_scope"]
+            assert "approved endpoint" in left["changed_premise"]
+        else:
+            assert left["result_scope"] == right["result_scope"], pair_id
+        assert left["changed_premise"] == right["changed_premise"], pair_id
+        assert len(set(left["facts"]) ^ set(right["facts"])) == 2, pair_id
+        for case in pair:
+            outcome = evaluate_domain(case["domain"], case["expected_answer_path"])
+            assert outcome.judgment.value == case["severity"], case["case_id"]
+
+
 def test_neutral_fixtures_cover_requested_d3_d4_d5_contrasts() -> None:
     cases = _fixture_cases()
     assert {case["domain"] for case in cases} == {
+        "domain:deviations",
         "domain:missing",
         "domain:measurement",
         "domain:selection",
@@ -258,6 +373,13 @@ def test_neutral_fixtures_cover_requested_d3_d4_d5_contrasts() -> None:
         "ambiguous_chronology",
         "platform_comparison",
         "multiple_eligible_analyses",
+        "analysis_exclusion_timing",
+        "stopped_treatment_followup",
+        "endpoint_specific_monitoring",
+        "safety_observation_window",
+        "plan_event_chronology",
+        "multiplicity_and_result_dependence",
+        "no_information_to_high_official_path",
     }
     assert required <= {case["contrast"] for case in cases}
     assert all(case["neutral"] for case in cases)
@@ -291,8 +413,8 @@ def test_reference_assets_repeat_the_decision_seams() -> None:
 
     root = Path(__file__).parents[1] / "src" / "rob2_kit" / "skills" / "rob2-assess" / "references"
     references = {
-        name: (root / name).read_text(encoding="utf-8").lower()
-        for name in ("missing.md", "measurement.md", "selection.md")
+        name: " ".join((root / name).read_text(encoding="utf-8").lower().split())
+        for name in ("deviations.md", "missing.md", "measurement.md", "selection.md")
     }
     for term in (
         "outcome-observed",
@@ -312,6 +434,13 @@ def test_reference_assets_repeat_the_decision_seams() -> None:
         "embedded sap",
         "platform",
         "multiple eligible analyses",
+        "excluded participants and reasons fixed",
+        "does not become missing outcome data",
+        "treatment discontinuation does not establish loss to follow-up",
+        "mortality-specific pathway",
+        "median time to disease progression",
+        "database lock",
+        "separately named sap file is not",
     ):
         assert any(term in text for text in references.values()), term
 

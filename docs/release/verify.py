@@ -348,6 +348,16 @@ def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
                 {"group_id": "b", "statistic": phrase, "value": phrase, "unit": phrase},
             ],
         },
+        "clarity": {
+            "outcome_definition": "specified",
+            "measurement": "specified",
+            "time_point": "specified",
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "source_table_meaning": "specified",
+            "eligible_result_choice": "specified",
+        },
     }
 
 

@@ -105,9 +105,7 @@ def test_prepare_batch_populates_the_search_projection_once_and_rebuilds_after_l
     intake._root(tmp_path)
     _ensure(tmp_path)
     with _db(tmp_path, "derivative.sqlite3") as connection:
-        connection.execute(
-            "INSERT INTO source_index VALUES ('stale', 'stale', 'stale', '{}')"
-        )
+        connection.execute("INSERT INTO source_index VALUES ('stale', 'stale', 'stale', '{}')")
         connection.execute("INSERT INTO pages VALUES ('stale', 1, 'stale page')")
         connection.execute("INSERT INTO pages_fts VALUES ('stale', 1, 'stale page', '')")
         connection.executemany(

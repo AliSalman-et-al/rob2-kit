@@ -44,42 +44,54 @@ def test_scope_adjudication_requires_all_frozen_identities(
     rows = scope_adjudication["load_scope_adjudications"](path)
 
     match = scope_adjudication["matching_scope_adjudication"]
-    assert match(
-        rows,
-        outcome="Overall Survival",
-        trial="TRIAL-A",
-        expected_result=expected,
-        review_identity="sha256:review",
-        result_identity="sha256:result",
-        relation="exact",
-    ) == row
-    assert match(
-        rows,
-        outcome="Overall Survival",
-        trial="TRIAL-A",
-        expected_result={**expected, "estimate": "0.76"},
-        review_identity="sha256:review",
-        result_identity="sha256:result",
-        relation="exact",
-    ) is None
-    assert match(
-        rows,
-        outcome="Overall Survival",
-        trial="TRIAL-A",
-        expected_result=expected,
-        review_identity="sha256:old-review",
-        result_identity="sha256:result",
-        relation="exact",
-    ) is None
-    assert match(
-        rows,
-        outcome="Overall Survival",
-        trial="TRIAL-A",
-        expected_result=expected,
-        review_identity="sha256:review",
-        result_identity="sha256:old-result",
-        relation="exact",
-    ) is None
+    assert (
+        match(
+            rows,
+            outcome="Overall Survival",
+            trial="TRIAL-A",
+            expected_result=expected,
+            review_identity="sha256:review",
+            result_identity="sha256:result",
+            relation="exact",
+        )
+        == row
+    )
+    assert (
+        match(
+            rows,
+            outcome="Overall Survival",
+            trial="TRIAL-A",
+            expected_result={**expected, "estimate": "0.76"},
+            review_identity="sha256:review",
+            result_identity="sha256:result",
+            relation="exact",
+        )
+        is None
+    )
+    assert (
+        match(
+            rows,
+            outcome="Overall Survival",
+            trial="TRIAL-A",
+            expected_result=expected,
+            review_identity="sha256:old-review",
+            result_identity="sha256:result",
+            relation="exact",
+        )
+        is None
+    )
+    assert (
+        match(
+            rows,
+            outcome="Overall Survival",
+            trial="TRIAL-A",
+            expected_result=expected,
+            review_identity="sha256:review",
+            result_identity="sha256:old-result",
+            relation="exact",
+        )
+        is None
+    )
 
 
 def test_scope_adjudication_rejects_malformed_decision(
@@ -140,24 +152,30 @@ def test_scope_adjudication_accepts_only_broader_or_related_scope_differences(
 
     rows = scope_adjudication["load_scope_adjudications"](path)
     assert rows == [base]
-    assert scope_adjudication["matching_scope_adjudication"](
-        rows,
-        outcome="Overall Survival",
-        trial="TRIAL-A",
-        expected_result=expected,
-        review_identity="sha256:review",
-        result_identity="sha256:result",
-        relation="broader",
-    ) == base
-    assert scope_adjudication["matching_scope_adjudication"](
-        rows,
-        outcome="Overall Survival",
-        trial="TRIAL-A",
-        expected_result=expected,
-        review_identity="sha256:review",
-        result_identity="sha256:result",
-        relation="related",
-    ) is None
+    assert (
+        scope_adjudication["matching_scope_adjudication"](
+            rows,
+            outcome="Overall Survival",
+            trial="TRIAL-A",
+            expected_result=expected,
+            review_identity="sha256:review",
+            result_identity="sha256:result",
+            relation="broader",
+        )
+        == base
+    )
+    assert (
+        scope_adjudication["matching_scope_adjudication"](
+            rows,
+            outcome="Overall Survival",
+            trial="TRIAL-A",
+            expected_result=expected,
+            review_identity="sha256:review",
+            result_identity="sha256:result",
+            relation="related",
+        )
+        is None
+    )
 
     for relation in ("exact", "narrower", "component"):
         invalid = {**base, "observed_relation": relation}

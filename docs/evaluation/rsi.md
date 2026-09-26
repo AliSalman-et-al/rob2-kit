@@ -4,6 +4,238 @@ Use this development loop for one trial and one approved Result at a time. It is
 diagnostic work, separate from release qualification and its held-out score.
 The [evaluation contract](README.md) defines the observation limits.
 
+## Frozen development comparisons (v0.3)
+
+Use `rob2-kit.evaluation-comparisons.v0.3` for controlled development
+comparisons. Its closed arms add `fact_binding` (`none` or
+`scope_matched_facts`) and `review` (`baseline` or `targeted_warrant`). Each
+pair declares one factor, and validation rejects arms that differ on another
+factor. The required pairs compare one common baseline with supplied decisive
+passages, scope-matched facts, compact context, and targeted warrant review.
+Labels and answers remain forbidden in every evidence policy. Fact tables must
+give source-linked facts, counterevidence, and unknowns without a RoB answer or
+an evaluative conclusion.
+
+The versioned plan freezes kit, scientific-pack, skill, tool-schema, prompt,
+Source, and exact Result identities. It declares at least two distinct draw
+IDs for each arm/case cell. Every draw gets an independent assessment session;
+an attempt may link to its predecessor only when that predecessor failed for
+infrastructure reasons. The paired comparison uses the terminal attempt under
+that fixed rule. Unrun planned draws are emitted as `missing`, and labels can
+be attached only to cases declared scope eligible. Scope-uncertain and
+ineligible cases remain visible but cannot enter provisional-label scores.
+
+[`development-comparison-v0.3.example.json`](development-comparison-v0.3.example.json)
+is a one-case ARASENS PFS D3 template with two repeated draws and all four
+required contrasts. Its zero digests and CLI version text are placeholders;
+replace them with hashes of the exact run inputs before using it. It is an
+example only, not an observed model comparison. Use only the existing ten
+Trials as development material; they have already informed the audit and do
+not form a held-out set.
+
+The example is a plan template. Before launch, replace its placeholder hashes
+and create an inputs sidecar with one row per selected intervention/case pair
+(two rows per planned case):
+
+```json
+{
+  "schema": "rob2-kit.development-comparison-inputs.v1",
+  "runs": [
+    {
+      "intervention_id": "iv-baseline",
+      "case_id": "ARASENS-pfs-D3",
+      "case_file": "cases/baseline-arasens.json",
+      "prompt_file": "prompt.txt"
+    },
+    {
+      "intervention_id": "iv-passages",
+      "case_id": "ARASENS-pfs-D3",
+      "case_file": "cases/passages-arasens.json",
+      "prompt_file": "prompt.txt"
+    }
+  ]
+}
+```
+
+Paths are relative to the sidecar. Both case manifests must match the planned
+Trial and outcome, and every prompt must match `plan.host.prompt_identity`.
+Do not put labels, adjudications, or answer keys in case manifests, Source
+files, or prompts. The launcher records Source digests and requires shared
+Sources to have identical bytes across arms. After each runner phase, it also
+checks that `run-inputs.json` records those exact digests and that the same
+bytes exist in the isolated `workspace/input` directory.
+
+For launcher preflight, each case's `result_identity` is the SHA-256 digest of
+its `expected_result` object serialized as canonical JSON (sorted keys and
+compact separators), with the `sha256:` prefix. This is a fingerprint of the
+planned target scope; it is not the canonical identity of the approved Result
+record. The case's `source_identity` is the digest of a canonical JSON array
+containing each baseline Source's `name`, `role`, and raw SHA-256 digest,
+sorted by name, with the `sha256:` prefix. A captured registry is included as
+`registry.json` with role `registry`; arm-specific additions are excluded. The
+launcher checks both digests against the materialized case and source bytes. A
+`scope-matched-facts.json` treatment Source must sit beside its case manifest
+inside the frozen comparison inputs; baseline Sources remain confined to the
+declared trial source directory.
+
+Run a preflight first, then remove `--dry-run` to launch one frozen pair. The
+launcher supports `evidence_exposure` and `fact_binding`; make one launch per
+pair. Each launch runs the declared baseline and treatment arms across every
+case and draw:
+
+```powershell
+uv run python scripts/run_development_comparison.py `
+  --config eval/runs/development-comparison/config.json `
+  --interventions eval/runs/development-comparison/interventions.json `
+  --inputs eval/runs/development-comparison/inputs.json `
+  --campaign-dir eval/runs/development-comparison/campaign `
+  --factor fact_binding `
+  --dry-run
+```
+
+For `evidence_exposure`, the treatment adds its declared decisive-passage
+Sources. For `fact_binding`, it adds exactly one
+`scope-matched-facts.json` Source with this closed structure:
+
+```json
+{
+  "schema": "rob2-kit.scope-matched-facts.v1",
+  "trial_id": "ARASENS",
+  "outcome_id": "Progression-Free Survival",
+  "result_identity": "sha256:<frozen Result identity>",
+  "facts": [
+    {
+      "domain_id": "domain:missing",
+      "question_id": "<planned question identifier>",
+      "statement": "A source-linked fact stated without a risk-of-bias conclusion.",
+      "source_name": "main-article.pdf",
+      "locator": "Table 1, row 4"
+    }
+  ],
+  "counterevidence": [],
+  "unknowns": []
+}
+```
+
+Each fact, counterexample, and unknown is bound to a planned Domain and cites
+one of the common baseline Sources. The schema rejects answer fields and
+checks the Trial/Result identity; it cannot determine whether free-text
+statements contain a conclusion. Have a reviewer inspect that content before
+launch. The extra Source's byte-for-byte presence is observable and recorded
+as **available**. Whether the model read the Source, bound facts to the right
+questions, or reasoned from them remains **unknown**. Do not interpret this
+pair as an enforced or successful fact-use intervention.
+
+The v0.3 plan also declares compact context and targeted warrant review, but
+the current runner has no control that can change context without changing the
+task inputs, and normal assessment review is mandatory with no treatment
+switch. Those pairs remain excluded and unsupported in `launch.json`; no
+condition delivery or effect should be inferred for them. Thus these launches
+cover the observable Source-availability contrasts only and do not complete
+all #463 conditions.
+
+The launcher pins GPT-6 Luna Medium from the plan, requires deny-by-default
+host isolation, and starts one phase-one `run_rsi_case.py` process in a fresh
+directory for each selected arm/case/draw. It retains every JSONL trace,
+launcher stdout/stderr, and source materialization result; it does not load
+labels. It rechecks case, prompt, Source, and runner bytes before each draw.
+The launch manifest also preserves host, model, and artifact identities copied
+from the plan as declared values; it does not claim that these match observed
+runtime identities. Phase one commonly stops at Proposal Review, so its exit
+is not necessarily a completed assessment.
+
+After inspecting and explicitly approving each Proposal Review with the
+researcher-only `rob2 review` command, continue the same campaign with the
+same frozen config and sidecars:
+
+```powershell
+uv run python scripts/run_development_comparison.py `
+  --config eval/runs/development-comparison/config.json `
+  --interventions eval/runs/development-comparison/interventions.json `
+  --inputs eval/runs/development-comparison/inputs.json `
+  --campaign-dir eval/runs/development-comparison/campaign `
+  --factor fact_binding `
+  --continue-approved
+```
+
+The continuation command selects only executions whose durable state is
+`waiting_for_user`. It reuses each original run directory and Codex session,
+and sends the fixed `Continue.` prompt recorded in `launch.json`; it does not
+approve a Proposal Review. The runner checks the workspace's actual researcher
+gate before starting each paid continuation and exits if review is still
+pending. If a later phase reaches another researcher gate, approve it manually
+and invoke the same continuation command again. The launcher retains each
+continuation phase's JSONL and logs alongside phase one. Never change a case,
+prompt, Source, runner, plan, or intervention sidecar between launch and
+continuation.
+
+Normalize the launch and runner records mechanically. The normalizer retains
+every runner attempt and retry, extracts an overall judgment only from a
+bundle that it independently verifies, and writes the scorer's JSON list plus
+a separate restricted provenance report:
+
+```powershell
+uv run python scripts/normalize_development_comparison.py `
+  --launch eval/runs/development-comparison/campaign/launch.json `
+  --outcomes eval/restricted/development-comparison/outcomes.json `
+  --provenance eval/restricted/development-comparison/normalization.json
+```
+
+The `outcomes.json` passed to the scorer contains one row per attempt,
+including failed attempts and infrastructure retries. A minimal row is:
+
+```json
+{
+  "attempt_id": "baseline-draw-1",
+  "arm_id": "baseline",
+  "cell_id": "ARASENS-pfs-D3",
+  "draw_id": "draw-1",
+  "session_id": "sha256:<hash of observed host session or null>",
+  "status": "assessed",
+  "prediction": "low",
+  "support": "full",
+  "completion": true,
+  "latency_ms": 120000,
+  "cost": null,
+  "context_bytes": null,
+  "tool_calls": null
+}
+```
+
+Latency is the sum of runner phase durations when both timestamps are present.
+This runner does not expose cost, actual model context bytes, or MCP call
+counts to the normalizer, so those values stay null. `normalization.json`
+records source/trace/bundle provenance, independently verified artifacts,
+attempt states, and measurement coverage. Missing session IDs stay null and
+cannot be treated as independent-session evidence. The scorer reports known
+measurement totals with observed/unknown counts and marks a budget check
+unverified when data is missing. A fact Source's availability is separately
+reported from unknown fact uptake or binding correctness.
+
+The scorer keeps retries and selects the terminal row under the frozen retry
+rule. Once every planned run or missing draw is recorded, score the frozen
+wave with:
+
+```powershell
+uv run python scripts/run_comparison.py `
+  --config eval/runs/development-comparison/config.json `
+  --interventions eval/runs/development-comparison/interventions.json `
+  --outcomes eval/restricted/development-comparison/outcomes.json `
+  --labels eval/restricted/development-comparison/provisional-labels.json `
+  --output eval/restricted/development-comparison/receipt.json
+```
+
+`scripts/run_comparison.py` validates and scores retained outcomes. The v0.3 receipt preserves every attempt, planned
+draw row (including missing draws), scope status, both assessed-only and
+all-planned provisional-label denominators, and each baseline-paired contrast.
+Its `evidence_status` labels recorded outcomes as observations, deterministic
+schema checks as static contracts, and any explanation of a score difference
+as a hypothesis. The receipt stores a digest of the label sidecar, not its
+contents, and calls its metric provisional-label agreement; a paired change is
+not an accuracy estimate or a causal mechanism finding. Preserve historical
+provisional scores as separate input/output artifacts instead of replacing
+them with any later interpretation.
+
 ## Predeclared retrieval comparisons
 
 The existing held-out manifest may include a `comparison_config` with schema

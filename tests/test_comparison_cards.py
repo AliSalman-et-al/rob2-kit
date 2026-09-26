@@ -242,7 +242,7 @@ def test_selection_card_keeps_unopened_supplement_and_combined_protocol_navigabl
     assert all(not item["passages"] for item in groups.values())
     # The inventory adds bounded metadata, not captured source text.
     serialized = json.dumps(card, ensure_ascii=False, separators=(",", ":"))
-    assert len(serialized) < 5_000
+    assert len(serialized) < 6_200
 
 
 def test_unopened_irrelevant_source_is_a_control_not_evidence() -> None:
@@ -321,3 +321,58 @@ def test_contrast_fixture_is_paired_traceable_and_development_only() -> None:
                 for evidence_set in premise["acceptable_evidence_sets"]
                 for evidence_id in evidence_set
             )
+
+
+def test_public_domain_cards_pair_endpoint_specific_scientific_contrasts() -> None:
+    pairs_by_domain = {
+        domain_id: {
+            item["pair_id"]: item
+            for item in _comparison_cards(domain_id, {}, {}, [], [])[0]["paired_examples"]
+        }
+        for domain_id in (
+            "domain:deviations",
+            "domain:missing",
+            "domain:measurement",
+            "domain:selection",
+        )
+    }
+    expected_pairs = (
+        ("domain:deviations", "d2-exclusion-before-versus-after-outcome"),
+        ("domain:missing", "d3-treatment-stop-with-followup-versus-loss"),
+        ("domain:measurement", "d4-toxicity-visits-by-endpoint"),
+        ("domain:measurement", "d4-safety-window-evidence"),
+        ("domain:selection", "d5-amendment-versus-unblinded-access"),
+        ("domain:selection", "d5-embedded-versus-separate-sap"),
+    )
+    for domain_id, pair_id in expected_pairs:
+        pair = pairs_by_domain[domain_id][pair_id]
+        left = set(pair["left_facts"])
+        right = set(pair["right_facts"])
+        assert len(left ^ right) == 2, pair_id
+        assert pair["changed_premise"]
+        assert pair["reasoning_focus"]
+        assert not {"expected_answer_path", "expected_judgment", "severity"} & pair.keys()
+
+    d4_by_id = pairs_by_domain["domain:measurement"]
+    mortality_pair = d4_by_id["d4-toxicity-visits-by-endpoint"]
+    mortality = " ".join(mortality_pair["left_facts"]).casefold()
+    toxicity = " ".join(mortality_pair["right_facts"]).casefold()
+    for phrase in ("same complete follow-up method", "extra visits"):
+        assert phrase in mortality and phrase in toxicity
+    assert "all-cause mortality" in mortality
+    assert "lab-defined toxicity" in toxicity
+
+    safety_window = d4_by_id["d4-safety-window-evidence"]
+    for facts in (safety_window["left_facts"], safety_window["right_facts"]):
+        joined = " ".join(facts).casefold()
+        assert "median treatment duration" in joined
+        assert "progression-free survival" in joined
+
+    d5_by_id = pairs_by_domain["domain:selection"]
+    amendment = d5_by_id["d5-amendment-versus-unblinded-access"]
+    assert "june 15" in " ".join(amendment["left_facts"]).casefold()
+    assert "july 15" in " ".join(amendment["left_facts"]).casefold()
+    assert "may 15" in " ".join(amendment["right_facts"]).casefold()
+    packaging = d5_by_id["d5-embedded-versus-separate-sap"]
+    assert "appendix 2" in " ".join(packaging["left_facts"]).casefold()
+    assert "separate repository pdf" in " ".join(packaging["right_facts"]).casefold()

@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
 import pytest
 
 from rob2_kit.evaluation import run_comparison, validate_comparison_config
-from rob2_kit.evaluation.harness import QUALIFICATION_COMPARISON_SCHEMA
+from rob2_kit.evaluation.harness import (
+    QUALIFICATION_COMPARISON_SCHEMA,
+)
 from rob2_kit.evaluation.observations import ObservationImportError, import_observations
 from rob2_kit.interfaces.mcp.contracts import SearchBatchRequest, SearchData
 
@@ -346,6 +352,26 @@ def test_qualification_runner_retains_every_platform_draw_and_failure() -> None:
         for pair in result["metrics"]["pairs"]
     )
 
+    shared_session = deepcopy(outcomes)
+    shared_session[2]["session_id"] = shared_session[0]["session_id"]
+    with pytest.raises(ValueError, match="independent sessions per cell and draw"):
+        run_comparison(
+            config,
+            interventions,
+            shared_session,
+            {"case-1": "low", "case-2": "high", "case-3": "low", "case-4": "high"},
+        )
+
+    shared_across_platforms = deepcopy(outcomes)
+    shared_across_platforms[8]["session_id"] = shared_across_platforms[0]["session_id"]
+    with pytest.raises(ValueError, match="independent sessions per cell and draw"):
+        run_comparison(
+            config,
+            interventions,
+            shared_across_platforms,
+            {"case-1": "low", "case-2": "high", "case-3": "low", "case-4": "high"},
+        )
+
 
 def test_qualification_runner_rejects_a_missing_declared_draw() -> None:
     config = _qualification_config()
@@ -370,6 +396,211 @@ def test_qualification_runner_rejects_a_missing_declared_draw() -> None:
 
     with pytest.raises(ValueError, match="every declared draw"):
         run_comparison(config, interventions, outcomes)
+
+
+_DEVELOPMENT_CASE_ID = "ARASENS-pfs-D3"
+
+
+def _development_config(scope: str = "eligible") -> tuple[dict[str, Any], dict[str, str]]:
+    example = Path(__file__).parents[1] / "docs/evaluation/development-comparison-v0.3.example.json"
+    config = json.loads(example.read_text(encoding="utf-8"))
+    config["plan"]["cases"][0]["scope"] = scope
+    interventions = {
+        arm["intervention_id"]: f"sha256:{index:064x}"
+        for index, arm in enumerate(config["arms"], 1)
+    }
+    return config, interventions
+
+
+def _development_outcome(
+    attempt_id: str,
+    arm_id: str,
+    draw_id: str,
+    prediction: str,
+    *,
+    status: str = "assessed",
+    retry_of: str | None = None,
+) -> dict[str, Any]:
+    row = {
+        "attempt_id": attempt_id,
+        "arm_id": arm_id,
+        "cell_id": _DEVELOPMENT_CASE_ID,
+        "draw_id": draw_id,
+        "session_id": f"session-{arm_id}-{draw_id}",
+        "status": status,
+        "prediction": prediction,
+        "support": "full",
+        "completion": status in {"assessed", "scope_unverified"},
+        "latency_ms": 10,
+        "cost": 0.1,
+        "context_bytes": 100,
+        "tool_calls": 2,
+    }
+    if retry_of is not None:
+        row["retry_of"] = retry_of
+    return row
+
+
+def test_development_comparison_freezes_one_factor_conditions_and_independent_draws() -> None:
+    config, interventions = _development_config()
+    validate_comparison_config(config, interventions)
+
+    multi_factor = deepcopy(config)
+    next(arm for arm in multi_factor["arms"] if arm["id"] == "facts")["context"] = "compact"
+    with pytest.raises(ValueError, match="only on their declared factor"):
+        validate_comparison_config(multi_factor, interventions)
+
+    missing_contrast = deepcopy(config)
+    missing_contrast["pairs"].pop()
+    with pytest.raises(ValueError, match="evidence, fact, context, and review contrasts"):
+        validate_comparison_config(missing_contrast, interventions)
+
+    reference_accuracy = deepcopy(config)
+    reference_accuracy["plan"]["scoring"]["primary_metric"] = "scientific_accuracy"
+    with pytest.raises(ValueError, match="provisional_label_agreement"):
+        validate_comparison_config(reference_accuracy, interventions)
+
+
+def test_documented_development_comparison_template_keeps_all_ten_draws_planned() -> None:
+    config, interventions = _development_config(scope="scope_uncertain")
+
+    with pytest.raises(ValueError, match="only eligible, known cases"):
+        run_comparison(config, interventions, [], {_DEVELOPMENT_CASE_ID: "low"})
+
+    result = run_comparison(config, interventions, [])
+
+    assert result["planned_draw_count"] == 10
+    assert sum(draw["status"] == "missing" for draw in result["draws"]) == 10
+    assert (
+        result["metrics"]["arms"]["baseline"]["provisional_label_agreement"][
+            "all_planned_denominator"
+        ]
+        == 0
+    )
+
+
+def test_development_runner_separates_draws_from_retries_and_reports_missing_denominators() -> None:
+    config, interventions = _development_config()
+    outcomes = [
+        _development_outcome(
+            "baseline-1-infra", "baseline", "draw-1", "unknown", status="failed_infrastructure"
+        ),
+        _development_outcome(
+            "baseline-1-retry", "baseline", "draw-1", "low", retry_of="baseline-1-infra"
+        ),
+        _development_outcome("baseline-2", "baseline", "draw-2", "low"),
+        _development_outcome("facts-1", "facts", "draw-1", "some_concerns"),
+        _development_outcome("passages-1", "passages", "draw-1", "low"),
+        _development_outcome("passages-2", "passages", "draw-2", "low"),
+        _development_outcome("compact-1", "compact-context", "draw-1", "low"),
+        _development_outcome("compact-2", "compact-context", "draw-2", "low"),
+        _development_outcome("review-1", "warrant-review", "draw-1", "low"),
+        _development_outcome("review-2", "warrant-review", "draw-2", "low"),
+    ]
+
+    result = run_comparison(config, interventions, outcomes, {_DEVELOPMENT_CASE_ID: "low"})
+
+    baseline = result["metrics"]["arms"]["baseline"]
+    facts = result["metrics"]["arms"]["facts"]
+    pair = result["metrics"]["pairs"]["fact-binding"]
+    assert result["schema"] == "rob2-kit.evaluation-comparison-run.v0.3"
+    assert result["retained_outcome_count"] == len(outcomes)
+    assert result["outcomes"][0]["prediction"] == "unknown"
+    assert result["outcomes"][1]["retry_of"] == "baseline-1-infra"
+    assert result["planned_draw_count"] == 10
+    assert len(result["draws"]) == 10
+    assert baseline["attempt_count"] == 3
+    assert baseline["infrastructure_retry_count"] == 1
+    assert baseline["planned_draws"] == 2
+    assert baseline["observed_draws"] == 2
+    assert baseline["provisional_label_agreement"] == {
+        "matches": 2,
+        "assessed_denominator": 2,
+        "assessed_rate": {"numerator": 2, "denominator": 2, "rate": 1.0},
+        "all_planned_denominator": 2,
+        "all_planned_rate": {"numerator": 2, "denominator": 2, "rate": 1.0},
+    }
+    assert facts["planned_draws"] == 2
+    assert facts["observed_draws"] == 1
+    assert facts["missing_draws"] == 1
+    assert facts["provisional_label_agreement"]["all_planned_denominator"] == 2
+    assert facts["provisional_label_agreement"]["assessed_denominator"] == 1
+    assert pair["planned_pair_draws"] == 2
+    assert pair["assessed_pair_draws"] == 1
+    assert pair["missing_right_draws"] == 1
+    assert pair["provisional_agreement"]["right_minus_left_matches"] == -1
+    assert pair["provisional_agreement"]["paired_assessed_denominator"] == 1
+    assert pair["provisional_agreement"]["all_planned_denominator"] == 2
+    assert pair["provisional_agreement"]["right_all_planned_rate"]["rate"] == 0
+    assert result["evidence_status"]["static_contracts"].startswith("the versioned configuration")
+    assert "reference_identity" in result
+    assert "reference_labels" not in result
+
+
+def test_development_comparison_retries_require_an_infrastructure_failure_parent() -> None:
+    config, interventions = _development_config()
+    outcomes = [
+        _development_outcome("root", "baseline", "draw-1", "low"),
+        _development_outcome("retry", "baseline", "draw-1", "low", retry_of="root"),
+    ]
+
+    with pytest.raises(ValueError, match="follow a failed attempt"):
+        run_comparison(config, interventions, outcomes)
+
+
+@pytest.mark.parametrize("status", ["assessed", "scope_unverified"])
+@pytest.mark.parametrize("session_id", [None, ""])
+def test_completed_development_outcomes_require_a_real_session(
+    status: str, session_id: str | None
+) -> None:
+    config, interventions = _development_config()
+    outcome = _development_outcome("baseline", "baseline", "draw-1", "low", status=status)
+    outcome["session_id"] = session_id
+
+    with pytest.raises(ValueError, match=r"outcome\[0\] is invalid"):
+        run_comparison(config, interventions, [outcome])
+
+
+def test_comparison_cli_writes_v03_receipt_with_draw_denominators(tmp_path: Path) -> None:
+    config, interventions = _development_config()
+    outcomes = [
+        _development_outcome("baseline-1", "baseline", "draw-1", "low"),
+        _development_outcome("baseline-2", "baseline", "draw-2", "low"),
+    ]
+    config_path = tmp_path / "config.json"
+    interventions_path = tmp_path / "interventions.json"
+    outcomes_path = tmp_path / "outcomes.json"
+    labels_path = tmp_path / "labels.json"
+    output_path = tmp_path / "receipt.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    interventions_path.write_text(json.dumps(interventions), encoding="utf-8")
+    outcomes_path.write_text(json.dumps(outcomes), encoding="utf-8")
+    labels_path.write_text(json.dumps({_DEVELOPMENT_CASE_ID: "low"}), encoding="utf-8")
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(Path(__file__).parents[1] / "scripts" / "run_comparison.py"),
+            "--config",
+            str(config_path),
+            "--interventions",
+            str(interventions_path),
+            "--outcomes",
+            str(outcomes_path),
+            "--labels",
+            str(labels_path),
+            "--output",
+            str(output_path),
+        ],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(output_path.read_text(encoding="utf-8"))
+    assert result["planned_draw_count"] == 10
+    assert result["metrics"]["arms"]["baseline"]["observed_draws"] == 2
 
 
 def test_search_purpose_models_require_a_domain_for_question_purpose() -> None:

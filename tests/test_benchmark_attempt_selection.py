@@ -19,9 +19,7 @@ if str(SCRIPTS) not in sys.path:
 
 contract = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))
 collector = runpy.run_path(str(SCRIPTS / "collect_rsi_benchmark.py"))
-_result_dimensions = runpy.run_path(str(SCRIPTS / "score_trial_benchmark.py"))[
-    "_result_dimensions"
-]
+_result_dimensions = runpy.run_path(str(SCRIPTS / "score_trial_benchmark.py"))["_result_dimensions"]
 _execution_identity = runpy.run_path(str(SCRIPTS / "run_rsi_case.py"))["_execution_identity"]
 
 
@@ -135,9 +133,7 @@ def _execution(
         "state": state,
         "selected_attempt_rule": "infrastructure_only",
         "selection_policy": {"rule": "infrastructure_only", "selected_attempt_id": attempt_id},
-        "attempts": [
-            {"attempt_id": attempt_id, "phase": 1, "state": state, "retry": 0}
-        ],
+        "attempts": [{"attempt_id": attempt_id, "phase": 1, "state": state, "retry": 0}],
         "phases": phases,
         "prompt_sha256_by_phase": {"1": prompt_hash},
         "run_input_sha256": input_hash,
@@ -177,9 +173,7 @@ def _execution(
         },
     }
     execution["runtime_inputs_sha256"] = hashlib.sha256(
-        json.dumps(
-            execution["runtime_inputs"], sort_keys=True, separators=(",", ":")
-        ).encode()
+        json.dumps(execution["runtime_inputs"], sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     if artifact is not None:
         artifact_manifest_identity = contract["artifact_manifest_identity"]
@@ -276,6 +270,67 @@ def test_collection_retains_queued_attempt_without_bundle(tmp_path: Path) -> Non
     assert details["cases"][0]["bundle"] is None
 
 
+def test_collection_retains_wrong_result_artifact_as_unscored(tmp_path: Path) -> None:
+    outcome = "Overall Survival"
+    run_root = tmp_path / "campaign" / "runs" / "overall-survival"
+    trial_dir = run_root / "trial"
+    reference = tmp_path / "reference"
+    _write_reference(reference)
+    workspace = _workspace(trial_dir / "workspace", outcome)
+    bundle = _assessed_artifact(workspace, outcome)
+    with zipfile.ZipFile(bundle) as archive:
+        canonical = json.loads(archive.read("canonical.json"))
+    result = canonical["proposal"]["payload"]["results"][0]
+    expected = _result_dimensions(result, "trial")
+    expected["endpoint_definition"] = "a different endpoint"
+    case = tmp_path / "case.json"
+    case.write_text(
+        json.dumps({"trial": "trial", "requested_outcome": outcome, "expected_result": expected}),
+        encoding="utf-8",
+    )
+    prompt = tmp_path / "prompt.txt"
+    prompt.write_text("Assess.\n", encoding="utf-8")
+    batch_trial = canonical["batch"]["trials"][0]
+    run_inputs = {
+        "campaign_id": "campaign",
+        "trial": "trial",
+        "requested_outcome": outcome,
+        "expected_result": expected,
+    }
+    _execution(
+        trial_dir,
+        expected=expected,
+        case=case,
+        prompt=prompt,
+        run_inputs=run_inputs,
+        state="succeeded",
+        attempt_id="attempt-wrong-result",
+        artifact=bundle,
+        bundle_sources=batch_trial["sources"],
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.benchmark-manifest.v2",
+                "rows": [
+                    _index_row(run_dir=trial_dir, case=case, prompt=prompt, expected=expected)
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    sidecar, details = collector["collect"](reference, run_root, outcome, manifest=manifest)
+
+    case_result = sidecar["cases"][0]
+    assert case_result["scope"] == "scope_uncertain"
+    assert case_result["scope_comparable"] == {f"D{i}": False for i in range(1, 6)}
+    assert details["cases"][0]["result_scope_status"] == "mismatch"
+    assert details["cases"][0]["result_scope_details"]["code"] == "result_scope_mismatch"
+    assert details["cases"][0]["bundle"] == str(bundle)
+
+
 def test_launcher_draws_discover_reruns_and_require_fresh_index_hash(
     tmp_path: Path,
 ) -> None:
@@ -345,9 +400,7 @@ def test_execution_draw_retains_phase_failure_without_a_second_attempt_draw() ->
     assert selected == "same-attempt"
     assert len(draws) == 1
     assert draws[0]["selected"] is True
-    assert draws[0]["phase_failures"] == [
-        {"phase": 1, "state": "resumable", "exit_code": 1}
-    ]
+    assert draws[0]["phase_failures"] == [{"phase": 1, "state": "resumable", "exit_code": 1}]
 
 
 def test_collection_uses_typed_launcher_draw_when_execution_was_never_created(
@@ -419,9 +472,7 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
     result = canonical["proposal"]["payload"]["results"][0]
     expected = _result_dimensions(result, trial)
     case.write_text(
-        json.dumps(
-            {"trial": trial, "requested_outcome": outcome, "expected_result": expected}
-        ),
+        json.dumps({"trial": trial, "requested_outcome": outcome, "expected_result": expected}),
         encoding="utf-8",
     )
     batch_trial = canonical["batch"]["trials"][0]
@@ -475,11 +526,11 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
         "cases": [
             {
                 **_index_row(
-                run_dir=replacement_run,
-                case=case,
-                prompt=prompt,
-                expected=expected,
-                attempt=2,
+                    run_dir=replacement_run,
+                    case=case,
+                    prompt=prompt,
+                    expected=expected,
+                    attempt=2,
                 ),
                 "campaign_id": "frozen-campaign-27f36d",
             }
@@ -501,9 +552,7 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
         json.dumps(replacement_runtime_inputs, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     replacement_execution_path.write_text(json.dumps(replacement_execution), encoding="utf-8")
-    transition = contract["_execution_build_transition"](
-        original_execution, replacement_execution
-    )
+    transition = contract["_execution_build_transition"](original_execution, replacement_execution)
     assert transition == {
         "from_build_sha256": "build-v1",
         "to_build_sha256": "different-build",
@@ -519,9 +568,7 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
     changed_execution["runtime_inputs_sha256"] = hashlib.sha256(
         json.dumps(changed_runtime, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    (replacement_run / "execution.json").write_text(
-        json.dumps(changed_execution), encoding="utf-8"
-    )
+    (replacement_run / "execution.json").write_text(json.dumps(changed_execution), encoding="utf-8")
     with pytest.raises(ValueError, match="changed fields: build_sha256, pack"):
         contract["validate_replacement_case"](
             original_index_path,
@@ -534,9 +581,7 @@ def test_collection_and_merge_retain_failed_original_and_selected_replacement(
     replacement_run_execution = dict(replacement_execution)
     replacement_run_execution["runtime_inputs"] = replacement_runtime_inputs
     replacement_run_execution["runtime_inputs_sha256"] = hashlib.sha256(
-        json.dumps(
-            replacement_runtime_inputs, sort_keys=True, separators=(",", ":")
-        ).encode()
+        json.dumps(replacement_runtime_inputs, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     replacement_execution_path.write_text(json.dumps(replacement_run_execution), encoding="utf-8")
 

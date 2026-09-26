@@ -22,9 +22,7 @@ if str(SCRIPTS) not in sys.path:
 artifact_manifest_identity = runpy.run_path(str(SCRIPTS / "benchmark_contract.py"))[
     "artifact_manifest_identity"
 ]
-_result_dimensions = runpy.run_path(str(SCRIPTS / "score_trial_benchmark.py"))[
-    "_result_dimensions"
-]
+_result_dimensions = runpy.run_path(str(SCRIPTS / "score_trial_benchmark.py"))["_result_dimensions"]
 
 
 def _write_reference(reference: Path, trial: str = "trial") -> None:
@@ -116,9 +114,7 @@ def test_real_verified_bundle_collects_and_scores_without_result_identity_field(
                 "prompt_sha256": hashlib.sha256(prompt_path.read_bytes()).hexdigest(),
             }
         ],
-        "prompt_sha256_by_phase": {
-            "1": hashlib.sha256(prompt_path.read_bytes()).hexdigest()
-        },
+        "prompt_sha256_by_phase": {"1": hashlib.sha256(prompt_path.read_bytes()).hexdigest()},
         "run_input_sha256": _sha256_json(run_inputs),
         "expected_result_sha256": _sha256_json(expected),
         "manifest_sha256": hashlib.sha256(case_path.read_bytes()).hexdigest(),
@@ -207,9 +203,9 @@ def test_real_verified_bundle_collects_and_scores_without_result_identity_field(
     )
 
     assert scored.returncode == 0, scored.stderr
-    assert json.loads(scored_path.read_text(encoding="utf-8"))["scope"][
-        "finalized_scored_cases"
-    ] == 1
+    assert (
+        json.loads(scored_path.read_text(encoding="utf-8"))["scope"]["finalized_scored_cases"] == 1
+    )
 
 
 def _write_v1_scoring_case(
@@ -296,7 +292,7 @@ def test_scoring_command_hard_fails_wrong_trial_and_ambiguous_result_before_labe
     _write_reference(reference, "GETUG-AFU-15")
     cases = (
         ("wrong-trial", {"wrong_trial": True}, "trial scope mismatch"),
-        ("ambiguous-result", {"ambiguous_result": True}, "missing or ambiguous"),
+        ("ambiguous-result", {"ambiguous_result": True}, "unavailable or ambiguous"),
     )
     for case_name, options, reason in cases:
         run_dir = tmp_path / case_name

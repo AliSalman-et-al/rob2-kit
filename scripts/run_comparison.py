@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 from rob2_kit.evaluation import run_comparison
+from rob2_kit.evaluation.harness import DEVELOPMENT_COMPARISON_RUN_SCHEMA
 
 
 def main() -> int:
@@ -32,10 +33,18 @@ def main() -> int:
         json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n",
         encoding="utf-8",
     )
-    print(
-        f"retained {result['retained_outcome_count']} comparison outcomes "
-        f"({result['schema']}; external execution not performed)"
-    )
+    if result["schema"] == DEVELOPMENT_COMPARISON_RUN_SCHEMA:
+        missing_draws = sum(draw["status"] == "missing" for draw in result["draws"])
+        print(
+            f"retained {result['retained_outcome_count']} comparison attempts across "
+            f"{result['planned_draw_count']} planned draws ({missing_draws} missing; "
+            f"{result['schema']}; external execution not performed)"
+        )
+    else:
+        print(
+            f"retained {result['retained_outcome_count']} comparison outcomes "
+            f"({result['schema']}; external execution not performed)"
+        )
     return 0
 
 

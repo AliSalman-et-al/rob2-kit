@@ -248,8 +248,7 @@ def _prioritize_domain_context_previews(data: dict[str, Any]) -> None:
             item
             for item in questions
             if isinstance(item, dict)
-            and item.get("activation_status")
-            in {"always_active", "active_in_saved_checkpoint"}
+            and item.get("activation_status") in {"always_active", "active_in_saved_checkpoint"}
         ),
         questions[0] if questions else None,
     )
@@ -278,11 +277,7 @@ def _prioritize_domain_context_previews(data: dict[str, Any]) -> None:
         if isinstance(item, dict) and isinstance(item.get("handle"), str)
     }
     preview = next(
-        (
-            by_handle[handle]
-            for handle in associated_handles
-            if handle in by_handle
-        ),
+        (by_handle[handle] for handle in associated_handles if handle in by_handle),
         next(
             (
                 item
@@ -507,6 +502,7 @@ def _paginate_domain_context_transport(
     if view_id is not None:
         cursor_payload["view_id"] = view_id
     cursor_placeholder = _domain_context_cursor(cursor_payload)
+
     def header_probe_for(template: dict[str, Any]) -> dict[str, Any]:
         return _domain_context_page_data(
             _domain_context_page_template(template, 0),
@@ -672,9 +668,7 @@ def _paginate_domain_context_transport(
                     )
                 break
             chosen_end = max(start + 1, end - 1)
-            records.append(
-                (section, initial_offset + start, section_items[start:chosen_end])
-            )
+            records.append((section, initial_offset + start, section_items[start:chosen_end]))
             start = chosen_end
 
     if page_index >= len(records):
@@ -1198,9 +1192,7 @@ def _invoke(
             and isinstance(diagnostic.get("action"), str)
         ):
             condition = {
-                key: diagnostic[key]
-                for key in ("code", "detail", "action")
-                if key in diagnostic
+                key: diagnostic[key] for key in ("code", "detail", "action") if key in diagnostic
             }
             return _content(
                 tool,
@@ -3085,14 +3077,14 @@ def get_domain_context(
         "Before saving a Domain, submit the complete draft. For each active answer, briefly "
         "explain what its cited bases establish and why that supports the selected option for "
         "the approved Result. Use narrow exact Evidence excerpts for each premise. Copy Evidence "
-        "handles into a complete answer shaped like {\"question_id\":\"<id>\",\"answer\":"
-        "\"<option>\",\"bases\":[{\"kind\":\"direct_support\",\"evidence\":"
-        "\"<exact handle>\"}],\"justification\":\"...\",\"unknowns\":[],"
-        "\"counterevidence\":[]}. Counterevidence entries use "
-        "{\"basis_index\":0,\"implication\":\"...\"}, indexed into that answer's original "
+        'handles into a complete answer shaped like {"question_id":"<id>","answer":'
+        '"<option>","bases":[{"kind":"direct_support","evidence":'
+        '"<exact handle>"}],"justification":"...","unknowns":[],'
+        '"counterevidence":[]}. Counterevidence entries use '
+        '{"basis_index":0,"implication":"..."}, indexed into that answer\'s original '
         "bases. A limitation basis includes both unresolved_premise and stopping_rationale. For a "
         "new-evidence revision, use "
-        "{\"kind\":\"new_evidence\",\"evidence\":\"<one handle>\",\"rationale\":\"...\"}. "
+        '{"kind":"new_evidence","evidence":"<one handle>","rationale":"..."}. '
         "If validation returns domain_context_delivery_stale, restart get_domain_context and "
         "complete its current pages before rebuilding and revalidating the draft. "
         "Before submitting, "

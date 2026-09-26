@@ -130,7 +130,9 @@ def test_contradiction_requires_citation_and_premise_handling() -> None:
 
 def test_attempt_selection_rule_is_enforced_not_trusted() -> None:
     value = fixture()
-    value["attempts"].append({**value["attempts"][0], "attempt_id": "b", "selected": False})
+    value["attempts"].append(
+        {**value["attempts"][0], "attempt_id": "b", "selected": False, "retry_of": "a"}
+    )
     value["manifest"]["attempt_ids"].append("b")
     assert evaluate_fixture(value)["audit"]["attempt_count"] == 2
 
@@ -199,7 +201,7 @@ def test_exact_vector_uses_one_domain_judgment_per_domain() -> None:
     assert evaluate_fixture(value)["scientific"]["exact_vector"]["agreement"]["numerator"] == 0
 
 
-def test_reliability_groups_repeated_draws_not_domains() -> None:
+def test_reliability_includes_failed_planned_draws_and_names_assessed_only_metrics() -> None:
     value = fixture()
     reference = value["references"][0]
     attempt = value["attempts"][0]
@@ -211,7 +213,8 @@ def test_reliability_groups_repeated_draws_not_domains() -> None:
             "run_id": "run-2",
             "draw": "2",
             "attempt_id": "b",
-            "prediction": "high",
+            "disposition": "failed",
+            "prediction": "low",
         }
     )
     value["events"].extend(
@@ -220,9 +223,24 @@ def test_reliability_groups_repeated_draws_not_domains() -> None:
     value["manifest"]["attempt_ids"].append("b")
 
     reliability = evaluate_fixture(value)["reliability"]
-    assert reliability["any_correct"] == {"numerator": 1, "denominator": 1, "rate": 1.0}
-    assert reliability["all_correct"] == {"numerator": 0, "denominator": 1, "rate": 0.0}
-    assert reliability["draws_per_cell"] == {2: 1}
+    assert reliability["attempted"]["accuracy"] == {
+        "numerator": 1,
+        "denominator": 2,
+        "rate": 0.5,
+    }
+    assert reliability["attempted"]["all_correct"] == {
+        "numerator": 0,
+        "denominator": 1,
+        "rate": 0.0,
+    }
+    assert reliability["attempted"]["dispositions"] == {"assessed": 1, "failed": 1}
+    assert reliability["attempted"]["draws_per_cell"] == {2: 1}
+    assert reliability["assessed_only"]["all_correct"] == {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1.0,
+    }
+    assert reliability["assessed_only"]["draws_per_cell"] == {1: 1}
 
 
 def test_split_leak_fails_for_every_fingerprint_kind() -> None:
@@ -263,7 +281,13 @@ def test_reference_truth_is_independent_of_attempts() -> None:
     value = fixture()
     value["attempts"][0]["prediction"] = "high"
     value["attempts"].append(
-        {**value["attempts"][0], "attempt_id": "b", "selected": False, "prediction": "low"}
+        {
+            **value["attempts"][0],
+            "attempt_id": "b",
+            "selected": False,
+            "prediction": "low",
+            "retry_of": "a",
+        }
     )
     value["manifest"]["attempt_ids"].append("b")
 
@@ -281,7 +305,9 @@ def test_reference_truth_is_independent_of_attempts() -> None:
 
 def test_nonselected_attempt_trajectory_cannot_credit_selected_attempt() -> None:
     value = fixture()
-    value["attempts"].append({**value["attempts"][0], "attempt_id": "b", "selected": False})
+    value["attempts"].append(
+        {**value["attempts"][0], "attempt_id": "b", "selected": False, "retry_of": "a"}
+    )
     value["manifest"]["attempt_ids"].append("b")
     for event in value["events"]:
         if event["type"] == "evidence_cited":
@@ -323,6 +349,82 @@ def test_optional_premise_does_not_change_required_premise_denominator() -> None
 
     assert result["coverage"]["premise_complete"]["denominator"] == 1
     assert result["coverage"]["passage_alternative_complete"]["denominator"] == 1
+
+
+def test_absent_planned_draws_are_counted_as_missing() -> None:
+    value = fixture()
+    reference = value["references"][0]
+    value["references"].append({**reference, "run_id": "run-2", "draw": "2"})
+    value["attempts"][0]["disposition"] = "failed"
+
+    reliability = evaluate_fixture(value)["reliability"]
+
+    assert reliability["attempted"]["accuracy"] == {
+        "numerator": 0,
+        "denominator": 2,
+        "rate": 0.0,
+    }
+    assert reliability["attempted"]["planned_draws"] == 2
+    assert reliability["attempted"]["dispositions"] == {"failed": 1, "missing": 1}
+    assert reliability["attempted"]["all_correct"] == {
+        "numerator": 0,
+        "denominator": 1,
+        "rate": 0.0,
+    }
+    assert reliability["assessed_only"]["accuracy"]["denominator"] == 0
+
+
+def test_two_failed_planned_draws_stay_in_attempted_reliability_denominator() -> None:
+    value = fixture()
+    reference = value["references"][0]
+    value["references"].append({**reference, "run_id": "run-2", "draw": "2"})
+    value["attempts"][0]["disposition"] = "failed"
+    value["attempts"].append(
+        {
+            **value["attempts"][0],
+            "run_id": "run-2",
+            "draw": "2",
+            "attempt_id": "b",
+            "selected": True,
+        }
+    )
+    value["manifest"]["attempt_ids"].append("b")
+
+    reliability = evaluate_fixture(value)["reliability"]
+
+    assert reliability["attempted"]["accuracy"] == {
+        "numerator": 0,
+        "denominator": 2,
+        "rate": 0.0,
+    }
+    assert reliability["attempted"]["dispositions"] == {"failed": 2}
+
+
+def test_infrastructure_retry_is_separate_from_independent_draw_denominator() -> None:
+    value = fixture()
+    value["attempts"].append(
+        {
+            **value["attempts"][0],
+            "attempt_id": "b",
+            "selected": False,
+            "disposition": "failed",
+            "retry_of": "a",
+        }
+    )
+    value["manifest"]["attempt_ids"].append("b")
+
+    reliability = evaluate_fixture(value)["reliability"]
+
+    assert reliability["attempted"]["planned_draws"] == 1
+    assert reliability["attempted"]["accuracy"] == {
+        "numerator": 1,
+        "denominator": 1,
+        "rate": 1.0,
+    }
+    assert reliability["infrastructure_retries"] == {
+        "count": 1,
+        "dispositions": {"failed": 1},
+    }
 
 
 def test_split_rows_are_closed_and_dimensions_are_manifest_bound() -> None:

@@ -20,14 +20,14 @@ from typing import cast
 from benchmark_contract import (
     TOOL_INVENTORY_VERSION,
     artifact_manifest_identity,
+    execution_index_binding,
     host_delivery_diagnosis,
     host_delivery_observed,
-    rob2_call_diagnostics,
-    execution_index_binding,
     host_tools_infrastructure_recovery_diagnosis,
     probe_server_advertised_inventory,
     public_contract_version,
     public_tool_inventory,
+    rob2_call_diagnostics,
     tool_inventory_provenance,
     trace_session_ids,
 )
@@ -49,6 +49,7 @@ EXPECTED_TOOL_INVENTORY = public_tool_inventory()
 # The prior 300-second MCP client limit expired while a benchmark search later
 # returned after roughly 447 seconds.
 ROB2_MCP_TOOL_TIMEOUT_SECONDS = 600
+
 
 def _optional_text(value: object) -> str | None:
     return value if isinstance(value, str) and value else None
@@ -191,6 +192,7 @@ def _strict_filesystem_profile(
     profile.extend(f'{json.dumps(path.as_posix())} = "deny"' for path in denied_directories)
     profile.append(f'{json.dumps(workspace.as_posix())} = "write"')
     profile.append(f'{json.dumps((repository / ".venv").as_posix())} = "read"')
+    profile.append(f'{json.dumps(str(Path(sys.executable).resolve().parent.parent))} = "read"')
     profile.extend(f'{json.dumps(path.as_posix())} = "deny"' for path in denied_files)
     profile.extend(["", "[permissions.rob2-rsi.network]", "enabled = false"])
     return profile
@@ -204,7 +206,7 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
             "requested strict host isolation is unsupported on Windows without UAC; "
             "use a POSIX host or run the documented non-strict Windows profile"
         )
-    with tempfile.TemporaryDirectory(prefix="rob2-rsi-preflight-") as directory:
+    with tempfile.TemporaryDirectory(prefix="rob2-rsi-preflight-", dir=Path.home()) as directory:
         root = Path(directory)
         campaign_root = root / "campaign"
         attempt = campaign_root / "runs" / "outcome" / "attempt"
@@ -260,21 +262,28 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
         protected_files["sibling_run_inputs"].write_text(
             '{"expected_result":"ROB2_RSI_SIBLING_RESULT_SECRET"}', encoding="utf-8"
         )
-        protected_files["outside_temp"].write_text(
-            "ROB2_RSI_OUTSIDE_TEMP_SECRET", encoding="utf-8"
-        )
+        protected_files["outside_temp"].write_text("ROB2_RSI_OUTSIDE_TEMP_SECRET", encoding="utf-8")
         profile = _strict_filesystem_profile(
             allowed,
             Path(__file__).resolve().parents[1],
-            (Path(tempfile.gettempdir()), campaign_root, codex_home_parent, source_auth_dir),
-            (sentinel,),
-        )
-        profile.extend(
-            f'{json.dumps(path.as_posix())} = "deny"'
-            for name, path in protected_files.items()
-            if name != "sentinel"
+            (),
+            tuple(protected_files.values()),
         )
         (codex_home / "config.toml").write_text("\n".join(profile) + "\n", encoding="utf-8")
+        sandbox_command = codex_command.resolve()
+        if sandbox_command.is_file():
+            if sandbox_command.read_bytes()[:4] != b"\x7fELF":
+                native = tuple(
+                    sandbox_command.parent.parent.glob(
+                        "node_modules/@openai/codex-linux-*/vendor/*/bin/codex"
+                    )
+                )
+                if len(native) == 1:
+                    sandbox_command = native[0]
+            sandbox_copy = allowed / "codex-sandbox-preflight"
+            shutil.copy2(sandbox_command, sandbox_copy)
+        else:
+            sandbox_copy = sandbox_command
         probes = [(name, str(path)) for name, path in protected_files.items()]
         script = (
             "from pathlib import Path\n"
@@ -308,14 +317,14 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
             "        print('WRITE:' + name)\n"
         )
         command = [
-            str(codex_command),
+            str(sandbox_copy),
             "sandbox",
             "-C",
             str(allowed),
             "-P",
             "rob2-rsi",
             "--",
-            sys.executable,
+            str(Path(sys.executable).resolve()),
             "-c",
             script,
         ]
@@ -347,13 +356,13 @@ def _preflight_isolation(codex_command: Path, required: bool) -> dict[str, objec
                 f"was not verified: {error}"
             ) from error
         lines = {line.strip() for line in output.splitlines()}
-        if any(
-            marker in lines
-            for name in protected_files
-            for marker in (f"READ:{name}", f"WRITE:{name}")
-        ):
+        exposed = [
+            name for name in protected_files if f"READ:{name}" in lines or f"WRITE:{name}" in lines
+        ]
+        if exposed:
             raise RuntimeError(
-                "requested strict host isolation failed: a protected file was readable"
+                "requested strict host isolation failed: a protected file was readable: "
+                + ", ".join(exposed)
             )
         missing_denials = [
             name
@@ -447,6 +456,7 @@ def _codex_mcp_config(command: str, workspace: Path) -> list[str]:
         'args = ["mcp"]',
         "env = { ROB2_WORKSPACE = " + json.dumps(str(workspace.resolve())) + " }",
         "required = true",
+        'default_tools_approval_mode = "approve"',
         "startup_timeout_sec = 120",
         f"tool_timeout_sec = {ROB2_MCP_TOOL_TIMEOUT_SECONDS}",
     ]
@@ -473,9 +483,8 @@ def _validate_tool_inventory(
         except (OSError, json.JSONDecodeError) as error:
             raise ValueError("frozen launch runtime record is unreadable") from error
         runtime = execution.get("runtime_inputs") if isinstance(execution, dict) else None
-        if (
-            isinstance(runtime, dict)
-            and execution.get("runtime_inputs_sha256") != _json_sha256(runtime)
+        if isinstance(runtime, dict) and execution.get("runtime_inputs_sha256") != _json_sha256(
+            runtime
         ):
             raise ValueError("frozen launch runtime inputs failed their integrity check")
         if isinstance(runtime, dict):
@@ -534,8 +543,7 @@ def _validate_tool_inventory(
     frozen_binding = frozen_server_inventory.get("server_binding")
     registered_binding = (
         execution.get("runtime_inputs", {}).get("codex_registered_mcp")
-        if isinstance(execution, dict)
-        and isinstance(execution.get("runtime_inputs"), dict)
+        if isinstance(execution, dict) and isinstance(execution.get("runtime_inputs"), dict)
         else None
     )
     if not isinstance(frozen_binding, dict) or registered_binding != frozen_binding:
@@ -575,14 +583,18 @@ def _validate_tool_inventory(
             + "); recovery: start a fresh benchmark attempt"
         )
     phases = execution.get("phases") if isinstance(execution, dict) else None
-    prior = next(
-        (
-            row
-            for row in reversed(phases)
-            if isinstance(row, dict) and row.get("phase") == phase
-        ),
-        None,
-    ) if isinstance(phases, list) else None
+    prior = (
+        next(
+            (
+                row
+                for row in reversed(phases)
+                if isinstance(row, dict) and row.get("phase") == phase
+            ),
+            None,
+        )
+        if isinstance(phases, list)
+        else None
+    )
     delivery = host_delivery_diagnosis(
         run_dir / f"phase-{phase}.jsonl",
         expected_sha256=(prior.get("trace_sha256") if isinstance(prior, dict) else None),
@@ -590,6 +602,8 @@ def _validate_tool_inventory(
     )
     if delivery is not None:
         if delivery.get("code") != "host_delivery_call_missing":
+            raise ValueError(json.dumps(delivery, sort_keys=True))
+        if phase not in (2, 3, 4):
             raise ValueError(json.dumps(delivery, sort_keys=True))
         recovery = host_tools_infrastructure_recovery_diagnosis(run_dir, phase)
         if recovery is not None:
@@ -953,7 +967,9 @@ def _execution_identity(run_dir: Path, run_inputs: dict[str, object]) -> dict[st
     campaign = (
         campaign_value
         if isinstance(campaign_value, str) and campaign_value.strip()
-        else run_dir.parents[1].name if len(run_dir.parents) > 1 else run_dir.parent.name
+        else run_dir.parents[1].name
+        if len(run_dir.parents) > 1
+        else run_dir.parent.name
     )
     outcome_slug = "".join(c for c in outcome.casefold() if c.isalnum())
     trial_slug = "".join(c for c in trial.casefold() if c.isalnum())
@@ -972,9 +988,7 @@ def _json_sha256(value: object) -> str:
     ).hexdigest()
 
 
-def _changed_runtime_input_keys(
-    prior: dict[str, object], current: dict[str, object]
-) -> list[str]:
+def _changed_runtime_input_keys(prior: dict[str, object], current: dict[str, object]) -> list[str]:
     """Return top-level runtime fields whose frozen values changed."""
 
     missing = object()
@@ -1077,9 +1091,7 @@ def _load_or_create_execution_record(
     overrides = dict(overrides or {})
     runtime_inputs = dict(runtime_inputs or {})
     if phase == 1 and (allow_build_only_transition or build_transition_reason is not None):
-        raise ValueError(
-            "build-only runtime transitions are valid only for continuation phases"
-        )
+        raise ValueError("build-only runtime transitions are valid only for continuation phases")
     has_build_transition_reason = bool(
         isinstance(build_transition_reason, str) and build_transition_reason.strip()
     )
@@ -1236,9 +1248,7 @@ def _load_or_create_execution_record(
             if not isinstance(prior_runtime_inputs, dict) or not isinstance(
                 prior_runtime_inputs_sha256, str
             ):
-                raise ValueError(
-                    "continuation prior top-level runtime provenance is incomplete"
-                )
+                raise ValueError("continuation prior top-level runtime provenance is incomplete")
             if _json_sha256(prior_runtime_inputs) != prior_runtime_inputs_sha256:
                 raise ValueError(
                     "continuation prior top-level runtime inputs failed their integrity check"
@@ -1252,17 +1262,13 @@ def _load_or_create_execution_record(
                 None,
             )
             if not isinstance(prior_phase, dict):
-                raise ValueError(
-                    f"continuation phase {phase - 1} runtime provenance is missing"
-                )
+                raise ValueError(f"continuation phase {phase - 1} runtime provenance is missing")
             prior_phase_runtime = prior_phase.get("runtime_inputs")
             prior_phase_runtime_sha256 = prior_phase.get("runtime_inputs_sha256")
             if not isinstance(prior_phase_runtime, dict) or not isinstance(
                 prior_phase_runtime_sha256, str
             ):
-                raise ValueError(
-                    f"continuation phase {phase - 1} runtime provenance is incomplete"
-                )
+                raise ValueError(f"continuation phase {phase - 1} runtime provenance is incomplete")
             if _json_sha256(prior_phase_runtime) != prior_phase_runtime_sha256:
                 raise ValueError(
                     f"continuation phase {phase - 1} runtime inputs failed their integrity check"
@@ -1283,7 +1289,8 @@ def _load_or_create_execution_record(
                 new_build = runtime_inputs.get("build_sha256")
                 if not isinstance(old_build, str) or not isinstance(new_build, str):
                     raise ValueError(
-                        "build-only runtime transition requires nonempty prior and current build_sha256"
+                        "build-only runtime transition requires nonempty prior and current "
+                        "build_sha256"
                     )
                 if not allow_build_only_transition:
                     raise ValueError(
@@ -1400,9 +1407,9 @@ def _load_or_create_execution_record(
         "phase": phase,
         "state": "queued",
         "retry": retry,
-        "kind": "initial" if phase == 1 and not retrying_infrastructure and retry == 0 else (
-            "infrastructure_retry" if retrying_infrastructure or retry > 0 else "resumption"
-        ),
+        "kind": "initial"
+        if phase == 1 and not retrying_infrastructure and retry == 0
+        else ("infrastructure_retry" if retrying_infrastructure or retry > 0 else "resumption"),
         "overrides": overrides,
         "expected_result_sha256": expected_result_sha256,
         "scope_status": scope_status,
@@ -1422,14 +1429,18 @@ def _mark_execution_running(run_dir: Path, record: dict[str, object], phase: int
     record["state"] = "running"
     record["updated_at"] = now
     phases = record.get("phases")
-    phase_record = next(
-        (
-            item
-            for item in reversed(phases)
-            if isinstance(item, dict) and item.get("phase") == phase
-        ),
-        None,
-    ) if isinstance(phases, list) else None
+    phase_record = (
+        next(
+            (
+                item
+                for item in reversed(phases)
+                if isinstance(item, dict) and item.get("phase") == phase
+            ),
+            None,
+        )
+        if isinstance(phases, list)
+        else None
+    )
     if isinstance(phase_record, dict):
         phase_record["state"] = "running"
         phase_record["running_at"] = now
@@ -1596,11 +1607,7 @@ def _finish_execution(
     if artifact_error is not None:
         record.pop("artifact", None)
         record["artifact_error"] = artifact_error
-    effective_terminal_state = (
-        terminal_state
-        if terminal_state is not None
-        else None
-    )
+    effective_terminal_state = terminal_state if terminal_state is not None else None
     if effective_terminal_state is not None and effective_terminal_state not in {
         "queued",
         "running",
@@ -1818,9 +1825,7 @@ def main() -> None:
     if args.phase == 1 and (
         args.allow_build_only_transition or args.build_transition_reason is not None
     ):
-        parser.error(
-            "build-only runtime transitions are valid only for continuation phases"
-        )
+        parser.error("build-only runtime transitions are valid only for continuation phases")
     if args.allow_build_only_transition != bool(
         isinstance(args.build_transition_reason, str) and args.build_transition_reason.strip()
     ):
@@ -1971,9 +1976,7 @@ def main() -> None:
 
     run_inputs = json.loads((run_dir / "run-inputs.json").read_text(encoding="utf-8"))
     expected_result = run_inputs.get("expected_result") if isinstance(run_inputs, dict) else None
-    unresolved_scope = (
-        run_inputs.get("scope_unresolved") if isinstance(run_inputs, dict) else None
-    )
+    unresolved_scope = run_inputs.get("scope_unresolved") if isinstance(run_inputs, dict) else None
     unresolved_scope = (
         unresolved_scope.strip()
         if isinstance(unresolved_scope, str) and unresolved_scope.strip()
@@ -2107,16 +2110,13 @@ def main() -> None:
     previous_execution_path = run_dir / "execution.json"
     if args.phase > 1 and previous_execution_path.is_file():
         try:
-            previous_execution = json.loads(
-                previous_execution_path.read_text(encoding="utf-8")
-            )
+            previous_execution = json.loads(previous_execution_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             previous_execution = None
         if isinstance(previous_execution, dict):
             previous_runtime = previous_execution.get("runtime_inputs")
     if args.phase == 1 or (
-        isinstance(previous_runtime, dict)
-        and "codex_mcp_tool_timeout_sec" in previous_runtime
+        isinstance(previous_runtime, dict) and "codex_mcp_tool_timeout_sec" in previous_runtime
     ):
         runtime_inputs["codex_mcp_tool_timeout_sec"] = ROB2_MCP_TOOL_TIMEOUT_SECONDS
 
@@ -2157,24 +2157,28 @@ def main() -> None:
         campaign_root = (
             args.benchmark_index.resolve().parent if args.benchmark_index is not None else run_dir
         )
-        denied_directories = (
-            Path(tempfile.gettempdir()),
-            campaign_root,
-            run_dir,
-            codex_home.parent,
-            auth_source.parent,
+        denied_directories = tuple(
+            dict.fromkeys(
+                (
+                    Path(tempfile.gettempdir()),
+                    campaign_root,
+                    run_dir,
+                    auth_source.parent,
+                    repository / "eval" / "reference",
+                    repository / "eval" / "cohorts",
+                    repository / "eval" / "runs",
+                )
+            )
         )
         profile = _strict_filesystem_profile(
             workspace,
             repository,
             denied_directories,
-            (
-                run_dir / "run-inputs.json",
-                run_dir / "approved-scope.json",
-                run_dir / "execution.json",
-                auth_copy,
-                auth_source,
-            ),
+            (),
+        )
+        profile.insert(
+            profile.index("[permissions.rob2-rsi.network]"),
+            f'{json.dumps(str(codex_command.resolve().parent.parent))} = "read"',
         )
     scorer_path = repository / "scripts" / "analyze_rsi_runs.py"
     scorer_metadata: dict[str, object] = {
@@ -2403,9 +2407,7 @@ def main() -> None:
         terminal_reason = "Codex phase was interrupted by the operator."
         completed = subprocess.CompletedProcess(command, 130)
     except BaseException:
-        _finish_execution(
-            run_dir, execution, args.phase, 125, expected_session=args.session
-        )
+        _finish_execution(run_dir, execution, args.phase, 125, expected_session=args.session)
         raise
     finally:
         auth_copy.unlink(missing_ok=True)

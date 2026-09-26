@@ -16,6 +16,7 @@ from ..workflow_models import (
     GroupBoundValuesResult,
     ProposalDraft,
     ProposalReasoningDraft,
+    ResultClarity,
     UnavailableIntakeConditionBasisDraft,
 )
 from ._state import _commit_records, _ensure, _identity, _result, _root, _state
@@ -155,6 +156,25 @@ def _proposal_shape_repairs(
 
     def assessable_repairs(result: AssessableResultDraft, path: str) -> list[dict[str, str]]:
         result_repairs: list[dict[str, str]] = []
+        if result.relation == "exact":
+            facets = (
+                {key: "unclear" for key in ResultClarity.model_fields}
+                if result.clarity is None
+                else result.clarity.model_dump(mode="json")
+            )
+            for facet, status in facets.items():
+                if status != "specified":
+                    result_repairs.append(
+                        {
+                            "path": f"{path}/clarity/{facet}",
+                            "code": "exact_result_scope_not_established",
+                            "detail": (
+                                f"exact relation requires the {facet} facet to be specified; "
+                                f"this facet is {status}. Resolve the conflict or uncertainty, "
+                                "or submit the closest non-exact Result relation."
+                            ),
+                        }
+                    )
         result_repairs.extend(
             _duplicate_values(
                 [group.id for group in result.target.comparison_groups],
@@ -333,19 +353,11 @@ def _canonical_result(
             else:
                 evidence.append({"kind": "narrative", "handle": handle})
     raw["evidence"] = evidence
-    raw["clarity"] = {
-        key: "specified"
-        for key in (
-            "outcome_definition",
-            "measurement",
-            "time_point",
-            "analysis_population",
-            "comparison_groups",
-            "effect_measure",
-            "source_table_meaning",
-            "eligible_result_choice",
-        )
-    }
+    raw["clarity"] = (
+        result.clarity.model_dump(mode="json")
+        if result.clarity is not None
+        else {key: "unclear" for key in ResultClarity.model_fields}
+    )
     raw["requested_outcome"] = requested_outcome
     raw["relation_rationale"] = result.relation_rationale
     target = dict(raw["target"])

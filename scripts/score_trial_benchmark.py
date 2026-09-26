@@ -63,10 +63,17 @@ class _SnapshotFailure(str):
     """String-compatible failure reason with bounded structured diagnostics."""
 
     details: dict[str, Any] | None
+    artifact: dict[str, Any] | None
 
-    def __new__(cls, message: str, details: dict[str, Any] | None = None) -> _SnapshotFailure:
+    def __new__(
+        cls,
+        message: str,
+        details: dict[str, Any] | None = None,
+        artifact: dict[str, Any] | None = None,
+    ) -> _SnapshotFailure:
         value: _SnapshotFailure = super().__new__(cls, message)
         value.details = details
+        value.artifact = artifact
         return value
 
 
@@ -282,12 +289,27 @@ def _safe_mismatch_details(mismatches: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _scope_mismatch_failure(mismatches: list[dict[str, Any]]) -> _SnapshotFailure:
+def _scope_mismatch_failure(
+    mismatches: list[dict[str, Any]], *, artifact: dict[str, Any] | None = None
+) -> _SnapshotFailure:
     fields = ", ".join(str(item["field"]) for item in mismatches)
     return _SnapshotFailure(
         f"result scope mismatch: {fields}",
         _safe_mismatch_details(mismatches),
+        artifact,
     )
+
+
+def _artifact_provenance(run_dir: Path, bundle: Path) -> dict[str, str | None]:
+    try:
+        identity = artifact_manifest_identity(bundle)
+    except ValueError:
+        identity = None
+    return {
+        "path": bundle.relative_to(run_dir).as_posix(),
+        "sha256": hashlib.sha256(bundle.read_bytes()).hexdigest(),
+        "identity": identity,
+    }
 
 
 def _validated_completion_reconciliation(
@@ -309,9 +331,9 @@ def _validated_completion_reconciliation(
         or record.get("attempt_id") != selected_attempt_id
     ):
         return None
-    if expected_result is not None and record.get("expected_result_sha256") != expected_result_sha256(
-        expected_result
-    ):
+    if expected_result is not None and record.get(
+        "expected_result_sha256"
+    ) != expected_result_sha256(expected_result):
         return None
     try:
         relative_artifact_path = artifact_path.resolve().relative_to(run_dir.resolve())
@@ -455,10 +477,21 @@ def _bundle_snapshot(
         return None, "canonical snapshot is not bound to an approved Result identity"
     result = trial_results[0] if len(trial_results) == 1 else None
     if expected_result is not None and len(trial_results) != 1:
-        return None, "result scope mismatch: approved Result identity is missing or ambiguous"
+        return None, _SnapshotFailure(
+            "approved Result is unavailable or ambiguous",
+            {"code": "approved_result_unavailable"},
+        )
     if expected_result is not None:
         if not isinstance(result, dict):
-            return None, "result scope mismatch: approved Result is unavailable"
+            return None, _SnapshotFailure(
+                "approved Result is unavailable",
+                {"code": "approved_result_unavailable"},
+            )
+        if result.get("kind") == "unavailable":
+            return None, _SnapshotFailure(
+                "approved Result is unavailable",
+                {"code": "approved_result_unavailable"},
+            )
         observed_result = _result_dimensions(result, expected_trial or trial_key)
         mismatches = _result_mismatches(
             expected_result, observed_result, expected_trial or trial_key
@@ -490,7 +523,9 @@ def _bundle_snapshot(
                 else None
             )
             if adjudication is None:
-                return None, _scope_mismatch_failure(mismatches)
+                return None, _scope_mismatch_failure(
+                    mismatches, artifact=_artifact_provenance(run_dir, bundles[0])
+                )
         else:
             adjudication = None
     else:
@@ -613,8 +648,8 @@ def score(
     rows = manifest.get("rows")
     if not isinstance(rows, list):
         raise ValueError("manifest rows must be a list")
-    references = _load_reference(reference_root)
     scope_adjudications = load_scope_adjudications(scope_adjudications_path)
+    references: dict[tuple[str, str], dict[str, str]] | None = None
     scored: list[dict[str, Any]] = []
     scope_difference_scored: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
@@ -691,11 +726,6 @@ def score(
             )
             hard_failures.append({"outcome": outcome, "trial": trial, "reason": reason})
             continue
-        if (outcome, trial) not in references:
-            excluded.append(
-                {"outcome": outcome, "trial": trial, "reason": "reference label unavailable"}
-            )
-            continue
         run_dir = Path(item["run_dir"])
         execution_snapshot: dict[str, Any] | None = None
         execution_path = run_dir / "execution.json"
@@ -728,15 +758,31 @@ def score(
         if bundle is None:
             failure_details = getattr(reason, "details", None)
             exclusion = {
-                    "outcome": outcome,
-                    "trial": trial,
-                    "primary_status": item.get("primary_status"),
-                    "reason": reason,
-                    **(
-                        {"result_scope_details": failure_details}
-                        if isinstance(failure_details, dict)
-                        else {}
-                    ),
+                "outcome": outcome,
+                "trial": trial,
+                "primary_status": item.get("primary_status"),
+                "reason": reason,
+                **(
+                    {"result_scope_details": failure_details}
+                    if isinstance(failure_details, dict)
+                    else {}
+                ),
+            }
+            artifact_record = (
+                execution_snapshot.get("artifact") if isinstance(execution_snapshot, dict) else None
+            )
+            if not isinstance(artifact_record, dict) and completion_reconciliation is not None:
+                artifact_record = completion_reconciliation[1]
+            artifact_provenance = (
+                artifact_record
+                if isinstance(artifact_record, dict)
+                else getattr(reason, "artifact", None)
+            )
+            if isinstance(artifact_provenance, dict):
+                exclusion["artifact"] = {
+                    key: artifact_provenance.get(key)
+                    for key in ("path", "sha256", "identity", "verified", "attempt_id")
+                    if key in artifact_provenance
                 }
             excluded.append(exclusion)
             if isinstance(item.get("expected_result"), dict):
@@ -753,12 +799,19 @@ def score(
                         or manifest.get("schema") != "rob2-kit.benchmark-manifest.v2"
                     )
                 ):
-                    hard_failure = {
-                        key: exclusion[key] for key in ("outcome", "trial", "reason")
-                    }
+                    hard_failure = {key: exclusion[key] for key in ("outcome", "trial", "reason")}
                     if failure_details is not None:
                         hard_failure["result_scope_details"] = failure_details
                     hard_failures.append(hard_failure)
+            continue
+        # Read gold labels only after the artifact has passed the frozen Result
+        # scope gate. A wrong-scope new attempt must fail without entering scoring.
+        if references is None:
+            references = _load_reference(reference_root)
+        if (outcome, trial) not in references:
+            excluded.append(
+                {"outcome": outcome, "trial": trial, "reason": "reference label unavailable"}
+            )
             continue
         expected = references[(outcome, trial)]
         adjudication = bundle.get("scope_adjudication")
@@ -770,9 +823,7 @@ def score(
             **(
                 {
                     "completion": bundle["completion"],
-                    "completion_reconciliation_phase": bundle[
-                        "completion_reconciliation_phase"
-                    ],
+                    "completion_reconciliation_phase": bundle["completion_reconciliation_phase"],
                 }
                 if bundle.get("completion") == "reconciled"
                 else {}
@@ -780,11 +831,7 @@ def score(
             "expected": expected,
             "observed": bundle["observed"],
             "bundle": bundle["bundle"],
-            **(
-                {"scope_adjudication": adjudication}
-                if adjudication is not None
-                else {}
-            ),
+            **({"scope_adjudication": adjudication} if adjudication is not None else {}),
             "result": bundle.get("result"),
             "result_scope": (
                 "accepted_with_scope_difference"
@@ -804,6 +851,22 @@ def score(
     primary_aggregates = _aggregates(scored)
     sensitivity_cases = [*scored, *scope_difference_scored]
     sensitivity_aggregates = _aggregates(sensitivity_cases)
+    mismatch_cases = sum(
+        isinstance(item.get("result_scope_details"), dict)
+        and item["result_scope_details"].get("code") == "result_scope_mismatch"
+        for item in excluded
+    )
+    unavailable_result_cases = sum(
+        isinstance(item.get("result_scope_details"), dict)
+        and item["result_scope_details"].get("code") == "approved_result_unavailable"
+        for item in excluded
+    )
+    result_scope_denominators = {
+        "exact": len(scored),
+        "approved_proxy": len(scope_difference_scored),
+        "unavailable": unavailable_result_cases,
+        "mismatch": mismatch_cases,
+    }
     return {
         "schema": "rob2-kit.trial-benchmark-score.v1",
         "manifest": str(manifest_path),
@@ -821,6 +884,7 @@ def score(
             "sensitivity_domain_cells": len(sensitivity_cases) * len(DOMAINS),
             "scope_difference_cases": len(scope_difference_scored),
             "excluded_cases": len(excluded),
+            "result_scope_denominators": result_scope_denominators,
         },
         **primary_aggregates,
         "sensitivity": {
@@ -862,6 +926,13 @@ def render_markdown(result: dict[str, Any]) -> str:
         ),
         f"- Cases excluded from scoring: {result['scope']['excluded_cases']}.",
         (
+            "- Result-scope cases: "
+            f"exact {result['scope']['result_scope_denominators']['exact']}; "
+            f"approved proxy {result['scope']['result_scope_denominators']['approved_proxy']}; "
+            f"unavailable {result['scope']['result_scope_denominators']['unavailable']}; "
+            f"mismatch {result['scope']['result_scope_denominators']['mismatch']}."
+        ),
+        (
             "- Exact scoring compares Low, Some Concerns, and High. Binary scoring maps "
             "Some Concerns and High to Non-Low."
         ),
@@ -892,10 +963,7 @@ def render_markdown(result: dict[str, Any]) -> str:
             "`equivalent` cases. This sensitivity aggregate adds cases adjudicated "
             "`accepted_with_scope_difference` (broader or related)."
         ),
-        (
-            f"- Added scope-difference cases: "
-            f"{result['scope'].get('scope_difference_cases', 0)}."
-        ),
+        (f"- Added scope-difference cases: {result['scope'].get('scope_difference_cases', 0)}."),
         "",
         "| Measure | Exact | Low vs Non-Low |",
         "|---|---:|---:|",

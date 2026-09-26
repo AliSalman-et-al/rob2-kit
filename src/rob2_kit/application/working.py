@@ -334,6 +334,100 @@ def _note_source_ids(items: tuple[dict[str, Any], ...]) -> tuple[str, ...]:
     )
 
 
+def _delivery_projection(
+    root: Path,
+    state: dict[str, Any],
+    trial_id: str,
+    sources: tuple[WorkingSourceBinding, ...],
+) -> dict[str, Any]:
+    """Report text ranges returned by read_pages separately from host note references."""
+
+    batch = state.get("batch")
+    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    source_ids = tuple(item.source_id for item in sources)
+    handles = {item.source_id: source_handle(item.source_id) for item in sources}
+    if not isinstance(batch_id, str) or not source_ids:
+        return {
+            "state": "unobserved",
+            "ranges": (),
+            "delivered_sources": (),
+            "sources_without_delivery": tuple(sorted(handles.values())),
+        }
+
+    placeholders = ",".join("?" for _ in source_ids)
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT phase,source_id,page,start_line,end_line FROM page_reads "
+            f"WHERE batch_id=? AND trial_id=? AND source_id IN ({placeholders}) "
+            "ORDER BY source_id,page,phase,start_line,end_line",
+            (batch_id, trial_id, *source_ids),
+        ).fetchall()
+        pages = connection.execute(
+            "SELECT source_id,page,text FROM pages "
+            f"WHERE source_id IN ({placeholders}) ORDER BY source_id,page",
+            source_ids,
+        ).fetchall()
+
+    ranges = [
+        {
+            "source_id": handles[str(row["source_id"])],
+            "page": int(row["page"]),
+            "start_line": int(row["start_line"]),
+            "end_line": int(row["end_line"]),
+            "phase": str(row["phase"]),
+        }
+        for row in rows
+        if str(row["source_id"]) in handles
+    ]
+    ranges_by_page: dict[tuple[str, int], list[tuple[int, int]]] = {}
+    for row in rows:
+        source_id = str(row["source_id"])
+        ranges_by_page.setdefault((source_id, int(row["page"])), []).append(
+            (int(row["start_line"]), int(row["end_line"]))
+        )
+    pages_by_source: dict[str, list[Any]] = {}
+    for row in pages:
+        pages_by_source.setdefault(str(row["source_id"]), []).append(row)
+
+    delivered = {str(row["source_id"]) for row in rows if str(row["source_id"]) in handles}
+    fully_delivered: set[str] = set()
+    for source_id, page_rows in pages_by_source.items():
+        for page in page_rows:
+            page_number = int(page["page"])
+            line_count = len(str(page["text"]).splitlines())
+            intervals = ranges_by_page.get((source_id, page_number), ())
+            if line_count == 0:
+                if not any(start == end == 0 for start, end in intervals):
+                    break
+                continue
+            cursor = 1
+            for start, end in sorted(intervals):
+                if end < cursor:
+                    continue
+                if start > cursor:
+                    break
+                cursor = max(cursor, end + 1)
+            if cursor <= line_count:
+                break
+        else:
+            if page_rows:
+                fully_delivered.add(source_id)
+
+    all_delivered = all(
+        source_id in fully_delivered for source_id in source_ids if source_id in pages_by_source
+    ) and all(source_id in pages_by_source for source_id in source_ids)
+    return {
+        "state": ("delivered" if all_delivered else "partial" if delivered else "unobserved"),
+        "ranges": tuple(ranges[:128]),
+        "range_count": len(ranges),
+        "delivered_sources": tuple(sorted(handles[item] for item in delivered)),
+        "sources_without_delivery": tuple(
+            sorted(handles[item] for item in set(source_ids) - delivered)
+        ),
+        "ranges_truncated": len(ranges) > 128,
+    }
+
+
 def _investigation_status(premise: dict[str, Any] | None) -> tuple[str, str]:
     if not isinstance(premise, dict):
         return "not_established", "not_established"
@@ -396,9 +490,8 @@ def investigation_projection(
             if question is not None
             else "No source-grounded premise has been recorded yet."
         )
-        source_scope = tuple(
-            source_handle(item.source_id) for item in _source_scope(state, trial_id)
-        )
+        source_bindings = _source_scope(state, trial_id)
+        source_scope = tuple(source_handle(item.source_id) for item in source_bindings)
         choices = [
             {
                 "operation": "save_working_checkpoint",
@@ -457,10 +550,12 @@ def investigation_projection(
             "workflow_permission": permission,
             "coverage": {
                 "source_scope": source_scope,
-                "observed_sources": (),
-                "unread_sources": source_scope,
-                "observed_note_count": 0,
-                "state": "unobserved",
+                **_delivery_projection(root, state, trial_id, source_bindings),
+            },
+            "host_notes": {
+                "referenced_sources": (),
+                "unread_ranges": (),
+                "observation_count": 0,
             },
             "observations": (),
             "support": (),
@@ -482,8 +577,7 @@ def investigation_projection(
         sorted(records, key=lambda item: (str(item.get("question_id") or ""), item["proposition"]))
     )
     active_order = {
-        question_id: index
-        for index, question_id in enumerate(active_question_ids or ())
+        question_id: index for index, question_id in enumerate(active_question_ids or ())
     }
     unresolved_status = {"unresolved": 0, "bounded": 1, "contradiction": 2}
     premise = min(
@@ -574,21 +668,11 @@ def investigation_projection(
     )
     support = premise_observations if premise and premise.get("status") == "support" else ()
     counterevidence = tuple(premise.get("counterevidence", ())) if premise else ()
-    observed = set(_note_source_ids(tuple(observations) + all_premise_observations))
-    unread = tuple(sorted({item.source_id for item in checkpoint.unread_ranges}))
-    coverage_state = (
-        "invalidated"
-        if invalid_reason
-        else "legacy"
-        if legacy
-        else "partial"
-        if checkpoint.unread_ranges
-        else "complete"
-        if source_scope and set(source_scope) <= observed
-        else "partial"
-        if observed
-        else "unobserved"
+    noted_sources = tuple(sorted(_note_source_ids(tuple(observations) + all_premise_observations)))
+    declared_unread_ranges = tuple(
+        item.model_dump(mode="json") for item in checkpoint.unread_ranges
     )
+    delivery = _delivery_projection(root, state, trial_id, current_sources)
     status, attribution = sufficiency or _investigation_status(premise)
     if invalid_reason is not None or related_domain_changed:
         status, attribution = "unresolved", "not_established"
@@ -677,10 +761,12 @@ def investigation_projection(
         "workflow_permission": permission,
         "coverage": {
             "source_scope": source_scope,
-            "observed_sources": tuple(sorted(observed)),
-            "unread_sources": unread,
-            "observed_note_count": len(observations) + len(all_premise_observations),
-            "state": coverage_state,
+            **delivery,
+        },
+        "host_notes": {
+            "referenced_sources": noted_sources,
+            "unread_ranges": declared_unread_ranges,
+            "observation_count": len(observations) + len(all_premise_observations),
         },
         "observations": observations,
         "support": support,

@@ -1,0 +1,164 @@
+{
+  "schema": "rob2-kit.evaluation-comparisons.v0.3",
+  "arms": [
+    {
+      "id": "baseline",
+      "intervention_id": "iv-baseline",
+      "retrieval": "free_search",
+      "spelling": "porter_only",
+      "context": "baseline",
+      "guidance": "baseline",
+      "evidence": {
+        "mode": "none",
+        "passages": "not_supplied",
+        "labels": "forbidden",
+        "answers": "forbidden"
+      },
+      "fact_binding": "none",
+      "review": "baseline"
+    },
+    {
+      "id": "passages",
+      "intervention_id": "iv-passages",
+      "retrieval": "supplied_decisive_evidence",
+      "spelling": "porter_only",
+      "context": "baseline",
+      "guidance": "baseline",
+      "evidence": {
+        "mode": "decisive",
+        "passages": "complete_relevant",
+        "labels": "forbidden",
+        "answers": "forbidden"
+      },
+      "fact_binding": "none",
+      "review": "baseline"
+    },
+    {
+      "id": "facts",
+      "intervention_id": "iv-facts",
+      "retrieval": "free_search",
+      "spelling": "porter_only",
+      "context": "baseline",
+      "guidance": "baseline",
+      "evidence": {
+        "mode": "none",
+        "passages": "not_supplied",
+        "labels": "forbidden",
+        "answers": "forbidden"
+      },
+      "fact_binding": "scope_matched_facts",
+      "review": "baseline"
+    },
+    {
+      "id": "compact-context",
+      "intervention_id": "iv-compact-context",
+      "retrieval": "free_search",
+      "spelling": "porter_only",
+      "context": "compact",
+      "guidance": "baseline",
+      "evidence": {
+        "mode": "none",
+        "passages": "not_supplied",
+        "labels": "forbidden",
+        "answers": "forbidden"
+      },
+      "fact_binding": "none",
+      "review": "baseline"
+    },
+    {
+      "id": "warrant-review",
+      "intervention_id": "iv-warrant-review",
+      "retrieval": "free_search",
+      "spelling": "porter_only",
+      "context": "baseline",
+      "guidance": "baseline",
+      "evidence": {
+        "mode": "none",
+        "passages": "not_supplied",
+        "labels": "forbidden",
+        "answers": "forbidden"
+      },
+      "fact_binding": "none",
+      "review": "targeted_warrant"
+    }
+  ],
+  "pairs": [
+    {
+      "id": "evidence-exposure",
+      "left": "baseline",
+      "right": "passages",
+      "diagnostic": true,
+      "factor": "evidence_exposure"
+    },
+    {
+      "id": "fact-binding",
+      "left": "baseline",
+      "right": "facts",
+      "diagnostic": true,
+      "factor": "fact_binding"
+    },
+    {
+      "id": "context",
+      "left": "baseline",
+      "right": "compact-context",
+      "diagnostic": true,
+      "factor": "context"
+    },
+    {
+      "id": "review",
+      "left": "baseline",
+      "right": "warrant-review",
+      "diagnostic": true,
+      "factor": "review"
+    }
+  ],
+  "plan": {
+    "cases": [
+      {
+        "case_id": "ARASENS-pfs-D3",
+        "trial_id": "ARASENS",
+        "outcome_id": "Progression-Free Survival",
+        "domain_ids": ["domain:missing"],
+        "result_identity": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "source_identity": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "scope": "scope_uncertain"
+      }
+    ],
+    "host": {
+      "provider": "codex-cli",
+      "interface": "jsonl",
+      "version": "replace-with-codex-cli-version",
+      "prompt_identity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "model": {
+      "family": "gpt-6-luna",
+      "version": "6",
+      "effort": "medium"
+    },
+    "retry_policy": {
+      "max_retries": 1,
+      "rule": "infrastructure_only"
+    },
+    "draw_policy": {
+      "draw_ids": ["draw-1", "draw-2"],
+      "selection": "terminal_attempt"
+    },
+    "artifacts": {
+      "kit_identity": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "pack_identity": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "skill_identity": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "tool_schema_identity": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "scoring": {
+      "primary_metric": "provisional_label_agreement",
+      "metrics": ["support", "completion", "latency", "cost"],
+      "class_recall": true
+    },
+    "budget": {
+      "max_attempts": 20,
+      "max_cost": 10.0,
+      "max_context_bytes": 200000,
+      "max_tool_calls": 1000
+    }
+  }
+}

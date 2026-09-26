@@ -58,8 +58,7 @@ def _parse_case_filter(
             raise SystemExit("benchmark index cases must declare nonempty outcome and trial")
         if key in available:
             raise SystemExit(
-                "benchmark index contains duplicate outcome/trial case key: "
-                + f"{outcome}:{trial}"
+                "benchmark index contains duplicate outcome/trial case key: " + f"{outcome}:{trial}"
             )
         available[key] = {
             "outcome": str(outcome).strip(),
@@ -70,15 +69,11 @@ def _parse_case_filter(
     excluded: list[dict[str, str]] = []
     for raw in values:
         if not isinstance(raw, str) or raw.count(":") != 1:
-            raise SystemExit(
-                f"invalid {option} {raw!r}; expected OUTCOME:TRIAL"
-            )
+            raise SystemExit(f"invalid {option} {raw!r}; expected OUTCOME:TRIAL")
         outcome, trial = (part.strip() for part in raw.split(":", 1))
         key = _case_key(outcome, trial)
         if not all(key):
-            raise SystemExit(
-                f"invalid {option} {raw!r}; outcome and trial must be nonempty"
-            )
+            raise SystemExit(f"invalid {option} {raw!r}; outcome and trial must be nonempty")
         if key in selected:
             raise SystemExit(f"duplicate {option} {raw!r}")
         selected.add(key)
@@ -262,7 +257,14 @@ def _write_no_progress_audit_note(run_dir: Path, phase: int) -> dict[str, str] |
         else:
             with note_path.open("x", encoding="utf-8") as stream:
                 stream.write(encoded)
-    except (AttributeError, OSError, StopIteration, TypeError, ValueError, json.JSONDecodeError) as error:
+    except (
+        AttributeError,
+        OSError,
+        StopIteration,
+        TypeError,
+        ValueError,
+        json.JSONDecodeError,
+    ) as error:
         return {
             "code": "no_progress_audit_note_unavailable",
             "detail": str(error),
@@ -442,10 +444,9 @@ def _continuation_diagnosis(run_dir: Path, phase: int) -> str | dict[str, str] |
             "recovery: start a fresh benchmark attempt and retain this run"
         )
     current_provenance = tool_inventory_provenance()
-    if (
-        advertised.get("contract_version") != current_provenance.get("contract_version")
-        or advertised.get("contract_sha256") != current_provenance.get("contract_sha256")
-    ):
+    if advertised.get("contract_version") != current_provenance.get(
+        "contract_version"
+    ) or advertised.get("contract_sha256") != current_provenance.get("contract_sha256"):
         return (
             "server-advertised MCP inventory does not match the current public contract; "
             "recovery: start a fresh benchmark attempt"
@@ -465,30 +466,32 @@ def _continuation_diagnosis(run_dir: Path, phase: int) -> str | dict[str, str] |
             "recovery: start a fresh benchmark attempt and retain this run"
         )
     phases = execution.get("phases") if isinstance(execution, dict) else None
-    prior = next(
-        (
-            row
-            for row in reversed(phases)
-            if isinstance(row, dict) and row.get("phase") == prior_phase
-        ),
-        None,
-    ) if isinstance(phases, list) else None
+    prior = (
+        next(
+            (
+                row
+                for row in reversed(phases)
+                if isinstance(row, dict) and row.get("phase") == prior_phase
+            ),
+            None,
+        )
+        if isinstance(phases, list)
+        else None
+    )
     delivery = host_delivery_diagnosis(
         run_dir / f"phase-{prior_phase}.jsonl",
         expected_sha256=(prior.get("trace_sha256") if isinstance(prior, dict) else None),
         expected_session=(prior.get("codex_session_id") if isinstance(prior, dict) else None),
     )
     if isinstance(delivery, dict) and delivery.get("code") == "host_delivery_call_missing":
-        recovery = (
-            host_tools_infrastructure_recovery_diagnosis(run_dir, prior_phase)
-        )
-        if recovery is None:
-            if prior_phase in {3, 4}:
+        if prior_phase in {2, 3, 4}:
+            recovery = host_tools_infrastructure_recovery_diagnosis(run_dir, prior_phase)
+            if recovery is None and prior_phase in {3, 4}:
                 recovery = _write_no_progress_audit_note(run_dir, prior_phase)
-        if recovery is None:
-            delivery = None
-        else:
-            return recovery
+            if recovery is None:
+                delivery = None
+            else:
+                return recovery
     if delivery is not None:
         return delivery
     if not isinstance(prior, dict):
@@ -617,9 +620,7 @@ def _run_one(
                     "detail": "case campaign_id differs from the frozen benchmark index",
                 },
             }
-    if phase == 1 and (
-        allow_build_only_transition or build_transition_reason is not None
-    ):
+    if phase == 1 and (allow_build_only_transition or build_transition_reason is not None):
         return {
             "outcome": item.get("outcome"),
             "trial": item.get("trial"),
@@ -663,8 +664,8 @@ def _run_one(
                     "diagnosis": {
                         "code": "campaign_binding_mismatch",
                         "detail": "execution campaign_id differs from the frozen benchmark index",
-                },
-            }
+                    },
+                }
         try:
             execution = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
             runtime_inputs = execution.get("runtime_inputs")
@@ -717,9 +718,7 @@ def _run_one(
             execution_index_binding(index_path, index_sha256, item, run_dir, attempt_number)
             runtime_inputs = execution.get("runtime_inputs")
             frozen_binding = (
-                runtime_inputs.get("benchmark_index")
-                if isinstance(runtime_inputs, dict)
-                else None
+                runtime_inputs.get("benchmark_index") if isinstance(runtime_inputs, dict) else None
             )
             if not isinstance(frozen_binding, dict):
                 raise ValueError("the execution has no frozen benchmark index binding")
@@ -731,7 +730,9 @@ def _run_one(
                 Path(frozen_path), frozen_sha256, item, run_dir, attempt_number
             )
             if verified_frozen_binding != frozen_binding:
-                raise ValueError("the frozen execution index binding does not match its retained index")
+                raise ValueError(
+                    "the frozen execution index binding does not match its retained index"
+                )
             # The batch index selects the run; runtime provenance remains bound to Phase 1.
             runtime_index_path = Path(frozen_binding["path"])
             runtime_index_sha256 = frozen_binding["sha256"]
@@ -893,9 +894,7 @@ def main() -> None:
     if args.phase == 1 and (
         args.allow_build_only_transition or args.build_transition_reason is not None
     ):
-        raise SystemExit(
-            "build-only runtime transitions are valid only for continuation phases"
-        )
+        raise SystemExit("build-only runtime transitions are valid only for continuation phases")
     if args.allow_build_only_transition != bool(
         isinstance(args.build_transition_reason, str) and args.build_transition_reason.strip()
     ):
@@ -913,9 +912,7 @@ def main() -> None:
         raise SystemExit("benchmark index must be an object")
     case_keys = index.get("cases")
     if args.include_case:
-        included_keys, _included = _parse_included_cases(
-            args.include_case, case_keys
-        )
+        included_keys, _included = _parse_included_cases(args.include_case, case_keys)
         submitted_cases = [
             item
             for item in index["cases"]
@@ -927,22 +924,18 @@ def main() -> None:
             if _case_key(item.get("outcome"), item.get("trial")) not in included_keys
         ]
         included_cases = [
-            {"outcome": item["outcome"], "trial": item["trial"]}
-            for item in submitted_cases
+            {"outcome": item["outcome"], "trial": item["trial"]} for item in submitted_cases
         ]
         selection_mode = "include"
     else:
-        excluded_keys, excluded_cases = _parse_excluded_cases(
-            args.exclude_case, case_keys
-        )
+        excluded_keys, excluded_cases = _parse_excluded_cases(args.exclude_case, case_keys)
         submitted_cases = [
             item
             for item in index["cases"]
             if _case_key(item.get("outcome"), item.get("trial")) not in excluded_keys
         ]
         included_cases = [
-            {"outcome": item["outcome"], "trial": item["trial"]}
-            for item in submitted_cases
+            {"outcome": item["outcome"], "trial": item["trial"]} for item in submitted_cases
         ]
         selection_mode = "exclude" if args.exclude_case else "all"
     prompt = (args.prompt or index_path.parent / "continuation.txt").resolve(strict=True)
@@ -955,9 +948,7 @@ def main() -> None:
     model = args.model or manifest_model
     effort = args.effort or manifest_effort
     manifest_timeout = index.get("timeout_seconds")
-    timeout_seconds = (
-        args.timeout_seconds if args.timeout_seconds is not None else manifest_timeout
-    )
+    timeout_seconds = args.timeout_seconds if args.timeout_seconds is not None else manifest_timeout
     if timeout_seconds is not None and (
         isinstance(timeout_seconds, bool)
         or not isinstance(timeout_seconds, (int, float))
@@ -1023,8 +1014,7 @@ def main() -> None:
         "submitted_count": len(submitted_cases),
         "excluded_count": len(excluded_cases),
         "submitted_cases": [
-            {"outcome": item["outcome"], "trial": item["trial"]}
-            for item in submitted_cases
+            {"outcome": item["outcome"], "trial": item["trial"]} for item in submitted_cases
         ],
         "excluded_cases": excluded_cases,
     }

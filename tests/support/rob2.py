@@ -282,6 +282,19 @@ def _result(
         "relation_rationale": (
             "The selected Evidence supports the requested endpoint correspondence."
         ),
+        "clarity": {
+            key: "specified"
+            for key in (
+                "outcome_definition",
+                "measurement",
+                "time_point",
+                "analysis_population",
+                "comparison_groups",
+                "effect_measure",
+                "source_table_meaning",
+                "eligible_result_choice",
+            )
+        },
         "applicability": {
             "design": "individual_parallel",
             "rationale": (
@@ -307,9 +320,7 @@ def _result(
             "analysis_population": "randomized population",
             "endpoint": {
                 "name": requested_outcome,
-                "definition": (
-                    f"The {requested_outcome} was measured in the analyzed population."
-                ),
+                "definition": (f"The {requested_outcome} was measured in the analyzed population."),
             },
             "group_values": [
                 {"group_id": "a", "statistic": "risk", "value": "1", "unit": "events"},
@@ -414,15 +425,43 @@ def _prepared_evidence(
     )["data"]["evidence"]
 
 
-def _assessment_workspace(tmp_path: Path) -> tuple[Path, dict[str, Any], int]:
+def _assessment_workspace(
+    tmp_path: Path,
+    *,
+    initial_effect: tuple[str, str] | None = None,
+) -> tuple[Path, dict[str, Any], int]:
     workspace = _workspace(tmp_path)
+    if initial_effect is not None:
+        (workspace / "input" / "trial" / "main.txt").write_text(
+            "The requested outcome was measured in the analyzed population.; death ascertainment; "
+            "end of follow-up through 15 February data cutoff; follow-up through 30 June data "
+            "cutoff; assigned to intervention; assigned to control; randomized population; "
+            "hazard ratio; estimate 0.61; 95% CI, 0.47 to 0.80; estimate 0.58; "
+            "95% CI, 0.40 to 0.75.\n",
+            encoding="utf-8",
+        )
     evidence = _prepared_evidence(workspace)
+    initial_result = _result(evidence)
+    if initial_effect is not None:
+        estimate, precision = initial_effect
+        initial_result["target"]["time_point_or_window"]["description"] = (
+            "follow-up through 15 February data cutoff"
+        )
+        initial_result["target"]["intended_effect_measure"] = "hazard ratio"
+        initial_result["reported"] = {
+            "form": "comparative_effect",
+            "effect_measure": "hazard ratio",
+            "estimate": estimate,
+            "precision": precision,
+            "analysis_population": "randomized population",
+            "endpoint": initial_result["reported"]["endpoint"],
+        }
     revision = int(_call(workspace, "get_status", {})["head"]["state_revision"])
     reasoned = _call(
         workspace,
         "validate_proposal",
         {
-            "results": [_result(evidence)],
+            "results": [initial_result],
             "assessments": [
                 {
                     "trial_id": "trial",
@@ -538,9 +577,7 @@ def _unavailable_result(evidence: dict[str, Any], fact: str) -> dict[str, Any]:
     }
 
 
-def _assessed_artifact(
-    workspace: Path, requested_outcome: str = "requested outcome"
-) -> Path:
+def _assessed_artifact(workspace: Path, requested_outcome: str = "requested outcome") -> Path:
     evidence = _prepared_evidence(workspace, requested_outcome)
     proposed = _call(
         workspace,

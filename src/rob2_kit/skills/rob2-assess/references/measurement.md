@@ -34,11 +34,30 @@ preserve component-specific Evidence and uncertainty: reassurance for an
 objective component does not override an unresolved or influenced subjective
 component.
 
+Tie monitoring to the selected endpoint. Additional appointments for toxicity
+monitoring do not establish differential measurement of all-cause mortality
+when death ascertainment uses the same complete registry in both groups; name
+a mortality-specific pathway if the evidence provides one. The same additional
+visits may create different detection opportunities when the approved outcome
+is a laboratory-detected toxicity measured at those visits.
+
+For safety outcomes, establish the actual observation window from the
+Source. Compare its start and end, scheduled and unscheduled visits,
+post-treatment surveillance, and ascertainment method with the approved Result.
+Median treatment duration, median time to disease progression, or a
+"treatment-emergent" label alone does not establish the time during which
+safety events were sought. If the Source does not state the window or
+monitoring schedule, preserve that uncertainty instead of treating treatment
+duration as the observation period.
+
 ## Paired premise check
 
-Compare an objective registry outcome with equal detection opportunity against a
-judgment-dependent participant outcome, and compare equal ascertainment schedules
-against an intervention that creates additional detection visits. These are
-neutral contrasts: assess suitability, differential detection, assessor identity
-and awareness, susceptibility, and likely influence separately. Open-label status
-or an endpoint class does not supply an answer.
+Compare an objective registry mortality result and a lab-detected toxicity result
+from the same trial with its extra toxicity visits. The visit difference matters
+to detection of the toxicity only when it changes its measurement opportunity;
+it does not change the mortality assessment without a mortality-specific link.
+Also compare a safety result with a source-stated shared observation window against
+the same trial report when it gives treatment-duration or disease-control medians but no safety
+window. These are neutral contrasts: assess suitability, differential detection,
+assessor identity and awareness, susceptibility, and likely influence separately.
+Open-label status or an endpoint class does not supply an answer.

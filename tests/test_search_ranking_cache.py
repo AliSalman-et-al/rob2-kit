@@ -7,16 +7,20 @@ from pathlib import Path
 
 import pytest
 
+import rob2_kit.application.evidence as evidence
 from rob2_kit.application._state import _SEARCH_DERIVATIVE_VERSION, _SEARCH_PROFILE
 from rob2_kit.application.contracts import COUNTERS
 from rob2_kit.application.evidence import (
+    _SEARCH_CORPUS_CACHE,
     _SEARCH_CORPUS_CACHE_MAX,
     _SEARCH_CORPUS_LEASES,
+    _SEARCH_CORPUS_RETIRED,
     _evidence_for_handles,
     _recomputed_search_projection,
     _release_search_corpus,
     _search_continuation,
     _search_corpus,
+    reset_search_caches,
     search_sources,
 )
 from rob2_kit.application.intake import prepare_batch
@@ -76,6 +80,28 @@ def test_warm_search_reuses_complete_ranking_and_evidence_identity(tmp_path: Pat
     assert after_cold["source_projection_verifications"] == 2
     assert COUNTERS["source_projection_verifications"] == 4
     assert _SEARCH_CORPUS_LEASES == leases_before
+
+
+def test_literal_search_does_not_acquire_a_scoped_fts_resource(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace, source_id = _workspace(tmp_path, "alpha beta\n")
+    corpus_keys_before = set(_SEARCH_CORPUS_CACHE)
+    builds_before = COUNTERS["search_fts_corpus_builds"]
+
+    result = search_sources(workspace, "trial", "alpha beta", mode="literal")
+
+    assert result["hits"][0]["source_id"] == source_id
+    assert set(_SEARCH_CORPUS_CACHE) == corpus_keys_before
+    assert COUNTERS["search_fts_corpus_builds"] == builds_before
+
+    def fail_ranking(*_args: object, **_kwargs: object) -> object:
+        raise RuntimeError("ranking failed")
+
+    monkeypatch.setattr(evidence, "_recomputed_search_projection", fail_ranking)
+    with pytest.raises(RuntimeError, match="ranking failed"):
+        search_sources(workspace, "trial", "a different literal", mode="literal")
+    assert set(_SEARCH_CORPUS_CACHE) == corpus_keys_before
 
 
 def test_cursor_continuation_and_restart_use_frozen_ranking(tmp_path: Path) -> None:
@@ -275,8 +301,59 @@ def test_evicted_fts_corpus_stays_open_until_its_query_releases_it(tmp_path: Pat
     )
 
     assert pairs == [("source-0", 1)]
+    _release_search_corpus(in_use)
     with pytest.raises(sqlite3.ProgrammingError, match="closed"):
         in_use.execute("SELECT 1")
+
+
+def test_search_releases_retired_corpus_after_ranking_returns(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace, source_id = _workspace(tmp_path, "alpha beta\n")
+    reset_search_caches()
+    original_search_corpus = evidence._search_corpus
+    original_search_expression = evidence._search_expression
+    acquired: list[sqlite3.Connection] = []
+    retired_during_ranking: list[int] = []
+
+    def track_search_corpus(
+        root: Path,
+        sources: list[dict[str, object]],
+        pages: dict[str, tuple[str, ...]],
+        profile: str = _SEARCH_PROFILE,
+    ) -> tuple[object, sqlite3.Connection]:
+        key, connection = original_search_corpus(root, sources, pages, profile)
+        if any(source.get("id") == source_id for source in sources):
+            acquired.append(connection)
+        return key, connection
+
+    def evict_during_ranking(query: str, mode: str) -> str:
+        if not retired_during_ranking:
+            for index in range(_SEARCH_CORPUS_CACHE_MAX):
+                other_id = f"eviction-source-{index}"
+                _key, connection = original_search_corpus(
+                    workspace,
+                    [{"id": other_id, "projection_hash": "sha256:" + f"{index + 1:064x}"}],
+                    {other_id: ("alpha",)},
+                )
+                _release_search_corpus(connection)
+            retired_during_ranking.append(len(_SEARCH_CORPUS_RETIRED))
+        return original_search_expression(query, mode)
+
+    monkeypatch.setattr(evidence, "_search_corpus", track_search_corpus)
+    monkeypatch.setattr(evidence, "_search_expression", evict_during_ranking)
+
+    try:
+        result = search_sources(workspace, "trial", "alpha", mode="any")
+
+        assert result["hits"]
+        assert retired_during_ranking == [1]
+        assert _SEARCH_CORPUS_RETIRED == {}
+        assert acquired
+        with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+            acquired[0].execute("SELECT 1")
+    finally:
+        reset_search_caches()
 
 
 def test_domain_continuation_preserves_an_unambiguous_question_purpose(tmp_path: Path) -> None:

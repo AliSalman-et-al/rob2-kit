@@ -331,6 +331,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "The question is about effect of assignment, so grouping must follow randomized assignment.",
             "Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.",
             "Never-treated participants are not automatically participants with no adverse event or unavailable outcome. Recover the documented eligibility, outcome availability, and exclusion reason before judging the approved assignment-effect estimand.",
+            "A post-randomization exclusion of an eligible participant remains an analysis concern whether it happened before the endpoint was measured or after an outcome value was recorded. Record that timing separately: an outcome not collected may also matter to D3, while an observed value omitted from the assignment analysis is not thereby missing outcome data. Judge 2.7 from the excluded participants, reasons, outcome rarity, and prognostic relevance for this Result.",
         ),
         (
             "an endpoint definition",
@@ -359,6 +360,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "This is conditional on an inappropriate or uncertain analysis in 2.6.",
             "Assess potential impact only after deciding whether 2.6 was appropriate; a small or balanced exclusion can have low impact without making an inappropriate analysis appropriate.",
+            "Use facts about this endpoint and the excluded participants. Exclusion before outcome ascertainment may also leave outcome data missing; exclusion after ascertainment may omit observed values from the analysis. Neither timing alone settles the possible effect on the estimate.",
         ),
         ("a small percentage alone", "an ITT analysis", "a group label without exclusion counts"),
     ),
@@ -449,7 +451,8 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "For time-to-event outcomes, inspect censoring reasons and timing to identify missing follow-up. A common administrative cutoff does not by itself establish outcome-dependent missingness.",
-            "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. Treatment discontinuation or last-known-alive censoring is not by itself evidence that observation stopped. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership.",
+            "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. Treatment discontinuation is not loss to follow-up when outcome ascertainment continues; stopping treatment or an analysis label alone does not establish whether the outcome was observed. Last-known-alive censoring is not by itself evidence that observation stopped. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership.",
+            "Withdrawal or censoring after worsening health or symptoms can support possible dependence on the outcome value when the source links the reason to that participant's outcome; stopping treatment without that follow-up loss does not.",
         ),
         (
             "complete follow-up claims",
@@ -526,6 +529,8 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "Compare actual methods and detection opportunities. Assessor awareness or possible reporting influence alone does not establish a between-group method difference; assess awareness and influence in 4.3 to 4.5.",
             "Detection opportunity is the chance an outcome could be identified or recorded, including passive ascertainment or intervention-related visits. Keep it separate from measurement susceptibility (4.1) and from who knew the assignment (4.3).",
             "A different visit schedule or passive collection is not enough on its own: explain how it could make the approved outcome more or less likely to be detected in one group.",
+            "Tie every monitoring difference to the approved event. Extra visits for toxicity monitoring do not establish differential measurement of mortality when death is captured through the same complete registry in both groups; those same visits may change detection of a lab-detected toxicity measured at those visits. State any mortality-specific pathway if one is supported.",
+            "For adverse events, compare the actual start and end of the AE observation window, visit schedule, post-treatment follow-up, and ascertainment method with the approved safety window. Treatment duration, median progression-free survival, or a treatment-emergent label alone does not establish when or how adverse events were observed.",
             "Neutral paired control: equal ascertainment schedules and intervention-created additional visits differ only in detection opportunity; do not turn that contrast into an automatic risk label.",
         ),
         ("a common endpoint label", "an equal number randomized", "an ITT analysis"),
@@ -603,10 +608,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     "sq:selection:prespecified-analysis": _guidance(
         "Full guidance p. 63, Box 11, signalling question 5.1",
         "Whether data producing this result followed a pre-specified plan finalized before unblinded outcome data were available.",
-        "Compare the approved Result with the applicable plan for the exact intervention comparison, cohort, endpoint, time window, population, analysis, and effect measure. Distinguish source creation/version and amendment dates from trial events and retrieval time; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
+        "Compare the approved Result with the applicable plan for the exact intervention comparison, cohort, endpoint, time window, population, analysis, and effect measure. Distinguish protocol or ethics approval, plan finalization, amendment effective dates, registry posting or update, data cutoff, database lock, and investigators' access to unblinded outcome data; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
         (
-            "A sufficiently detailed protocol or SAP, its source-located chronology and finalization date relative to unblinded outcome data, and the reported analysis.",
-            "For an original plan and an amended plan, capture the source-located content and chronology separately. An embedded SAP can be applicable evidence when its comparison, cohort, and Result fields match; an absent or unresolved plan remains an information limit.",
+            "A sufficiently detailed protocol or SAP, its source-located chronology and finalization date relative to unblinded outcome data, and the reported analysis. Capture each dated event as reported; approval, cutoff, or database lock does not by itself establish when investigators could see unblinded outcomes.",
+            "For an original plan and an amended plan, capture the source-located content and chronology separately. An SAP embedded in a protocol, supplement, or combined document is still plan Evidence when its section and scope can be located; a separate SAP file is not required. An absent or unresolved plan remains an information limit.",
         ),
         "Use a definitive answer when firm evidence establishes timing and correspondence. "
         "Use a probable answer when source facts and trial circumstances support only an inference. "
@@ -625,10 +630,11 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Assess correspondence between the applicable plan and the exact approved Result: outcome, time point, population, effect measure, and analysis must be compared.",
-            "Assess applicability before chronology: a platform or master plan may cover several comparisons and cohorts, so its presence does not establish applicability to the approved Result. Establish chronology separately: plan finalization must precede availability of unblinded outcome data; a source creation date, registry posting or update date, amendment date, or retrieval date is not automatically the relevant trial chronology.",
-            "Current registry content does not establish unseen historical intent, and a data cutoff is not investigator unblinding. Preserve unresolved applicability or chronology instead of filling the gap from report wording that merely looks prespecified.",
+            "Assess applicability before chronology: a platform or master plan may cover several comparisons and cohorts, so its presence does not establish applicability to the approved Result. Establish chronology separately: plan finalization must precede availability of unblinded outcome data. Protocol approval, ethics approval, amendment, initial registry posting, registry update, retrieval, data cutoff, and database lock are distinct events; none substitutes for the source-located date of plan finalization or investigator access to unblinded results.",
+            "Current registry content does not establish unseen historical intent. A data cutoff or database lock is not itself proof of when investigators accessed unblinded outcomes. Preserve unresolved applicability or chronology instead of filling the gap from report wording that merely looks prespecified.",
             "Results-driven selection is a separate concern from whether a plan exists or whether its chronology is known. Do not infer selection merely from an amendment or from a mismatch without evidence that the choice was driven by results.",
-            "Neutral paired control: an applicable plan for the approved cohort differs from a platform plan for another phase; pre-unblinding finalization differs from ambiguous chronology only in the timing premise.",
+            "Neutral paired control: an applicable plan for the approved cohort differs from a platform plan for another phase; a source-located finalization date before investigator access differs from the same plan with access timing unresolved.",
+            "A plan may be an identified section of a combined protocol or supplement. Navigate to that section and retain its exact Source and page coordinates; the lack of a separately named SAP file does not show that no plan exists.",
         ),
         (
             "an objective definition",

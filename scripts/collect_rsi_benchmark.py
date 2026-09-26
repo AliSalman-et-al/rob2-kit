@@ -15,9 +15,9 @@ from typing import Any
 
 from benchmark_contract import (
     COMPLETION_RECONCILIATION_FILENAME,
+    _execution_build_transition_for_rows,
     artifact_manifest_identity,
     validate_completion_reconciliation,
-    _execution_build_transition_for_rows,
     validate_execution_index_binding,
     validate_replacement_case,
 )
@@ -123,9 +123,7 @@ def _benchmark_rows(
         indexed[key] = row
     schema = payload.get("schema") if isinstance(payload, dict) else None
     campaign_id = payload.get("campaign_id") if isinstance(payload, dict) else None
-    if campaign_id is not None and (
-        not isinstance(campaign_id, str) or not campaign_id.strip()
-    ):
+    if campaign_id is not None and (not isinstance(campaign_id, str) or not campaign_id.strip()):
         raise ValueError("benchmark manifest campaign_id is malformed")
     if isinstance(campaign_id, str) and any(
         row.get("campaign_id", campaign_id) != campaign_id for row in indexed.values()
@@ -406,10 +404,9 @@ def _lineage_draws(
         original_row, replacement_row
     ):
         raise ValueError("attempt lineage build transition differs from its execution records")
-    if (
-        original_entry.get("run_dir") != original_row.get("run_dir")
-        or replacement_entry.get("run_dir") != replacement_row.get("run_dir")
-    ):
+    if original_entry.get("run_dir") != original_row.get("run_dir") or replacement_entry.get(
+        "run_dir"
+    ) != replacement_row.get("run_dir"):
         raise ValueError("attempt lineage run directories differ from their frozen indexes")
     draws: list[dict[str, Any]] = []
     selected_id: str | None = None
@@ -432,13 +429,17 @@ def _lineage_draws(
             raise ValueError("attempt lineage source index is malformed")
         source_rows = source_payload.get("cases")
         case_key = (_normalise(identity["outcome"]), _normalise(identity["trial_id"]))
-        source_matches = [
-            item
-            for item in source_rows
-            if isinstance(item, dict)
-            and _normalise(str(item.get("outcome", ""))) == case_key[0]
-            and _normalise(str(item.get("trial", ""))) == case_key[1]
-        ] if isinstance(source_rows, list) else []
+        source_matches = (
+            [
+                item
+                for item in source_rows
+                if isinstance(item, dict)
+                and _normalise(str(item.get("outcome", ""))) == case_key[0]
+                and _normalise(str(item.get("trial", ""))) == case_key[1]
+            ]
+            if isinstance(source_rows, list)
+            else []
+        )
         if len(source_matches) != 1 or source_matches[0].get("run_dir") != source_run_value:
             raise ValueError("attempt lineage case/run binding mismatch")
         source_row = source_matches[0]
@@ -467,9 +468,7 @@ def _lineage_draws(
             source_draws, local_selected_id = _execution_draws(
                 source_execution,
                 observed=(
-                    selected_observed
-                    if entry.get("selected") is True and selected_result
-                    else None
+                    selected_observed if entry.get("selected") is True and selected_result else None
                 ),
             )
             for draw in source_draws:
@@ -569,8 +568,7 @@ def _read_bundle(
         ]
     if len(trial_results) != 1:
         raise ValueError(
-            "bundle approved Result identity is missing or ambiguous for "
-            f"{trial_id}: {path}"
+            f"bundle approved Result identity is missing or ambiguous for {trial_id}: {path}"
         )
     proposal = trial_results[0]
     reported = proposal.get("reported", {}) if isinstance(proposal, dict) else {}
@@ -681,6 +679,131 @@ def _is_historical_execution(record: dict[str, Any] | None) -> bool:
     )
 
 
+def _approved_result_scope(
+    canonical: dict[str, Any],
+    *,
+    expected_result: dict[str, Any] | None,
+    trial: str,
+    outcome: str,
+    scope_adjudications: list[dict[str, Any]] | None,
+) -> tuple[dict[str, Any] | None, str, dict[str, Any] | None, str | None]:
+    """Classify the artifact's approved Result against the frozen benchmark Result."""
+
+    if expected_result is None:
+        return (
+            None,
+            "unavailable",
+            {
+                "code": "expected_result_unavailable",
+                "reason": "no complete Result was frozen before execution",
+            },
+            None,
+        )
+    snapshots = canonical.get("snapshots")
+    snapshot = (
+        next(
+            (
+                item
+                for snapshot_trial, item in snapshots.items()
+                if _normalise(str(snapshot_trial)) == _normalise(trial)
+            ),
+            None,
+        )
+        if isinstance(snapshots, dict)
+        else None
+    )
+    snapshot_identity = snapshot.get("result_identity") if isinstance(snapshot, dict) else None
+    proposal = canonical.get("proposal")
+    payload = proposal.get("payload") if isinstance(proposal, dict) else None
+    results = payload.get("results") if isinstance(payload, dict) else None
+    matching = (
+        [
+            item
+            for item in results
+            if isinstance(item, dict)
+            and _normalise(str(item.get("trial_id", ""))) == _normalise(trial)
+            and _canonical_identity(item) == snapshot_identity
+        ]
+        if isinstance(results, list) and isinstance(snapshot_identity, str)
+        else []
+    )
+    if len(matching) != 1:
+        return (
+            None,
+            "unavailable",
+            {
+                "code": "approved_result_unavailable",
+                "reason": "approved Result identity is missing or ambiguous",
+            },
+            snapshot_identity if isinstance(snapshot_identity, str) else None,
+        )
+
+    result = matching[0]
+    result_identity = _canonical_identity(result)
+    if result.get("kind") == "unavailable":
+        return (
+            None,
+            "unavailable",
+            {
+                "code": "approved_result_unavailable",
+                "reason": "the approved Result is unavailable",
+            },
+            result_identity,
+        )
+    mismatches = _result_mismatches(expected_result, _result_dimensions(result, trial), trial)
+    if not mismatches:
+        return None, "matched", None, result_identity
+
+    proposal_review = canonical.get("proposal_review")
+    acknowledgment = canonical.get("proposal_acknowledgment")
+    review_identity = proposal_review.get("identity") if isinstance(proposal_review, dict) else None
+    acknowledged_review_identity = (
+        acknowledgment.get("review_identity") if isinstance(acknowledgment, dict) else None
+    )
+    adjudication = (
+        matching_scope_adjudication(
+            scope_adjudications or [],
+            outcome=outcome,
+            trial=trial,
+            expected_result=expected_result,
+            review_identity=review_identity,
+            result_identity=snapshot_identity,
+            relation=result.get("relation"),
+        )
+        if review_identity == acknowledged_review_identity and snapshot_identity == result_identity
+        else None
+    )
+    if adjudication is not None:
+        return (
+            adjudication,
+            "approved_proxy"
+            if adjudication.get("decision") == "accepted_with_scope_difference"
+            else "matched",
+            None,
+            result_identity,
+        )
+    return None, "mismatch", _safe_mismatch_details(mismatches), result_identity
+
+
+def _manifest_expected_result(
+    manifest_row: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if not isinstance(manifest_row, dict):
+        return None
+    expected = manifest_row.get("expected_result")
+    if isinstance(expected, dict):
+        return expected
+    case_value = manifest_row.get("case_path", manifest_row.get("case"))
+    if not isinstance(case_value, str) or not case_value:
+        return None
+    try:
+        case = json.loads(Path(case_value).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    expected = case.get("expected_result") if isinstance(case, dict) else None
+    return expected if isinstance(expected, dict) else None
+
+
 def _validate_execution_inputs(
     trial_dir: Path,
     execution: dict[str, Any],
@@ -690,7 +813,7 @@ def _validate_execution_inputs(
     manifest_row: dict[str, Any] | None,
     bundle: Path | None,
     scope_adjudications: list[dict[str, Any]] | None = None,
-) -> dict[str, Any] | None:
+) -> tuple[dict[str, Any] | None, str, dict[str, Any] | None]:
     """Bind a successful artifact to the frozen case, prompt, and inputs."""
 
     run_inputs_path = trial_dir / "run-inputs.json"
@@ -778,8 +901,7 @@ def _validate_execution_inputs(
     )
     unresolved_scope = (
         manifest_row.get("scope_unresolved")
-        if isinstance(manifest_row, dict)
-        and isinstance(manifest_row.get("scope_unresolved"), str)
+        if isinstance(manifest_row, dict) and isinstance(manifest_row.get("scope_unresolved"), str)
         else manifest_case.get("scope_unresolved", run_inputs.get("scope_unresolved"))
     )
     if isinstance(unresolved_scope, str):
@@ -808,6 +930,8 @@ def _validate_execution_inputs(
         raise ValueError(f"cannot qualify a run without its expected Result artifact: {trial}")
 
     scope_adjudication = None
+    result_scope_status = "unavailable" if expected_result is not None else "unresolved"
+    result_scope_details: dict[str, Any] | None = None
     if bundle is not None:
         try:
             with zipfile.ZipFile(bundle) as archive:
@@ -844,76 +968,16 @@ def _validate_execution_inputs(
                 f"observed {bundle_trial['requested_outcome']!r}"
             )
 
-        if expected_result is not None:
-            snapshots = canonical.get("snapshots") if isinstance(canonical, dict) else None
-            snapshot = (
-                next(
-                    (
-                        item
-                        for snapshot_trial, item in snapshots.items()
-                        if _normalise(str(snapshot_trial)) == _normalise(trial)
-                    ),
-                    None,
-                )
-                if isinstance(snapshots, dict)
-                else None
+        scope_adjudication, result_scope_status, result_scope_details, _result_identity = (
+            _approved_result_scope(
+                canonical,
+                expected_result=expected_result,
+                trial=trial,
+                outcome=outcome,
+                scope_adjudications=scope_adjudications,
             )
-            snapshot_identity = (
-                snapshot.get("result_identity") if isinstance(snapshot, dict) else None
-            )
-            proposal = canonical.get("proposal") if isinstance(canonical, dict) else None
-            results = (
-                proposal.get("payload", {}).get("results") if isinstance(proposal, dict) else None
-            )
-            matching = (
-                [
-                    item
-                    for item in results
-                    if isinstance(item, dict)
-                    and _normalise(str(item.get("trial_id", ""))) == _normalise(trial)
-                    and _canonical_identity(item) == snapshot_identity
-                ]
-                if isinstance(results, list) and isinstance(snapshot_identity, str)
-                else []
-            )
-            if len(matching) != 1:
-                raise ValueError(f"approved Result identity is missing or ambiguous for {trial}")
-            mismatches = _result_mismatches(
-                expected_result, _result_dimensions(matching[0], trial), trial
-            )
-            if mismatches:
-                proposal_review = canonical.get("proposal_review")
-                acknowledgment = canonical.get("proposal_acknowledgment")
-                review_identity = (
-                    proposal_review.get("identity")
-                    if isinstance(proposal_review, dict)
-                    else None
-                )
-                acknowledged_review_identity = (
-                    acknowledgment.get("review_identity")
-                    if isinstance(acknowledgment, dict)
-                    else None
-                )
-                adjudication = (
-                    matching_scope_adjudication(
-                        scope_adjudications or [],
-                        outcome=outcome,
-                        trial=trial,
-                        expected_result=expected_result,
-                        review_identity=review_identity,
-                        result_identity=snapshot_identity,
-                        relation=matching[0].get("relation"),
-                    )
-                    if review_identity == acknowledged_review_identity
-                    and snapshot_identity == _canonical_identity(matching[0])
-                    else None
-                )
-                if adjudication is None:
-                    raise ValueError(
-                        "expected Result scope mismatch: "
-                        + json.dumps(_safe_mismatch_details(mismatches), sort_keys=True)
-                    )
-                scope_adjudication = adjudication
+        )
+
         def source_inventory(rows: object) -> list[tuple[str, str]]:
             if not isinstance(rows, list):
                 raise ValueError(f"source inventory is missing for {trial}")
@@ -937,7 +1001,7 @@ def _validate_execution_inputs(
         observed_sources = source_inventory(bundle_trial.get("sources"))
         if sorted(expected_sources) != sorted(observed_sources):
             raise ValueError(f"bundle source inventory/content hashes are not bound to {trial}")
-    return scope_adjudication
+    return scope_adjudication, result_scope_status, result_scope_details
 
 
 def _verify_bundle(path: Path) -> tuple[bool, str]:
@@ -1083,10 +1147,9 @@ def collect(
             )
         else:
             trial_dir = run_root / trial
+        run_parent = run_root.resolve().parent
         inferred_campaign_id = (
-            run_root.resolve().parents[1].name
-            if len(run_root.resolve().parents) > 1
-            else run_root.resolve().parent.name
+            run_parent.parent.name if run_parent.name == "runs" else run_parent.name
         )
         campaign_id = frozen_campaign_id or inferred_campaign_id
         if manifest_row is not None:
@@ -1123,6 +1186,19 @@ def collect(
             else None
         )
         scope_adjudication = None
+        expected_result = _manifest_expected_result(manifest_row)
+        result_scope_status = "unavailable"
+        result_scope_details: dict[str, Any] | None = (
+            {
+                "code": "expected_result_unavailable",
+                "reason": "no complete Result was frozen before execution",
+            }
+            if expected_result is None
+            else {
+                "code": "approved_result_unavailable",
+                "reason": "no verified artifact contains the approved Result",
+            }
+        )
         completion_reconciliation: dict[str, Any] | None = None
         if execution is not None:
             if (
@@ -1131,7 +1207,9 @@ def collect(
                 and manifest_schema == "rob2-kit.fresh-benchmark-index.v1"
                 and not isinstance(manifest_row.get("attempt_history"), list)
             ):
-                validate_execution_index_binding(manifest.resolve(strict=True), manifest_row, execution)
+                validate_execution_index_binding(
+                    manifest.resolve(strict=True), manifest_row, execution
+                )
             historical_execution = _is_historical_execution(execution)
             if (
                 not historical_execution
@@ -1154,7 +1232,11 @@ def collect(
                 and execution.get("state") in {"succeeded", "failed_infrastructure"}
                 and (execution.get("state") == "succeeded" or completion_reconciliation is not None)
             ):
-                scope_adjudication = _validate_execution_inputs(
+                (
+                    scope_adjudication,
+                    result_scope_status,
+                    result_scope_details,
+                ) = _validate_execution_inputs(
                     trial_dir,
                     execution,
                     trial=trial,
@@ -1179,8 +1261,10 @@ def collect(
             observed_overall = None
             proposal: dict[str, Any] = {}
             result_identity = None
-            completion = _completion_for_state(execution.get("state")) if execution else (
-                "incomplete" if phases else "unknown"
+            completion = (
+                _completion_for_state(execution.get("state"))
+                if execution
+                else ("incomplete" if phases else "unknown")
             )
         elif execution is None or historical_execution:
             verified, verification_message = _verify_bundle(bundle)
@@ -1189,6 +1273,24 @@ def collect(
             observed, observed_overall, proposal, result_identity = _read_bundle(
                 bundle, expected_trial=trial, expected_outcome=outcome
             )
+            try:
+                with zipfile.ZipFile(bundle) as archive:
+                    canonical = json.loads(archive.read("canonical.json"))
+            except (OSError, KeyError, ValueError, json.JSONDecodeError) as error:
+                raise ValueError(f"bundle canonical data is unreadable: {bundle}") from error
+            if isinstance(canonical, dict):
+                (
+                    scope_adjudication,
+                    result_scope_status,
+                    result_scope_details,
+                    _approved_identity,
+                ) = _approved_result_scope(
+                    canonical,
+                    expected_result=expected_result,
+                    trial=trial,
+                    outcome=outcome,
+                    scope_adjudications=scope_adjudications,
+                )
             completion = "finalized"
         elif completion_reconciliation is not None:
             verified, verification_message = _verify_bundle(bundle)
@@ -1280,17 +1382,12 @@ def collect(
             }:
                 completion = str(selected_draw["completion"])
         scope_status = (
-            "scope_uncertain"
-            if manifest_row is not None
-            and (
-                isinstance(manifest_row.get("scope_unresolved"), str)
-                or not isinstance(manifest_row.get("expected_result"), dict)
-            )
-            else "eligible"
+            "eligible"
+            if result_scope_status in {"matched", "approved_proxy"}
+            else "scope_uncertain"
         )
-        selected_draw = next(
-            (item for item in attempt_draws if item.get("selected") is True), None
-        )
+        scope_comparable = result_scope_status == "matched"
+        selected_draw = next((item for item in attempt_draws if item.get("selected") is True), None)
         operational_state = (
             execution.get("state")
             if execution is not None
@@ -1320,6 +1417,7 @@ def collect(
                 "trial_id": trial,
                 "outcome": outcome,
                 "scope": scope_status,
+                "scope_comparable": {key: scope_comparable for key, _ in DOMAINS},
                 "completion": completion,
                 "expected": {key: expected[key] for key, _ in DOMAINS},
                 "observed": observed,
@@ -1327,16 +1425,6 @@ def collect(
                 "selected_attempt_id": selected_attempt_id,
                 "failure_causes": {},
                 "result_identity": result_identity,
-                **(
-                    {"completion_reconciliation": completion_reconciliation}
-                    if completion_reconciliation is not None
-                    else {}
-                ),
-                **(
-                    {"scope_adjudication": scope_adjudication}
-                    if scope_adjudication is not None
-                    else {}
-                ),
             }
         )
         details.append(
@@ -1352,12 +1440,10 @@ def collect(
                 "execution": execution,
                 "attempts": attempt_draws,
                 "selected_attempt_id": selected_attempt_id,
-                "launcher_draws": (
-                    attempt_draws
-                    if execution is None and attempt_draws
-                    else []
-                ),
+                "launcher_draws": (attempt_draws if execution is None and attempt_draws else []),
                 "operational_state": operational_state,
+                "result_scope_status": result_scope_status,
+                "result_scope_details": result_scope_details,
                 "scope_status": execution.get("scope_status") if execution else None,
                 "scope_unresolved": execution.get("scope_unresolved") if execution else None,
                 "operational_failure": (
@@ -1394,6 +1480,11 @@ def collect(
                     if bundle and execution
                     else ({"verified": True, "mode": "legacy-read-only"} if bundle else None)
                 ),
+                "result_scope": {
+                    "status": result_scope_status,
+                    "comparable": scope_comparable,
+                    "details": result_scope_details,
+                },
                 **(
                     {"scope_adjudication": scope_adjudication}
                     if scope_adjudication is not None

@@ -20,6 +20,10 @@ In `comparison_cards[].passage_groups`, inspect the Source label, role, logical
 path, and page count. A protocol, SAP, or registry group may have no selected
 passages yet. Use the Source to resolve missing premises; an empty passage list
 does not establish absent plan content.
+An analysis plan may be an identifiable section in a combined protocol,
+supplement, or other captured document; a separately named SAP file is not
+required. Read the section in its Source context, retain its exact page
+coordinates, and recover omitted text before using it as plan Evidence.
 `source_origin`, `registry_url`, and `registry_retrieved_at` describe captured
 provenance; they do not establish when a plan was finalized or which Trial
 comparison it covered.
@@ -34,17 +38,23 @@ paths. Refreshing context does not advance these registry windows. For omitted s
 passages, follow [Recover omitted Evidence](evidence.md#recover-omitted-evidence).
 
 Keep original and amended plans distinct, with source-located content and
-chronology. Keep record posting, record update, retrieval, plan finalization,
-recruitment, and unblinded access dates distinct. A registry's first-posted date
-does not date the endpoint content in its current record; current registry content
-does not establish unseen historical intent. A data cutoff is not
-investigator unblinding.
+chronology. Keep protocol or ethics approval, plan finalization, amendment
+effective date, record posting, record update, retrieval, data cutoff, database
+lock, recruitment, and investigator access to unblinded outcome data distinct.
+An approval date identifies the document or activity approved; it does not date
+a separate analysis plan unless that plan and its content are included. A
+registry's first-posted date does not date endpoint content added in a later
+update. Current registry content does not establish unseen historical intent.
+A data cutoff or database lock does not by itself establish when investigators
+could access unblinded outcomes.
 
 Paired chronology example: one Source locates SAP finalization on 1 June and
-actual access to unblinded outcome data on 1 July; another gives a registry
-posting date of 1 June but does not date the plan or investigators' access to
-unblinded outcomes. Preserve the second chronology as unknown. Posting,
-approval, retrieval, and cutoff dates do not fill in a missing access date.
+actual access to unblinded outcome data on 1 July; another gives protocol
+approval and registry posting dates of 1 June, with an analysis section added
+later, but does not date plan finalization or investigators' access to unblinded
+outcomes. Preserve the second chronology as unknown. Posting, approval,
+amendment, retrieval, data cutoff, and database lock do not fill in a missing
+access date.
 
 The selected plan passage establishes plan content. A registry identifier,
 endpoint label, or report-level prespecification claim alone leaves plan timing

@@ -354,12 +354,8 @@ def test_public_context_previews_later_active_question_and_associated_evidence_f
         pages.append(page)
         cursor = page["data"]["context_page"]["next_cursor"]
 
-    questions_reconstructed = [
-        item for page in pages for item in page["data"].get("questions", [])
-    ]
-    evidence_reconstructed = [
-        item for page in pages for item in page["data"].get("evidence", [])
-    ]
+    questions_reconstructed = [item for page in pages for item in page["data"].get("questions", [])]
+    evidence_reconstructed = [item for page in pages for item in page["data"].get("evidence", [])]
     assert [item["id"] for item in questions_reconstructed] == [
         item["id"] for item in expected_questions
     ]

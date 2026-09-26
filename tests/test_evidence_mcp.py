@@ -291,6 +291,153 @@ def test_search_term_feedback_uses_source_handles_and_full_query_scope(tmp_path:
     ]
 
 
+def test_search_feedback_includes_matching_terms_beyond_source_prefix(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    for index in range(65):
+        text = "alpha only\n" if index == 64 else "control only\n"
+        (trial / f"source-{index:02d}.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    data = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "all"},
+    )["data"]
+
+    target = next(
+        source
+        for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if source["label"] == "source-64.txt"
+    )
+    source = next(item for item in data["term_feedback"] if item["source_id"] == target["id"])
+    assert data["total_matches"] == 0
+    assert data["term_feedback_sources_truncated"] is True
+    assert len(data["term_feedback"]) == 64
+    assert source["query_matching_page_count"] == 0
+    assert {row["term"]: row["matching_page_count"] for row in source["term_page_counts"]} == {
+        "alpha": 1,
+        "beta": 0,
+    }
+
+
+def test_literal_feedback_reports_single_term_counts_in_the_same_source_scope(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input" / "trial" / "main.txt").write_text(
+        "alpha\nintervening wording\nbeta\n", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+
+    data = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "literal"},
+    )["data"]
+
+    assert data["total_matches"] == 0
+    [source] = data["term_feedback"]
+    assert source["query_matching_page_count"] == 0
+    assert {row["term"]: row["matching_page_count"] for row in source["term_page_counts"]} == {
+        "alpha": 1,
+        "beta": 1,
+    }
+
+
+def test_navigation_suppresses_repeated_furniture_without_losing_late_locators(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for number in range(1, 13):
+        page = document.new_page()
+        page.insert_text((50, 40), f"Trial protocol 2024-06-01 | Page {number} of 12")
+        if number == 12:
+            body = (
+                "12. Statistical Analysis Plan\n\n"
+                "Embedded SAP Version 2.1\n\n"
+                "SAP finalized: June 3, 2023.\n\n"
+                "The primary model was prespecified."
+            )
+        else:
+            body = f"{number}. Protocol Section {number}\n\nThe trial procedures are described."
+        page.insert_textbox((50, 130, 550, 650), body)
+        page.insert_text((50, 760), f"Confidential | Page {number} of 12")
+    (workspace / "input" / "trial" / "combined.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "combined.pdf"
+    )
+
+    entries: list[dict[str, Any]] = []
+    version_spans: list[dict[str, Any]] = []
+    date_spans: list[dict[str, Any]] = []
+    cursor = None
+    while True:
+        args: dict[str, object] = {"trial_id": "trial", "source_id": source["id"], "limit": 4}
+        if cursor is not None:
+            args["cursor"] = cursor
+        navigation = _call(workspace, "list_sources", args)["data"]["navigation"]
+        entries.extend(navigation["entries"])
+        version_spans.extend(navigation["version_spans"])
+        date_spans.extend(navigation["date_spans"])
+        cursor = navigation["next_cursor"]
+        if cursor is None:
+            break
+
+    assert any(
+        entry["page"] == 12
+        and entry["kind"] == "heading_candidate"
+        and entry["text"] == "12. Statistical Analysis Plan"
+        for entry in entries
+    )
+    assert any(
+        entry["page"] == 12 and entry["text"] == "Embedded SAP Version 2.1"
+        for entry in version_spans
+    )
+    assert any(
+        entry["page"] == 12
+        and entry["text"] == "SAP finalized: June 3, 2023."
+        and entry["date_kind"] == "finalization"
+        for entry in date_spans
+    )
+    assert not any("2024-06-01" in entry["text"] for entry in date_spans)
+    assert sum("Trial protocol" in entry["text"] for entry in entries) == 1
+    assert sum("Confidential" in entry["text"] for entry in entries) <= 1
+
+    complete_page = _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": source["id"], "pages": [12]},
+    )["data"]["pages"][0]
+    assert "Trial protocol 2024-06-01 | Page 12 of 12" in complete_page["numbered_text"]
+    assert "Confidential | Page 12 of 12" in complete_page["numbered_text"]
+
+    heading = next(
+        entry for entry in entries if entry["page"] == 12 and entry["kind"] == "heading_candidate"
+    )
+    recovered = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": heading["page"],
+                    "start_line": heading["start_line"],
+                    "end_line": heading["end_line"],
+                }
+            ],
+        },
+    )["data"]["pages"][0]
+    assert recovered["numbered_text"] == f"{heading['start_line']}|{heading['text']}"
+
+
 def test_phrase_no_hit_feedback_distinguishes_terms_from_phrase_match(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
@@ -973,7 +1120,7 @@ def test_source_navigation_is_literal_bounded_and_cursor_stable(tmp_path: Path) 
     )["data"]["navigation"]
     assert first["source_id"] == source["id"]
     assert first["projection_hash"] == source["projection_hash"]
-    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.1"
+    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.2"
     assert first["pages_examined"] == 7
     assert all(len(entry["text"]) <= 512 for entry in first["entries"])
 

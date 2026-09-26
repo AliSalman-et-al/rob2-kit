@@ -65,6 +65,7 @@ def _expected(reviewer: dict[str, Any], result: dict[str, Any]) -> dict[str, Any
         "reported_scope": dimensions["reported_scope"],
     }
 
+
 def test_portable_cli_lookup_uses_venv_bin_when_present(
     reviewer: dict[str, Any], tmp_path: Path
 ) -> None:
@@ -83,9 +84,7 @@ def test_yes_inspects_exact_scope_before_acknowledging(
     approval = (
         response
         + b"\n"
-        + json.dumps(
-            {"acknowledgment_record": {"review_identity": "review-1"}}
-        ).encode()
+        + json.dumps({"acknowledgment_record": {"review_identity": "review-1"}}).encode()
         + b"\n"
     )
     calls: list[tuple[list[str], bytes]] = []
@@ -193,9 +192,7 @@ def test_yes_accepts_source_adjudicated_scope_difference_when_relation_matches(
         "source_citation": "Main article, p. 1.",
     }
 
-    recorded = reviewer["_one"](
-        tmp_path, item, "yes", tmp_path / "reviews", [adjudication]
-    )
+    recorded = reviewer["_one"](tmp_path, item, "yes", tmp_path / "reviews", [adjudication])
 
     assert calls == [b"no\n", b"yes\n"]
     assert recorded["approved"] is True
@@ -236,9 +233,7 @@ def test_yes_rejects_scope_adjudication_when_relation_differs(
         "source_citation": "Main article, p. 1.",
     }
 
-    recorded = reviewer["_one"](
-        tmp_path, item, "yes", tmp_path / "reviews", [adjudication]
-    )
+    recorded = reviewer["_one"](tmp_path, item, "yes", tmp_path / "reviews", [adjudication])
 
     assert calls == [b"no\n"]
     assert recorded["approved"] is False

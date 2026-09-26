@@ -895,14 +895,39 @@ class AssessableTargetRelation(StrEnum):
 
 
 class ResultClarity(StrictModel):
-    outcome_definition: Literal["specified", "unclear", "unavailable"]
-    measurement: Literal["specified", "unclear", "unavailable"]
-    time_point: Literal["specified", "unclear", "unavailable"]
-    analysis_population: Literal["specified", "unclear", "unavailable"]
-    comparison_groups: Literal["specified", "unclear", "unavailable"]
-    effect_measure: Literal["specified", "unclear", "unavailable"]
-    source_table_meaning: Literal["specified", "unclear", "unavailable"]
-    eligible_result_choice: Literal["specified", "unclear", "unavailable"]
+    """Host's explicit account of which requested and reported Result facets are known."""
+
+    outcome_definition: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported outcome definition is established.",
+    )
+    measurement: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported measurement is established.",
+    )
+    time_point: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description=(
+            "Whether the requested and reported time point or window, including any material "
+            "data-cut chronology, is established."
+        ),
+    )
+    analysis_population: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported analysis population is established.",
+    )
+    comparison_groups: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported comparison groups are established.",
+    )
+    effect_measure: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the requested and reported effect measure is established.",
+    )
+    source_table_meaning: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description=(
+            "Whether source-reported values and table cells have a clear meaning, including "
+            "whether the selected estimate and precision are consistent across the relevant "
+            "source material."
+        ),
+    )
+    eligible_result_choice: Literal["specified", "unclear", "unavailable", "conflicting"] = Field(
+        description="Whether the chosen reported result is established as the target candidate.",
+    )
 
 
 MISSING_GROUP_VALUE_UNIT = "__rob2_missing_group_unit__"
@@ -1474,6 +1499,15 @@ class AssessableResultDraft(StrictModel):
             "scope. Matching endpoint names alone do not establish exact correspondence."
         ),
     )
+    clarity: ResultClarity | None = Field(
+        default=None,
+        description=(
+            "For each facet, report specified, unclear, unavailable, or conflicting. If omitted, "
+            "the server records every facet as unclear. Include data-cut chronology in "
+            "time_point and estimate/precision consistency in source_table_meaning. Exact "
+            "relation requires every Result scope facet to be specified."
+        ),
+    )
     applicability: ResultApplicabilityDraft = Field(
         description=(
             "Required pack applicability. Unsupported or unresolved designs remain unassessed "
@@ -1704,6 +1738,14 @@ DomainBasis = Annotated[
     Field(discriminator="kind"),
 ]
 
+MISSING_DATA_QUESTION_IDS = frozenset(
+    {
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:missing:data-available",
+    }
+)
+
 
 class DomainCounterevidence(StrictModel):
     basis_index: NonNegativeInt = Field(
@@ -1785,8 +1827,25 @@ class DomainAnswer(StrictModel):
 
         if not isinstance(value, dict) or not isinstance(value.get("bases"), list):
             return value
+        original_bases = value["bases"]
+        counterevidence = value.get("counterevidence")
+        if isinstance(counterevidence, list):
+            for item in counterevidence:
+                if not isinstance(item, dict):
+                    continue
+                basis_index = item.get("basis_index")
+                if (
+                    not isinstance(basis_index, int)
+                    or isinstance(basis_index, bool)
+                    or not 0 <= basis_index < len(original_bases)
+                ):
+                    raise ValueError(
+                        "counterevidence basis_index must reference an original answer basis"
+                    )
         normalized: list[Any] = []
-        for raw_basis in value["bases"]:
+        original_to_normalized: list[int] = []
+        for raw_basis in original_bases:
+            original_to_normalized.append(len(normalized))
             if not isinstance(raw_basis, dict) or raw_basis.get("kind") != "limitation":
                 normalized.append(raw_basis)
                 continue
@@ -1806,7 +1865,21 @@ class DomainAnswer(StrictModel):
                 normalized.extend({"kind": "context", "evidence": item} for item in evidence)
             else:
                 normalized.append(raw_basis)
-        return {**value, "bases": normalized}
+        result = {**value, "bases": normalized}
+        if isinstance(counterevidence, list):
+            # An expanded limitation remains the original target; its added
+            # context bases do not acquire original answer-basis indices.
+            result["counterevidence"] = [
+                (
+                    {**item, "basis_index": original_to_normalized[item["basis_index"]]}
+                    if isinstance(item, dict)
+                    and isinstance(item.get("basis_index"), int)
+                    and 0 <= item["basis_index"] < len(original_to_normalized)
+                    else item
+                )
+                for item in counterevidence
+            ]
+        return result
 
     @field_validator("justification")
     @classmethod
@@ -1824,14 +1897,8 @@ class DomainAnswer(StrictModel):
 
     @model_validator(mode="after")
     def missing_data_has_flow_question(self) -> DomainAnswer:
-        if self.missing_data is not None and self.question_id not in {
-            "sq:deviations:context-deviations",
-            "sq:deviations:appropriate-analysis",
-            "sq:missing:data-available",
-        }:
-            raise ValueError(
-                "missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1"
-            )
+        if self.missing_data is not None and self.question_id not in MISSING_DATA_QUESTION_IDS:
+            raise ValueError("missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1")
         return self
 
 
@@ -1909,14 +1976,8 @@ class DomainSaveAnswer(StrictModel):
 
     @model_validator(mode="after")
     def missing_data_has_flow_question(self) -> DomainSaveAnswer:
-        if self.missing_data is not None and self.question_id not in {
-            "sq:deviations:context-deviations",
-            "sq:deviations:appropriate-analysis",
-            "sq:missing:data-available",
-        }:
-            raise ValueError(
-                "missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1"
-            )
+        if self.missing_data is not None and self.question_id not in MISSING_DATA_QUESTION_IDS:
+            raise ValueError("missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1")
         return self
 
 

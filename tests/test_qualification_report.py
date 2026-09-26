@@ -8,6 +8,7 @@ import pytest
 from rob2_kit.evaluation import run_comparison
 from rob2_kit.evaluation.harness import QUALIFICATION_COMPARISON_SCHEMA
 from rob2_kit.evaluation.qualification_report import (
+    HISTORICAL_QUALIFICATION_SCHEMA,
     QUALIFICATION_SCHEMA,
     SCHEMA,
     bind_comparison,
@@ -235,6 +236,12 @@ def _qualification_report() -> dict:
         "baseline": identity({"arm": "baseline"}),
         "successor": identity({"arm": "successor"}),
     }
+    labels = {
+        "case-1": "low",
+        "case-2": "some_concerns",
+        "case-3": "high",
+        "case-4": "low",
+    }
     outcomes = []
     attempt = 0
     for platform_id in ("platform-a", "platform-b"):
@@ -248,7 +255,7 @@ def _qualification_report() -> dict:
                         "cell_id": case_id,
                         "session_id": f"session-{attempt}",
                         "status": "assessed",
-                        "prediction": "low",
+                        "prediction": labels[case_id],
                         "support": "full",
                         "completion": True,
                         "latency_ms": 10,
@@ -259,7 +266,7 @@ def _qualification_report() -> dict:
                         "draw": 1,
                     }
                 )
-    receipt = run_comparison(config, interventions, outcomes)
+    receipt = run_comparison(config, interventions, outcomes, labels=labels)
     attempts = [
         {
             "attempt_id": row["attempt_id"],
@@ -290,6 +297,7 @@ def _qualification_report() -> dict:
         metric: {"numerator": len(outcomes), "denominator": len(outcomes), "rate": 1.0}
         for metric in (
             "result_scope",
+            "decisive_claim_validity",
             "premise_support",
             "counterevidence",
             "unsupported_concern",
@@ -307,7 +315,82 @@ def _qualification_report() -> dict:
             "cost": {"total": 1.6},
         }
     )
+    matrix = {
+        "low": {"low": 4, "some_concerns": 0, "high": 0},
+        "some_concerns": {"low": 0, "some_concerns": 2, "high": 0},
+        "high": {"low": 0, "some_concerns": 0, "high": 2},
+    }
+    class_support = {"low": 4, "some_concerns": 2, "high": 2}
+    interval = {
+        "method": "trial_cluster_percentile_bootstrap",
+        "clusters": 4,
+        "lower": 0.6,
+        "upper": 1.0,
+    }
+    diagnostics_arms = {
+        arm_id: {
+            "provisional_agreement": {"numerator": 8, "denominator": 8, "rate": 1.0},
+            "result_scope": {"numerator": 8, "denominator": 8, "rate": 1.0},
+            "decisive_claim_validity": {"numerator": 8, "denominator": 8, "rate": 1.0},
+            "non_low": {"numerator": 4, "denominator": 4, "rate": 1.0},
+            "confusion": deepcopy(matrix),
+            "class_support": deepcopy(class_support),
+            "predicted_support": deepcopy(class_support),
+            "high_support": {
+                "reference": 2,
+                "predicted": 2,
+                "true_positive": 2,
+                "sensitivity": {"numerator": 2, "denominator": 2, "rate": 1.0},
+            },
+            "uncertainty": deepcopy(interval),
+            "completion": {"numerator": 8, "denominator": 8, "rate": 1.0},
+            "cost": 0.8,
+        }
+        for arm_id in ("baseline", "successor")
+    }
+    diagnostic_confusion = {
+        "low": {"low": 2, "some_concerns": 0, "high": 0},
+        "some_concerns": {"low": 0, "some_concerns": 1, "high": 0},
+        "high": {"low": 0, "some_concerns": 0, "high": 1},
+    }
+    diagnostic_identity = identity({"comparison": receipt["receipt_identity"], "labels": labels})
+    host_checks = [
+        {
+            "platform_id": platform["id"],
+            "host": platform["host"],
+            "model_family": platform["model_family"],
+            "kind": kind,
+            "result": "passed",
+            "artifact_identity": identity({"platform": platform["id"], "kind": kind}),
+        }
+        for platform in config["campaign"]["platforms"]
+        for kind in (
+            "tool",
+            "structured",
+            "text",
+            "image",
+            "continuation",
+            "compaction",
+            "restart",
+            "review",
+        )
+    ]
     report = _report()
+    report["mechanical"] = [
+        {
+            "check_id": kind,
+            "kind": kind,
+            "result": "passed",
+            "artifact_identity": identity({"check": kind}),
+        }
+        for kind in (
+            "formatting",
+            "types",
+            "full_test_suite",
+            "public_contract",
+            "bundle_verification",
+        )
+    ]
     report.update(
         {
             "schema": QUALIFICATION_SCHEMA,
@@ -315,6 +398,22 @@ def _qualification_report() -> dict:
             "metrics": metrics,
             "attempts": attempts,
             "observations": observations,
+            "host_checks": host_checks,
+            "diagnostics": {
+                "schema": "rob2-kit.qualification-diagnostics.v1",
+                "source_artifact_identity": diagnostic_identity,
+                "scorer": "heldout-diagnostics-v1",
+                "arms": diagnostics_arms,
+                "aggregation": {
+                    "policy_id": "ADR-0035",
+                    "policy_version": "ADR-0035-current-deterministic-cochrane-v1",
+                    "reference_basis": "provisional_overall_labels",
+                    "source_artifact_identity": diagnostic_identity,
+                    "agreement": {"numerator": 4, "denominator": 4, "rate": 1.0},
+                    "confusion": diagnostic_confusion,
+                    "uncertainty": deepcopy(interval),
+                },
+            },
             "claim": {
                 "decision": "promote",
                 "scope": "bounded_engineering",
@@ -434,6 +533,7 @@ def test_qualification_report_exposes_separate_metrics_and_bounded_claim() -> No
     assert report["claim"]["adjudicated_scientific_accuracy"] is False
     assert set(report["metrics"]) == {
         "result_scope",
+        "decisive_claim_validity",
         "premise_support",
         "counterevidence",
         "unsupported_concern",
@@ -451,6 +551,111 @@ def test_qualification_report_exposes_separate_metrics_and_bounded_claim() -> No
         report["comparison"]["receipt_identity"]
         == report["comparison"]["receipt"]["receipt_identity"]
     )
+    assert set(report["diagnostics"]["arms"]["successor"]["confusion"]) == {
+        "low",
+        "some_concerns",
+        "high",
+    }
+
+
+def test_successor_quality_regression_holds_a_complete_report() -> None:
+    report = _qualification_report()
+    report["diagnostics"]["arms"]["successor"]["decisive_claim_validity"] = {
+        "numerator": 6,
+        "denominator": 8,
+        "rate": 0.75,
+    }
+    report["metrics"]["decisive_claim_validity"] = {
+        "numerator": 14,
+        "denominator": 16,
+        "rate": 0.875,
+    }
+    report["promotion"] = "hold"
+    report["claim"]["decision"] = "hold"
+    report = bind_comparison(report, report["comparison"]["receipt"])
+
+    assert validate(report) == []
+    assert promotion_decision(report) == "hold"
+
+
+def test_malformed_controls_are_held_without_raising_type_errors() -> None:
+    report = _qualification_report()
+    report["campaign"]["controls"] = ["D2", {}, "D4", "D5"]
+    report["promotion"] = "hold"
+    report["claim"]["decision"] = "hold"
+
+    errors = validate(report)
+
+    assert any("campaign controls must cover" in error for error in errors)
+    assert promotion_decision(report) == "hold"
+
+
+def test_historical_v2_report_replays_but_cannot_qualify_the_integrated_gate() -> None:
+    report = _qualification_report()
+    report["schema"] = HISTORICAL_QUALIFICATION_SCHEMA
+    report.pop("host_checks")
+    report.pop("diagnostics")
+    report["metrics"].pop("decisive_claim_validity")
+    report["mechanical"] = [
+        {
+            "check_id": check["check_id"],
+            "kind": "integrity",
+            "status": "completion",
+            "observed": True,
+        }
+        for check in report["mechanical"]
+    ]
+    report["comparison"]["report_metrics_identity"] = identity(
+        {
+            "receipt_identity": report["comparison"]["receipt_identity"],
+            "value": report["metrics"],
+        }
+    )
+
+    assert validate(report) == []
+    assert promotion_decision(report) == "hold"
+
+
+def test_qualification_report_holds_without_complete_gates_and_class_metrics() -> None:
+    report = _qualification_report()
+    report["host_checks"] = [row for row in report["host_checks"] if row["kind"] != "compaction"]
+    report["promotion"] = "hold"
+    report["claim"]["decision"] = "hold"
+    assert any("installed-host matrix" in error for error in validate(report))
+    assert promotion_decision(report) == "hold"
+
+    report = _qualification_report()
+    del report["diagnostics"]["arms"]["successor"]["confusion"]
+    report["promotion"] = "hold"
+    report["claim"]["decision"] = "hold"
+    assert any("unclosed metric set" in error for error in validate(report))
+    assert promotion_decision(report) == "hold"
+
+
+def test_explicitly_missing_gate_evidence_is_a_valid_hold() -> None:
+    report = _qualification_report()
+    test_gate = next(row for row in report["mechanical"] if row["kind"] == "full_test_suite")
+    test_gate.update({"result": "missing", "artifact_identity": None})
+    host_gate = next(row for row in report["host_checks"] if row["kind"] == "restart")
+    host_gate.update({"result": "missing", "artifact_identity": None})
+    report["promotion"] = "hold"
+    report["claim"]["decision"] = "hold"
+
+    assert validate(report) == []
+    assert promotion_decision(report) == "hold"
+
+
+def test_qualification_report_cross_checks_confusion_against_receipt_metrics() -> None:
+    report = _qualification_report()
+    report["diagnostics"]["arms"]["successor"]["confusion"]["low"]["low"] = 1
+    report["promotion"] = "hold"
+    report["claim"]["decision"] = "hold"
+
+    errors = validate(report)
+
+    assert any("does not match its confusion matrix" in error for error in errors)
+    assert any("detached from comparison metrics" in error for error in errors)
+    assert promotion_decision(report) == "hold"
 
 
 @pytest.mark.parametrize(

@@ -88,7 +88,7 @@ def _registry_identifier(value: object) -> str | None:
     return value
 
 
-def _source_path(base: Path, value: object, trial: str) -> Path:
+def _source_path(base: Path, value: object, trial: str, *, source_name: str | None = None) -> Path:
     if not isinstance(value, str) or not value:
         raise ValueError("source path must be a non-empty relative path")
     path = Path(value)
@@ -110,10 +110,16 @@ def _source_path(base: Path, value: object, trial: str) -> Path:
     allowed_root = evaluation_root
     if evaluation_root != base:
         allowed_root = (evaluation_root / "reference" / "sources" / trial).resolve()
-    if not resolved.is_file() or not resolved.is_relative_to(allowed_root):
+    in_trial_corpus = resolved.is_relative_to(allowed_root)
+    is_campaign_fact = (
+        source_name == "scope-matched-facts.json"
+        and resolved.name == source_name
+        and resolved.is_relative_to(base.resolve())
+    )
+    if not resolved.is_file() or not (in_trial_corpus or is_campaign_fact):
         raise ValueError(
-            "source path must resolve to a file under the case manifest or declared trial "
-            "source directory"
+            "source path must resolve under the declared trial source directory; only "
+            "scope-matched-facts.json may also be beside its case manifest"
         )
     return resolved
 
@@ -155,7 +161,12 @@ def prepare_workspace(case_file: Path, workspace: Path) -> dict[str, Any]:
                 raise ValueError("source role is invalid or source filename is duplicated")
             used_names.add(name)
             role_by_name[name] = role
-            source_path = _source_path(case_file.parent, source["path"], case["trial"])
+            source_path = _source_path(
+                case_file.parent,
+                source["path"],
+                case["trial"],
+                source_name=name,
+            )
             content = source_path.read_bytes()
             (inputs / name).write_bytes(content)
             file_records.append({"name": name, "role": role, "sha256": _sha256(content)})

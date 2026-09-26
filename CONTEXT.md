@@ -65,7 +65,10 @@ questions, and unfinished drafts. It is bound to the Trial's captured Source
 projections and exact current Result. It is resumable working memory, not
 Evidence, a Domain answer, or Canonical state. `get_status` suppresses its
 contents after a Source or Result mismatch; absence or staleness calls for
-reorientation from the current sources.
+reorientation from the current Sources. Its source locators are host assertions;
+they do not establish that a passage was delivered or understood. Status reports
+the ranges actually returned by `read_pages` separately from Sources referenced
+in working notes.
 
 Each text pass covers the same source-order prefix of the full captured Source,
 up to 65,536 UTF-8 source-text bytes per report at whole-line boundaries. A
@@ -156,6 +159,15 @@ or widening actions as a checklist.
 A **Result target** specifies the requested outcome, measurement, time point or
 window, effect of assignment, comparison groups, analysis population, and effect
 measure. A **Reported result** separately records what a Source actually reports.
+An assessable Proposal records Result clarity for the outcome definition,
+measurement, time point, analysis population, comparison groups, effect measure,
+source table meaning, and candidate choice as `specified`, `unclear`,
+`unavailable`, or `conflicting`. Omitted clarity is stored as `unclear`. An
+`exact` relation requires every facet to be specified. These are host
+classifications shown at Proposal Review; `time_point` includes material
+data-cut chronology, and `source_table_meaning` includes consistency of the
+selected estimate and precision across the relevant material. They do not
+establish semantic correspondence by themselves.
 
 The closed Target relation is `exact`, `broader`, `narrower`, `component`,
 `related`, `ambiguous`, or `unavailable`. `exact` means equivalent scientific

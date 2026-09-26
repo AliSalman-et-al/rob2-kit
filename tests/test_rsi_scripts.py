@@ -107,23 +107,23 @@ def test_phase_completion_metadata_binds_the_trace_session(tmp_path: Path) -> No
 
     assert metadata["codex_session_id"] == "session-1"
     assert metadata["trace_sha256"] == hashlib.sha256(trace.read_bytes()).hexdigest()
-    assert metadata["host_delivery_observed"]["session_id_sha256"] == hashlib.sha256(
-        b"session-1"
-    ).hexdigest()
+    assert (
+        metadata["host_delivery_observed"]["session_id_sha256"]
+        == hashlib.sha256(b"session-1").hexdigest()
+    )
 
 
 def test_private_codex_config_requires_the_preflighted_rob2_server(tmp_path: Path) -> None:
     runner = runpy.run_path(str(Path(__file__).parents[1] / "scripts" / "run_rsi_case.py"))
 
-    config = tomllib.loads(
-        "\n".join(runner["_codex_mcp_config"](r"C:\rob2.exe", tmp_path))
-    )
+    config = tomllib.loads("\n".join(runner["_codex_mcp_config"](r"C:\rob2.exe", tmp_path)))
 
     assert config["mcp_servers"]["rob2"] == {
         "command": r"C:\rob2.exe",
         "args": ["mcp"],
         "env": {"ROB2_WORKSPACE": str(tmp_path.resolve())},
         "required": True,
+        "default_tools_approval_mode": "approve",
         "startup_timeout_sec": 120,
         "tool_timeout_sec": runner["ROB2_MCP_TOOL_TIMEOUT_SECONDS"],
     }
@@ -145,14 +145,18 @@ def test_successful_cli_turn_without_rob2_delivery_is_infrastructure_failure(
 
     assert exit_code == 75
     assert state == "failed_infrastructure"
-    assert reason == "Codex completed without verified rob2 host-tool delivery: host_delivery_call_missing"
+    assert reason == (
+        "Codex completed without verified rob2 host-tool delivery: host_delivery_call_missing"
+    )
     assert diagnosis == {
         "code": "host_delivery_call_missing",
         "detail": (
             "The prior trace lacks a completed typed rob2 call and either a completed get_status "
             "call or a valid status head in a typed receipt."
         ),
-        "recovery": "Keep this phase resumable and start a fresh case or repair the retained trace.",
+        "recovery": (
+            "Keep this phase resumable and start a fresh case or repair the retained trace."
+        ),
     }
 
 
@@ -608,9 +612,7 @@ def test_concurrent_workspace_preparation_has_one_atomic_owner(
                 "schema": "rob2-kit.rsi-case.v1",
                 "trial": "Trial-A",
                 "requested_outcome": "Overall Survival",
-                "sources": [
-                    {"path": "article.txt", "name": "article.txt", "role": "main_article"}
-                ],
+                "sources": [{"path": "article.txt", "name": "article.txt", "role": "main_article"}],
             }
         ),
         encoding="utf-8",
@@ -658,9 +660,7 @@ def test_failed_workspace_preparation_can_retry_after_launcher_records_failure(
                 "schema": "rob2-kit.rsi-case.v1",
                 "trial": "Trial-A",
                 "requested_outcome": "Overall Survival",
-                "sources": [
-                    {"path": "article.txt", "name": "article.txt", "role": "main_article"}
-                ],
+                "sources": [{"path": "article.txt", "name": "article.txt", "role": "main_article"}],
             }
         ),
         encoding="utf-8",
@@ -702,11 +702,11 @@ def test_prepared_assessment_tools_see_only_allowlisted_sources_and_scope(
         encoding="utf-8",
     )
     case = {
-            "schema": "rob2-kit.rsi-case.v1",
-            "trial": "Trial-A",
-            "requested_outcome": "Progression-Free Survival",
-            "campaign_id": "frozen-campaign-27f36d",
-            "approved_scope": "progression-free survival at the reported timepoint",
+        "schema": "rob2-kit.rsi-case.v1",
+        "trial": "Trial-A",
+        "requested_outcome": "Progression-Free Survival",
+        "campaign_id": "frozen-campaign-27f36d",
+        "approved_scope": "progression-free survival at the reported timepoint",
         "sources": [{"path": "article.txt", "name": "main-article.txt", "role": "main_article"}],
         "registry_capture": {
             "path": "registry-capture.json",

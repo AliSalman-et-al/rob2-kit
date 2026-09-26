@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -134,8 +135,262 @@ def test_import_projects_validation_repairs_as_mechanical_events() -> None:
         "count": 2,
         "codes": ["invalid_answer", "missing_active_question"],
         "paths": ["/answers", "/answers/0/answer"],
+        "rows": [
+            {"code": "invalid_answer", "path": "/answers/0/answer"},
+            {"code": "missing_active_question", "path": "/answers"},
+        ],
     }
     assert "private detail omitted" not in json.dumps(artifact)
+
+
+def test_current_receipts_keep_scope_handles_answers_batch_children_and_repair_rows() -> None:
+    transcript = [
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "batch-1",
+                "type": "mcp_tool_call",
+                "server": "rob2",
+                "tool": "search_sources_batch",
+                "arguments": {
+                    "requests": [
+                        {
+                            "trial_id": "trial-a",
+                            "source_id": "sh_0123456789abcdef",
+                            "purpose_domain_id": "domain:missing",
+                            "purpose_question_id": "sq:missing:data-available",
+                            "query": "private query one",
+                            "mode": "all",
+                        },
+                        {
+                            "trial_id": "trial-a",
+                            "query": "private query two",
+                            "mode": "phrase",
+                            "cursor": "sc_0123456789abcdef_2",
+                        },
+                    ]
+                },
+                "result": {
+                    "structured_content": {
+                        "outcome": "success",
+                        "data": {
+                            "results": [
+                                {
+                                    "index": 0,
+                                    "result": {
+                                        "outcome": "success",
+                                        "data": {
+                                            "hits": [{"source_id": "sh_0123456789abcdef"}],
+                                            "next_cursor": "sc_0123456789abcdef_3",
+                                        },
+                                    },
+                                },
+                                {
+                                    "index": 1,
+                                    "result": {
+                                        "outcome": "condition",
+                                        "condition": {"code": "search_cursor_stale"},
+                                    },
+                                },
+                            ]
+                        },
+                    }
+                },
+            },
+        },
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "save-1",
+                "type": "mcp_tool_call",
+                "server": "rob2",
+                "tool": "save_domain_judgment",
+                "arguments": {"trial_id": "trial-a"},
+                "result": {
+                    "structured_content": {
+                        "outcome": "success",
+                        "data": {
+                            "checkpoint": {
+                                "identity": "sha256:" + "b" * 64,
+                                "answers": [
+                                    {
+                                        "question_id": "sq:missing:data-available",
+                                        "answer": "probably_no",
+                                    }
+                                ],
+                            }
+                        },
+                    }
+                },
+            },
+        },
+        {
+            "type": "item.completed",
+            "item": {
+                "id": "repair-1",
+                "type": "mcp_tool_call",
+                "server": "rob2",
+                "tool": "validate_domain_assessment",
+                "arguments": {"trial_id": "trial-a"},
+                "result": {
+                    "structured_content": {
+                        "outcome": "repair",
+                        "data": {
+                            "repairs": [{"path": "/answers/0/answer", "code": "invalid_answer"}]
+                        },
+                    }
+                },
+            },
+        },
+    ]
+    raw = ("\n".join(json.dumps(row) for row in transcript) + "\n").encode()
+
+    artifact = import_observations(_manifest(), {"session-a": raw})
+    operations = {row["call_id"]: row for row in artifact["attempts"][0]["operations"]}
+
+    batch = operations["batch-1"]["response"]
+    assert artifact["reconciliation"]["searches"] == 2
+    assert len(batch["logical_searches"]) == 2
+    assert batch["logical_searches"][0]["scope"]["source_id"] == "sh_0123456789abcdef"
+    assert batch["logical_searches"][0]["purpose"] == {
+        "domain_id": "domain:missing",
+        "question_id": "sq:missing:data-available",
+    }
+    assert batch["logical_searches"][0]["has_next_cursor"] is True
+    assert batch["logical_searches"][1]["outcome"] == "condition"
+    assert batch["logical_searches"][1]["has_cursor"] is True
+    assert "sh_0123456789abcdef" in operations["batch-1"]["request_identities"]
+    assert operations["save-1"]["mutation"]["committed_answers"] == [
+        {"question_id": "sq:missing:data-available", "answer": "probably_no"}
+    ]
+    assert operations["repair-1"]["repair"]["codes"] == ["invalid_answer"]
+    assert operations["repair-1"]["repair"]["rows"] == [
+        {"path": "/answers/0/answer", "code": "invalid_answer"}
+    ]
+
+
+def test_event_positions_retain_overlap_restart_fallback_replay_and_missing_edges() -> None:
+    def mcp(call_id: str, event_type: str, *, result: dict[str, Any] | None = None) -> dict:
+        item: dict[str, Any] = {
+            "id": call_id,
+            "type": "mcp_tool_call",
+            "server": "rob2",
+            "tool": "read_pages",
+            "arguments": {"trial_id": "trial-a"},
+        }
+        if result is not None:
+            item["result"] = result
+        return {"type": event_type, "item": item}
+
+    text_result = {
+        "content": [{"type": "text", "text": '{"outcome":"success","data":{"windows":[]}}'}]
+    }
+    structured_result = {"structured_content": {"outcome": "success", "data": {}}}
+    rows = [
+        {"type": "thread.started", "thread_id": "private-thread-one"},
+        mcp("call-a", "item.started"),
+        mcp("call-b", "item.started"),
+        mcp("call-b", "item.completed", result=text_result),
+        mcp("call-b", "item.completed", result=text_result),
+        {"type": "thread.started", "thread_id": "private-thread-two"},
+        mcp("call-a", "item.completed", result=structured_result),
+        mcp("call-c", "item.completed", result=structured_result),
+        mcp("call-d", "item.started"),
+    ]
+    raw = ("\n".join(json.dumps(row) for row in rows) + "\n").encode()
+    manifest = _manifest()
+    manifest["transcripts"][0]["path"] = "eval/runs/frozen/phase.jsonl"
+
+    artifact = import_observations(manifest, {"session-a": raw})
+    attempt = artifact["attempts"][0]
+    operations = {row["call_id"]: row for row in attempt["operations"]}
+
+    assert [row["call_id"] for row in attempt["operations"]] == [
+        "call-a",
+        "call-b",
+        "call-c",
+        "call-d",
+    ]
+    assert [event["line"] for event in attempt["event_stream"]] == list(range(1, 10))
+    assert attempt["transcripts"][0]["path"] == "eval/runs/frozen/phase.jsonl"
+    assert attempt["transcripts"][0]["digest"] == "sha256:" + hashlib.sha256(raw).hexdigest()
+    assert len(attempt["transcripts"][0]["thread_identities"]) == 2
+    assert "private-thread-one" not in json.dumps(artifact)
+    assert operations["call-a"]["event_order"]["started"]["line"] == 2
+    assert operations["call-a"]["event_order"]["completed"]["line"] == 7
+    assert operations["call-b"]["event_order"]["completion_events"] == [
+        {"type": "item.completed", "event_ordinal": 4, "line": 4},
+        {"type": "item.completed", "event_ordinal": 5, "line": 5},
+    ]
+    assert operations["call-b"]["response"]["encoding"] == "text_fallback"
+    assert operations["call-c"]["event_order"]["started"] is None
+    assert operations["call-c"]["event_order"]["completed"]["line"] == 8
+    assert operations["call-d"]["event_order"]["started"]["line"] == 9
+    assert operations["call-d"]["event_order"]["completed"] is None
+
+
+def test_frozen_live_transcript_preserves_original_event_positions() -> None:
+    path = (
+        Path(__file__).parents[1]
+        / "eval"
+        / "runs"
+        / "22-Sep-26"
+        / "os-random-luna-medium-20260922-current"
+        / "runs"
+        / "overall-survival"
+        / "CHAARTED"
+        / "phase-2.jsonl"
+    )
+    raw = path.read_bytes()
+    manifest = _manifest()
+    manifest["transcripts"][0]["path"] = path.relative_to(Path(__file__).parents[1]).as_posix()
+
+    artifact = import_observations(manifest, {"session-a": raw})
+    operations = {row["call_id"]: row for row in artifact["attempts"][0]["operations"]}
+
+    assert [row["call_id"] for row in artifact["attempts"][0]["operations"][:6]] == [
+        f"item_{index}" for index in range(1, 7)
+    ]
+    assert operations["item_1"]["event_order"]["started"]["line"] == 4
+    assert operations["item_1"]["event_order"]["completed"]["line"] == 5
+    assert operations["item_6"]["event_order"]["started"]["line"] == 14
+    assert operations["item_6"]["event_order"]["completed"]["line"] == 15
+    assert len(operations["item_6"]["response"]["logical_searches"]) == 4
+    assert all(
+        search["outcome"] is not None
+        for search in operations["item_6"]["response"]["logical_searches"]
+    )
+
+
+def test_unavailable_phase_delivery_and_cost_remain_unknown() -> None:
+    manifest = _manifest()
+    manifest["transcripts"][0].pop("phase")
+    raw = (
+        json.dumps(
+            {
+                "type": "item.started",
+                "item": {
+                    "id": "search-started",
+                    "type": "mcp_tool_call",
+                    "server": "rob2",
+                    "tool": "search_sources",
+                    "arguments": {"trial_id": "trial-a", "query": "private query", "mode": "all"},
+                },
+            }
+        )
+        + "\n"
+    ).encode()
+
+    artifact = import_observations(manifest, {"session-a": raw})
+    attempt = artifact["attempts"][0]
+    operation = attempt["operations"][0]
+
+    assert attempt["transcripts"][0]["phase"] is None
+    assert attempt["reconciliation"]["assessment_searches"] is None
+    assert artifact["reconciliation"]["assessment_searches"] is None
+    assert operation["status"] == "unmatched"
+    assert operation["response"]["encoding"] == "unavailable"
+    assert operation["metrics"]["cost"] is None
 
 
 def test_documented_tools_match_the_public_contract() -> None:
@@ -395,11 +650,46 @@ def test_malicious_nested_fields_are_not_emitted_and_enums_are_closed() -> None:
         "submitted_option_ids",
         "committed_option_ids",
         "repair",
+        "rows",
         "kind",
         "count",
         "codes",
         "paths",
     }
+    allowed_keys.update(
+        {
+            "transcripts",
+            "digest",
+            "path",
+            "phase",
+            "event_count",
+            "thread_identities",
+            "event_stream",
+            "type",
+            "event_ordinal",
+            "line",
+            "thread_identity",
+            "thread_instance",
+            "transcript_digest",
+            "purpose",
+            "request_identities",
+            "source_id",
+            "event_order",
+            "started",
+            "completed",
+            "start_events",
+            "completion_events",
+            "encoding",
+            "logical_searches",
+            "continuation",
+            "requested",
+            "returned",
+            "index",
+            "has_next_cursor",
+            "committed_answers",
+            "answer",
+        }
+    )
 
     def keys(value: object) -> set[str]:
         if isinstance(value, dict):

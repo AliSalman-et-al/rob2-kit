@@ -543,6 +543,16 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
     rows: list[tuple[str, int, str]] = []
     search_rows: list[tuple[str, int, str, str]] = []
     sources: list[tuple[str, str, str, bytes]] = []
+    table_failure_pages: dict[str, set[int]] = {}
+    for condition in batch.get("conditions", []):
+        if (
+            isinstance(condition, dict)
+            and condition.get("code") == "optional_table_extraction_failed"
+            and isinstance(condition.get("source_id"), str)
+            and isinstance(condition.get("page"), int)
+            and not isinstance(condition.get("page"), bool)
+        ):
+            table_failure_pages.setdefault(condition["source_id"], set()).add(condition["page"])
     batch_identity = str(batch.get("identity", ""))
     for trial in batch.get("trials", []):
         for source in trial.get("sources", []):
@@ -555,7 +565,11 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
                 raise ValueError("captured Source bytes do not match Canonical identity")
             if source["id"] != _source_id(trial["id"], source["logical_path"], source["sha256"]):
                 raise ValueError("captured Source projection identity is corrupt")
-            pages = _pages(Path(source["logical_path"]), data)
+            pages = _pages(
+                Path(source["logical_path"]),
+                data,
+                skip_table_pages=table_failure_pages.get(source["id"]),
+            )
             media_type = str(source["media_type"])
             if _projection_hash(source["sha256"], media_type, pages) != source.get(
                 "projection_hash"
@@ -995,7 +1009,13 @@ def _docx_pages(path: Path, data: bytes) -> tuple[str, ...]:
     return (_bound_projected_lines(_normalize_projected_text("\n".join(lines))),)
 
 
-def _pages(path: Path, data: bytes) -> tuple[str, ...]:
+def _pages(
+    path: Path,
+    data: bytes,
+    *,
+    table_extraction_failures: list[int] | None = None,
+    skip_table_pages: set[int] | None = None,
+) -> tuple[str, ...]:
     COUNTERS["extraction_calls"] += 1
     if data.startswith(b"%PDF-"):
         document = pymupdf.open(stream=data, filetype="pdf")
@@ -1003,23 +1023,25 @@ def _pages(path: Path, data: bytes) -> tuple[str, ...]:
             pages = [
                 document[number].get_text(flags=_PDF_TEXT_FLAGS) for number in range(len(document))
             ]
-            table_pages: dict[int, tuple[Any, ...]] = {}
             for number in range(len(document)):
-                tables = getattr(document[number].find_tables(), "tables", ())
-                if _semantic_table_page(tables):
-                    table_pages[number] = tuple(tables)
-            if not table_pages:
-                return tuple(
-                    _bound_projected_lines(_normalize_projected_text(page)) for page in pages
-                )
-            for number, tables in table_pages.items():
-                rendered = [
-                    _table_gfm(table, index)
-                    for index, table in enumerate(tables, start=1)
-                    if _textual_table_shape(table)
-                ]
-                if rendered:
-                    pages[number] = pages[number].rstrip() + "\n\n" + "\n\n".join(rendered) + "\n"
+                if skip_table_pages is not None and number + 1 in skip_table_pages:
+                    continue
+                try:
+                    tables = tuple(getattr(document[number].find_tables(), "tables", ()))
+                    if not _semantic_table_page(tables):
+                        continue
+                    rendered = [
+                        _table_gfm(table, index)
+                        for index, table in enumerate(tables, start=1)
+                        if _textual_table_shape(table)
+                    ]
+                    if rendered:
+                        pages[number] = (
+                            pages[number].rstrip() + "\n\n" + "\n\n".join(rendered) + "\n"
+                        )
+                except Exception:
+                    if table_extraction_failures is not None:
+                        table_extraction_failures.append(number + 1)
             return tuple(_bound_projected_lines(_normalize_projected_text(page)) for page in pages)
         finally:
             document.close()

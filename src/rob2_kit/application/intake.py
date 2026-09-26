@@ -659,8 +659,9 @@ def prepare_batch(
                 continue
             digest = "sha256:" + hashlib.sha256(data).hexdigest()
             source_id = _source_id(trial_id, relative, digest)
+            table_extraction_failures: list[int] = []
             try:
-                pages = _pages(path, data)
+                pages = _pages(path, data, table_extraction_failures=table_extraction_failures)
             except (UnicodeDecodeError, ValueError, pymupdf.FileDataError, OSError) as error:
                 conditions.append(
                     {
@@ -719,6 +720,23 @@ def prepare_batch(
                 ),
             }
             records.append(record)
+            conditions.extend(
+                {
+                    "code": "optional_table_extraction_failed",
+                    "trial_id": trial_id,
+                    "path": relative,
+                    "role": role,
+                    "declared_role": declared_role,
+                    "sha256": digest,
+                    "source_id": source_id,
+                    "page": page,
+                    "reason": (
+                        "Optional PDF table extraction failed; captured narrative text remains "
+                        "searchable. Render this Source page to inspect its layout."
+                    ),
+                }
+                for page in table_extraction_failures
+            )
             with _db(root, "derivative.sqlite3") as derivative:
                 derivative.executemany(
                     "INSERT OR REPLACE INTO pages VALUES (?,?,?)",

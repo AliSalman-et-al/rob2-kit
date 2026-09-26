@@ -199,14 +199,10 @@ def test_preview_basis_must_be_explicit_and_same_trial() -> None:
     }
     result_identity = "sha256:" + "c" * 64
     preview = domains._canonical_preview_rows([row], catalog, "trial", result_identity)[0]
-    assert preview["basis"] == [
-        "sha256:" + "a" * 64
-    ]
+    assert preview["basis"] == ["sha256:" + "a" * 64]
     assert preview["result_identity"] == result_identity
     with pytest.raises(ValueError, match="requires Evidence basis"):
-        domains._canonical_preview_rows(
-            [{**row, "basis": []}], catalog, "trial", result_identity
-        )
+        domains._canonical_preview_rows([{**row, "basis": []}], catalog, "trial", result_identity)
     with pytest.raises(ValueError, match="unknown or cross-Trial"):
         domains._canonical_preview_rows(
             [{**row, "basis": ["eh_1111111111111111"]}], catalog, "trial", result_identity

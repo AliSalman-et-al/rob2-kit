@@ -33,6 +33,15 @@ inappropriate assignment-effect analysis; keep that issue distinct for Domain
 3. If an analysis defect activates the impact question, consider outcome rarity
 and prognostic exclusions as well as the percentage affected.
 
+An eligible participant excluded from the assignment-effect analysis after
+randomization is an analysis exclusion whether the exclusion occurred before
+the approved endpoint was measured or after an outcome value was recorded.
+Record whether the endpoint was unavailable or was observed and then omitted.
+The first may also require D3 missing-outcome reasoning; the second does not
+become missing outcome data merely because the analysis left it out. For 2.7,
+assess the excluded participants and their reasons against this endpoint. Do not
+use timing or a fixed percentage as a substitute for impact reasoning.
+
 Support each conduct-chain proposition with source facts and any stated
 inference. A passage supporting one proposition does not settle the others.
 
@@ -41,6 +50,10 @@ inference. A passage supporting one proposition does not settle the others.
 Use the comparison card's neutral pair as a reasoning control. In the permitted
 care case, rescue or crossover is allowed by the protocol and is ordinary later
 care; in the changed case, the same treatment change is prohibited and caused
-by trial participation or trial staff. Change the reasoning only when both
-protocol inconsistency and a trial-context cause change. Do not import an
-expected answer or risk label from the pair.
+by trial participation or trial staff. Change the 2.3 reasoning only when both
+protocol inconsistency and a trial-context cause change. A second contrast keeps
+the excluded participants and reasons fixed while moving exclusion from before
+to after endpoint ascertainment. The 2.6 exclusion premise remains; the timing
+changes whether outcomes were unavailable or observed and then omitted, and
+therefore whether D3 also needs missing-outcome reasoning. Do not import an
+expected answer or risk label from either pair.

@@ -81,9 +81,9 @@ class ReviewerProvenance(_StrictModel):
     """Reviewer state; pending records carry no invented reviewer identity."""
 
     status: Literal["pending_external_adjudication", "complete"] = "pending_external_adjudication"
-    reviewer_identity: StrictStr | None = None
-    reviewer_role: StrictStr | None = None
-    reviewed_at: StrictStr | None = None
+    reviewer_identity: StrictStr | None = Field(default=None, min_length=1)
+    reviewer_role: StrictStr | None = Field(default=None, min_length=1)
+    reviewed_at: StrictStr | None = Field(default=None, min_length=1)
     note: StrictStr = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -179,6 +179,12 @@ class CohortCell(_StrictModel):
                 raise ValueError("pending cells require pending reviewer provenance")
         elif self.classification is None or self.uncertainty == "pending":
             raise ValueError("complete cells require classification and visible uncertainty")
+        elif self.reviewer_provenance.status != "complete":
+            raise ValueError("complete cells require complete reviewer provenance")
+        if self.revision == 0 and self.supersedes is not None:
+            raise ValueError("revision zero cannot supersede an earlier cell")
+        if self.revision > 0 and self.supersedes is None:
+            raise ValueError("revised cells must identify the superseded content hash")
         if self.supersedes is not None and not _HASH.fullmatch(self.supersedes):
             raise ValueError("supersedes must identify an earlier content hash")
         expected = content_identity(
@@ -229,6 +235,8 @@ class AgreementSampleEntry(_StrictModel):
             and self.reviewer_provenance.status != self.review_status
         ):
             raise ValueError("pending agreement sample requires pending reviewer provenance")
+        if self.review_status == "complete" and self.reviewer_provenance.status != "complete":
+            raise ValueError("completed agreement sample requires complete reviewer provenance")
         return self
 
 
@@ -297,13 +305,58 @@ class CohortManifest(_StrictModel):
             cell.adjudication_status != "pending_external_adjudication" for cell in self.cells
         ):
             raise ValueError("baseline manifests cannot contain complete adjudications")
+        revisions: dict[tuple[str, str], dict[int, CohortCell]] = {}
+        for cell in self.cells:
+            revisions.setdefault((cell.case_identity, cell.domain_id), {})[cell.revision] = cell
+        for cell_revisions in revisions.values():
+            numbers = sorted(cell_revisions)
+            if numbers != list(range(numbers[-1] + 1)):
+                raise ValueError("cell revision history must be contiguous from revision zero")
+            for revision in numbers[1:]:
+                previous = cell_revisions[revision - 1]
+                current = cell_revisions[revision]
+                if current.supersedes != previous.identity:
+                    raise ValueError("cell revision must supersede the prior immutable cell")
+                if any(
+                    getattr(current, field) != getattr(previous, field)
+                    for field in (
+                        "campaign_id",
+                        "case_identity",
+                        "trial_id",
+                        "outcome_id",
+                        "result_identity",
+                        "review_identity",
+                        "domain_id",
+                        "question_ids",
+                        "checkpoint_identity",
+                        "source_identities",
+                        "source_projection_ids",
+                        "source_projection_scope",
+                        "reference_label",
+                        "model_label",
+                        "comparison",
+                        "trace_reference",
+                    )
+                ):
+                    raise ValueError("cell revision cannot change the pinned assessment scope")
+        latest_cells = _latest_cells(self.cells)
+        if self.status == "adjudicated":
+            if any(cell.adjudication_status != "complete" for cell in self.cells):
+                raise ValueError("adjudicated manifests require every cell to be complete")
+            if self.cohort_revision == 1 and any(cell.revision > 0 for cell in self.cells):
+                raise ValueError("cell revisions require a later cohort revision")
+            domains_by_case: dict[str, set[str]] = {}
+            for cell in latest_cells:
+                domains_by_case.setdefault(cell.case_identity, set()).add(cell.domain_id)
+            if any(domain_ids != set(DOMAINS) for domain_ids in domains_by_case.values()):
+                raise ValueError("adjudicated manifests require the complete Domain cell set")
         if (
             self.model_access.adjudication_labels_available
             or self.model_access.adjudication_rationales_available
         ):
             raise ValueError("model access must exclude adjudication labels and rationales")
-        expected_outcome = _totals(self.cells, key=lambda cell: cell.outcome_id, unit="outcome")
-        expected_domain = _totals(self.cells, key=lambda cell: cell.domain_id, unit="domain")
+        expected_outcome = _totals(latest_cells, key=lambda cell: cell.outcome_id, unit="outcome")
+        expected_domain = _totals(latest_cells, key=lambda cell: cell.domain_id, unit="domain")
         _assert_totals(expected_outcome, self.published_outcome_totals, "outcome")
         _assert_totals(expected_domain, self.published_domain_totals, "Domain")
         agreement_cells = {cell.identity for cell in self.cells if cell.comparison == "agreement"}
@@ -342,6 +395,16 @@ def _totals(
         )
         for group, rows in grouped.items()
     }
+
+
+def _latest_cells(cells: Iterable[CohortCell]) -> tuple[CohortCell, ...]:
+    latest: dict[tuple[str, str], CohortCell] = {}
+    for cell in cells:
+        key = (cell.case_identity, cell.domain_id)
+        previous = latest.get(key)
+        if previous is None or cell.revision > previous.revision:
+            latest[key] = cell
+    return tuple(latest.values())
 
 
 def _assert_totals(
@@ -445,11 +508,12 @@ def select_agreement_sample(
 def summarize(cohort: CohortManifest) -> dict[str, Any]:
     """Return counts only; no corrected or adjudication-derived accuracy is computed."""
 
+    cells = _latest_cells(cohort.cells)
     return {
-        "assessments": len({cell.case_identity for cell in cohort.cells}),
-        "domain_cells": len(cohort.cells),
-        "exact_matches": sum(cell.comparison == "agreement" for cell in cohort.cells),
-        "disagreements": sum(cell.comparison == "disagreement" for cell in cohort.cells),
+        "assessments": len({cell.case_identity for cell in cells}),
+        "domain_cells": len(cells),
+        "exact_matches": sum(cell.comparison == "agreement" for cell in cells),
+        "disagreements": sum(cell.comparison == "disagreement" for cell in cells),
         "outcome_totals": {
             key: value.model_dump(mode="json")
             for key, value in cohort.published_outcome_totals.items()

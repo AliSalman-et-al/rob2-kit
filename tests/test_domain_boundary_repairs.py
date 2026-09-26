@@ -80,9 +80,7 @@ def test_public_d2_and_d3_contexts_share_result_bound_source_flow(tmp_path: Path
     answer["missing_data"] = [{**row, "result_identity": "sha256:" + "f" * 64}]
     rejected = _call(workspace, "save_domain_judgment", draft)
     assert rejected["outcome"] == "repair", rejected
-    assert any(
-        repair["code"] == "missing_data_result_mismatch" for repair in rejected["repairs"]
-    )
+    assert any(repair["code"] == "missing_data_result_mismatch" for repair in rejected["repairs"])
     assert rejected["head"]["state_revision"] == revision
 
     answer["missing_data"] = [row, second_arm_row]
@@ -219,9 +217,7 @@ def test_blinded_trial_d2_6_can_carry_flow_without_activating_d2_3(tmp_path: Pat
     assert saved["outcome"] == "success", saved
     state = _state(workspace)
     saved_answers = state["domain_records"]["trial:domain:deviations"]["answers"]
-    assert "sq:deviations:context-deviations" not in {
-        item["question_id"] for item in saved_answers
-    }
+    assert "sq:deviations:context-deviations" not in {item["question_id"] for item in saved_answers}
     saved_flow_answer = next(
         item
         for item in saved_answers

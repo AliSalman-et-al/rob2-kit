@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import importlib
 import io
 import json
 import os
@@ -44,9 +45,7 @@ def _tools_list_response() -> dict[str, Any]:
                 "outputSchema": json.loads(json.dumps(tool.output_schema)),
                 "annotations": {
                     "readOnlyHint": bool(tool.annotations and tool.annotations.read_only_hint),
-                    "destructiveHint": bool(
-                        tool.annotations and tool.annotations.destructive_hint
-                    ),
+                    "destructiveHint": bool(tool.annotations and tool.annotations.destructive_hint),
                     "idempotentHint": bool(tool.annotations and tool.annotations.idempotent_hint),
                     "openWorldHint": bool(tool.annotations and tool.annotations.open_world_hint),
                 },
@@ -264,28 +263,32 @@ def test_unreturned_rob2_call_is_recorded_as_infrastructure_failure(
         "\n".join(
             (
                 json.dumps({"type": "thread.started", "thread_id": "session-1"}),
-                json.dumps({
-                    "type": "item.completed",
-                    "item": {
-                        "id": "item-1",
-                        "type": "mcp_tool_call",
-                        "server": "rob2",
-                        "tool": "get_status",
-                        "status": "completed",
-                        "error": None,
-                        "result": {"structured_content": {}},
-                    },
-                }),
-                json.dumps({
-                    "type": "item.started",
-                    "item": {
-                        "id": "item-2",
-                        "type": "mcp_tool_call",
-                        "server": "rob2",
-                        "tool": "prepare_batch",
-                        "status": "in_progress",
-                    },
-                }),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "id": "item-1",
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "get_status",
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {}},
+                        },
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "item.started",
+                        "item": {
+                            "id": "item-2",
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "prepare_batch",
+                            "status": "in_progress",
+                        },
+                    }
+                ),
             )
         )
         + "\n",
@@ -318,32 +321,36 @@ def test_completed_timeout_is_resumable_and_recorded_as_telemetry(
         "\n".join(
             (
                 json.dumps({"type": "thread.started", "thread_id": "session-1"}),
-                json.dumps({
-                    "type": "item.started",
-                    "item": {
-                        "id": "item-1",
-                        "type": "mcp_tool_call",
-                        "server": "rob2",
-                        "tool": "prepare_batch",
-                        "status": "in_progress",
-                    },
-                }),
-                json.dumps({
-                    "type": "item.completed",
-                    "item": {
-                        "id": "item-1",
-                        "type": "mcp_tool_call",
-                        "server": "rob2",
-                        "tool": "prepare_batch",
-                        "status": "failed",
-                        "error": {
-                            "message": (
-                                "tool call failed for `rob2/prepare_batch`: "
-                                "timed out awaiting tools/call after 300s"
-                            )
+                json.dumps(
+                    {
+                        "type": "item.started",
+                        "item": {
+                            "id": "item-1",
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "prepare_batch",
+                            "status": "in_progress",
                         },
-                    },
-                }),
+                    }
+                ),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "id": "item-1",
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "prepare_batch",
+                            "status": "failed",
+                            "error": {
+                                "message": (
+                                    "tool call failed for `rob2/prepare_batch`: "
+                                    "timed out awaiting tools/call after 300s"
+                                )
+                            },
+                        },
+                    }
+                ),
             )
         )
         + "\n",
@@ -383,7 +390,9 @@ def test_completed_timeout_does_not_invalidate_a_verified_finalized_artifact(
         "sha256": artifact_sha256,
     }
     timeout = {
-        "message": "tool call failed for `rob2/search_sources`: timed out awaiting tools/call after 300s"
+        "message": (
+            "tool call failed for `rob2/search_sources`: timed out awaiting tools/call after 300s"
+        )
     }
     events = [
         {"type": "thread.started", "thread_id": "session-1"},
@@ -824,27 +833,37 @@ def _write_frozen_inventory(
     trace.write_text(
         "\n".join(
             (
+                json.dumps(session_event or {"type": "thread.started", "thread_id": "session-1"}),
                 json.dumps(
-                    session_event
-                    or {"type": "thread.started", "thread_id": "session-1"}
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "get_status",
+                            "status": "completed",
+                            "error": None,
+                            "result": {"structured_content": {}},
+                        },
+                    }
                 ),
-                json.dumps({
-                    "type": "item.completed",
-                    "item": {
-                        "type": "mcp_tool_call", "server": "rob2", "tool": "get_status",
-                        "status": "completed", "error": None, "result": {"structured_content": {}},
-                    },
-                }),
-                json.dumps({
-                    "type": "item.completed",
-                    "item": {
-                        "type": "mcp_tool_call", "server": "rob2", "tool": "search_sources",
-                        "status": "completed", "error": None, "arguments": {"query": "trial"},
-                        "result": {"structured_content": {}},
-                    },
-                }),
+                json.dumps(
+                    {
+                        "type": "item.completed",
+                        "item": {
+                            "type": "mcp_tool_call",
+                            "server": "rob2",
+                            "tool": "search_sources",
+                            "status": "completed",
+                            "error": None,
+                            "arguments": {"query": "trial"},
+                            "result": {"structured_content": {}},
+                        },
+                    }
+                ),
             )
-        ) + "\n",
+        )
+        + "\n",
         encoding="utf-8",
     )
     trace_sha256 = hashlib.sha256(trace.read_bytes()).hexdigest()
@@ -856,21 +875,25 @@ def _write_frozen_inventory(
             {
                 "runtime_inputs": runtime,
                 "runtime_inputs_sha256": runtime_hash,
-                "phases": [{
-                    "phase": 1,
-                    "trace_sha256": trace_sha256,
-                    "codex_session_id": "session-1",
-                }],
+                "phases": [
+                    {
+                        "phase": 1,
+                        "trace_sha256": trace_sha256,
+                        "codex_session_id": "session-1",
+                    }
+                ],
             }
         ),
         encoding="utf-8",
     )
     (run_dir / "phase-1.meta.json").write_text(
-        json.dumps({
-            "server_advertised_inventory": inventory,
-            "trace_sha256": trace_sha256,
-            "codex_session_id": "session-1",
-        }),
+        json.dumps(
+            {
+                "server_advertised_inventory": inventory,
+                "trace_sha256": trace_sha256,
+                "codex_session_id": "session-1",
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -982,15 +1005,15 @@ def _write_host_tools_recovery_fixture(
             )
     phase_2_events.extend(
         [
-        {
-            "type": "item.completed",
-            "item": {
-                "id": "message-1",
-                "type": "agent_message",
-                "text": "The rob2 tools were unavailable.",
+            {
+                "type": "item.completed",
+                "item": {
+                    "id": "message-1",
+                    "type": "agent_message",
+                    "text": "The rob2 tools were unavailable.",
+                },
             },
-        },
-        {"type": "turn.completed", "turn_id": proof_task_id},
+            {"type": "turn.completed", "turn_id": proof_task_id},
         ]
     )
     phase_2_trace.write_text(
@@ -1125,7 +1148,12 @@ def _write_host_tools_recovery_fixture(
                 add_exec_call(
                     f"resource-call-{index}",
                     cell,
-                    [{"type": "input_text", "text": "Script completed\nOutput:\n{\"resources\":[]}"}],
+                    [
+                        {
+                            "type": "input_text",
+                            "text": 'Script completed\nOutput:\n{"resources":[]}',
+                        }
+                    ],
                 )
             else:
                 add_exec_call(
@@ -1218,7 +1246,7 @@ def _write_host_tools_recovery_fixture(
             returncode=0, stdout=json.dumps(status), stderr=""
         ),
     )
-    import prepare_rsi_workspace
+    prepare_rsi_workspace = importlib.import_module("prepare_rsi_workspace")
 
     monkeypatch.setattr(
         prepare_rsi_workspace,
@@ -1259,9 +1287,7 @@ def test_host_tools_recovery_accepts_one_hash_bound_phase_two_no_tool_turn(
     fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch)
 
     assert (
-        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
-            fixture["run_dir"], 2
-        )
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](fixture["run_dir"], 2)
         is None
     )
 
@@ -1269,14 +1295,10 @@ def test_host_tools_recovery_accepts_one_hash_bound_phase_two_no_tool_turn(
 def test_host_tools_recovery_accepts_required_status_binding_failure(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    fixture = _write_host_tools_recovery_fixture(
-        tmp_path, monkeypatch, proof_case="status_only"
-    )
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch, proof_case="status_only")
 
     assert (
-        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
-            fixture["run_dir"], 2
-        )
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](fixture["run_dir"], 2)
         is None
     )
 
@@ -1315,9 +1337,7 @@ def test_host_tools_recovery_accepts_populated_or_truncated_read_only_inventory_
     _rewrite_recovery_rollout(fixture, events)
 
     assert (
-        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
-            fixture["run_dir"], 2
-        )
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](fixture["run_dir"], 2)
         is None
     )
 
@@ -1325,14 +1345,10 @@ def test_host_tools_recovery_accepts_populated_or_truncated_read_only_inventory_
 def test_host_tools_recovery_accepts_explicit_missing_registry_proof(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    fixture = _write_host_tools_recovery_fixture(
-        tmp_path, monkeypatch, proof_case="registry"
-    )
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch, proof_case="registry")
 
     assert (
-        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
-            fixture["run_dir"], 2
-        )
+        fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](fixture["run_dir"], 2)
         is None
     )
 
@@ -1349,9 +1365,7 @@ def test_host_tools_recovery_rejects_nonempty_or_truncated_missing_registry_proo
     tmp_path: Path,
     inventory_output: str,
 ) -> None:
-    fixture = _write_host_tools_recovery_fixture(
-        tmp_path, monkeypatch, proof_case="registry"
-    )
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch, proof_case="registry")
     events = [
         json.loads(line)
         for line in fixture["rollout_path"].read_text(encoding="utf-8").splitlines()
@@ -1360,8 +1374,7 @@ def test_host_tools_recovery_rejects_nonempty_or_truncated_missing_registry_proo
         (SCRIPTS / "benchmark_recovery_exec_allowlist.json").read_text(encoding="utf-8")
     )
     proof_sha256 = next(
-        row["sha256"] for row in allowlist["cells"]
-        if row.get("proof") == "rob2_tool_names"
+        row["sha256"] for row in allowlist["cells"] if row.get("proof") == "rob2_tool_names"
     )
     proof_source = next(
         row["source"] for row in allowlist["cells"] if row["sha256"] == proof_sha256
@@ -1397,9 +1410,9 @@ def test_host_tools_recovery_rejects_metadata_runtime_binding_drift(
     phase_meta = json.loads(phase_meta_path.read_text(encoding="utf-8"))
     phase_meta["runtime_inputs"]["codex_registered_mcp"]["command"] = "other-rob2"
     phase_meta["runtime_inputs_sha256"] = hashlib.sha256(
-        json.dumps(
-            phase_meta["runtime_inputs"], sort_keys=True, separators=(",", ":")
-        ).encode("utf-8")
+        json.dumps(phase_meta["runtime_inputs"], sort_keys=True, separators=(",", ":")).encode(
+            "utf-8"
+        )
     ).hexdigest()
     phase_meta_path.write_text(json.dumps(phase_meta), encoding="utf-8")
 
@@ -1608,9 +1621,7 @@ def test_host_tools_recovery_recomputes_the_exact_approved_scope(
 def test_host_tools_recovery_rejects_proof_from_another_rollout_turn(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    fixture = _write_host_tools_recovery_fixture(
-        tmp_path, monkeypatch, proof_task_id="turn-other"
-    )
+    fixture = _write_host_tools_recovery_fixture(tmp_path, monkeypatch, proof_task_id="turn-other")
 
     diagnosis = fixture["contract"]["host_tools_infrastructure_recovery_diagnosis"](
         fixture["run_dir"], 2
@@ -1724,9 +1735,7 @@ def test_tools_list_preflight_checks_schemas_and_metadata(
         lambda *_args, **_kwargs: _FakePreflightProcess(altered_stdout),
     )
     with pytest.raises(ValueError, match="get_status.schema_sha256"):
-        contract["probe_server_advertised_inventory"](
-            tmp_path / "rob2", tmp_path / "workspace"
-        )
+        contract["probe_server_advertised_inventory"](tmp_path / "rob2", tmp_path / "workspace")
 
 
 def test_continuation_requires_matching_server_preflight_not_a_jsonl_event(
@@ -1743,9 +1752,9 @@ def test_continuation_requires_matching_server_preflight_not_a_jsonl_event(
     )
     _write_frozen_inventory(tmp_path, inventory, expected)
 
-    assert runner["_validate_tool_inventory"](
-        tmp_path, 1, server_inventory=inventory
-    ) == tuple(sorted(expected))
+    assert runner["_validate_tool_inventory"](tmp_path, 1, server_inventory=inventory) == tuple(
+        sorted(expected)
+    )
     assert phase_runner["_continuation_diagnosis"](tmp_path, 2) is None
 
     changed = dict(inventory)
@@ -1777,9 +1786,7 @@ def test_continuation_requires_hash_bound_same_session_typed_calls(
     record_path = tmp_path / "execution.json"
     record = json.loads(record_path.read_text(encoding="utf-8"))
     trace_hash = hashlib.sha256(trace.read_bytes()).hexdigest()
-    record["phases"][0].update(
-        {"trace_sha256": trace_hash, "codex_session_id": "session-1"}
-    )
+    record["phases"][0].update({"trace_sha256": trace_hash, "codex_session_id": "session-1"})
     record_path.write_text(json.dumps(record), encoding="utf-8")
     metadata_path = tmp_path / "phase-1.meta.json"
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
@@ -1791,9 +1798,7 @@ def test_continuation_requires_hash_bound_same_session_typed_calls(
     assert diagnosis["code"] == "host_delivery_call_missing"
     assert "get_status" in diagnosis["detail"]
     with pytest.raises(ValueError, match="host_delivery_call_missing"):
-        runner["_validate_tool_inventory"](
-            tmp_path, 1, server_inventory=inventory
-        )
+        runner["_validate_tool_inventory"](tmp_path, 1, server_inventory=inventory)
 
 
 def test_continuation_accepts_null_initial_session_argument_when_session_is_bound(
@@ -1891,10 +1896,11 @@ def test_codex_timeout_kills_child_and_is_reported_to_runner(
             self.killed = True
             self.returncode = -9
 
-        def wait(self) -> int:
+        def wait(self, timeout: float | None = None) -> int:
             return int(self.returncode or 0)
 
     spawned: list[TimedOutProcess] = []
+    signals: list[tuple[int, int]] = []
 
     def popen(*args: Any, **kwargs: Any) -> TimedOutProcess:
         process = TimedOutProcess(*args, **kwargs)
@@ -1902,6 +1908,13 @@ def test_codex_timeout_kills_child_and_is_reported_to_runner(
         return process
 
     monkeypatch.setattr(subprocess, "Popen", popen)
+    os_module = runner["_run_owned_codex"].__globals__["os"]
+    monkeypatch.setattr(
+        os_module,
+        "killpg",
+        lambda pid, sig: signals.append((pid, sig)),
+        raising=False,
+    )
     runner["_run_owned_codex"].__globals__["_windows_job_guard"] = lambda _process: None
     with pytest.raises(subprocess.TimeoutExpired):
         runner["_run_owned_codex"](
@@ -1915,7 +1928,8 @@ def test_codex_timeout_kills_child_and_is_reported_to_runner(
         )
 
     assert len(spawned) == 1
-    assert spawned[0].killed is True
+    signal_module = runner["_run_owned_codex"].__globals__["signal"]
+    assert signals == [(123, signal_module.SIGTERM), (123, getattr(signal_module, "SIGKILL", 9))]
 
 
 def test_timeout_terminates_owned_posix_process_group_and_waits(
@@ -2008,9 +2022,7 @@ def test_phase_runner_passes_build_transition_options_to_case_launcher(
         captured["command"] = command
         return SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
 
-    monkeypatch.setattr(
-        phase_runner["_run_one"].__globals__["subprocess"], "run", fake_run
-    )
+    monkeypatch.setattr(phase_runner["_run_one"].__globals__["subprocess"], "run", fake_run)
     monkeypatch.setitem(
         phase_runner["_run_one"].__globals__, "_continuation_diagnosis", lambda *_args: None
     )
@@ -2160,8 +2172,8 @@ def test_phase_runner_records_a_future_exception_in_final_summary(
         ),
         encoding="utf-8",
     )
-    phase_runner["main"].__globals__["_run_one"] = lambda *_args, **_kwargs: (
-        (_ for _ in ()).throw(RuntimeError("synthetic worker failure"))
+    phase_runner["main"].__globals__["_run_one"] = lambda *_args, **_kwargs: (_ for _ in ()).throw(
+        RuntimeError("synthetic worker failure")
     )
     monkeypatch.setattr(
         sys,
@@ -2795,8 +2807,7 @@ def test_continuation_allows_explicit_build_only_transition_and_preserves_phase_
         runtime_inputs=first_runtime,
     )
     (run_dir / "phase-1.jsonl").write_text(
-        json.dumps({"type": "thread.started", "thread_id": "authoritative-session"})
-        + "\n",
+        json.dumps({"type": "thread.started", "thread_id": "authoritative-session"}) + "\n",
         encoding="utf-8",
     )
     record = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
@@ -2864,8 +2875,7 @@ def test_continuation_build_transition_rejects_other_runtime_drift_with_keys(
         runtime_inputs=runtime,
     )
     (run_dir / "phase-1.jsonl").write_text(
-        json.dumps({"type": "thread.started", "thread_id": "authoritative-session"})
-        + "\n",
+        json.dumps({"type": "thread.started", "thread_id": "authoritative-session"}) + "\n",
         encoding="utf-8",
     )
     record = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
