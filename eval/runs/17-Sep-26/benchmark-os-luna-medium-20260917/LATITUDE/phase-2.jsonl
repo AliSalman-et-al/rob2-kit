@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0abf2-8596-7153-9995-a24d7165198c"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The Proposal Review is approved by your “Continue” instruction. I’m recording that approval now, then I’ll complete each active RoB 2 domain checkpoint and finalize the LATITUDE assessment."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m blocked because the rob2-kit tools became unavailable after the approval step (`get_status` and `request_proposal_approval` are no longer callable). No domain judgments were committed. Please retry or re-open the assessment session so I can continue."}}
-{"type":"turn.completed","usage":{"input_tokens":1267232,"cached_input_tokens":1157632,"cache_write_input_tokens":0,"output_tokens":4331,"reasoning_output_tokens":1116}}

@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0abf2-8f74-7f32-8252-763b942efca7"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The Proposal Review is approved. I’m advancing the canonical assessment now, then I’ll read the active Domain context and complete each RoB 2 checkpoint with source-grounded answers."}}
-{"type":"error","message":"You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:23 AM."}
-{"type":"turn.failed","error":{"message":"You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:23 AM."}}

@@ -1,1 +1,0 @@
-/rob2-assess Assess risk of bias for Adverse Events defined as Toxicity graded with NCI-CTCAE v3.0, Abstract reports 72 serious adverse events in the ADT+docetaxel group and none in the ADT-alone group; no broad AE estimate in GETUG-AFU-15.

@@ -1,5 +1,0 @@
-**ARASENS assessment finalized:** overall **High risk of bias**, driven by the **High missing outcome data** domain. Randomization, deviations from intended interventions, outcome measurement, and selection of the reported result were each judged **Low**.
-
-The assessed result was time to castration-resistant prostate cancer (HR 0.36, 95% CI 0.30–0.42). Although that exact endpoint is not reported in the abstract, the main article and supplement report it, and the SAP specifies its definition. The missing data domain was High because outcome availability and robustness to missing data were not sufficiently reported, and whether missingness depended on the true outcome remained unresolved.
-
-The finalized artifact is [c5891a7af4b8d48b5ff77f58c2b7da277f1b3559bffae1aef6531939ab654dd9.rob2.zip](C:\Users\Ali-Salman\Documents\Code\rob2-kit\eval\runs\24-Sep-26\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\runs\progression-free-survival\ARASENS\workspace\.rob2-kit\finalized\c5891a7af4b8d48b5ff77f58c2b7da277f1b3559bffae1aef6531939ab654dd9.rob2.zip).

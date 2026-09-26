@@ -1,7 +1,0 @@
-## TITAN Proposal Review
-
-The selected result is the **exact primary radiographic progression-free survival comparison** for apalutamide plus ADT versus placebo plus ADT. The report defines rPFS from randomization to radiographic progression or death, and reports 24-month rPFS of **68.2% vs 47.5%**; HR **0.48** (95% CI **0.39 to 0.60**), *P*<.001. The randomized groups were 525 and 527 participants.
-
-The report says 39 participants were lost to follow-up or withdrew from all data collection, but does not give arm-specific details or an rPFS-specific count. That uncertainty is recorded in the proposal.
-
-The proposal is saved and awaits your review. **Approve this result** to continue the RoB 2 assessment, or tell me what result scope to reconsider.

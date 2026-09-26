@@ -1,9 +1,0 @@
-## Proposal Review: ENZAMET
-
-**Proposed Result:** Adverse event leading to treatment discontinuation at any time.
-
-The main article reports 33 patients in the enzalutamide group and 14 in the standard-care group. It says adverse events were graded using NCI CTCAE version 4.02. These are patient counts, not numbers of events.
-
-**Scope:** The reported groups match the requested comparison. The safety analysis included participants who received a dose of trial drug (563 and 558), rather than all randomized participants (563 and 562), so I classified the Result as **narrower**. The supplement reports the same counts as reasons for permanently ceasing treatment; its percentages use participants who stopped treatment as the denominator.
-
-The Proposal is saved and awaiting your review. Please approve it or direct me to choose another candidate.

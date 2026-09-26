@@ -1,7 +1,0 @@
-## Proposal Review — SWOG-1216, Adverse Events
-
-**Proposed Result:** Grade 3/4 adverse events, reported as 43% with ADT plus orteronel versus 14% with ADT plus bicalutamide. This is a narrower outcome than adverse events generally.
-
-**Evidence gap:** The abstract reports 43% versus 14%, but the safety section reports 43% versus 13%. Table 2 instead presents Grade 3–5 toxicities, excludes events judged unlikely or unrelated to treatment, and lists safety denominators of 627 and 629. The report does not establish that these figures describe the same endpoint or population. The protocol specifies CTCAE v4.0 and a toxicity assessment schedule, but does not resolve the aggregate endpoint definition or its reporting window.
-
-The proposal is saved. **Do you approve this Result for assessment, or would you like me to choose a different candidate?**

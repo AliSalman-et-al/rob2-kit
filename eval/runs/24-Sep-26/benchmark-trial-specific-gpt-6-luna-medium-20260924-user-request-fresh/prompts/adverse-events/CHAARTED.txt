@@ -1,1 +1,0 @@
-/rob2-assess Assess risk of bias for Adverse Events defined as No AE definition is listed in eTable 1; the main article says toxic effects were graded using NCI-CTCAE v4.0, Abstract gives selected events in the docetaxel group only: grade 3/4 febrile neutropenia 6.2%, grade 3/4 infection with neutropenia 2.3%, and grade 3 sensory and motor neuropathy 0.5% each in CHAARTED.

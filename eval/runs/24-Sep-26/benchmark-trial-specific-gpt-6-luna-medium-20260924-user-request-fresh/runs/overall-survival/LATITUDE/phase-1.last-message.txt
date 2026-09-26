@@ -1,3 +1,0 @@
-The LATITUDE overall-survival Result is selected and saved for Proposal Review. The main report defines OS as time from randomization to death from any cause and reports the first interim result at median follow-up of 30.4 months: median not reached vs 34.7 months; HR 0.62 (95% CI 0.51–0.76), P<0.001. The supplement identifies all randomized participants (597 vs 602) as the ITT population.
-
-RoB 2 domain assessment is waiting for the required researcher review of this Result.

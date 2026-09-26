@@ -1,9 +1,0 @@
-The **Proposal Review** for STAMPEDE is pending (reference `sha256:a683e0e768a4e1236e45d784c424b813ac16c662aafac0fbe11a26ffdbf515af`).
-
-- **Result:** Overall survival, defined as time from randomization to death from any cause.
-- **Comparison:** ADT plus abiraterone acetate and prednisolone versus ADT alone.
-- **Estimate:** HR 0.63 (95% CI 0.52–0.76), P<0.001.
-- **Scope:** Exact match to the requested outcome. The efficacy analysis included patients by assigned treatment; median follow-up was 40 months.
-- **Assessment status:** Not yet assessed. The workflow requires your approval of this Result before I can proceed to the five RoB 2 domains.
-
-Do you approve this Result for assessment, or would you like me to revise the selection?

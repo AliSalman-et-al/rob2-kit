@@ -1,5 +1,0 @@
-STAMPEDE’s adverse-event result is **high risk of bias overall**. The result assessed was grade 3 or higher AEs during the entire time in the trial: **443/948 (47%)** with abiraterone plus prednisolone versus **315/960 (33%)** with ADT alone; grade 5 events were **9 versus 3**.
-
-The measurement domain was **high risk**: the trial was open label, and participants receiving combination therapy had additional scheduled assessments, creating more opportunity to detect AEs. Selection was **some concerns** because the available SAP did not establish that its plan matched the reported time window or was finalized before investigators had access to unblinded outcomes. Randomization and missing outcome data were low risk; deviations from intended interventions raised some concerns.
-
-The assessment is finalized: [download the RoB 2 artifact](C:\Users\Ali-Salman\Documents\Code\rob2-kit\eval\runs\24-Sep-26\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\runs\adverse-events\STAMPEDE\workspace\.rob2-kit\finalized\6b12a3eb92f0c6672d39367ad47ed994f3020ed8bb2df5b59225a2dbbd1f62d6.rob2.zip).

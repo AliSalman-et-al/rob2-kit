@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d1dd-490c-7043-8dbc-81f43e819bbc"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll treat “Continue” as approval of the Proposal Review and record it through the workflow’s approval step, then resume the LATITUDE assessment."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I treated “Continue” as approval of the LATITUDE Proposal Review, but the rob2 approval tool is unavailable in this turn, so I couldn’t record the approval or resume the assessment. The workflow remains at the pending Proposal Review."}}
-{"type":"turn.completed","usage":{"input_tokens":1801680,"cached_input_tokens":1609216,"cache_write_input_tokens":0,"output_tokens":6142,"reasoning_output_tokens":1825}}

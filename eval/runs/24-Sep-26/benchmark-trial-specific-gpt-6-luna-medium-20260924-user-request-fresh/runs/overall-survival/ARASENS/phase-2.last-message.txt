@@ -1,7 +1,0 @@
-ARASENS Overall Survival (HR 0.68, 95% CI 0.57–0.80; P<0.001): **high risk of bias overall**.
-
-The main concern is missing outcome data: the report gives the analysis population and death count, but not arm-specific vital-status availability or censoring reasons. That left the missingness questions unresolved and drove the high rating. Deviations raised some concerns because one randomized participant was excluded after investigator fraud was detected; the protocol says that participant’s data could not be trusted. The other domains were rated low.
-
-The assessment is finalized. The result was judged narrower than the all-randomized target (1305 of 1306 participants analyzed). The overall judgment is sensitive to assumptions about the unresolved missing-data questions.
-
-Artifact: [ARASENS RoB 2 assessment](C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/overall-survival/ARASENS/workspace/.rob2-kit/finalized/e6a8c90b653c84c4b73348a0009bf4fab6cb118cf72623d31dc3d70f0e3b3032.rob2.zip).

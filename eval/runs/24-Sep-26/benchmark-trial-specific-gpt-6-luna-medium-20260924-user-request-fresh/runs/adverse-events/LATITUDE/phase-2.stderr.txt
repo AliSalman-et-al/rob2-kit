@@ -1,2 +1,0 @@
-2026-09-24T19:18:36.080613Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell
-2026-09-24T19:18:39.674668Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out

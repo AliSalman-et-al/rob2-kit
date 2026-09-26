@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d19d-2167-7e51-b6ad-a77936697d67"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll continue from the saved Proposal Review and record your approval, then complete the domain assessments and finalize the batch."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I take “Continue” as approval of the saved proposal. I can’t record that approval or continue the assessment because the RoB 2 tools are unavailable in this turn. The assessment is still pending at Proposal Review; please retry when those tools are available."}}
-{"type":"turn.completed","usage":{"input_tokens":1605698,"cached_input_tokens":1424896,"cache_write_input_tokens":0,"output_tokens":7637,"reasoning_output_tokens":2654}}

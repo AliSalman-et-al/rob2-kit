@@ -1,5 +1,0 @@
-The PEACE-1 assessment is finalized for grade 3 or worse adverse events in the docetaxel population. The Result Proposal retains the complete group values: **217/347 (63%)** with abiraterone and **181/350 (52%)** without.
-
-Overall risk of bias is **High**, driven by concerns about missing AE data for patients excluded from the safety population and potentially differential outcome measurement: liver tests were scheduled more often in abiraterone groups. The other three domains were rated Some concerns.
-
-[Download the finalized assessment](C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/adverse-events/PEACE-1/workspace/.rob2-kit/finalized/e6eb6d85b836823edc2fc122ea7c7ec7c7837f2a911c1dfe1da579eb1662cceb.rob2.zip)

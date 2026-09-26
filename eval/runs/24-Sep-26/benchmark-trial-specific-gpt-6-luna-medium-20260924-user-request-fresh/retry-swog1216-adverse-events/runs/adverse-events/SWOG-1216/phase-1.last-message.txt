@@ -1,5 +1,0 @@
-The Proposal for SWOG-1216 is saved and awaiting your review. **No Domain judgments have been made yet**, so this is not a completed risk-of-bias assessment.
-
-The proposed result uses the abstract’s **43% vs 14%** grade 3/4 AE comparison. There is conflicting source information: Table 2 reports **grade 3–5** AEs and gives **43% vs 13%**; the registry defines its endpoint as study-drug-related, CTCAE v4.0 grade 3–5 AEs among treated participants. The registry describes the time window as treatment and follow-up. I therefore proposed the result as **narrower** than the requested, otherwise unspecified toxicity outcome, and recorded the grade, control-rate, and population differences as uncertainties.
-
-Please **approve this Proposal** to continue, or tell me what Result detail you want corrected.

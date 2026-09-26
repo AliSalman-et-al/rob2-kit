@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d19e-0335-7e02-bd22-df3ae6ed4daf"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll record your approval of the reviewed result and continue with the five RoB 2 domains."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Your approval is recorded. I can’t continue the assessment in this turn because the rob2 workflow tools are no longer available in my tool session, so I can’t retrieve the approved result or assess the domains. The assessment remains pending; please resume the PEACE-1 RoB 2 workflow when those tools are available."}}
-{"type":"turn.completed","usage":{"input_tokens":1363869,"cached_input_tokens":1204480,"cache_write_input_tokens":0,"output_tokens":4529,"reasoning_output_tokens":1031}}

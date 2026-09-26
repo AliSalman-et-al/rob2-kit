@@ -1,5 +1,0 @@
-The GETUG-AFU-15 assessment is complete. **Overall risk of bias is High**, driven by High judgments for deviations from intended interventions, missing outcome data, and outcome measurement; randomization was Low risk, and selection of the reported result raised Some concerns.
-
-The selected result is the narrower serious-adverse-event count: **72 events** with ADT+docetaxel and **0 reported** with ADT alone. These are event counts, not numbers of participants affected, and the report does not provide a broad any-grade AE estimate. Key concerns include the safety analysis’s use of exposed participants, three ADT-alone participants without safety assessments (including two early deaths), and more frequent clinical and blood-test monitoring in the docetaxel group.
-
-The finalized artifact is [GETUG-AFU-15 RoB 2 assessment](C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/adverse-events/GETUG-AFU-15/workspace/.rob2-kit/finalized/d81c8ac390d1d614dd2a42852af5da5dd2a9730ede395626637e86979c0b57c1.rob2.zip).

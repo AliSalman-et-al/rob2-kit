@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0abf2-88f9-7931-858f-cc14448750bf"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"Approval received. I’m advancing the saved proposal and will now complete the domain assessments in server order, starting with randomization and rereading the approved trial context as required."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m unable to continue because the rob2-kit workflow tools disappeared from the active session after approval. Please restart or reconnect the assessment session, then say “Continue” again."}}
-{"type":"turn.completed","usage":{"input_tokens":1327364,"cached_input_tokens":1199616,"cache_write_input_tokens":0,"output_tokens":4795,"reasoning_output_tokens":1031}}

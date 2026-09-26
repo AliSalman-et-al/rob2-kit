@@ -1,7 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d1e2-a66c-7791-b907-578ce94eef0f"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m recording your approval of the current Proposal Review, then I’ll proceed through the RoB 2 Domains for this Result."}}
-{"type":"item.started","item":{"id":"item_1","type":"mcp_tool_call","server":"codex","tool":"list_mcp_resources","arguments":{},"result":null,"error":null,"status":"in_progress"}}
-{"type":"item.completed","item":{"id":"item_1","type":"mcp_tool_call","server":"codex","tool":"list_mcp_resources","arguments":{},"result":{"content":[{"type":"text","text":"{\"resources\":[]}"}],"structured_content":null},"error":null,"status":"completed"}}
-{"type":"item.completed","item":{"id":"item_2","type":"agent_message","text":"Your “Continue” approves the Proposal Review. I couldn’t record that approval or proceed with the Domain assessments because the RoB 2 tools are no longer available in this session. The assessment remains at Proposal Review; no Domain judgments have been made."}}
-{"type":"turn.completed","usage":{"input_tokens":2426869,"cached_input_tokens":2213632,"cache_write_input_tokens":0,"output_tokens":6438,"reasoning_output_tokens":2543}}

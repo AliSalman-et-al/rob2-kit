@@ -1,4 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d4b6-8bda-76f0-93cd-9be5786ee6ff"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The assessment is complete and finalized. Overall risk of bias is **High**; the artifact is linked above."}}
-{"type":"turn.completed","usage":{"input_tokens":13786052,"cached_input_tokens":13316608,"cache_write_input_tokens":0,"output_tokens":50157,"reasoning_output_tokens":33227}}

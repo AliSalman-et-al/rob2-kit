@@ -1,9 +1,0 @@
-## Proposal Review — SWG-1216 Overall Survival
-
-The proposed Result is the final OS comparison: time from random assignment to death from any cause, comparing ADT plus orteronel with ADT plus bicalutamide. The report gives median OS of 81.1 vs 70.2 months and HR 0.86 (95% CI 0.72–1.02), with median follow-up of 4.9 years.
-
-The analysis included 1,279 of 1,313 randomized patients: 638 and 641 per arm. The report says 32 were ineligible and two withdrew consent before treatment, so the proposed Result is classified as **narrower** than the full randomized population.
-
-**Proposal reference:** `sha256:f3d335be0a57e94da5cd0607f62104794229a3490c7d0ff839243c2c1831fe8d`
-
-This Proposal Review is awaiting your decision. Reply to approve it and continue the RoB 2 assessment, or request a different Result.

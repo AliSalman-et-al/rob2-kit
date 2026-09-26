@@ -1,7 +1,0 @@
-**ENZAMET Clinical PFS: high risk of bias overall**, driven by **Domain 4 (measurement of the outcome): high risk**. The other domains were judged low risk: randomization, deviations from intended interventions, missing outcome data, and selection of the reported result.
-
-The main concern is that the open-label endpoint included cancer-attributable symptoms and starting another anticancer treatment, which could be influenced by knowledge of treatment assignment. Imaging reports were reviewed locally, without central review of the images. The groups had the same planned assessment schedule, which reduces concern about different opportunities to detect progression.
-
-The requested estimate was HR 0.40 (P<.001); the full report gives a 95% CI of 0.33–0.49. One definition caveat remains: the SAP describes Clinical PFS as including death from any cause, while the requested endpoint definition does not. The assessment is finalized against the requested definition.
-
-[Download the finalized RoB 2 assessment](.rob2-kit/finalized/cd07483af42671460eacd307b9dce0e43d76c890eaf585573df618a16348c512.rob2.zip).

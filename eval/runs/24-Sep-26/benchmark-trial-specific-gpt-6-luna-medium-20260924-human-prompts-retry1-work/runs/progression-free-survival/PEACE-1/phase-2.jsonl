@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d19e-7e04-7721-84ea-3fba16536423"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m recording your approval of the Proposal Review, then I’ll continue with the approved Result and the five RoB 2 Domains."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t continue the assessment in this turn because the RoB 2 tools are unavailable: `request_proposal_approval` and `get_status` are missing from the current tool set. Your approval is clear, but I can’t record it or retrieve the next Domain checkpoint without those tools.\n\nThe Proposal Review remains pending. Once the RoB 2 tools are available again, I can record your approval and resume from that checkpoint."}}
-{"type":"turn.completed","usage":{"input_tokens":2347699,"cached_input_tokens":2025472,"cache_write_input_tokens":0,"output_tokens":8374,"reasoning_output_tokens":3203}}

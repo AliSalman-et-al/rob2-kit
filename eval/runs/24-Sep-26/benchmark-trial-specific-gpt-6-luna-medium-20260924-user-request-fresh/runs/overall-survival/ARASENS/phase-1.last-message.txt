@@ -1,9 +1,0 @@
-## Proposal Review: ARASENS overall survival
-
-**Proposed Result:** The primary overall-survival comparison of darolutamide plus ADT and docetaxel versus placebo plus ADT and docetaxel. Overall survival is time from randomization until death from any cause. At the October 25, 2021 cutoff, after 533 deaths, the reported hazard ratio was **0.68 (95% CI 0.57–0.80; P<0.001)**.
-
-**Population scope:** The full analysis set included 1,305 of 1,306 randomized participants. The supplement’s flow diagram identifies one placebo-randomized participant excluded for a GCP violation, while the protocol says all randomized participants would be included in the OS analysis. The sources do not explain the violation or establish whether outcome data were available for that participant. The proposal therefore classifies the reported analysis as slightly narrower than all randomized participants.
-
-**Proposal Review reference:** `sha256:2eaf9086448f750ad1f1e1d37d726a988bb3eaeed4d1eeb43ab06615ab8306cc`
-
-The assessment is paused at the required researcher review. **Please approve this proposed Result or tell me what to change.** No RoB 2 domain judgments have been made yet.

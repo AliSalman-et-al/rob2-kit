@@ -1,1 +1,0 @@
-/rob2-assess Assess risk of bias for Overall Survival defined as Time from randomization to death resulting from any cause, Median OS 81.1 vs 70.2 months; HR 0.86 (95% CI 0.72–1.02), P=.040 (one-sided) in SWOG-1216.

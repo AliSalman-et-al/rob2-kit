@@ -1,7 +1,0 @@
-The CHAARTED Overall Survival assessment is complete and finalized. **Overall risk of bias: Low**; all five Domains were judged Low.
-
-The Result matches the requested outcome: all-cause death from randomization, median OS 57.6 vs 44.0 months, HR 0.61 (95% CI 0.47–0.80), *P*<.001.
-
-The main uncertainty is that the report does not give an OS-specific count of participants with known vital status at the survival cutoff. It does state that all randomized participants were followed and included in the primary analysis, supporting a judgment of near-complete availability.
-
-The finalized artifact is [.rob2.zip](C:/Users/Ali-Salman/Documents/Code/rob2-kit/eval/runs/24-Sep-26/benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh/runs/overall-survival/CHAARTED/workspace/.rob2-kit/finalized/8519d882ebd079805090818c1b082138e18b942551078986ab4e3fa2ba8a949a.rob2.zip).

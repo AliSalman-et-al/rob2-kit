@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d20a-1843-79a3-905b-fdf1b8a7810d"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll resume from the pending Proposal Review and check the workflow status for its current next action."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"The proposal is waiting for researcher approval, and I’ll treat “Continue” as approval of the submitted candidate. I can’t record that approval or proceed with the domain assessments because the `rob2-kit` workflow tools aren’t available in this turn. The last workflow status showed Proposal Review pending, so no RoB 2 domains have been assessed yet."}}
-{"type":"turn.completed","usage":{"input_tokens":1329099,"cached_input_tokens":1171712,"cache_write_input_tokens":0,"output_tokens":5850,"reasoning_output_tokens":1899}}

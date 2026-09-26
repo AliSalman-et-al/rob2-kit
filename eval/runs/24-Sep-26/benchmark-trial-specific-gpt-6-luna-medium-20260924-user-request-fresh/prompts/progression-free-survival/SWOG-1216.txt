@@ -1,1 +1,0 @@
-/rob2-assess Assess risk of bias for Progression-Free Survival defined as From randomization to first PSA or radiographic progression, symptomatic deterioration, or death due to any cause, Median PFS 47.6 vs 23.0 months; HR 0.58 (95% CI 0.51–0.67), P<.0001 in SWOG-1216.

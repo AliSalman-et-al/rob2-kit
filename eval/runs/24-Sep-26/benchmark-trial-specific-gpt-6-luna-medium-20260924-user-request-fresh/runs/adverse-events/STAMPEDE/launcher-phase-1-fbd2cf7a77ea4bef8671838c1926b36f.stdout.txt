@@ -1,2 +1,0 @@
-C:\Users\Ali-Salman\Documents\Code\rob2-kit\eval\runs\24-Sep-26\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\runs\adverse-events\STAMPEDE\workspace\.agents\skills\rob2-assess
-{"exit_code": 0, "trace": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\24-Sep-26\\benchmark-trial-specific-gpt-6-luna-medium-20260924-user-request-fresh\\runs\\adverse-events\\STAMPEDE\\phase-1.jsonl"}

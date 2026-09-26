@@ -1,4 +1,0 @@
-2026-09-24T18:34:35.764565Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell
-2026-09-24T18:35:29.916884Z  WARN codex_analytics::client: failed to send events request: error sending request for url (https://chatgpt.com/backend-api/codex/analytics-events/events)
-2026-09-24T18:37:04.338492Z  WARN codex_rmcp_client::stdio_server_launcher: Failed to read MCP server stderr (C:\Users\Ali-Salman\Documents\Code\rob2-kit\.venv\Scripts\rob2.exe): stream did not contain valid UTF-8
-2026-09-24T18:38:36.336799Z  WARN codex_core::tasks: failed to flush rollout after emitting terminal turn event: thread 01a0d4b2-b0e2-7292-970d-f9512c284149 not found

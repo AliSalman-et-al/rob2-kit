@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d1b0-0fd3-7471-8445-1edfd388f172"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"You approved the selected result by asking me to continue. I’ll record that approval and proceed through the five RoB 2 domains, following the workflow’s required source reading and checkpoints."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t continue the canonical assessment in this turn: the rob2 workflow tools used to prepare and save the proposal are no longer available in my tool session, so I can’t record your approval or safely proceed with the domain checkpoints.\n\nYour result selection is ready for approval, but that approval has **not** been recorded. Please resume in a session where the rob2 tools are available; I’ll then continue from the pending Proposal Review."}}
-{"type":"turn.completed","usage":{"input_tokens":2056995,"cached_input_tokens":1873664,"cache_write_input_tokens":0,"output_tokens":7452,"reasoning_output_tokens":2732}}

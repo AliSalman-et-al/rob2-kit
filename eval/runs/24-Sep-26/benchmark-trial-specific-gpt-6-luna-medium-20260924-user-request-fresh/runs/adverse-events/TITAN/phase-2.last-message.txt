@@ -1,6 +1,0 @@
-The TITAN assessment is complete and finalized.
-
-- **Overall risk of bias: High**, driven by Domain 3 (missing outcome data). The report identifies 39 participants who were lost to follow-up or withdrew from data collection, but does not establish how many had missing Grade 3/4 AE data, when or why follow-up ended, or their treatment groups.
-- Domain ratings: randomization **Low**; deviations **Some concerns**; missing outcome data **High**; measurement **Low**; selection of the reported result **Some concerns**.
-- Reported Grade 3/4 AEs were 221/524 (42.2%) with apalutamide and 215/527 (40.8%) with placebo. The AE analysis used the treated safety population, excluding one randomized apalutamide participant who withdrew before treatment.
-- Finalized artifact: `.rob2-kit/finalized/aa43c2b2308e0652a2bb4ebd2cb52e47a2b45ee7ea5be8bf0f61c7534a465d5a.rob2.zip`

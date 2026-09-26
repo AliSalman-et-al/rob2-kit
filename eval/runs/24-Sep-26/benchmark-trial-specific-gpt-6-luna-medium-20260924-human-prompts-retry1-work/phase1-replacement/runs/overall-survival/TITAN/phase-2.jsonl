@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d215-0ec1-7943-97c6-c9577ce4c7f4"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll treat “Continue” as approval of the displayed Proposal Review, record that approval in the workflow, then proceed with the five RoB 2 Domains."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t continue the RoB 2 workflow in this turn because the `rob2-kit` tools are no longer available. The Proposal Review is still pending, and its approval was not recorded. No Domain judgments have been made.\n\nPlease resume in a turn where the `rob2-kit` tools are available; I can then record your approval and continue the assessment."}}
-{"type":"turn.completed","usage":{"input_tokens":2592500,"cached_input_tokens":2354176,"cache_write_input_tokens":0,"output_tokens":6551,"reasoning_output_tokens":2823}}

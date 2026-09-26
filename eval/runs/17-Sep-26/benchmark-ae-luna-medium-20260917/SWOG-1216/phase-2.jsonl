@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0abf2-8947-7670-9084-96127701bcce"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"Approval received. I’m accepting the immutable Proposal Review and will continue through the five RoB 2 domains, using the approved adverse-events Result and the server’s current checkpoints."}}
-{"type":"error","message":"You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:23 AM."}
-{"type":"turn.failed","error":{"message":"You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:23 AM."}}

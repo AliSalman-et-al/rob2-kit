@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d193-9030-7bc3-a26c-b0d08abd161f"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll continue with the selected result. I’m checking the workflow’s approval state first, then I’ll proceed with the required Domain assessments."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t continue the assessment in this turn because the rob2 workflow tools used to record proposal approval and assess the Domains are no longer available in the active tool set. Your “Continue” confirms the intended direction, but I can’t record approval or commit the assessment without those tools. The selected CHAARTED result remains pending in the workflow."}}
-{"type":"turn.completed","usage":{"input_tokens":1692358,"cached_input_tokens":1516544,"cache_write_input_tokens":0,"output_tokens":4644,"reasoning_output_tokens":1113}}

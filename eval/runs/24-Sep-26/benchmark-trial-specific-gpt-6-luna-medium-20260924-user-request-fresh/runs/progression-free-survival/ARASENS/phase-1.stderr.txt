@@ -1,3 +1,0 @@
-2026-09-24T18:23:02.617064Z ERROR codex_models_manager::manager: failed to refresh available models: request timed out
-2026-09-24T18:23:02.796783Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell
-2026-09-24T18:27:14.400836Z  WARN codex_core::tasks: failed to flush rollout after emitting terminal turn event: thread 01a0d4a8-1dd9-7a03-bed3-f0dfee1a122e not found

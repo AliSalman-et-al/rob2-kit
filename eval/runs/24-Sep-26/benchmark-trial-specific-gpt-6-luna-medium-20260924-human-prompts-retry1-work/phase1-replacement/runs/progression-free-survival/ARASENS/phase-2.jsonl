@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0d20a-1495-7681-8d93-513d5da3a7b3"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’ll record your approval of the saved result, then continue through the required RoB 2 domains."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I can’t continue the RoB 2 workflow right now: the rob2 assessment tools are no longer available in this turn, including the tool needed to record your approval. Your approval is clear, but I can’t advance the saved Proposal or create domain judgments without those tools. Please resume once the rob2 tools are available."}}
-{"type":"turn.completed","usage":{"input_tokens":1855976,"cached_input_tokens":1665536,"cache_write_input_tokens":0,"output_tokens":5964,"reasoning_output_tokens":2346}}

@@ -1,3 +1,0 @@
-The exact ARCHES result is the primary rPFS comparison: enzalutamide plus ADT versus placebo plus ADT, analyzed in all 1,150 randomized patients. The report gives HR 0.39 (95% CI 0.30–0.50; P<.001), with median rPFS not reached versus 19.0 months. The supplement confirms the central review definition, including RECIST 1.1 progression in soft tissue, at least two new bone lesions, and death within 24 weeks after treatment discontinuation.
-
-The proposal is saved and ready for the required researcher review. **Do you approve this Result selection so I can continue the RoB 2 assessment?**

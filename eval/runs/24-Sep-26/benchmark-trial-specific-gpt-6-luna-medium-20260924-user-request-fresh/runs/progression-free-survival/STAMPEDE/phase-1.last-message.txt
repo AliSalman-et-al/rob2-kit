@@ -1,7 +1,0 @@
-**Proposal Review — STAMPEDE, Progression-Free Survival**
-
-The saved Proposal selects the full article’s 3-year PFS comparison: **ADT plus abiraterone and prednisolone vs ADT alone**, HR **0.40** (95% CI **0.34–0.47**; *P*<0.001). The article reports 3-year PFS of 80% vs 62%. It defines PFS as failure-free survival excluding biochemical failure; the protocol also lists the PFS event criteria. The estimate appears in the article body, while the abstract reports the failure-free survival estimate.
-
-The selected result is **exact** for the requested outcome, population, comparison, and time point. The study randomized 957 participants to ADT alone and 960 to combination therapy; efficacy analyses followed intention to treat.
-
-The Proposal is saved and awaiting your review. **Approve it to continue with the RoB 2 domains**, or tell me what result or scope to reconsider.

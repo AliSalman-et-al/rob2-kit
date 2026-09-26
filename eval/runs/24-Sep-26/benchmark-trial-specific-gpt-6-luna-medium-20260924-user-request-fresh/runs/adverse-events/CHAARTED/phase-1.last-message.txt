@@ -1,5 +1,0 @@
-The Proposal Review for **CHAARTED adverse events** is pending. I propose an **unavailable** Result: the report gives selected grade 3 or higher adverse-event results for patients receiving ADT plus docetaxel, but no comparable profile for ADT alone. It says adverse events in the ADT-alone group were not routinely documented. The protocol describes CTCAE v4.0 grading, while the article says study records retained v3.0 for consistency; neither supplies the missing comparator results.
-
-The review records this missing fact: *comparative adverse-event results for the ADT-alone group corresponding to the reported docetaxel-group profile*. Since there is no complete comparative Result to assess, I can’t assign RoB 2 domain judgments for this outcome.
-
-**Do you approve this Proposal Review?** Reply “approve” to continue the workflow, or tell me what to revise.

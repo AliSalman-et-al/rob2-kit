@@ -1,3 +1,0 @@
-The Proposal Review is ready for your approval. I selected an **unavailable** Result for the requested broad, CTCAE v3.0 graded adverse-event outcome: the report gives 72 serious adverse events in the ADT+docetaxel arm and none in ADT alone, but those are event counts, not a broad comparative estimate of participants with adverse events. The article’s six-month table reports selected toxicity categories, not an overall estimate.
-
-The captured article identifies NCI Common Toxicity Criteria version 3 and reports selected grade-specific toxicities; the registry has no posted results. Because no broad AE estimate is available, this Result cannot proceed to RoB 2 domain assessment. The proposal is pending the workflow’s required researcher approval.

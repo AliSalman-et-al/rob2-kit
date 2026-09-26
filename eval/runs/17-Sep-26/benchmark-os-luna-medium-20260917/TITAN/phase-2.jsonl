@@ -1,5 +1,0 @@
-{"type":"thread.started","thread_id":"01a0abf5-6b4c-7240-b98f-1d3d620ffe0f"}
-{"type":"turn.started"}
-{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"The Proposal Review is already saved and pending approval. I’m resuming from the server’s current workflow state and will proceed through the domain checkpoints."}}
-{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"I’m unable to continue because the `rob2` workflow tools are no longer available in the current session context. Please retry “Continue” in the same workspace/session so I can resume at Proposal Review approval."}}
-{"type":"turn.completed","usage":{"input_tokens":1396638,"cached_input_tokens":1243648,"cache_write_input_tokens":0,"output_tokens":3788,"reasoning_output_tokens":1191}}
