@@ -378,13 +378,20 @@ def test_stale_competing_domain_draft_cannot_overwrite_winner(tmp_path: Path) ->
         os.environ["ROB2_WORKSPACE"] = str(workspace)
         return list(await asyncio.gather(submit(winner), submit(competitor)))
 
-    accepted, rejected = asyncio.run(compete())
+    first, second = asyncio.run(compete())
 
-    successes = [result for result in (accepted, rejected) if result["outcome"] == "success"]
-    conflicts = [result for result in (accepted, rejected) if result["outcome"] == "conflict"]
-    assert len(successes) == 1, (accepted, rejected)
-    assert len(conflicts) == 1, (accepted, rejected)
+    successes = [result for result in (first, second) if result["outcome"] == "success"]
+    assert len(successes) == 1, (first, second)
+    # The other call can return a condition before the winner commits.
+    assert {first["outcome"], second["outcome"]} <= {
+        "success",
+        "conflict",
+        "condition",
+    }
     accepted = successes[0]
+    stale_draft = competitor if first["outcome"] == "success" else winner
+    stale = _call(workspace, "save_domain_judgment", stale_draft)
+    assert stale["outcome"] == "conflict", stale
     state = _state(workspace)
     assert state["revision"] == accepted["head"]["state_revision"]
     assert (
