@@ -851,7 +851,12 @@ def _run_development_comparison(
         raise ValueError("development comparison attempt budget was exceeded")
     measurement_keys = ("latency_ms", "cost", "context_bytes", "tool_calls")
     known_totals = {
-        key: sum(row[key] for row in rows if row[key] is not None) for key in measurement_keys
+        key: (
+            math.fsum(row[key] for row in rows if row[key] is not None)
+            if key == "cost"
+            else sum(row[key] for row in rows if row[key] is not None)
+        )
+        for key in measurement_keys
     }
     if known_totals["cost"] > budget["max_cost"]:
         raise ValueError("development comparison cost budget was exceeded")
@@ -1240,7 +1245,7 @@ def run_comparison(
         rows.append(dict(row))
     if len(rows) > budget["max_attempts"]:
         raise ValueError("comparison usage budget was exceeded")
-    if sum(row["cost"] for row in rows) > budget["max_cost"]:
+    if math.fsum(row["cost"] for row in rows) > budget["max_cost"]:
         raise ValueError("comparison cost budget was exceeded")
     if sum(row["context_bytes"] for row in rows) > budget["max_context_bytes"]:
         raise ValueError("comparison context budget was exceeded")
@@ -1321,7 +1326,7 @@ def run_comparison(
             "support": dict(Counter(row["support"] for row in arm_rows)),
             "statuses": dict(Counter(row["status"] for row in arm_rows)),
             "latency_ms": sum(row["latency_ms"] for row in arm_rows),
-            "cost": sum(row["cost"] for row in arm_rows),
+            "cost": math.fsum(row["cost"] for row in arm_rows),
             "context_bytes": sum(row["context_bytes"] for row in arm_rows),
             "tool_calls": sum(row["tool_calls"] for row in arm_rows),
         }
@@ -1462,7 +1467,9 @@ def _rate(n: int | float, d: int | float) -> dict[str, int | float]:
 
 def _sum_known(rows: list[dict[str, Any]], key: str) -> int | float | None:
     values = [row[key] for row in rows if row[key] is not None]
-    return sum(values) if values else None
+    if not values:
+        return None
+    return math.fsum(values) if key == "cost" else sum(values)
 
 
 def _scrub(value: Any) -> Any:

@@ -1054,7 +1054,7 @@ def _validate_comparison_binding(report: dict[str, Any], errors: list[str]) -> N
         "context_bytes": {"total": sum(row["context_bytes"] for row in outcomes)},
         "calls": {"total": sum(row["tool_calls"] for row in outcomes)},
         "latency": {"total": sum(row["latency_ms"] for row in outcomes)},
-        "cost": {"total": sum(row["cost"] for row in outcomes)},
+        "cost": {"total": math.fsum(row["cost"] for row in outcomes)},
     }
     completed: dict[str, Any] = expected_metrics["completion"]
     completed["rate"] = (
