@@ -500,7 +500,7 @@ def _continuation_diagnosis(run_dir: Path, phase: int) -> str | dict[str, str] |
     recorded_sessions = [
         phase_meta[field]
         for field in ("codex_session_id", "session")
-        if field in phase_meta
+        if isinstance(phase_meta.get(field), str) and phase_meta[field].strip()
     ]
     if (
         phase_meta.get("trace_sha256") != prior.get("trace_sha256")

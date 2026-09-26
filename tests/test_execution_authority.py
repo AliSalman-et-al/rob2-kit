@@ -1796,6 +1796,22 @@ def test_continuation_requires_hash_bound_same_session_typed_calls(
         )
 
 
+def test_continuation_accepts_null_initial_session_argument_when_session_is_bound(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+    runner = _runner()
+    _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+    _write_frozen_inventory(tmp_path, inventory, tuple(runner["EXPECTED_TOOL_INVENTORY"]))
+
+    metadata_path = tmp_path / "phase-1.meta.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    metadata["session"] = None
+    metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+
+    assert phase_runner["_continuation_diagnosis"](tmp_path, 2) is None
+
+
 def test_scientific_terminal_status_requires_explicit_operator_command(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
