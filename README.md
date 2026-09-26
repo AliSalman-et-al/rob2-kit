@@ -165,6 +165,9 @@ records the tool catalog, schemas, annotations, resource families, and portable
 skill pointers. See the [release guide](docs/release/README.md) for contract and
 wheel verification.
 
+The server resolves the unique validated draft for its revision and scope
+before it saves a Proposal or Domain judgment.
+
 ### Run the project checks
 
 ```powershell
