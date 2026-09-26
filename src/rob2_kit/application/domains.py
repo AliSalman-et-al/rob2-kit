@@ -2805,6 +2805,9 @@ def save_domain_judgment(
     rows = dict(state.get("domain_records", {}))
     if rows.get(key, {}).get("identity") == record["identity"]:
         return _result("success", state, checkpoint=rows[key], retry=True)
+    current_revision = int(state.get("revision", 0))
+    if parsed.expected_revision != current_revision:
+        raise WorkflowConflict(parsed.expected_revision, current_revision)
     if existing_record is not None:
         if parsed.supersedes != existing_record.get("identity"):
             return _result(
@@ -2872,10 +2875,6 @@ def save_domain_judgment(
             record["observed_at"] = prior_observed_at
         if rows.get(key, {}).get("identity") == record["identity"]:
             return _result("success", state, checkpoint=rows[key], retry=True)
-    current_revision = int(state.get("revision", 0))
-    if parsed.expected_revision != current_revision:
-        raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
-
     delivery = _domain_context_delivery(root, parsed.trial_id, parsed.domain_id, None)
     if delivery is not None:
         preview_scope = delivery.get("preview_scope")
