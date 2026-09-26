@@ -1,0 +1,192 @@
+{
+  "schema": "rob2-kit.benchmark-scope-adjudications.v2",
+  "adjudications": [
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARCHES",
+      "expected_result_sha256": "56f2550fbacc7d7534b0765e8eb3605ed38438886316800202bd4d1942e779b4",
+      "review_identity": "sha256:5e276d4708a1b71ceff16f5ac91f7c3de9656c42108717c13546983fe19da20e",
+      "result_identity": "sha256:17dcdf4e302520befe62d3f698770c83be2cd4e4dfd28859ce696c85b5b38bab",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The requested endpoint is overall survival, time from randomization to death from any cause, comparing the randomized enzalutamide plus ADT and placebo plus ADT groups. The selected estimate is the paper's interim OS analysis at final rPFS analysis (October 14, 2018 cutoff; median follow-up 14.4 months): HR 0.81 (95% CI 0.53 to 1.25). The registry contains a distinct later OS analysis with a different estimate.",
+      "source_citation": "Main article, interim overall-survival Results/Table 2, PDF pp. 4-5.; Supplement eTable 1, PDF p. 61"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "CHAARTED",
+      "expected_result_sha256": "e48908ca91bb3e2689daa4f303981c65cb26b8bcc55da7d3404df5d0301bd168",
+      "review_identity": "sha256:e2ec32fcbcfa9fd464bb6f809d4ab0edf041bb08461cbf5ba3d266529cb7f281",
+      "result_identity": "sha256:c2a61d00e07b7d81c5b068e766e673bda6c4be499488c90dcecb318600ce19f5",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report evaluates overall survival from randomization until death from any cause, compares all randomized patients assigned to ADT plus docetaxel with those assigned to ADT alone, and reports the requested estimate at the December 23, 2013 survival data cutoff. The registry specifies last known alive as the censoring endpoint, compatible with the article's time-to-death outcome.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 63"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ENZAMET",
+      "expected_result_sha256": "be0fe5f1296118f64fe41da0614a3936cad1d45c9c17f1416e62fd859aef5ae7",
+      "review_identity": "sha256:c30a106ba6f3e94943e74dbc03995b1a0b3ce600f25f5030a258847933051a10",
+      "result_identity": "sha256:efed6952c4d5e02f354ef3cec93eb0fc70e686f6ec91b889f039dbfafd68053a",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report defines overall survival as time from randomization to death from any cause or last known alive. The requested comparative estimate is for randomized enzalutamide versus standard-care assignment groups, analyzed in all randomized patients; the selected time-to-event report is the first interim analysis after median follow-up of 34 months.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 63"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "GETUG-AFU-15",
+      "expected_result_sha256": "4544b7416346eba4a2f0e9443a929c55549109996f64ccec428d395710635d45",
+      "review_identity": "sha256:c96f22ef310188d7e2d12ac140a19a4a7875e0a87ebbf48e8e07f1dbefc09f3e",
+      "result_identity": "sha256:577a4c46f339f1a678116c09a074d4bc67330382c735dc818a3a18c2f9938c03",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The article's primary endpoint is overall survival, defined as time between randomisation and death from any cause, compared between the two randomized groups. It reports the HR after extended follow-up through July 31, 2011. The registry listed 36-month overall survival, but the published report extends follow-up to a common cutoff and the request sets no fixed horizon.",
+      "source_citation": "Main article abstract, Findings, PDF p. 1.; Supplement eTable 1, PDF p. 64"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE",
+      "expected_result_sha256": "fcfba3ff5675b9e595f61ec94b79eec5a09d48b6bf7ccb09bd02f0f0a8d1fe99",
+      "review_identity": "sha256:5b20d4355820f3601e873d5230b01da45067e452f3e19ca67e5a727988841730",
+      "result_identity": "sha256:70c36d587845f9bca1eb07c8db170beff0e256c42a707103303b0dc77ceff7a5",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. This is the prespecified overall-survival comparison in the randomized groups, with death from any cause measured from randomization; the estimate is the hazard ratio at the first interim analysis, matching the requested outcome and estimate.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 62"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "PEACE-1",
+      "expected_result_sha256": "e96690701f6252b1a25ac24091c5fdb537ade46fb1177801ce1f0add3ddabd54",
+      "review_identity": "sha256:1c65612d572a16c72eecfa91959ab67fbb56622c702e206722dd3cce4acb4be6",
+      "result_identity": "sha256:3270879bb7a1248fd758fcfbbfff47e4a1ba684312dc37d7e9fae66fe23c9711",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report defines overall survival as time from randomisation to death from any cause, with patients without events censored at last follow-up. It reports the overall randomized population, comparing assignment to SOC plus abiraterone versus SOC without abiraterone, pooled across radiotherapy allocation, using the requested hazard ratio; the data cutoff was June 1, 2021.",
+      "source_citation": "Main article abstract, Findings, PDF p. 1.; Supplement eTable 1, PDF p. 60"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "expected_result_sha256": "c9b94a864d2cf8ab17d2db4119811acf25e9d41600f82648c1f403fa4cd7de37",
+      "review_identity": "sha256:c251e51dd71b69519dc4ed6df7e83fcdd3acbe709128908885e9f66c04962be3",
+      "result_identity": "sha256:4898ef4663b32917f69b4eb67f5fee8460d10029bfee5c7d7e7db0b2fc224778",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The target is all randomized participants assigned to ADT plus abiraterone and prednisolone versus ADT alone, with death from any cause measured from randomization through the February 10, 2017 data freeze. The report names overall survival, explicitly defines it with that event set and time origin, and reports the comparative hazard ratio for the intention-to-treat population.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 60"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "TITAN",
+      "expected_result_sha256": "2df3aea252a3871dca93f3d61d7110fa7ec60b9c7a1967e5da64baf812f7c500",
+      "review_identity": "sha256:842d747e597ca13e6e17074d746f6b604eacc828a8aad5b9313e60b86ba53413",
+      "result_identity": "sha256:4e9818cb15b002bba0aa84719d22b1169a8dc08fc41638a04cd9c0cb26dc9202",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report defines overall survival as time from randomization to death from any cause, matching the requested event set and time origin. It compares the two randomized groups and reports the first interim overall-survival analysis.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 61"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "CHAARTED",
+      "expected_result_sha256": "75b54c8f2aba7bf6b60aa34df599643b8ee5fc370ba9a0952dad9fb1d8a0fbf5",
+      "review_identity": "sha256:29d246296c95f07708a168ee5ae150c4c4c59d8a56d3fa722664b5cba3483c0d",
+      "result_identity": "sha256:8456bd43cc85c9c9a4437d19eaee2bfc56354da9a093b05330b8cd204fdfd47b",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The protocol names time to Clinical Progression Free Survival and defines it from randomization to documented clinical progression: increasing symptomatic bone metastases, RECIST progression, or cancer-related clinical deterioration in the investigator’s opinion. The article reports time to clinical progression from randomization using the same event set, in all randomized patients assigned to ADT plus docetaxel versus ADT alone; the reported hazard ratio is 0.61 (95% CI, 0.50 to 0.75).",
+      "source_citation": "Main article Results/Table 2, secondary end points, PDF pp. 4-5.; Supplement eTable 1, PDF p. 63"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "GETUG-AFU-15",
+      "expected_result_sha256": "5b0c82abb1e04862207c98e676563b7d41ddf7e36a1343d447988aefbab4b6ac",
+      "review_identity": "sha256:6aa32fea1d3f33ccf64017dc3bcb01979a06666eadf6d545fd10930a13edb887",
+      "result_identity": "sha256:9866e92899190ce9f18cfa8489fce0270322dee3fd399c41f2a324ef8a12e881",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report labels its secondary endpoint cPFS and defines it as time to clinical progression or death, measured from randomization. The lesion-specific progression criteria include RECIST 1.0 progression of pre-existing measurable lesions or new bone lesions and a separate definition for bone-only disease. Death is an event. The report compares the two randomized groups using the intention-to-treat population and reports the cPFS hazard ratio.",
+      "source_citation": "Main article Results, clinical progression-free survival, Figure 3, PDF p. 4.; Supplement eTable 1, PDF p. 64"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "PEACE-1",
+      "expected_result_sha256": "ff60c68ac40b3b2097cd3871c54b2a289018f5d243bea491b471a06f58ebe033",
+      "review_identity": "sha256:60f532c650ec034d8842843e0d247bc49eac8c534ee5a94d880ab0efba0a992c",
+      "result_identity": "sha256:3e37a84e4c11910e7534a53762ef98869a093a7f03ddac6a40ab107df9982722",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The reported radiographic progression-free survival uses the requested event set (radiographical progression or death from any cause), begins at randomisation, and is reported for the intention-to-treat overall population. The estimate compares the two pooled abiraterone assignment groups with the two pooled groups not assigned abiraterone, regardless of radiotherapy, after no qualitative interaction with radiotherapy was found.",
+      "source_citation": "Main article abstract, Findings, PDF p. 1.; Supplement eTable 1, PDF p. 60"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "STAMPEDE",
+      "expected_result_sha256": "e5fd5ce4158b29270cf39dfda02d3b11421fb2177380e07adc38266efbc9278c",
+      "review_identity": "sha256:2aba85a0c03f9153f38a1b97ed3d7aa7e2d90d28d5251d3ec1da8f8d55401d36",
+      "result_identity": "sha256:852d6644c767ad72696d3d4d76b8efb77a3c564952c19356222122d8aa47f026",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The requested progression-free survival is explicitly defined as failure-free survival excluding biochemical (PSA) failure. The report defines failure-free survival using radiologic, clinical, or PSA progression or prostate-cancer death, so the corresponding endpoint is radiologic or clinical progression or prostate-cancer death. It reports the comparative hazard ratio at 3 years in patients assigned to ADT alone versus ADT plus abiraterone and prednisolone; efficacy analyses included all patients under assigned treatment.",
+      "source_citation": "Main article Results, Other Efficacy Outcome Measures, PDF p. 5.; Supplement eTable 1, PDF p. 60"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "TITAN",
+      "expected_result_sha256": "b05bca3cdc8741c7b49e12c8b017a24949a71e997cf1101bc4ca1977057b4073",
+      "review_identity": "sha256:cdcc8e73513415c4db8b794ff758a26f1f07ce0a713670fa6079d6605a9a7959",
+      "result_identity": "sha256:a8aedafdf072daf1c9bcbaf1d48869e98fba01b6abaeb169125a152f949cbc70",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The requested outcome and the trial's primary rPFS endpoint both start at randomization and end at the first imaging-documented radiographic progression or death, whichever occurs first. The randomized comparison is apalutamide plus ADT versus placebo plus ADT, and the reported assignment effect is the hazard ratio at the rPFS analysis performed at the first planned OS interim analysis (data cutoff November 23, 2018; median follow-up 22.7 months). The separate second progression-free survival endpoint includes PSA or clinical progression during subsequent therapy and is not the requested endpoint.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 61"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE",
+      "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+      "review_identity": "sha256:7150390a14dff63613217b472e81dbb1d43ad7538469d8c3d9028ab58f21307f",
+      "result_identity": "sha256:64f9a0c7cf19147adfc435da3005cf204ff9e185ad78fad579f48ab06ec938d8",
+      "observed_relation": "exact",
+      "decision": "equivalent",
+      "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report gives the requested grade 3 or higher threshold as grade 3 or 4 adverse events, in the two randomized groups, with comparative counts and percentages. Safety was assessed during trial visits, at treatment discontinuation, and at end of trial. The report does not specify a single calendar time point.",
+      "source_citation": "Main article Results, Safety, PDF p. 5.; Supplement eTable 1, PDF p. 62"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARCHES",
+      "expected_result_sha256": "64c5ac33eb741226ba02a50603217d6f2a26acebcb8f5961927d6dfc6c2f4780",
+      "review_identity": "sha256:c1fa037956d1980fcdd4aa8bd3c32f3d575bf429b674c00162fb9af8dfeccc5f",
+      "result_identity": "sha256:2799f3409ffb4390d785d1fc4d4b274ee33d348e5cbad8a24550a42bef678ab4",
+      "observed_relation": "broader",
+      "decision": "accepted_with_scope_difference",
+      "rationale": "Accepted as a sensitivity-only proxy because the selected result concerns the requested endpoint and uses the supplied trial contrast and estimate, but has a documented scope difference: The reported primary rPFS result is for randomized men with metastatic hormone-sensitive prostate cancer, comparing enzalutamide plus ADT with placebo plus ADT, from randomization to radiographic progression or death within the specified 24-week post-discontinuation window. The requested definition specifies radiographic progression as RECIST 1.1 progressive disease; the report applies RECIST 1.1 to soft-tissue disease and also counts qualifying new bone lesions on bone scans, so its event definition is broader. The report uses central radiographic review and the same death rule.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 61"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ENZAMET",
+      "expected_result_sha256": "8a28cf3532d0335cf66f76230d9e2fd09c4e7ad1372591cfba76110bff566186",
+      "review_identity": "sha256:859b17595ffb08ab0e938975ecbb408b09debb1a43c5fe17c0106e0e6f0a12c3",
+      "result_identity": "sha256:d03b082c3d82399e9bd35a0428cdf51bbea1303f7da38140521bea5039d88868",
+      "observed_relation": "broader",
+      "decision": "accepted_with_scope_difference",
+      "rationale": "Accepted as a sensitivity-only proxy because the selected result concerns the requested endpoint and uses the supplied trial contrast and estimate, but has a documented scope difference: The requested event is clinical progression defined by radiographic progression, cancer-related symptoms, or initiation of another prostate-cancer treatment. The report's clinical progression-free survival uses these clinical progression events, but the protocol also counts death from any cause as an event. Its time origin is randomization, and it compares all randomized patients assigned to enzalutamide versus standard care.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 63"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "LATITUDE",
+      "expected_result_sha256": "b81c430d15cc08b9a53fea867c3d5d07b9dcfa133c4114a677814c5c7fe5eab7",
+      "review_identity": "sha256:542a97a57b91fe2abb3220ad6bcd41cfa71269d37c292a481345adb617f6905c",
+      "result_identity": "sha256:5e52160c3ea8452b73acc60ddb4d5e0624c6cca6f087c5309822b64acf9d8ff2",
+      "observed_relation": "related",
+      "decision": "accepted_with_scope_difference",
+      "rationale": "Accepted as a sensitivity-only proxy because the selected result concerns the requested endpoint and uses the supplied trial contrast and estimate, but has a documented scope difference: The event set, randomization time origin, ascertainment, comparison groups, and hazard-ratio result match the requested radiographic progression-free survival outcome. The article provides randomized arm sizes and event counts but does not explicitly state the rPFS analysis set; therefore, population correspondence cannot be established as exact.",
+      "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 62"
+    }
+  ]
+}

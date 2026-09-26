@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Overall Survival defined as The time from randomization to death resulting from any cause, hazard ratio 0.61; 95% CI, 0.47 to 0.80; P<0.001 in CHAARTED.

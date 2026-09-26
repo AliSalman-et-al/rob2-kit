@@ -1,0 +1,23 @@
+{
+  "schema": "rob2-kit.benchmark-phase-scope.v1",
+  "phase": 2,
+  "benchmark_index": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\enzamet-ae-v3\\index.json",
+  "benchmark_index_sha256": "c71b6e87d09a375ecaf7efc138cae2b44c2e7309131b1830f917e0d45378a81c",
+  "selection_mode": "all",
+  "included_count": 1,
+  "included_cases": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET"
+    }
+  ],
+  "submitted_count": 1,
+  "excluded_count": 0,
+  "submitted_cases": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET"
+    }
+  ],
+  "excluded_cases": []
+}

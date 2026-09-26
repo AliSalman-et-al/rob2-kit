@@ -1,0 +1,15 @@
+[
+  {
+    "outcome": "Adverse Events",
+    "trial": "ENZAMET",
+    "phase": 1,
+    "exit_code": 0,
+    "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\adverse-events\\ENZAMET-grade3-assessment",
+    "launcher_stdout_path": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\adverse-events\\ENZAMET-grade3-assessment\\launcher-phase-1-c7bd431a7f1e4a2983ea2b0ddfc7220b.stdout.txt",
+    "launcher_stdout_sha256": "17187f35e9e0f6fc18f017e6272e4d0515f932294593caf3df278eba1b033b12",
+    "launcher_stderr_path": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\adverse-events\\ENZAMET-grade3-assessment\\launcher-phase-1-c7bd431a7f1e4a2983ea2b0ddfc7220b.stderr.txt",
+    "launcher_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "launcher_invocation_id": "c7bd431a7f1e4a2983ea2b0ddfc7220b",
+    "benchmark_index_sha256": "818827e8a53e15a4b7d007c3d82a3ceeca3fbae38bfdd51fae7eb0e24cd920a5"
+  }
+]

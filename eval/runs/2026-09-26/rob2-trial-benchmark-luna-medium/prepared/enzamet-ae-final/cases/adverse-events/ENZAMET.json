@@ -1,0 +1,81 @@
+{
+  "campaign_id": "46c47f8570db43c8bd56f4fb9b8f1cbc",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Enzalutamide plus testosterone suppression",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Patients with any adverse event graded 3 or higher; adverse events were graded with NCI-CTCAE version 4.0.2.",
+    "population": "Patients who received at least one dose of any trial drug and were included in the safety population.",
+    "reported_scope": {
+      "analysis_population": "Safety population: 563 enzalutamide and 558 standard-care participants.",
+      "endpoint": {
+        "definition": "The mutually exclusive worst-grade categories for any adverse event were grades 1 through 5; summing grades 3, 4, and 5 gives the number with a grade 3 or higher event.",
+        "name": "Patients with any grade 3 or higher adverse event"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "Patients with any grade 3 or higher adverse event",
+          "unit": "patients (%)",
+          "value": "321/563 (57%)"
+        },
+        {
+          "group_id": "control",
+          "statistic": "Patients with any grade 3 or higher adverse event",
+          "unit": "patients (%)",
+          "value": "241/558 (43%)"
+        }
+      ]
+    },
+    "trial": "ENZAMET",
+    "window_or_cutoff": {
+      "description": "Adverse events collected during treatment, with final safety assessment 30 to 42 days after treatment stopped.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:13:27.679130Z",
+    "path": "../../../../../../../reference/sources/ENZAMET/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02446405",
+    "sha256": "ba84ecaa795516d6c69815b6a340786f28eb39bf303ad4de8ad3dd8ac06d9d4e"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other-2.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/other-2.pdf",
+      "role": "other"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../../reference/sources/ENZAMET/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ENZAMET"
+}

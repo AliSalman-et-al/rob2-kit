@@ -1,0 +1,790 @@
+{
+  "schema": "rob2-kit.fresh-benchmark-index.v1",
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "attempt_policy": {
+    "schema": "rob2-kit.benchmark-attempt-policy.v1",
+    "max_attempts": 2,
+    "rule": "infrastructure_only",
+    "selection": "latest_eligible_replacement"
+  },
+  "metadata": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\source-metadata.tsv",
+  "cases": [
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARCHES",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.81; 95% CI, 0.53 to 1.25; P=0.3361",
+      "source_locator": "Main article, interim overall-survival Results/Table 2, PDF pp. 4-5.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\ARCHES.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\ARCHES.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\ARCHES",
+      "expected_result": {
+        "trial": "ARCHES",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide plus androgen-deprivation therapy"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo plus androgen-deprivation therapy"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to death resulting from any cause.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary analysis data cutoff October 14, 2018; median follow-up was not reached for rPFS."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (574 enzalutamide; 576 placebo).",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time from randomization to death resulting from any cause."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "0.81",
+          "precision": "95% CI, 0.53 to 1.25; P=0.3361",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "CHAARTED",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.61; 95% CI, 0.47 to 0.80; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\CHAARTED.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\CHAARTED.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\CHAARTED",
+      "expected_result": {
+        "trial": "CHAARTED",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy alone"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to death resulting from any cause.",
+        "population": "All randomized patients analyzed by intention to treat.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 28.9 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (790 randomized patients).",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time from randomization to death resulting from any cause."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "0.61",
+          "precision": "95% CI, 0.47 to 0.80; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ENZAMET",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause or to the date at which the patient was last known to be alive.",
+      "effect_size": "hazard ratio 0.67; 95% CI, 0.52 to 0.86; P=0.002",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\ENZAMET.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\ENZAMET.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\ENZAMET",
+      "expected_result": {
+        "trial": "ENZAMET",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide plus testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to death resulting from any cause or to the date at which the patient was last known to be alive.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 34 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (563 enzalutamide; 562 standard care).",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time from randomization to death resulting from any cause or to the date at which the patient was last known to be alive."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "0.67",
+          "precision": "95% CI, 0.52 to 0.86; P=0.002",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "GETUG-AFU-15",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 1.01; 95% CI, 0.75 to 1.36",
+      "source_locator": "Main article abstract, Findings, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\GETUG-AFU-15.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\GETUG-AFU-15.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\GETUG-AFU-15",
+      "expected_result": {
+        "trial": "GETUG-AFU-15",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy alone"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to death resulting from any cause.",
+        "population": "All randomized patients analyzed by intention to treat.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 50 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (192 docetaxel; 193 control).",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time from randomization to death resulting from any cause."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "1.01",
+          "precision": "95% CI, 0.75 to 1.36",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.62; 95% CI, 0.51 to 0.76; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\LATITUDE.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\LATITUDE.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\LATITUDE",
+      "expected_result": {
+        "trial": "LATITUDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy plus dual placebos"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to death resulting from any cause.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Planned interim analysis after median follow-up of 30.4 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (1,199 randomized patients).",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time from randomization to death resulting from any cause."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "0.62",
+          "precision": "95% CI, 0.51 to 0.76; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "PEACE-1",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "The time between randomization and death from any cause; patients without events were censored at the date of last follow-up.",
+      "effect_size": "hazard ratio 0.82; 95.1% CI, 0.69 to 0.98; P=0.030",
+      "source_locator": "Main article abstract, Findings, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\PEACE-1.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\PEACE-1.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\PEACE-1",
+      "expected_result": {
+        "trial": "PEACE-1",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Standard of care plus abiraterone and prednisone"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard of care without abiraterone"
+          }
+        ],
+        "endpoint_definition": "The time between randomization and death from any cause; patients without events were censored at the date of last follow-up.",
+        "population": "Overall randomized trial population, pooled across docetaxel and radiotherapy strata for the abiraterone comparison.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Overall-population analyses; median follow-up 3.5 years for rPFS and 4.4 years for OS."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The overall population: 583 assigned to abiraterone and 589 not assigned to abiraterone.",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time between randomization and death from any cause; patients without events were censored at the date of last follow-up."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "0.82",
+          "precision": "95.1% CI, 0.69 to 0.98; P=0.030",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death from any cause.",
+      "effect_size": "hazard ratio 0.63; 95% CI, 0.52 to 0.76; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\STAMPEDE.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\STAMPEDE.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\STAMPEDE",
+      "expected_result": {
+        "trial": "STAMPEDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy alone"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to death from any cause.",
+        "population": "All randomized patients in the trial comparison, analyzed according to assigned group.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 40 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The randomized comparison: 1,917 patients (948 combination; 960 ADT alone in the safety population).",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time from randomization to death from any cause."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "0.63",
+          "precision": "95% CI, 0.52 to 0.76; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "TITAN",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to death resulting from any cause.",
+      "effect_size": "hazard ratio 0.67; 95% CI, 0.51 to 0.89; P=0.005",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\overall-survival\\TITAN.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\overall-survival\\TITAN.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\overall-survival\\TITAN",
+      "expected_result": {
+        "trial": "TITAN",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide plus androgen-deprivation therapy"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo plus androgen-deprivation therapy"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to death resulting from any cause.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "First interim analysis after median follow-up of 22.7 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (525 apalutamide; 527 placebo).",
+          "endpoint": {
+            "name": "Overall survival",
+            "definition": "The time from randomization to death resulting from any cause."
+          },
+          "effect_measure": "hazard ratio for death",
+          "estimate": "0.67",
+          "precision": "95% CI, 0.51 to 0.89; P=0.005",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "CHAARTED",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Clinical progression-free survival: time to the appearance of symptomatic bone metastases, progression according to RECIST version 1.0, or clinical deterioration due to cancer in the investigator’s opinion.",
+      "effect_size": "hazard ratio 0.61; 95% CI, 0.50 to 0.75; P<0.001",
+      "source_locator": "Main article Results/Table 2, secondary end points, PDF pp. 4-5.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\CHAARTED.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\CHAARTED.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\CHAARTED",
+      "expected_result": {
+        "trial": "CHAARTED",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy alone"
+          }
+        ],
+        "endpoint_definition": "Clinical progression-free survival: time to the appearance of symptomatic bone metastases, progression according to RECIST version 1.0, or clinical deterioration due to cancer in the investigator’s opinion.",
+        "population": "All randomized patients analyzed by intention to treat.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 28.9 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (790 randomized patients).",
+          "endpoint": {
+            "name": "Clinical progression-free survival",
+            "definition": "Clinical progression-free survival: time to the appearance of symptomatic bone metastases, progression according to RECIST version 1.0, or clinical deterioration due to cancer in the investigator’s opinion."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.61",
+          "precision": "95% CI, 0.50 to 0.75; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "GETUG-AFU-15",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Clinical progression-free survival: progression of pre-existing lesions according to RECIST version 1.0 or occurrence of new bone lesions, whichever occurred first.",
+      "effect_size": "hazard ratio 0.75; 95% CI, 0.59 to 0.94; P=0.015",
+      "source_locator": "Main article Results, clinical progression-free survival, Figure 3, PDF p. 4.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\GETUG-AFU-15.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\GETUG-AFU-15.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\GETUG-AFU-15",
+      "expected_result": {
+        "trial": "GETUG-AFU-15",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus docetaxel"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy alone"
+          }
+        ],
+        "endpoint_definition": "Clinical progression-free survival: progression of pre-existing lesions according to RECIST version 1.0 or occurrence of new bone lesions, whichever occurred first.",
+        "population": "All randomized patients analyzed by intention to treat.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 50 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (192 docetaxel; 193 control).",
+          "endpoint": {
+            "name": "Clinical progression-free survival",
+            "definition": "Clinical progression-free survival: progression of pre-existing lesions according to RECIST version 1.0 or occurrence of new bone lesions, whichever occurred first."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.75",
+          "precision": "95% CI, 0.59 to 0.94; P=0.015",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "PEACE-1",
+      "primary_status": "primary",
+      "role": "co-primary",
+      "definition": "Radiographic progression-free survival: time from randomization to the appearance of first radiological evidence of progressive disease or death; progressively increasing soft-tissue lesions or new bone lesions according to PCWG2.",
+      "effect_size": "hazard ratio 0.54; 99.9% CI, 0.41 to 0.71; p<0.0001",
+      "source_locator": "Main article abstract, Findings, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\PEACE-1.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\PEACE-1.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\PEACE-1",
+      "expected_result": {
+        "trial": "PEACE-1",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Standard of care plus abiraterone and prednisone"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard of care without abiraterone"
+          }
+        ],
+        "endpoint_definition": "Radiographic progression-free survival: time from randomization to the appearance of first radiological evidence of progressive disease or death; progressively increasing soft-tissue lesions or new bone lesions according to PCWG2.",
+        "population": "Overall randomized trial population, pooled across docetaxel and radiotherapy strata for the abiraterone comparison.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Overall-population analyses; median follow-up 3.5 years for rPFS and 4.4 years for OS."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The overall population: 583 assigned to abiraterone and 589 not assigned to abiraterone.",
+          "endpoint": {
+            "name": "Radiographic progression-free survival",
+            "definition": "Radiographic progression-free survival: time from randomization to the appearance of first radiological evidence of progressive disease or death; progressively increasing soft-tissue lesions or new bone lesions according to PCWG2."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.54",
+          "precision": "99.9% CI, 0.41 to 0.71; p<0.0001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "STAMPEDE",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Progression-free survival defined as failure-free survival excluding patients with biochemical (PSA progression) failure.",
+      "effect_size": "hazard ratio 0.40; 95% CI, 0.34 to 0.47; P<0.001",
+      "source_locator": "Main article Results, Other Efficacy Outcome Measures, PDF p. 5.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\STAMPEDE.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\STAMPEDE.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\STAMPEDE",
+      "expected_result": {
+        "trial": "STAMPEDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy alone"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival defined as failure-free survival excluding patients with biochemical (PSA progression) failure.",
+        "population": "All randomized patients in the trial comparison, analyzed according to assigned group.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 40 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The randomized comparison: 1,917 patients (948 combination; 960 ADT alone in the safety population).",
+          "endpoint": {
+            "name": "Progression-free survival",
+            "definition": "Progression-free survival defined as failure-free survival excluding patients with biochemical (PSA progression) failure."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.34 to 0.47; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "TITAN",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "Radiographic progression-free survival: time from randomization to first imaging-based documentation of progressive disease or death, whichever occurred first.",
+      "effect_size": "hazard ratio 0.48; 95% CI, 0.39 to 0.60; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\TITAN.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\TITAN.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\TITAN",
+      "expected_result": {
+        "trial": "TITAN",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Apalutamide plus androgen-deprivation therapy"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo plus androgen-deprivation therapy"
+          }
+        ],
+        "endpoint_definition": "Radiographic progression-free survival: time from randomization to first imaging-based documentation of progressive disease or death, whichever occurred first.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "First interim analysis after median follow-up of 22.7 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (525 apalutamide; 527 placebo).",
+          "endpoint": {
+            "name": "Radiographic progression-free survival",
+            "definition": "Radiographic progression-free survival: time from randomization to first imaging-based documentation of progressive disease or death, whichever occurred first."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.48",
+          "precision": "95% CI, 0.39 to 0.60; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.",
+      "effect_size": "63% vs 48% had grade 3 or 4 adverse events.",
+      "source_locator": "Main article Results, Safety, PDF p. 5.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\adverse-events\\LATITUDE.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\adverse-events\\LATITUDE.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\adverse-events\\LATITUDE",
+      "expected_result": {
+        "trial": "LATITUDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy plus dual placebos"
+          }
+        ],
+        "endpoint_definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0.",
+        "population": "Patients who received at least one dose and were included in the safety population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Safety outcomes reported for the treatment period in the main article."
+        },
+        "reported_scope": {
+          "form": "group_bound_values",
+          "analysis_population": "Safety population; grade 3 or 4 adverse events reported by randomized group.",
+          "endpoint": {
+            "name": "Patients with grade 3 or higher adverse events",
+            "definition": "Grade 3 or higher adverse events; adverse events were graded with NCI-CTCAE version 4.0."
+          },
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "Patients with grade 3 or higher adverse events",
+              "value": "63%",
+              "unit": "percent"
+            },
+            {
+              "group_id": "control",
+              "statistic": "Patients with grade 3 or higher adverse events",
+              "value": "48%",
+              "unit": "percent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARCHES",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "The time from randomization to the appearance of first radiological evidence of progressive disease assessed by independent central review or death from any cause within 24 weeks of drug discontinuation; radiographic disease progression is defined as progressive disease by RECIST version 1.1.",
+      "effect_size": "hazard ratio 0.39; 95% CI, 0.30 to 0.50; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\ARCHES.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\ARCHES.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\ARCHES",
+      "expected_result": {
+        "trial": "ARCHES",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide plus androgen-deprivation therapy"
+          },
+          {
+            "id": "control",
+            "assignment": "Placebo plus androgen-deprivation therapy"
+          }
+        ],
+        "endpoint_definition": "The time from randomization to the appearance of first radiological evidence of progressive disease assessed by independent central review or death from any cause within 24 weeks of drug discontinuation; radiographic disease progression is defined as progressive disease by RECIST version 1.1.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary analysis data cutoff October 14, 2018; median follow-up was not reached for rPFS."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (574 enzalutamide; 576 placebo).",
+          "endpoint": {
+            "name": "Radiographic progression-free survival",
+            "definition": "The time from randomization to the appearance of first radiological evidence of progressive disease assessed by independent central review or death from any cause within 24 weeks of drug discontinuation; radiographic disease progression is defined as progressive disease by RECIST version 1.1."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.39",
+          "precision": "95% CI, 0.30 to 0.50; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ENZAMET",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Clinical progression-free survival: time to the earliest sign of radiographic progression according to PCWG2 for bone lesions and RECIST version 1.1 for soft-tissue lesions; development of symptoms attributable to cancer progression; or initiation of another anticancer treatment for prostate cancer.",
+      "effect_size": "hazard ratio 0.40; 95% CI, 0.33 to 0.49; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\ENZAMET.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\ENZAMET.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\ENZAMET",
+      "expected_result": {
+        "trial": "ENZAMET",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Enzalutamide plus testosterone suppression"
+          },
+          {
+            "id": "control",
+            "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression"
+          }
+        ],
+        "endpoint_definition": "Clinical progression-free survival: time to the earliest sign of radiographic progression according to PCWG2 for bone lesions and RECIST version 1.1 for soft-tissue lesions; development of symptoms attributable to cancer progression; or initiation of another anticancer treatment for prostate cancer.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Primary report after median follow-up of 34 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (563 enzalutamide; 562 standard care).",
+          "endpoint": {
+            "name": "Clinical progression-free survival",
+            "definition": "Clinical progression-free survival: time to the earliest sign of radiographic progression according to PCWG2 for bone lesions and RECIST version 1.1 for soft-tissue lesions; development of symptoms attributable to cancer progression; or initiation of another anticancer treatment for prostate cancer."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.40",
+          "precision": "95% CI, 0.33 to 0.49; P<0.001",
+          "group_values": []
+        }
+      }
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "LATITUDE",
+      "primary_status": "primary",
+      "role": "primary",
+      "definition": "Radiographic progression-free survival: time from randomization to the first radiological evidence of progressive disease or death; soft-tissue lesions were evaluated by CT or MRI using RECIST version 1.1, and new bone lesions by PCWG2.",
+      "effect_size": "hazard ratio 0.47; 95% CI, 0.39 to 0.55; P<0.001",
+      "source_locator": "Main article abstract, Results, PDF p. 1.",
+      "reference_label_available": "yes",
+      "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\cases\\progression-free-survival\\LATITUDE.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\prompts\\progression-free-survival\\LATITUDE.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\progression-free-survival\\LATITUDE",
+      "expected_result": {
+        "trial": "LATITUDE",
+        "comparison": [
+          {
+            "id": "treatment",
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone"
+          },
+          {
+            "id": "control",
+            "assignment": "Androgen-deprivation therapy plus dual placebos"
+          }
+        ],
+        "endpoint_definition": "Radiographic progression-free survival: time from randomization to the first radiological evidence of progressive disease or death; soft-tissue lesions were evaluated by CT or MRI using RECIST version 1.1, and new bone lesions by PCWG2.",
+        "population": "All randomized patients in the intention-to-treat efficacy population.",
+        "window_or_cutoff": {
+          "kind": "described",
+          "description": "Planned interim analysis after median follow-up of 30.4 months."
+        },
+        "reported_scope": {
+          "form": "comparative_effect",
+          "analysis_population": "The intention-to-treat population (1,199 randomized patients).",
+          "endpoint": {
+            "name": "Radiographic progression-free survival",
+            "definition": "Radiographic progression-free survival: time from randomization to the first radiological evidence of progressive disease or death; soft-tissue lesions were evaluated by CT or MRI using RECIST version 1.1, and new bone lesions by PCWG2."
+          },
+          "effect_measure": "hazard ratio",
+          "estimate": "0.47",
+          "precision": "95% CI, 0.39 to 0.55; P<0.001",
+          "group_values": []
+        }
+      }
+    }
+  ]
+}

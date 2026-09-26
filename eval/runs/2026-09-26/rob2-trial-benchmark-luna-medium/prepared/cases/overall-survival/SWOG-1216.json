@@ -1,0 +1,61 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy with orteronel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy with bicalutamide",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "The time from randomization to death resulting from any cause.",
+    "population": "All randomized patients analyzed by intention to treat.",
+    "reported_scope": {
+      "analysis_population": "The intention-to-treat population (1,279 randomized patients).",
+      "effect_measure": "hazard ratio for death",
+      "endpoint": {
+        "definition": "The time from randomization to death resulting from any cause.",
+        "name": "Overall survival"
+      },
+      "estimate": "0.86",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.72 to 1.02; one-sided P=0.040"
+    },
+    "trial": "SWOG-1216",
+    "window_or_cutoff": {
+      "description": "Primary report after median follow-up of 4.9 years.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:39.480131Z",
+    "path": "../../../../../../reference/sources/SWOG-1216/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT01809691",
+    "sha256": "f864b7938c5b1367427bb47bf96623f9b4da51ec7268a25425396250f69e0ad1"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/SWOG-1216/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../reference/sources/SWOG-1216/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/SWOG-1216/protocol.pdf",
+      "role": "protocol"
+    }
+  ],
+  "trial": "SWOG-1216"
+}

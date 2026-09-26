@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Adverse Events defined as Grade 3 or higher adverse events; NCI-CTCAE version 4.0 was used to grade adverse events, grade 3 or worse adverse events occurred in 217/347 (63%) with abiraterone versus 181/350 (52%) without abiraterone in the docetaxel population in PEACE-1.

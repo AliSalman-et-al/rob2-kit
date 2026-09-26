@@ -1,0 +1,69 @@
+{
+  "schema": "rob2-kit.fresh-benchmark-index.v1",
+  "campaign_id": "92410935dd3e4bb7835ded0a6f68e32a",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "attempt_policy": {
+    "schema": "rob2-kit.benchmark-attempt-policy.v1",
+    "max_attempts": 2,
+    "rule": "infrastructure_only",
+    "selection": "latest_eligible_replacement"
+  },
+  "metadata": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\enzamet-grade3-retry\\metadata.tsv",
+  "cases": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET",
+      "primary_status": "secondary",
+      "role": "secondary",
+      "definition": "Grade 3 adverse events; NCI-CTCAE version 4.0.2 was used to grade adverse events.",
+      "effect_size": "Grade 3: 277/563 (49%) vs 194/558 (35%).",
+      "source_locator": "Main article Table 2, Any Adverse Event severity, Grade 3 row, PDF p. 9.",
+      "reference_label_available": "yes",
+      "campaign_id": "08e70480648e4c889fafe0b64d84fec6",
+      "case": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\enzamet-grade3-retry\\cases\\adverse-events\\ENZAMET.json",
+      "prompt": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\enzamet-grade3-retry\\prompts\\adverse-events\\ENZAMET.txt",
+      "run_dir": "C:\\Users\\Ali-Salman\\.codex\\worktrees\\rob2-trial-benchmark\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark\\adverse-events\\ENZAMET-grade3-final",
+      "expected_result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus testosterone suppression",
+            "id": "treatment"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen therapy plus testosterone suppression",
+            "id": "control"
+          }
+        ],
+        "endpoint_definition": "Grade 3 adverse events; NCI-CTCAE version 4.0.2 was used to grade adverse events.",
+        "population": "Patients who received at least one dose and were included in the safety population.",
+        "reported_scope": {
+          "analysis_population": "Safety population (563 enzalutamide; 558 standard care).",
+          "endpoint": {
+            "name": "Grade 3 adverse events"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "treatment",
+              "statistic": "Grade 3 adverse events",
+              "unit": "patients (%)",
+              "value": "277/563 (49%)"
+            },
+            {
+              "group_id": "control",
+              "statistic": "Grade 3 adverse events",
+              "unit": "patients (%)",
+              "value": "194/558 (35%)"
+            }
+          ]
+        },
+        "trial": "ENZAMET",
+        "window_or_cutoff": {
+          "description": "Adverse events collected during treatment, with final safety assessment 30 to 42 days after treatment stopped.",
+          "kind": "described"
+        }
+      }
+    }
+  ]
+}

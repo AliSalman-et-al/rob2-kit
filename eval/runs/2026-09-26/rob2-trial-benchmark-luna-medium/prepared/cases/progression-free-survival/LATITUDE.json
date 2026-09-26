@@ -1,0 +1,66 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy plus dual placebos",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Radiographic progression-free survival: time from randomization to the first radiological evidence of progressive disease or death; soft-tissue lesions were evaluated by CT or MRI using RECIST version 1.1, and new bone lesions by PCWG2.",
+    "population": "All randomized patients in the intention-to-treat efficacy population.",
+    "reported_scope": {
+      "analysis_population": "The intention-to-treat population (1,199 randomized patients).",
+      "effect_measure": "hazard ratio",
+      "endpoint": {
+        "definition": "Radiographic progression-free survival: time from randomization to the first radiological evidence of progressive disease or death; soft-tissue lesions were evaluated by CT or MRI using RECIST version 1.1, and new bone lesions by PCWG2.",
+        "name": "Radiographic progression-free survival"
+      },
+      "estimate": "0.47",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.39 to 0.55; P<0.001"
+    },
+    "trial": "LATITUDE",
+    "window_or_cutoff": {
+      "description": "Planned interim analysis after median follow-up of 30.4 months.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:41.004240Z",
+    "path": "../../../../../../reference/sources/LATITUDE/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT01715285",
+    "sha256": "4e7dba9abd0ea357d6e4161a340d49980c6d8d927f27946f06ff710075384f1c"
+  },
+  "requested_outcome": "Progression-Free Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/LATITUDE/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "LATITUDE"
+}

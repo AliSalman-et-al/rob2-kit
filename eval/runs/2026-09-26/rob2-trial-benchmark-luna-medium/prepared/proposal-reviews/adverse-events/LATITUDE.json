@@ -1,0 +1,192 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:413ac7dccacc19f50e2496885bd07b41cfe6005d37c43b96256a672e7c54185c": {
+        "end": 1802,
+        "end_line": 46,
+        "handle": "eh_413ac7dccacc19f5",
+        "identity": "sha256:413ac7dccacc19f50e2496885bd07b41cfe6005d37c43b96256a672e7c54185c",
+        "kind": "narrative",
+        "page": 8,
+        "quote": "Adverse Event\nAbiraterone Group\n(N = 597)\nPlacebo Group\n(N = 602)\nnumber of patients (percent)\nAny adverse event\n558 (93)\n557 (93)\nGrade 3 or 4 adverse event\n374 (63)\n287 (48)",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 1627,
+        "start_line": 35,
+        "trial_id": "latitude"
+      },
+      "sha256:bd3b78c8ffd6c8d00bac408a00869f99e1c3ad7d48fb977aad43a5de6a924a59": {
+        "end": 930,
+        "end_line": 22,
+        "handle": "eh_bd3b78c8ffd6c8d0",
+        "identity": "sha256:bd3b78c8ffd6c8d00bac408a00869f99e1c3ad7d48fb977aad43a5de6a924a59",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "and serum testosterone levels. Adverse events\nwere graded with the use of the Common Termi-\nnology Criteria for Adverse Events of the Na-\ntional Cancer Institute, version 4.0.",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 755,
+        "start_line": 19,
+        "trial_id": "latitude"
+      },
+      "sha256:f72363456d8bfba38629ad35e7df6c1d48d21451ea4d4d3e01ca10f19bd96dc1": {
+        "end": 3259,
+        "end_line": 71,
+        "handle": "eh_f72363456d8bfba3",
+        "identity": "sha256:f72363456d8bfba38629ad35e7df6c1d48d21451ea4d4d3e01ca10f19bd96dc1",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "Patients were randomly assigned in a 1:1 ratio\nto receive androgen-deprivation therapy and abira\nterone acetate (1000 mg daily, given once daily\nas four 250-mg tablets) and prednisone (5 mg\ndaily) (the abiraterone group) or androgen-depri-\nvation therapy and placebos (the placebo group).\nPatients were stratified according to the presence\nor absence of measurable visceral disease and\nECOG performance-status score (0 or 1 vs. 2).\nAbiraterone or placebo was administered at least\n1 hour before or 2 hours after a meal. All the\npatients who had not undergone surgical castra-\ntion received ongoing androgen-deprivation ther-\napy to reach or maintain a serum testosterone\nlevel of less than 50 ng per deciliter (1.7 nmol\nper liter). Safety and dosing adherence were\nevaluated during each trial visit, at treatment\ndiscontinuation (if applicable), and at the end-of-\ntrial visit.",
+        "source_id": "source_c697b666a3a887b568c9e9e6dd365de6f33c02483189c1ce7c8a57d86ec6aaf7",
+        "source_version": "sha256:34353270742c69f9790054698959406e5fd2a87521430d17b2446d4e6ef84775",
+        "start": 2382,
+        "start_line": 53,
+        "trial_id": "latitude"
+      }
+    },
+    "identity": "sha256:f27340eb298ecb419f107030cb7517d494a36fc7b7c0006addf963f7af99da78",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_f72363456d8bfba3"
+            ],
+            "rationale": "Patients were randomly assigned in a 1:1 ratio to two parallel treatment groups."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:09eecdd6bba6c639ffd7368a3ce6727fd1e927e7dc5bd27d581875cba300fcf5"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/0/statistic"
+              },
+              "value_digest": "sha256:975986ba312df3bc85fa3f470e76d8a387a7fa05eb30d2538b5b212b1a3f5a03"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/0/value"
+              },
+              "value_digest": "sha256:10f41f5d714e04d226b96bdb85e71bf3b816b98bf627f044f608d3594e0b9fca"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/0/unit"
+              },
+              "value_digest": "sha256:81e071c46fa1d704a86ed61fb878d81f43864e17930edd3f8228a6bbda0d4ceb"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/1/statistic"
+              },
+              "value_digest": "sha256:975986ba312df3bc85fa3f470e76d8a387a7fa05eb30d2538b5b212b1a3f5a03"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/1/value"
+              },
+              "value_digest": "sha256:847e2a611df57d2701a721c34514bd98a94fd48ca669c49f07d62ffc9720fea1"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/group_values/1/unit"
+              },
+              "value_digest": "sha256:81e071c46fa1d704a86ed61fb878d81f43864e17930edd3f8228a6bbda0d4ceb"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_413ac7dccacc19f5",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_bd3b78c8ffd6c8d0",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_f72363456d8bfba3",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The report gives the requested grade 3 or higher threshold as grade 3 or 4 adverse events, in the two randomized groups, with comparative counts and percentages. Safety was assessed during trial visits, at treatment discontinuation, and at end of trial. The report does not specify a single calendar time point.",
+          "reported": {
+            "analysis_population": "Patients in randomized groups (abiraterone N=597; placebo N=602).",
+            "endpoint": {
+              "definition": null,
+              "name": "Grade 3 or 4 adverse event"
+            },
+            "form": "group_bound_values",
+            "group_values": [
+              {
+                "group_id": "abiraterone",
+                "statistic": "number of patients (percent)",
+                "unit": "patients (percent)",
+                "value": "374 (63)"
+              },
+              {
+                "group_id": "placebo",
+                "statistic": "number of patients (percent)",
+                "unit": "patients (percent)",
+                "value": "287 (48)"
+              }
+            ]
+          },
+          "requested_outcome": "Grade 3 or higher adverse events",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+                "id": "abiraterone"
+              },
+              {
+                "assignment": "Androgen-deprivation therapy plus dual placebos",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Risk of at least one Grade 3 or higher adverse event",
+            "measurement": {
+              "method": "Adverse events graded with NCI Common Terminology Criteria for Adverse Events version 4.0; occurrence of at least one grade 3 or higher event.",
+              "metric": "Grade 3 or higher adverse events"
+            },
+            "outcome_definition": "Grade 3 or higher adverse events",
+            "time_point_or_window": {
+              "description": "During trial follow-up; safety assessments occurred at each trial visit, treatment discontinuation, and end of trial.",
+              "kind": "described"
+            }
+          },
+          "trial_id": "latitude"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:7150390a14dff63613217b472e81dbb1d43ad7538469d8c3d9028ab58f21307f",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

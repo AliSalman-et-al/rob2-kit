@@ -1,0 +1,61 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Enzalutamide plus androgen-deprivation therapy",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo plus androgen-deprivation therapy",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "The time from randomization to death resulting from any cause.",
+    "population": "All randomized patients in the intention-to-treat efficacy population.",
+    "reported_scope": {
+      "analysis_population": "The intention-to-treat population (574 enzalutamide; 576 placebo).",
+      "effect_measure": "hazard ratio for death",
+      "endpoint": {
+        "definition": "The time from randomization to death resulting from any cause.",
+        "name": "Overall survival"
+      },
+      "estimate": "0.81",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.53 to 1.25; P=0.3361"
+    },
+    "trial": "ARCHES",
+    "window_or_cutoff": {
+      "description": "Primary analysis data cutoff October 14, 2018; median follow-up was not reached for rPFS.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:44.999378Z",
+    "path": "../../../../../../reference/sources/ARCHES/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT02677896",
+    "sha256": "101c1f3852c211ee5946b7d008c38a4ec6a7c0e8bf5f5d8c94f6ed1151f87a67"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/ARCHES/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/ARCHES/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/ARCHES/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "ARCHES"
+}

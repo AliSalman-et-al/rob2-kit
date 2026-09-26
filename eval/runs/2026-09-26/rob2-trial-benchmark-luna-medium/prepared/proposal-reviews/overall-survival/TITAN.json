@@ -1,0 +1,168 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:28d2fd2a05a40cabb50f38502c5eefda7188d1fe93a073e0ce3c453fed5a4563": {
+        "end": 4794,
+        "end_line": 103,
+        "handle": "eh_28d2fd2a05a40cab",
+        "identity": "sha256:28d2fd2a05a40cabb50f38502c5eefda7188d1fe93a073e0ce3c453fed5a4563",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 381;1 nejm.org July 4, 2019\n16\nThe new engl and jour nal of medicine\ntion period, and every 4 months for up to 1 year\nafter discontinuation. BPI-SF assessments were\ncollected 6 days before cycle 1, then at each cy-\ncle, the end of the intervention period, and every\n4 months for up to 1 year after discontinuation.\nStatistical Analysis\nThe TITAN trial was designed to enroll approxi-\nmately 1000 patients. Radiographic progression-\nfree survival was tested first. If the difference\nbetween the apalutamide group and the placebo\ngroup was considered to be statistically signifi-\ncant, the alpha was recycled to overall survival\non the basis of the fallback method.19 An overall\ntype I error of 5% was planned. A total of 368\nevents of radiographic progression were required\nto provide at least 85% power to detect a hazard\nratio of 0.67 with a two-tailed significance level\nof 0.005. For the final overall survival analysis,\n410 deaths were required to provide approxi-\nmately 80% power to detect a hazard ratio of\n0.75 with a two-tailed significance level of 0.045.\nAnalyses of overall survival incorporated group-\nsequential design with an alpha-spending func-\ntion that was calculated as Wang-Tsiatis power\nboundaries of shape parameter 0.2. Two interim\nanalyses were planned for overall survival. It was\nestimated that the first interim analysis would\ninclude approximately 50% of the total required\nevents for overall survival at the time of the pri-\nmary analysis for radiographic progression-free\nsurvival. The alpha level for interim analysis for\noverall survival was 0.009, under the assumption\nof an overall two-tailed significance level of 0.045.\nSubgroup analyses were prespecified to assess\nconsistency of treatment effect. If the between-\ngroup differences in the primary end points\nwere significant, evaluation of secondary end\npoints was to be performed in the following\nhierarchical order, each with an overall two-\nsided significance level of 0.05: time to cyto-\ntoxic chemotherapy, time to pain progression,\ntime to chronic opioid use, and time to skeletal-\nrelated event. Demographic and clinical charac-\nteristics at baseline were summarized with the use\nof descriptive statistics. The primary statistical\nmethod of comparison for time-to-event end\npoints was a stratified log-rank test, with strat\nification according to prespecified factors. The\nKaplan-Meier product-limit method and Cox pro-\nportional-hazards model were used to estimate\ntime-to-event variables and determine hazard\nratios and associated confidence intervals.\nResults\nPatients\nBetween December 15, 2015, and July 25, 2017,\na total of 525 patients were randomly assigned\nto the apalutamide group and 527 to the placebo\ngroup (Fig. S1 in the Supplementary Appendix).\nAt the cutoff date (November 23, 2018) for the\nfirst prespecified interim analysis and after 83\ndeaths in the apalutamide group and 117 in the\nplacebo group, the median follow-up time was\n22.7 months. The median number of cycles re-\nceived was 23 for apalutamide and 19 for placebo\n(range, 1 to 37 in each group). The median dura-\ntion of the trial intervention was 20.5 months\nfor apalutamide and 18.3 months for placebo. A\ntotal of 66.2% of the patients in the apalutamide\ngroup and 46.1% of those in the placebo group\nwere receiving the trial intervention at the clini-\ncal cutoff date. A total of 45 patients across the\ntwo groups withdrew consent for the trial inter-\nvention (Fig. S1 in the Supplementary Appendix).\nThese patients were followed for survival and\nsecondary end points, so their data were not\nmissing. A total of 39 patients were either lost to\nfollow-up or withdrew from all further data col-\nlection; this information is not shown in Figure\nS1 in the Supplementary Appendix.\nDemographic and clinical characteristics at\nbaseline were well balanced (Table 1, and Table\nS1 in the Supplementary Appendix). The median\nage of the patients across both groups was 68\nyears. A total of 16.4% of the patients had under-\ngone prostatectomy or received radiotherapy for\nlocalized disease, and 10.7% had received previ-\nous docetaxel therapy; 62.7% had high-volume\ndisease, and 37.3% had low-volume disease. Pa-\ntients had newly diagnosed metastatic, castration-\nsensitive prostate cancer or relapsed metastatic\ndisease after an initial diagnosis of localized dis-\nease; most had newly diagnosed metastatic\ndisease. Previous therapies for prostate cancer are\nlisted in Table S2 in the Supplementary Appendix.\nPrimary End Points\nRadiographic Progression-free Survival\nA total of 365 events of radiographic progression\nwere observed (134 in the apalutamide group and\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_d2a76997c77be51a7f62e4c42a13956ce50b9af1163170c05d315c75df62d928",
+        "source_version": "sha256:a971fe310379188effb8b93f0e335412e0ef667464e2214964ef9c137c8c8f6f",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "titan"
+      },
+      "sha256:6ae8c200f349370ff18ac404fd307c551bb0193c96c2b04658540c8c9a7f2043": {
+        "end": 5015,
+        "end_line": 107,
+        "handle": "eh_6ae8c200f349370f",
+        "identity": "sha256:6ae8c200f349370ff18ac404fd307c551bb0193c96c2b04658540c8c9a7f2043",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 381;1 nejm.org July 4, 2019\n15\nApalutamide for Castration-Sensitive Prostate Cancer\nstatic disease, and other localized treatments (e.g.,\nradiation therapy or prostatectomy) completed at\nleast 1 year before randomization. Patients who\nhad received a gonadotropin-releasing hormone\nagonist within 28 days before randomization\nwere required to take a first-generation anti\nandrogen13 (i.e., bicalutamide, flutamide, or nilu-\ntamide) for 14 or more days before randomiza-\ntion. Antiandrogen therapy must have been\ndiscontinued before randomization. Patients with\nsevere angina, myocardial infarction, congestive\nheart failure, arterial or venous thromboembolic\nevents, a history of or predisposition to seizure,\nor recent ventricular arrhythmias were excluded.\nPatients were randomly assigned in a 1:1 ratio\nto receive apalutamide (240 mg) or matched\nplacebo administered orally once daily, in addi-\ntion to continuous ADT. Patients were stratified\naccording to Gleason score at diagnosis (≤7 vs. >7,\non a scale of 2 to 10, with higher scores indicat-\ning higher-grade cancer that may be more ag-\ngressive), geographic region (North America and\nEuropean Union vs. all other countries), and\nprevious treatment with docetaxel (yes vs. no).\nEnd Points\nThe primary end points were radiographic pro-\ngression-free survival and overall survival. Radio-\ngraphic progression-free survival was defined as\nthe time from randomization to first imaging-\nbased documentation of progressive disease or\ndeath, whichever occurred first. A patient was\nconsidered to have radiographic progressive dis-\nease if he had either progression of soft-tissue\nlesions measured by means of computed tomog-\nraphy (CT) or magnetic resonance imaging (MRI)\nor new bone lesions on bone scanning. Overall\nsurvival was defined as the time from random-\nization to the date of death from any cause.\nSecondary end points were the time to cyto-\ntoxic chemotherapy, time to pain progression as\nassessed by the Brief Pain Inventory-Short Form\n(BPI-SF; worst pain [item 3] was used for this\nend point; scores range from 0 to 10, with lower\nscores representing lower levels of pain intensity;\na change of 2 was the minimally important dif-\nference14), time to chronic opioid use, and time\nto skeletal-related event. Definitions of second-\nary and exploratory end points are provided in\nthe Methods section in the Supplementary Ap-\npendix, available at NEJM.org. A prespecified\nanalysis of data from patients with low-volume\nor high-volume metastatic, castration-sensitive\nprostate cancer was planned, and evaluation of\nthe efficacy of the intervention in these groups\nwas a secondary objective. The definition of\nhigh-volume disease was adapted from the Che-\nmohormonal Therapy versus Androgen Ablation\nRandomized Trial for Extensive Disease in Pros-\ntate Cancer (CHAARTED)7: visceral metastases\nand at least one bone lesion, or at least four bone\nlesions with at least one outside the axial skele-\nton. Low-volume disease was defined as the\npresence of bone lesions not meeting the defini-\ntion of high-volume disease.\nExploratory end points included the time to\nprostate-specific antigen (PSA) progression, sec-\nond progression-free survival, and the time to\nsymptomatic local progression. Second progres-\nsion-free survival was defined as the time from\nrandomization to the first occurrence of investi-\ngator-determined disease progression (PSA pro-\ngression, progression on imaging, or clinical\nprogression) while the patient was receiving first\nsubsequent therapy for prostate cancer or death\ndue to any cause, whichever occurred first. Patient-\nreported outcomes for health-related quality of\nlife were assessed by means of the Functional\nAssessment of Cancer Therapy-Prostate (FACT-P)\nquestionnaire.15-17 Raw FACT-P scores range from\n0 to 156, with higher scores indicating more\nfavorable health-related quality of life. A change\nof 6 to 10 points in the FACT-P total score is the\nminimally important difference.15\nAssessments\nPatients were assessed for efficacy according to\nmodified Response Evaluation Criteria in Solid\nTumors, version 1.1, with the use of CT or MRI\nof the chest, abdomen, and pelvis during screen-\ning (≤6 weeks before randomization) and accord-\ning to Prostate Cancer Working Group 2 criteria18\n(see the Methods section in the Supplementary\nAppendix) with the use of bone scanning during\ncycles 3 and 5 and every fourth cycle thereafter.\nEvents of progression were assessed by the in-\nvestigator. Scans from approximately 60% of the\npatients were randomly selected for independent\ncentral review. Adverse events were assessed\nmonthly and graded according to National Can-\ncer Institute Common Terminology Criteria for\nAdverse Events, version 4.0.3. FACT-P assessments\nwere collected on day 1 of cycles 2 through 7,\nthen every other cycle, at the end of the interven-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_d2a76997c77be51a7f62e4c42a13956ce50b9af1163170c05d315c75df62d928",
+        "source_version": "sha256:a971fe310379188effb8b93f0e335412e0ef667464e2214964ef9c137c8c8f6f",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "titan"
+      },
+      "sha256:fd7f158902f4ce2c316731a1b74eb0ff6cfe7467db5c0bf59687a76ecaafa28b": {
+        "end": 4891,
+        "end_line": 106,
+        "handle": "eh_fd7f158902f4ce2c",
+        "identity": "sha256:fd7f158902f4ce2c316731a1b74eb0ff6cfe7467db5c0bf59687a76ecaafa28b",
+        "kind": "narrative",
+        "page": 7,
+        "quote": "n engl j med 381;1 nejm.org July 4, 2019\n19\nApalutamide for Castration-Sensitive Prostate Cancer\nOverall Survival\nThe first interim analysis for overall survival oc-\ncurred after 200 deaths were observed (83 in the\napalutamide group and 117 in the placebo group).\nThe overall survival percentage at 24 months\nwas 82.4% in the apalutamide group and 73.5%\nin the placebo group (hazard ratio for death,\n0.67; 95% CI, 0.51 to 0.89; P = 0.005), and there\nwas a 33% lower risk of death in the apaluta\nmide group (Fig. 2A). The treatment effect on\noverall survival consistently favored apalutamide\nover placebo, with no significant difference in\nthe effect of apalutamide according to disease\nvolume (Fig. 2B).\nSecondary End Points\nThe time to cytotoxic chemotherapy was signif\nicantly longer with apalutamide than with pla-\ncebo (Table 2, and Fig. S2 in the Supplemen-\ntary Appendix). On the basis of the prespecified\nhierarchical testing sequence, the time to pain\nprogression was tested next; because the between-\ngroup difference did not reach statistical signifi-\ncance, no formal testing for further secondary\nend points was conducted.\nOther Clinically Relevant End Points\nThe median time to PSA progression was more\nfavorable with apalutamide than with placebo\n(Table 2, and Fig. S3 in the Supplementary Ap-\npendix), and PSA reached undetectable levels\n(<0.2 ng per ml) in 68.4% of the patients in the\napalutamide group and 28.7% of those in the pla-\ncebo group. A total of 87 patients in the apalu-\ntamide group and 190 in the placebo group re-\nceived subsequent treatment for prostate cancer\n(first subsequent therapies are shown in Table\nS3 in the Supplementary Appendix). The median\nsecond progression-free survival was longer with\napalutamide than with placebo (Table 2, and Fig.\nS4 in the Supplementary Appendix). There were\nfew events of symptomatic local progression and\nno substantial difference between the two groups\nin the time to symptomatic local progression\n(Table 2). Analysis of change from baseline in\nthe FACT-P score with the use of a mixed-effect\nrepeated-measures model showed that health-\nrelated quality of life was maintained with apalu-\ntamide, with no substantial between-group dif-\nference (Fig. S5 in the Supplementary Appendix).\nSafety\nTable 3 presents a summary of adverse events,\nand Table 4 shows the most common adverse\nevents of any cause that occurred from the time\nof the first dose of the trial intervention through\n30 days after the last dose. Frequencies of grade\n3 or 4 events (42.2% in the apalutamide group\nand 40.8% in the placebo group) and of serious\nadverse events (19.8% in the apalutamide group\nand 20.3% in the placebo group) did not differ\nsubstantially between the two groups. Most dis-\ncontinuations of the trial intervention were the\nresult of progressive disease (in 99 patients\n[18.9%] in the apalutamide group and 227\n[43.1%] in the placebo group) (Table S3 in the\nSupplementary Appendix). Adverse events led to\ndiscontinuation in 42 patients (8.0%) in the\napalutamide group and 28 (5.3%) in the placebo\ngroup (Table S4 in the Supplementary Appendix).\nA total of 10 patients (1.9%) in the apalutamide\ngroup and 16 (3.0%) in the placebo group died\nas the result of an adverse event (Table S5 in the\nSupplementary Appendix).\nRash of any grade was more common among\npatients who received apalutamide than among\nthose who received placebo (27.1% vs. 8.5%)\n(Table 4), and the most common adverse event\nof grade 3 or higher that was considered by the\ninvestigator to be related to apalutamide was\nrash of any type (6.3%). Hypothyroidism was\nreported by 6.5% of the patients in the apalu-\ntamide group and 1.1% of those in the placebo\ngroup (Table 4); all events were grade 1 or 2.\nIschemic heart disease was reported in 4.4% of\nthe patients in the apalutamide group and 1.5%\nFigure 1 (facing page). Kaplan-Meier Estimate\nof Radiographic Progression-free Survival and\nForest Plot of Radiographic Progression-free Survival\nAccording to Baseline Patient Characteristics.\nIn Panel A, analyses were performed with the use of a\nlog-rank test with stratification according to Gleason\nscore at diagnosis (≤7 vs. >7, on a scale of 2 to 10, with\nhigher scores indicating higher-grade cancer that may\nbe more aggressive), geographic region (North America\nand European Union vs. all other countries), and previ-\nous treatment with docetaxel (yes vs. no). In Panel B,\nthe analyses were unstratified. Eastern Cooperative\nOncology Group (ECOG) performance-status scores\nrange from 0 to 5, with higher scores reflecting greater\ndisability. ALP denotes alkaline phosphatase, LDH lactic\nacid dehydrogenase, NE could not be estimated, PSA\nprostate-specific antigen, and ULN upper limit of the\nnormal range.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on May 8, 2026.",
+        "source_id": "source_d2a76997c77be51a7f62e4c42a13956ce50b9af1163170c05d315c75df62d928",
+        "source_version": "sha256:a971fe310379188effb8b93f0e335412e0ef667464e2214964ef9c137c8c8f6f",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "titan"
+      }
+    },
+    "identity": "sha256:aa09fbd39756b6d6dc8a34d31758bf9d2f538c75ab3cfd3a5eaa96500e37aacb",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_6ae8c200f349370f"
+            ],
+            "rationale": "Patients were randomly assigned 1:1 to apalutamide or placebo, with continuous ADT in both arms."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:1ddb33f0989590cef1555e74e663133d3f3a7d05d5cbec8994c05aafeb3efdf7"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:a0d92531e2dd92dbe272ab5d4b345ba62ca9315832d4366d0ac01583abb9bcc6"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            },
+            {
+              "evidence_index": 1,
+              "field": {
+                "path": "/reported/endpoint/definition"
+              },
+              "value_digest": "sha256:69961f1e9cb5f2f158aec449ba2d5cc603cc5c0439aafc6148b043c0720dbdf7"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_28d2fd2a05a40cab",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_6ae8c200f349370f",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_fd7f158902f4ce2c",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The report defines overall survival as time from randomization to death from any cause, matching the requested event set and time origin. It compares the two randomized groups and reports the first interim overall-survival analysis.",
+          "reported": {
+            "analysis_population": "All randomized patients (525 assigned apalutamide; 527 assigned placebo); at the first interim analysis, 83 and 117 deaths, respectively.",
+            "effect_measure": "Hazard ratio",
+            "endpoint": {
+              "definition": "Time from randomization to the date of death from any cause",
+              "name": "Overall survival"
+            },
+            "estimate": "0.67",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% CI, 0.51 to 0.89; P = 0.005"
+          },
+          "requested_outcome": "Overall Survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Apalutamide plus ADT",
+                "id": "apalutamide"
+              },
+              {
+                "assignment": "Placebo plus ADT",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from randomization to date of death from any cause",
+              "metric": "Overall Survival"
+            },
+            "outcome_definition": "Overall Survival",
+            "time_point_or_window": {
+              "description": "First planned interim overall-survival analysis; median follow-up 22.7 months",
+              "kind": "described"
+            }
+          },
+          "trial_id": "titan"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:842d747e597ca13e6e17074d746f6b604eacc828a8aad5b9313e60b86ba53413",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

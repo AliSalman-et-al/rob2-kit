@@ -1,0 +1,66 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Standard of care with docetaxel plus abiraterone and prednisone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Standard of care with docetaxel without abiraterone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "Grade 3 or higher adverse events; NCI-CTCAE version 4.0 was used to grade adverse events.",
+    "population": "Patients in the randomized ADT plus docetaxel population receiving assigned study treatment (safety population).",
+    "reported_scope": {
+      "analysis_population": "The safety population in the ADT plus docetaxel stratum (347 assigned abiraterone; 350 not assigned abiraterone).",
+      "endpoint": {
+        "definition": "Grade 3 or higher adverse events; NCI-CTCAE version 4.0 was used to grade adverse events.",
+        "name": "Patients with grade 3 or higher adverse events"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "treatment",
+          "statistic": "Patients with at least one grade 3 or worse adverse event",
+          "unit": "patients (%)",
+          "value": "217/347 (63%)"
+        },
+        {
+          "group_id": "control",
+          "statistic": "Patients with at least one grade 3 or worse adverse event",
+          "unit": "patients (%)",
+          "value": "181/350 (52%)"
+        }
+      ]
+    },
+    "trial": "PEACE-1",
+    "window_or_cutoff": {
+      "description": "Safety events recorded during the treatment period in the docetaxel population of interest.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:12:18.837315Z",
+    "path": "../../../../../../reference/sources/PEACE-1/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT01957436",
+    "sha256": "4647033fd2ac8a105955c0942c93f13de01d1357dd8c8799cb42c14f41c17ec8"
+  },
+  "requested_outcome": "Adverse Events",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/PEACE-1/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/PEACE-1/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "PEACE-1"
+}

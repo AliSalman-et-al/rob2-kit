@@ -1,0 +1,86 @@
+{
+  "schema": "rob2-kit.proposal-scope-difference-approvals.v1",
+  "approvals": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARASENS",
+      "relation": "narrower",
+      "result_identity": "sha256:a3921293f003d72391351b0eca1a8eeb7d118bc2eec6fd654a0193a0bb1d0c9e",
+      "review_identity": "sha256:ec07e623432e3e6de61762076b07ab457c4477e575ed2575bb2c220343f4eaa3",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARCHES",
+      "relation": "narrower",
+      "result_identity": "sha256:4bfeaf0183aded31353794148155b70290048f75378f4ff4247a0cebca05acb1",
+      "review_identity": "sha256:44b5f65a1dea2b22844da3841db7611206b6c7a455ab75f7e2d7fdba29ed8552",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ENZAMET",
+      "relation": "component",
+      "result_identity": "sha256:1ed05d5a327be6de4d4e8db8ebe98f1dea2237ddc504812120f8405fad67acc7",
+      "review_identity": "sha256:5b3fdcccec1dbb3277419f7ff78e2358f3d81fbbdfb29bea40443ea188b0c32c",
+      "approved": true,
+      "scope_note": "component; direct grouped grade-family representation is not supported by the proposal validator"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "PEACE-1",
+      "relation": "narrower",
+      "result_identity": "sha256:2c75ee67463613ca9cbffafcb84963f55bfb0c8a318fa914c4b5be1bed2010a5",
+      "review_identity": "sha256:343b0026dacd4a21437b4fba5843cd0a4cc7b190917a948411fa8942a2a1b33e",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "STAMPEDE",
+      "relation": "narrower",
+      "result_identity": "sha256:1be23ef4b6cb6a26489b629d3acf8716ddcc435589cf88054017271b0592ba34",
+      "review_identity": "sha256:cc0362190b07ffc9a8fbbe18c96fbe2801fbd5330fd9c79010b4cd5895ee35e9",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "TITAN",
+      "relation": "narrower",
+      "result_identity": "sha256:7af43289bcb4ca0790a0a1956ecb30bbed229c6c7e77a1729dd98b31ad8ed26b",
+      "review_identity": "sha256:78a8ed62b9f662dedcf58c0305162c01a8a1c77162a73b21583111aae0832048",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARASENS",
+      "relation": "narrower",
+      "result_identity": "sha256:260eafee97cad11db21be572f022c75141e7441e10a381c81d83d8cf6709e75d",
+      "review_identity": "sha256:c78e38dad3850906ea4b5650716c72c2e8ae3ea726df90fef15a608ad4ddea45",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "SWOG-1216",
+      "relation": "narrower",
+      "result_identity": "sha256:d57a86ebe800bfcd1bb23459f23bfbf76b5cc736813c270c95ece3609e057451",
+      "review_identity": "sha256:0c6d7d002251f5d6e5d6b42e4bc3ba04713a91d759e0a52abd3fe572f9adc3d0",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "SWOG-1216",
+      "relation": "narrower",
+      "result_identity": "sha256:61f10c91e3b5cd0782c8e7ca5c8d91fe8b8266fa50a63d4c1550ef96e89c384d",
+      "review_identity": "sha256:294b03e750630dd314f1b9f8ac039ac73e6f4735bd9ea640b034a4f3606973d4",
+      "approved": true,
+      "scope_note": "narrower than frozen target; approved to proceed, excluded from exact-scope scoring"
+    }
+  ]
+}

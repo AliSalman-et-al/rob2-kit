@@ -1,0 +1,179 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:0e31f3d006464c837ca97f465893b02a45caff49d1acc3859be5981d7f436ed0": {
+        "end": 4000,
+        "end_line": 100,
+        "handle": "eh_0e31f3d006464c83",
+        "identity": "sha256:0e31f3d006464c837ca97f465893b02a45caff49d1acc3859be5981d7f436ed0",
+        "kind": "narrative",
+        "page": 5,
+        "quote": "Articles\nwww.thelancet.com Vol 399 April 30, 2022\n1699\n(5000 repeats). Statistical analyses were performed with\nSAS (version 9.4) and R (version 4.0.2).\nThis study is ongoing and is registered with\nClinicalTrials.gov, NCT01957436.\nRole of the funding source\nThe funders of the study had no role in study design,\ndata collection, data analysis, data interpretation, or\nwriting of the report.\nResults\nBetween Nov 27, 2013, and Dec 20, 2018, 1173 patients\nwere enrolled (one patient subsequently withdrew\nconsent for analysis of his data) and assigned to receive\nSOC (n=296), SOC plus radiotherapy (n=293), SOC plus\nabiraterone (n=292), or SOC plus radiotherapy plus\nabiraterone (n=291; figure 1). SOC was ADT alone in\n462 patients and ADT with docetaxel in 710 patients\n(table 1).\nFor radiographic progression-free survival and overall\nsurvival, the median follow-up periods were longer in\nthe overall population (3·5 years [IQR 2·8-4·6] and\n4·4 years [3·5-5·4], respectively) than in the ADT with\ndocetaxel population (3·0 years [2·1-3·8] and 3·8 years\n[2·9-4·5], respectively). Regardless of the population and\nsurvival outcome considered, the median follow-up\nperiods did not differ between the groups who did or did\nnot receive abiraterone. For the radiographic progression-\nfree survival analyses, the median follow-up periods\nfrom randomisation to the cutoff date of Sept 1, 2020,\nwere 3·53 years for the overall population (3·52 years for\nthe SOC without abiraterone groups and 3·56 years for\nthe SOC plus abiraterone groups; log-rank p=0·86) and\n2·99 years for the ADT with docetaxel population\n(3·00 years and 2·97 years; log-rank p=0·93). For the\noverall survival analyses, the median follow-up periods\nfrom randomisation to the cutoff date of June 1, 2021,\nwere 4·41 years for the overall population (4·44 years for\nthe SOC without abiraterone groups and 4·39 years for\nthe SOC plus abiraterone groups; log-rank p=0·98) and\n3·81 years for the ADT with docetaxel population\n(3·75 years and 3·85 years; log-rank p=0·95).\nIn the overall population (n=1172), no interaction\nbetween abiraterone and radiotherapy was found\nfor radiographic progression-free survival (p=0·64),\noverall survival (p=0·86), CRPC-free survival (p=0·56),\nor\nprostate-cancer-specific\nsurvival\n(p=0·54),\nafter\nadjusting for the four stratification factors. Likewise,\nin the ADT with docetaxel population (n=710), no\ninteraction between abiraterone and radiotherapy was\nFigure 1: Trial profile\nADT=androgen deprivation therapy. SOC=standard of care.\n296 assigned to SOC\n293 assigned to SOC plus\nradiotherapy\n1 withdrew consent for analysis of\n their data, data not included\n1173 patients enrolled and randomly assigned\n292 assigned to SOC plus\nabiraterone\n291 assigned to SOC plus\nabiraterone plus radiotherapy\n178 received docetaxel\n118 did not receive docetaxel\n589 in SOC (with or without radiotherapy) without abiraterone\ngroups\n306 alive with data from the past 3 months\n15 alive without data from the past 3 months\n(lost to follow-up or consent withdrawn)\n268 deceased at data cutoff\n583 in SOC (with or without radiotherapy) plus abiraterone groups\n337 alive with data from the past 3 months\n18 alive without data from the past 3 months (lost to\nfollow-up or consent withdrawn)\n228 deceased at data cutoff\n589 included in the overall population for efficacy analysis\n355 included in the ADT with docetaxel population for efficacy\nanalysis\n583 included in the overall population for efficacy analysis\n355 included in the ADT with docetaxel population for efficacy\nanalysis\n350 included in the ADT with docetaxel population for safety\nanalysis\n237 included in the ADT without docetaxel population for safety\nanalysis\n347 included in the ADT with docetaxel population for safety\nanalysis\n226 included in the ADT without docetaxel population for safety\nanalysis\n177 received docetaxel\n116 did not receive docetaxel\n177 received docetaxel\n115 did not receive docetaxel\n178 received docetaxel\n113 did not receive docetaxel",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "peace-1"
+      },
+      "sha256:3b7feb2b1e603d70b3064b1b0319274438ddec67586633a0321d539cd96e49f5": {
+        "end": 5901,
+        "end_line": 117,
+        "handle": "eh_3b7feb2b1e603d70",
+        "identity": "sha256:3b7feb2b1e603d70b3064b1b0319274438ddec67586633a0321d539cd96e49f5",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "Articles\nwww.thelancet.com Vol 399 April 30, 2022\n1697\nsurvival compared with ADT alone.6,7 Thereby, an\nadditional amendment was filed on Aug 10, 2017, to make\ndocetaxel mandatory for the remainder of the patients to\nbe accrued, so that the trial could evaluate the addition of\nabiraterone to ADT with docetaxel (given that the\nevaluation of ADT plus abiraterone compared with ADT\nalone had already been addressed by other trials). Further\ndetails on the amendments to the protocol and statistical\nanalysis plan are provided in the appendix (pp 7-8).\nEvolution of the sample size and allocation of patients\naccording to these key amendments is depicted in the\nappendix (pp 9-10).\nRandomisation and masking\nEligible patients were centrally randomly assigned in the\nAlea Clinical Portal), in a 1:1:1:1 ratio, to SOC, SOC plus\nradiotherapy, SOC plus abiraterone (abiraterone plus\nprednisone), or SOC plus radiotherapy plus abiraterone.\nThis randomisation process was performed via the\nTenalea autonomous software, solely accessed by the trial\ndata manager within the Epidemioloy and Biostatistics\nfacility of the Gustave Roussy Center in Villejuif, France\nuntil 2015, then by each investigator.\nRandomisation was done using a minimisation\nalgorithm, stratified by study site, ECOG performance\nstatus (0 vs 1-2), type of ADT (gonadotropin-releasing\nhormone agonist vs antagonist vs bilateral orchiectomy),\nplanned administration of docetaxel (yes vs no), and\ndisease extent or burden based on metastatic status\n(lymph node metastases only vs bone metastases [with or\nwithout lymph node metastases] vs visceral metastases).\nA similar weight was given to each of the five\nstratification factors, with 80% probability to minimise\nimbalance in the number of patients assigned to each\ntreatment group. As the case report form gathered\ninformation for patient stratification according to\nhigh-volume versus low-volume metastatic burden\nclassification (as defined in the CHAARTED study2 [high\nvolume was defined as the presence of visceral\nmetastases or at least four bone lesions with one beyond\nthe vertebral bodies and pelvis]), this later classification\nwas retained to enable inter-trial comparisons. No\nmasking was performed in this study.\nProcedures\nIn all patients in the study, ADT was planned to be\ncontinuously maintained by either a gonadotropin-\nreleasing hormone agonist or antagonist, or bilateral\norchiectomy. Patients assigned to receive docetaxel as part\nof SOC with continuous ADT were to receive six cycles of\nintravenous docetaxel (75 mg/m2 per cycle; maximum\ndose of 150 mg per cycle), to be administered every\n3 weeks (plus or minus 3 days). Granulocyte colony-\nstimulating factor (G-CSF) injections after each docetaxel\ncycle were recommended until the protocol amendment\non Jan 22, 2018, made G-CSF prophylaxis mandatory for\npatients who received docetaxel. The first docetaxel cycle\nhad to be administered within 14 days after randomisation\nand be at least 6 weeks after ADT initiation. Patients\nassigned to receive abiraterone received 1000 mg of\nabiraterone (four 250 mg tablets, orally) once daily plus\nprednisone 5 mg orally twice daily, starting within 6 weeks\nafter ADT initiation. PEACE-1 began accrual in 2013,\nbefore the LATITUDE6 and the STAMPEDE7 abiraterone\ntrials were reported and before abiraterone was approved\nfor mCSPC, which is why we used 10 mg of prednisone,\nsimilar to what is approved for metastatic castration-\nresistant prostate cancer (mCRPC). Abiraterone and\nprednisone (hereafter referred to as abiraterone) were\nadministered until disease progression to castration\nresistance, withdrawal of consent, unacceptable toxicity,\nor death. Patients assigned to receive radiotherapy\n(74 Gy in 37 fractions administered over 7-8 weeks)\nwere planned to start radiotherapy at least 3 weeks\nafter docetaxel completion (but no more than 8 weeks\nafter completion). Treatments given after disease\nprogression followed common practice, and investigators\nwere able to change therapy as they thought was most\nappropriate, on the basis of prostate-specific antigen\n(PSA) concentration variation or clinical progression,\neven in absence of radiographical evidence. The treatment\nflow chart is depicted in the appendix (p 10).\nEvery enrolled patient was to be followed-up for a\nduration of 10 years. The complete list of assessments\nperformed at each visit and follow-up intervals are\ndetailed in the appendix (pp 12-13). Survival status data\nwere gathered within 3 months of the cutoff date for\n97% of patients.\nOutcomes\nThe coprimary endpoints were radiographic progression-\nfree survival and overall survival. Radiographical pro\ngression of soft-tissue lesions was evaluated by either CT\nor MRI, on the basis of RECIST version 1.1. Progression\nof bone lesions was assessed by bone scan according to\nthe adapted version of Prostate Cancer Working Group 2\ncriteria,21 with no secondary bone scan required to\nconfirm progression. Radiographic progression-free\nsurvival was defined as the time between randomisation\nand the occurrence of radiographical progression or\ndeath from any cause. Overall survival was defined as the\ntime between randomisation and death from any cause.\nPatients without events were censored at the date of last\nfollow-up.\nThe secondary endpoints were castration-resistant\nprostate cancer (CRPC)-free survival, serious-genito\nurinary-event-free survival, prostate-cancer-specific survival,\ntime to next skeletal-related event, PSA response rate,\nprognostic study of serum PSA measured 6-8 months\nafter initiation of systemic therapy, time to pain pro\ngression, time to chemotherapy for CRPC, quality of life,\nchanges in bone mineral density, correlation of biomarkers\nwith outcome, event rate per 100 person-years of treatment\nanalysis, and toxicity. CRPC-free survival was defined as\nFor more on the Alea Clinical\nPortal see https://www.\naleaclinical.eu",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "peace-1"
+      },
+      "sha256:7d07b913adf04224b4f5d72ed0e7e91f74d81f2ff06fc6759974889a37006fbd": {
+        "end": 4118,
+        "end_line": 55,
+        "handle": "eh_7d07b913adf04224",
+        "identity": "sha256:7d07b913adf04224b4f5d72ed0e7e91f74d81f2ff06fc6759974889a37006fbd",
+        "kind": "narrative",
+        "page": 9,
+        "quote": "8\n\nadditional blood test around day 6 (for early neutropenia detection) for all docetaxel-treated patients until the trial\ncompletion. Once this amendment (N°23) was authorized on March 22, 2018 (210 patients were randomized afterwards), no\nsubsequent toxicity-related death was observed.\nAmendment N°32 (substantial; ethics committee approval: 13-JAN-2021)\nDue to the Covid-19 pandemic, the submission and approval this amendment was considerably delayed. From April 2019 to\nApril 2020 changes to be made to the analysis plan were discussed with the IDMC and the Steering Committee as some\nquestions to be answered by PEACE 1 had been partially or totally solved. Specifically:\n•\nThe efficacy of abiraterone in hormone-sensitive metastatic prostate cancer treated by ADT alone as SOC was\ninvestigated by the LATITUDE study with regard to high-risk patients4, and the STAMPEDE study5\n•\nThe efficacy of prostate radiotherapy in hormone-sensitive metastatic prostate cancer treated by ADT alone as\nSOC was investigated by the HORRAD study6 and the STAMPEDE RT study7.\n\nTherefore, once authorized, this amendment allowed us to:\n•\nInvestigate a revise co-primary objective to answer two questions of utmost interest for the medical community\nby:\no\nAssessing the efficacy of abiraterone acetate and prednisone in patients with metastatic hormone-naïve\nprostate cancer treated by ADT and docetaxel (with or without prostate radiotherapy) in terms of overall\nsurvival (OS) and radiographic progression free survival (rPFS).\no\nAssessing the efficacy of prostate radiotherapy in hormone-naïve prostate cancer patients with low\nmetastatic burden (as defined in the CHAARTED trial8), regardless of the SOC received (ADT with or\nwithout docetaxel, with or without abiraterone) in terms of OS and rPFS.\n•\nFocus on the timing of the final analyses instead of conducting intermediate analysis based on the hypotheses\nthat abiraterone in the ADT+ docetaxel population would have an efficacy and that prostate radiotherapy on the\npopulation with a low metastatic burden (in accordance with the revised primary objectives) would also have an\nefficacy.\n•\nUpdate the nature of the co-primary endpoint from PFS to radiographic PFS (rPFS): In initial protocol PFS\nwas based on rPFS and PSA progression events. However, post PEACE-1 initiation, various studies showed that\nPSA progression had poor prognosis value as a surrogate endpoint. In contrast, rPFS was demonstrated to be a\nvalid surrogate endpoint for OS in metastatic prostate cancer and was an FDA-validated registration endpoint in\nhormone sensitive metastatic prostate cancer settings (PEACE-1 study indication). Hence, rPFS was requalified as\na co-primary endpoint while PFS events already well defined and collected during the trial were used along with\nPSA progression to characterize and evaluate CRPC-free survival as a secondary endpoint.\n•\nChange the distribution of the type I error between the co-primary endpoints in order to prioritize the overall\nsurvival analysis. Thus, the type I error for OS was set at 4.9% instead of 4%, and at 0.1% instead of 1% for rPFS.\n•\nDefine the testing strategy and decision rules for the fixed-sequence test in the study subpopulations to control the\ntype I error and avoid multiplicity issues. Specifically, for the abiraterone question, the choice of testing first the\noverall population and then the ADT+docetaxel population was based on the following arguments: the trial had\nbeen designed for the population of men with de novo mCSPC with a SOC comprising ADT+/- docetaxel\ndepending on the inclusion period. We felt that discarding the information provided by 40% of our study\npopulation (those receiving ADT alone as SOC) was unethical. To the contrary, keeping those patients in the\nanalysis gave more power to the study (as more events were available in the overall population). The risk of being\nstopped after testing the overall population and not being able to present data for the ADT+docetaxel population\nwas considered small, given the external efficacy data of abiraterone reported by the LATITUDE and STAMPEDE\nstudies.",
+        "source_id": "source_a7e60b887782ac1e0939091fc1fe34a36ad3be71d4d3c640eef0be6699424281",
+        "source_version": "sha256:48e28b6efd1b4e0811890b10b448104c70359d72c01ae93773bba311d16a9a2a",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "peace-1"
+      },
+      "sha256:ee7bc370c3dd41b7cb606b18efea4693403bd0d2f58744a899bb27cebb11bc21": {
+        "end": 1523,
+        "end_line": 30,
+        "handle": "eh_ee7bc370c3dd41b7",
+        "identity": "sha256:ee7bc370c3dd41b7cb606b18efea4693403bd0d2f58744a899bb27cebb11bc21",
+        "kind": "narrative",
+        "page": 6,
+        "quote": "radiotherapy) decreased the number of deaths from 268\nto 228, improved the median overall survival from 4·72\nyears (IQR 2·59-not reached) to 5·72 years (2·72-not\nreached), and reduced the risk of death from any cause by\n18% (adjusted HR for overall survival 0·82, 95·1% CI\n0·69-0·98; p=0·030; figure 2C, table 2). In the overall",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 1195,
+        "start_line": 25,
+        "trial_id": "peace-1"
+      }
+    },
+    "identity": "sha256:a9ab9d9088210b6fc26e240edc52ac9049a5606d2f88a740ccec06bc897eaa36",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_3b7feb2b1e603d70"
+            ],
+            "rationale": "Patients were centrally randomly assigned in a 1:1:1:1 ratio to four treatment groups; the abiraterone contrast pools two arms against two arms."
+          },
+          "bindings": [
+            {
+              "evidence_index": 3,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a11e81437d4d11810475bbc8aabc9c188fd75d103e0b607260252d4a406d157a"
+            },
+            {
+              "evidence_index": 3,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:1b2041973a5d1f944590704e662bd0602bb9c4933ea68ccb8cc3e872d8b3d439"
+            },
+            {
+              "evidence_index": 3,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:5fc7594ed1723ff219c1f413f001ea7f34d4b9a249f4ed1c8dcd35255258149b"
+            },
+            {
+              "evidence_index": 3,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:3a8808d6503d722fb5b8ef9a475152abbea0747dad64984c35f63c7d0b403152"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_0e31f3d006464c83",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_3b7feb2b1e603d70",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_7d07b913adf04224",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_ee7bc370c3dd41b7",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The report defines overall survival as time from randomisation to death from any cause, with patients without events censored at last follow-up. It reports the overall randomized population, comparing assignment to SOC plus abiraterone versus SOC without abiraterone, pooled across radiotherapy allocation, using the requested hazard ratio; the data cutoff was June 1, 2021.",
+          "reported": {
+            "analysis_population": "Intention-to-treat overall population: 583 assigned to SOC plus abiraterone and 589 assigned to SOC without abiraterone (n=1172); one of 1173 randomized participants withdrew consent for analysis.",
+            "effect_measure": "HR",
+            "endpoint": {
+              "definition": null,
+              "name": "overall survival"
+            },
+            "estimate": "0·82",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95·1% CI 0·69-0·98"
+          },
+          "requested_outcome": "Overall Survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "SOC plus abiraterone, with or without radiotherapy",
+                "id": "abiraterone"
+              },
+              {
+                "assignment": "SOC without abiraterone, with or without radiotherapy",
+                "id": "no_abiraterone"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "HR",
+            "measurement": {
+              "method": "Time from randomisation to death from any cause; patients without events are censored at date of last follow-up.",
+              "metric": "Overall Survival"
+            },
+            "outcome_definition": "Overall Survival",
+            "time_point_or_window": {
+              "description": "From randomisation through death or last follow-up; overall-survival data cutoff June 1, 2021.",
+              "kind": "described"
+            }
+          },
+          "trial_id": "peace-1"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:1c65612d572a16c72eecfa91959ab67fbb56622c702e206722dd3cce4acb4be6",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

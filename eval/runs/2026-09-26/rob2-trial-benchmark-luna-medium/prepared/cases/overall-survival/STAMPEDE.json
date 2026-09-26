@@ -1,0 +1,66 @@
+{
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy alone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "The time from randomization to death from any cause.",
+    "population": "All randomized patients in the trial comparison, analyzed according to assigned group.",
+    "reported_scope": {
+      "analysis_population": "The randomized comparison: 1,917 patients (948 combination; 960 ADT alone in the safety population).",
+      "effect_measure": "hazard ratio for death",
+      "endpoint": {
+        "definition": "The time from randomization to death from any cause.",
+        "name": "Overall survival"
+      },
+      "estimate": "0.63",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.52 to 0.76; P<0.001"
+    },
+    "trial": "STAMPEDE",
+    "window_or_cutoff": {
+      "description": "Primary report after median follow-up of 40 months.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "captured_at": "2026-09-13T19:14:13.902255Z",
+    "path": "../../../../../../reference/sources/STAMPEDE/registry.json",
+    "provenance": "captured response retained from PFS baseline",
+    "registry_id": "NCT00268476",
+    "sha256": "f17d24fac49c26e7cd9ae51ce52ef6b9568cf440f8792b52aede034eb98914c9"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-case.v1",
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "path": "../../../../../../reference/sources/STAMPEDE/main_article.pdf",
+      "role": "main_article"
+    },
+    {
+      "name": "other.pdf",
+      "path": "../../../../../../reference/sources/STAMPEDE/other.pdf",
+      "role": "other"
+    },
+    {
+      "name": "protocol.pdf",
+      "path": "../../../../../../reference/sources/STAMPEDE/protocol.pdf",
+      "role": "protocol"
+    },
+    {
+      "name": "supplement.pdf",
+      "path": "../../../../../../reference/sources/STAMPEDE/supplement.pdf",
+      "role": "supplement"
+    }
+  ],
+  "trial": "STAMPEDE"
+}

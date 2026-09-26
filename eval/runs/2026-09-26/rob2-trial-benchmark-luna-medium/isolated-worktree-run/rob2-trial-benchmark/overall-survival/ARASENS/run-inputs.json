@@ -1,0 +1,79 @@
+{
+  "approved_scope": null,
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Darolutamide plus androgen-deprivation therapy and docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Placebo plus androgen-deprivation therapy and docetaxel",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "The time from randomization to death resulting from any cause.",
+    "population": "All randomized patients in the primary analysis, analyzed by assigned group.",
+    "reported_scope": {
+      "analysis_population": "The primary analysis population: 1,306 randomized patients (651 darolutamide; 655 placebo).",
+      "effect_measure": "hazard ratio for death",
+      "endpoint": {
+        "definition": "The time from randomization to death resulting from any cause.",
+        "name": "Overall survival"
+      },
+      "estimate": "0.68",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.57 to 0.80; P<0.001"
+    },
+    "trial": "ARASENS",
+    "window_or_cutoff": {
+      "description": "Primary analysis at the October 25, 2021 data cutoff.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "capture_provenance": "captured response retained from OS baseline",
+    "captured_at": "2026-09-13T19:31:14.538796Z",
+    "registry_id": "NCT02799602",
+    "replay_provenance": "copied byte-for-byte from the case manifest; no registry request made",
+    "replayed_at": "2026-09-26T10:59:39.104183+00:00",
+    "sha256": "5a6a378e5aaeeb083e17276f3c06ccc3129d734151c4699ddd607a8e72c9b6b6"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-run-inputs.v1",
+  "scope_unresolved": null,
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "role": "main_article",
+      "sha256": "31fa6ce53f1a9f75560edcabd004c4882a010e6ede933370b9e00a67c99b793e"
+    },
+    {
+      "name": "other-2.pdf",
+      "role": "other",
+      "sha256": "1d0373b747205cc73e5e11dbca4769ef95a9f002effa695e30712c17624b26aa"
+    },
+    {
+      "name": "other.pdf",
+      "role": "other",
+      "sha256": "4dd9419f853329f08fc88c85757516177c1ed5255a91cfbdcb822732f57789a3"
+    },
+    {
+      "name": "protocol.pdf",
+      "role": "protocol",
+      "sha256": "6570aa6f772789170f4fb7d29863918b4f85f57b1940291b53434a9c51e3ce88"
+    },
+    {
+      "name": "registry.json",
+      "role": "registry",
+      "sha256": "5a6a378e5aaeeb083e17276f3c06ccc3129d734151c4699ddd607a8e72c9b6b6"
+    },
+    {
+      "name": "supplement.pdf",
+      "role": "supplement",
+      "sha256": "7d4dbdda5497a4e9eb58af6b698faf8530669820598e6f9f212632bc4cb97085"
+    }
+  ],
+  "trial": "ARASENS"
+}

@@ -1,0 +1,2 @@
+outcome	trial	primary_status	role	definition	effect_size	source_locator	main_article	run_dir
+Adverse Events	ENZAMET	secondary	secondary	Grade 3 adverse events; NCI-CTCAE version 4.0.2 was used to grade adverse events.	Grade 3: 277/563 (49%) vs 194/558 (35%).	Main article Table 2, Any Adverse Event severity, Grade 3 row, PDF p. 9.	eval\reference\sources\ENZAMET\main_article.pdf	C:\Users\Ali-Salman\.codex\worktrees\rob2-trial-benchmark\rob2-kit\eval\runs\2026-09-26\rob2-trial-benchmark\adverse-events\ENZAMET-grade3-final

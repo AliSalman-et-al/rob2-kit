@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Overall Survival defined as The time between randomization and death from any cause; patients without events were censored at the date of last follow-up, hazard ratio 0.82; 95.1% CI, 0.69 to 0.98; P=0.030 in PEACE-1.

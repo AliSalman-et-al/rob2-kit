@@ -1,0 +1,243 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:0fbd6d0c21f9b894e1bb2318e6c32aef14e0e6e238530a3c9f1ec308bfdab32b": {
+        "end": 511,
+        "end_line": 60,
+        "handle": "eh_0fbd6d0c21f9b894",
+        "identity": "sha256:0fbd6d0c21f9b894e1bb2318e6c32aef14e0e6e238530a3c9f1ec308bfdab32b",
+        "kind": "narrative",
+        "page": 16,
+        "quote": "15\n\nSupplementary table 6. Expected frequent (>5%) severe (Grade 3-5) adverse events - Safety population\nTreatment allocation\nADT+DXL population\n\nADT population\n(SOC = ADT + DXL +/- RT)\n\n(SOC = ADT +/- RT)\n\nSOC + Abi\n\nSOC\n\nSOC + Abi\n\nSOC\n\nArm B+D\n\nArm A+C\n\nArm B+D\n\nArm A+C\nSafety population\n(n=347)\n\n(n=350)\n\n(n=226)\n\n(n=237)\nExpected frequent adverse events\n\n\n\n\n\n\nSevere (Grade 3-5) adverse events\n\n\n\n\n\n\nHypertension\n76 (22)\n45 (13)\n66 (29)\n38 (16)\nNeutropenia\n34 (10)\n32 (9)\n0 (0)\n0 (0)\nHepatotoxicity\n20 (6)",
+        "source_id": "source_a7e60b887782ac1e0939091fc1fe34a36ad3be71d4d3c640eef0be6699424281",
+        "source_version": "sha256:48e28b6efd1b4e0811890b10b448104c70359d72c01ae93773bba311d16a9a2a",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "peace-1"
+      },
+      "sha256:3b7feb2b1e603d70b3064b1b0319274438ddec67586633a0321d539cd96e49f5": {
+        "end": 5901,
+        "end_line": 117,
+        "handle": "eh_3b7feb2b1e603d70",
+        "identity": "sha256:3b7feb2b1e603d70b3064b1b0319274438ddec67586633a0321d539cd96e49f5",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "Articles\nwww.thelancet.com Vol 399 April 30, 2022\n1697\nsurvival compared with ADT alone.6,7 Thereby, an\nadditional amendment was filed on Aug 10, 2017, to make\ndocetaxel mandatory for the remainder of the patients to\nbe accrued, so that the trial could evaluate the addition of\nabiraterone to ADT with docetaxel (given that the\nevaluation of ADT plus abiraterone compared with ADT\nalone had already been addressed by other trials). Further\ndetails on the amendments to the protocol and statistical\nanalysis plan are provided in the appendix (pp 7-8).\nEvolution of the sample size and allocation of patients\naccording to these key amendments is depicted in the\nappendix (pp 9-10).\nRandomisation and masking\nEligible patients were centrally randomly assigned in the\nAlea Clinical Portal), in a 1:1:1:1 ratio, to SOC, SOC plus\nradiotherapy, SOC plus abiraterone (abiraterone plus\nprednisone), or SOC plus radiotherapy plus abiraterone.\nThis randomisation process was performed via the\nTenalea autonomous software, solely accessed by the trial\ndata manager within the Epidemioloy and Biostatistics\nfacility of the Gustave Roussy Center in Villejuif, France\nuntil 2015, then by each investigator.\nRandomisation was done using a minimisation\nalgorithm, stratified by study site, ECOG performance\nstatus (0 vs 1-2), type of ADT (gonadotropin-releasing\nhormone agonist vs antagonist vs bilateral orchiectomy),\nplanned administration of docetaxel (yes vs no), and\ndisease extent or burden based on metastatic status\n(lymph node metastases only vs bone metastases [with or\nwithout lymph node metastases] vs visceral metastases).\nA similar weight was given to each of the five\nstratification factors, with 80% probability to minimise\nimbalance in the number of patients assigned to each\ntreatment group. As the case report form gathered\ninformation for patient stratification according to\nhigh-volume versus low-volume metastatic burden\nclassification (as defined in the CHAARTED study2 [high\nvolume was defined as the presence of visceral\nmetastases or at least four bone lesions with one beyond\nthe vertebral bodies and pelvis]), this later classification\nwas retained to enable inter-trial comparisons. No\nmasking was performed in this study.\nProcedures\nIn all patients in the study, ADT was planned to be\ncontinuously maintained by either a gonadotropin-\nreleasing hormone agonist or antagonist, or bilateral\norchiectomy. Patients assigned to receive docetaxel as part\nof SOC with continuous ADT were to receive six cycles of\nintravenous docetaxel (75 mg/m2 per cycle; maximum\ndose of 150 mg per cycle), to be administered every\n3 weeks (plus or minus 3 days). Granulocyte colony-\nstimulating factor (G-CSF) injections after each docetaxel\ncycle were recommended until the protocol amendment\non Jan 22, 2018, made G-CSF prophylaxis mandatory for\npatients who received docetaxel. The first docetaxel cycle\nhad to be administered within 14 days after randomisation\nand be at least 6 weeks after ADT initiation. Patients\nassigned to receive abiraterone received 1000 mg of\nabiraterone (four 250 mg tablets, orally) once daily plus\nprednisone 5 mg orally twice daily, starting within 6 weeks\nafter ADT initiation. PEACE-1 began accrual in 2013,\nbefore the LATITUDE6 and the STAMPEDE7 abiraterone\ntrials were reported and before abiraterone was approved\nfor mCSPC, which is why we used 10 mg of prednisone,\nsimilar to what is approved for metastatic castration-\nresistant prostate cancer (mCRPC). Abiraterone and\nprednisone (hereafter referred to as abiraterone) were\nadministered until disease progression to castration\nresistance, withdrawal of consent, unacceptable toxicity,\nor death. Patients assigned to receive radiotherapy\n(74 Gy in 37 fractions administered over 7-8 weeks)\nwere planned to start radiotherapy at least 3 weeks\nafter docetaxel completion (but no more than 8 weeks\nafter completion). Treatments given after disease\nprogression followed common practice, and investigators\nwere able to change therapy as they thought was most\nappropriate, on the basis of prostate-specific antigen\n(PSA) concentration variation or clinical progression,\neven in absence of radiographical evidence. The treatment\nflow chart is depicted in the appendix (p 10).\nEvery enrolled patient was to be followed-up for a\nduration of 10 years. The complete list of assessments\nperformed at each visit and follow-up intervals are\ndetailed in the appendix (pp 12-13). Survival status data\nwere gathered within 3 months of the cutoff date for\n97% of patients.\nOutcomes\nThe coprimary endpoints were radiographic progression-\nfree survival and overall survival. Radiographical pro\ngression of soft-tissue lesions was evaluated by either CT\nor MRI, on the basis of RECIST version 1.1. Progression\nof bone lesions was assessed by bone scan according to\nthe adapted version of Prostate Cancer Working Group 2\ncriteria,21 with no secondary bone scan required to\nconfirm progression. Radiographic progression-free\nsurvival was defined as the time between randomisation\nand the occurrence of radiographical progression or\ndeath from any cause. Overall survival was defined as the\ntime between randomisation and death from any cause.\nPatients without events were censored at the date of last\nfollow-up.\nThe secondary endpoints were castration-resistant\nprostate cancer (CRPC)-free survival, serious-genito\nurinary-event-free survival, prostate-cancer-specific survival,\ntime to next skeletal-related event, PSA response rate,\nprognostic study of serum PSA measured 6-8 months\nafter initiation of systemic therapy, time to pain pro\ngression, time to chemotherapy for CRPC, quality of life,\nchanges in bone mineral density, correlation of biomarkers\nwith outcome, event rate per 100 person-years of treatment\nanalysis, and toxicity. CRPC-free survival was defined as\nFor more on the Alea Clinical\nPortal see https://www.\naleaclinical.eu",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "peace-1"
+      },
+      "sha256:54e7340e586e572eeaebff95e66fd2f0431c2c476ff10ffa7d166b75ae15085d": {
+        "end": 5942,
+        "end_line": 100,
+        "handle": "eh_54e7340e586e572e",
+        "identity": "sha256:54e7340e586e572eeaebff95e66fd2f0431c2c476ff10ffa7d166b75ae15085d",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "Articles\nwww.thelancet.com Vol 399 April 30, 2022\n1695\nAbiraterone plus prednisone added to androgen deprivation\ntherapy and docetaxel in de novo metastatic castration-\nsensitive prostate cancer (PEACE-1): a multicentre, open-\nlabel, randomised, phase 3 study with a 2 × 2 factorial design\nKarim Fizazi, Stéphanie Foulon, Joan Carles, Guilhem Roubaud, Ray McDermott, Aude Fléchon, Bertrand Tombal, Stéphane Supiot,\nDominik Berthold, Philippe Ronchin, Gabriel Kacso, Gwenaëlle Gravis, Fabio Calabro, Jean-François Berdah, Ali Hasbini, Marlon Silva,\nAntoine Thiery-Vuillemin, Igor Latorzeff, Loïc Mourey, Brigitte Laguerre, Sophie Abadie-Lacourtoisie, Etienne Martin, Claude El Kouri,\nAnne Escande, Alvar Rosello, Nicolas Magne, Friederike Schlurmann, Frank Priou, Marie-Eve Chand-Fouche, Salvador Villà Freixa,\nMuhammad Jamaluddin, Isabelle Rieger, Alberto Bossi, on behalf of the PEACE-1 investigators*\nSummary\nBackground Current standard of care for metastatic castration-sensitive prostate cancer supplements androgen\ndeprivation therapy with either docetaxel, second-generation hormonal therapy, or radiotherapy. We aimed to\nevaluate the efficacy and safety of abiraterone plus prednisone, with or without radiotherapy, in addition to\nstandard of care.\nMethods We conducted an open-label, randomised, phase 3 study with a 2 × 2 factorial design (PEACE-1) at\n77 hospitals across Belgium, France, Ireland, Italy, Romania, Spain, and Switzerland. Eligible patients were male,\naged 18 years or older, with histologically confirmed or cytologically confirmed de novo metastatic prostate\nadenocarcinoma, and an Eastern Cooperative Oncology Group performance status of 0-1 (or 2 due to bone pain).\nParticipants were randomly assigned (1:1:1:1) to standard of care (androgen deprivation therapy alone or with\nintravenous docetaxel 75 mg/m2 once every 3 weeks), standard of care plus radiotherapy, standard of care plus\nabiraterone (oral 1000 mg abiraterone once daily plus oral 5 mg prednisone twice daily), or standard of care plus\nradiotherapy plus abiraterone. Neither the investigators nor the patients were masked to treatment allocation. The\ncoprimary endpoints were radiographic progression-free survival and overall survival. Abiraterone efficacy was\nfirst assessed in the overall population and then in the population who received androgen deprivation therapy\nwith docetaxel as standard of care (population of interest). This study is ongoing and is registered with\nClinicalTrials.gov, NCT01957436.\nFindings Between Nov 27, 2013, and Dec 20, 2018, 1173 patients were enrolled (one patient subsequently withdrew\nconsent for analysis of his data) and assigned to receive standard of care (n=296), standard of care plus radiotherapy\n(n=293), standard of care plus abiraterone (n=292), or standard of care plus radiotherapy plus abiraterone (n=291).\nMedian follow-up was 3·5 years (IQR 2·8-4·6) for radiographic progression-free survival and 4·4 years (3·5-5·4)\nfor overall survival. Adjusted Cox regression modelling revealed no interaction between abiraterone and\nradiotherapy, enabling the pooled analysis of abiraterone efficacy. In the overall population, patients assigned to\nreceive abiraterone (n=583) had longer radiographic progression-free survival (hazard ratio [HR] 0·54, 99·9% CI\n0·41-0·71; p<0·0001) and overall survival (0·82, 95·1% CI 0·69-0·98; p=0·030) than patients who did not receive\nabiraterone (n=589). In the androgen deprivation therapy with docetaxel population (n=355 in both with\nabiraterone and without abiraterone groups), the HRs were consistent (radiographic progression-free survival 0·50,\n99·9% CI 0·34-0·71; p<0·0001; overall survival 0·75, 95·1% CI 0·59-0·95; p=0·017). In the androgen deprivation\ntherapy with docetaxel population, grade 3 or worse adverse events occurred in 217 (63%) of 347 patients who\nreceived abiraterone and 181 (52%) of 350 who did not; hypertension had the largest difference in occurrence\n(76 [22%] patients and 45 [13%], respectively). Addition of abiraterone to androgen deprivation therapy plus\ndocetaxel did not increase the rates of neutropenia, febrile neutropenia, fatigue, or neuropathy compared with\nandrogen deprivation therapy plus docetaxel alone.\nInterpretation Combining androgen deprivation therapy, docetaxel, and abiraterone in de novo metastatic castration-\nsensitive prostate cancer improved overall survival and radiographic progression-free survival with a modest increase\nin toxicity, mostly hypertension. This triplet therapy could become a standard of care for these patients.\nFunding Janssen-Cilag, Ipsen, Sanofi, and the French Government.\nCopyright © 2022 Elsevier Ltd. All rights reserved.\nLancet 2022; 399: 1695-07\nPublished Online\nApril 8, 2022\nhttps://doi.org/10.1016/\nS0140-6736(22)00367-1\nSee Comment page 1670\n*Members are listed in the\nappendix (p 2)\nDepartment of Cancer\nMedicine (Prof K Fizazi MD),\nDepartment of Biostatistics\nand Epidemiology\n(S Foulon MD), Oncostat\nU1018, Inserm, Ligue Contre le\nCancer (S Foulon), and\nDepartment of Radiotherapy\n(A Bossi MD), Institut Gustave\nRoussy, University of Paris-\nSaclay, Villejuif, France; Vall\nd'Hebron Institute of\nOncology, Vall d'Hebron\nUniversity Hospital,\nBarcelona, Spain\n(Prof J Carles MD); Institut\nBergonié 229 cours de\nl'Argonne, Bordeaux, France\n(G Roubaud MD); Cancer Trials\nIreland, St Vincent's University\nHospital, Dublin, Ireland\n(Prof R McDermott MD); Centre\nLéon Bérard, Lyon, France\n(A Fléchon MD); Clinique\nUniversitaire St Luc, Brussels,\nBelgium (Prof B Tombal MD);\nInstitut de Cancérologie de\nl'Ouest, René Gauducheau,\nSaint-Herblain, France\n(Prof S Supiot MD); Centre\nPluridisciplinaire d'Oncologie,\nCentre Hospitalier Universitaire\nVaudois, Lausanne, Switzerland\n(D Berthold MD); Centre\nAzureen de Cancerologie,\nMougins, France\n(P Ronchin MD); Amethyst\nRadiotherapy Center, Iuliu\nHatieganu University of\nMedicine and Pharmacy,\nCluj-Napoca, Romania\n(G Kacso MD); Institut",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "peace-1"
+      },
+      "sha256:c7a6880ea85166182ef9b500bbfb6170db8790422ee0c47cab16a7e39ed1fe82": {
+        "end": 6847,
+        "end_line": 206,
+        "handle": "eh_c7a6880ea8516618",
+        "identity": "sha256:c7a6880ea85166182ef9b500bbfb6170db8790422ee0c47cab16a7e39ed1fe82",
+        "kind": "narrative",
+        "page": 11,
+        "quote": "Articles\nwww.thelancet.com Vol 399 April 30, 2022\n1705\nwith ADT and docetaxel without abiraterone. Indeed,\ndocetaxel and abiraterone have distinct mechanisms of\naction. In addition, they do not display absolute cross-\nresistance, as abiraterone improves overall survival\nafter docetaxel treatment and docetaxel retains some\nactivity after abiraterone failure.30,31 Collectively, these\nobservations provide a rationale for the survival benefits\nresulting from their combination in this trial. However,\nthis study did not answer whether this triple\ncombination yields clinical advantages over ADT plus a\nsecond-generation androgen receptor axis inhibitor.\nIndeed, at the time when this trial was conducted\n(2013-18), combining ADT with such an inhibitor had\nnot been approved for mCSPC, thereby precluding\nsuch a comparison within the trial. Incidentally, the\nongoing phase 3 ARASENS (NCT02799602) and\nENZAMET (NCT02446405) trials are also testing the\ncombined efficacy of second-generation androgen\nreceptor axis inhibitors (darolutamide and enzalutamide,\nrespectively) with ADT and docetaxel, and their\nupcoming overall survival results will put the benefits\nof abiraterone in perspective.\nReaching treatment synergy and preventing acquired\nresistance despite tumour clonal heterogeneity are\ncardinal aspects of mCSPC management that require\nan optimisation of the treatment framework. In\nPEACE-1, significant survival benefits were obtained\nwhen abiraterone was added to ADT with docetaxel.\nRemarkably, these benefits were observed even though\nmore than 80% of the SOC without abiraterone group\neventually received a second-generation androgen\nreceptor axis inhibitor (mostly abiraterone or enzaluta\nmide) to address cancer progression. Indeed, by contrast\nwith previous trials, PEACE-1 investigators were allowed\nto prescribe early salvage treatments to the control\ngroup patients who showed evidence of cancer\nprogression. To this end, a PSA minimum value of just\n0·50 ng/mL was used to define mCRPC, even in the\nabsence of radiographic progression. Collectively, these\nobservations suggest that the upfront combination\nimplemented in this trial is superior to the sequential\nadministration of these (or similar) agents as occurred\nin the control group. Of note, abiraterone is approved\nfor metastatic prostate cancer in many countries and is\nclose to becoming a worldwide generic drug.\nIn conclusion, this trial not only confirms that\ncombining abiraterone with SOC improves outcomes in\nmen with de novo mCSPC, but it shows that combining\nabiraterone with ADT and docetaxel improves overall\nand radiographic progression-free survival and other\nefficacy\nendpoints\nwith\nlittle\ntoxicity\nincrease.\nNonetheless, as PEACE-1 only included patients with\nde novo mCSPC, it is still unclear whether this triple\ntherapy might benefit patients with metachronous\nmCSPC. Our findings cannot directly address whether\nthis triplet systemic combination is superior to ADT\nand abiraterone. Longer follow-up is required to answer\nwhether combining such an intensive first line systemic\ntreatment with radiotherapy to the primary tumour\nmight provide further clinical benefits for patients with\nmCSPC. This upcoming analysis will be performed\nwhen\nthe\npreplanned\nnumber\nof\nradiographic\nprogression-free survival and overall survival events is\nreached in the population of men presenting with\nlow-volume metastatic dissemination.\nContributors\nKF, AB, and SF conceived and designed the study. KF, JC, GR, RM, AF,\nBT, SS, DB, PR, GK, GG, FC, J-FB, AH, MS, AT-V, IL, LM, BL, SA-L, EM,\nCEK, AE, AR, NM, FS, FP, M-EC-F, SVF, MJ, and AB were investigators\nwho conducted the study and collected data. KF, IR, and SF directly\naccessed and verified the underlying data. KF, JC, GR, RM, DB, FB, BT,\nGK, GG, AT-V, and SF contributed to data analysis or data interpretation.\nAll authors contributed to data interpretation and writing, review, and\napproval of the manuscript for submission.\nDeclaration of interests\nKF reports consulting fees from Amgen, AstraZeneca, Astellas, Bayer,\nCureVac, Janssen, Novartis, Orion, Pfizer, and Sanofi; honoraria from\nAstraZeneca, Astellas, Bayer, Janssen, Novartis, and Sanofi;\nand participation on a Data Safety Monitoring Board for Lilly.\nJC reports grants from AB Science, Aragon Pharmaceuticals,\nArog Pharmaceuticals, Astellas Pharma, AstraZeneca,\nAveo Pharmaceuticals, Bayer, Blueprint Medicines Corporation,\nBN Immunotherapeutics, Boehringer Ingelheim, Esperia, Bristol\nMyers Squibb, Clovis Oncology, Cougar Biotechnology, Deciphera\nPharmaceuticals, Exelixis, F Hoffmann-La Roche, Genentech,\nADT with docetaxel population\nADT without docetaxel population\nSOC plus\nabiraterone groups\n(with or without\nradiotherapy;\nn=347)\nSOC without\nabiraterone groups\n(with or without\nradiotherapy;\nn=350)\nSOC plus\nabiraterone groups\n(with or without\nradiotherapy;\nn=226)\nSOC without\nabiraterone groups\n(with or without\nradiotherapy;\nn=237)\nAny adverse events\n346 (100%)\n349 (100%)\n226 (100%)\n233 (99%)\nSevere (grade ≥3)\nadverse events\n217 (63%)\n181 (52%)\n149 (66%)\n97 (41%)\nFatal (grade 5) adverse\nevents\n7 (2%)\n3 (1%)\n8 (4%)\n5 (2%)\nFrequent severe adverse events\nHypertension\n76 (22%)\n45 (13%)\n66 (29%)\n38 (16%)\nNeutropenia\n34 (10%)\n32 (9%)\n0\n0\nHepatotoxicity\n20 (6%)\n2 (1%)\n14 (6%)\n3 (1%)\nFebrile neutropenia\n18 (5%)\n19 (5%)\n2 (1%)\n1 (<1%)\nGamma-glutamyl\ntransferase increase\n17 (5%)\n14 (4%)\n6 (3%)\n4 (2%)\nErectile dysfunction\n7 (2%)\n5 (1%)\n12 (5%)\n13 (5%)\nBlood alkaline\nphosphatase increase\n15 (4%)\n12 (3%)\n6 (3%)\n13 (5%)\nOther severe adverse events\nFatigue\n10 (3%)\n15 (4%)\n3 (1%)\n0\nPeripheral\nneuropathy\n4 (1%)\n6 (2%)\n1 (<1%)\n0\nData are n (%). As the patients were not randomly assigned according to docetaxel prescription, toxicities recorded in\nthe ADT without docetaxel and ADT with docetaxel populations are not directly comparable. Percentages are rounded\nto the nearest integer. The safety population includes patients who actually received the assigned treatment. Severe\nadverse events (grade ≥3) were considered frequent if they occurred in at least 5% of patients in either group and\nare reported in decreasing order of occurrence according to the Medical Dictionary for Regulatory Affairs Preferred\nTerm classification. ADT=androgen deprivation therapy. SOC=standard of care.\nTable 3: Adverse events in the safety population\n\n[Extracted table 2]\n|Column 1|Column 2|Column 3|Column 4|Column 5|\n|---|---|---|---|---|\n|Frequent severe adverse events|||||\n|Hypertension|76 (22%)|45 (13%)|66 (29%)|38 (16%)|\n|Neutropenia|34 (10%)|32 (9%)|0|0|\n|Hepatotoxicity|20 (6%)|2 (1%)|14 (6%)|3 (1%)|\n|Febrile neutropenia|18 (5%)|19 (5%)|2 (1%)|1 (<1%)|\n|Gamma-glutamyl<br>transferase increase|17 (5%)|14 (4%)|6 (3%)|4 (2%)|\n|Erectile dysfunction|7 (2%)|5 (1%)|12 (5%)|13 (5%)|\n|Blood alkaline<br>phosphatase increase|15 (4%)|12 (3%)|6 (3%)|13 (5%)|",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "peace-1"
+      },
+      "sha256:d3ed92190ed7d15c088f303825817acfebfece033b9574a098abeed3c531a3eb": {
+        "end": 6052,
+        "end_line": 125,
+        "handle": "eh_d3ed92190ed7d15c",
+        "identity": "sha256:d3ed92190ed7d15c088f303825817acfebfece033b9574a098abeed3c531a3eb",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "Institute Common Terminology Criteria for Adverse\nEvents version 4.0. Safety analysis was based on the highest\ngrade adverse event recorded during the period spanning\nfrom treatment initiation to CRPC. Apart from CRPC-free\nsurvival, prostate-cancer-specific survival, event rate per\n100 person-years, and toxicity, secondary endpoint results\nwere still under investigation at the time this manuscript\nwas submitted and so are not reported here.\nStatistical analysis\nThe initial protocol in 2013 planned for a sample size of\n916 patients. However, due to a change in the SOC and the\nknowledge gained from the LATITUDE and STAMPEDE\ntrial results published in late 2017, the planned sample\nsize was increased to 1173 and the coprimary study aims\nwere revised (appendix pp 7-8). Because PEACE-1 was the\nonly phase 3 trial to date that could determine abiraterone\nefficacy in patients with mCSPC receiving ADT plus\ndocetaxel as SOC, the timing of the final analyses was\nbased on this population (population of interest). Sample\nsize calculation was performed with East software (Cytel;\nCambridge, MA, USA), on the basis of the assumption\nthat no significant interaction would take place between\nradiotherapy and abiraterone, to allow for a 2 × 2 factorial\nanalysis of abiraterone efficacy. For abiraterone efficacy\nevaluation, the predetermined acceptable probability of a\ntype I error was set at 0·05, divided between the two\ncoprimary endpoints (0·049 for overall survival and 0·001\nfor\nradiographic\nprogression-free\nsurvival).\nWe\nhypothesised that adding abiraterone to ADT plus\ndocetaxel would improve overall survival by 30% over a\nmedian of 53 months and progression-free survival by\n40% over 30 months. Hence, with 355 patients assigned to\nADT with docetaxel plus abiraterone (with or without\nradiotherapy) and 355 patients assigned to ADT with\ndocetaxel\nwithout\nabiraterone\n(with\nor\nwithout\nradiotherapy), 249 deaths would give an 80% power to\ndetect an overall survival hazard ratio (HR) of 0·70 at a\ntwo-sided α level of 0·049. With the same group allocation,\n262 radiographic progression events or deaths were\npredicted to have an 80% power to detect a radiographic\nprogression-free survival HR of 0·60 at a two-sided α level\nof 0·001.\nThis trial had a factorial design, based on the\nassumption that there would be no interaction between\nabiraterone and radiotherapy. Before analysing the\nvarious outcomes, the presence of such an interaction\nfor both coprimary endpoints was tested by analyses of\nmaximum likelihood estimates using a Cox model\nadjusted for stratification factors (ECOG performance\nstatus [0 vs 1-2], ADT type [gonadotropin-releasing\nhormone agonist vs antagonist vs bilateral orchiectomy],\nmetastatic burden [low vs high; as defined in the\nRandomisation and masking section],2 and docetaxel\n[no docetaxel before amendment vs no docetaxel after\namendment vs with docetaxel after amendment]). In the\nabsence of a qualitative interaction (p>0·05) between\nabiraterone and radiotherapy, the groups were to be\ncombined two by two on the basis of abiraterone\nadministration, regardless of radiotherapy, before se\nquentially assessing abiraterone efficacy first in the\noverall population and then in the ADT with docetaxel\npopulation (assuming the significance level was reached\nin first instance). As the preplanned number of pro\ngression-free survival and overall survival events had\nnot been reached in the study population at the time\nthis paper was written, the efficacy of radiotherapy\nremains to be analysed (appendix p 16). The coprimary\nendpoint results presented here correspond to the final\nplanned analysis; no interim analysis was conducted.\nAll efficacy analyses were conducted in the intention-to-\ntreat population, defined as all patients who were\nrandomly assigned to a treatment group. Safety analyses\nwere conducted in the safety population, according to\nthe treatment actually received by the patients (those\nwho did not receive any investigational treatment were\nnot included in the safety analyses).\nThe median follow-up was estimated by the inverse\nKaplan-Meier method. Time-to-event endpoints were\nestimated by the Kaplan-Meier method. The Cox\nproportional hazards model adjusted for radiotherapy\nand stratification factors provided significances and an\nestimate of the abiraterone effect (p value and HR with\nCIs adjusted to match adjustment made to significance\nlevels in the corresponding test [ie, 99·9% for\nradiographic progression-free survival, 95·1% for overall\nsurvival, and 95% for secondary endpoints]). The\nassumption of proportional hazards was evaluated on\nthe basis of the weighted Schoenfeld residuals. The\nheterogeneity of the effect of abiraterone in the\npredefined stratification subgroups was evaluated using\nCox proportional hazards models adjusted for radio\ntherapy and stratification factors and including an\ninteraction term between abiraterone and the studied\nstratification variable. These analyses are illustrated\nusing forest plots. Notably, we analysed the efficacy of\nabiraterone in the ADT with docetaxel population by\ndisease burden. Non-parametric CIs for the median\nsurvival differences between groups were analysed by\nthe bootkm function of the R Hmisc package",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 817,
+        "start_line": 18,
+        "trial_id": "peace-1"
+      },
+      "sha256:da23a640dcc9fe7bc207e3db5103c228649d3bb8260f27ff799b2235e867ac55": {
+        "end": 7042,
+        "end_line": 181,
+        "handle": "eh_da23a640dcc9fe7b",
+        "identity": "sha256:da23a640dcc9fe7bc207e3db5103c228649d3bb8260f27ff799b2235e867ac55",
+        "kind": "narrative",
+        "page": 7,
+        "quote": "of 347 patients vs 45 [13%] of 350) and hepatotoxicity with\nincreased aminotransferases (20 [6%] of 347 vs two [1%]\nof 350), which were more frequent among those who\nreceived abiraterone (table 3). Although the incidence of\nsevere hypertension and hepatotoxicity were similar in\npatients who received abiraterone in the ADT with\ndocetaxel and ADT without docetaxel populations, there\nwas a difference, as expected, in the incidence of severe\nneutropenia, which occurred in 34 (10%) of 347 patients\nversus none of 226, respectively (appendix p 15).\nAlthough severe fatigue and peripheral neuropathy\nevents did not reach the frequency cutoff of 5% in the\nADT with docetaxel population, ten (3%) of 347 patients\nwho received abiraterone and 15 (4%) of 350 who did\nnot receive abiraterone had at least one event of severe\nfatigue, and four (1%) and six (2%) had at least one\nsevere peripheral neuropathy event (table 3).\nOverall population (n=1172)\nADT with docetaxel population\n(n=710)*\nSOC plus\nabiraterone groups\n(with or without\nradiotherapy;\nn=583)\nSOC without\nabiraterone groups\n(with or without\nradiotherapy;\nn=589)\nSOC plus\nabiraterone groups\n(with or without\nradiotherapy;\nn=355)\nSOC without\nabiraterone groups\n(with or without\nradiotherapy;\nn=355)\n(Continued from previous page)\nGleason score\n≤7\n145 (25%)\n133 (23%)\n79 (23%)\n71 (20%)\n8-10\n429 (75%)\n441 (77%)\n270 (77%)\n276 (80%)\nMissing data\n9 (2%)\n15 (3%)\n6 (2%)\n8 (2%)\nPSA at randomisation, ng/mL\nMedian\n14 (3-62)\n11 (3-55)\n14 (2-59)\n12 (3-60)\nMissing data\n2 (<1%)\n4 (1%)\n0\n2 (<1%)\nMedical history\nHypertension\n270 (47%); N=574\n241 (43%); N=562\n156 (44%); N=352\n148 (43%); N=344\nType 2 diabetes\n62 (11%); N=566\n80 (14%); N=556\n33 (9%); N=351\n56 (16%); N=344\nHigh cholesterol\n229 (40%); N=568\n229 (41%); N=556\n136 (39%); N=351\n130 (38%); N=343\nData are n (%) or median (IQR) unless otherwise stated. All numbers are rounded to the nearest integer. Ethnicity-\nrelated information are not presented, as French laws forbid the collection of such data. SOC in the overall population\nwas ADT with or without docetaxel. SOC in the ADT with docetaxel population was ADT with docetaxel.\nADT=androgen deprivation therapy. ECOG=Eastern Cooperative Oncology Group. PSA=prostate-specific antigen.\nSOC=standard of care. *The median number of docetaxel cycles was 6 (IQR 6-6) in both the SOC with abiraterone and\nSOC without abiraterone groups. †Without visceral metastases. ‡With or without lymph node and bone metastases.\n§The metastatic burden was classified as reported by Sweeney and colleagues (2015), with a high burden characterised\nby four or more bone metastases with one or more outside the vertebral bodies or pelvis, or visceral metastases, or\nboth; all other assessable situations were classified as low burden.\nTable 1: Baseline characteristics in the intention-to-treat population\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|Column 5|\n|---|---|---|---|---|\n|Gleason score|||||\n|≤7|145 (25%)|133 (23%)|79 (23%)|71 (20%)|\n|8-10|429 (75%)|441 (77%)|270 (77%)|276 (80%)|\n|Missing data|9 (2%)|15 (3%)|6 (2%)|8 (2%)|\n\n[Extracted table 2]\n|Column 1|Column 2|Column 3|Column 4|Column 5|\n|---|---|---|---|---|\n|Medical history|||||\n|Hypertension|270 (47%); N=574|241 (43%); N=562|156 (44%); N=352|148 (43%); N=344|\n|Type 2 diabetes|62 (11%); N=566|80 (14%); N=556|33 (9%); N=351|56 (16%); N=344|\n|High cholesterol|229 (40%); N=568|229 (41%); N=556|136 (39%); N=351|130 (38%); N=343|",
+        "source_id": "source_d4b48a26e1e64f2b5cdacb2cd2c27ad30789beac8ca55dd37bc648b8a56d4a8b",
+        "source_version": "sha256:bb9d4b00cacb7312fbd8cdb14103e6a06f43440ae7066e06892cfceeaa868436",
+        "start": 3596,
+        "start_line": 72,
+        "trial_id": "peace-1"
+      }
+    },
+    "identity": "sha256:f82af437911f18a62fb6fd131fd154b937f25d1028d3e2706b678a7a6e0279b8",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_54e7340e586e572e",
+              "eh_3b7feb2b1e603d70"
+            ],
+            "rationale": "Patients were centrally randomly assigned individually to treatment arms in a 2×2 factorial parallel-group trial."
+          },
+          "bindings": [
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:2f07e64d2d5cabd978a3936e6cb710b08cf653e8995504032ab82c4f6d9c8020"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/0/statistic"
+              },
+              "value_digest": "sha256:392306ff101665ffbd56321c16ea99be0dc3461cb2a1638d059198383359a1ff"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/0/value"
+              },
+              "value_digest": "sha256:9c1d437feccaefa7bb8925a86b8a05aefa7a9991f37327fbcfbad8e91627afcf"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/0/unit"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/1/statistic"
+              },
+              "value_digest": "sha256:392306ff101665ffbd56321c16ea99be0dc3461cb2a1638d059198383359a1ff"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/1/value"
+              },
+              "value_digest": "sha256:f35c737be52d46fdca1d7cf1c8ce700313d1572f6b15123c50043212e91797e1"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/group_values/1/unit"
+              },
+              "value_digest": "sha256:bd8ece5bba10cff1a33178f8c15ae5ccc400c9a169e8d8564594bf9b6b08a41e"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "unclear",
+            "comparison_groups": "unclear",
+            "effect_measure": "unclear",
+            "eligible_result_choice": "unclear",
+            "measurement": "unclear",
+            "outcome_definition": "unclear",
+            "source_table_meaning": "unclear",
+            "time_point": "unclear"
+          },
+          "evidence": [
+            {
+              "handle": "eh_0fbd6d0c21f9b894",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_3b7feb2b1e603d70",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_c7a6880ea8516618",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_d3ed92190ed7d15c",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_da23a640dcc9fe7b",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The reported endpoint is the requested occurrence of at least one grade ≥3 adverse event, graded with NCI-CTCAE v4.0, in patients with ADT plus docetaxel, comparing abiraterone with no abiraterone (radiotherapy pooled in both). The safety analysis is limited to patients who actually received assigned treatment, whereas the target is the randomized docetaxel population.",
+          "reported": {
+            "analysis_population": "Safety population in the ADT with docetaxel subgroup: patients who actually received assigned treatment; 347 with abiraterone and 350 without.",
+            "endpoint": {
+              "definition": null,
+              "name": "Severe (grade ≥3) adverse events"
+            },
+            "form": "group_bound_values",
+            "group_values": [
+              {
+                "group_id": "abiraterone",
+                "statistic": "n (%)",
+                "unit": "patients",
+                "value": "217 (63%)"
+              },
+              {
+                "group_id": "control",
+                "statistic": "n (%)",
+                "unit": "patients",
+                "value": "181 (52%)"
+              }
+            ]
+          },
+          "requested_outcome": "Grade 3 or higher adverse events",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "ADT plus docetaxel with abiraterone (with or without radiotherapy)",
+                "id": "abiraterone"
+              },
+              {
+                "assignment": "ADT plus docetaxel without abiraterone (with or without radiotherapy)",
+                "id": "control"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Risk of at least one grade ≥3 adverse event",
+            "measurement": {
+              "method": "Occurrence of at least one adverse event graded ≥3 using NCI-CTCAE version 4.0",
+              "metric": "Grade 3 or higher adverse events"
+            },
+            "outcome_definition": "Grade 3 or higher adverse events",
+            "time_point_or_window": {
+              "description": "From treatment initiation to castration resistance",
+              "kind": "described"
+            }
+          },
+          "trial_id": "peace-1"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:343b0026dacd4a21437b4fba5843cd0a4cc7b190917a948411fa8942a2a1b33e",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

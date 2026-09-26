@@ -1,0 +1,74 @@
+{
+  "approved_scope": null,
+  "campaign_id": "4430112f58fb492ab6ea27f8025a2df4",
+  "expected_result": {
+    "comparison": [
+      {
+        "assignment": "Androgen-deprivation therapy plus docetaxel",
+        "id": "treatment"
+      },
+      {
+        "assignment": "Androgen-deprivation therapy alone",
+        "id": "control"
+      }
+    ],
+    "endpoint_definition": "The time from randomization to death resulting from any cause.",
+    "population": "All randomized patients analyzed by intention to treat.",
+    "reported_scope": {
+      "analysis_population": "The intention-to-treat population (790 randomized patients).",
+      "effect_measure": "hazard ratio for death",
+      "endpoint": {
+        "definition": "The time from randomization to death resulting from any cause.",
+        "name": "Overall survival"
+      },
+      "estimate": "0.61",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.47 to 0.80; P<0.001"
+    },
+    "trial": "CHAARTED",
+    "window_or_cutoff": {
+      "description": "Primary report after median follow-up of 28.9 months.",
+      "kind": "described"
+    }
+  },
+  "registry_capture": {
+    "capture_provenance": "captured response retained from PFS baseline",
+    "captured_at": "2026-09-13T19:12:21.292151Z",
+    "registry_id": "NCT00309985",
+    "replay_provenance": "copied byte-for-byte from the case manifest; no registry request made",
+    "replayed_at": "2026-09-26T10:59:39.159668+00:00",
+    "sha256": "dc6172674e21c980ee609c7a7e8c1a3fadff31f5c32722986d99ece931cdd9b3"
+  },
+  "requested_outcome": "Overall Survival",
+  "schema": "rob2-kit.rsi-run-inputs.v1",
+  "scope_unresolved": null,
+  "sources": [
+    {
+      "name": "main_article.pdf",
+      "role": "main_article",
+      "sha256": "fb7eb1918e85028cc773f7cbe9f2df06dfa97ac67036b5ae03067bb34084b593"
+    },
+    {
+      "name": "other.pdf",
+      "role": "other",
+      "sha256": "288c7f257e596a1aa2eef58e55488b65e0c50be64f4f97120b3ce9cb5a9c8032"
+    },
+    {
+      "name": "protocol.pdf",
+      "role": "protocol",
+      "sha256": "fe91a92d4a05d83f7904008abaeb4a1f9bdd753b89d0af8117379c1d8ac45c6c"
+    },
+    {
+      "name": "registry.json",
+      "role": "registry",
+      "sha256": "dc6172674e21c980ee609c7a7e8c1a3fadff31f5c32722986d99ece931cdd9b3"
+    },
+    {
+      "name": "supplement.pdf",
+      "role": "supplement",
+      "sha256": "f976b37594b8b8b0d08770bbacfcb3fab77d2c336cc0928ee18056a669824b99"
+    }
+  ],
+  "trial": "CHAARTED"
+}

@@ -1,0 +1,4488 @@
+{
+  "by_domain": {
+    "D1": {
+      "exact": {
+        "correct": 14,
+        "rate": 1.0,
+        "total": 14
+      },
+      "low_vs_non_low": {
+        "correct": 14,
+        "rate": 1.0,
+        "total": 14
+      }
+    },
+    "D2": {
+      "exact": {
+        "correct": 9,
+        "rate": 0.6428571428571429,
+        "total": 14
+      },
+      "low_vs_non_low": {
+        "correct": 9,
+        "rate": 0.6428571428571429,
+        "total": 14
+      }
+    },
+    "D3": {
+      "exact": {
+        "correct": 6,
+        "rate": 0.42857142857142855,
+        "total": 14
+      },
+      "low_vs_non_low": {
+        "correct": 10,
+        "rate": 0.7142857142857143,
+        "total": 14
+      }
+    },
+    "D4": {
+      "exact": {
+        "correct": 13,
+        "rate": 0.9285714285714286,
+        "total": 14
+      },
+      "low_vs_non_low": {
+        "correct": 14,
+        "rate": 1.0,
+        "total": 14
+      }
+    },
+    "D5": {
+      "exact": {
+        "correct": 9,
+        "rate": 0.6428571428571429,
+        "total": 14
+      },
+      "low_vs_non_low": {
+        "correct": 9,
+        "rate": 0.6428571428571429,
+        "total": 14
+      }
+    }
+  },
+  "by_outcome": {
+    "Adverse Events": {
+      "case_count": 1,
+      "domain_cells": 5,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 0,
+            "rate": 0.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 0,
+          "rate": 0.0,
+          "total": 1
+        },
+        "low_vs_non_low": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 4,
+          "rate": 0.8,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 1.0,
+          "total": 5
+        }
+      }
+    },
+    "Overall Survival": {
+      "case_count": 8,
+      "domain_cells": 40,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.5,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.75,
+            "total": 8
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 1,
+          "rate": 0.125,
+          "total": 8
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 0.625,
+          "total": 8
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 30,
+          "rate": 0.75,
+          "total": 40
+        },
+        "low_vs_non_low": {
+          "correct": 32,
+          "rate": 0.8,
+          "total": 40
+        }
+      }
+    },
+    "Progression-Free Survival": {
+      "case_count": 5,
+      "domain_cells": 25,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.4,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.8,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 0,
+          "rate": 0.0,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 1.0,
+          "total": 5
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 17,
+          "rate": 0.68,
+          "total": 25
+        },
+        "low_vs_non_low": {
+          "correct": 19,
+          "rate": 0.76,
+          "total": 25
+        }
+      }
+    }
+  },
+  "by_outcome_domain": {
+    "Adverse Events": {
+      "D1": {
+        "exact": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        },
+        "low_vs_non_low": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        },
+        "low_vs_non_low": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 0,
+          "rate": 0.0,
+          "total": 1
+        },
+        "low_vs_non_low": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        },
+        "low_vs_non_low": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        },
+        "low_vs_non_low": {
+          "correct": 1,
+          "rate": 1.0,
+          "total": 1
+        }
+      }
+    },
+    "Overall Survival": {
+      "D1": {
+        "exact": {
+          "correct": 8,
+          "rate": 1.0,
+          "total": 8
+        },
+        "low_vs_non_low": {
+          "correct": 8,
+          "rate": 1.0,
+          "total": 8
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 5,
+          "rate": 0.625,
+          "total": 8
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 0.625,
+          "total": 8
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 4,
+          "rate": 0.5,
+          "total": 8
+        },
+        "low_vs_non_low": {
+          "correct": 6,
+          "rate": 0.75,
+          "total": 8
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 8,
+          "rate": 1.0,
+          "total": 8
+        },
+        "low_vs_non_low": {
+          "correct": 8,
+          "rate": 1.0,
+          "total": 8
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 5,
+          "rate": 0.625,
+          "total": 8
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 0.625,
+          "total": 8
+        }
+      }
+    },
+    "Progression-Free Survival": {
+      "D1": {
+        "exact": {
+          "correct": 5,
+          "rate": 1.0,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 1.0,
+          "total": 5
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 3,
+          "rate": 0.6,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 3,
+          "rate": 0.6,
+          "total": 5
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 2,
+          "rate": 0.4,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 3,
+          "rate": 0.6,
+          "total": 5
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 4,
+          "rate": 0.8,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 1.0,
+          "total": 5
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 3,
+          "rate": 0.6,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 3,
+          "rate": 0.6,
+          "total": 5
+        }
+      }
+    }
+  },
+  "by_primary_status": {
+    "primary": {
+      "case_count": 9,
+      "domain_cells": 45,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 9,
+            "rate": 1.0,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 9,
+            "rate": 1.0,
+            "total": 9
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.6666666666666666,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.6666666666666666,
+            "total": 9
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.4444444444444444,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.5555555555555556,
+            "total": 9
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 9,
+            "rate": 1.0,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 9,
+            "rate": 1.0,
+            "total": 9
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.6666666666666666,
+            "total": 9
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.6666666666666666,
+            "total": 9
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 1,
+          "rate": 0.1111111111111111,
+          "total": 9
+        },
+        "low_vs_non_low": {
+          "correct": 6,
+          "rate": 0.6666666666666666,
+          "total": 9
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 34,
+          "rate": 0.7555555555555555,
+          "total": 45
+        },
+        "low_vs_non_low": {
+          "correct": 35,
+          "rate": 0.7777777777777778,
+          "total": 45
+        }
+      }
+    },
+    "secondary": {
+      "case_count": 5,
+      "domain_cells": 25,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.4,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.8,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 3,
+            "rate": 0.6,
+            "total": 5
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 0,
+          "rate": 0.0,
+          "total": 5
+        },
+        "low_vs_non_low": {
+          "correct": 5,
+          "rate": 1.0,
+          "total": 5
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 17,
+          "rate": 0.68,
+          "total": 25
+        },
+        "low_vs_non_low": {
+          "correct": 21,
+          "rate": 0.84,
+          "total": 25
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\ARCHES\\workspace\\.rob2-kit\\finalized\\4e5933c0a909a4e3e03f71da0c5b1c4e44eb97a8a4ad32a527007083de545163.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus ADT",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.81",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.53 to 1.25",
+        "reported_scope": {
+          "analysis_population": "Intent-to-treat population; 1,150 randomized men (574 and 576). At interim analysis, 84 deaths had occurred (39 and 45).",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Median OS (months)"
+          },
+          "estimate": "0.81",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.53 to 1.25"
+        },
+        "trial": "arches",
+        "window_or_cutoff": {
+          "description": "Interim OS analysis at final rPFS analysis; data cutoff October 14, 2018, median follow-up 14.4 months",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "secondary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "56f2550fbacc7d7534b0765e8eb3605ed38438886316800202bd4d1942e779b4",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The requested endpoint is overall survival, time from randomization to death from any cause, comparing the randomized enzalutamide plus ADT and placebo plus ADT groups. The selected estimate is the paper's interim OS analysis at final rPFS analysis (October 14, 2018 cutoff; median follow-up 14.4 months): HR 0.81 (95% CI 0.53 to 1.25). The registry contains a distinct later OS analysis with a different estimate.",
+        "result_identity": "sha256:17dcdf4e302520befe62d3f698770c83be2cd4e4dfd28859ce696c85b5b38bab",
+        "review_identity": "sha256:5e276d4708a1b71ceff16f5ac91f7c3de9656c42108717c13546983fe19da20e",
+        "source_citation": "Main article, interim overall-survival Results/Table 2, PDF pp. 4-5.; Supplement eTable 1, PDF p. 61",
+        "trial": "ARCHES"
+      },
+      "trial": "ARCHES"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\CHAARTED\\workspace\\.rob2-kit\\finalized\\240245e03ac5a6258602717898238035e2e200c3235644ba75d99ef59405e8f3.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "high",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.61",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.47 to 0.80",
+        "reported_scope": {
+          "analysis_population": "All 790 randomly assigned patients, analyzed by assigned group regardless of eligibility or treatment status; all were followed and included in the primary analysis.",
+          "effect_measure": "Hazard ratio for death in the combination group",
+          "endpoint": {
+            "definition": "Time until death from any cause",
+            "name": "Overall survival"
+          },
+          "estimate": "0.61",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.47 to 0.80"
+        },
+        "trial": "chaarted",
+        "window_or_cutoff": {
+          "description": "From randomization through the survival data cutoff of December 23, 2013; median follow-up was 28.9 months.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e48908ca91bb3e2689daa4f303981c65cb26b8bcc55da7d3404df5d0301bd168",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report evaluates overall survival from randomization until death from any cause, compares all randomized patients assigned to ADT plus docetaxel with those assigned to ADT alone, and reports the requested estimate at the December 23, 2013 survival data cutoff. The registry specifies last known alive as the censoring endpoint, compatible with the article's time-to-death outcome.",
+        "result_identity": "sha256:c2a61d00e07b7d81c5b068e766e673bda6c4be499488c90dcecb318600ce19f5",
+        "review_identity": "sha256:e2ec32fcbcfa9fd464bb6f809d4ab0edf041bb08461cbf5ba3d266529cb7f281",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 63",
+        "trial": "CHAARTED"
+      },
+      "trial": "CHAARTED"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\ENZAMET\\workspace\\.rob2-kit\\finalized\\cee15dad808297d006176903546fcb31a575dacd8cdf2a8e8b9dc288625aef07.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus testosterone suppression",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Standard nonsteroidal antiandrogen plus testosterone suppression",
+            "id": "standard_care"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.67",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.52 to 0.86; P = 0.002",
+        "reported_scope": {
+          "analysis_population": "All 1125 randomized patients analyzed according to intention-to-treat; 14 patients lost to follow-up or withdrawing consent were included with censored times as appropriate.",
+          "effect_measure": "Hazard ratio for death",
+          "endpoint": {
+            "definition": "Interval from randomization to death from any cause or to the date at which the patient was last known to be alive.",
+            "name": "Overall survival"
+          },
+          "estimate": "0.67",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.52 to 0.86; P = 0.002"
+        },
+        "trial": "enzamet",
+        "window_or_cutoff": {
+          "description": "Time-to-event from randomization through the first interim analysis, after median follow-up of 34 months; no fixed assessment time.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "be0fe5f1296118f64fe41da0614a3936cad1d45c9c17f1416e62fd859aef5ae7",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report defines overall survival as time from randomization to death from any cause or last known alive. The requested comparative estimate is for randomized enzalutamide versus standard-care assignment groups, analyzed in all randomized patients; the selected time-to-event report is the first interim analysis after median follow-up of 34 months.",
+        "result_identity": "sha256:efed6952c4d5e02f354ef3cec93eb0fc70e686f6ec91b889f039dbfafd68053a",
+        "review_identity": "sha256:c30a106ba6f3e94943e74dbc03995b1a0b3ce600f25f5030a258847933051a10",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 63",
+        "trial": "ENZAMET"
+      },
+      "trial": "ENZAMET"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\GETUG-AFU-15\\workspace\\.rob2-kit\\finalized\\91f29b07d3d844ec8d7972629e14b07397017a5373d1bdb6d31191a3b1ce6be1.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "1\u00b701",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI 0\u00b775-1\u00b736",
+        "reported_scope": {
+          "analysis_population": "All 385 randomized patients (192 assigned ADT plus docetaxel and 193 assigned ADT alone); efficacy analyses were by intention to treat.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "overall survival"
+          },
+          "estimate": "1\u00b701",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI 0\u00b775-1\u00b736"
+        },
+        "trial": "getug-afu-15",
+        "window_or_cutoff": {
+          "description": "Follow-up through the common data cutoff of July 31, 2011; median follow-up was 50 months.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "4544b7416346eba4a2f0e9443a929c55549109996f64ccec428d395710635d45",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The article's primary endpoint is overall survival, defined as time between randomisation and death from any cause, compared between the two randomized groups. It reports the HR after extended follow-up through July 31, 2011. The registry listed 36-month overall survival, but the published report extends follow-up to a common cutoff and the request sets no fixed horizon.",
+        "result_identity": "sha256:577a4c46f339f1a678116c09a074d4bc67330382c735dc818a3a18c2f9938c03",
+        "review_identity": "sha256:c96f22ef310188d7e2d12ac140a19a4a7875e0a87ebbf48e8e07f1dbefc09f3e",
+        "source_citation": "Main article abstract, Findings, PDF p. 1.; Supplement eTable 1, PDF p. 64",
+        "trial": "GETUG-AFU-15"
+      },
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\LATITUDE\\workspace\\.rob2-kit\\finalized\\34bea4fb27e9e29e0f226070089cb3a6d671e05a50eea4cdc2c5b41cb986db7f.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Overall survival",
+        "estimate": "0.62",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.51 to 0.76",
+        "reported_scope": {
+          "analysis_population": "All randomized patients (597 assigned to abiraterone and 602 to placebo); first interim analysis after 406 deaths.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": "Time from randomization to death from any cause",
+            "name": "Overall survival"
+          },
+          "estimate": "0.62",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.51 to 0.76"
+        },
+        "trial": "latitude",
+        "window_or_cutoff": {
+          "description": "From randomization through the first interim analysis (median follow-up 30.4 months)",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "co-primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "fcfba3ff5675b9e595f61ec94b79eec5a09d48b6bf7ccb09bd02f0f0a8d1fe99",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. This is the prespecified overall-survival comparison in the randomized groups, with death from any cause measured from randomization; the estimate is the hazard ratio at the first interim analysis, matching the requested outcome and estimate.",
+        "result_identity": "sha256:70c36d587845f9bca1eb07c8db170beff0e256c42a707103303b0dc77ceff7a5",
+        "review_identity": "sha256:5b20d4355820f3601e873d5230b01da45067e452f3e19ca67e5a727988841730",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 62",
+        "trial": "LATITUDE"
+      },
+      "trial": "LATITUDE"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\PEACE-1\\workspace\\.rob2-kit\\finalized\\7559adb3dabff651634f8c90f52e664e1bf1469ff0ed9a18f56f8090ff08dbcb.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "SOC plus abiraterone, with or without radiotherapy",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "SOC without abiraterone, with or without radiotherapy",
+            "id": "no_abiraterone"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0\u00b782",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95\u00b71% CI 0\u00b769-0\u00b798",
+        "reported_scope": {
+          "analysis_population": "Intention-to-treat overall population: 583 assigned to SOC plus abiraterone and 589 assigned to SOC without abiraterone (n=1172); one of 1173 randomized participants withdrew consent for analysis.",
+          "effect_measure": "HR",
+          "endpoint": {
+            "definition": null,
+            "name": "overall survival"
+          },
+          "estimate": "0\u00b782",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95\u00b71% CI 0\u00b769-0\u00b798"
+        },
+        "trial": "peace-1",
+        "window_or_cutoff": {
+          "description": "From randomisation through death or last follow-up; overall-survival data cutoff June 1, 2021.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "co-primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e96690701f6252b1a25ac24091c5fdb537ade46fb1177801ce1f0add3ddabd54",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report defines overall survival as time from randomisation to death from any cause, with patients without events censored at last follow-up. It reports the overall randomized population, comparing assignment to SOC plus abiraterone versus SOC without abiraterone, pooled across radiotherapy allocation, using the requested hazard ratio; the data cutoff was June 1, 2021.",
+        "result_identity": "sha256:3270879bb7a1248fd758fcfbbfff47e4a1ba684312dc37d7e9fae66fe23c9711",
+        "review_identity": "sha256:1c65612d572a16c72eecfa91959ab67fbb56622c702e206722dd3cce4acb4be6",
+        "source_citation": "Main article abstract, Findings, PDF p. 1.; Supplement eTable 1, PDF p. 60",
+        "trial": "PEACE-1"
+      },
+      "trial": "PEACE-1"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\d0552d4d39bd4fdad34611b0161188f2859ca8fe5b9bd783953138be402bb595.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy alone",
+            "id": "adt"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisolone",
+            "id": "combination"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.63",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.52 to 0.76; P<0.001",
+        "reported_scope": {
+          "analysis_population": "All randomized patients were included in efficacy analyses according to assigned treatment on an intention-to-treat basis.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": "Time from randomization to death from any cause.",
+            "name": "Overall survival"
+          },
+          "estimate": "0.63",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.52 to 0.76; P<0.001"
+        },
+        "trial": "stampede",
+        "window_or_cutoff": {
+          "description": "From randomization through the February 10, 2017 data freeze; median follow-up was 40 months.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "c9b94a864d2cf8ab17d2db4119811acf25e9d41600f82648c1f403fa4cd7de37",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The target is all randomized participants assigned to ADT plus abiraterone and prednisolone versus ADT alone, with death from any cause measured from randomization through the February 10, 2017 data freeze. The report names overall survival, explicitly defines it with that event set and time origin, and reports the comparative hazard ratio for the intention-to-treat population.",
+        "result_identity": "sha256:4898ef4663b32917f69b4eb67f5fee8460d10029bfee5c7d7e7db0b2fc224778",
+        "review_identity": "sha256:c251e51dd71b69519dc4ed6df7e83fcdd3acbe709128908885e9f66c04962be3",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 60",
+        "trial": "STAMPEDE"
+      },
+      "trial": "STAMPEDE"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\overall-survival\\TITAN\\workspace\\.rob2-kit\\finalized\\0f03815527c8cffd65d59f4c96963e8435d11ab123c144de7c17f22022bc34d7.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Apalutamide plus ADT",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Overall Survival",
+        "estimate": "0.67",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.51 to 0.89; P = 0.005",
+        "reported_scope": {
+          "analysis_population": "All randomized patients (525 assigned apalutamide; 527 assigned placebo); at the first interim analysis, 83 and 117 deaths, respectively.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": "Time from randomization to the date of death from any cause",
+            "name": "Overall survival"
+          },
+          "estimate": "0.67",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.51 to 0.89; P = 0.005"
+        },
+        "trial": "titan",
+        "window_or_cutoff": {
+          "description": "First planned interim overall-survival analysis; median follow-up 22.7 months",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "co-primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "2df3aea252a3871dca93f3d61d7110fa7ec60b9c7a1967e5da64baf812f7c500",
+        "observed_relation": "exact",
+        "outcome": "Overall Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report defines overall survival as time from randomization to death from any cause, matching the requested event set and time origin. It compares the two randomized groups and reports the first interim overall-survival analysis.",
+        "result_identity": "sha256:4e9818cb15b002bba0aa84719d22b1169a8dc08fc41638a04cd9c0cb26dc9202",
+        "review_identity": "sha256:842d747e597ca13e6e17074d746f6b604eacc828a8aad5b9313e60b86ba53413",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 61",
+        "trial": "TITAN"
+      },
+      "trial": "TITAN"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\CHAARTED\\workspace\\.rob2-kit\\finalized\\cfd1b98f81dfd2923b53ba750cc08321cc0b02d2b900f58b6c3c25eefa240917.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT plus docetaxel",
+            "id": "combination"
+          },
+          {
+            "assignment": "ADT alone",
+            "id": "control"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.61",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.50 to 0.75",
+        "reported_scope": {
+          "analysis_population": "All 790 randomly assigned patients, analyzed in their assigned groups regardless of eligibility and treatment status.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Time to clinical progression"
+          },
+          "estimate": "0.61",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.50 to 0.75"
+        },
+        "trial": "chaarted",
+        "window_or_cutoff": {
+          "description": "From randomization until clinical progression; patients without progression censored at last clinical disease evaluation.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "secondary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "75b54c8f2aba7bf6b60aa34df599643b8ee5fc370ba9a0952dad9fb1d8a0fbf5",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The protocol names time to Clinical Progression Free Survival and defines it from randomization to documented clinical progression: increasing symptomatic bone metastases, RECIST progression, or cancer-related clinical deterioration in the investigator\u2019s opinion. The article reports time to clinical progression from randomization using the same event set, in all randomized patients assigned to ADT plus docetaxel versus ADT alone; the reported hazard ratio is 0.61 (95% CI, 0.50 to 0.75).",
+        "result_identity": "sha256:8456bd43cc85c9c9a4437d19eaee2bfc56354da9a093b05330b8cd204fdfd47b",
+        "review_identity": "sha256:29d246296c95f07708a168ee5ae150c4c4c59d8a56d3fa722664b5cba3483c0d",
+        "source_citation": "Main article Results/Table 2, secondary end points, PDF pp. 4-5.; Supplement eTable 1, PDF p. 63",
+        "trial": "CHAARTED"
+      },
+      "trial": "CHAARTED"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\GETUG-AFU-15\\workspace\\.rob2-kit\\finalized\\f6c7f5c69c8f5b43cdf63147aabe980577b17d24e1bf0c3c81b586ad30060bcd.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus docetaxel",
+            "id": "adt_docetaxel"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy alone",
+            "id": "adt_alone"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.75",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "0\u00b759-0\u00b794; p=0\u00b7015",
+        "reported_scope": {
+          "analysis_population": "Intention-to-treat population: 192 patients allocated to ADT plus docetaxel and 193 allocated to ADT alone; no patients were lost to follow-up.",
+          "effect_measure": "HR",
+          "endpoint": {
+            "definition": null,
+            "name": "cPFS"
+          },
+          "estimate": "0.75",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "0\u00b759-0\u00b794; p=0\u00b7015"
+        },
+        "trial": "getug-afu-15",
+        "window_or_cutoff": {
+          "description": "From randomization until clinical progression or death; patients without an event were censored at last visit or July 31, 2011.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "secondary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "5b0c82abb1e04862207c98e676563b7d41ddf7e36a1343d447988aefbab4b6ac",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report labels its secondary endpoint cPFS and defines it as time to clinical progression or death, measured from randomization. The lesion-specific progression criteria include RECIST 1.0 progression of pre-existing measurable lesions or new bone lesions and a separate definition for bone-only disease. Death is an event. The report compares the two randomized groups using the intention-to-treat population and reports the cPFS hazard ratio.",
+        "result_identity": "sha256:9866e92899190ce9f18cfa8489fce0270322dee3fd399c41f2a324ef8a12e881",
+        "review_identity": "sha256:6aa32fea1d3f33ccf64017dc3bcb01979a06666eadf6d545fd10930a13edb887",
+        "source_citation": "Main article Results, clinical progression-free survival, Figure 3, PDF p. 4.; Supplement eTable 1, PDF p. 64",
+        "trial": "GETUG-AFU-15"
+      },
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\PEACE-1\\workspace\\.rob2-kit\\finalized\\3b1fd75db5171f0e85c9e032f6740037e67d27b7140eba3cf69112df408049eb.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Standard of care (androgen deprivation therapy alone or with docetaxel)",
+            "id": "soc"
+          },
+          {
+            "assignment": "Standard of care plus radiotherapy",
+            "id": "soc_radiotherapy"
+          },
+          {
+            "assignment": "Standard of care plus abiraterone (abiraterone plus prednisone)",
+            "id": "soc_abiraterone"
+          },
+          {
+            "assignment": "Standard of care plus radiotherapy plus abiraterone",
+            "id": "soc_abiraterone_radiotherapy"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0\u00b754",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "99\u00b79% CI 0\u00b741-0\u00b771",
+        "reported_scope": {
+          "analysis_population": "Intention-to-treat overall population: 583 patients assigned to the two abiraterone groups and 589 assigned to the two groups without abiraterone; one randomized patient withdrew consent for analysis and was excluded.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Radiographic progression-free survival"
+          },
+          "estimate": "0\u00b754",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "99\u00b79% CI 0\u00b741-0\u00b771"
+        },
+        "trial": "peace-1",
+        "window_or_cutoff": {
+          "description": "Time from randomisation to radiographical progression or death from any cause; patients without events were censored at last follow-up.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "co-primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "ff60c68ac40b3b2097cd3871c54b2a289018f5d243bea491b471a06f58ebe033",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The reported radiographic progression-free survival uses the requested event set (radiographical progression or death from any cause), begins at randomisation, and is reported for the intention-to-treat overall population. The estimate compares the two pooled abiraterone assignment groups with the two pooled groups not assigned abiraterone, regardless of radiotherapy, after no qualitative interaction with radiotherapy was found.",
+        "result_identity": "sha256:3e37a84e4c11910e7534a53762ef98869a093a7f03ddac6a40ab107df9982722",
+        "review_identity": "sha256:60f532c650ec034d8842843e0d247bc49eac8c534ee5a94d880ab0efba0a992c",
+        "source_citation": "Main article abstract, Findings, PDF p. 1.; Supplement eTable 1, PDF p. 60",
+        "trial": "PEACE-1"
+      },
+      "trial": "PEACE-1"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\STAMPEDE\\workspace\\.rob2-kit\\finalized\\b7cd89bfe9f220b0a2495fad041a8946b4a2c95e01646d597db0ff7c0fb67612.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "ADT alone",
+            "id": "adt_alone"
+          },
+          {
+            "assignment": "ADT plus abiraterone acetate and prednisolone",
+            "id": "combination"
+          }
+        ],
+        "endpoint_definition": "Progression-free survival",
+        "estimate": "0.40",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.34 to 0.47",
+        "reported_scope": {
+          "analysis_population": "All patients included in efficacy analyses under their assigned treatment on an intention-to-treat basis.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Progression-free survival"
+          },
+          "estimate": "0.40",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.34 to 0.47"
+        },
+        "trial": "stampede",
+        "window_or_cutoff": {
+          "description": "3 years after randomization",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "secondary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e5fd5ce4158b29270cf39dfda02d3b11421fb2177380e07adc38266efbc9278c",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The requested progression-free survival is explicitly defined as failure-free survival excluding biochemical (PSA) failure. The report defines failure-free survival using radiologic, clinical, or PSA progression or prostate-cancer death, so the corresponding endpoint is radiologic or clinical progression or prostate-cancer death. It reports the comparative hazard ratio at 3 years in patients assigned to ADT alone versus ADT plus abiraterone and prednisolone; efficacy analyses included all patients under assigned treatment.",
+        "result_identity": "sha256:852d6644c767ad72696d3d4d76b8efb77a3c564952c19356222122d8aa47f026",
+        "review_identity": "sha256:2aba85a0c03f9153f38a1b97ed3d7aa7e2d90d28d5251d3ec1da8f8d55401d36",
+        "source_citation": "Main article Results, Other Efficacy Outcome Measures, PDF p. 5.; Supplement eTable 1, PDF p. 60",
+        "trial": "STAMPEDE"
+      },
+      "trial": "STAMPEDE"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\TITAN\\workspace\\.rob2-kit\\finalized\\287822e504ab94f5617396d265a2dffc4a8b89e40387a7cd70419ed6952a3b13.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Apalutamide plus ADT",
+            "id": "apalutamide"
+          },
+          {
+            "assignment": "Placebo plus ADT",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.48",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% confidence interval [CI], 0.39 to 0.60; P<0.001",
+        "reported_scope": {
+          "analysis_population": "Intent-to-treat population, comprising all randomized participants classified by assigned treatment; 525 were assigned to apalutamide plus ADT and 527 to placebo plus ADT. The main article reports 365 radiographic progression events (134 and 231, respectively).",
+          "effect_measure": "Hazard ratio for radiographic progression or death",
+          "endpoint": {
+            "definition": "Time from randomization to first imaging-based documentation of progressive disease or death, whichever occurred first.",
+            "name": "Radiographic progression-free survival"
+          },
+          "estimate": "0.48",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% confidence interval [CI], 0.39 to 0.60; P<0.001"
+        },
+        "trial": "titan",
+        "window_or_cutoff": {
+          "description": "Time-to-event from randomization; rPFS final analysis at the first planned OS interim analysis (data cutoff November 23, 2018; median follow-up 22.7 months).",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "co-primary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "b05bca3cdc8741c7b49e12c8b017a24949a71e997cf1101bc4ca1977057b4073",
+        "observed_relation": "exact",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The requested outcome and the trial's primary rPFS endpoint both start at randomization and end at the first imaging-documented radiographic progression or death, whichever occurs first. The randomized comparison is apalutamide plus ADT versus placebo plus ADT, and the reported assignment effect is the hazard ratio at the rPFS analysis performed at the first planned OS interim analysis (data cutoff November 23, 2018; median follow-up 22.7 months). The separate second progression-free survival endpoint includes PSA or clinical progression during subsequent therapy and is not the requested endpoint.",
+        "result_identity": "sha256:a8aedafdf072daf1c9bcbaf1d48869e98fba01b6abaeb169125a152f949cbc70",
+        "review_identity": "sha256:cdcc8e73513415c4db8b794ff758a26f1f07ce0a713670fa6079d6605a9a7959",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 61",
+        "trial": "TITAN"
+      },
+      "trial": "TITAN"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\adverse-events\\LATITUDE\\workspace\\.rob2-kit\\finalized\\625bf56c9b2d9d7e8479ef1d0a782fcd6438efabb673a6811a1cdd0ae09fb1b1.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Grade 3 or higher adverse events",
+        "estimate": null,
+        "population": "All randomized participants in the comparison groups",
+        "precision": null,
+        "reported_scope": {
+          "analysis_population": "Patients in randomized groups (abiraterone N=597; placebo N=602).",
+          "endpoint": {
+            "definition": null,
+            "name": "Grade 3 or 4 adverse event"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "abiraterone",
+              "statistic": "number of patients (percent)",
+              "unit": "patients (percent)",
+              "value": "374 (63)"
+            },
+            {
+              "group_id": "placebo",
+              "statistic": "number of patients (percent)",
+              "unit": "patients (percent)",
+              "value": "287 (48)"
+            }
+          ]
+        },
+        "trial": "latitude",
+        "window_or_cutoff": {
+          "description": "During trial follow-up; safety assessments occurred at each trial visit, treatment discontinuation, and end of trial.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "matched",
+      "role": "secondary",
+      "scope_adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+        "observed_relation": "exact",
+        "outcome": "Adverse Events",
+        "rationale": "Equivalent benchmark scope: the selected reported endpoint, assigned comparison, and estimate correspond to the requested trial outcome. Wording, group identifiers, or descriptive scope fields differ without changing that outcome-result mapping. The report gives the requested grade 3 or higher threshold as grade 3 or 4 adverse events, in the two randomized groups, with comparative counts and percentages. Safety was assessed during trial visits, at treatment discontinuation, and at end of trial. The report does not specify a single calendar time point.",
+        "result_identity": "sha256:64f9a0c7cf19147adfc435da3005cf204ff9e185ad78fad579f48ab06ec938d8",
+        "review_identity": "sha256:7150390a14dff63613217b472e81dbb1d43ad7538469d8c3d9028ab58f21307f",
+        "source_citation": "Main article Results, Safety, PDF p. 5.; Supplement eTable 1, PDF p. 62",
+        "trial": "LATITUDE"
+      },
+      "trial": "LATITUDE"
+    }
+  ],
+  "excluded": [
+    {
+      "artifact": {
+        "attempt_id": "attempt_03a1e2fc12073313c8346c9a40941935",
+        "identity": "sha256:81a9e82476da9ccf813fb5eaff848fd7005f97cc4e45e2766f651ab94c63d211",
+        "path": "workspace\\.rob2-kit\\finalized\\81a9e82476da9ccf813fb5eaff848fd7005f97cc4e45e2766f651ab94c63d211.rob2.zip",
+        "sha256": "b939b79b70b69cba783949a5263e8454ce8da75ff3cc945bd581a30d3740d4b8",
+        "verified": true
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, precision, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 184,
+              "present": true,
+              "sha256": "039862cb48b22842455d7af9dc12429970c3a355ddc6308c66d23e46899df92a"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 187,
+              "present": true,
+              "sha256": "f998e7d51bff88e0f5833ac597bbf4ac826577e84034e65bc698863725d7c3ce"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 64,
+              "present": true,
+              "sha256": "76f369a593549b05341ae7db2f141991ab64a3160c30dee9f3aabd518bb1fdee"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 18,
+              "present": true,
+              "sha256": "ad8e390faf82b4a7f73d8afc262a63f90e84ad0ef40214898f09e2270565ba31"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 78,
+              "present": true,
+              "sha256": "5c36023ba7653ce7a3389c3b7da4e23ce82ab3c069e69dd097b05a964013f1db"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 90,
+              "present": true,
+              "sha256": "4f01b85e2ddc3bff1df99d6bc9440de4b2ae943e1e4b44b42414b39c57df9180"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 145,
+              "present": true,
+              "sha256": "0d08aaa0d2db1aeb2eec9d2fb6bae8ebd3dc79e1a70c5903df4e5fe377a620cf"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 31,
+              "present": true,
+              "sha256": "7b3dedebe97282b051abf02e0855afc097a6662c21bd608efe282ae221014790"
+            },
+            "field": "precision",
+            "observed": {
+              "kind": "str",
+              "length": 39,
+              "present": true,
+              "sha256": "0150c9f42a00a6c8f02b5ab5230f8645b388d291ebd59be282eba03f080ec90c"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 384,
+              "present": true,
+              "sha256": "690d7ea75bedc9e7ea631a28dff7e9e5853a15a8c8f7b430b1fe12779a56cb33"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 457,
+              "present": true,
+              "sha256": "699ad4c88fd2260ed1dc35e09d269017c57f8ab15413210539be0c231e237579"
+            }
+          }
+        ]
+      },
+      "trial": "ARASENS"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_d1c679807def555ee3ce20cb7c0f4761",
+        "identity": "sha256:1b430b4c542bcd8eeaf872a8206b138095d322a96ba65b524fc8e2b0cb0968da",
+        "path": "workspace\\.rob2-kit\\finalized\\1b430b4c542bcd8eeaf872a8206b138095d322a96ba65b524fc8e2b0cb0968da.rob2.zip",
+        "sha256": "fcd4575c4e0b107dda4bb7d42427c479fc1e352f04a7f9e981bf5fa2d00d8dfb",
+        "verified": true
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, precision, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 158,
+              "present": true,
+              "sha256": "bbf4e59a6eae7d41a2d2f0a9189b250182185852ebc09a321db7e0c868eadd20"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 113,
+              "present": true,
+              "sha256": "de85e1b79e973c4e58b50055649074c33b505155e8c96c9227e45d14d709d224"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 64,
+              "present": true,
+              "sha256": "76f369a593549b05341ae7db2f141991ab64a3160c30dee9f3aabd518bb1fdee"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 18,
+              "present": true,
+              "sha256": "f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 57,
+              "present": true,
+              "sha256": "fb9b0de4e8fa0b25693358711d10e75638974203b852045de6d37a19b0165c43"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 88,
+              "present": true,
+              "sha256": "daeee2d4061f1a04896e493ee932a0dbf50003d698a321ede05e2c42921b7572"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 110,
+              "present": true,
+              "sha256": "3e6ef78c2ab8a2fc309cce6becda7e521e8fd7d42698b1adf319d439dc7ad0f9"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 41,
+              "present": true,
+              "sha256": "db108489c320ab1b239a055e292afa003bb63b797fb7ed18f92061ac33ee8bd1"
+            },
+            "field": "precision",
+            "observed": {
+              "kind": "str",
+              "length": 21,
+              "present": true,
+              "sha256": "97241b2b72aa7a03a6c9b44c61161ee9bd2fcfcf4897da1c76285b34ce92d94b"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 365,
+              "present": true,
+              "sha256": "3276624928609eaf20d54a190b1b7a6f1959866105a445c38cc52b8df1892b81"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 390,
+              "present": true,
+              "sha256": "1cc1a59a946fa667fb4160e50fface8aacb7360ca1f755434c37a9427653c045"
+            }
+          }
+        ]
+      },
+      "trial": "SWOG-1216"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_9f68648b11e502f4ec53daf653266007",
+        "identity": "sha256:db4b13386094189316f1a58b4497976bf7ee537b6727d09bb1f06842799a9c4d",
+        "path": "workspace\\.rob2-kit\\finalized\\db4b13386094189316f1a58b4497976bf7ee537b6727d09bb1f06842799a9c4d.rob2.zip",
+        "sha256": "890e7605e14d3a8ce70c1c09acc9fb3db4f34e6691a5a327bea3f1b61e6ff8f8",
+        "verified": true
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, precision, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 158,
+              "present": true,
+              "sha256": "bbf4e59a6eae7d41a2d2f0a9189b250182185852ebc09a321db7e0c868eadd20"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 135,
+              "present": true,
+              "sha256": "a1b1b5e09a4eb1d74af4f04b05255478bb89bd0794007bdf6f0aeca629e17e44"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 168,
+              "present": true,
+              "sha256": "0fa27b6424ee20caf6b2a7e7e99ecdd8b8d573b52ce5213e274f632cddf6c32a"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 27,
+              "present": true,
+              "sha256": "38dd783d1597bcdc8012a59c2b0d0a7cffe8adfa8f801ddc4f75def508437059"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 57,
+              "present": true,
+              "sha256": "fb9b0de4e8fa0b25693358711d10e75638974203b852045de6d37a19b0165c43"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 88,
+              "present": true,
+              "sha256": "daeee2d4061f1a04896e493ee932a0dbf50003d698a321ede05e2c42921b7572"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 94,
+              "present": true,
+              "sha256": "046bb830169038c9ccfd3a3ca065e692fa27477f11731d8c1048649c2bd3df76"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 32,
+              "present": true,
+              "sha256": "7ecaead9add0c22b2a089702f254c7fa665d6b0d5dc2aa83f85ecd276928b35d"
+            },
+            "field": "precision",
+            "observed": {
+              "kind": "str",
+              "length": 32,
+              "present": true,
+              "sha256": "9931733cf8395908dc84f635120e0094813bd981e80b515d9f1ffa1084bef241"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 459,
+              "present": true,
+              "sha256": "f7298f69329ae1e234a5b7f7a4c8d99146d277d56bef371a8309e44fa832ffc4"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 386,
+              "present": true,
+              "sha256": "645ab864b521292300e200f6566689c1ae70442c6d596d31a6abd49ea5aa40d6"
+            }
+          }
+        ]
+      },
+      "trial": "SWOG-1216"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_6f603c2f4bab6b017a260a6de2b03a6a",
+        "identity": "sha256:7ac11c76362f000744c70ea0248540ee16da72b38217c289e9a9192f1c8be4c5",
+        "path": "workspace\\.rob2-kit\\finalized\\7ac11c76362f000744c70ea0248540ee16da72b38217c289e9a9192f1c8be4c5.rob2.zip",
+        "sha256": "6bc26fb431ea85e0b80118fe03af84e7dde5b0dccd6e7f6dc9474fff419e8336",
+        "verified": true
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 184,
+              "present": true,
+              "sha256": "039862cb48b22842455d7af9dc12429970c3a355ddc6308c66d23e46899df92a"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 177,
+              "present": true,
+              "sha256": "12a0bd958842bde59d3cc304bc2c0a796e6e3fc1d8c64de2848e924d20154dce"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 92,
+              "present": true,
+              "sha256": "d9552beca87b17dda2540577c4d90a6eeefc9f01a4b9a7a7d4e0cbcb13c02356"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 65,
+              "present": true,
+              "sha256": "6ac2ef673e0045a90c7990aa77357ee391b174d49ceee4e6598067315bee77ea"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "1cb75684186bd5a9ff833787ba5b78e2a4399a2c80038c5698905a4807a00995"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 110,
+              "present": true,
+              "sha256": "e563f18dc50d4e176f8769d8959ca7a9d4b50001858bc9670bde826d11174dee"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 565,
+              "present": true,
+              "sha256": "8988b750ce165760dfe7899651e4c1a77ee2a4be85a898c7afc66135c45b3a46"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 442,
+              "present": true,
+              "sha256": "ce5a310bb9b96b17dada5501c3c77a696e964e1cbc2e8f7dd7077b2b51f34faf"
+            }
+          }
+        ]
+      },
+      "trial": "ARASENS"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_5bf43f957102bebfd7e8d72cc9536cff",
+        "identity": "sha256:970063237e426e4492ab6f02ffda4df91f574582b98db5927ce15b12371f154f",
+        "path": "workspace\\.rob2-kit\\finalized\\970063237e426e4492ab6f02ffda4df91f574582b98db5927ce15b12371f154f.rob2.zip",
+        "sha256": "259c264f005bc52d2672717e90ffc2c6a2b9a7e3fbc6d58e6938b1980159e21b",
+        "verified": true
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 156,
+              "present": true,
+              "sha256": "f0434b64941fc72180da326ad42203bf0e41979ec6c2a15a934553ce68c0d3ee"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 109,
+              "present": true,
+              "sha256": "6a0f26e4da00551229b7d709a5b3bdeee1ced6c9cec88a799c8b59f1394365a2"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 92,
+              "present": true,
+              "sha256": "d9552beca87b17dda2540577c4d90a6eeefc9f01a4b9a7a7d4e0cbcb13c02356"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 83,
+              "present": true,
+              "sha256": "229293341af9dd4b3ea7eeefe92190a4d4395c8ff2f6c107f7e9b16a0d3285fc"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "1cb75684186bd5a9ff833787ba5b78e2a4399a2c80038c5698905a4807a00995"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 156,
+              "present": true,
+              "sha256": "b05f3eceb36680b8c7a0a8ee7a797f2290c50a25ed20b4a3ace3ccba32d65d06"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 532,
+              "present": true,
+              "sha256": "de9cd4c637b80d056a666f130b36d4ccad3e7e18d048ca8d67ee090123a4f79b"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 401,
+              "present": true,
+              "sha256": "4b904dc25f3a7edfabd92883fa93c2636075abce62c201ff8439e14a6029e6ef"
+            }
+          }
+        ]
+      },
+      "trial": "ARCHES"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_cacf77ad4bd2692d375e7b5b86f9b0bf",
+        "identity": "sha256:d9e442c11817bdbd340f9975af76bd9821d627f10f64f16e001a12b0470a0a69",
+        "path": "workspace\\.rob2-kit\\finalized\\d9e442c11817bdbd340f9975af76bd9821d627f10f64f16e001a12b0470a0a69.rob2.zip",
+        "sha256": "32dc579cd5dccb1c2098b80649f5efcba6f04c29b861f1c6623ae9336947ca0a",
+        "verified": true
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 183,
+              "present": true,
+              "sha256": "5b3e5b18dfccea2a4598be844786aa1f83cc3c25b94e0b063a4a219b20a55791"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 184,
+              "present": true,
+              "sha256": "7adfbcf10799db10acd62f36d9f29e6de4a350940ebbd0cde7cbbc8abcee7ac6"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 83,
+              "present": true,
+              "sha256": "2200d683001390f49f45ddaf2390e3acaf0bbdbbe95054555ae7b323f419f4dd"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 24,
+              "present": true,
+              "sha256": "8de54ceacf20095fcc092e584715dc04b307c621ec2ebbc7173ef4b7b9f5828a"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 85,
+              "present": true,
+              "sha256": "bb1d7b33ca1fc5a6ee3ad1bc32b0d3d7438892bb4adcc67b21a3572990f9498e"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 147,
+              "present": true,
+              "sha256": "d07b24053f008b217f079e6667cba336031b7f25e3ad6617bd2da87b7aa76b2c"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 129,
+              "present": true,
+              "sha256": "2c17258daabe2c4a80b49a9fbd1b3cdcbf9b5e964fda7e2e99e31461723423aa"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 386,
+              "present": true,
+              "sha256": "d1cef1e6af57f5882e1893958880cb64ac806cc6e527517e9eaaff0283dfcd34"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 423,
+              "present": true,
+              "sha256": "4f860d7137c6ede2c58c46dbbdaf51eef5a0dfb77e4dcc97c1a10f5796af3416"
+            }
+          }
+        ]
+      },
+      "trial": "ENZAMET"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_61ab8ced2198ab84983e7e5283066a44",
+        "identity": "sha256:b4c07c3020bf7e0ac28d5c676b0592843dc1dd1148471007e54854e324944d6c",
+        "path": "workspace\\.rob2-kit\\finalized\\b4c07c3020bf7e0ac28d5c676b0592843dc1dd1148471007e54854e324944d6c.rob2.zip",
+        "sha256": "852c0f836209db07821267f98d1f38e3f2ce4dfb5d0bee81359ebfa30751b26b",
+        "verified": true
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 183,
+              "present": true,
+              "sha256": "7ea3f5d26d8e9d335c18fbe93dd840dd1911e36a0ea2084299c879b3ba5f5461"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 206,
+              "present": true,
+              "sha256": "1de44f1d0e3ba74e3e6e1c6406285b9e64a09d75d7915b96e73bd14be9378bfc"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 91,
+              "present": true,
+              "sha256": "1fa6c39ba1d5c173467a768b4d23b90516a78505d7f0f798d35696bf99440953"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 114,
+              "present": true,
+              "sha256": "2945cf5e93aa3b5d41b0cdc995257b52c8c0a52a746137f617c280502503e4de"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 128,
+              "present": true,
+              "sha256": "bf5c5ccadfd1e4c50deb98f31b7dc03b5c878a130c28d448da7686d9b8c3a864"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 87,
+              "present": true,
+              "sha256": "62cb4a8c07b2fcbc4d2814a856e5b63b8b3746b8afd194cf06da085ff9523d38"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 642,
+              "present": true,
+              "sha256": "16b79f982daf05e13b12462f7a0f8da4a2cadc6946dbb61eff7c0a51436c4187"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 452,
+              "present": true,
+              "sha256": "1d631cb6f225d08eb2bb17d81c597da0b7c988416ca4a22ec591ffcd56d6377a"
+            }
+          }
+        ]
+      },
+      "trial": "PEACE-1"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_ac5f6b3c727fb4e2a85d0579fdbca6b0",
+        "identity": "sha256:b97c07f1f84684e499c1862fb65e0c8e105d7dd03592ada36f5aa7224518a6f0",
+        "path": "workspace\\.rob2-kit\\finalized\\b97c07f1f84684e499c1862fb65e0c8e105d7dd03592ada36f5aa7224518a6f0.rob2.zip",
+        "sha256": "313f573f951139086685e2b968a9438b99b0d7021ab2a34a15a930f90f095909",
+        "verified": true
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 173,
+              "present": true,
+              "sha256": "f4a7029cedde2e4045db13a44319f4d2644b8ce9007272479752e5068c5a9fd7"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 125,
+              "present": true,
+              "sha256": "8c2c54157a5d84d535ba303d58ecce989c430128442741c8586dde02ebfdefca"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 99,
+              "present": true,
+              "sha256": "14a80dbd5cc5f0de068c006c97934c78fc8c495d9a8f6334c3f1d26132d83a53"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 65,
+              "present": true,
+              "sha256": "b12233b899cc802a215d16d61a37bcc3c41430119a05221e06e1f1a22eec5fe6"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 118,
+              "present": true,
+              "sha256": "bc631bbbca6a54134927b58a725a7685b3f3d82aa3fc5559a9afe735d7ebe668"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 72,
+              "present": true,
+              "sha256": "b5551a1d7f59181d0245b65a5f76f607fe6b5cb1307271be8c6016d9ad53e43b"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 635,
+              "present": true,
+              "sha256": "59c8c5a1b9c9304dd72526c480d921c829afa6c5c2411a66e6d86f325ed918a0"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 440,
+              "present": true,
+              "sha256": "82847945ddd4f1697da6b01d54f44718f4294ce37c9942193c1f8e077290e410"
+            }
+          }
+        ]
+      },
+      "trial": "STAMPEDE"
+    },
+    {
+      "artifact": {
+        "attempt_id": "attempt_b7fbe62f2e4dd6437dd8eb8ae117d3c3",
+        "identity": "sha256:198100fc282d96b432c2afa39154052b9f1d98b76ff2d394fc5eb2535198aed2",
+        "path": "workspace\\.rob2-kit\\finalized\\198100fc282d96b432c2afa39154052b9f1d98b76ff2d394fc5eb2535198aed2.rob2.zip",
+        "sha256": "26dbe3835189204a3197fab1b2b148e955b562623f0f9aecea0108487bf1c2cc",
+        "verified": true
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 155,
+              "present": true,
+              "sha256": "3cf9f4138663830a849fcac648845a1658a1e8f9a4fd1c52d954e28a090a306e"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 107,
+              "present": true,
+              "sha256": "ff55f048c4613005582976b9fe11a4d562f4c00b2208b6e1c0f12f337697918a"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 92,
+              "present": true,
+              "sha256": "d9552beca87b17dda2540577c4d90a6eeefc9f01a4b9a7a7d4e0cbcb13c02356"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 83,
+              "present": true,
+              "sha256": "229293341af9dd4b3ea7eeefe92190a4d4395c8ff2f6c107f7e9b16a0d3285fc"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "1cb75684186bd5a9ff833787ba5b78e2a4399a2c80038c5698905a4807a00995"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "3d02512118e13d88c804af983584b5d49c1b59ab01057f3100a5390da780d786"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 558,
+              "present": true,
+              "sha256": "7d58939c9e438a1bac809ec12286d61b05609831e72c48163b1acdee0d2780ee"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 547,
+              "present": true,
+              "sha256": "d8217cd40268acbc6d99ac8557a43b3ec16ce68c66d758780728a62d3c84ff2c"
+            }
+          }
+        ]
+      },
+      "trial": "TITAN"
+    }
+  ],
+  "hard_failures": [
+    {
+      "outcome": "Overall Survival",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, precision, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 184,
+              "present": true,
+              "sha256": "039862cb48b22842455d7af9dc12429970c3a355ddc6308c66d23e46899df92a"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 187,
+              "present": true,
+              "sha256": "f998e7d51bff88e0f5833ac597bbf4ac826577e84034e65bc698863725d7c3ce"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 64,
+              "present": true,
+              "sha256": "76f369a593549b05341ae7db2f141991ab64a3160c30dee9f3aabd518bb1fdee"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 18,
+              "present": true,
+              "sha256": "ad8e390faf82b4a7f73d8afc262a63f90e84ad0ef40214898f09e2270565ba31"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 78,
+              "present": true,
+              "sha256": "5c36023ba7653ce7a3389c3b7da4e23ce82ab3c069e69dd097b05a964013f1db"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 90,
+              "present": true,
+              "sha256": "4f01b85e2ddc3bff1df99d6bc9440de4b2ae943e1e4b44b42414b39c57df9180"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 145,
+              "present": true,
+              "sha256": "0d08aaa0d2db1aeb2eec9d2fb6bae8ebd3dc79e1a70c5903df4e5fe377a620cf"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 31,
+              "present": true,
+              "sha256": "7b3dedebe97282b051abf02e0855afc097a6662c21bd608efe282ae221014790"
+            },
+            "field": "precision",
+            "observed": {
+              "kind": "str",
+              "length": 39,
+              "present": true,
+              "sha256": "0150c9f42a00a6c8f02b5ab5230f8645b388d291ebd59be282eba03f080ec90c"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 384,
+              "present": true,
+              "sha256": "690d7ea75bedc9e7ea631a28dff7e9e5853a15a8c8f7b430b1fe12779a56cb33"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 457,
+              "present": true,
+              "sha256": "699ad4c88fd2260ed1dc35e09d269017c57f8ab15413210539be0c231e237579"
+            }
+          }
+        ]
+      },
+      "trial": "ARASENS"
+    },
+    {
+      "outcome": "Overall Survival",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, precision, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 158,
+              "present": true,
+              "sha256": "bbf4e59a6eae7d41a2d2f0a9189b250182185852ebc09a321db7e0c868eadd20"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 113,
+              "present": true,
+              "sha256": "de85e1b79e973c4e58b50055649074c33b505155e8c96c9227e45d14d709d224"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 64,
+              "present": true,
+              "sha256": "76f369a593549b05341ae7db2f141991ab64a3160c30dee9f3aabd518bb1fdee"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 18,
+              "present": true,
+              "sha256": "f4a755e520e38f1b5444155e7d8b22f50636b1b08942c2125999dfc8c014f334"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 57,
+              "present": true,
+              "sha256": "fb9b0de4e8fa0b25693358711d10e75638974203b852045de6d37a19b0165c43"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 88,
+              "present": true,
+              "sha256": "daeee2d4061f1a04896e493ee932a0dbf50003d698a321ede05e2c42921b7572"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 110,
+              "present": true,
+              "sha256": "3e6ef78c2ab8a2fc309cce6becda7e521e8fd7d42698b1adf319d439dc7ad0f9"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 41,
+              "present": true,
+              "sha256": "db108489c320ab1b239a055e292afa003bb63b797fb7ed18f92061ac33ee8bd1"
+            },
+            "field": "precision",
+            "observed": {
+              "kind": "str",
+              "length": 21,
+              "present": true,
+              "sha256": "97241b2b72aa7a03a6c9b44c61161ee9bd2fcfcf4897da1c76285b34ce92d94b"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 365,
+              "present": true,
+              "sha256": "3276624928609eaf20d54a190b1b7a6f1959866105a445c38cc52b8df1892b81"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 390,
+              "present": true,
+              "sha256": "1cc1a59a946fa667fb4160e50fface8aacb7360ca1f755434c37a9427653c045"
+            }
+          }
+        ]
+      },
+      "trial": "SWOG-1216"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, precision, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 158,
+              "present": true,
+              "sha256": "bbf4e59a6eae7d41a2d2f0a9189b250182185852ebc09a321db7e0c868eadd20"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 135,
+              "present": true,
+              "sha256": "a1b1b5e09a4eb1d74af4f04b05255478bb89bd0794007bdf6f0aeca629e17e44"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 168,
+              "present": true,
+              "sha256": "0fa27b6424ee20caf6b2a7e7e99ecdd8b8d573b52ce5213e274f632cddf6c32a"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 27,
+              "present": true,
+              "sha256": "38dd783d1597bcdc8012a59c2b0d0a7cffe8adfa8f801ddc4f75def508437059"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 57,
+              "present": true,
+              "sha256": "fb9b0de4e8fa0b25693358711d10e75638974203b852045de6d37a19b0165c43"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 88,
+              "present": true,
+              "sha256": "daeee2d4061f1a04896e493ee932a0dbf50003d698a321ede05e2c42921b7572"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 94,
+              "present": true,
+              "sha256": "046bb830169038c9ccfd3a3ca065e692fa27477f11731d8c1048649c2bd3df76"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 32,
+              "present": true,
+              "sha256": "7ecaead9add0c22b2a089702f254c7fa665d6b0d5dc2aa83f85ecd276928b35d"
+            },
+            "field": "precision",
+            "observed": {
+              "kind": "str",
+              "length": 32,
+              "present": true,
+              "sha256": "9931733cf8395908dc84f635120e0094813bd981e80b515d9f1ffa1084bef241"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 459,
+              "present": true,
+              "sha256": "f7298f69329ae1e234a5b7f7a4c8d99146d277d56bef371a8309e44fa832ffc4"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 386,
+              "present": true,
+              "sha256": "645ab864b521292300e200f6566689c1ae70442c6d596d31a6abd49ea5aa40d6"
+            }
+          }
+        ]
+      },
+      "trial": "SWOG-1216"
+    },
+    {
+      "outcome": "Adverse Events",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 184,
+              "present": true,
+              "sha256": "039862cb48b22842455d7af9dc12429970c3a355ddc6308c66d23e46899df92a"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 177,
+              "present": true,
+              "sha256": "12a0bd958842bde59d3cc304bc2c0a796e6e3fc1d8c64de2848e924d20154dce"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 92,
+              "present": true,
+              "sha256": "d9552beca87b17dda2540577c4d90a6eeefc9f01a4b9a7a7d4e0cbcb13c02356"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 65,
+              "present": true,
+              "sha256": "6ac2ef673e0045a90c7990aa77357ee391b174d49ceee4e6598067315bee77ea"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "1cb75684186bd5a9ff833787ba5b78e2a4399a2c80038c5698905a4807a00995"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 110,
+              "present": true,
+              "sha256": "e563f18dc50d4e176f8769d8959ca7a9d4b50001858bc9670bde826d11174dee"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 565,
+              "present": true,
+              "sha256": "8988b750ce165760dfe7899651e4c1a77ee2a4be85a898c7afc66135c45b3a46"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 442,
+              "present": true,
+              "sha256": "ce5a310bb9b96b17dada5501c3c77a696e964e1cbc2e8f7dd7077b2b51f34faf"
+            }
+          }
+        ]
+      },
+      "trial": "ARASENS"
+    },
+    {
+      "outcome": "Adverse Events",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 156,
+              "present": true,
+              "sha256": "f0434b64941fc72180da326ad42203bf0e41979ec6c2a15a934553ce68c0d3ee"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 109,
+              "present": true,
+              "sha256": "6a0f26e4da00551229b7d709a5b3bdeee1ced6c9cec88a799c8b59f1394365a2"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 92,
+              "present": true,
+              "sha256": "d9552beca87b17dda2540577c4d90a6eeefc9f01a4b9a7a7d4e0cbcb13c02356"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 83,
+              "present": true,
+              "sha256": "229293341af9dd4b3ea7eeefe92190a4d4395c8ff2f6c107f7e9b16a0d3285fc"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "1cb75684186bd5a9ff833787ba5b78e2a4399a2c80038c5698905a4807a00995"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 156,
+              "present": true,
+              "sha256": "b05f3eceb36680b8c7a0a8ee7a797f2290c50a25ed20b4a3ace3ccba32d65d06"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 532,
+              "present": true,
+              "sha256": "de9cd4c637b80d056a666f130b36d4ccad3e7e18d048ca8d67ee090123a4f79b"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 401,
+              "present": true,
+              "sha256": "4b904dc25f3a7edfabd92883fa93c2636075abce62c201ff8439e14a6029e6ef"
+            }
+          }
+        ]
+      },
+      "trial": "ARCHES"
+    },
+    {
+      "outcome": "Adverse Events",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 183,
+              "present": true,
+              "sha256": "5b3e5b18dfccea2a4598be844786aa1f83cc3c25b94e0b063a4a219b20a55791"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 184,
+              "present": true,
+              "sha256": "7adfbcf10799db10acd62f36d9f29e6de4a350940ebbd0cde7cbbc8abcee7ac6"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 83,
+              "present": true,
+              "sha256": "2200d683001390f49f45ddaf2390e3acaf0bbdbbe95054555ae7b323f419f4dd"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 24,
+              "present": true,
+              "sha256": "8de54ceacf20095fcc092e584715dc04b307c621ec2ebbc7173ef4b7b9f5828a"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 85,
+              "present": true,
+              "sha256": "bb1d7b33ca1fc5a6ee3ad1bc32b0d3d7438892bb4adcc67b21a3572990f9498e"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 147,
+              "present": true,
+              "sha256": "d07b24053f008b217f079e6667cba336031b7f25e3ad6617bd2da87b7aa76b2c"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 129,
+              "present": true,
+              "sha256": "2c17258daabe2c4a80b49a9fbd1b3cdcbf9b5e964fda7e2e99e31461723423aa"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 386,
+              "present": true,
+              "sha256": "d1cef1e6af57f5882e1893958880cb64ac806cc6e527517e9eaaff0283dfcd34"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 423,
+              "present": true,
+              "sha256": "4f860d7137c6ede2c58c46dbbdaf51eef5a0dfb77e4dcc97c1a10f5796af3416"
+            }
+          }
+        ]
+      },
+      "trial": "ENZAMET"
+    },
+    {
+      "outcome": "Adverse Events",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 183,
+              "present": true,
+              "sha256": "7ea3f5d26d8e9d335c18fbe93dd840dd1911e36a0ea2084299c879b3ba5f5461"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 206,
+              "present": true,
+              "sha256": "1de44f1d0e3ba74e3e6e1c6406285b9e64a09d75d7915b96e73bd14be9378bfc"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 91,
+              "present": true,
+              "sha256": "1fa6c39ba1d5c173467a768b4d23b90516a78505d7f0f798d35696bf99440953"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 114,
+              "present": true,
+              "sha256": "2945cf5e93aa3b5d41b0cdc995257b52c8c0a52a746137f617c280502503e4de"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 128,
+              "present": true,
+              "sha256": "bf5c5ccadfd1e4c50deb98f31b7dc03b5c878a130c28d448da7686d9b8c3a864"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 87,
+              "present": true,
+              "sha256": "62cb4a8c07b2fcbc4d2814a856e5b63b8b3746b8afd194cf06da085ff9523d38"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 642,
+              "present": true,
+              "sha256": "16b79f982daf05e13b12462f7a0f8da4a2cadc6946dbb61eff7c0a51436c4187"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 452,
+              "present": true,
+              "sha256": "1d631cb6f225d08eb2bb17d81c597da0b7c988416ca4a22ec591ffcd56d6377a"
+            }
+          }
+        ]
+      },
+      "trial": "PEACE-1"
+    },
+    {
+      "outcome": "Adverse Events",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 173,
+              "present": true,
+              "sha256": "f4a7029cedde2e4045db13a44319f4d2644b8ce9007272479752e5068c5a9fd7"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 125,
+              "present": true,
+              "sha256": "8c2c54157a5d84d535ba303d58ecce989c430128442741c8586dde02ebfdefca"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 99,
+              "present": true,
+              "sha256": "14a80dbd5cc5f0de068c006c97934c78fc8c495d9a8f6334c3f1d26132d83a53"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 65,
+              "present": true,
+              "sha256": "b12233b899cc802a215d16d61a37bcc3c41430119a05221e06e1f1a22eec5fe6"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 118,
+              "present": true,
+              "sha256": "bc631bbbca6a54134927b58a725a7685b3f3d82aa3fc5559a9afe735d7ebe668"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 72,
+              "present": true,
+              "sha256": "b5551a1d7f59181d0245b65a5f76f607fe6b5cb1307271be8c6016d9ad53e43b"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 635,
+              "present": true,
+              "sha256": "59c8c5a1b9c9304dd72526c480d921c829afa6c5c2411a66e6d86f325ed918a0"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 440,
+              "present": true,
+              "sha256": "82847945ddd4f1697da6b01d54f44718f4294ce37c9942193c1f8e077290e410"
+            }
+          }
+        ]
+      },
+      "trial": "STAMPEDE"
+    },
+    {
+      "outcome": "Adverse Events",
+      "reason": "result scope mismatch: comparison, endpoint_definition, population, window_or_cutoff, reported_scope",
+      "result_scope_details": {
+        "code": "result_scope_mismatch",
+        "fields": [
+          {
+            "expected": {
+              "kind": "list",
+              "length": 155,
+              "present": true,
+              "sha256": "3cf9f4138663830a849fcac648845a1658a1e8f9a4fd1c52d954e28a090a306e"
+            },
+            "field": "comparison",
+            "observed": {
+              "kind": "list",
+              "length": 107,
+              "present": true,
+              "sha256": "ff55f048c4613005582976b9fe11a4d562f4c00b2208b6e1c0f12f337697918a"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 92,
+              "present": true,
+              "sha256": "d9552beca87b17dda2540577c4d90a6eeefc9f01a4b9a7a7d4e0cbcb13c02356"
+            },
+            "field": "endpoint_definition",
+            "observed": {
+              "kind": "str",
+              "length": 34,
+              "present": true,
+              "sha256": "64d92a9d3ab069cc875593139b2492c2e4c79e7cf5ea638570d263156eaa93ab"
+            }
+          },
+          {
+            "expected": {
+              "kind": "str",
+              "length": 83,
+              "present": true,
+              "sha256": "229293341af9dd4b3ea7eeefe92190a4d4395c8ff2f6c107f7e9b16a0d3285fc"
+            },
+            "field": "population",
+            "observed": {
+              "kind": "str",
+              "length": 54,
+              "present": true,
+              "sha256": "8ddd4243a40e95a2c2ac269d1b521b5e3fce48a9e96a62bec94f6d5f8ae2147f"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "1cb75684186bd5a9ff833787ba5b78e2a4399a2c80038c5698905a4807a00995"
+            },
+            "field": "window_or_cutoff",
+            "observed": {
+              "kind": "dict",
+              "length": 107,
+              "present": true,
+              "sha256": "3d02512118e13d88c804af983584b5d49c1b59ab01057f3100a5390da780d786"
+            }
+          },
+          {
+            "expected": {
+              "kind": "dict",
+              "length": 558,
+              "present": true,
+              "sha256": "7d58939c9e438a1bac809ec12286d61b05609831e72c48163b1acdee0d2780ee"
+            },
+            "field": "reported_scope",
+            "observed": {
+              "kind": "dict",
+              "length": 547,
+              "present": true,
+              "sha256": "d8217cd40268acbc6d99ac8557a43b3ec16ce68c66d758780728a62d3c84ff2c"
+            }
+          }
+        ]
+      },
+      "trial": "TITAN"
+    }
+  ],
+  "label_interpretation": "agreement with frozen provisional catalog labels; not adjudicated scientific accuracy",
+  "manifest": "eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\trial-benchmark-manifest.v3.json",
+  "model": "gpt-6-luna",
+  "pooled": {
+    "case_count": 14,
+    "domain_cells": 70,
+    "domains": {
+      "D1": {
+        "exact": {
+          "correct": 14,
+          "rate": 1.0,
+          "total": 14
+        },
+        "low_vs_non_low": {
+          "correct": 14,
+          "rate": 1.0,
+          "total": 14
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 9,
+          "rate": 0.6428571428571429,
+          "total": 14
+        },
+        "low_vs_non_low": {
+          "correct": 9,
+          "rate": 0.6428571428571429,
+          "total": 14
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 6,
+          "rate": 0.42857142857142855,
+          "total": 14
+        },
+        "low_vs_non_low": {
+          "correct": 10,
+          "rate": 0.7142857142857143,
+          "total": 14
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 13,
+          "rate": 0.9285714285714286,
+          "total": 14
+        },
+        "low_vs_non_low": {
+          "correct": 14,
+          "rate": 1.0,
+          "total": 14
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 9,
+          "rate": 0.6428571428571429,
+          "total": 14
+        },
+        "low_vs_non_low": {
+          "correct": 9,
+          "rate": 0.6428571428571429,
+          "total": 14
+        }
+      }
+    },
+    "overall": {
+      "exact": {
+        "correct": 1,
+        "rate": 0.07142857142857142,
+        "total": 14
+      },
+      "low_vs_non_low": {
+        "correct": 11,
+        "rate": 0.7857142857142857,
+        "total": 14
+      }
+    },
+    "pooled_domains": {
+      "exact": {
+        "correct": 51,
+        "rate": 0.7285714285714285,
+        "total": 70
+      },
+      "low_vs_non_low": {
+        "correct": 56,
+        "rate": 0.8,
+        "total": 70
+      }
+    }
+  },
+  "prompt_policy": null,
+  "reasoning_effort": "medium",
+  "schema": "rob2-kit.trial-benchmark-score.v1",
+  "scope": {
+    "excluded_cases": 9,
+    "finalized_domain_cells": 70,
+    "finalized_scored_cases": 14,
+    "manifest_rows": 26,
+    "result_scope_denominators": {
+      "approved_proxy": 3,
+      "exact": 14,
+      "mismatch": 9,
+      "unavailable": 0
+    },
+    "scope_difference_cases": 3,
+    "sensitivity_domain_cells": 85,
+    "sensitivity_scored_cases": 17
+  },
+  "scope_difference_cases": [
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\ARCHES\\workspace\\.rob2-kit\\finalized\\c88e4899d7dc5885d91fe8d52aa4551a8e1c3770fbd741bbd81c4853c3b56f20.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Enzalutamide plus androgen deprivation therapy",
+            "id": "enzalutamide_plus_ADT"
+          },
+          {
+            "assignment": "Placebo plus androgen deprivation therapy",
+            "id": "placebo_plus_ADT"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.39",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.30 to 0.50",
+        "reported_scope": {
+          "analysis_population": "Intent-to-treat population: all randomized patients (1,150 total; 574 assigned enzalutamide plus ADT and 576 assigned placebo plus ADT).",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "rPFS"
+          },
+          "estimate": "0.39",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.30 to 0.50"
+        },
+        "trial": "arches",
+        "window_or_cutoff": {
+          "description": "From randomization to first radiographic progression or death from any cause within 24 weeks after study drug discontinuation, whichever occurs first",
+          "kind": "described"
+        }
+      },
+      "result_scope": "accepted_with_scope_difference",
+      "role": "primary",
+      "scope_adjudication": {
+        "decision": "accepted_with_scope_difference",
+        "expected_result_sha256": "64c5ac33eb741226ba02a50603217d6f2a26acebcb8f5961927d6dfc6c2f4780",
+        "observed_relation": "broader",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Accepted as a sensitivity-only proxy because the selected result concerns the requested endpoint and uses the supplied trial contrast and estimate, but has a documented scope difference: The reported primary rPFS result is for randomized men with metastatic hormone-sensitive prostate cancer, comparing enzalutamide plus ADT with placebo plus ADT, from randomization to radiographic progression or death within the specified 24-week post-discontinuation window. The requested definition specifies radiographic progression as RECIST 1.1 progressive disease; the report applies RECIST 1.1 to soft-tissue disease and also counts qualifying new bone lesions on bone scans, so its event definition is broader. The report uses central radiographic review and the same death rule.",
+        "result_identity": "sha256:2799f3409ffb4390d785d1fc4d4b274ee33d348e5cbad8a24550a42bef678ab4",
+        "review_identity": "sha256:c1fa037956d1980fcdd4aa8bd3c32f3d575bf429b674c00162fb9af8dfeccc5f",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 61",
+        "trial": "ARCHES"
+      },
+      "trial": "ARCHES"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\ENZAMET\\workspace\\.rob2-kit\\finalized\\75e03a8c962a920f681ae6b72c49d1c5df959736db2ac4b0a63ccdcc39a40c1e.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Testosterone suppression plus enzalutamide",
+            "id": "enzalutamide"
+          },
+          {
+            "assignment": "Testosterone suppression plus standard nonsteroidal antiandrogen therapy",
+            "id": "standard_care"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.40",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.33 to 0.49",
+        "reported_scope": {
+          "analysis_population": "All randomized patients, analyzed by intention to treat (563 assigned to enzalutamide and 562 to standard care).",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Clinical progression-free survival"
+          },
+          "estimate": "0.40",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.33 to 0.49"
+        },
+        "trial": "enzamet",
+        "window_or_cutoff": {
+          "description": "Time to the earliest specified clinical progression event",
+          "kind": "described"
+        }
+      },
+      "result_scope": "accepted_with_scope_difference",
+      "role": "secondary",
+      "scope_adjudication": {
+        "decision": "accepted_with_scope_difference",
+        "expected_result_sha256": "8a28cf3532d0335cf66f76230d9e2fd09c4e7ad1372591cfba76110bff566186",
+        "observed_relation": "broader",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Accepted as a sensitivity-only proxy because the selected result concerns the requested endpoint and uses the supplied trial contrast and estimate, but has a documented scope difference: The requested event is clinical progression defined by radiographic progression, cancer-related symptoms, or initiation of another prostate-cancer treatment. The report's clinical progression-free survival uses these clinical progression events, but the protocol also counts death from any cause as an event. Its time origin is randomization, and it compares all randomized patients assigned to enzalutamide versus standard care.",
+        "result_identity": "sha256:d03b082c3d82399e9bd35a0428cdf51bbea1303f7da38140521bea5039d88868",
+        "review_identity": "sha256:859b17595ffb08ab0e938975ecbb408b09debb1a43c5fe17c0106e0e6f0a12c3",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 63",
+        "trial": "ENZAMET"
+      },
+      "trial": "ENZAMET"
+    },
+    {
+      "bundle": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\isolated-worktree-run\\rob2-trial-benchmark\\progression-free-survival\\LATITUDE\\workspace\\.rob2-kit\\finalized\\bd658144289ac768ded846185766c3ede3cdc717ff12b81a55f0c02555a6180e.rob2.zip",
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "result": {
+        "comparison": [
+          {
+            "assignment": "Androgen-deprivation therapy plus abiraterone acetate and prednisone",
+            "id": "abiraterone"
+          },
+          {
+            "assignment": "Androgen-deprivation therapy plus dual placebos",
+            "id": "placebo"
+          }
+        ],
+        "endpoint_definition": "Progression-Free Survival",
+        "estimate": "0.47",
+        "population": "All randomized participants in the comparison groups",
+        "precision": "95% CI, 0.39 to 0.55",
+        "reported_scope": {
+          "analysis_population": "The trial randomized 597 patients to the abiraterone group and 602 to the placebo group; the article reports 239 versus 354 radiographic progression or death events. The specific rPFS analysis set, exclusions, and missing-observation handling are not stated.",
+          "effect_measure": "Hazard ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "Radiographic progression-free survival"
+          },
+          "estimate": "0.47",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "95% CI, 0.39 to 0.55"
+        },
+        "trial": "latitude",
+        "window_or_cutoff": {
+          "description": "Time from randomization to radiographic progression or death from any cause; reported at the planned rPFS analysis.",
+          "kind": "described"
+        }
+      },
+      "result_scope": "accepted_with_scope_difference",
+      "role": "co-primary",
+      "scope_adjudication": {
+        "decision": "accepted_with_scope_difference",
+        "expected_result_sha256": "b81c430d15cc08b9a53fea867c3d5d07b9dcfa133c4114a677814c5c7fe5eab7",
+        "observed_relation": "related",
+        "outcome": "Progression-Free Survival",
+        "rationale": "Accepted as a sensitivity-only proxy because the selected result concerns the requested endpoint and uses the supplied trial contrast and estimate, but has a documented scope difference: The event set, randomization time origin, ascertainment, comparison groups, and hazard-ratio result match the requested radiographic progression-free survival outcome. The article provides randomized arm sizes and event counts but does not explicitly state the rPFS analysis set; therefore, population correspondence cannot be established as exact.",
+        "result_identity": "sha256:5e52160c3ea8452b73acc60ddb4d5e0624c6cca6f087c5309822b64acf9d8ff2",
+        "review_identity": "sha256:542a97a57b91fe2abb3220ad6bcd41cfa71269d37c292a481345adb617f6905c",
+        "source_citation": "Main article abstract, Results, PDF p. 1.; Supplement eTable 1, PDF p. 62",
+        "trial": "LATITUDE"
+      },
+      "trial": "LATITUDE"
+    }
+  ],
+  "sensitivity": {
+    "added_scope_difference_cases": 3,
+    "by_domain": {
+      "D1": {
+        "exact": {
+          "correct": 17,
+          "rate": 1.0,
+          "total": 17
+        },
+        "low_vs_non_low": {
+          "correct": 17,
+          "rate": 1.0,
+          "total": 17
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 12,
+          "rate": 0.7058823529411765,
+          "total": 17
+        },
+        "low_vs_non_low": {
+          "correct": 12,
+          "rate": 0.7058823529411765,
+          "total": 17
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 7,
+          "rate": 0.4117647058823529,
+          "total": 17
+        },
+        "low_vs_non_low": {
+          "correct": 12,
+          "rate": 0.7058823529411765,
+          "total": 17
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 16,
+          "rate": 0.9411764705882353,
+          "total": 17
+        },
+        "low_vs_non_low": {
+          "correct": 17,
+          "rate": 1.0,
+          "total": 17
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 11,
+          "rate": 0.6470588235294118,
+          "total": 17
+        },
+        "low_vs_non_low": {
+          "correct": 11,
+          "rate": 0.6470588235294118,
+          "total": 17
+        }
+      }
+    },
+    "by_outcome": {
+      "Adverse Events": {
+        "case_count": 1,
+        "domain_cells": 5,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 0,
+              "rate": 0.0,
+              "total": 1
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            },
+            "low_vs_non_low": {
+              "correct": 1,
+              "rate": 1.0,
+              "total": 1
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 0,
+            "rate": 0.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.8,
+            "total": 5
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 1.0,
+            "total": 5
+          }
+        }
+      },
+      "Overall Survival": {
+        "case_count": 8,
+        "domain_cells": 40,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 5,
+              "rate": 0.625,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "rate": 0.625,
+              "total": 8
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 4,
+              "rate": 0.5,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 0.75,
+              "total": 8
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 5,
+              "rate": 0.625,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "rate": 0.625,
+              "total": 8
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 1,
+            "rate": 0.125,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 30,
+            "rate": 0.75,
+            "total": 40
+          },
+          "low_vs_non_low": {
+            "correct": 32,
+            "rate": 0.8,
+            "total": 40
+          }
+        }
+      },
+      "Progression-Free Survival": {
+        "case_count": 8,
+        "domain_cells": 40,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 6,
+              "rate": 0.75,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 0.75,
+              "total": 8
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 3,
+              "rate": 0.375,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "rate": 0.625,
+              "total": 8
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 7,
+              "rate": 0.875,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 1.0,
+              "total": 8
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 5,
+              "rate": 0.625,
+              "total": 8
+            },
+            "low_vs_non_low": {
+              "correct": 5,
+              "rate": 0.625,
+              "total": 8
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.25,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 29,
+            "rate": 0.725,
+            "total": 40
+          },
+          "low_vs_non_low": {
+            "correct": 32,
+            "rate": 0.8,
+            "total": 40
+          }
+        }
+      }
+    },
+    "by_outcome_domain": {
+      "Adverse Events": {
+        "D1": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 0,
+            "rate": 0.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          },
+          "low_vs_non_low": {
+            "correct": 1,
+            "rate": 1.0,
+            "total": 1
+          }
+        }
+      },
+      "Overall Survival": {
+        "D1": {
+          "exact": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 4,
+            "rate": 0.5,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.75,
+            "total": 8
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          }
+        }
+      },
+      "Progression-Free Survival": {
+        "D1": {
+          "exact": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 6,
+            "rate": 0.75,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 0.75,
+            "total": 8
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 3,
+            "rate": 0.375,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 7,
+            "rate": 0.875,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 1.0,
+            "total": 8
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          },
+          "low_vs_non_low": {
+            "correct": 5,
+            "rate": 0.625,
+            "total": 8
+          }
+        }
+      }
+    },
+    "by_primary_status": {
+      "primary": {
+        "case_count": 11,
+        "domain_cells": 55,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 11,
+              "rate": 1.0,
+              "total": 11
+            },
+            "low_vs_non_low": {
+              "correct": 11,
+              "rate": 1.0,
+              "total": 11
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 8,
+              "rate": 0.7272727272727273,
+              "total": 11
+            },
+            "low_vs_non_low": {
+              "correct": 8,
+              "rate": 0.7272727272727273,
+              "total": 11
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 4,
+              "rate": 0.36363636363636365,
+              "total": 11
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 0.5454545454545454,
+              "total": 11
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 11,
+              "rate": 1.0,
+              "total": 11
+            },
+            "low_vs_non_low": {
+              "correct": 11,
+              "rate": 1.0,
+              "total": 11
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 7,
+              "rate": 0.6363636363636364,
+              "total": 11
+            },
+            "low_vs_non_low": {
+              "correct": 7,
+              "rate": 0.6363636363636364,
+              "total": 11
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 2,
+            "rate": 0.18181818181818182,
+            "total": 11
+          },
+          "low_vs_non_low": {
+            "correct": 8,
+            "rate": 0.7272727272727273,
+            "total": 11
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 41,
+            "rate": 0.7454545454545455,
+            "total": 55
+          },
+          "low_vs_non_low": {
+            "correct": 43,
+            "rate": 0.7818181818181819,
+            "total": 55
+          }
+        }
+      },
+      "secondary": {
+        "case_count": 6,
+        "domain_cells": 30,
+        "domains": {
+          "D1": {
+            "exact": {
+              "correct": 6,
+              "rate": 1.0,
+              "total": 6
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 1.0,
+              "total": 6
+            }
+          },
+          "D2": {
+            "exact": {
+              "correct": 4,
+              "rate": 0.6666666666666666,
+              "total": 6
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "rate": 0.6666666666666666,
+              "total": 6
+            }
+          },
+          "D3": {
+            "exact": {
+              "correct": 3,
+              "rate": 0.5,
+              "total": 6
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 1.0,
+              "total": 6
+            }
+          },
+          "D4": {
+            "exact": {
+              "correct": 5,
+              "rate": 0.8333333333333334,
+              "total": 6
+            },
+            "low_vs_non_low": {
+              "correct": 6,
+              "rate": 1.0,
+              "total": 6
+            }
+          },
+          "D5": {
+            "exact": {
+              "correct": 4,
+              "rate": 0.6666666666666666,
+              "total": 6
+            },
+            "low_vs_non_low": {
+              "correct": 4,
+              "rate": 0.6666666666666666,
+              "total": 6
+            }
+          }
+        },
+        "overall": {
+          "exact": {
+            "correct": 1,
+            "rate": 0.16666666666666666,
+            "total": 6
+          },
+          "low_vs_non_low": {
+            "correct": 6,
+            "rate": 1.0,
+            "total": 6
+          }
+        },
+        "pooled_domains": {
+          "exact": {
+            "correct": 22,
+            "rate": 0.7333333333333333,
+            "total": 30
+          },
+          "low_vs_non_low": {
+            "correct": 26,
+            "rate": 0.8666666666666667,
+            "total": 30
+          }
+        }
+      }
+    },
+    "pooled": {
+      "case_count": 17,
+      "domain_cells": 85,
+      "domains": {
+        "D1": {
+          "exact": {
+            "correct": 17,
+            "rate": 1.0,
+            "total": 17
+          },
+          "low_vs_non_low": {
+            "correct": 17,
+            "rate": 1.0,
+            "total": 17
+          }
+        },
+        "D2": {
+          "exact": {
+            "correct": 12,
+            "rate": 0.7058823529411765,
+            "total": 17
+          },
+          "low_vs_non_low": {
+            "correct": 12,
+            "rate": 0.7058823529411765,
+            "total": 17
+          }
+        },
+        "D3": {
+          "exact": {
+            "correct": 7,
+            "rate": 0.4117647058823529,
+            "total": 17
+          },
+          "low_vs_non_low": {
+            "correct": 12,
+            "rate": 0.7058823529411765,
+            "total": 17
+          }
+        },
+        "D4": {
+          "exact": {
+            "correct": 16,
+            "rate": 0.9411764705882353,
+            "total": 17
+          },
+          "low_vs_non_low": {
+            "correct": 17,
+            "rate": 1.0,
+            "total": 17
+          }
+        },
+        "D5": {
+          "exact": {
+            "correct": 11,
+            "rate": 0.6470588235294118,
+            "total": 17
+          },
+          "low_vs_non_low": {
+            "correct": 11,
+            "rate": 0.6470588235294118,
+            "total": 17
+          }
+        }
+      },
+      "overall": {
+        "exact": {
+          "correct": 3,
+          "rate": 0.17647058823529413,
+          "total": 17
+        },
+        "low_vs_non_low": {
+          "correct": 14,
+          "rate": 0.8235294117647058,
+          "total": 17
+        }
+      },
+      "pooled_domains": {
+        "exact": {
+          "correct": 63,
+          "rate": 0.7411764705882353,
+          "total": 85
+        },
+        "low_vs_non_low": {
+          "correct": 69,
+          "rate": 0.8117647058823529,
+          "total": 85
+        }
+      }
+    }
+  }
+}

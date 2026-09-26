@@ -1,0 +1,1 @@
+/rob2-assess Assess risk of bias for Progression-Free Survival defined as Progression-free survival from the date of randomization to first occurrence of PSA or radiographic progression, symptomatic deterioration, or death due to any cause, hazard ratio 0.58; 95% CI, 0.51 to 0.67; P<0.0001 in SWOG-1216.

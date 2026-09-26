@@ -1,0 +1,22 @@
+[
+  {
+    "outcome": "Adverse Events",
+    "trial": "ENZAMET",
+    "answer": "no",
+    "exit_code": 1,
+    "scope_mismatches": [],
+    "scope_adjudication": null,
+    "result_identity": "sha256:49a92b639a5dfa6127916edf72c8e2720f0f2f8b91b0b76765969cc8d3ff85fe",
+    "approved": false,
+    "approval_reference_matches": false,
+    "review": "C:\\Users\\Ali-Salman\\Documents\\Code\\rob2-kit\\eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\prepared\\enzamet-grade3-assessment\\proposal-reviews\\adverse-events\\ENZAMET.json",
+    "review_identity": "sha256:9692c84c0d89a08c027a1de5dfa95f8c7ae917bbdeaab21f3d34f8eab43345fb",
+    "requested_outcome": "Grade 3 adverse events",
+    "trial_id": "enzamet",
+    "kind": "assessable",
+    "relation": "narrower",
+    "endpoint": "Any adverse event",
+    "estimate": null,
+    "precision": null
+  }
+]

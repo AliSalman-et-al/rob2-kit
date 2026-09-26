@@ -1,0 +1,179 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:b0f3eaca24fabc6e6fb0161440768901733f2a06401af4533078573ed173290d": {
+        "end": 3310,
+        "end_line": 67,
+        "handle": "eh_b0f3eaca24fabc6e",
+        "identity": "sha256:b0f3eaca24fabc6e6fb0161440768901733f2a06401af4533078573ed173290d",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "Patients were randomly assigned in a 1:1 ratio to receive\norteronel (300 mg) orally twice daily or bicalutamide (50\nmg) administered orally once daily, in addition to contin-\nuous ADT. Patient assignment was dynamically balanced\non three stratification factors: severity of disease (minimal v\nextensive), Zubrod performance status (0-1 v 2-3), and\npreregistration treatment status (early v late induction).",
+        "source_id": "source_a9b208285fbf7ea4740dfa7e6ffb0c5ecc6251373dd56f2613eeb4043277794f",
+        "source_version": "sha256:ff983e655d6ae893cb49d4623e6d7e99534b2497e7bd4d4693a448bd65d4bb1d",
+        "start": 2904,
+        "start_line": 61,
+        "trial_id": "swog-1216"
+      },
+      "sha256:cf627fbe2fdafe274115a20a91ad2db07c1e9237b9319a4acbc8d4590f96a40b": {
+        "end": 881,
+        "end_line": 24,
+        "handle": "eh_cf627fbe2fdafe27",
+        "identity": "sha256:cf627fbe2fdafe274115a20a91ad2db07c1e9237b9319a4acbc8d4590f96a40b",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "Between March 1, 2013, and July 15, 2017, 1,313 patients\nwere randomly assigned and 1,279 were included in the\nintention-to-treat analysis (32 patients were ineligible, and\ntwo\npatients\nwithdrew\nall\nconsent\nbefore\nstarting\ntreatment-see Appendix Fig A1 [online only] for details).\nSix hundred thirty-eight patients were randomly assigned to\nthe orteronel arm, and 641 were randomly assigned to the\ncontrol arm. At the cutoff date (February 5, 2021) for the\nfinal analysis after 525 deaths (and 787 PFS events), the\nmedian follow-up time was 4.9 years. Demographic and",
+        "source_id": "source_a9b208285fbf7ea4740dfa7e6ffb0c5ecc6251373dd56f2613eeb4043277794f",
+        "source_version": "sha256:ff983e655d6ae893cb49d4623e6d7e99534b2497e7bd4d4693a448bd65d4bb1d",
+        "start": 314,
+        "start_line": 9,
+        "trial_id": "swog-1216"
+      },
+      "sha256:f3d2b97d3575921536ba4f7494900c5d223d656187f6b0f11b7df78d0ea24fc4": {
+        "end": 2263,
+        "end_line": 51,
+        "handle": "eh_f3d2b97d35759215",
+        "identity": "sha256:f3d2b97d3575921536ba4f7494900c5d223d656187f6b0f11b7df78d0ea24fc4",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "Secondary End Points\nAnalysis of PFS occurred after 787 events were observed\n(343 in the orteronel group and 444 in the control group).\nThe median PFS in the orteronel group was 47.6 months\ncompared with 23.0 months in the control group (Fig 2).\nThe PFS at 4 years was 50.2% in the orteronel group and\n33.9% in the control group (HR, 0.58; 95% CI, 0.51 to\n0.67; P , .001).",
+        "source_id": "source_a9b208285fbf7ea4740dfa7e6ffb0c5ecc6251373dd56f2613eeb4043277794f",
+        "source_version": "sha256:ff983e655d6ae893cb49d4623e6d7e99534b2497e7bd4d4693a448bd65d4bb1d",
+        "start": 1891,
+        "start_line": 44,
+        "trial_id": "swog-1216"
+      },
+      "sha256:f6e53a6c96f2ee254e62011271435a0e82cc5ef5af302693d3d02c69211e1a8e": {
+        "end": 872,
+        "end_line": 16,
+        "handle": "eh_f6e53a6c96f2ee25",
+        "identity": "sha256:f6e53a6c96f2ee254e62011271435a0e82cc5ef5af302693d3d02c69211e1a8e",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "adverse events (AEs) rate. PFS was defined as the time from\nrandom assignment to first documentation of PSA progression\n($ 25% increase and an absolute increase of at least 2 ng/mL\nfrom the nadir PSA), radiologic progression (two or more new\nlesions on radionuclide bone scans, per Prostate Cancer\nWorking Group 2 [PCWG2] criteria, and/or soft tissue pro-\ngression per RECIST version 1.1), clinical progression\n(symptomatic deterioration) or death, whichever occurred\nfirst. PSA response rates were divided into complete response",
+        "source_id": "source_a9b208285fbf7ea4740dfa7e6ffb0c5ecc6251373dd56f2613eeb4043277794f",
+        "source_version": "sha256:ff983e655d6ae893cb49d4623e6d7e99534b2497e7bd4d4693a448bd65d4bb1d",
+        "start": 343,
+        "start_line": 8,
+        "trial_id": "swog-1216"
+      }
+    },
+    "identity": "sha256:c4d8d29336bcee17dc4fc2da00f1ec46f93ebd215d671e22777c76d1c3100874",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_b0f3eaca24fabc6e"
+            ],
+            "rationale": "Patients were randomly assigned individually in parallel to orteronel plus continuous ADT or bicalutamide plus continuous ADT."
+          },
+          "bindings": [
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a11e81437d4d11810475bbc8aabc9c188fd75d103e0b607260252d4a406d157a"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:8f4b785b4d6a98584c014b1c8f910b15d88654796feb0b25ebe56873e44a4c4f"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:9931733cf8395908dc84f635120e0094813bd981e80b515d9f1ffa1084bef241"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:600eab318b96b0b9235fdd109c939456bdb4011f11651284ba0de4b1b73d0165"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "unclear",
+            "comparison_groups": "unclear",
+            "effect_measure": "unclear",
+            "eligible_result_choice": "unclear",
+            "measurement": "unclear",
+            "outcome_definition": "unclear",
+            "source_table_meaning": "unclear",
+            "time_point": "unclear"
+          },
+          "evidence": [
+            {
+              "handle": "eh_b0f3eaca24fabc6e",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_cf627fbe2fdafe27",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_f3d2b97d35759215",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_f6e53a6c96f2ee25",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "The reported composite endpoint, time origin, treatment contrast, and hazard-ratio measure match the requested PFS result. The published analysis includes 1,279 of 1,313 randomized participants; 32 were excluded as ineligible and two withdrew consent before treatment, so the analysis population is narrower than all randomized participants.",
+          "reported": {
+            "analysis_population": "Intention-to-treat analysis, 1,279 of 1,313 randomized participants (638 orteronel; 641 control); 32 ineligible participants and two who withdrew consent before treatment were excluded.",
+            "effect_measure": "HR",
+            "endpoint": {
+              "definition": null,
+              "name": "PFS"
+            },
+            "estimate": "0.58",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% CI, 0.51 to 0.67; P , .001"
+          },
+          "requested_outcome": "Progression-free survival",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Orteronel plus continuous ADT",
+                "id": "orteronel"
+              },
+              {
+                "assignment": "Bicalutamide plus continuous ADT",
+                "id": "bicalutamide"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Time from randomization to first PSA progression, radiographic progression, symptomatic deterioration, or death from any cause",
+              "metric": "Progression-free survival"
+            },
+            "outcome_definition": "Progression-free survival",
+            "time_point_or_window": {
+              "description": "From randomization until first progression event or death",
+              "kind": "described"
+            }
+          },
+          "trial_id": "swog-1216"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:294b03e750630dd314f1b9f8ac039ac73e6f4735bd9ea640b034a4f3606973d4",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}

@@ -1,0 +1,17 @@
+{
+  "approval_identity": "sha256:02f595e8632b36f986851d0b86c59702993434bf69c4ce198ff84096ec42afcb",
+  "approved_at": "2026-09-26T11:56:53.640263Z",
+  "case_requested_scope": null,
+  "proposal_identity": "sha256:f27340eb298ecb419f107030cb7517d494a36fc7b7c0006addf963f7af99da78",
+  "results": [
+    {
+      "identity": "sha256:64f9a0c7cf19147adfc435da3005cf204ff9e185ad78fad579f48ab06ec938d8",
+      "kind": "assessable",
+      "reported_scope_identity": "sha256:bdd562c53a87b01032eacd57e697e955b1e0fb922ca478c901e65718dcfb9334",
+      "target_scope_identity": "sha256:dcb94d9999167437826545e8591890a7100856557f269e0a40503c36085e212b",
+      "trial_id": "latitude"
+    }
+  ],
+  "review_identity": "sha256:7150390a14dff63613217b472e81dbb1d43ad7538469d8c3d9028ab58f21307f",
+  "schema": "rob2-kit.rsi-approved-scope.v1"
+}
