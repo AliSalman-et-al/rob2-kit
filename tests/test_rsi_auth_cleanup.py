@@ -529,7 +529,7 @@ def test_isolation_preflight_probes_run_inputs_approved_scope_and_auth(
     environment = runner["_codex_environment"](
         Path("/tmp/codex"), Path("/tmp/workspace"), strict=True, base={"PATH": "bin"}
     )
-    assert environment["TMPDIR"] == "/tmp/workspace/.tmp"
+    assert environment["TMPDIR"] == str(Path("/tmp/workspace") / ".tmp")
 
 
 def test_strict_launch_denies_scope_and_auth_files_on_any_host(

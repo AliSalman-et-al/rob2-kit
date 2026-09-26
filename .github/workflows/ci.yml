@@ -116,6 +116,10 @@ jobs:
         env:
           EXPECTED_PYTHON: ${{ matrix.python-version }}
       - run: uv run --no-sync pytest
+        env:
+          TMP: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
+          TMPDIR: ${{ runner.temp }}
 
   package:
     name: Package (${{ matrix.python-version }} / ${{ matrix.os }})

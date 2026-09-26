@@ -1928,8 +1928,11 @@ def test_codex_timeout_kills_child_and_is_reported_to_runner(
         )
 
     assert len(spawned) == 1
-    signal_module = runner["_run_owned_codex"].__globals__["signal"]
-    assert signals == [(123, signal_module.SIGTERM), (123, getattr(signal_module, "SIGKILL", 9))]
+    if os.name == "nt":
+        assert spawned[0].killed
+    else:
+        signal_module = runner["_run_owned_codex"].__globals__["signal"]
+        assert signals == [(123, signal_module.SIGTERM), (123, getattr(signal_module, "SIGKILL", 9))]
 
 
 def test_timeout_terminates_owned_posix_process_group_and_waits(
