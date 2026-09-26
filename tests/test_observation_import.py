@@ -400,6 +400,7 @@ def test_documented_tools_match_the_public_contract() -> None:
         "reason_domain_assessment",
         "reason_proposal",
         "request_trial_terminal",
+        "validate_domain_assessment",
     }
 
 

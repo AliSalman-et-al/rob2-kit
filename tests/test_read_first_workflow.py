@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import zipfile
 from pathlib import Path
 
 import pymupdf
@@ -94,6 +95,15 @@ def _write_large_pdf(path: Path, pages: list[str]) -> None:
         document.close()
 
 
+def _write_docx(path: Path, text: str) -> None:
+    document = (
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        f"<w:body><w:p><w:r><w:t>{text}</w:t></w:r></w:p><w:sectPr/></w:body></w:document>"
+    )
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("word/document.xml", document)
+
+
 def test_first_proposal_save_requires_bounded_main_report_read(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     _main, evidence = _prepare_with_evidence(workspace, read_main=False)
@@ -184,6 +194,9 @@ def test_main_report_pass_includes_appended_pages_below_cap(tmp_path: Path) -> N
     )
     article = _source(workspace, "article.pdf")
     initial = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert initial["identity_status"] == "identified"
+    assert initial["identity_basis"] == "declared_role"
+    assert initial["identity_sources"] == [article["id"]]
     assert {window["page"] for window in initial["required_ranges"]} == {1, 2}
     assert initial["unread_ranges"] == []
 
@@ -197,6 +210,252 @@ def test_main_report_pass_includes_appended_pages_below_cap(tmp_path: Path) -> N
         )
     complete = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
     assert complete["status"] == "complete"
+
+
+def test_inferred_roles_do_not_turn_orientation_reading_into_report_coverage(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    protocol_text = (trial / "main.txt").read_text(encoding="utf-8")
+    (trial / "sources.toml").unlink()
+    (trial / "main.txt").unlink()
+    _write_docx(trial / "protocol.docx", protocol_text)
+    _write_docx(trial / "report.docx", "Final primary publication reports overall survival.")
+    (trial / "notes.txt").write_text("Study notes and an alternate endpoint.\n", encoding="utf-8")
+    _write_large_pdf(trial / "results.pdf", ["Captured results in PDF form.\n"])
+
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    listed = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    sources = {item["label"]: item for item in listed}
+    protocol = sources["protocol.docx"]
+    report = sources["report.docx"]
+    assert report["role"] == "other"
+    assert report["declared_role"] is None
+    assert sources["results.pdf"]["role"] == "main_article"
+    assert sources["results.pdf"]["declared_role"] is None
+
+    _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": protocol["id"], "pages": [1]},
+    )
+    protocol_evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": protocol["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    unresolved = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert unresolved["identity_status"] == "unresolved"
+    assert unresolved["status"] == "identity_unresolved"
+    assert unresolved["required_ranges"] == []
+    assert unresolved["orientation_source_ids"] == [protocol["id"]]
+    assert unresolved["orientation_reading"]["ranges"] == [
+        {
+            "source_id": protocol["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        }
+    ]
+    assert unresolved["orientation_reading"]["range_count"] == 1
+    blocked = _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(workspace, [_result(protocol_evidence)]),
+    )
+    assert blocked["outcome"] == "repair", blocked
+    assert any(repair["code"] == "main_report_identity_unresolved" for repair in blocked["repairs"])
+
+    preview = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": report["id"]},
+    )["data"]["navigation"]["entries"][0]
+    saved = _call(
+        workspace,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "main_report_source_id": report["id"],
+                "observations": [
+                    {
+                        "text": preview["text"],
+                        "sources": [
+                            {
+                                "source_id": report["id"],
+                                "page": preview["page"],
+                                "start_line": preview["start_line"],
+                                "end_line": preview["end_line"],
+                            }
+                        ],
+                    }
+                ],
+            }
+        },
+    )
+    assert saved["outcome"] == "success", saved
+
+    identified = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert identified["identity_status"] == "identified"
+    assert identified["identity_basis"] == "working_checkpoint"
+    assert identified["identity_sources"] == [report["id"]]
+    assert identified["status"] == "required"
+    assert {window["source_id"] for window in identified["required_ranges"]} == {report["id"]}
+    assert identified["orientation_reading"]["ranges"] == []
+
+    replacement = _call(
+        workspace,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "interpretations": [
+                    {
+                        "text": "The protocol describes the planned analysis.",
+                        "sources": [
+                            {
+                                "source_id": protocol["id"],
+                                "page": 1,
+                                "start_line": 1,
+                                "end_line": 1,
+                            }
+                        ],
+                    }
+                ],
+            }
+        },
+    )
+    assert replacement["outcome"] == "success", replacement
+    (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
+    recovered = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert recovered["identity_status"] == "identified"
+    assert recovered["identity_sources"] == [report["id"]]
+    assert recovered["identity_observations"][0]["text"] == preview["text"]
+    assert {window["source_id"] for window in recovered["required_ranges"]} == {report["id"]}
+    _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": protocol["id"], "pages": [1]},
+    )
+    protocol_evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": protocol["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+
+    report_gate = _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(workspace, [_result(protocol_evidence)]),
+    )
+    assert report_gate["outcome"] == "repair", report_gate
+    assert any(
+        repair["code"] == "main_report_reading_required" for repair in report_gate["repairs"]
+    ), report_gate
+    _read_window_to_end(
+        workspace,
+        report,
+        page=identified["required_ranges"][0]["page"],
+        start_line=identified["required_ranges"][0]["start_line"],
+        end_line=identified["required_ranges"][0]["end_line"],
+    )
+    accepted = _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(workspace, [_result(protocol_evidence)]),
+    )
+    assert accepted["outcome"] == "review_required", accepted
+
+
+def test_explicit_missing_report_is_recorded_as_a_limitation_and_does_not_deadlock(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    trial = workspace / "input" / "trial"
+    (trial / "sources.toml").unlink()
+    (trial / "main.txt").rename(trial / "protocol.txt")
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    protocol = _source(workspace, "protocol.txt")
+    _call(
+        workspace,
+        "read_pages",
+        {"trial_id": "trial", "source_id": protocol["id"], "pages": [1]},
+    )
+    evidence = _call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": protocol["id"],
+            "page": 1,
+            "start_line": 1,
+            "end_line": 1,
+        },
+    )["data"]["evidence"]
+    unresolved = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert unresolved["identity_status"] == "unresolved"
+    assert unresolved["orientation_reading"]["ranges"]
+
+    saved = _call(
+        workspace,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "main_report_source_id": "missing",
+                "observations": [
+                    {
+                        "text": "The captured dossier contains a protocol but no main report.",
+                        "sources": [
+                            {
+                                "source_id": protocol["id"],
+                                "page": 1,
+                                "start_line": 1,
+                                "end_line": 1,
+                            }
+                        ],
+                    }
+                ],
+            }
+        },
+    )
+    assert saved["outcome"] == "success", saved
+
+    missing = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    assert missing["identity_status"] == "missing"
+    assert missing["status"] == "missing"
+    assert "does not establish report coverage" in missing["limitation"]
+    assert missing["identity_observations"][0]["text"].startswith(
+        "The captured dossier contains a protocol"
+    )
+    proposal = _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(workspace, [_result(evidence)]),
+    )
+    assert proposal["outcome"] == "review_required", proposal
 
 
 def test_first_domain_save_requires_fresh_post_approval_read_and_context_recovers(
@@ -274,9 +533,12 @@ def test_main_report_budget_is_utf8_whole_line_and_per_source(tmp_path: Path) ->
     assert blocked["outcome"] == "repair", blocked
     assert any(repair["code"] == "main_report_reading_required" for repair in blocked["repairs"])
     main_sources = [_source(workspace, "main-a.txt"), _source(workspace, "main-b.txt")]
-    windows = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"][
-        "required_ranges"
-    ]
+    initial = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
+    expected_reports = {_source(workspace, label)["id"] for label in ("main-a.txt", "main-b.txt")}
+    assert initial["identity_status"] == "identified"
+    assert initial["identity_basis"] == "declared_role"
+    assert set(initial["identity_sources"]) == expected_reports
+    windows = initial["required_ranges"]
     assert {window["source_id"] for window in windows} == {source["id"] for source in main_sources}
     for source in main_sources:
         _read_window_to_end(workspace, source)
@@ -329,7 +591,8 @@ def test_oversized_utf8_prefix_and_empty_page_need_explicit_reads_and_continue_c
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     empty_before = _call(empty_workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
-    assert empty_before["status"] == "complete"
+    assert empty_before["identity_status"] == "unresolved"
+    assert empty_before["status"] == "identity_unresolved"
     assert not _call(empty_workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
     assert any(
         condition.get("code") == "unreadable_source" for condition in prepared["data"]["conditions"]

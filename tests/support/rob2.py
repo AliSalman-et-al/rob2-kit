@@ -28,11 +28,11 @@ standalone_valid_selected_evidence = runpy.run_path("scripts/verify_bundle.py")[
 ]
 standalone_valid_batch = runpy.run_path("scripts/verify_bundle.py")["_valid_batch"]
 standalone_normalized_contains = runpy.run_path("scripts/verify_bundle.py")["_normalized_contains"]
-_REASONING_RECEIPTS: dict[tuple[str, str], dict[str, object]] = {}
+_PROPOSAL_RECEIPTS: dict[tuple[str, str], dict[str, object]] = {}
 
 
-def _receipt_key(workspace: Path, tool: str, request: dict[str, object]) -> tuple[str, str]:
-    return str(workspace), f"{tool}:{json.dumps(request, sort_keys=True, default=str)}"
+def _proposal_receipt_key(workspace: Path, request: dict[str, object]) -> tuple[str, str]:
+    return str(workspace), json.dumps(request, sort_keys=True, default=str)
 
 
 def _call(
@@ -52,8 +52,8 @@ def _call(
             )
             request = dict(arguments)
             if not _raw and tool == "save_proposal" and "results" in request:
-                cache_key = _receipt_key(workspace, tool, request)
-                cached = _REASONING_RECEIPTS.get(cache_key)
+                cache_key = _proposal_receipt_key(workspace, request)
+                cached = _PROPOSAL_RECEIPTS.get(cache_key)
                 if cached is None:
                     reasoned = await client.call_tool(
                         "validate_proposal",
@@ -67,57 +67,7 @@ def _call(
                     if reasoned_value.get("outcome") != "success":
                         return reasoned_value
                     cached = dict(reasoned_value["data"]["next_action"])
-                    _REASONING_RECEIPTS[cache_key] = cached
-                request = dict(cached)
-            elif not _raw and tool == "save_domain_judgment" and "answers" in request:
-                cache_key = _receipt_key(workspace, tool, request)
-                cached = _REASONING_RECEIPTS.get(cache_key)
-                if cached is None:
-                    raw_answers = request["answers"]
-                    if not isinstance(raw_answers, list):
-                        raise TypeError("legacy Domain save helper requires an answers list")
-                    reasoning_answers = []
-                    for answer in raw_answers:
-                        if not isinstance(answer, dict):
-                            reasoning_answers.append(answer)
-                            continue
-                        bases = answer.get("bases", [])
-                        counterevidence = answer.get("counterevidence", [])
-                        if not counterevidence and isinstance(bases, list):
-                            counterevidence = [
-                                {
-                                    "basis_index": index,
-                                    "implication": (
-                                        "This cited contradiction limits the selected conclusion."
-                                    ),
-                                }
-                                for index, basis in enumerate(bases)
-                                if isinstance(basis, dict) and basis.get("kind") == "contradiction"
-                            ]
-                        reasoning_answers.append(
-                            {
-                                **answer,
-                                "justification": answer.get(
-                                    "justification",
-                                    "The cited bases support the selected option for the "
-                                    "approved Result.",
-                                ),
-                                "unknowns": answer.get("unknowns", []),
-                                "counterevidence": counterevidence,
-                            }
-                        )
-                    reasoned = await client.call_tool(
-                        "validate_domain_assessment",
-                        {
-                            **request,
-                            "answers": reasoning_answers,
-                        },
-                    )
-                    reasoned_value = dict(reasoned.structured_content or {})
-                    if reasoned_value.get("outcome") != "success":
-                        return reasoned_value
-                    cached = dict(reasoned_value["data"]["next_action"])
-                    _REASONING_RECEIPTS[cache_key] = cached
+                    _PROPOSAL_RECEIPTS[cache_key] = cached
                 request = dict(cached)
             result = await client.call_tool(tool, request)
             value = dict(result.structured_content or {})
@@ -269,6 +219,10 @@ def _workspace(tmp_path: Path, requested_outcome: str = "requested outcome") -> 
         "measured in the analyzed population.; risk; 1; events; 2.\n",
         encoding="utf-8",
     )
+    (trial / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article" }\n',
+        encoding="utf-8",
+    )
     return tmp_path
 
 
@@ -392,6 +346,9 @@ def _domain_draft(
                 "question_id": question_id,
                 "answer": answer,
                 "bases": list(bases),
+                "justification": "The cited Evidence supports the selected answer in this fixture.",
+                "unknowns": [],
+                "counterevidence": [],
             }
             for question_id, answer in _answers(domain_id).items()
         ],

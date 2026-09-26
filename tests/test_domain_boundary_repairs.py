@@ -253,9 +253,7 @@ def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
                     for answer in arguments["answers"]
                 ],
             }
-            result = await client.call_tool(
-                "validate_domain_assessment", reasoning, raise_on_error=False
-            )
+            result = await client.call_tool("save_domain_judgment", reasoning, raise_on_error=False)
             return dict(result.structured_content or {})
 
     return asyncio.run(invoke())
@@ -274,9 +272,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     async def inspect() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(
-                tool
-                for tool in await client.list_tools()
-                if tool.name == "validate_domain_assessment"
+                tool for tool in await client.list_tools() if tool.name == "save_domain_judgment"
             )
             return dict(tool.input_schema)
 
@@ -485,6 +481,9 @@ def test_all_question_submission_resolves_dependent_path_once(
             "question_id": card["id"],
             "answer": next(option for option in card["options"] if option == answers[card["id"]]),
             "bases": [{"kind": "direct_support", "evidence": evidence["handle"]}],
+            "justification": "The cited passage supports this answer for the approved Result.",
+            "unknowns": [],
+            "counterevidence": [],
         }
         for card in cards
     ]
@@ -984,6 +983,12 @@ def test_saved_contradiction_is_projected_in_contradiction_group(tmp_path: Path)
     draft = _domain_draft("trial", "domain:randomization", revision, result_evidence)
     for answer in draft["answers"]:
         answer["bases"][0]["kind"] = "contradiction"
+        answer["counterevidence"] = [
+            {
+                "basis_index": 0,
+                "implication": "The cited contradiction weakens the selected conclusion.",
+            }
+        ]
     saved = _call(workspace, "save_domain_judgment", draft)
     assert saved["outcome"] == "success", saved
 
@@ -1176,6 +1181,10 @@ def test_domain_context_does_not_expose_another_trials_uncommitted_evidence(
     workspace = _workspace(tmp_path)
     trial_b = workspace / "input" / "trial-b"
     trial_b.mkdir()
+    (trial_b / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article" }\n',
+        encoding="utf-8",
+    )
     text = (workspace / "input" / "trial" / "main.txt").read_text(encoding="utf-8")
     for trial_id in ("trial", "trial-b"):
         path = workspace / "input" / trial_id / "main.txt"

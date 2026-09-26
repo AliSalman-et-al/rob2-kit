@@ -131,7 +131,7 @@ def test_question_scope_rejects_unlisted_value_without_rewriting_it(tmp_path) ->
     original_answers = [dict(answer) for answer in draft["answers"]]
     before = _state(workspace)
 
-    repaired = _call(workspace, "validate_domain_assessment", draft)
+    repaired = _call(workspace, "save_domain_judgment", draft)
 
     assert repaired["outcome"] == "repair", repaired
     repair = next(item for item in repaired["repairs"] if item["code"] == "invalid_answer")
@@ -154,7 +154,7 @@ def test_public_repair_preserves_negative_answer_and_unaffected_answers(tmp_path
         )
     unaffected = [dict(answer) for answer in draft["answers"][1:]]
 
-    repaired = _call(workspace, "validate_domain_assessment", draft)
+    repaired = _call(workspace, "save_domain_judgment", draft)
 
     assert repaired["outcome"] == "repair", repaired
     repair = next(

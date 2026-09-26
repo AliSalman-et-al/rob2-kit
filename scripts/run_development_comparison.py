@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -47,6 +49,11 @@ _FACTS_FIELDS = {
     "unknowns",
 }
 _FACT_FIELDS = {"domain_id", "question_id", "statement", "source_name", "locator"}
+SUPPORTED_CODEX_PROFILES = {
+    ("gpt-6-luna", "6", "medium"),
+    ("gpt-6-luna", "6", "high"),
+    ("gpt-6-sol", "6", "high"),
+}
 
 
 def _read_json(path: Path) -> Any:
@@ -62,6 +69,155 @@ def _hash_bytes(value: bytes) -> str:
 
 def _hash_json(value: Any) -> str:
     return _hash_bytes(json.dumps(value, sort_keys=True, separators=(",", ":")).encode())
+
+
+def _profile_key(model: dict[str, Any]) -> tuple[str, str, str]:
+    return model["family"], model["version"], model["effort"]
+
+
+def _profile_name(profile: tuple[str, str, str]) -> str:
+    family, version, effort = profile
+    return f"{family} (version {version}) at {effort} effort"
+
+
+def _supported_profiles_text(profiles: set[tuple[str, str, str]]) -> str:
+    return "; ".join(_profile_name(profile) for profile in sorted(profiles))
+
+
+def _validate_declared_profile(model: dict[str, Any]) -> tuple[str, str, str]:
+    profile = _profile_key(model)
+    if profile not in SUPPORTED_CODEX_PROFILES:
+        raise ValueError(
+            f"unsupported comparison profile {_profile_name(profile)}; launcher profiles: "
+            f"{_supported_profiles_text(SUPPORTED_CODEX_PROFILES)}"
+        )
+    return profile
+
+
+def _codex_profile_catalog(catalog: Any) -> set[tuple[str, str, str]]:
+    """Read advertised API models and reasoning efforts from `codex debug models`."""
+
+    if not isinstance(catalog, dict) or not isinstance(catalog.get("models"), list):
+        raise ValueError("Codex CLI returned an unsupported model catalog")
+    profiles: set[tuple[str, str, str]] = set()
+    for model in catalog["models"]:
+        if (
+            not isinstance(model, dict)
+            or model.get("visibility") != "list"
+            or model.get("supported_in_api") is not True
+        ):
+            continue
+        family = model.get("slug")
+        levels = model.get("supported_reasoning_levels")
+        if not isinstance(family, str) or not isinstance(levels, list):
+            continue
+        for level in levels:
+            effort = level.get("effort") if isinstance(level, dict) else None
+            if isinstance(effort, str):
+                profiles.update(
+                    profile
+                    for profile in SUPPORTED_CODEX_PROFILES
+                    if profile[0] == family and profile[2] == effort
+                )
+    return profiles
+
+
+def _validate_catalog_profile(
+    profile: tuple[str, str, str], available_profiles: set[tuple[str, str, str]]
+) -> None:
+    if profile not in available_profiles:
+        advertised = available_profiles & SUPPORTED_CODEX_PROFILES
+        choices = _supported_profiles_text(advertised) or "none of the launcher profiles"
+        raise ValueError(
+            f"Codex CLI does not advertise {_profile_name(profile)}; advertised launcher "
+            f"profiles: {choices}. Update Codex CLI or select an advertised profile."
+        )
+
+
+def _codex_executable() -> Path:
+    override = os.environ.get("CODEX_EXECUTABLE")
+    if override:
+        path = Path(override)
+        if not path.is_absolute():
+            raise ValueError("CODEX_EXECUTABLE must be an absolute path")
+        if not path.is_file():
+            raise ValueError(f"CODEX_EXECUTABLE does not exist: {path}")
+        return path.resolve()
+    for name in ("codex.cmd", "codex.exe", "codex"):
+        located = shutil.which(name)
+        if located:
+            return Path(located).resolve()
+    raise ValueError(
+        "Codex CLI profile preflight could not find the runner's Codex executable; "
+        "install Codex CLI or set CODEX_EXECUTABLE to its executable path"
+    )
+
+
+def _runner_environment(preflight: object) -> dict[str, str] | None:
+    if preflight is None:
+        return None
+    executable = preflight.get("executable") if isinstance(preflight, dict) else None
+    if not isinstance(executable, str) or not Path(executable).is_absolute():
+        raise ValueError("Codex CLI preflight did not resolve an absolute executable")
+    return {**os.environ, "CODEX_EXECUTABLE": executable}
+
+
+def _preflight_codex_profile(model: dict[str, Any]) -> dict[str, Any]:
+    """Check a frozen comparison profile against the local Codex CLI catalog."""
+
+    profile = _validate_declared_profile(model)
+    executable = _codex_executable()
+    try:
+        catalog_result = subprocess.run(
+            [str(executable), "debug", "models"],
+            capture_output=True,
+            check=False,
+            encoding="utf-8",
+            errors="replace",
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ValueError(
+            f"Codex CLI model catalog preflight failed for {executable}: {error}"
+        ) from error
+    if catalog_result.returncode != 0:
+        raise ValueError(
+            f"Codex CLI model catalog preflight failed for {executable}; "
+            "run `codex debug models` and verify the CLI installation"
+        )
+    try:
+        catalog = json.loads(catalog_result.stdout)
+    except json.JSONDecodeError as error:
+        raise ValueError("Codex CLI model catalog preflight returned invalid JSON") from error
+    available_profiles = _codex_profile_catalog(catalog)
+    _validate_catalog_profile(profile, available_profiles)
+
+    try:
+        version_result = subprocess.run(
+            [str(executable), "--version"],
+            capture_output=True,
+            check=False,
+            encoding="utf-8",
+            errors="replace",
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ValueError(f"Codex CLI version preflight failed for {executable}: {error}") from error
+    version_text = (version_result.stdout or version_result.stderr).strip()
+    if version_result.returncode != 0 or not version_text:
+        raise ValueError(
+            f"Codex CLI version preflight failed for {executable}; "
+            "run `codex --version` and verify the CLI installation"
+        )
+    profile_rows = [
+        {"family": family, "version": version, "effort": effort}
+        for family, version, effort in sorted(available_profiles)
+    ]
+    return {
+        "executable": str(executable),
+        "version": version_text.splitlines()[0],
+        "advertised_comparison_profiles": profile_rows,
+    }
 
 
 def _input_file(value: Any, root: Path, name: str) -> Path:
@@ -146,8 +302,7 @@ def prepare_campaign(
     if not isinstance(config, dict) or config.get("schema") != DEVELOPMENT_COMPARISON_SCHEMA:
         raise ValueError(f"campaign requires schema {DEVELOPMENT_COMPARISON_SCHEMA}")
     validate_comparison_config(config, interventions)
-    if config["plan"]["model"] != {"family": "gpt-6-luna", "version": "6", "effort": "medium"}:
-        raise ValueError("development comparison launcher is pinned to GPT-6 Luna Medium")
+    _validate_declared_profile(config["plan"]["model"])
     if config["plan"]["host"]["provider"] != "codex-cli":
         raise ValueError("development comparison launcher requires Codex CLI")
     if config["plan"]["host"]["interface"] != "jsonl":
@@ -542,6 +697,7 @@ def launch_campaign(
 ) -> int:
     """Run every planned draw once and retain its raw phase trace."""
 
+    runner_environment = _runner_environment(manifest.get("preflight_observation"))
     campaign_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = campaign_dir / "launch.json"
     continuation_path = campaign_dir / manifest["continuation_prompt_file"]
@@ -568,6 +724,7 @@ def launch_campaign(
                 result = runner_call(
                     attempt["command"],
                     cwd=Path(__file__).resolve().parents[1],
+                    env=runner_environment,
                     stdout=stdout,
                     stderr=stderr,
                     check=False,
@@ -642,6 +799,11 @@ def continue_approved_campaign(
         raise ValueError("continuation inputs differ from the frozen campaign")
     if manifest.get("model") != config["plan"]["model"]:
         raise ValueError("campaign model differs from the frozen plan")
+    preflight_observation = _preflight_codex_profile(config["plan"]["model"])
+    frozen_preflight = manifest.get("preflight_observation")
+    if frozen_preflight is not None and frozen_preflight != preflight_observation:
+        raise ValueError("Codex CLI preflight identity differs from the frozen campaign")
+    runner_environment = _runner_environment(preflight_observation)
     prompt_name = manifest.get("continuation_prompt_file")
     if prompt_name != "continuation.txt":
         raise ValueError("campaign continuation prompt path must be continuation.txt")
@@ -804,6 +966,7 @@ def continue_approved_campaign(
         continuation = {
             "phase": phase_number,
             "prompt_identity": manifest["continuation_prompt_identity"],
+            "preflight_observation": preflight_observation,
             "session_id": session_id,
             "trace": trace_relative.as_posix(),
             "command": command,
@@ -829,6 +992,7 @@ def continue_approved_campaign(
                 result = runner_call(
                     command,
                     cwd=Path(__file__).resolve().parents[1],
+                    env=runner_environment,
                     stdout=stdout,
                     stderr=stderr,
                     check=False,
@@ -1070,6 +1234,7 @@ def main(argv: list[str] | None = None) -> int:
             runner=runner_path,
             factor=args.factor,
         )
+        manifest["preflight_observation"] = _preflight_codex_profile(manifest["model"])
     except (OSError, ValueError) as error:
         parser.error(str(error))
 

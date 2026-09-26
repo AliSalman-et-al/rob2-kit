@@ -32,7 +32,7 @@ def test_structured_domain_uses_and_search_receipts(tmp_path: Path) -> None:
     domain_id = SCIENTIFIC_PACK.domains[0].id
     context = _call(workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id})
     assert context["head"]["next_action"] == {
-        "operation": "validate_domain_assessment",
+        "operation": "save_domain_judgment",
         "authority": "host",
         "trial_id": "trial",
         "domain_id": domain_id,
@@ -146,6 +146,9 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
         trial = tmp_path / "input" / label
         trial.mkdir(parents=True)
         (trial / "main.txt").write_text(source_text, encoding="utf-8")
+        (trial / "sources.toml").write_text(
+            'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
+        )
 
     prepared = _call(
         tmp_path,
@@ -825,6 +828,9 @@ def test_mixed_batch_has_authoritative_needs_input_and_assessed_dispositions(
         "randomized population; risk ratio; The requested outcome was "
         "measured in the analyzed population.; risk; 1; events; 2.\n",
         encoding="utf-8",
+    )
+    (second / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
     )
     prepared = _call(
         workspace,

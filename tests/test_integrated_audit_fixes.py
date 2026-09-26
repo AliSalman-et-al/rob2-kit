@@ -94,9 +94,8 @@ def test_domain_save_validates_only_submitted_evidence_handles(tmp_path: Path) -
     saved = _call(workspace, "save_domain_judgment", draft)
 
     assert saved["outcome"] == "success", saved
-    # The mandatory reasoning receipt and its save validation each inspect
-    # only the submitted handle.
-    assert COUNTERS["source_projection_verifications"] - before == 2
+    # Atomic submission verifies only the Evidence handle in the submitted draft.
+    assert COUNTERS["source_projection_verifications"] - before == 1
 
 
 def test_visual_transcription_rejects_blank_at_model_and_application_boundaries(

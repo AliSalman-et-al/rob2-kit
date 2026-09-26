@@ -19,6 +19,9 @@ def test_source_handles_round_trip_across_source_tools_and_recovery(tmp_path: Pa
     document.new_page().insert_text((72, 72), "alpha beta\nsecond line")
     (workspace / "input" / "trial" / "main.pdf").write_bytes(document.tobytes())
     document.close()
+    (workspace / "input" / "trial" / "sources.toml").write_text(
+        'roles = { "main.pdf" = "main_article" }\n', encoding="utf-8"
+    )
     prepared = _call(
         workspace,
         "prepare_batch",

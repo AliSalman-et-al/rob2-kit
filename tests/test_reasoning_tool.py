@@ -1,12 +1,15 @@
-"""Mandatory source-bound reasoning receipt behavior."""
+"""Source-bound Proposal and Domain submission behavior."""
 
 from __future__ import annotations
 
+import asyncio
 import json
+import os
 from pathlib import Path
 from typing import Any
 
 import pytest
+from fastmcp import Client
 from pydantic import ValidationError
 from support.rob2 import (
     _assessment_workspace,
@@ -19,6 +22,7 @@ from support.rob2 import (
 )
 
 from rob2_kit.application._state import _state
+from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.packs import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import DomainAnswer
 
@@ -217,43 +221,54 @@ def _reasoning_draft_for_evidence(
     return draft
 
 
-def test_reasoning_binds_exact_draft_and_preserves_explanations(tmp_path: Path) -> None:
+def test_domain_submission_commits_complete_draft_in_one_public_call(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     before = _state(workspace)
     draft = _reasoning_draft_for_evidence(revision, evidence)
+    calls: list[str] = []
+    call_tool = Client.call_tool
 
-    reasoned = _call(workspace, "validate_domain_assessment", draft)
+    async def tracked_call_tool(
+        self: Client,
+        name: str,
+        arguments: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        calls.append(name)
+        return await call_tool(self, name, arguments, **kwargs)
 
-    assert reasoned["outcome"] == "success", reasoned
-    assert reasoned["data"]["validation_scope"] == "structure_and_references_only"
-    assert "reasoning_id" not in reasoned["data"]
-    assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
-    assert "reasoning_opt_in" not in _state(workspace)
+    monkeypatch.setattr(Client, "call_tool", tracked_call_tool)
+    saved = _call(workspace, "save_domain_judgment", draft)
 
-    save = _call(workspace, "save_domain_judgment", reasoned["data"]["next_action"])
-
-    assert save["outcome"] == "success", save
+    assert calls == ["save_domain_judgment"]
+    assert saved["outcome"] == "success", saved
+    assert saved["head"]["state_revision"] == before["revision"] + 1
     stored = _state(workspace)["domain_records"][f"trial:{SCIENTIFIC_PACK.domains[0].id}"]
-    assert stored["answers"][0]["unknowns"]
-    assert stored["answers"][0]["counterevidence"][0]["basis_index"] == 0
+    assert stored["identity"] == saved["data"]["checkpoint"]["identity"]
+    assert stored["answers"][0]["justification"] == draft["answers"][0]["justification"]
+    assert stored["answers"][0]["unknowns"] == draft["answers"][0]["unknowns"]
+    assert stored["answers"][0]["counterevidence"] == draft["answers"][0]["counterevidence"]
+    assert not any(
+        isinstance(record, dict) and record.get("kind") == "domain_reasoning"
+        for record in _state(workspace).get("reasoning_records", {}).values()
+    )
 
 
-def test_domain_save_requires_a_validated_revision(tmp_path: Path) -> None:
+def test_invalid_domain_reasoning_repairs_without_canonical_mutation(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    result = _call(
-        workspace,
-        "save_domain_judgment",
-        {
-            "trial_id": "trial",
-            "domain_id": SCIENTIFIC_PACK.domains[0].id,
-            "expected_revision": revision,
-        },
-    )
+    before = _state(workspace)
+    draft = _reasoning_draft_for_evidence(revision, evidence)
+    del draft["answers"][0]["unknowns"]
 
-    assert result["outcome"] == "condition"
-    assert result.get("code") == "reasoning_stale" or result["condition"]["code"] == (
-        "reasoning_stale"
-    )
+    result = _call(workspace, "save_domain_judgment", draft)
+
+    assert result["outcome"] == "repair", result
+    assert any(item["code"] == "unknowns_required" for item in result["repairs"])
+    after = _state(workspace)
+    assert after["revision"] == before["revision"]
+    assert after.get("domain_records", {}) == before.get("domain_records", {})
 
 
 def test_limitation_expansion_remaps_counterevidence_from_original_bases() -> None:
@@ -322,7 +337,7 @@ def test_reasoning_requires_counterevidence_for_contradiction(tmp_path: Path) ->
 
     result = _call(
         workspace,
-        "validate_domain_assessment",
+        "save_domain_judgment",
         _reasoning_draft_for_evidence(revision, evidence, contradiction=True),
     )
 
@@ -333,78 +348,78 @@ def test_reasoning_requires_counterevidence_for_contradiction(tmp_path: Path) ->
     assert _state(workspace)["revision"] == before["revision"]
 
 
-def test_reasoning_retry_reuses_record(tmp_path: Path) -> None:
+def test_domain_submission_retry_after_restart_keeps_identity_and_history(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     draft = _reasoning_draft_for_evidence(revision, evidence)
 
-    first = _call(workspace, "validate_domain_assessment", draft)
-    second = _call(workspace, "validate_domain_assessment", draft)
+    first = _call(workspace, "save_domain_judgment", draft)
+    second = _call(workspace, "save_domain_judgment", draft)
 
-    assert first["outcome"] == "success"
-    assert second["outcome"] == "success"
+    assert first["outcome"] == "success", first
+    assert second["outcome"] == "success", second
+    assert second["data"]["retry"] is True
+    assert second["data"]["checkpoint"]["identity"] == first["data"]["checkpoint"]["identity"]
     assert second["head"]["state_revision"] == first["head"]["state_revision"]
-    assert len(_state(workspace)["reasoning_records"]) == 2
+    assert len(_state(workspace)["domain_history"][f"trial:{SCIENTIFIC_PACK.domains[0].id}"]) == 1
 
 
-def test_validated_domain_survives_later_domain_save(tmp_path: Path) -> None:
+def test_stale_competing_domain_draft_cannot_overwrite_winner(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
-    first_domain, later_domain = (domain.id for domain in SCIENTIFIC_PACK.domains[:2])
-    first = _call(
-        workspace,
-        "validate_domain_assessment",
-        _reasoning_draft_for_evidence(revision, evidence, domain_id=first_domain),
+    winner = _reasoning_draft_for_evidence(revision, evidence)
+    competitor = _reasoning_draft_for_evidence(revision, evidence)
+    competitor["answers"][0]["justification"] = "A distinct draft races at the same revision."
+
+    async def submit(draft: dict[str, Any]) -> dict[str, Any]:
+        async with Client(mcp) as client:
+            result = await client.call_tool("save_domain_judgment", draft)
+            return dict(result.structured_content or {})
+
+    async def compete() -> list[dict[str, Any]]:
+        os.environ["ROB2_WORKSPACE"] = str(workspace)
+        return list(await asyncio.gather(submit(winner), submit(competitor)))
+
+    accepted, rejected = asyncio.run(compete())
+
+    successes = [result for result in (accepted, rejected) if result["outcome"] == "success"]
+    conflicts = [result for result in (accepted, rejected) if result["outcome"] == "conflict"]
+    assert len(successes) == 1, (accepted, rejected)
+    assert len(conflicts) == 1, (accepted, rejected)
+    accepted = successes[0]
+    state = _state(workspace)
+    assert state["revision"] == accepted["head"]["state_revision"]
+    assert (
+        state["domain_records"][f"trial:{SCIENTIFIC_PACK.domains[0].id}"]["identity"]
+        == (accepted["data"]["checkpoint"]["identity"])
     )
+    assert len(state["domain_history"][f"trial:{SCIENTIFIC_PACK.domains[0].id}"]) == 1
+
+
+def test_domain_correction_uses_supersession_and_exact_retry(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    first_draft = _reasoning_draft_for_evidence(revision, evidence)
+    first = _call(workspace, "save_domain_judgment", first_draft)
     assert first["outcome"] == "success", first
 
-    later_context = _call(
+    refreshed = _call(
         workspace,
         "get_domain_context",
-        {"trial_id": "trial", "domain_id": later_domain},
+        {"trial_id": "trial", "domain_id": SCIENTIFIC_PACK.domains[0].id},
     )
-    assert later_context["outcome"] == "success", later_context
-    later = _call(
-        workspace,
-        "validate_domain_assessment",
-        _reasoning_draft_for_evidence(
-            int(later_context["head"]["state_revision"]),
-            evidence,
-            domain_id=later_domain,
-        ),
-    )
-    assert later["outcome"] == "success", later
-    saved_later = _call(workspace, "save_domain_judgment", later["data"]["next_action"])
-    assert saved_later["outcome"] == "success", saved_later
-
-    saved_first = _call(workspace, "save_domain_judgment", first["data"]["next_action"])
-
-    assert saved_first["outcome"] == "success", saved_first
-    state = _state(workspace)
-    assert f"trial:{first_domain}" in state["domain_records"]
-    assert f"trial:{later_domain}" in state["domain_records"]
-
-
-def test_validated_domain_is_stale_after_its_predecessor_changes(tmp_path: Path) -> None:
-    workspace, evidence, revision = _assessment_workspace(tmp_path)
-    draft = _reasoning_draft_for_evidence(revision, evidence)
-    first = _call(workspace, "validate_domain_assessment", draft)
-    assert first["outcome"] == "success", first
-
-    changed = _reasoning_draft_for_evidence(int(first["head"]["state_revision"]), evidence)
-    question_id = changed["answers"][0]["question_id"]
-    question = next(item for item in SCIENTIFIC_PACK.questions if item.id == question_id)
-    current = changed["answers"][0]["answer"]
-    changed["answers"][0]["answer"] = next(
-        answer.value for answer in question.allowed_answers if answer.value != current
-    )
-    second = _call(workspace, "validate_domain_assessment", changed)
+    assert refreshed["outcome"] == "success", refreshed
+    corrected = _reasoning_draft_for_evidence(int(refreshed["head"]["state_revision"]), evidence)
+    corrected["supersedes"] = first["data"]["checkpoint"]["identity"]
+    corrected["revision_basis"] = {
+        "kind": "self_correction",
+        "rationale": "The first submission omitted the source-bound uncertainty note.",
+    }
+    corrected["answers"][0]["unknowns"] = ["A material implementation detail is unresolved."]
+    second = _call(workspace, "save_domain_judgment", corrected)
     assert second["outcome"] == "success", second
-    saved = _call(workspace, "save_domain_judgment", second["data"]["next_action"])
-    assert saved["outcome"] == "success", saved
 
-    stale = _call(workspace, "save_domain_judgment", first["data"]["next_action"])
+    retry = _call(workspace, "save_domain_judgment", corrected)
 
-    assert stale["outcome"] == "condition", stale
-    assert (
-        stale.get("code") == "reasoning_stale"
-        or stale.get("condition", {}).get("code") == "reasoning_stale"
-    )
+    assert retry["outcome"] == "success", retry
+    assert retry["data"]["retry"] is True
+    assert retry["data"]["checkpoint"]["identity"] == second["data"]["checkpoint"]["identity"]
+    history = _state(workspace)["domain_history"][f"trial:{SCIENTIFIC_PACK.domains[0].id}"]
+    assert len(history) == 2

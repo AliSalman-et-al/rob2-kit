@@ -50,9 +50,9 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
 3. **Proposal Review** is the only researcher gate. The researcher may approve,
    reject, or replace the chosen Result mapping.
 4. For each approved Trial with a supported design, the model repeats the bounded
-   text pass before its first Domain assessment. It submits the complete active
-   answer draft through `validate_domain_assessment`, saves the exact returned
-   receipt, and the server derives Domain and overall judgments.
+   text pass before its first Domain assessment. It submits each complete active
+   answer draft once through `save_domain_judgment`; the server validates and
+   commits atomically, then derives Domain and overall judgments.
 5. The fifth Domain makes a supported Trial `reviewable`; its checkpoints can
    still be corrected. `review_trial` binds the approved Result and exact
    current checkpoint set, then `close_trial` makes that reviewed outcome
@@ -77,6 +77,15 @@ unread-range navigation. Relevant omitted passages remain subject to targeted
 discovery. Appended material remains part of the captured Source; the host does
 not select a report boundary. Coverage records prove delivery, not comprehension
 or retention in a later host context.
+
+Main-report identification is separate from reading coverage. A unique declared
+`main_article` role identifies the report. Inferred roles and fallback reading
+remain visible but do not certify report identity. When identification is
+unresolved, the host may inspect captured Sources and record the chosen
+`main_report_source_id` with source-located observations in its working
+checkpoint. Reading a fallback protocol or plan does not complete the required
+pass for an unidentified report. If no report can be identified, the host
+preserves that limitation rather than claiming complete coverage.
 
 A **State revision** is the optimistic-concurrency basis for one mutation. A
 stale revision returns a typed conflict and never adopts newer state silently.
@@ -363,20 +372,21 @@ records or scientific judgments.
 
 ## Public boundary
 
-The v0.9 FastMCP surface exposes exactly 19 strictly typed tools:
+The v0.10 FastMCP surface exposes exactly 18 strictly typed tools:
 
 `prepare_batch`, `get_status`, `save_working_checkpoint`, `list_sources`,
 `search_sources`, `search_sources_batch`, `read_pages`,
 `select_text_evidence`, `render_page`, `select_visual_evidence`,
 `validate_proposal`, `save_proposal`, `request_proposal_approval`,
-`get_domain_context`, `validate_domain_assessment`, `save_domain_judgment`,
+`get_domain_context`, `save_domain_judgment`,
 `review_trial`, `close_trial`, and `finalize_batch`.
 
 `validate_proposal` must validate the complete Proposal draft before
-`save_proposal` consumes its exact receipt. `validate_domain_assessment` must
-validate the complete Domain draft before `save_domain_judgment`
-consumes its receipt. These calls validate structure, Evidence references, and
-workflow requirements. They do not establish scientific correctness. Proposal
+`save_proposal` consumes its exact receipt. `save_domain_judgment` accepts a
+complete Domain draft, validates it, and commits it at the expected revision in
+one operation. Invalid drafts leave canonical state unchanged. These calls
+validate structure, Evidence references, and workflow requirements. They do not
+establish scientific correctness. Proposal
 Review remains the only researcher approval gate.
 
 DOCX Sources project ordinary paragraphs, table rows and cells, and footnotes

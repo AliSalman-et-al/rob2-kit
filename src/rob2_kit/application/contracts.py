@@ -17,7 +17,6 @@ TOOL_NAMES = (
     "save_proposal",
     "request_proposal_approval",
     "get_domain_context",
-    "validate_domain_assessment",
     "save_domain_judgment",
     "review_trial",
     "close_trial",

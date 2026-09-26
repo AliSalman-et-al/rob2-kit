@@ -474,11 +474,11 @@ def _review_domain_findings(
             domain.id,
             workflow_permission={
                 "permitted": True,
-                "operation": "validate_domain_assessment",
+                "operation": "save_domain_judgment",
                 "authority": "host",
                 "detail": (
-                    "Revise this Domain through ordinary validation before refreshing Trial "
-                    "review; review itself is not semantic approval."
+                    "Submit a changed Domain draft before refreshing Trial review; review itself "
+                    "is not semantic approval."
                 ),
             },
         )

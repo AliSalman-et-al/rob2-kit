@@ -274,7 +274,7 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
     assert all(page["data"]["context_page"]["count"] == len(pages) for page in pages)
     assert pages[1]["data"]["context_page"]["section"] == "questions"
     assert pages[1]["data"]["context_page"]["item_start"] >= 1
-    assert pages[-1]["head"]["next_action"]["operation"] == "validate_domain_assessment"
+    assert pages[-1]["head"]["next_action"]["operation"] == "save_domain_judgment"
     question_ids = {
         question["id"] for page in pages for question in page["data"].get("questions", [])
     }

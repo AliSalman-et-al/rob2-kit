@@ -851,12 +851,17 @@ def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: 
     workspace = _workspace(tmp_path)
     trial = workspace / "input" / "trial"
     (trial / "main.txt").write_text("needle one\nneedle two\n", encoding="utf-8")
-    (trial / "protocol.txt").write_text(
-        "needle protocol\n" + "context\n" * 12 + "needle protocol again\n",
-        encoding="utf-8",
-    )
+    protocol = pymupdf.open()
+    for page_number in (1, 2):
+        protocol.new_page().insert_text((72, 72), f"needle protocol page {page_number}")
+    protocol.save(trial / "protocol.pdf")
+    protocol.close()
     _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    main_source = next(source for source in sources if source["logical_path"].endswith("main.txt"))
+    protocol_source = next(
+        source for source in sources if source["logical_path"].endswith("protocol.pdf")
+    )
     first = _call(
         workspace,
         "search_sources",
@@ -875,10 +880,11 @@ def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: 
             "trial_id": "trial",
             "query": "needle",
             "mode": "any",
-            "source_id": sources[0]["id"],
+            "source_id": protocol_source["id"],
             "limit": 1,
         },
     )["data"]
+    assert scoped["next_cursor"] is not None, scoped
     mismatch = _call(
         workspace,
         "search_sources",
@@ -886,7 +892,7 @@ def test_search_cursor_conditions_are_typed_and_source_scope_is_bound(tmp_path: 
             "trial_id": "trial",
             "query": "needle",
             "mode": "any",
-            "source_id": sources[-1]["id"],
+            "source_id": main_source["id"],
             "cursor": scoped["next_cursor"],
         },
     )
@@ -1333,6 +1339,178 @@ def test_source_navigation_pages_metadata_spans_and_preserves_exact_recovery(
         },
     )["data"]["pages"][0]
     assert recovered["numbered_text"] == f"{span['start_line']}|{span['text']}"
+
+
+def test_long_source_navigation_metadata_is_bounded_and_recoverable(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    long_sources = {
+        "version.txt": f"Version v{'2' * 700} amendment.",
+        "date.txt": f"Protocol approved on January 1, 2026 {'d' * 700}.",
+        "contents.txt": f"Table of contents {'c' * 700}.",
+        "cross-reference.txt": f"See section 5 {'r' * 700}.",
+        "heading.txt": f"Section 5 Methods\n\nSee section 5 {'h' * 700}.",
+    }
+    for label, text in long_sources.items():
+        (workspace / "input" / "trial" / label).write_text(text, encoding="utf-8")
+    (workspace / "input" / "trial" / "control.txt").write_text(
+        "Ordinary short control.", encoding="utf-8"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    sources = {
+        source["label"]: source["id"]
+        for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    }
+
+    def navigation(source_id: str) -> dict[str, Any]:
+        return _call(
+            workspace,
+            "list_sources",
+            {"trial_id": "trial", "source_id": source_id},
+        )["data"]["navigation"]
+
+    navigations = {label: navigation(sources[label]) for label in long_sources}
+    for page in navigations.values():
+        for entry in (*page["entries"], *page["version_spans"], *page["date_spans"]):
+            for field in ("text", "logical_section", "embedded_version"):
+                if entry.get(field) is not None:
+                    assert len(entry[field]) <= 512
+
+    version = next(
+        entry
+        for entry in navigations["version.txt"]["version_spans"]
+        if entry["kind"] == "version_lead"
+    )
+    date = navigations["date.txt"]["date_spans"][0]
+    contents = next(
+        entry for entry in navigations["contents.txt"]["entries"] if entry["kind"] == "page_excerpt"
+    )
+    cross_reference = next(
+        entry
+        for entry in navigations["cross-reference.txt"]["entries"]
+        if entry["kind"] == "cross_reference_lead"
+    )
+    heading_cross_reference = next(
+        entry
+        for entry in navigations["heading.txt"]["entries"]
+        if entry["kind"] == "cross_reference_lead"
+    )
+    recoverable_entries = [
+        ("version.txt", version),
+        ("date.txt", date),
+        ("contents.txt", contents),
+        ("cross-reference.txt", cross_reference),
+        ("heading.txt", heading_cross_reference),
+    ]
+    for label, entry in recoverable_entries:
+        expected_window = {
+            "source_id": sources[label],
+            "page": entry["page"],
+            "start_line": entry["start_line"],
+            "end_line": entry["end_line"],
+        }
+        recovery = json.dumps(
+            {"trial_id": "trial", "windows": [expected_window]},
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+        assert "omitted" in entry["text"]
+        assert f"read_pages {recovery}" in entry["text"]
+        recovered = _call(
+            workspace,
+            "read_pages",
+            {"trial_id": "trial", "windows": [expected_window]},
+        )["data"]["pages"][0]
+        full_line = long_sources[label].splitlines()[entry["start_line"] - 1]
+        assert recovered["numbered_text"] == f"{entry['start_line']}|{full_line}"
+
+    heading_section = next(
+        entry["logical_section"]
+        for entry in navigations["heading.txt"]["entries"]
+        if entry["kind"] == "cross_reference_lead"
+    )
+    assert heading_section == "Section 5 Methods"
+
+    short_control = navigation(sources["control.txt"])
+    assert any(entry["text"] == "Ordinary short control." for entry in short_control["entries"])
+
+    no_hit = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": sources["version.txt"],
+            "query": "absent concept",
+            "mode": "phrase",
+        },
+    )["data"]
+    assert no_hit["condition"] == "no_hits"
+    assert no_hit["diagnostic"]["code"] == "no_hits"
+    assert "issued lexical query matched no captured text" in no_hit["diagnostic"]["detail"]
+    for entry in no_hit["diagnostic"]["navigation"]["entries"]:
+        for field in ("text", "logical_section", "embedded_version"):
+            if entry.get(field) is not None:
+                assert len(entry[field]) <= 512
+
+    batch = _call(
+        workspace,
+        "search_sources_batch",
+        {
+            "requests": [
+                {
+                    "trial_id": "trial",
+                    "source_id": sources["version.txt"],
+                    "query": "absent concept",
+                    "mode": "phrase",
+                },
+                {
+                    "trial_id": "trial",
+                    "source_id": "sh_0000000000000000",
+                    "query": "absent concept",
+                    "mode": "phrase",
+                },
+                {
+                    "trial_id": "trial",
+                    "source_id": sources["control.txt"],
+                    "query": "ordinary short control",
+                    "mode": "phrase",
+                },
+            ]
+        },
+    )["data"]["results"]
+    assert [item["result"]["outcome"] for item in batch] == [
+        "success",
+        "condition",
+        "success",
+    ]
+    assert batch[0]["result"]["data"]["diagnostic"]["code"] == "no_hits"
+    assert batch[1]["result"]["condition"]["code"] == "invalid_request"
+    assert batch[2]["result"]["data"]["hits"]
+
+
+def test_search_batch_schema_failure_is_not_reported_as_oversized(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = _workspace(tmp_path)
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    monkeypatch.setattr(mcp_server, "_search_sources", lambda *_args: {})
+
+    result = _call(
+        workspace,
+        "search_sources_batch",
+        {
+            "requests": [
+                {"trial_id": "trial", "query": "alpha", "mode": "any"},
+            ]
+        },
+    )
+
+    assert result["outcome"] == "condition"
+    assert result["condition"]["code"] == "search_batch_response_contract_invalid"
+    assert "failed the batch output contract" in result["condition"]["detail"]
+    assert (
+        "reducing the hit limit only addresses actual response-size exhaustion"
+        in result["condition"]["detail"]
+    )
 
 
 def test_search_session_keeps_distinct_sibling_passages_through_cursor_traversal(

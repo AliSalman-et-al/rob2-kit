@@ -182,6 +182,13 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
 
     main_report_reading = {
         trial_id: {
+            "identity_status": item["identity_status"],
+            "identity_basis": item["identity_basis"],
+            "identity_sources": item["identity_sources"],
+            "identity_observations": item["identity_observations"],
+            "orientation_source_ids": item["orientation_source_ids"],
+            "orientation_reading": item["orientation_reading"],
+            "limitation": item.get("limitation"),
             "status": item["status"],
             "budget_bytes": item["budget_bytes"],
             "covered_prefix_bytes": item["covered_prefix_bytes"],

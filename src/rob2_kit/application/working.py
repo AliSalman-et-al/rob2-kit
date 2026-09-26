@@ -16,7 +16,6 @@ from ..workflow_models import (
 )
 from ._state import _db, _decode_object, _ensure, _result, _root, _state
 from ._state import _identity as _digest
-from .evidence import read_pages as _read_pages
 from .source_handles import source_handle, source_handle_map
 
 _MAX_WORKING_CHECKPOINT_BYTES = 24_576
@@ -146,7 +145,7 @@ def _validate_ranges(
 ) -> None:
     by_id = {str(source["id"]): source for source in sources if isinstance(source.get("id"), str)}
     handle_index = source_handle_map(batch)
-    read_pages: dict[tuple[str, int], str] = {}
+    page_text: dict[tuple[str, int], str] = {}
     for item in _ranges(draft):
         matches = tuple(
             source_id
@@ -169,10 +168,16 @@ def _validate_ranges(
         if item.start_line == 0:
             continue
         page_key = (source_id, item.page)
-        if page_key not in read_pages:
-            page = _read_pages(root, draft.trial_id, source_id, [item.page])["pages"][0]
-            read_pages[page_key] = str(page["text"])
-        line_count = len(read_pages[page_key].splitlines())
+        if page_key not in page_text:
+            with _db(root, "derivative.sqlite3") as connection:
+                row = connection.execute(
+                    "SELECT text FROM pages WHERE source_id=? AND page=?",
+                    page_key,
+                ).fetchone()
+            if row is None:
+                raise ValueError("working_checkpoint_locator_outside_source")
+            page_text[page_key] = str(row["text"])
+        line_count = len(page_text[page_key].splitlines())
         if item.end_line > line_count:
             raise ValueError("working_checkpoint_locator_outside_source")
 
@@ -227,6 +232,51 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
                 "detail": "The Trial is not part of the active Batch.",
             },
         )
+    source_scope = _source_scope(state, trial_id)
+    if "main_report_source_id" not in draft.model_fields_set:
+        previous = _stored_checkpoint(root, state, trial_id)
+        if previous is not None and previous.source_scope == source_scope:
+            selected = previous.main_report_source_id
+            if selected is not None:
+                prior_observations = tuple(
+                    note
+                    for note in previous.observations
+                    if selected == "missing"
+                    or any(source.source_id == selected for source in note.sources)
+                )
+                observations = list(draft.observations)
+                if not (
+                    selected != "missing"
+                    and any(
+                        source.source_id == selected
+                        for note in observations
+                        for source in note.sources
+                    )
+                ):
+                    for note in prior_observations:
+                        if note in observations:
+                            continue
+                        if len(observations) >= 16:
+                            raise ValueError(
+                                "working_checkpoint_main_report_context_limit: keep the "
+                                "source-backed report identity observation when replacing notes"
+                            )
+                        observations.insert(0, note)
+                draft = draft.model_copy(
+                    update={
+                        "main_report_source_id": selected,
+                        "observations": tuple(observations),
+                    }
+                )
+    if draft.main_report_source_id == "missing" and not draft.observations and sources:
+        raise ValueError("working_checkpoint_main_report_missing_requires_observation")
+    if isinstance(draft.main_report_source_id, str) and draft.main_report_source_id != "missing":
+        if not any(
+            note_range.source_id == draft.main_report_source_id
+            for observation in draft.observations
+            for note_range in observation.sources
+        ):
+            raise ValueError("working_checkpoint_main_report_source_requires_observation")
     _validate_ranges(root, draft, sources, batch)
     value = {
         "batch_id": batch_id,
@@ -236,7 +286,7 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
         "domain_checkpoint_bindings": [
             item.model_dump(mode="json") for item in _domain_checkpoint_bindings(state, trial_id)
         ],
-        "source_scope": [item.model_dump(mode="json") for item in _source_scope(state, trial_id)],
+        "source_scope": [item.model_dump(mode="json") for item in source_scope],
         **draft.model_dump(mode="json", exclude={"trial_id"}),
     }
     checkpoint = _with_identity(WorkingCheckpoint.model_validate(value), None)
@@ -289,6 +339,78 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
             "notes are not Evidence or saved Domain answers."
         ),
     )
+
+
+def main_report_identity(root: Path, state: dict[str, Any], trial_id: str) -> dict[str, Any]:
+    """Resolve report identity from explicit intake roles or current source notes."""
+    sources = _active_trial_sources(state, trial_id)
+    declared = [
+        source
+        for source in sources
+        if source.get("declared_role") == "main_article" and isinstance(source.get("id"), str)
+    ]
+    if declared:
+        return {
+            "identity_status": "identified",
+            "identity_basis": "declared_role",
+            "identity_sources": tuple(sorted(str(source["id"]) for source in declared)),
+            "identity_observations": (),
+        }
+
+    checkpoint = _stored_checkpoint(root, state, trial_id)
+    # Report identity is based on the captured source set, not on a Proposal
+    # Result. Preserve this one source-backed observation when Results change.
+    if checkpoint is None or checkpoint.source_scope != _source_scope(state, trial_id):
+        return {
+            "identity_status": "unresolved",
+            "identity_basis": None,
+            "identity_sources": (),
+            "identity_observations": (),
+        }
+
+    observations = tuple(
+        {
+            "text": note.text,
+            "sources": tuple(source.model_dump(mode="json") for source in note.sources),
+        }
+        for note in checkpoint.observations
+    )
+    selected = checkpoint.main_report_source_id
+    if selected == "missing" and (observations or not sources):
+        return {
+            "identity_status": "missing",
+            "identity_basis": "working_checkpoint",
+            "identity_sources": (),
+            "identity_observations": observations[:8],
+        }
+    if isinstance(selected, str):
+        matches = tuple(
+            source_id
+            for owner_trial, source_id in source_handle_map(state.get("batch")).get(selected, ())
+            if owner_trial == trial_id
+        )
+        if len(matches) == 1:
+            basis = tuple(
+                note
+                for note in observations
+                if any(
+                    isinstance(source, dict) and source.get("source_id") == selected
+                    for source in note["sources"]
+                )
+            )
+            if basis:
+                return {
+                    "identity_status": "identified",
+                    "identity_basis": "working_checkpoint",
+                    "identity_sources": matches,
+                    "identity_observations": basis[:8],
+                }
+    return {
+        "identity_status": "unresolved",
+        "identity_basis": None,
+        "identity_sources": (),
+        "identity_observations": observations[:8],
+    }
 
 
 def _stored_checkpoint(
@@ -512,34 +634,20 @@ def investigation_projection(
                 "operation": "accept_limitation",
                 "available": domain_id is not None,
                 "rationale": (
-                    "Record an honest limitation through Domain validation when accessible "
+                    "Record an honest limitation in the Domain draft when accessible "
                     "investigation cannot resolve the premise."
                 ),
             },
         ]
         legal_operation = permission.get("operation")
-        if domain_id is not None and legal_operation != "validate_domain_assessment":
-            choices.append(
-                {
-                    "operation": "validate_domain_assessment",
-                    "available": True,
-                    "rationale": (
-                        "Revise the current Domain draft and validate its structure and "
-                        "references without treating validation as semantic approval."
-                    ),
-                }
-            )
-        if permission.get("permitted") and legal_operation in {
-            "validate_domain_assessment",
-            "save_domain_judgment",
-        }:
+        if permission.get("permitted") and legal_operation == "save_domain_judgment":
             choices.append(
                 {
                     "operation": legal_operation,
                     "available": True,
                     "rationale": (
-                        "Revise or continue the current Domain through the exact permitted "
-                        "workflow operation; permission is not scientific sufficiency."
+                        "Submit the complete Domain draft; workflow permission does not "
+                        "establish scientific sufficiency."
                     ),
                 }
             )
@@ -713,33 +821,19 @@ def investigation_projection(
             "available": domain_id is not None,
             "rationale": (
                 "Record the unresolved premise and stopping rationale through Domain "
-                "validation when further accessible investigation is not discriminating."
+                "submission when further accessible investigation is not discriminating."
             ),
         },
     ]
     legal_operation = permission.get("operation")
-    if domain_id is not None and legal_operation != "validate_domain_assessment":
-        choices.append(
-            {
-                "operation": "validate_domain_assessment",
-                "available": True,
-                "rationale": (
-                    "Revise the current Domain draft and validate its structure and references "
-                    "without treating validation as semantic approval."
-                ),
-            }
-        )
-    if permission.get("permitted") and legal_operation in {
-        "validate_domain_assessment",
-        "save_domain_judgment",
-    }:
+    if permission.get("permitted") and legal_operation == "save_domain_judgment":
         choices.append(
             {
                 "operation": legal_operation,
                 "available": True,
                 "rationale": (
-                    "Follow the current workflow permission; structural permission does not "
-                    "establish scientific sufficiency."
+                    "Submit the complete Domain draft; workflow permission does not establish "
+                    "scientific sufficiency."
                 ),
             }
         )

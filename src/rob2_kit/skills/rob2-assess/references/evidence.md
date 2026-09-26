@@ -200,7 +200,7 @@ you judge whether those facts support the answer.
 
 ## Build a Domain answer
 
-Read this section before the first `validate_domain_assessment` call. Submit
+Read this section before the first `save_domain_judgment` call. Submit
 one object for each question on the dependency-closed active path. The object
 needs `question_id`, the exact permitted `answer`, at least one `bases` item,
 `justification`, `unknowns`, and `counterevidence` for an active question.
@@ -286,7 +286,7 @@ cursors.
    premise. Do not run every query suggestion or read every appendix by default.
 6. Investigate the upstream premise first. If it remains unknown, preserve that
    uncertainty and follow the question card's activation rules. Before
-   `validate_domain_assessment` and `save_domain_judgment`, revisit every
+   `save_domain_judgment`, revisit every
    still-material unknown against the Source inventory. Record the relevant
    section inspected and the facts that remain unavailable. If a fact
    remains discoverable within captured Sources and bounded cursor or page

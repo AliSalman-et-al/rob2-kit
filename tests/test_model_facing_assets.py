@@ -6,8 +6,8 @@ from pathlib import Path
 
 from rob2_kit.workflow_models import (
     DescribedTiming,
+    DomainAnswer,
     DomainLimitationBasis,
-    DomainReasoningAnswer,
     ProposalReasoningDraft,
     TrialClosureRequest,
     TrialReviewRequest,
@@ -68,11 +68,12 @@ def test_domain_references_use_current_handle_only_evidence_contract() -> None:
     assert stale == {}
 
 
-def test_readme_uses_receipt_only_save_contracts_without_internal_reasoning_ids() -> None:
+def test_readme_describes_proposal_receipt_and_atomic_domain_save() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
     assert "save_proposal` with the returned `reasoning_id`" not in readme
     assert "save_domain_judgment` with its returned\n`reasoning_id`" not in readme
-    assert "resolves the unique validated draft" in readme
+    assert "unique validated Proposal draft" in readme
+    assert "A complete Domain draft validates and commits in one" in readme
 
 
 def test_evidence_reference_contains_closed_limitation_example() -> None:
@@ -109,14 +110,14 @@ def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> 
     examples = re.findall(r"```json\s*(.*?)\s*```", section, flags=re.DOTALL)
     assert len(examples) == 2
     answer = json.loads(examples[0])
-    DomainReasoningAnswer.model_validate(answer)
+    DomainAnswer.model_validate(answer)
     assert {item["kind"] for item in answer["bases"]} == {"direct_support"}
     assert answer["unknowns"] == []
     assert answer["counterevidence"] == []
     basis_shapes = [json.loads(line) for line in examples[1].splitlines()]
     assert {item["kind"] for item in basis_shapes} == {"context", "absence", "limitation"}
     for item in basis_shapes:
-        DomainReasoningAnswer.model_validate(
+        DomainAnswer.model_validate(
             {
                 **answer,
                 "bases": [item],

@@ -6,10 +6,10 @@ model loop. The server captures trial sources, validates evidence selections
 against them, applies deterministic RoB 2 logic, records assessment history,
 and exports verifiable bundles.
 
-The v0.9 workflow requires a fresh assessment workspace. Finish an active
-assessment with the version that created it, or start a new workspace from the
-original inputs. Historical v0.5 through v0.8 bundles still verify. See the
-[v0.9 upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#v0-9-release-amendment).
+The v0.10 public contract submits each Domain in one atomic call. Existing
+v0.9 workspaces retain their canonical assessments; use the current skill and
+tool contract when resuming. Historical bundles still verify under their
+recorded semantics. See the [v0.10 decision](docs/adr/0036-atomic-domain-submission.md).
 
 ## Use rob2-kit
 
@@ -30,13 +30,13 @@ rob2 --help
 ```
 
 If `rob2` is not found, run `uv tool update-shell`, open a new terminal, and
-try `rob2 --help` again. The package includes the `rob2` command, a 19-tool MCP
+try `rob2 --help` again. The package includes the `rob2` command, an 18-tool MCP
 server, and the portable `rob2-assess` skill.
 
 To install a wheel instead, use its path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.9.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.10.0-py3-none-any.whl
 ```
 
 ### Prepare a workspace
@@ -60,8 +60,9 @@ Image-only PDFs can be inspected with `render_page`. Legacy `.doc` files are
 unsupported. Trial directory names become trial labels, so keep them
 meaningful.
 
-Filenames provide default source roles. Add `sources.toml` when a filename is
-ambiguous or when you need to identify an authoritative registry record:
+Filenames provide inferred source roles for navigation; they do not by
+themselves identify the main report. Add `sources.toml` to declare report roles
+or an authoritative registry record when known:
 
 ```toml
 nct = "<NCT-ID>"
@@ -159,20 +160,21 @@ rob2 verify-sources C:/path/to/archive.sources.zip
 
 ### Public contract
 
-The server exposes 19 strictly typed MCP tools and the live
+The server exposes 18 strictly typed MCP tools and the live
 `rob2://current-batch` resource. The generated [public contract](docs/release/public-contract.json)
 records the tool catalog, schemas, annotations, resource families, and portable
 skill pointers. See the [release guide](docs/release/README.md) for contract and
 wheel verification.
 
-The server resolves the unique validated draft for its revision and scope
-before it saves a Proposal or Domain judgment.
+The server resolves the unique validated Proposal draft for its revision and
+scope before saving it. A complete Domain draft validates and commits in one
+revision checked operation.
 
 ### Run the project checks
 
 ```powershell
 uv sync --frozen
-./scripts/verify_v09.ps1
+./scripts/verify_v010.ps1
 ```
 
 The verification script runs Ruff, ty, pytest with four workers, public

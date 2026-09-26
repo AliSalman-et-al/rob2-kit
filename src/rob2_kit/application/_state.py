@@ -281,7 +281,7 @@ def _ensure(root: Path) -> None:
     if legacy.exists():
         raise ValueError(
             "workspace_contract_unsupported: this active workspace uses a legacy contract; "
-            "start a new empty workspace to use v0.9.0. The existing workspace is left intact, "
+            "start a new empty workspace to use v0.10.0. The existing workspace is left intact, "
             "and finalized bundles remain independently verifiable."
         )
     canonical = internal_path(root, "canonical.sqlite3")
@@ -297,7 +297,7 @@ def _ensure(root: Path) -> None:
                 if "meta" not in tables:
                     raise ValueError(
                         "workspace_contract_unsupported: this active workspace has no supported "
-                        "contract marker; start a new empty workspace to use v0.9.0. The existing "
+                        "contract marker; start a new empty workspace to use v0.10.0. The existing "
                         "workspace is left intact, and finalized bundles remain independently "
                         "verifiable."
                     )
@@ -306,8 +306,9 @@ def _ensure(root: Path) -> None:
                     found = current[0] if current is not None else "an unmarked contract"
                     raise ValueError(
                         "workspace_contract_unsupported: this active workspace uses contract "
-                        f"{found}, while v0.9.0 requires {_WORKSPACE_CONTRACT_VERSION}; start a "
-                        "new empty workspace to use v0.9.0. The existing workspace is left intact, "
+                        f"{found}, while v0.10.0 requires {_WORKSPACE_CONTRACT_VERSION}; start a "
+                        "new empty workspace to use v0.10.0. The existing workspace is left "
+                        "intact, "
                         "and finalized bundles remain independently verifiable."
                     )
     with _db(root, "canonical.sqlite3") as connection:
@@ -338,7 +339,7 @@ def _ensure(root: Path) -> None:
         elif current[0] != _WORKSPACE_CONTRACT_VERSION:
             raise ValueError(
                 "workspace_contract_unsupported: the active workspace contract changed while "
-                "opening it; start a new empty workspace to use v0.9.0. The existing workspace "
+                "opening it; start a new empty workspace to use v0.10.0. The existing workspace "
                 "is left intact, and finalized bundles remain independently verifiable."
             )
         page_recipe = connection.execute(

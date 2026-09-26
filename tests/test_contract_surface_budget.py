@@ -48,7 +48,6 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "save_proposal",
         "request_proposal_approval",
         "get_domain_context",
-        "validate_domain_assessment",
         "save_domain_judgment",
         "review_trial",
         "close_trial",
@@ -160,8 +159,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         in read_window["properties"]["source_id"]["description"]
     )
     assert "One-based Source-page index" in read_window["properties"]["page"]["description"]
-    domain_tool = by_name["validate_domain_assessment"]
-    save_tool = by_name["save_domain_judgment"]
+    domain_tool = by_name["save_domain_judgment"]
     context_tool = by_name["get_domain_context"]
     assert "current Domain checkpoint" in (context_tool.description or "")
     assert "restart without a cursor" in (context_tool.description or "")
@@ -183,16 +181,18 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "outside the recoverable narrative budget"
         in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
-    assert "Before saving a Domain" in (domain_tool.description or "")
-    assert "counterevidence and unresolved facts" in (domain_tool.description or "")
+    assert "complete Domain draft once" in (domain_tool.description or "")
+    assert "counterevidence" in (domain_tool.description or "")
     answer_schema = _resolve(
         domain_tool.parameters,
         domain_tool.parameters["properties"]["answers"]["items"],
     )
     assert set(answer_schema["required"]) >= {"question_id", "answer", "bases"}
     assert "active answer" in answer_schema["properties"]["justification"]["description"]
-    assert "inactive branch answers" in answer_schema["properties"]["unknowns"]["description"]
-    assert "exact Domain draft stored" in (save_tool.description or "")
+    assert "inactive branch answers" in (
+        answer_schema["properties"]["unknowns"]["description"].lower()
+    )
+    assert "scientific correctness" in (domain_tool.description or "")
     assert "multiple_concerns" not in domain_tool.parameters["properties"]
     proposal_tool = by_name["validate_proposal"]
     assert proposal_tool.title == "Validate Proposal draft"
@@ -225,7 +225,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     # exposing the initialize result through its in-process client.
     assert initialization is None
     assert mcp.name == "rob2-kit"
-    assert mcp.version == "0.9.0"
+    assert mcp.version == "0.10.0"
     assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]

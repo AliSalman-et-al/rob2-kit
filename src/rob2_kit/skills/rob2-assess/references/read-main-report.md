@@ -18,7 +18,13 @@ Proposal Review remains the only researcher gate.
 ## Read consecutive windows
 
 1. Call `get_status` and check `data.main_report_reading` for the Trial. Use
-   `list_sources` to identify the captured main articles when needed.
+   `list_sources` to inspect declared and inferred Source roles. A unique
+   declared `main_article` identifies the report. When identity is unresolved,
+   inspect likely Sources and their contents, then record the identified
+   `main_report_source_id` with source-located observations in the existing
+   working checkpoint. A protocol or other fallback can orient the search but
+   cannot complete the main-report pass merely by being read. If no report can
+   be identified, keep the limitation explicit and inspect Intake conditions.
 2. While the Trial's reading status is `required`, call `read_pages` with its
    `trial_id` and `windows` set to the returned `required_ranges`. The server
    computes this bounded batch of prefix windows; do not tally UTF-8 bytes or
@@ -80,9 +86,10 @@ If either required pass is interrupted before its required prefix is covered, re
 remaining required ranges before the next scientific save. A current working
 checkpoint can replace repeating a completed post-approval orientation after a
 restart, but does not replace exact passage recovery when a passage is needed.
-When no main article
-was captured, inspect the available Sources and any Intake conditions. Preserve
-the missing report as a limitation rather than a completed reading.
+When no main article was captured or identified, inspect the available Sources
+and any Intake conditions. Preserve unresolved report identity as a limitation
+rather than a completed reading. Do not infer the identity or scientific
+completeness from a filename or fallback priority.
 If a repair reports incomplete reading, call `get_status` and read the Trial's
 `required_ranges` before resubmitting. Selecting a search hit or an abstract
 does not satisfy the required prefix.

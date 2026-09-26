@@ -82,7 +82,7 @@ try {
         'mcp__rob2__render_page', 'mcp__rob2__select_visual_evidence', 'mcp__rob2__validate_proposal',
         'mcp__rob2__save_proposal',
         'mcp__rob2__request_proposal_approval', 'mcp__rob2__get_domain_context',
-        'mcp__rob2__validate_domain_assessment', 'mcp__rob2__save_domain_judgment',
+        'mcp__rob2__save_domain_judgment',
         'mcp__rob2__review_trial', 'mcp__rob2__close_trial', 'mcp__rob2__finalize_batch'
     )
     $runConfig = [ordered]@{
