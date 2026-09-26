@@ -11,14 +11,16 @@ assessment with the version that created it, or start a new workspace from the
 original inputs. Historical v0.5 through v0.8 bundles still verify. See the
 [v0.9 upgrade boundary](docs/adr/0031-v0-4-evidence-first-interaction.md#v0-9-release-amendment).
 
-## Requirements
+## Use rob2-kit
+
+### Requirements
 
 - Python 3.11 or later
 - [uv](https://docs.astral.sh/uv/) for development and wheel builds
 - An MCP host with local stdio support
 - One directory of authorized source documents for each trial
 
-## Install
+### Install
 
 Install the command from a source checkout:
 
@@ -37,7 +39,7 @@ To install a wheel instead, use its path:
 uv tool install --force dist/rob2_kit-0.9.0-py3-none-any.whl
 ```
 
-## Prepare a workspace
+### Prepare a workspace
 
 Create one immediate subdirectory under `input` for each trial:
 
@@ -75,7 +77,7 @@ and `other`. When `sources.toml` contains an NCT identifier, `prepare_batch`
 requests that record from the public ClinicalTrials.gov API. Use this only when
 the lookup is authorized. Other source capture is local.
 
-## Connect your host
+### Connect your host
 
 Set `ROB2_WORKSPACE` to the directory that contains `input`.
 
@@ -109,7 +111,7 @@ The export includes the skill's reference files. Restart the host if it does
 not discover the skill in the current session. Confirm that the `rob2` MCP
 server is connected before you start an assessment.
 
-## Run an assessment
+### Run an assessment
 
 Invoke the skill with the outcome shared by the selected trials:
 
@@ -132,7 +134,7 @@ rob2 review --workspace C:/path/to/my-assessment
 The packaged [`rob2-assess` skill](src/rob2_kit/skills/rob2-assess/SKILL.md)
 contains the full assessment and recovery workflow.
 
-## Verify and archive results
+### Verify and archive results
 
 Finalization writes a deterministic `.rob2.zip` bundle under
 `.rob2-kit/finalized/`. Each bundle contains canonical JSON, static HTML,
@@ -153,7 +155,9 @@ rob2 archive-sources --workspace C:/path/to/my-assessment
 rob2 verify-sources C:/path/to/archive.sources.zip
 ```
 
-## Public contract
+## Develop
+
+### Public contract
 
 The server exposes 19 strictly typed MCP tools and the live
 `rob2://current-batch` resource. The generated [public contract](docs/release/public-contract.json)
@@ -161,7 +165,7 @@ records the tool catalog, schemas, annotations, resource families, and portable
 skill pointers. See the [release guide](docs/release/README.md) for contract and
 wheel verification.
 
-## Develop
+### Run the project checks
 
 ```powershell
 uv sync --frozen
@@ -172,16 +176,13 @@ The verification script runs Ruff, ty, pytest with four workers, public
 contract checks, wheel construction, and independent verification of the wheel.
 Use `uv run pytest -n 0` when debugging a test that needs serial output.
 
-## Evaluation
+### Evaluation
 
-The 26-case [RCT benchmark report](eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/trial-benchmark-report.md)
-reports exact agreement with frozen catalog labels on 85 of 130 Domain
-judgments (65.4%). It reports 4 of 26 exact overall-label matches. The catalog
-labels are provisional and have not been independently adjudicated, so these
-figures are agreement measures, not estimates of scientific accuracy. The
-scope-matched sensitivity and excluded cases are in the report.
+The [26-case RCT benchmark report](eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/trial-benchmark-report.md)
+compares assessments with provisional catalog labels. Its scores are agreement
+measures, not independently adjudicated estimates of scientific accuracy.
 
-The current qualification decision remains on hold. See the
-[qualification ledger](docs/evaluation/issue-464-qualification.md), the
-[evaluation guide](docs/evaluation/README.md), and the
-[recursive assessment improvement guide](docs/evaluation/rsi.md).
+The [qualification ledger](docs/evaluation/issue-464-qualification.md) keeps
+qualification on hold. See the [evaluation guide](docs/evaluation/README.md)
+and the [recursive assessment improvement guide](docs/evaluation/rsi.md) for
+the evaluation process.
