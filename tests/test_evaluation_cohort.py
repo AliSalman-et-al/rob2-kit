@@ -8,6 +8,7 @@ import pytest
 from rob2_kit.evaluation.cohort import (
     CohortCell,
     CohortManifest,
+    CohortPartitions,
     ReviewerProvenance,
     read_cohort,
     select_agreement_sample,
@@ -127,6 +128,36 @@ def test_agreement_sample_selection_is_stable() -> None:
     first = select_agreement_sample(cohort.cells)
     second = select_agreement_sample(cohort.cells)
     assert first == second == cohort.agreement_sample
+
+
+def test_development_cohort_can_have_no_held_out_cases() -> None:
+    assert CohortPartitions(development_case_ids=("case-1",)).held_out_case_ids == ()
+    with pytest.raises(ValueError, match="at least one case"):
+        CohortPartitions()
+
+
+def test_agreement_sample_can_include_a_prespecified_matching_cell() -> None:
+    cohort = read_cohort(COHORT_PATH)
+    required = next(cell.identity for cell in cohort.cells if cell.comparison == "agreement")
+    assert isinstance(required, str)
+
+    sample = select_agreement_sample(
+        cohort.cells,
+        seed="rob2-kit-test-agreement-sample-v1",
+        size=2,
+        required_cell_identities=(required,),
+    )
+
+    assert sample[0].cell_identity == required
+    assert len(sample) == 2
+    disagreement = next(cell.identity for cell in cohort.cells if cell.comparison == "disagreement")
+    assert isinstance(disagreement, str)
+    with pytest.raises(ValueError, match="exact agreements"):
+        select_agreement_sample(
+            cohort.cells,
+            size=2,
+            required_cell_identities=(disagreement,),
+        )
 
 
 def test_original_labels_cannot_be_overwritten_by_classification() -> None:

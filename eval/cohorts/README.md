@@ -27,3 +27,19 @@ remain pending because they were not supplied with the pinned audit. The
 development partition is intentionally empty; all 28 pinned cases are
 held-out, and the manifest explicitly denies model access to adjudication
 labels and rationales.
+
+# September 26–27 adjudication cohorts
+
+The two September campaigns have separate [provenance and score
+reconciliation](../../docs/evaluation/2026-09-27-adjudication-cohort.md).
+They reproduce 85/130 and 78/130 all-case Domain agreements. The primary
+exact/equivalent scope totals are 51/70 for September 26 and 70/120 for
+September 27; accepted proxies and accepted scope differences are reported as
+separate sensitivities. Every disagreement is present in the reconciliation,
+and source-audited sidecars identify reviewed findings and pending cells.
+
+The September manifests use all-development partitions because they are
+post-run material. Labels and assessment traces remain unchanged. Source-audit
+records are AI-authored observations, not independent human certification or
+corrected accuracy. See the report for score details, review coverage, trace
+inventory, limitations, and the rebuild command.

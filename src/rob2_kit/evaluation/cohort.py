@@ -249,7 +249,7 @@ class ModelAccess(_StrictModel):
 
 class CohortPartitions(_StrictModel):
     development_case_ids: tuple[StrictStr, ...] = ()
-    held_out_case_ids: tuple[StrictStr, ...] = Field(min_length=1)
+    held_out_case_ids: tuple[StrictStr, ...] = ()
 
     @model_validator(mode="after")
     def validate_partitions(self) -> CohortPartitions:
@@ -261,6 +261,8 @@ class CohortPartitions(_StrictModel):
             raise ValueError("partition case identities must be unique")
         if development & held_out:
             raise ValueError("development and held-out cases overlap")
+        if not development and not held_out:
+            raise ValueError("partition must contain at least one case")
         return self
 
 
@@ -477,16 +479,26 @@ def select_agreement_sample(
     *,
     seed: str = "rob2-kit-2026-09-21-agreement-sample-v1",
     size: int = 10,
+    required_cell_identities: Iterable[str] = (),
 ) -> tuple[AgreementSampleEntry, ...]:
     """Select a deterministic, prespecified exact-agreement review sample."""
 
     if size < 1:
         raise ValueError("agreement sample size must be positive")
     candidates = [cell for cell in cells if cell.comparison == "agreement"]
+    required = tuple(required_cell_identities)
+    required_ids = set(required)
+    candidate_ids = {cast(str, cell.identity) for cell in candidates}
+    if len(required_ids) != len(required) or not required_ids <= candidate_ids:
+        raise ValueError("required sample cells must be distinct exact agreements")
+    if len(required) > size:
+        raise ValueError("required sample cells cannot exceed sample size")
     ranked = sorted(
-        candidates,
+        (cell for cell in candidates if cell.identity not in required_ids),
         key=lambda cell: hashlib.sha256(f"{seed}:{cell.identity}".encode()).hexdigest(),
-    )[:size]
+    )[: size - len(required)]
+    by_identity = {cast(str, cell.identity): cell for cell in candidates}
+    selected = [by_identity[identity] for identity in required] + ranked
     pending = ReviewerProvenance(
         note=(
             "Independent agreement review was not supplied with the pinned audit; "
@@ -501,7 +513,7 @@ def select_agreement_sample(
             dimensions=SAMPLE_DIMENSIONS,
             reviewer_provenance=pending,
         )
-        for rank, cell in enumerate(ranked)
+        for rank, cell in enumerate(selected)
     )
 
 
