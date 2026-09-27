@@ -1,0 +1,457 @@
+{
+  "runs": [
+    {
+      "capture": "adverse-events/ENZAMET",
+      "phases": 3,
+      "trace_files": [
+        {
+          "name": "phase-1.jsonl",
+          "bytes": 167040,
+          "sha256": "4b6fae39bd1f9447f658dbb1f25fb5fdc57df8d67c35356fe29860e0f6dcde66"
+        },
+        {
+          "name": "phase-2.jsonl",
+          "bytes": 75986,
+          "sha256": "c141789607f75cad21516daf9cb4dc343c1253710400bd58f4792d36bca8b68a"
+        },
+        {
+          "name": "phase-3.jsonl",
+          "bytes": 1321413,
+          "sha256": "6f28f170fbb47b997a45500c83e5fbba9e9393764d4924181d32968546e0f6b7"
+        }
+      ],
+      "domain_context_calls": 33,
+      "first_page_calls": 10,
+      "continuation_page_calls": 21,
+      "unpaged_calls": 2,
+      "serialized_response_bytes": 544652,
+      "first_page_response_bytes": 270332,
+      "continuation_response_bytes": 273170,
+      "unpaged_response_bytes": 1150,
+      "structured_payload_bytes": 543464,
+      "text_content_parts": 0,
+      "text_content_bytes": 0,
+      "exact_structured_text_copy_calls": 0,
+      "nontext_content_parts": 0,
+      "candidate_serialized_response_bytes": 544224,
+      "candidate_bytes_saved": 428,
+      "candidate_reduction_percent": 0.079,
+      "omitted_empty_array_occurrences": 22,
+      "complete_context_snapshots": 7,
+      "context_snapshots": [
+        {
+          "snapshot_sha256": "098f271d9453ec21af802b54fc1952f736e57cd0e99880023f501b1d1194eb3a",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 4,
+          "conditional_question_count": 3,
+          "evidence_count": 3,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2389
+        },
+        {
+          "snapshot_sha256": "580382fb4e2b020968ceb67f02f652ef23289bd7ee123421ee09f2637386935f",
+          "page_count": 3,
+          "captured_page_indexes": [
+            0,
+            1,
+            2
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 3,
+          "comparison_card_count": 0,
+          "result_serialized_bytes": 2389
+        },
+        {
+          "snapshot_sha256": "67f7d4bf4fd801fbe38ba4bab18858f26eeb346b3f3452eaea720dda3287b2f6",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 5,
+          "conditional_question_count": 3,
+          "evidence_count": 5,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2389
+        },
+        {
+          "snapshot_sha256": "86f735a64d251250f2a30d95c71a239cf32ec45186200942c13c19dbeb5d8bfa",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 5,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2389
+        },
+        {
+          "snapshot_sha256": "cd80ed2a2fa6cb76a0ea3a8ba1418a05832cf7a7a3a7ca8f574cb948ec0748bb",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 7,
+          "conditional_question_count": 4,
+          "evidence_count": 3,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2389
+        },
+        {
+          "snapshot_sha256": "dc6d28e10f1a3fac048dadea66087352d19527f6e249f2c7ff6088c567ae41ff",
+          "page_count": 5,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 69,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2389
+        },
+        {
+          "snapshot_sha256": "f79e367f40ab7088717ca354267435c8f0409195f3f2e988c802cd796642699d",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 4,
+          "conditional_question_count": 3,
+          "evidence_count": 5,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2389
+        }
+      ],
+      "repair_receipts_all_tools": 3,
+      "tool_call_errors_all_tools": 0,
+      "latency_measurements_ms": [],
+      "latency_available": false,
+      "token_usage_records": 0,
+      "token_usage_available": false
+    },
+    {
+      "capture": "overall-survival/ENZAMET",
+      "phases": 2,
+      "trace_files": [
+        {
+          "name": "phase-1.jsonl",
+          "bytes": 212545,
+          "sha256": "563df209a6a386fab862bc21046db949fb7826fadf1d0f53f0161c0e485283f4"
+        },
+        {
+          "name": "phase-2.jsonl",
+          "bytes": 1013991,
+          "sha256": "7c55f464853e5f53210aff72175496e89daa70651475254baddde6fef9d8f796"
+        }
+      ],
+      "domain_context_calls": 24,
+      "first_page_calls": 6,
+      "continuation_page_calls": 18,
+      "unpaged_calls": 0,
+      "serialized_response_bytes": 392849,
+      "first_page_response_bytes": 168202,
+      "continuation_response_bytes": 224647,
+      "unpaged_response_bytes": 0,
+      "structured_payload_bytes": 391985,
+      "text_content_parts": 0,
+      "text_content_bytes": 0,
+      "exact_structured_text_copy_calls": 0,
+      "nontext_content_parts": 0,
+      "candidate_serialized_response_bytes": 392479,
+      "candidate_bytes_saved": 370,
+      "candidate_reduction_percent": 0.094,
+      "omitted_empty_array_occurrences": 19,
+      "complete_context_snapshots": 6,
+      "context_snapshots": [
+        {
+          "snapshot_sha256": "1da0196d5cae5d614292d1680628c308fe145d64e668701a690691cbbbcbdfe4",
+          "page_count": 3,
+          "captured_page_indexes": [
+            0,
+            1,
+            2
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 5,
+          "comparison_card_count": 0,
+          "result_serialized_bytes": 2763
+        },
+        {
+          "snapshot_sha256": "2334ce63c8c88b6320d6b73e29c33a128c22749c9fe91f1fd7cd1d6f067bfce9",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 5,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2763
+        },
+        {
+          "snapshot_sha256": "239d982a06ec0e81b51d5a4556c4239edf389519866b719ee02c6985489b901c",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 7,
+          "conditional_question_count": 4,
+          "evidence_count": 5,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2763
+        },
+        {
+          "snapshot_sha256": "7b293e59bb544858e8583c883325be02a578573b92a8c7e660036f490c302833",
+          "page_count": 5,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 65,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2763
+        },
+        {
+          "snapshot_sha256": "8b187635b8334fa64b020a3e2cd656639813d979f634d28a4e87a00c041c50bd",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 5,
+          "conditional_question_count": 3,
+          "evidence_count": 5,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2763
+        },
+        {
+          "snapshot_sha256": "caf8758ec0b9a4b283d477a0e768ad4ddd583afee4271a5cd8cdc0b4ffc7b9db",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 4,
+          "conditional_question_count": 3,
+          "evidence_count": 5,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2763
+        }
+      ],
+      "repair_receipts_all_tools": 3,
+      "tool_call_errors_all_tools": 0,
+      "latency_measurements_ms": [],
+      "latency_available": false,
+      "token_usage_records": 0,
+      "token_usage_available": false
+    },
+    {
+      "capture": "progression-free-survival/ENZAMET",
+      "phases": 2,
+      "trace_files": [
+        {
+          "name": "phase-1.jsonl",
+          "bytes": 212586,
+          "sha256": "716668ce8e2e657cbd99ff64b9ad1cc8c644c85ba8769a05de410bd6fb7575c7"
+        },
+        {
+          "name": "phase-2.jsonl",
+          "bytes": 1062870,
+          "sha256": "abd5c4384dffdd59dc25021d133187117f6429c78107530ee7d72e75f3d34235"
+        }
+      ],
+      "domain_context_calls": 24,
+      "first_page_calls": 6,
+      "continuation_page_calls": 17,
+      "unpaged_calls": 1,
+      "serialized_response_bytes": 334386,
+      "first_page_response_bytes": 166454,
+      "continuation_response_bytes": 167323,
+      "unpaged_response_bytes": 609,
+      "structured_payload_bytes": 333522,
+      "text_content_parts": 0,
+      "text_content_bytes": 0,
+      "exact_structured_text_copy_calls": 0,
+      "nontext_content_parts": 0,
+      "candidate_serialized_response_bytes": 334038,
+      "candidate_bytes_saved": 348,
+      "candidate_reduction_percent": 0.104,
+      "omitted_empty_array_occurrences": 18,
+      "complete_context_snapshots": 6,
+      "context_snapshots": [
+        {
+          "snapshot_sha256": "01510c5309b5d544758cae8b9c73e5185fdc6332619720b196d9b8016b043028",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 5,
+          "conditional_question_count": 3,
+          "evidence_count": 4,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2610
+        },
+        {
+          "snapshot_sha256": "04ba0d65609670e171fc5f8ef23cd3d0a91af6a59c6ed2fe1103f3ba54e773b3",
+          "page_count": 3,
+          "captured_page_indexes": [
+            0,
+            1,
+            2
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 4,
+          "comparison_card_count": 0,
+          "result_serialized_bytes": 2610
+        },
+        {
+          "snapshot_sha256": "89d3c181641beb807a4452983209d29f60d47aa82802ceb0f4d715d6b59bed13",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 7,
+          "conditional_question_count": 4,
+          "evidence_count": 4,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2610
+        },
+        {
+          "snapshot_sha256": "9832736e7cd5e15bac2237d9a98179f091a05985cbf9232b79b5a82ed4c1e74b",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 4,
+          "conditional_question_count": 3,
+          "evidence_count": 4,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2610
+        },
+        {
+          "snapshot_sha256": "a42c407e54b83c0cb1996745e8f6521434b329755b5f15808a35c5b31907a865",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 5,
+          "conditional_question_count": 3,
+          "evidence_count": 4,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2610
+        },
+        {
+          "snapshot_sha256": "bc2df430a504eb7787b07504671839ed0c9a8ef312ded89651de59350efc5271",
+          "page_count": 4,
+          "captured_page_indexes": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "complete": true,
+          "reconstruction_digest_matches": true,
+          "question_count": 3,
+          "conditional_question_count": 0,
+          "evidence_count": 4,
+          "comparison_card_count": 1,
+          "result_serialized_bytes": 2610
+        }
+      ],
+      "repair_receipts_all_tools": 0,
+      "tool_call_errors_all_tools": 0,
+      "latency_measurements_ms": [],
+      "latency_available": false,
+      "token_usage_records": 0,
+      "token_usage_available": false
+    }
+  ]
+}
