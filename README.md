@@ -7,16 +7,16 @@ against them, applies deterministic RoB 2 logic, records assessment history,
 and exports verifiable bundles.
 
 The v0.10 public contract submits each Domain in one atomic call. Existing
-v0.9 workspaces retain their canonical assessments; use the current skill and
-tool contract when resuming. Historical bundles still verify under their
-recorded semantics. See the [v0.10 decision](docs/adr/0036-atomic-domain-submission.md).
+v0.9 workspaces keep their saved assessments. Use the current skill and tool
+contract to resume them. Historical bundles still verify under their recorded
+semantics. See the [v0.10 decision](docs/adr/0036-atomic-domain-submission.md).
 
 ## Use rob2-kit
 
 ### Requirements
 
 - Python 3.11 or later
-- [uv](https://docs.astral.sh/uv/) for development and wheel builds
+- [uv](https://docs.astral.sh/uv/) for installation, development, and wheel builds
 - An MCP host with local stdio support
 - One directory of authorized source documents for each trial
 
@@ -60,9 +60,10 @@ Image-only PDFs can be inspected with `render_page`. Legacy `.doc` files are
 unsupported. Trial directory names become trial labels, so keep them
 meaningful.
 
-Filenames provide inferred source roles for navigation; they do not by
-themselves identify the main report. Add `sources.toml` to declare report roles
-or an authoritative registry record when known:
+Filenames suggest source roles for navigation; they do not identify the main
+report. Declare a known main report as `main_article` in `sources.toml`. If you
+do not declare one, the assessor checks file contents and leaves the identity
+unresolved if it cannot identify the report.
 
 ```toml
 nct = "<NCT-ID>"
@@ -121,9 +122,9 @@ Invoke the skill with the outcome shared by the selected trials:
 ```
 
 The host prepares the batch, searches the captured sources, and proposes one
-Result for each trial. Review and approve that proposal before the
-host assesses the five RoB 2 domains. The server computes the overall label,
-then the host reviews and closes each trial before it finalizes the batch.
+Result for each trial. Review and approve the Result mapping before assessment.
+After approval, the host assesses the five RoB 2 domains. The server computes
+the overall label, and the host closes each trial before finalizing the batch.
 
 The proposal is the only researcher approval gate. If the MCP host does not
 support elicitation, approve the exact proposal through the CLI:
@@ -165,10 +166,6 @@ The server exposes 18 strictly typed MCP tools and the live
 records the tool catalog, schemas, annotations, resource families, and portable
 skill pointers. See the [release guide](docs/release/README.md) for contract and
 wheel verification.
-
-The server resolves the unique validated Proposal draft for its revision and
-scope before saving it. A complete Domain draft validates and commits in one
-revision checked operation.
 
 ### Run the project checks
 
