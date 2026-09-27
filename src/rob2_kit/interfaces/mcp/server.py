@@ -22,7 +22,15 @@ from fastmcp.server.context import (
 from fastmcp.tools import InputRequiredToolResult, ToolResult
 from mcp.shared.exceptions import MCPError
 from mcp.types import ImageContent, TextContent, ToolAnnotations
-from pydantic import ConfigDict, Field, StrictBool, StrictInt, StrictStr, model_validator
+from pydantic import (
+    ConfigDict,
+    Field,
+    StrictBool,
+    StrictInt,
+    StrictStr,
+    ValidationError,
+    model_validator,
+)
 from pydantic.functional_validators import AfterValidator, BeforeValidator
 
 from rob2_kit import __version__
@@ -31,7 +39,6 @@ from rob2_kit.application.contracts import COUNTERS, TOOL_NAMES, WorkflowConflic
 from rob2_kit.application.domains import (
     _domain_context_delivery,
     _domain_context_view,
-    _domain_reasoning_matches_current,
     _record_domain_context_delivery,
     _record_domain_context_view,
 )
@@ -39,9 +46,6 @@ from rob2_kit.application.domains import (
     get_domain_context as _get_domain_context,
 )
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
-from rob2_kit.application.domains import (
-    validate_domain_assessment as _validate_domain_assessment,
-)
 from rob2_kit.application.evidence import (
     _cursor_handle,
 )
@@ -82,9 +86,8 @@ from rob2_kit.application.working import save_working_checkpoint as _save_workin
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
     MISSING_GROUP_VALUE_UNIT,
-    DomainDraft,
+    DomainAnswer,
     DomainId,
-    DomainReasoningAnswer,
     DomainRevisionBasis,
     ExpectedRevision,
     Identity,
@@ -1343,7 +1346,6 @@ def _invoke(
                 )
         if tool in {
             "get_domain_context",
-            "validate_domain_assessment",
             "save_domain_judgment",
             "review_trial",
             "close_trial",
@@ -1437,7 +1439,10 @@ def prepare_batch(
         "Read phase, revision, dispositions, next action, main-report reading status, and the "
         "derived investigation view. The view separates host-asserted sufficiency from workflow "
         "permission and keeps recovery choices visible. "
-        "When reading status is required, read its required_ranges before scientific work. "
+        "Main-report identity and delivered reading coverage are reported separately. Resolve an "
+        "uncertain identity through the existing working checkpoint; fallback reading is for "
+        "orientation only. When coverage status is required, read its required_ranges before "
+        "scientific work. "
         "Check again after finishing the returned windows. Omitted Evidence quotes retain exact "
         "read_pages recovery; recover unfamiliar passages before using them."
     ),
@@ -1462,7 +1467,10 @@ def get_status() -> ToolResult:
         "a question, change a Result, or commit a "
         "Domain. get_status returns them only while the captured source scope and Trial Result "
         "still match. If cited content is missing or uncertain, recover the passage with "
-        "read_pages; use render_page for a whole-page visual locator. Saving replaces the prior "
+        "read_pages; use render_page for a whole-page visual locator. To resolve an uncertain "
+        "main-report identity, set main_report_source_id to a Source handle cited by an "
+        "observation, "
+        "or set it to 'missing' with a source-backed explanation. Saving replaces the prior "
         "checkpoint for this Trial."
     ),
     annotations=_MUTATION,
@@ -1871,6 +1879,19 @@ def search_sources_batch(
         )
     try:
         _bound_search_batch(results)
+    except ValidationError:
+        return _content(
+            "search_sources_batch",
+            {
+                "outcome": "condition",
+                "code": "search_batch_response_contract_invalid",
+                "condition": (
+                    "A search result failed the batch output contract before serialized size "
+                    "could be measured. Retry the affected query separately; reducing the hit "
+                    "limit only addresses actual response-size exhaustion."
+                ),
+            },
+        )
     except ValueError as error:
         return _content(
             "search_sources_batch",
@@ -3071,50 +3092,40 @@ def get_domain_context(
 
 
 @mcp.tool(
-    name="validate_domain_assessment",
-    title="Check Domain reasoning",
+    name="save_domain_judgment",
+    title="Save Domain judgment",
     description=(
-        "Before saving a Domain, submit the complete draft. For each active answer, briefly "
-        "explain what its cited bases establish and why that supports the selected option for "
-        "the approved Result. Use narrow exact Evidence excerpts for each premise. Copy Evidence "
-        'handles into a complete answer shaped like {"question_id":"<id>","answer":'
-        '"<option>","bases":[{"kind":"direct_support","evidence":'
-        '"<exact handle>"}],"justification":"...","unknowns":[],'
-        '"counterevidence":[]}. Counterevidence entries use '
-        '{"basis_index":0,"implication":"..."}, indexed into that answer\'s original '
-        "bases. A limitation basis includes both unresolved_premise and stopping_rationale. For a "
-        "new-evidence revision, use "
-        '{"kind":"new_evidence","evidence":"<one handle>","rationale":"..."}. '
-        "If validation returns domain_context_delivery_stale, restart get_domain_context and "
-        "complete its current pages before rebuilding and revalidating the draft. "
-        "Before submitting, "
-        "inspect the relevant captured Source section "
-        "for any material unresolved fact, or record a bounded information limit. Identify "
-        "material counterevidence and unresolved facts without treating uncertainty as a finding. "
-        "The server validates structure, references, activation and workflow requirements, not "
-        "scientific correctness. The returned investigation projection keeps search, read, "
-        "revision, and honest-limitation choices visible after structural validation. Save using "
-        "the returned revision; the server retains the validated draft."
+        "Submit the complete Domain draft once with its expected revision. For every active "
+        "answer, explain why its cited bases support the option for the approved Result, list "
+        "unknowns (use [] when none), and list counterevidence by index into the original bases "
+        "(use [] when none). Inactive branch answers may omit those fields. A limitation basis "
+        "includes unresolved_premise and stopping_rationale. For a correction, supply the exact "
+        "prior checkpoint identity and a new_evidence, self_correction, or mechanical_repair "
+        "revision basis. The server checks structure, references, activation, and workflow rules; "
+        "success does not establish scientific correctness. If a repair is returned, correct the "
+        "draft and submit it again. Complete the post-approval bounded main-report text pass and "
+        "every Domain context page before submission. "
+        "The fifth accepted Domain makes the Trial ready for review; it remains correctable "
+        "until close_trial commits the exact current review."
     ),
     annotations=_MUTATION,
-    output_schema=output_schema("validate_domain_assessment"),
+    output_schema=output_schema("save_domain_judgment"),
 )
-def validate_domain_assessment(
+def save_domain_judgment(
     trial_id: Annotated[TrialId, Field(description="Trial being assessed.")],
     domain_id: Annotated[DomainId, Field(description="RoB 2 Domain being assessed.")],
     expected_revision: Annotated[
         ExpectedRevision, Field(description="Current revision from get_domain_context.")
     ],
     answers: Annotated[
-        list[DomainReasoningAnswer],
+        list[DomainAnswer],
         Field(
             min_length=1,
             description=(
                 "Complete answers for the current Domain path. Every active answer requires a "
                 "nonblank justification, an unknowns array, and a counterevidence array whose "
                 "basis_index values refer to the answer's original bases, not the returned "
-                "deduplicated Evidence list; inactive branch answers may "
-                "omit those reasoning fields."
+                "deduplicated Evidence list; inactive branch answers may omit those fields."
             ),
             examples=[
                 [
@@ -3166,101 +3177,6 @@ def validate_domain_assessment(
             revision_basis.model_dump(mode="json") if revision_basis is not None else None
         ),
     }
-    return _invoke(
-        "validate_domain_assessment",
-        lambda: _validate_domain_assessment(_workspace(), draft),
-    )
-
-
-@mcp.tool(
-    name="save_domain_judgment",
-    title="Save Domain judgment",
-    description=(
-        "Commit the exact Domain draft stored by validate_domain_assessment using its returned "
-        "revision; do not resend answers or copy an internal receipt identity. To change the "
-        "draft, repeat validate_domain_assessment with the revised draft. Complete the "
-        "post-approval bounded "
-        "main-report text pass and every Domain context page before reasoning. "
-        "The fifth accepted Domain makes the Trial ready for review; it remains correctable "
-        "until close_trial commits the exact current review."
-    ),
-    annotations=_MUTATION,
-    output_schema=output_schema("save_domain_judgment"),
-)
-def save_domain_judgment(
-    trial_id: Annotated[TrialId, Field(description="Trial being assessed.")],
-    domain_id: Annotated[DomainId, Field(description="RoB 2 Domain being assessed.")],
-    expected_revision: Annotated[
-        ExpectedRevision, Field(description="Revision returned by validate_domain_assessment.")
-    ],
-) -> ToolResult:
-    root = _root(_workspace())
-    state = _state(root)
-    records = state.get("reasoning_records")
-    candidates = (
-        [
-            item
-            for item in records.values()
-            if isinstance(item, dict)
-            and item.get("kind") == "domain_reasoning"
-            and item.get("trial_id") == trial_id
-            and item.get("domain_id") == domain_id
-            and item.get("save_revision") == expected_revision
-        ]
-        if isinstance(records, dict)
-        else []
-    )
-    record = candidates[0] if len(candidates) == 1 else None
-    if (
-        not isinstance(record, dict)
-        or record.get("kind") != "domain_reasoning"
-        or record.get("trial_id") != trial_id
-        or record.get("domain_id") != domain_id
-    ):
-        return _content(
-            "save_domain_judgment",
-            {
-                "outcome": "condition",
-                "code": "reasoning_stale",
-                "condition": (
-                    "Call get_status. If work remains active, submit the complete Domain draft to "
-                    "validate_domain_assessment, then save its returned receipt. Otherwise follow "
-                    "head.next_action."
-                ),
-            },
-        )
-    current_revision = int(state.get("revision", 0))
-    stored_draft = record.get("draft")
-    if not isinstance(stored_draft, dict):
-        return _content(
-            "save_domain_judgment",
-            {
-                "outcome": "condition",
-                "code": "reasoning_stale",
-                "condition": (
-                    "Call get_status. If work remains active, refresh the explicit Trial and "
-                    "Domain, complete context delivery, revalidate, and save its returned receipt. "
-                    "Otherwise follow head.next_action."
-                ),
-            },
-        )
-    if expected_revision != record.get("save_revision") or not _domain_reasoning_matches_current(
-        root, record, state
-    ):
-        return _content(
-            "save_domain_judgment",
-            {
-                "outcome": "condition",
-                "code": "reasoning_stale",
-                "condition": (
-                    "Call get_status. If work remains active, refresh the explicit Trial and "
-                    "Domain, complete context delivery, revalidate, and save its returned receipt. "
-                    "Otherwise follow head.next_action."
-                ),
-            },
-        )
-    expected_revision = current_revision
-    draft = DomainDraft.model_validate({**stored_draft, "expected_revision": expected_revision})
     return _invoke("save_domain_judgment", lambda: _save_domain_judgment(_workspace(), draft))
 
 

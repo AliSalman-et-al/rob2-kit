@@ -1,0 +1,800 @@
+{
+  "scope": "All JSONL files under both requested dates; paired label outcomes by same trial/outcome and unchanged expected labels.",
+  "log_inventory": {
+    "2026-09-26": {
+      "jsonl_files": 59,
+      "file_bytes": 45968548,
+      "files_by_run_root": {
+        "rob2-trial-benchmark-luna-medium": 59
+      },
+      "phase_files": {
+        "phase-1.jsonl": 29,
+        "phase-2.jsonl": 28,
+        "phase-3.jsonl": 1,
+        "phase-4.jsonl": 1
+      },
+      "events": {
+        "thread.started": 59,
+        "turn.started": 59,
+        "item.completed": 3206,
+        "item.started": 2842,
+        "turn.completed": 59
+      },
+      "item_types": {
+        "agent_message": 364,
+        "command_execution": 328,
+        "mcp_tool_call": 5350,
+        "web_search": 6
+      },
+      "completed_mcp_calls_by_tool": {
+        "get_status": 201,
+        "prepare_batch": 29,
+        "read_pages": 485,
+        "search_sources": 496,
+        "validate_proposal": 87,
+        "save_proposal": 29,
+        "request_proposal_approval": 24,
+        "get_domain_context": 641,
+        "search_sources_batch": 131,
+        "validate_domain_assessment": 147,
+        "save_domain_judgment": 137,
+        "render_page": 50,
+        "select_visual_evidence": 13,
+        "review_trial": 28,
+        "close_trial": 27,
+        "finalize_batch": 27,
+        "list_sources": 32,
+        "select_text_evidence": 88,
+        "list_mcp_resources": 1,
+        "list_mcp_resource_templates": 1,
+        "read_mcp_resource": 1
+      },
+      "completed_mcp_call_count": 2675,
+      "serialized_mcp_result_bytes": 41420719,
+      "errors": [],
+      "malformed_lines": []
+    },
+    "2026-09-27": {
+      "jsonl_files": 64,
+      "file_bytes": 49153210,
+      "files_by_run_root": {
+        "issue-465-e2e": 7,
+        "rob2-trial-benchmark-latest-8ae8016": 57
+      },
+      "phase_files": {
+        "phase-1.jsonl": 31,
+        "phase-2.jsonl": 30,
+        "phase-3.jsonl": 3
+      },
+      "events": {
+        "thread.started": 64,
+        "turn.started": 64,
+        "item.completed": 3255,
+        "item.started": 2874,
+        "turn.completed": 62,
+        "error": 3
+      },
+      "item_types": {
+        "agent_message": 381,
+        "command_execution": 540,
+        "mcp_tool_call": 5208
+      },
+      "completed_mcp_calls_by_tool": {
+        "get_status": 215,
+        "prepare_batch": 36,
+        "read_pages": 480,
+        "search_sources_batch": 189,
+        "validate_proposal": 82,
+        "save_proposal": 31,
+        "get_domain_context": 706,
+        "select_text_evidence": 248,
+        "save_domain_judgment": 173,
+        "search_sources": 198,
+        "review_trial": 30,
+        "close_trial": 29,
+        "finalize_batch": 29,
+        "request_proposal_approval": 23,
+        "list_sources": 51,
+        "render_page": 60,
+        "select_visual_evidence": 24
+      },
+      "completed_mcp_call_count": 2604,
+      "serialized_mcp_result_bytes": 43638008,
+      "errors": [
+        {
+          "path": "eval\\runs\\2026-09-27\\rob2-trial-benchmark-latest-8ae8016\\runs\\overall-survival\\ARCHES\\phase-2.jsonl",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "path": "eval\\runs\\2026-09-27\\rob2-trial-benchmark-latest-8ae8016\\runs\\progression-free-survival\\CHAARTED\\phase-2.jsonl",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        },
+        {
+          "path": "eval\\runs\\2026-09-27\\rob2-trial-benchmark-latest-8ae8016\\runs\\progression-free-survival\\TITAN\\phase-2.jsonl",
+          "message": "Reconnecting... 2/5 (request timed out)"
+        }
+      ],
+      "malformed_lines": []
+    },
+    "duplicate_jsonl_content_groups": []
+  },
+  "official_latest_trace_metrics": {
+    "jsonl_segments": 57,
+    "event_types": {
+      "thread.started": 57,
+      "turn.started": 57,
+      "item.completed": 2923,
+      "item.started": 2580,
+      "turn.completed": 55,
+      "error": 3
+    },
+    "item_types": {
+      "agent_message": 343,
+      "command_execution": 470,
+      "mcp_tool_call": 4690
+    },
+    "completed_mcp_calls_by_tool": {
+      "get_status": 192,
+      "prepare_batch": 33,
+      "read_pages": 428,
+      "search_sources": 184,
+      "validate_proposal": 77,
+      "save_proposal": 28,
+      "request_proposal_approval": 22,
+      "get_domain_context": 625,
+      "search_sources_batch": 168,
+      "save_domain_judgment": 153,
+      "render_page": 60,
+      "select_visual_evidence": 24,
+      "review_trial": 27,
+      "close_trial": 26,
+      "finalize_batch": 26,
+      "list_sources": 50,
+      "select_text_evidence": 222
+    },
+    "completed_mcp_call_count": 2345,
+    "response_outcomes": {
+      "success": 2228,
+      "unstructured_or_unknown": 34,
+      "repair": 46,
+      "review_required": 27,
+      "condition": 10
+    },
+    "repair_codes": {
+      "unknown_evidence_handle": 2,
+      "incoherent_reported_result": 16,
+      "result_value_not_supported": 52,
+      "exact_result_scope_not_established": 88,
+      "post_approval_main_report_reading_required": 1,
+      "answers_must_match_active_questions": 2,
+      "endpoint_definition_not_jointly_supported": 14,
+      "answer_requires_direct_basis": 6,
+      "main_report_reading_required": 1
+    },
+    "domain_context_continuation_calls": 449,
+    "serialized_mcp_result_bytes": 40198774,
+    "serialized_mcp_result_bytes_per_call": {
+      "mean": 17142.3,
+      "median": 8377,
+      "p95": 33069,
+      "max": 837734
+    },
+    "single_search_calls": 182,
+    "single_search_zero_hit_calls": 59,
+    "single_search_unknown_count_calls": 2,
+    "single_search_total_matches_median": 1.0,
+    "single_search_total_matches_max": 212,
+    "single_search_query_modes": {
+      "phrase": 87,
+      "any": 59,
+      "all": 35,
+      "prefix": 1
+    },
+    "single_search_truncated_calls": 50,
+    "single_search_over_100_matches": [
+      {
+        "trial": "arasens",
+        "query": "adverse event grade 3",
+        "hits": 187
+      },
+      {
+        "trial": "titan",
+        "query": "overall survival censoring death",
+        "hits": 106
+      },
+      {
+        "trial": "titan",
+        "query": "intent-to-treat overall survival analysis",
+        "hits": 130
+      },
+      {
+        "trial": "titan",
+        "query": "all randomized patients efficacy analyses ITT",
+        "hits": 198
+      },
+      {
+        "trial": "titan",
+        "query": "sensitivity analysis",
+        "hits": 107
+      },
+      {
+        "trial": "titan",
+        "query": "missing data",
+        "hits": 122
+      },
+      {
+        "trial": "titan",
+        "query": "lost to follow-up",
+        "hits": 212
+      },
+      {
+        "trial": "stampede",
+        "query": "randomisation allocation telephone",
+        "hits": 158
+      }
+    ],
+    "single_search_no_hit_examples": [
+      {
+        "trial": "arasens",
+        "query": "grade 3 or 4 adverse events"
+      },
+      {
+        "trial": "arches",
+        "query": "safety analysis set adverse events"
+      },
+      {
+        "trial": "arches",
+        "query": "randomization schedule"
+      },
+      {
+        "trial": "arches",
+        "query": "interactive web response system"
+      },
+      {
+        "trial": "arches",
+        "query": "allocation concealment"
+      },
+      {
+        "trial": "arches",
+        "query": "computer generated"
+      },
+      {
+        "trial": "arches",
+        "query": "centrally randomized"
+      },
+      {
+        "trial": "arches",
+        "query": "randomly assigned"
+      },
+      {
+        "trial": "arches",
+        "query": "randomly assigned"
+      },
+      {
+        "trial": "arches",
+        "query": "randomized 1:1"
+      },
+      {
+        "trial": "enzamet",
+        "query": "grade 3 or 4 adverse events"
+      },
+      {
+        "trial": "enzamet",
+        "query": "grade 3 or 4"
+      }
+    ],
+    "errors": [
+      {
+        "path": "eval\\runs\\2026-09-27\\rob2-trial-benchmark-latest-8ae8016\\runs\\overall-survival\\ARCHES\\phase-2.jsonl",
+        "line": 86,
+        "message": "Reconnecting... 2/5 (request timed out)"
+      },
+      {
+        "path": "eval\\runs\\2026-09-27\\rob2-trial-benchmark-latest-8ae8016\\runs\\progression-free-survival\\CHAARTED\\phase-2.jsonl",
+        "line": 28,
+        "message": "Reconnecting... 2/5 (request timed out)"
+      },
+      {
+        "path": "eval\\runs\\2026-09-27\\rob2-trial-benchmark-latest-8ae8016\\runs\\progression-free-survival\\TITAN\\phase-2.jsonl",
+        "line": 156,
+        "message": "Reconnecting... 2/5 (request timed out)"
+      }
+    ]
+  },
+  "score_paths": [
+    "eval\\runs\\2026-09-26\\rob2-trial-benchmark-luna-medium\\all-case-accuracy.json",
+    "eval\\runs\\2026-09-27\\rob2-trial-benchmark-latest-8ae8016\\accuracy.json"
+  ],
+  "baseline_cases": 26,
+  "latest_cases_including_scope_differences": 26,
+  "paired_cases": 26,
+  "paired_cases_with_same_expected_labels": 26,
+  "paired_scores": {
+    "D1": {
+      "total": 26,
+      "baseline_correct": 25,
+      "latest_correct": 25
+    },
+    "D2": {
+      "total": 26,
+      "baseline_correct": 16,
+      "latest_correct": 15
+    },
+    "D3": {
+      "total": 26,
+      "baseline_correct": 10,
+      "latest_correct": 11
+    },
+    "D4": {
+      "total": 26,
+      "baseline_correct": 20,
+      "latest_correct": 15
+    },
+    "D5": {
+      "total": 26,
+      "baseline_correct": 14,
+      "latest_correct": 12
+    },
+    "overall": {
+      "total": 26,
+      "baseline_correct": 4,
+      "latest_correct": 3
+    }
+  },
+  "all_26_label_changes": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARCHES",
+      "domain": "D3",
+      "expected": "some_concerns",
+      "baseline_observed": "high",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARCHES",
+      "domain": "D4",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE",
+      "domain": "D3",
+      "expected": "some_concerns",
+      "baseline_observed": "high",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "accepted_with_scope_difference"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "LATITUDE",
+      "domain": "overall",
+      "expected": "some_concerns",
+      "baseline_observed": "high",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "accepted_with_scope_difference"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "PEACE-1",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "TITAN",
+      "domain": "D2",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "TITAN",
+      "domain": "D4",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "high",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Adverse Events",
+      "trial": "TITAN",
+      "domain": "D5",
+      "expected": "some_concerns",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARASENS",
+      "domain": "D2",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARASENS",
+      "domain": "overall",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARCHES",
+      "domain": "D4",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "ARCHES",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE",
+      "domain": "D3",
+      "expected": "some_concerns",
+      "baseline_observed": "low",
+      "latest_observed": "high",
+      "baseline_correct": false,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "LATITUDE",
+      "domain": "overall",
+      "expected": "some_concerns",
+      "baseline_observed": "low",
+      "latest_observed": "high",
+      "baseline_correct": false,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "PEACE-1",
+      "domain": "D2",
+      "expected": "some_concerns",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "PEACE-1",
+      "domain": "overall",
+      "expected": "some_concerns",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "domain": "D2",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "domain": "D3",
+      "expected": "some_concerns",
+      "baseline_observed": "high",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "domain": "D4",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "STAMPEDE",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "SWOG-1216",
+      "domain": "D3",
+      "expected": "low",
+      "baseline_observed": "high",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Overall Survival",
+      "trial": "SWOG-1216",
+      "domain": "overall",
+      "expected": "low",
+      "baseline_observed": "high",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARCHES",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "accepted_with_scope_difference"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ARCHES",
+      "domain": "overall",
+      "expected": "some_concerns",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "low",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "accepted_with_scope_difference"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "CHAARTED",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ENZAMET",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "ENZAMET",
+      "domain": "overall",
+      "expected": "some_concerns",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "high",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "GETUG-AFU-15",
+      "domain": "D4",
+      "expected": "some_concerns",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "high",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "LATITUDE",
+      "domain": "D5",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "PEACE-1",
+      "domain": "D1",
+      "expected": "low",
+      "baseline_observed": "low",
+      "latest_observed": "some_concerns",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "STAMPEDE",
+      "domain": "D4",
+      "expected": "some_concerns",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "high",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "SWOG-1216",
+      "domain": "D1",
+      "expected": "low",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "SWOG-1216",
+      "domain": "D2",
+      "expected": "low",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "low",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "SWOG-1216",
+      "domain": "D4",
+      "expected": "some_concerns",
+      "baseline_observed": "high",
+      "latest_observed": "some_concerns",
+      "baseline_correct": false,
+      "latest_correct": true,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    },
+    {
+      "outcome": "Progression-Free Survival",
+      "trial": "TITAN",
+      "domain": "D5",
+      "expected": "some_concerns",
+      "baseline_observed": "some_concerns",
+      "latest_observed": "low",
+      "baseline_correct": true,
+      "latest_correct": false,
+      "baseline_scope_note": "",
+      "latest_scope_adjudication": "equivalent"
+    }
+  ],
+  "cell_csv": "case-cell-comparison.csv",
+  "mismatch_csv": "case-cell-mismatches.csv",
+  "agreement_csv": "case-cell-agreements.csv",
+  "final_bundle_domain_history_records": {
+    "deviations": 26,
+    "measurement": 26,
+    "missing": 27,
+    "randomization": 26,
+    "selection": 26
+  },
+  "final_bundle_domain_history_record_total": 131,
+  "final_bundle_repeated_domain_histories": [
+    {
+      "outcome": "Adverse Events",
+      "trial": "ARASENS",
+      "domain": "missing",
+      "judgments": [
+        "low",
+        "low"
+      ]
+    }
+  ]
+}

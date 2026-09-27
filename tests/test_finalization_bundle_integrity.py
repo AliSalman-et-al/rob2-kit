@@ -1018,14 +1018,12 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     malformed = deepcopy(draft)
     malformed["answers"][0]["counterevidence"][1]["basis_index"] = 3
     before = _state(workspace)
-    rejected = _public_tool_result(workspace, "validate_domain_assessment", malformed)
+    rejected = _public_tool_result(workspace, "save_domain_judgment", malformed)
     assert rejected.is_error
     assert _state(workspace)["revision"] == before["revision"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
 
-    validated = _call(workspace, "validate_domain_assessment", draft)
-    assert validated["outcome"] == "success", validated
-    saved = _call(workspace, "save_domain_judgment", validated["data"]["next_action"])
+    saved = _call(workspace, "save_domain_judgment", draft)
     assert saved["outcome"] == "success", saved
     revision = int(saved["head"]["state_revision"])
     stored = _state(workspace)["domain_records"][f"trial:{domain_id}"]["answers"][0]
@@ -1105,7 +1103,7 @@ def test_d2_participant_flow_rows_pass_the_full_bundle_contract(tmp_path: Path) 
         }
     ]
     before = _state(workspace)
-    rejected = _public_tool_result(workspace, "validate_domain_assessment", invalid_question)
+    rejected = _public_tool_result(workspace, "save_domain_judgment", invalid_question)
     assert rejected.is_error
     assert _state(workspace)["revision"] == before["revision"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
@@ -1163,7 +1161,7 @@ def test_d2_participant_flow_rows_pass_the_full_bundle_contract(tmp_path: Path) 
     deviations_index = draft["answers"].index(deviations_answer)
     bad_quantity["answers"][deviations_index]["missing_data"][0]["observed"] = 98.5
     before = _state(workspace)
-    rejected_quantity = _public_tool_result(workspace, "validate_domain_assessment", bad_quantity)
+    rejected_quantity = _public_tool_result(workspace, "save_domain_judgment", bad_quantity)
     assert rejected_quantity.is_error
     assert _state(workspace)["revision"] == before["revision"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})

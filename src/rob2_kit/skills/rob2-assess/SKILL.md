@@ -216,7 +216,7 @@ question card as authoritative for wording, allowed answer values, activation,
 official guidance, decision rules, and uncertainty. Open the matching
 scientific reference when working on that Domain:
 
-Before the first `validate_domain_assessment` call, read
+Before the first `save_domain_judgment` call, read
 [Build a Domain answer](references/evidence.md#build-a-domain-answer) for the
 complete answer and basis shapes.
 
@@ -261,7 +261,7 @@ Before a new material discovery attempt, follow the
 [unresolved-premise loop](references/evidence.md#recover-an-unresolved-premise).
 Use it for material facts realistically discoverable in captured Sources, and
 keep the search or read in the same working assessment. Before
-`validate_domain_assessment` and `save_domain_judgment`, revisit material unknowns
+`save_domain_judgment`, revisit material unknowns
 against the Source inventory, identify the section inspected and facts still
 unavailable, then make one bounded search or read or document a bounded limit.
 
@@ -313,9 +313,8 @@ unknown; do not invent a downstream premise or answer. Include an inactive
 answer when it is already available; it needs no fabricated reasoning and the
 server ignores it. Use allowed card answer values and supported bases for every
 submitted answer. Submit the complete active set in one
-`validate_domain_assessment` call. The server resolves activation from the draft
-and commits active answers after `save_domain_judgment` consumes the returned
-revision.
+`save_domain_judgment` call. The server validates the draft, resolves activation,
+and commits active answers atomically at the expected revision.
 
 Before saving, compare each active answer with the approved Result in the
 current Domain context: outcome definition, population, comparison, and time
@@ -326,10 +325,9 @@ concise `justification`, an `unknowns` array, and a `counterevidence` array. The
 is complete when every active answer addresses that Result and its bases support
 the claims attributed to them.
 
-Do not make `save_domain_judgment` the primary next action. The next scientific
-step is `validate_domain_assessment` after `head.next_action`, `reading_recovery`,
-and any required Evidence reading are complete; follow another continuation
-first when it is present.
+Follow `head.next_action`, `reading_recovery`, and any required Evidence reading
+before submitting the Domain; follow another continuation first when it is
+present.
 
 For D3.1, run the **availability audit** before saving. Yes/Probably Yes needs
 evidence of all or nearly-all availability; No/Probably No needs evidence of
@@ -348,10 +346,10 @@ provenance and performs only scope-matched arithmetic. For an optional count
 preview before saving, follow
 [Reconcile availability](references/missing.md#reconcile-availability).
 
-Commit the exact draft stored by `validate_domain_assessment`. Supply its
-returned revision to `save_domain_judgment`; do not copy its internal audit
-identity. To change the draft, call `validate_domain_assessment` again with the
-complete revised draft.
+Supply the complete draft and current expected revision to `save_domain_judgment`.
+If its response is lost, retry the identical request with the original revision;
+the same accepted checkpoint is returned. A changed draft is a correction and
+must follow the explicit supersession rules.
 
 Apply every reported repair and retain other drafted answers. Add missing
 questions to the existing answer set. Resubmit the complete resulting active

@@ -44,6 +44,9 @@ def _table_workspace(tmp_path: Path) -> Path:
         + "Footnote: events were recorded at end of follow-up.\n",
         encoding="utf-8",
     )
+    (trial / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
+    )
     return tmp_path
 
 

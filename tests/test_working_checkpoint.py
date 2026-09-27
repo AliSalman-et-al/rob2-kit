@@ -341,7 +341,6 @@ def test_missing_working_notes_request_reorientation_without_changing_assessment
         "save_working_checkpoint",
         "search_sources",
         "read_pages",
-        "validate_domain_assessment",
     } <= choices
     after = _state(workspace)
     assert after["revision"] == before["revision"]
@@ -642,8 +641,8 @@ def test_investigation_projection_tracks_domain_dependency_and_unread_coverage(
     context_choices = {
         choice["operation"] for choice in context["data"]["investigation"]["recovery_choices"]
     }
-    assert "validate_domain_assessment" in context_choices
-    assert "save_domain_judgment" not in context_choices
+    assert "save_domain_judgment" in context_choices
+    assert "validate_domain_assessment" not in context_choices
     revision = int(context["head"]["state_revision"])
     saved_domain = _call(
         workspace,

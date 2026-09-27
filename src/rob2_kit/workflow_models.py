@@ -232,6 +232,14 @@ WorkingPremise = WorkingPremiseRecord
 
 class WorkingCheckpointDraft(StrictModel):
     trial_id: TrialId = Field(description="Current open Trial that owns these notes.")
+    main_report_source_id: SourceHandle | Literal["missing"] | None = Field(
+        default=None,
+        description=(
+            "Host resolution for an otherwise uncertain main-report identity: cite the selected "
+            "Source handle in an observation, use 'missing' with a source-backed explanation, "
+            "or leave null while unresolved. Explicit declared main_article roles take priority."
+        ),
+    )
     observations: tuple[WorkingNote, ...] = Field(
         default=(), max_length=16, description="Source-located facts observed in the Sources."
     )
@@ -281,6 +289,8 @@ class WorkingCheckpoint(StrictModel):
     batch_id: Identity
     trial_id: TrialId
     result_identity: Identity | None = None
+    # ``None`` preserves older checkpoints and means report identity was not resolved there.
+    main_report_source_id: SourceHandle | Literal["missing"] | None = None
     # ``None`` means a checkpoint written before this field existed.  An
     # explicit empty tuple is meaningful: it records that no Domain checkpoint
     # existed when the notes were saved.
@@ -1796,21 +1806,24 @@ class DomainAnswer(StrictModel):
     justification: str | None = Field(
         default=None,
         description=(
-            "Explain how cited facts support this answer when inference, conflict, or "
-            "uncertainty matters."
+            "Required for active answers: explain what the cited facts establish and why they "
+            "support the selected answer for the approved Result. Inactive branch answers may "
+            "omit this field."
         ),
     )
     unknowns: tuple[str, ...] | None = Field(
         default=None,
         description=(
-            "Unresolved facts that affect this answer; use an empty array when none are identified."
+            "Required for active answers: unresolved facts that affect this answer; use [] when "
+            "none are identified. Inactive branch answers may omit this field."
         ),
     )
     counterevidence: tuple[DomainCounterevidence, ...] | None = Field(
         default=None,
         description=(
-            "Counterpoints by zero-based basis index and their implication for this answer; "
-            "use an empty array when none are identified."
+            "Required for active answers: counterpoints by zero-based basis index and their "
+            "implication; use [] when none are identified. Inactive branch answers may omit this "
+            "field."
         ),
     )
 
@@ -2060,39 +2073,6 @@ class DomainDraft(StrictModel):
     domain_id: DomainId
     expected_revision: ExpectedRevision
     answers: tuple[DomainAnswer, ...]
-    supersedes: Identity | None = None
-    revision_basis: DomainRevisionBasis | None = None
-
-
-class DomainReasoningAnswer(DomainAnswer):
-    justification: str | None = Field(
-        default=None,
-        description=(
-            "For an active answer, what the cited bases establish and why they support the "
-            "selected option. Omit for inactive branch answers."
-        ),
-    )
-    unknowns: tuple[str, ...] | None = Field(
-        default=None,
-        description=(
-            "For an active answer, concrete unresolved facts; use [] when none are identified. "
-            "Omit for inactive branch answers."
-        ),
-    )
-    counterevidence: tuple[DomainCounterevidence, ...] | None = Field(
-        default=None,
-        description=(
-            "For an active answer, counterpoints referenced by zero-based basis index; use [] "
-            "when none are identified. Omit for inactive branch answers."
-        ),
-    )
-
-
-class DomainReasoningDraft(StrictModel):
-    trial_id: TrialId
-    domain_id: DomainId
-    expected_revision: ExpectedRevision
-    answers: tuple[DomainReasoningAnswer, ...]
     supersedes: Identity | None = None
     revision_basis: DomainRevisionBasis | None = None
 

@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
 from ..models import ResponseFramework, canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
-from ..workflow_models import DomainDraft, DomainReasoningDraft
+from ..workflow_models import DomainDraft
 from ._state import (
     _canonical_evidence_records,
     _commit_records,
@@ -2120,27 +2120,6 @@ def _host_asserted_sufficiency(summary: dict[str, Any] | None) -> dict[str, Any]
     }
 
 
-def _investigation_sufficiency(summary: dict[str, Any] | None) -> tuple[str, str]:
-    """Map the host's submitted basis into an advisory investigation status."""
-
-    claims = summary.get("claims", []) if isinstance(summary, dict) else []
-    statuses = {
-        item.get("status")
-        for item in claims
-        if isinstance(item, dict) and isinstance(item.get("status"), str)
-    }
-    if not statuses:
-        return "not_established", "not_established"
-    if "contradicted" in statuses:
-        return "contradicted", "host_asserted"
-    if "retrieval_incomplete" in statuses:
-        return "unresolved", "host_asserted"
-    if "unresolved" in statuses:
-        bounded = any(isinstance(item, dict) and item.get("unresolved_premises") for item in claims)
-        return "bounded" if bounded else "unresolved", "host_asserted"
-    return "supported", "host_asserted"
-
-
 def _counterfactual_answer_branch(
     domain_id: str,
     answers: dict[str, str],
@@ -2344,8 +2323,6 @@ def _canonical_observed_at(root: Path, identity: str) -> str | None:
 def save_domain_judgment(
     workspace: str | Path,
     draft: dict[str, Any] | DomainDraft,
-    *,
-    validate_only: bool = False,
 ) -> dict[str, Any]:
     """Validate and atomically persist one structured Domain checkpoint."""
     root = _root(workspace)
@@ -2713,6 +2690,64 @@ def save_domain_judgment(
     if repairs:
         return _result("repair", state, repairs=repairs)
 
+    reasoning_repairs: list[dict[str, Any]] = []
+    for answer_index, answer in active_answer_items:
+        if answer.justification is None:
+            reasoning_repairs.append(
+                _repair(
+                    f"/answers/{answer_index}/justification",
+                    "justification_required",
+                    "Every active answer needs a concise source-bound justification.",
+                )
+            )
+        if answer.unknowns is None:
+            reasoning_repairs.append(
+                _repair(
+                    f"/answers/{answer_index}/unknowns",
+                    "unknowns_required",
+                    "Every active answer needs an unknowns array; use [] when none are identified.",
+                )
+            )
+        if answer.counterevidence is None:
+            reasoning_repairs.append(
+                _repair(
+                    f"/answers/{answer_index}/counterevidence",
+                    "counterevidence_required",
+                    (
+                        "Every active answer needs a counterevidence array; use [] when none "
+                        "are identified."
+                    ),
+                )
+            )
+            continue
+        counterevidence_indexes = {item.basis_index for item in answer.counterevidence}
+        for item in answer.counterevidence:
+            if item.basis_index >= len(answer.bases):
+                reasoning_repairs.append(
+                    _repair(
+                        f"/answers/{answer_index}/counterevidence",
+                        "counterevidence_basis_index_invalid",
+                        (
+                            f"basis_index {item.basis_index} does not reference a basis "
+                            "in this answer."
+                        ),
+                    )
+                )
+        for basis_index, basis in enumerate(answer.bases):
+            if basis.kind == "contradiction" and basis_index not in counterevidence_indexes:
+                reasoning_repairs.append(
+                    _repair(
+                        f"/answers/{answer_index}/counterevidence",
+                        "contradiction_counterevidence_required",
+                        (
+                            f"basis {basis_index} is a contradiction and needs a "
+                            "counterevidence implication."
+                        ),
+                    )
+                )
+    if reasoning_repairs:
+        return _result("repair", state, repairs=reasoning_repairs)
+
     canonical_answer_values = {
         item.question_id: answers[item.question_id] for _, item in active_answer_items
     }
@@ -2770,6 +2805,9 @@ def save_domain_judgment(
     rows = dict(state.get("domain_records", {}))
     if rows.get(key, {}).get("identity") == record["identity"]:
         return _result("success", state, checkpoint=rows[key], retry=True)
+    current_revision = int(state.get("revision", 0))
+    if parsed.expected_revision != current_revision:
+        raise WorkflowConflict(parsed.expected_revision, current_revision)
     if existing_record is not None:
         if parsed.supersedes != existing_record.get("identity"):
             return _result(
@@ -2837,34 +2875,54 @@ def save_domain_judgment(
             record["observed_at"] = prior_observed_at
         if rows.get(key, {}).get("identity") == record["identity"]:
             return _result("success", state, checkpoint=rows[key], retry=True)
-    current_revision = int(state.get("revision", 0))
-    proposal_review = state.get("proposal_review")
-    proposal_basis = (
-        proposal_review.get("workflow_basis") if isinstance(proposal_review, dict) else None
-    )
-    if (
-        validate_only
-        and isinstance(proposal_basis, int)
-        and parsed.expected_revision < proposal_basis
-    ):
+    delivery = _domain_context_delivery(root, parsed.trial_id, parsed.domain_id, None)
+    if delivery is not None:
+        preview_scope = delivery.get("preview_scope")
+        current_basis = _domain_context_basis_identity(
+            state,
+            parsed.trial_id,
+            parsed.domain_id,
+            preview_scope if isinstance(preview_scope, list) else None,
+        )
+        if delivery.get("basis_identity") != current_basis:
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "domain_context_delivery_stale",
+                    "detail": (
+                        "The approved Result, RoB 2 pack, current Domain checkpoint, or preview "
+                        "changed. Restart get_domain_context before submitting this assessment."
+                    ),
+                },
+            )
+    if delivery is not None and not bool(delivery.get("complete")):
+        next_cursor = delivery.get("next_cursor")
+        if not isinstance(next_cursor, str) or not next_cursor:
+            return _result(
+                "condition",
+                state,
+                condition={
+                    "code": "domain_context_delivery_invalid",
+                    "detail": "The Domain context delivery is unrecoverable. Report the failure.",
+                },
+            )
         return _result(
             "condition",
             state,
             condition={
-                "code": "result_scope_stale",
-                "detail": "Reload this Domain context after the approved Result changed.",
+                "code": "domain_context_delivery_pending",
+                "detail": "Fetch the complete Domain context before submitting this assessment.",
+                "recovery": {
+                    "operation": "get_domain_context",
+                    "arguments": {
+                        "trial_id": parsed.trial_id,
+                        "domain_id": parsed.domain_id,
+                        "cursor": next_cursor,
+                        "max_response_bytes": delivery["page_size"],
+                    },
+                },
             },
-        )
-    if parsed.expected_revision != current_revision:
-        raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
-
-    if validate_only:
-        return _result(
-            "success",
-            state,
-            checkpoint=record,
-            active_question_ids=active,
-            validation_scope="structure_and_references_only",
         )
 
     rows[key] = record
@@ -2960,268 +3018,6 @@ def save_domain_judgment(
         trial_ready_for_review=snapshot is not None,
         continuation=_continuation(state),
     )
-
-
-def validate_domain_assessment(
-    workspace: str | Path, draft: dict[str, Any] | DomainReasoningDraft
-) -> dict[str, Any]:
-    """Validate and persist one mandatory, source-bound Domain reasoning record."""
-    root = _root(workspace)
-    _ensure(root)
-    state = _state(root)
-    try:
-        parsed = (
-            draft
-            if isinstance(draft, DomainReasoningDraft)
-            else DomainReasoningDraft.model_validate(draft)
-        )
-    except ValidationError as error:
-        return _result("repair", state, repairs=_repairs(error))
-
-    payload = parsed.model_dump(mode="json")
-    reasoning_id = _identity({"kind": "domain_reasoning", "draft": payload})
-    records = state.get("reasoning_records")
-    prior = records.get(reasoning_id) if isinstance(records, dict) else None
-    if isinstance(prior, dict):
-        if not _domain_reasoning_matches_current(root, prior, state):
-            return _result(
-                "condition",
-                state,
-                condition={
-                    "code": "reasoning_stale",
-                    "detail": (
-                        "The Domain receipt is stale. Refresh the explicit Trial and Domain, "
-                        "complete every returned context page, revalidate the complete draft, "
-                        "and save the returned receipt. Otherwise follow head.next_action."
-                    ),
-                },
-            )
-        return _reasoning_receipt(state, prior)
-
-    current_revision = int(state.get("revision", 0))
-    if parsed.expected_revision != current_revision:
-        raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
-    delivery = _domain_context_delivery(root, parsed.trial_id, parsed.domain_id, None)
-    if delivery is not None:
-        preview_scope = delivery.get("preview_scope")
-        current_basis = _domain_context_basis_identity(
-            state,
-            parsed.trial_id,
-            parsed.domain_id,
-            preview_scope if isinstance(preview_scope, list) else None,
-        )
-        if delivery.get("basis_identity") != current_basis:
-            return _result(
-                "condition",
-                state,
-                condition={
-                    "code": "domain_context_delivery_stale",
-                    "detail": (
-                        "The approved Result, RoB 2 pack, current Domain checkpoint, or preview "
-                        "changed. Restart get_domain_context before validating this assessment."
-                    ),
-                },
-            )
-    if delivery is not None and not bool(delivery.get("complete")):
-        next_cursor = delivery.get("next_cursor")
-        if not isinstance(next_cursor, str) or not next_cursor:
-            return _result(
-                "condition",
-                state,
-                condition={
-                    "code": "domain_context_delivery_invalid",
-                    "detail": "The Domain context delivery is unrecoverable. Report the failure.",
-                },
-            )
-        return _result(
-            "condition",
-            state,
-            condition={
-                "code": "domain_context_delivery_pending",
-                "detail": "Fetch the complete Domain context before reasoning about this draft.",
-                "recovery": {
-                    "operation": "get_domain_context",
-                    "arguments": {
-                        "trial_id": parsed.trial_id,
-                        "domain_id": parsed.domain_id,
-                        "cursor": next_cursor,
-                        "max_response_bytes": delivery["page_size"],
-                    },
-                },
-            },
-        )
-
-    validation = save_domain_judgment(root, payload, validate_only=True)
-    if validation.get("outcome") != "success":
-        return validation
-    checkpoint = validation.get("checkpoint")
-    if not isinstance(checkpoint, dict):
-        raise ValueError("validated Domain reasoning is missing its checkpoint")
-    predecessor = (state.get("domain_records") or {}).get(f"{parsed.trial_id}:{parsed.domain_id}")
-    active_ids = set(checkpoint.get("active_questions", ()))
-    reasoning_repairs: list[dict[str, Any]] = []
-    for answer_index, answer in enumerate(parsed.answers):
-        if answer.question_id not in active_ids:
-            continue
-        if answer.justification is None:
-            reasoning_repairs.append(
-                _repair(
-                    f"/answers/{answer_index}/justification",
-                    "justification_required",
-                    "Every active answer needs a concise source-bound justification.",
-                )
-            )
-        if answer.unknowns is None:
-            reasoning_repairs.append(
-                _repair(
-                    f"/answers/{answer_index}/unknowns",
-                    "unknowns_required",
-                    "Every active answer needs an unknowns array; use [] when none are identified.",
-                )
-            )
-        if answer.counterevidence is None:
-            reasoning_repairs.append(
-                _repair(
-                    f"/answers/{answer_index}/counterevidence",
-                    "counterevidence_required",
-                    (
-                        "Every active answer needs a counterevidence array; use [] when none "
-                        "are identified."
-                    ),
-                )
-            )
-            continue
-        counterevidence_indexes = {item.basis_index for item in answer.counterevidence}
-        for item in answer.counterevidence:
-            if item.basis_index >= len(answer.bases):
-                reasoning_repairs.append(
-                    _repair(
-                        f"/answers/{answer_index}/counterevidence",
-                        "counterevidence_basis_index_invalid",
-                        (
-                            f"basis_index {item.basis_index} does not reference a basis "
-                            "in this answer."
-                        ),
-                    )
-                )
-        for basis_index, basis in enumerate(answer.bases):
-            if basis.kind == "contradiction" and basis_index not in counterevidence_indexes:
-                reasoning_repairs.append(
-                    _repair(
-                        f"/answers/{answer_index}/counterevidence",
-                        "contradiction_counterevidence_required",
-                        (
-                            f"basis {basis_index} is a contradiction and needs a "
-                            "counterevidence implication."
-                        ),
-                    )
-                )
-    if reasoning_repairs:
-        return _result("repair", state, repairs=reasoning_repairs)
-    record = {
-        "kind": "domain_reasoning",
-        "identity": reasoning_id,
-        "trial_id": parsed.trial_id,
-        "domain_id": parsed.domain_id,
-        "draft": payload,
-        "checkpoint_identity": checkpoint["identity"],
-        "predecessor_identity": (
-            predecessor.get("identity") if isinstance(predecessor, dict) else None
-        ),
-        "result_identity": checkpoint["result_identity"],
-        "pack_identity": _pack_identity(),
-        "active_question_ids": list(checkpoint["active_questions"]),
-        "validation_scope": "structure_and_references_only",
-        "created_revision": current_revision,
-        "save_revision": current_revision + 1,
-    }
-    reasoning_records = dict(records) if isinstance(records, dict) else {}
-    reasoning_records[reasoning_id] = record
-    committed = _commit_records(
-        root,
-        {**state, "reasoning_records": reasoning_records},
-        current_revision,
-        {f"reasoning:{reasoning_id}": record},
-    )
-    receipt = _reasoning_receipt(committed, record)
-    receipt["investigation"] = investigation_projection(
-        root,
-        committed,
-        parsed.trial_id,
-        parsed.domain_id,
-        workflow_permission={
-            "permitted": True,
-            "operation": "save_domain_judgment",
-            "authority": "host",
-            "detail": (
-                "The structurally validated draft may be saved; this permission does not "
-                "establish scientific sufficiency."
-            ),
-        },
-        sufficiency=_investigation_sufficiency(checkpoint.get("evidence_sufficiency")),
-        active_question_ids=tuple(checkpoint.get("active_questions", ())),
-    )
-    return receipt
-
-
-def _reasoning_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[str, Any]:
-    next_action = {
-        "trial_id": record["trial_id"],
-        "domain_id": record["domain_id"],
-        "expected_revision": record["save_revision"],
-    }
-    continuation = {
-        "operation": "save_domain_judgment",
-        "authority": "host",
-        **next_action,
-    }
-    return _result(
-        "success",
-        state,
-        active_question_ids=record["active_question_ids"],
-        validation_scope=record["validation_scope"],
-        repairs=[],
-        next_action=next_action,
-        continuation=continuation,
-    )
-
-
-def _domain_reasoning_matches_current(
-    root: Path, record: dict[str, Any], state: dict[str, Any] | None = None
-) -> bool:
-    draft = record.get("draft")
-    if (
-        not isinstance(draft, dict)
-        or record.get("pack_identity") != _pack_identity()
-        or record.get("result_identity") is None
-    ):
-        return False
-    state = state if state is not None else _state(root)
-    current = (state.get("domain_records") or {}).get(
-        f"{record.get('trial_id')}:{record.get('domain_id')}"
-    )
-    current_identity = current.get("identity") if isinstance(current, dict) else None
-    if current_identity not in {
-        record.get("predecessor_identity"),
-        record.get("checkpoint_identity"),
-    }:
-        return False
-    if _identity(_approved_result(state, str(record["trial_id"]))) != record["result_identity"]:
-        return False
-    if int(state.get("revision", 0)) == record.get("save_revision"):
-        return True
-
-    draft = {**draft, "expected_revision": int(state.get("revision", 0))}
-    validation = save_domain_judgment(root, draft, validate_only=True)
-    checkpoint = validation.get("checkpoint")
-    if (
-        validation.get("outcome") != "success"
-        or not isinstance(checkpoint, dict)
-        or checkpoint.get("identity") != record.get("checkpoint_identity")
-        or checkpoint.get("result_identity") != record.get("result_identity")
-    ):
-        return False
-    return True
 
 
 def get_domain_context(
@@ -3875,7 +3671,7 @@ def get_domain_context(
         }
 
     continuation: dict[str, Any] = {
-        "operation": "validate_domain_assessment",
+        "operation": "save_domain_judgment",
         "authority": "host",
         "trial_id": trial_id,
         "domain_id": domain_id,
@@ -3919,11 +3715,11 @@ def get_domain_context(
             domain_id,
             workflow_permission={
                 "permitted": True,
-                "operation": "validate_domain_assessment",
+                "operation": "save_domain_judgment",
                 "authority": "host",
                 "detail": (
-                    "The Domain draft may be structurally validated; this permission does not "
-                    "establish scientific sufficiency."
+                    "The complete Domain draft may be submitted; structural success does not "
+                    "establish scientific correctness or sufficiency."
                 ),
             },
             active_question_ids=tuple(

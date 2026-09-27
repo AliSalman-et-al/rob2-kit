@@ -267,7 +267,6 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
             "validate_proposal": 4,
             "save_proposal": 5,
             "request_proposal_approval": 2,
-            "validate_domain_assessment": 4,
             "save_domain_judgment": 4,
             "review_trial": 3,
             "close_trial": 3,
@@ -647,7 +646,6 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
             "validate_proposal": "#/$defs/ValidateProposalAction",
             "save_proposal": "#/$defs/SaveProposalAction",
             "get_domain_context": "#/$defs/GetDomainContextAction",
-            "validate_domain_assessment": "#/$defs/ValidateDomainAssessmentAction",
             "save_domain_judgment": "#/$defs/SaveDomainJudgmentAction",
             "review_trial": "#/$defs/ReviewTrialAction",
             "close_trial": "#/$defs/CloseTrialAction",
@@ -661,7 +659,6 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
         "ValidateProposalAction",
         "PrepareBatchAction",
         "GetDomainContextAction",
-        "ValidateDomainAssessmentAction",
         "SaveDomainJudgmentAction",
         "ReviewTrialAction",
         "CloseTrialAction",
@@ -675,7 +672,7 @@ def test_next_action_is_operation_discriminated_and_closed() -> None:
     close_definition = definitions["CloseTrialAction"]
     assert "caller_inputs" not in close_definition["properties"]
     assert "review_reference" in close_definition["required"]
-    assert "supersedes" not in definitions["SaveDomainJudgmentAction"]["properties"]
+    assert "supersedes" in definitions["SaveDomainJudgmentAction"]["properties"]
 
     with pytest.raises(ValidationError):
         validate_output(
@@ -1046,13 +1043,16 @@ def test_save_proposal_schema_is_closed_and_discriminated() -> None:
 def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     schema = _tool_schema("save_domain_judgment")
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["trial_id", "domain_id", "expected_revision"]
+    assert schema["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
     assert set(schema["properties"]) == {
         "trial_id",
         "domain_id",
         "expected_revision",
+        "answers",
+        "supersedes",
+        "revision_basis",
     }
-    draft = _tool_schema("validate_domain_assessment")
+    draft = schema
     assert draft["additionalProperties"] is False
     assert "multiple_concerns" not in draft["properties"]
     assert draft["required"] == ["trial_id", "domain_id", "expected_revision", "answers"]
@@ -1096,6 +1096,9 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
     )
     (tmp_path / "input" / "trial").mkdir(parents=True)
     (tmp_path / "input" / "trial" / "main.txt").write_text(quote, encoding="utf-8")
+    (tmp_path / "input" / "trial" / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
+    )
 
     prepared = _call(
         tmp_path,

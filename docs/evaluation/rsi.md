@@ -134,15 +134,44 @@ condition delivery or effect should be inferred for them. Thus these launches
 cover the observable Source-availability contrasts only and do not complete
 all #463 conditions.
 
-The launcher pins GPT-6 Luna Medium from the plan, requires deny-by-default
-host isolation, and starts one phase-one `run_rsi_case.py` process in a fresh
-directory for each selected arm/case/draw. It retains every JSONL trace,
-launcher stdout/stderr, and source materialization result; it does not load
-labels. It rechecks case, prompt, Source, and runner bytes before each draw.
-The launch manifest also preserves host, model, and artifact identities copied
-from the plan as declared values; it does not claim that these match observed
-runtime identities. Phase one commonly stops at Proposal Review, so its exit
-is not necessarily a completed assessment.
+The launcher supports three explicit Codex CLI profiles: GPT-6 Luna version 6
+at medium or high effort, and GPT-6 Sol version 6 at high effort. Before it
+creates a campaign, it checks that the installed CLI's `codex debug models`
+catalog advertises the selected model and effort. The historical Luna Medium
+profile remains the baseline. A continuation rechecks that profile and the
+Codex CLI preflight identity recorded at launch. The launcher requires
+deny-by-default host isolation and starts one phase-one `run_rsi_case.py`
+process in a fresh directory for each selected arm/case/draw. It retains every
+JSONL trace, launcher stdout/stderr, and source materialization result; it does
+not load labels. It rechecks case, prompt, Source, and runner bytes before each
+draw. The launch manifest keeps the plan's declared host, model, and artifact
+identities separate from the observed CLI executable, version, and advertised
+comparison profiles. A requested profile is not proof of the model or effort
+served at runtime; identity not reported by the runtime remains unknown.
+Phase one commonly stops at Proposal Review, so its exit is not necessarily a
+completed assessment.
+
+To compare model or effort, make two copies of the same completed config and
+change only `plan.model` between runs. Keep the interventions, inputs, prompt,
+Sources, Results, budgets, draws, retry rule, and scorer fixed, and use a new
+campaign directory for each profile. For example, compare the historical Luna
+Medium baseline with Luna High or Sol High on one case and the same supported
+factor. A two-draw, two-arm plan launches four draws per profile; retain and
+report every draw, including failures. Run the same dry-run command for each
+config before launching it:
+
+```powershell
+uv run python scripts/run_development_comparison.py `
+  --config eval/runs/development-comparison/config-luna-high.json `
+  --interventions eval/runs/development-comparison/interventions.json `
+  --inputs eval/runs/development-comparison/inputs.json `
+  --campaign-dir eval/runs/development-comparison/luna-high `
+  --factor evidence_exposure `
+  --dry-run
+```
+
+Effort labels name each model's CLI setting; they do not assert equivalent
+reasoning budgets across models or providers.
 
 After inspecting and explicitly approving each Proposal Review with the
 researcher-only `rob2 review` command, continue the same campaign with the

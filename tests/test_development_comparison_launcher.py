@@ -4,12 +4,33 @@ import hashlib
 import json
 import runpy
 import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 _SCRIPTS = Path(__file__).parents[1] / "scripts"
 _LAUNCHER = runpy.run_path(str(_SCRIPTS / "run_development_comparison.py"))
+_LAUNCHER_GLOBALS = _LAUNCHER["main"].__globals__
+_REAL_CODEX_PREFLIGHT = _LAUNCHER["_preflight_codex_profile"]
+
+
+def _mock_codex_preflight(model: dict[str, str]) -> dict[str, object]:
+    _LAUNCHER["_validate_declared_profile"](model)
+    return {
+        "executable": str(Path(sys.executable).resolve()),
+        "version": "codex-cli test",
+        "advertised_comparison_profiles": [
+            {"family": family, "version": version, "effort": effort}
+            for family, version, effort in sorted(_LAUNCHER["SUPPORTED_CODEX_PROFILES"])
+        ],
+    }
+
+
+@pytest.fixture(autouse=True)
+def _mock_codex_cli_preflight(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setitem(_LAUNCHER_GLOBALS, "_preflight_codex_profile", _mock_codex_preflight)
 
 
 def _hash(value: bytes) -> str:
@@ -208,10 +229,21 @@ print('fake runner completed')
     return config_path, interventions_path, inputs_path, runner_path, input_root
 
 
+@pytest.mark.parametrize(
+    ("family", "effort"),
+    [
+        ("gpt-6-luna", "medium"),
+        ("gpt-6-luna", "high"),
+        ("gpt-6-sol", "high"),
+    ],
+)
 def test_campaign_launches_each_frozen_arm_case_draw_isolated_and_retains_jsonl(
-    tmp_path: Path,
+    tmp_path: Path, family: str, effort: str
 ) -> None:
     config, interventions, inputs, runner, _input_root = _campaign_inputs(tmp_path)
+    config_data = json.loads(config.read_text(encoding="utf-8"))
+    config_data["plan"]["model"] = {"family": family, "version": "6", "effort": effort}
+    config.write_text(json.dumps(config_data), encoding="utf-8")
     campaign_dir = tmp_path / "campaign"
 
     result = _LAUNCHER["main"](
@@ -237,6 +269,8 @@ def test_campaign_launches_each_frozen_arm_case_draw_isolated_and_retains_jsonl(
     assert launch["declared_draw_count"] == 10
     assert launch["planned_draw_count"] == 4
     assert launch["selected_factor"] == "evidence_exposure"
+    assert launch["model"] == {"family": family, "version": "6", "effort": effort}
+    assert launch["preflight_observation"]["version"] == "codex-cli test"
     assert set(launch["excluded_pairs"]) == {"fact-binding", "context", "review"}
     assert len(launch["attempts"]) == 4
     assert {row["launch_status"] for row in launch["attempts"]} == {"phase_started"}
@@ -246,8 +280,8 @@ def test_campaign_launches_each_frozen_arm_case_draw_isolated_and_retains_jsonl(
     assert all(row["source_identities"] for row in launch["attempts"])
     assert all(
         "--require-isolated-host" in row["command"]
-        and row["command"][row["command"].index("--model") + 1] == "gpt-6-luna"
-        and row["command"][row["command"].index("--effort") + 1] == "medium"
+        and row["command"][row["command"].index("--model") + 1] == family
+        and row["command"][row["command"].index("--effort") + 1] == effort
         for row in launch["attempts"]
     )
     assert all((campaign_dir / row["trace"]).is_file() for row in launch["attempts"])
@@ -286,6 +320,198 @@ def test_campaign_preflights_all_prompt_hashes_before_creating_campaign(tmp_path
 
     assert error.value.code == 2
     assert not campaign_dir.exists()
+
+
+@pytest.mark.parametrize(
+    "model",
+    [
+        {"family": "gpt-6-luna", "version": "6", "effort": "low"},
+        {"family": "gpt-6-astra", "version": "6", "effort": "high"},
+    ],
+)
+def test_campaign_rejects_unsupported_codex_profile_before_creating_campaign(
+    tmp_path: Path, model: dict[str, str]
+) -> None:
+    config, interventions, inputs, runner, _input_root = _campaign_inputs(tmp_path)
+    config_data = json.loads(config.read_text(encoding="utf-8"))
+    config_data["plan"]["model"] = model
+    config.write_text(json.dumps(config_data), encoding="utf-8")
+    campaign_dir = tmp_path / "campaign"
+
+    with pytest.raises(SystemExit) as error:
+        _LAUNCHER["main"](
+            [
+                "--config",
+                str(config),
+                "--interventions",
+                str(interventions),
+                "--inputs",
+                str(inputs),
+                "--campaign-dir",
+                str(campaign_dir),
+                "--factor",
+                "evidence_exposure",
+                "--runner",
+                str(runner),
+                "--dry-run",
+            ]
+        )
+
+    assert error.value.code == 2
+    assert not campaign_dir.exists()
+
+
+def test_codex_catalog_preflight_rejects_unadvertised_effort() -> None:
+    catalog = {
+        "models": [
+            {
+                "slug": "gpt-6-luna",
+                "visibility": "list",
+                "supported_in_api": True,
+                "supported_reasoning_levels": [{"effort": "medium"}],
+            },
+            {
+                "slug": "gpt-6-sol",
+                "visibility": "list",
+                "supported_in_api": True,
+                "supported_reasoning_levels": [{"effort": "high"}],
+            },
+        ]
+    }
+    available = _LAUNCHER["_codex_profile_catalog"](catalog)
+
+    assert available == {
+        ("gpt-6-luna", "6", "medium"),
+        ("gpt-6-sol", "6", "high"),
+    }
+    with pytest.raises(ValueError, match="does not advertise.*gpt-6-luna.*high effort"):
+        _LAUNCHER["_validate_catalog_profile"](("gpt-6-luna", "6", "high"), available)
+
+
+def test_codex_preflight_stores_only_runtime_identity_and_supported_profiles(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    catalog = {
+        "models": [
+            {
+                "slug": "gpt-6-luna",
+                "visibility": "list",
+                "supported_in_api": True,
+                "supported_reasoning_levels": [
+                    {"effort": "medium"},
+                    {"effort": "high"},
+                ],
+                "model_messages": {"instructions": "private model prompt"},
+            },
+            {
+                "slug": "gpt-6-sol",
+                "visibility": "list",
+                "supported_in_api": True,
+                "supported_reasoning_levels": [{"effort": "high"}],
+            },
+        ]
+    }
+
+    def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
+        if command[1:] == ["debug", "models"]:
+            return SimpleNamespace(returncode=0, stdout=json.dumps(catalog), stderr="")
+        return SimpleNamespace(returncode=0, stdout="codex-cli 0.157.1\n", stderr="")
+
+    monkeypatch.setitem(_LAUNCHER_GLOBALS, "_codex_executable", lambda: Path("codex.exe"))
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    observation = _REAL_CODEX_PREFLIGHT(
+        {"family": "gpt-6-luna", "version": "6", "effort": "medium"}
+    )
+
+    assert observation == {
+        "executable": "codex.exe",
+        "version": "codex-cli 0.157.1",
+        "advertised_comparison_profiles": [
+            {"family": "gpt-6-luna", "version": "6", "effort": "high"},
+            {"family": "gpt-6-luna", "version": "6", "effort": "medium"},
+            {"family": "gpt-6-sol", "version": "6", "effort": "high"},
+        ],
+    }
+    assert "private model prompt" not in json.dumps(observation)
+
+
+def test_campaign_rejects_profile_missing_from_host_catalog_before_creation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config, interventions, inputs, runner, _input_root = _campaign_inputs(tmp_path)
+    config_data = json.loads(config.read_text(encoding="utf-8"))
+    config_data["plan"]["model"] = {"family": "gpt-6-sol", "version": "6", "effort": "high"}
+    config.write_text(json.dumps(config_data), encoding="utf-8")
+    catalog = {
+        "models": [
+            {
+                "slug": "gpt-6-luna",
+                "visibility": "list",
+                "supported_in_api": True,
+                "supported_reasoning_levels": [{"effort": "medium"}],
+            }
+        ]
+    }
+
+    def preflight(model: dict[str, str]) -> dict[str, str]:
+        profile = _LAUNCHER["_validate_declared_profile"](model)
+        _LAUNCHER["_validate_catalog_profile"](
+            profile, _LAUNCHER["_codex_profile_catalog"](catalog)
+        )
+        return {}
+
+    monkeypatch.setitem(_LAUNCHER_GLOBALS, "_preflight_codex_profile", preflight)
+    campaign_dir = tmp_path / "campaign"
+
+    with pytest.raises(SystemExit) as error:
+        _LAUNCHER["main"](
+            [
+                "--config",
+                str(config),
+                "--interventions",
+                str(interventions),
+                "--inputs",
+                str(inputs),
+                "--campaign-dir",
+                str(campaign_dir),
+                "--factor",
+                "evidence_exposure",
+                "--runner",
+                str(runner),
+            ]
+        )
+
+    assert error.value.code == 2
+    assert not campaign_dir.exists()
+
+
+def test_preflight_rejects_relative_codex_override(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CODEX_EXECUTABLE", "./alternate-codex.exe")
+
+    with pytest.raises(ValueError, match="CODEX_EXECUTABLE must be an absolute path"):
+        _LAUNCHER["_codex_executable"]()
+
+
+def test_preflight_rejects_missing_codex_override(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CODEX_EXECUTABLE", str(tmp_path / "missing-codex.exe"))
+
+    with pytest.raises(ValueError, match="CODEX_EXECUTABLE does not exist"):
+        _LAUNCHER["_codex_executable"]()
+
+
+def test_runner_environment_uses_preflight_executable() -> None:
+    executable = str(Path(sys.executable).resolve())
+    environment = _LAUNCHER["_runner_environment"]({"executable": executable})
+
+    assert environment is not None
+    assert environment["CODEX_EXECUTABLE"] == executable
+    with pytest.raises(ValueError, match="absolute executable"):
+        _LAUNCHER["_runner_environment"]({"executable": "codex"})
 
 
 def test_launcher_rechecks_frozen_prompt_before_each_draw(tmp_path: Path) -> None:
@@ -554,10 +780,17 @@ def test_fact_table_stays_in_campaign_inputs_outside_trial_corpus(tmp_path: Path
     assert facts_attempt["source_materialization"]["status"] == "verified"
 
 
+@pytest.mark.parametrize(
+    ("family", "effort"),
+    [("gpt-6-luna", "medium"), ("gpt-6-luna", "high"), ("gpt-6-sol", "high")],
+)
 def test_continue_approved_uses_frozen_prompt_and_same_session_without_approving_review(
-    tmp_path: Path,
+    tmp_path: Path, family: str, effort: str
 ) -> None:
     config, interventions, inputs, runner, _input_root = _campaign_inputs(tmp_path)
+    config_data = json.loads(config.read_text(encoding="utf-8"))
+    config_data["plan"]["model"] = {"family": family, "version": "6", "effort": effort}
+    config.write_text(json.dumps(config_data), encoding="utf-8")
     campaign_dir = tmp_path / "campaign"
     launch_args = [
         "--config",
@@ -591,17 +824,70 @@ def test_continue_approved_uses_frozen_prompt_and_same_session_without_approving
     assert _LAUNCHER["main"]([*launch_args, "--continue-approved"]) == 0
     launch = json.loads((campaign_dir / "launch.json").read_text(encoding="utf-8"))
     assert all(row["execution_state"] == "succeeded" for row in launch["attempts"])
+    assert launch["model"] == {"family": family, "version": "6", "effort": effort}
     for row in launch["attempts"]:
+        assert row["command"][row["command"].index("--model") + 1] == family
+        assert row["command"][row["command"].index("--effort") + 1] == effort
         continuation = row["continuations"][-1]
         command = continuation["command"]
         assert command[command.index("--session") + 1] == "codex-session-fixed"
         assert command[command.index("--prompt") + 1] == str(
             (campaign_dir / "continuation.txt").resolve()
         )
+        assert command[command.index("--model") + 1] == family
+        assert command[command.index("--effort") + 1] == effort
+        assert continuation["preflight_observation"] == launch["preflight_observation"]
         assert "--case" not in command
         assert "rob2 review" not in " ".join(command)
         assert continuation["trace_retained"]
         assert continuation["trace_identity"].startswith("sha256:")
+
+
+def test_continue_rejects_changed_codex_preflight_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config_path, interventions_path, inputs_path, runner, _input_root = _campaign_inputs(tmp_path)
+    campaign_dir = tmp_path / "campaign"
+    launch_args = [
+        "--config",
+        str(config_path),
+        "--interventions",
+        str(interventions_path),
+        "--inputs",
+        str(inputs_path),
+        "--campaign-dir",
+        str(campaign_dir),
+        "--factor",
+        "evidence_exposure",
+        "--runner",
+        str(runner),
+    ]
+    assert _LAUNCHER["main"](launch_args) == 0
+
+    monkeypatch.setitem(
+        _LAUNCHER_GLOBALS,
+        "_preflight_codex_profile",
+        lambda _model: {
+            "executable": "codex",
+            "version": "codex-cli changed",
+            "advertised_comparison_profiles": [
+                {"family": family, "version": version, "effort": effort}
+                for family, version, effort in sorted(_LAUNCHER["SUPPORTED_CODEX_PROFILES"])
+            ],
+        },
+    )
+    with pytest.raises(ValueError, match="preflight identity differs"):
+        _LAUNCHER["continue_approved_campaign"](
+            campaign_dir.resolve(),
+            config=json.loads(config_path.read_text(encoding="utf-8")),
+            interventions=json.loads(interventions_path.read_text(encoding="utf-8")),
+            inputs=json.loads(inputs_path.read_text(encoding="utf-8")),
+            runner=runner,
+            factor="evidence_exposure",
+            runner_call=lambda *_args, **_kwargs: pytest.fail(
+                "campaign with a different Codex CLI identity must not be continued"
+            ),
+        )
 
 
 @pytest.mark.parametrize(

@@ -219,6 +219,9 @@ def test_proposal_approval_does_not_clobber_a_concurrent_revision(
         "measured in the analyzed population.; risk; 1; events; 2.\n",
         encoding="utf-8",
     )
+    (trial / "sources.toml").write_text(
+        'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
+    )
     evidence = _prepared_evidence(workspace)
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert saved["outcome"] == "review_required"

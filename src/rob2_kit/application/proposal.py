@@ -26,7 +26,7 @@ from .evidence import (
     _result_value_contains,
     main_report_read_gaps,
 )
-from .working import working_checkpoint_status
+from .working import main_report_identity, working_checkpoint_status
 
 
 def _leaves(value: Any, path: str) -> dict[str, Any]:
@@ -1471,6 +1471,32 @@ def save_proposal(
     else:
         canonical_by_trial = {item["trial_id"]: item for item in canonical}
         raw["results"] = [canonical_by_trial[trial_id] for trial_id in expected_trials_in_order]
+    unresolved_report_trials = [
+        result["trial_id"]
+        for result in raw["results"]
+        if result["kind"] == "assessable"
+        and main_report_identity(root, state, result["trial_id"])["identity_status"] == "unresolved"
+    ]
+    if unresolved_report_trials:
+        return _result(
+            "repair",
+            state,
+            repairs=[
+                {
+                    "path": "/results",
+                    "code": "main_report_identity_unresolved",
+                    "detail": (
+                        "Resolve the main-report identity for each assessable Trial before "
+                        "submitting the Proposal. Review get_status data.main_report_reading "
+                        "and the Source inventory, then save a source-backed "
+                        "main_report_source_id observation in the existing working checkpoint. "
+                        "If no main report is present, record 'missing' with a source-backed "
+                        "explanation; fallback reading is only orientation and does not "
+                        "establish report coverage."
+                    ),
+                }
+            ],
+        )
     identity = _identity(raw)
     if state.get("phase") != "proposal" and not revising_approved and not revision_in_progress:
         raise ValueError("proposal is not the current operation")

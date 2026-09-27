@@ -37,6 +37,7 @@ from ._state import (
     internal_path,
 )
 from .contracts import COUNTERS
+from .source_handles import source_handle
 
 MAIN_REPORT_TEXT_BUDGET = 65_536
 _SEARCH_PREVIEW_MAX_BYTES = 512
@@ -169,7 +170,7 @@ def _source_navigation(
 ) -> dict[str, Any]:
     """Return bounded literal navigation over one verified persisted projection."""
 
-    entries = _source_navigation_entries(pages)
+    entries = _source_navigation_entries(pages, trial_id=trial_id, source_id=source["id"])
     offset = 0
     if cursor is not None:
         payload = _decode_source_navigation_cursor(cursor)
@@ -272,7 +273,42 @@ def _decode_source_navigation_cursor(cursor: str) -> dict[str, Any]:
     return payload
 
 
-def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
+def _bounded_navigation_text(
+    text: str,
+    *,
+    trial_id: str | None,
+    source_id: str | None,
+    page: int,
+    start_line: int,
+    end_line: int,
+) -> str:
+    if len(text) <= _SOURCE_NAVIGATION_MAX_TEXT:
+        return text
+    if trial_id is not None and source_id is not None:
+        recovery = json.dumps(
+            {
+                "trial_id": trial_id,
+                "windows": [
+                    {
+                        "source_id": source_handle(source_id),
+                        "page": page,
+                        "start_line": start_line,
+                        "end_line": end_line,
+                    }
+                ],
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+        marker = f" … [omitted; read_pages {recovery}]"
+    else:
+        marker = f" … [omitted; read_pages page={page} lines={start_line}-{end_line}]"
+    return text[: _SOURCE_NAVIGATION_MAX_TEXT - len(marker)].rstrip() + marker
+
+
+def _source_navigation_entries(
+    pages: tuple[str, ...], *, trial_id: str | None = None, source_id: str | None = None
+) -> list[dict[str, Any]]:
     """Index literal headings, leads, and cross-references without inferring meaning."""
 
     page_lines = [page.splitlines() for page in pages]
@@ -502,13 +538,43 @@ def _source_navigation_entries(pages: tuple[str, ...]) -> list[dict[str, Any]]:
     # response limit; truncating this list would make late sections
     # unreachable while reporting a false terminal page.
     ordered = sorted(ordered, key=lambda item: (item["page"], item["start_line"], item["kind"]))
-    current_section: str | None = None
+    current_section: tuple[str, int, int, int] | None = None
     for item in ordered:
+        text = item["text"]
+        page = item["page"]
+        start_line = item["start_line"]
+        end_line = item["end_line"]
         if item["kind"] == "heading_candidate":
-            current_section = item["text"]
-        item["logical_section"] = current_section
+            current_section = (text, page, start_line, end_line)
+        item["text"] = _bounded_navigation_text(
+            text,
+            trial_id=trial_id,
+            source_id=source_id,
+            page=page,
+            start_line=start_line,
+            end_line=end_line,
+        )
+        item["logical_section"] = (
+            _bounded_navigation_text(
+                current_section[0],
+                trial_id=trial_id,
+                source_id=source_id,
+                page=current_section[1],
+                start_line=current_section[2],
+                end_line=current_section[3],
+            )
+            if current_section is not None
+            else None
+        )
         if item["kind"] == "version_lead":
-            item["embedded_version"] = item["text"]
+            item["embedded_version"] = _bounded_navigation_text(
+                text,
+                trial_id=trial_id,
+                source_id=source_id,
+                page=page,
+                start_line=start_line,
+                end_line=end_line,
+            )
     return ordered
 
 
@@ -2954,27 +3020,77 @@ def record_read_coverage_batch(
         )
 
 
-def _main_report_sources(trial: dict[str, Any]) -> list[dict[str, Any]]:
+def _main_report_identity(root: Path, state: dict[str, Any], trial_id: str) -> dict[str, Any]:
+    from .working import main_report_identity
+
+    return main_report_identity(root, state, trial_id)
+
+
+def _main_report_sources(
+    trial: dict[str, Any], source_ids: tuple[str, ...]
+) -> list[dict[str, Any]]:
     sources = [item for item in trial.get("sources", []) if isinstance(item, dict)]
-    main = [item for item in sources if item.get("role") == "main_article"]
-    if main:
-        return sorted(
-            main, key=lambda item: (str(item.get("logical_path", "")), str(item.get("id", "")))
-        )
-    priority = {"protocol": 0, "sap": 1, "supplement": 2, "other": 3, "registry": 4}
+    selected = [item for item in sources if item.get("id") in source_ids]
     return sorted(
+        selected, key=lambda item: (str(item.get("logical_path", "")), str(item.get("id", "")))
+    )
+
+
+def _orientation_source(trial: dict[str, Any]) -> dict[str, Any] | None:
+    sources = [item for item in trial.get("sources", []) if isinstance(item, dict)]
+    if any(item.get("declared_role") == "main_article" for item in sources):
+        return None
+    priority = {"protocol": 0, "sap": 1, "supplement": 2, "other": 3, "registry": 4}
+    candidates = sorted(
         sources, key=lambda item: (priority.get(str(item.get("role")), 5), str(item.get("id", "")))
-    )[:1]
+    )
+    return candidates[0] if candidates else None
+
+
+def _orientation_reading(
+    connection: Any,
+    *,
+    batch_id: str | None,
+    phase: str,
+    trial_id: str,
+    source: dict[str, Any] | None,
+) -> dict[str, Any]:
+    source_id = source.get("id") if isinstance(source, dict) else None
+    rows = (
+        connection.execute(
+            "SELECT source_id,page,start_line,end_line FROM page_reads "
+            "WHERE batch_id=? AND phase=? AND trial_id=? AND source_id=? "
+            "ORDER BY page,start_line,end_line",
+            (batch_id, phase, trial_id, source_id),
+        ).fetchall()
+        if isinstance(batch_id, str) and isinstance(source_id, str)
+        else ()
+    )
+    ranges = [
+        {
+            "source_id": str(row["source_id"]),
+            "page": int(row["page"]),
+            "start_line": int(row["start_line"]),
+            "end_line": int(row["end_line"]),
+        }
+        for row in rows
+    ]
+    return {
+        "source_ids": (source_id,) if isinstance(source_id, str) else (),
+        "ranges": ranges[:20],
+        "range_count": len(ranges),
+        "ranges_truncated": len(ranges) > 20,
+    }
 
 
 def _main_report_layout(
-    connection: Any, trial: dict[str, Any]
+    connection: Any, trial: dict[str, Any], source_ids: tuple[str, ...]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Compute one deterministic, whole-line UTF-8 prefix for a Trial report."""
 
     layout: list[dict[str, Any]] = []
     unread: list[dict[str, Any]] = []
-    for source in _main_report_sources(trial):
+    for source in _main_report_sources(trial, source_ids):
         budget = MAIN_REPORT_TEXT_BUDGET
         prefix_open = True
         source_id = source.get("id")
@@ -3067,7 +3183,10 @@ def main_report_read_gaps(
         for trial in trials:
             if not isinstance(trial, dict) or not isinstance(trial.get("id"), str):
                 continue
-            for item in _main_report_layout(connection, trial)[0]:
+            identity = _main_report_identity(root, state, trial["id"])
+            if identity["identity_status"] != "identified":
+                continue
+            for item in _main_report_layout(connection, trial, identity["identity_sources"])[0]:
                 page = item["page"]
                 required_count = item["required_count"]
                 covered = connection.execute(
@@ -3125,7 +3244,7 @@ def main_report_reading_status(
     *,
     phase: str,
 ) -> dict[str, dict[str, Any]]:
-    """Report complete, required, or budget-limited text coverage per Trial."""
+    """Report report identity separately from actual delivered text coverage."""
 
     root = _root(workspace)
     _ensure(root)
@@ -3137,7 +3256,44 @@ def main_report_reading_status(
         for trial in trials:
             if not isinstance(trial, dict) or not isinstance(trial.get("id"), str):
                 continue
-            layout, unread = _main_report_layout(connection, trial)
+            identity = _main_report_identity(root, _state(root), trial["id"])
+            orientation = (
+                _orientation_source(trial) if identity["identity_status"] != "identified" else None
+            )
+            if identity["identity_status"] != "identified":
+                result[trial["id"]] = {
+                    **identity,
+                    "orientation_source_ids": (
+                        (str(orientation["id"]),)
+                        if isinstance(orientation, dict) and isinstance(orientation.get("id"), str)
+                        else ()
+                    ),
+                    "orientation_reading": _orientation_reading(
+                        connection,
+                        batch_id=batch_id if isinstance(batch_id, str) else None,
+                        phase=phase,
+                        trial_id=trial["id"],
+                        source=orientation,
+                    ),
+                    "limitation": (
+                        "No main report is available. Reading a fallback document does not "
+                        "establish report coverage or scientific completeness."
+                        if identity["identity_status"] == "missing"
+                        else "Main-report identity is unresolved. A fallback source may support "
+                        "orientation, but it cannot satisfy report coverage."
+                    ),
+                    "status": (
+                        "missing"
+                        if identity["identity_status"] == "missing"
+                        else "identity_unresolved"
+                    ),
+                    "budget_bytes": MAIN_REPORT_TEXT_BUDGET,
+                    "covered_prefix_bytes": 0,
+                    "unread_ranges": [],
+                    "required_ranges": [],
+                }
+                continue
+            layout, unread = _main_report_layout(connection, trial, identity["identity_sources"])
             covered_prefix = 0
             covered_unread: list[dict[str, Any]] = []
             unread_by_page: dict[tuple[str, int], list[dict[str, Any]]] = {}
@@ -3199,6 +3355,15 @@ def main_report_reading_status(
                 covered_unread = list(unread)
             trial_gaps = [item for item in gaps if item.get("trial_id") == trial["id"]]
             result[trial["id"]] = {
+                **identity,
+                "orientation_source_ids": (),
+                "orientation_reading": {
+                    "source_ids": (),
+                    "ranges": (),
+                    "range_count": 0,
+                    "ranges_truncated": False,
+                },
+                "limitation": None,
                 "status": (
                     "required" if trial_gaps else "budget_limited" if covered_unread else "complete"
                 ),

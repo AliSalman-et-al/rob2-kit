@@ -41,6 +41,7 @@ eval/reference/*
 !eval/reference/sources/**
 eval/reference/catalog/provisional-labels/
 eval/private/
+eval/runs/
 
 # Local benchmark analysis, calibration, and rendering artifacts
 analysis/

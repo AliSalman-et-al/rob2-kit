@@ -28,6 +28,9 @@ def _multi_trial_workspace(tmp_path: Path) -> Path:
         trial = tmp_path / "input" / name
         trial.mkdir(parents=True)
         (trial / "main.txt").write_text(text, encoding="utf-8")
+        (trial / "sources.toml").write_text(
+            'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
+        )
         if name == "trial-a":
             (trial / "revised.txt").write_text(text + " corrected source.\n", encoding="utf-8")
     return tmp_path
@@ -170,6 +173,42 @@ def test_pending_partial_replacement_preserves_unmentioned_result_and_evidence(
     )
     assert after["proposal"]["identity"] != before["proposal"]["identity"]
     assert after["review"]["identity"] != before["review"]["identity"]
+
+
+def test_pending_partial_replacement_checks_unmentioned_report_identity(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    workspace = _multi_trial_workspace(tmp_path)
+    evidence = _multi_trial_evidence(workspace)
+    initial = _call(
+        workspace,
+        "save_proposal",
+        _proposal_args(
+            workspace,
+            [
+                _result_for_trial(evidence["trial-a"], "trial-a"),
+                _result_for_trial(evidence["trial-b"], "trial-b"),
+            ],
+        ),
+    )
+    assert initial["outcome"] == "review_required"
+
+    original = proposal.main_report_identity
+
+    def unresolved_trial_b(root, state, trial_id):
+        if trial_id == "trial-b":
+            return {"identity_status": "unresolved"}
+        return original(root, state, trial_id)
+
+    monkeypatch.setattr(proposal, "main_report_identity", unresolved_trial_b)
+    replacement = _result_for_trial(evidence["trial-a"], "trial-a")
+    replacement["target"]["time_point_or_window"]["description"] = "a corrected window"
+    receipt = proposal.save_proposal(
+        workspace, ProposalDraft.model_validate(_proposal_args(workspace, [replacement]))
+    )
+    assert receipt["outcome"] == "repair"
+    assert any(item["code"] == "main_report_identity_unresolved" for item in receipt["repairs"])
 
 
 def test_initial_proposal_is_stored_in_captured_trial_order(tmp_path: Path) -> None:

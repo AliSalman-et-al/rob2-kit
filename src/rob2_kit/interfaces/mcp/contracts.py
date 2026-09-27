@@ -93,14 +93,6 @@ class SaveDomainJudgmentAction(PublicModel):
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: NonNegativeInt
-
-
-class ValidateDomainAssessmentAction(PublicModel):
-    operation: Literal["validate_domain_assessment"]
-    authority: Literal["host"]
-    trial_id: TrialId
-    domain_id: DomainId
-    expected_revision: NonNegativeInt
     caller_inputs: tuple[Literal["answers", "revision_basis"], ...]
     supersedes: Identity | None = None
 
@@ -176,7 +168,6 @@ NextAction = Annotated[
     | SaveProposalAction
     | ValidateProposalAction
     | GetDomainContextAction
-    | ValidateDomainAssessmentAction
     | SaveDomainJudgmentAction
     | ReviewTrialAction
     | CloseTrialAction
@@ -323,7 +314,6 @@ _RECEIPT_OPTIONS: Final = {
     "save_proposal": {"review": True, "repair": True, "conflict": True},
     "request_proposal_approval": {},
     "get_domain_context": {},
-    "validate_domain_assessment": {"repair": True, "conflict": True},
     "save_domain_judgment": {"repair": True, "conflict": True},
     "review_trial": {"conflict": True},
     "close_trial": {"conflict": True},
@@ -599,8 +589,42 @@ SelectedEvidence = Annotated[
 ]
 
 
+class WorkingSourceRangeData(PublicModel):
+    source_id: SourceHandle
+    page: PageNumber
+    start_line: NonNegativeInt
+    end_line: NonNegativeInt
+
+
+class MainReportIdentityObservation(PublicModel):
+    text: str = Field(min_length=1, max_length=4_000)
+    sources: tuple[WorkingSourceRangeData, ...] = Field(min_length=1, max_length=8)
+
+
+class MainReportOrientationReading(PublicModel):
+    source_ids: tuple[SourceHandle, ...] = ()
+    ranges: tuple[WorkingSourceRangeData, ...] = ()
+    range_count: NonNegativeInt = 0
+    ranges_truncated: StrictBool = False
+
+
 class MainReportReadingStatus(PublicModel):
-    status: Literal["required", "complete", "budget_limited"]
+    identity_status: Literal["identified", "unresolved", "missing"]
+    identity_basis: Literal["declared_role", "working_checkpoint"] | None = None
+    identity_sources: tuple[SourceHandle, ...] = ()
+    identity_observations: tuple[MainReportIdentityObservation, ...] = ()
+    orientation_source_ids: tuple[SourceHandle, ...] = ()
+    orientation_reading: MainReportOrientationReading = Field(
+        default_factory=MainReportOrientationReading
+    )
+    limitation: str | None = None
+    status: Literal[
+        "required",
+        "complete",
+        "budget_limited",
+        "identity_unresolved",
+        "missing",
+    ]
     budget_bytes: NonNegativeInt
     covered_prefix_bytes: NonNegativeInt
     required_ranges: tuple[EvidenceReadWindow, ...] = Field(
@@ -610,13 +634,6 @@ class MainReportReadingStatus(PublicModel):
     required_range_count: NonNegativeInt = 0
     unread_ranges: tuple[EvidenceReadWindow, ...] = ()
     unread_range_count: NonNegativeInt = 0
-
-
-class WorkingSourceRangeData(PublicModel):
-    source_id: SourceHandle
-    page: PageNumber
-    start_line: NonNegativeInt
-    end_line: NonNegativeInt
 
 
 class WorkingSourceBindingData(PublicModel):
@@ -676,6 +693,7 @@ class WorkingCheckpointData(PublicModel):
     batch_id: Identity
     trial_id: TrialId
     result_identity: Identity | None = None
+    main_report_source_id: SourceHandle | Literal["missing"] | None = None
     domain_checkpoint_identities: tuple[Identity, ...] | None = None
     domain_checkpoint_bindings: tuple[WorkingDomainBindingData, ...] | None = None
     source_scope: tuple[WorkingSourceBindingData, ...]
@@ -751,7 +769,6 @@ class InvestigationRecoveryChoice(PublicModel):
         "search_sources",
         "read_pages",
         "render_page",
-        "validate_domain_assessment",
         "save_domain_judgment",
         "accept_limitation",
     ]
@@ -2450,20 +2467,6 @@ class DomainJudgmentData(PublicModel):
     retry: StrictBool = False
 
 
-class ReasoningSaveAction(PublicModel):
-    trial_id: TrialId
-    domain_id: DomainId
-    expected_revision: NonNegativeInt
-
-
-class ValidateDomainAssessmentData(PublicModel):
-    active_question_ids: tuple[QuestionId, ...]
-    validation_scope: Literal["structure_and_references_only"]
-    repairs: tuple[RepairDefect, ...] = ()
-    investigation: InvestigationView | None = None
-    next_action: ReasoningSaveAction
-
-
 class ReviewEvidenceReference(PublicModel):
     """One exact Evidence identity retained by a reviewed answer."""
 
@@ -2713,7 +2716,6 @@ DataByTool: Final = {
     "validate_proposal": ValidateProposalData,
     "request_proposal_approval": ProposalApprovalData,
     "get_domain_context": DomainContextData,
-    "validate_domain_assessment": ValidateDomainAssessmentData,
     "save_domain_judgment": DomainJudgmentData,
     "review_trial": ReviewTrialData,
     "close_trial": CloseTrialData,
@@ -2724,7 +2726,6 @@ ConditionByTool: Final = {
     "search_sources_batch": ConditionData,
     "finalize_batch": ConditionData,
     "request_proposal_approval": ProposalApprovalCondition,
-    "validate_domain_assessment": DomainContextDeliveryCondition,
     "save_domain_judgment": DomainContextDeliveryCondition,
 }
 

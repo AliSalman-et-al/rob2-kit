@@ -233,7 +233,7 @@ def test_d3_availability_suggestions_find_unknown_mortality_status_in_supplement
         encoding="utf-8",
     )
     (trial / "sources.toml").write_text(
-        'roles = { "supplement.txt" = "supplement" }\n',
+        'roles = { "main.txt" = "main_article", "supplement.txt" = "supplement" }\n',
         encoding="utf-8",
     )
     evidence = _prepared_evidence(workspace)
@@ -525,7 +525,7 @@ def test_search_receipts_are_verified_disposable_derivatives(tmp_path: Path) -> 
     retry = _call(
         workspace, "search_sources", {"trial_id": "trial", "query": "requested", "mode": "any"}
     )
-    assert hit["data"]["hits"][0]["source_role"] == "other"
+    assert hit["data"]["hits"][0]["source_role"] == "main_article"
     assert hit["data"]["hits"][0]["source_label"] == "main.txt"
     assert (
         _search_receipt(workspace, hit["data"]["search_receipt"])["identity"]

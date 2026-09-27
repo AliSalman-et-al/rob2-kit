@@ -34,7 +34,7 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.9.0":
+    if value["contract_version"] != "0.10.0":
         raise ValueError("public contract version differs")
     expected_order = [
         "prepare_batch",
@@ -51,7 +51,6 @@ def _load_contract() -> dict[str, Any]:
         "save_proposal",
         "request_proposal_approval",
         "get_domain_context",
-        "validate_domain_assessment",
         "save_domain_judgment",
         "review_trial",
         "close_trial",
@@ -640,37 +639,15 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
         search_receipt = search_data["search_receipt"]
         answers = _domain_answers(context, evidence, search_receipt)
         for _attempt in range(5):
-            reasoned = await _call(
+            saved = await _call(
                 client,
-                "validate_domain_assessment",
+                "save_domain_judgment",
                 {
                     "trial_id": "trial",
                     "domain_id": domain_id,
                     "expected_revision": revision,
                     "answers": answers,
                 },
-            )
-            if reasoned.get("outcome") != "success":
-                repair = next(
-                    (
-                        item
-                        for item in reasoned.get("repairs", [])
-                        if isinstance(item, dict)
-                        and item.get("code") == "answers_must_match_active_questions"
-                    ),
-                    None,
-                )
-                detail = repair.get("detail") if isinstance(repair, dict) else None
-                match = re.search(r"active IDs: \[([^]]*)\]", str(detail))
-                if match is None:
-                    raise ValueError(f"acceptance Domain reasoning failed: {domain_id}: {reasoned}")
-                active_ids = {item.strip() for item in match.group(1).split(",") if item.strip()}
-                answers = _domain_answers(context, evidence, search_receipt, active_ids)
-                continue
-            saved = await _call(
-                client,
-                "save_domain_judgment",
-                reasoned["next_action"],
             )
             if saved.get("outcome") == "success":
                 break
@@ -814,6 +791,9 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
                 trial = Path(temporary) / "input" / "trial"
                 trial.mkdir(parents=True)
                 (trial / "main.txt").write_text("requested outcome", encoding="utf-8")
+                (trial / "sources.toml").write_text(
+                    'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
+                )
                 _verify_packaged_skill(
                     (ROOT / "src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8"),
                     (ROOT / "src/rob2_kit/skills/rob2-assess/references/missing.md").read_text(
@@ -855,6 +835,9 @@ def verify(wheel: Path | None = None, bundle: Path | None = None) -> None:
         (trial / "main.txt").write_text(
             "requested outcome",
             encoding="utf-8",
+        )
+        (trial / "sources.toml").write_text(
+            'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
         )
         python = _installed_python(wheel, Path(temporary))
         environment = os.environ | {"ROB2_WORKSPACE": str(workspace)}
