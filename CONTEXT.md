@@ -49,10 +49,13 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
    then saves the exact returned receipt for one complete Result proposal per Trial.
 3. **Proposal Review** is the only researcher gate. The researcher may approve,
    reject, or replace the chosen Result mapping.
-4. For each approved Trial with a supported design, the model repeats the bounded
-   text pass before its first Domain assessment. It submits each complete active
-   answer draft once through `save_domain_judgment`; the server validates and
-   commits atomically, then derives Domain and overall judgments.
+4. For each approved Trial with a supported design, the host uses a current
+   Result-bound working checkpoint to resume reading when one is available.
+   It completes any unread report ranges and recovers exact passages needed
+   for its answers. If the checkpoint is absent or stale, the host reorients
+   from the current Sources. It submits each complete active answer draft once
+   through `save_domain_judgment`. The server validates and commits the draft
+   atomically, then derives Domain and overall judgments.
 5. The fifth Domain makes a supported Trial `reviewable`; its checkpoints can
    still be corrected. `review_trial` binds the approved Result and exact
    current checkpoint set, then `close_trial` makes that reviewed outcome
