@@ -27,9 +27,7 @@ def _fixture() -> dict[str, Any]:
 
 def _sentences(prompt: str) -> Counter[str]:
     return Counter(
-        sentence.strip()
-        for sentence in re.split(r"(?<=[.!?])\s+", prompt)
-        if sentence.strip()
+        sentence.strip() for sentence in re.split(r"(?<=[.!?])\s+", prompt) if sentence.strip()
     )
 
 
@@ -73,9 +71,7 @@ def test_each_contrast_changes_one_premise_and_keeps_its_controls_fixed() -> Non
         left_sentences, right_sentences = _sentences(left), _sentences(right)
         assert sum((left_sentences - right_sentences).values()) == 1
         assert sum((right_sentences - left_sentences).values()) == 1
-        changed_values = {
-            expectations[case_id]["changed_premise_value"] for case_id in cases
-        }
+        changed_values = {expectations[case_id]["changed_premise_value"] for case_id in cases}
         assert len(changed_values) == 2
         assert all(contrast["pair_id"] not in model_inputs[case_id] for case_id in cases)
         assert all(case_id in expectations for case_id in cases)

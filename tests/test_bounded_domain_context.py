@@ -326,9 +326,7 @@ def test_empty_delta_arrays_are_omittable_without_changing_reconstructed_context
     reconstructed = dict(candidate_pages[0]["data"])
     for section in ("questions", "comparison_cards", "evidence"):
         reconstructed[section] = [
-            item
-            for page in candidate_pages
-            for item in page["data"].get(section, [])
+            item for page in candidate_pages for item in page["data"].get(section, [])
         ]
     reconstructed.pop("context_page")
     full = _call(workspace, "get_domain_context", {})["data"]

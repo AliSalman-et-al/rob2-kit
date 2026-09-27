@@ -126,9 +126,7 @@ def _handoff_checkpoint(source_id: str, *, result_bound: bool) -> dict:
                 if result_bound
                 else "Participants were individually randomly assigned to intervention and control."
             ),
-            "sources": [
-                {"source_id": source_id, "page": 1, "start_line": 1, "end_line": 1}
-            ],
+            "sources": [{"source_id": source_id, "page": 1, "start_line": 1, "end_line": 1}],
             "domain_id": "domain:randomization",
         }
     ]
@@ -343,9 +341,7 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
             assert rebound["outcome"] == "success", rebound
             current = call("get_status", {})["data"]["working_checkpoint"]
             assert current["status"] == "current"
-            assert current["checkpoint"]["result_identity"] == rebound["data"][
-                "result_identity"
-            ]
+            assert current["checkpoint"]["result_identity"] == rebound["data"]["result_identity"]
 
         approved = call("request_proposal_approval", {}, approve=True)
         assert approved["outcome"] == "success", approved

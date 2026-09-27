@@ -131,8 +131,7 @@ def test_every_disagreement_is_in_trace_reconciliation_and_audit_records_bind_to
         "Saved answer justification: The same CTCAE grading"
     )
     assert any(
-        "PDF p. 4, lines 68–76" in locator.locator
-        and "eh_e8d8c5be69654304" in locator.locator
+        "PDF p. 4, lines 68–76" in locator.locator and "eh_e8d8c5be69654304" in locator.locator
         for locator in latitude_differential.evidence
     )
     assert "2026-09-27T14:28:06+05:00" == latitude_differential.reviewed_at.isoformat()

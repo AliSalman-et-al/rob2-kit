@@ -47,8 +47,7 @@ def test_plan_has_three_paired_luna_medium_repeats_with_alternating_order() -> N
         pairs.setdefault(item["pair_id"], []).append(item)
     assert len(pairs) == 3
     assert all(
-        {item["arm"] for item in pair} == {"baseline", "candidate"}
-        for pair in pairs.values()
+        {item["arm"] for item in pair} == {"baseline", "candidate"} for pair in pairs.values()
     )
     assert [item["arm"] for item in plan] == [
         "baseline",

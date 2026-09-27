@@ -19,9 +19,7 @@ def test_luna_plan_has_five_blinded_pairs_and_counterbalances_order() -> None:
     plan = _plan(fixture, 3, "gpt-6-luna", "medium")
 
     assert len(plan) == 30
-    assert Counter(item["pair_id"] for item in plan) == {
-        f"P-{number}": 6 for number in range(1, 6)
-    }
+    assert Counter(item["pair_id"] for item in plan) == {f"P-{number}": 6 for number in range(1, 6)}
     for pair_id in (f"P-{number}" for number in range(1, 6)):
         pair = [item for item in plan if item["pair_id"] == pair_id]
         assert [item["case_id"] for item in pair[:2]] == [
@@ -55,8 +53,9 @@ def test_prepare_stores_only_blinded_prompts_separate_from_key(tmp_path: Path) -
     }
 
     assert manifest["run_count"] == 10
-    assert json.loads((output / "evaluator-key.json").read_text(encoding="utf-8")) == (
-        fixture["evaluator_key"]
+    assert (
+        json.loads((output / "evaluator-key.json").read_text(encoding="utf-8"))
+        == (fixture["evaluator_key"])
     )
     for run in manifest["runs"]:
         prompt = (output / run["input_file"]).read_text(encoding="utf-8")
