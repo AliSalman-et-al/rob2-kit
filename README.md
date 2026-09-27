@@ -167,6 +167,10 @@ records the tool catalog, schemas, annotations, resource families, and portable
 skill pointers. See the [release guide](docs/release/README.md) for contract and
 wheel verification.
 
+The server resolves the unique validated Proposal draft for the current
+revision and scope before saving it. A complete Domain draft validates and
+commits in one revision-checked operation.
+
 ### Run the project checks
 
 ```powershell
