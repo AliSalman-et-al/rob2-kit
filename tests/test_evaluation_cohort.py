@@ -8,6 +8,7 @@ import pytest
 from rob2_kit.evaluation.cohort import (
     CohortCell,
     CohortManifest,
+    CohortPartitions,
     ReviewerProvenance,
     read_cohort,
     select_agreement_sample,
@@ -148,6 +149,14 @@ def test_manifest_rejects_partition_leakage_and_synthetic_accuracy() -> None:
     payload["synthetic_corrected_accuracy"] = 0.5
     with pytest.raises(ValueError):
         CohortManifest.model_validate(payload)
+
+
+def test_partitions_allow_development_only_and_reject_no_cases() -> None:
+    development = CohortPartitions(development_case_ids=("case-1",))
+    assert development.development_case_ids == ("case-1",)
+    assert development.held_out_case_ids == ()
+    with pytest.raises(ValueError, match="at least one"):
+        CohortPartitions()
 
 
 def test_pending_reviewer_provenance_cannot_carry_identity() -> None:

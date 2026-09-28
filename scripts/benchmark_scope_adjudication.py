@@ -13,9 +13,7 @@ DECISIONS = {"equivalent", "accepted_with_scope_difference"}
 
 
 def expected_result_sha256(expected_result: dict[str, Any]) -> str:
-    payload = json.dumps(expected_result, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
+    payload = json.dumps(expected_result, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
 
@@ -28,7 +26,7 @@ def load_scope_adjudications(path: Path | None) -> list[dict[str, Any]]:
     rows = payload.get("adjudications")
     if not isinstance(rows, list):
         raise ValueError(f"scope adjudication rows are missing: {path}")
-    seen: set[tuple[str, str, str, str, str]] = set()
+    seen: set[tuple[str, str, str, str, str, str]] = set()
     for row in rows:
         if not isinstance(row, dict):
             raise ValueError(f"scope adjudication row is malformed: {path}")
@@ -49,17 +47,15 @@ def load_scope_adjudications(path: Path | None) -> list[dict[str, Any]]:
         if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
             raise ValueError(f"scope adjudication expected-result hash is malformed: {path}")
         if row["decision"] not in DECISIONS:
-            raise ValueError(
-                f"unsupported scope adjudication decision: {row['decision']!r}"
-            )
+            raise ValueError(f"unsupported scope adjudication decision: {row['decision']!r}")
         if row["observed_relation"] not in RELATIONS:
             raise ValueError(
                 f"unsupported scope adjudication relation: {row['observed_relation']!r}"
             )
-        if (
-            row["decision"] == "accepted_with_scope_difference"
-            and row["observed_relation"] not in {"broader", "related"}
-        ):
+        if row["decision"] == "accepted_with_scope_difference" and row["observed_relation"] not in {
+            "broader",
+            "related",
+        }:
             raise ValueError(
                 "accepted_with_scope_difference requires a broader or related observed_relation"
             )

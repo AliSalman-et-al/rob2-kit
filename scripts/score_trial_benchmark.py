@@ -243,20 +243,59 @@ def _result_mismatches(
             and expected_value is not _MISSING
             and _norm_identity(expected_value) == _norm_identity(observed_value)
         )
-        if (
-            expected_value is _MISSING
-            or (expected_value != observed_value and not equivalent_trial_id)
+        if expected_value is _MISSING or (
+            expected_value != observed_value and not equivalent_trial_id
         ):
             mismatches.append(
                 {
                     "field": field,
-                    "expected": (
-                        None if expected_value is _MISSING else expected_value
-                    ),
+                    "expected": (None if expected_value is _MISSING else expected_value),
                     "observed": observed_value,
                 }
             )
     return mismatches
+
+
+def _different_paths(path: str, expected: object, observed: object) -> list[str]:
+    if expected is _MISSING or observed is _MISSING:
+        return [path]
+    if isinstance(expected, dict) and isinstance(observed, dict):
+        paths = []
+        for key in sorted(expected.keys() | observed.keys()):
+            child = f"{path}.{key}"
+            paths.extend(
+                _different_paths(
+                    child,
+                    expected.get(key, _MISSING),
+                    observed.get(key, _MISSING),
+                )
+            )
+        return paths
+    if isinstance(expected, list) and isinstance(observed, list):
+        paths = []
+        for index in range(max(len(expected), len(observed))):
+            child = f"{path}[{index}]"
+            paths.extend(
+                _different_paths(
+                    child,
+                    expected[index] if index < len(expected) else _MISSING,
+                    observed[index] if index < len(observed) else _MISSING,
+                )
+            )
+        return paths
+    return [] if expected == observed else [path]
+
+
+def _mismatch_facets(mismatches: list[dict[str, Any]]) -> list[str]:
+    return [
+        path
+        for item in mismatches
+        for path in _different_paths(
+            str(item["field"]),
+            item.get("expected", _MISSING),
+            item.get("observed", _MISSING),
+        )
+    ]
 
 
 def _safe_mismatch_value(value: object) -> object:
@@ -275,9 +314,14 @@ def _safe_mismatch_value(value: object) -> object:
     }
 
 
-def _safe_mismatch_details(mismatches: list[dict[str, Any]]) -> dict[str, Any]:
+def _safe_mismatch_details(
+    mismatches: list[dict[str, Any]], *, proposal_relation: object = None
+) -> dict[str, Any]:
     return {
         "code": "result_scope_mismatch",
+        "mechanical_match": False,
+        "differing_facets": _mismatch_facets(mismatches),
+        "proposal_relation": proposal_relation,
         "fields": [
             {
                 "field": item["field"],
@@ -290,13 +334,43 @@ def _safe_mismatch_details(mismatches: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _scope_mismatch_failure(
-    mismatches: list[dict[str, Any]], *, artifact: dict[str, Any] | None = None
+    mismatches: list[dict[str, Any]],
+    *,
+    proposal_relation: object = None,
+    code: str = "result_scope_mismatch",
+    artifact: dict[str, Any] | None = None,
 ) -> _SnapshotFailure:
     fields = ", ".join(str(item["field"]) for item in mismatches)
     return _SnapshotFailure(
         f"result scope mismatch: {fields}",
-        _safe_mismatch_details(mismatches),
+        {
+            **_safe_mismatch_details(mismatches, proposal_relation=proposal_relation),
+            "code": code,
+        },
         artifact,
+    )
+
+
+def _scope_adjudication_identity_mismatch(
+    adjudications: list[dict[str, Any]],
+    *,
+    outcome: str,
+    trial: str,
+    expected_result: dict[str, Any],
+    review_identity: object,
+    result_identity: object,
+    relation: object,
+) -> bool:
+    """Detect a candidate decision that failed only its immutable identity binding."""
+
+    expected_hash = expected_result_sha256(expected_result)
+    return any(
+        row["outcome"] == outcome
+        and row["trial"] == trial
+        and row["expected_result_sha256"] == expected_hash
+        and row["observed_relation"] == relation
+        and (row["review_identity"] != review_identity or row["result_identity"] != result_identity)
+        for row in adjudications
     )
 
 
@@ -496,6 +570,7 @@ def _bundle_snapshot(
         mismatches = _result_mismatches(
             expected_result, observed_result, expected_trial or trial_key
         )
+        proposal_relation = result.get("relation")
         if mismatches:
             proposal_review = canonical.get("proposal_review")
             acknowledgment = canonical.get("proposal_acknowledgment")
@@ -503,9 +578,7 @@ def _bundle_snapshot(
                 proposal_review.get("identity") if isinstance(proposal_review, dict) else None
             )
             acknowledged_review_identity = (
-                acknowledgment.get("review_identity")
-                if isinstance(acknowledgment, dict)
-                else None
+                acknowledgment.get("review_identity") if isinstance(acknowledgment, dict) else None
             )
             result_identity = _canonical_identity(result)
             adjudication = (
@@ -523,8 +596,24 @@ def _bundle_snapshot(
                 else None
             )
             if adjudication is None:
+                identity_mismatch = _scope_adjudication_identity_mismatch(
+                    scope_adjudications or [],
+                    outcome=expected_outcome or "",
+                    trial=expected_trial or trial_key,
+                    expected_result=expected_result,
+                    review_identity=review_identity,
+                    result_identity=result_identity,
+                    relation=proposal_relation,
+                )
                 return None, _scope_mismatch_failure(
-                    mismatches, artifact=_artifact_provenance(run_dir, bundles[0])
+                    mismatches,
+                    proposal_relation=proposal_relation,
+                    code=(
+                        "scope_adjudication_identity_mismatch"
+                        if identity_mismatch
+                        else "result_scope_mismatch"
+                    ),
+                    artifact=_artifact_provenance(run_dir, bundles[0]),
                 )
         else:
             adjudication = None
@@ -569,6 +658,12 @@ def _bundle_snapshot(
             else {}
         ),
         "scope_adjudication": adjudication,
+        "proposal_relation": result.get("relation") if isinstance(result, dict) else None,
+        "result_scope_details": {
+            "mechanical_match": not bool(mismatches) if expected_result is not None else None,
+            "differing_facets": _mismatch_facets(mismatches) if expected_result is not None else [],
+            "proposal_relation": result.get("relation") if isinstance(result, dict) else None,
+        },
         "result": _result_dimensions(result, expected_trial or trial_key)
         if isinstance(result, dict)
         else None,
@@ -611,16 +706,12 @@ def _aggregates(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Build the common pooled and stratified aggregates for one case set."""
 
     by_outcome = {
-        outcome: _group(
-            [row for row in rows if row["outcome"] == outcome], include_overall=True
-        )
+        outcome: _group([row for row in rows if row["outcome"] == outcome], include_overall=True)
         for outcome in sorted({row["outcome"] for row in rows})
     }
     by_domain = {domain: _score(rows, domain) for domain in DOMAINS}
     by_role = {
-        role: _group(
-            [row for row in rows if row["primary_status"] == role], include_overall=True
-        )
+        role: _group([row for row in rows if row["primary_status"] == role], include_overall=True)
         for role in ("primary", "secondary")
     }
     by_outcome_domain = {
@@ -652,6 +743,7 @@ def score(
     references: dict[tuple[str, str], dict[str, str]] | None = None
     scored: list[dict[str, Any]] = []
     scope_difference_scored: list[dict[str, Any]] = []
+    review_required_cases: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
     hard_failures: list[dict[str, Any]] = []
     for item in rows:
@@ -677,6 +769,7 @@ def score(
                         "trial": trial,
                         "primary_status": item.get("primary_status"),
                         "result_scope": "scope_unresolved",
+                        "correspondence": "unresolved",
                         "reason": unresolved.strip(),
                     }
                 )
@@ -706,6 +799,7 @@ def score(
                         "outcome": outcome,
                         "trial": trial,
                         "result_scope": "missing_frozen_scope",
+                        "correspondence": "unresolved",
                         "reason": (
                             "new benchmark row has no frozen Result scope or "
                             "scope_unresolved marker"
@@ -721,6 +815,7 @@ def score(
                     "outcome": outcome,
                     "trial": trial,
                     "result_scope": "incomplete_frozen_scope",
+                    "correspondence": "unresolved",
                     "reason": reason,
                 }
             )
@@ -757,11 +852,35 @@ def score(
         )
         if bundle is None:
             failure_details = getattr(reason, "details", None)
+            failure_code = (
+                failure_details.get("code") if isinstance(failure_details, dict) else None
+            )
+            proposal_relation = (
+                failure_details.get("proposal_relation")
+                if isinstance(failure_details, dict)
+                else None
+            )
+            result_scope = {
+                "scope_adjudication_identity_mismatch": "unresolved",
+                "approved_result_unavailable": "unavailable",
+                "result_scope_mismatch": "mismatched",
+            }.get(failure_code)
             exclusion = {
                 "outcome": outcome,
                 "trial": trial,
                 "primary_status": item.get("primary_status"),
                 "reason": reason,
+                **({"result_scope": result_scope} if result_scope is not None else {}),
+                **(
+                    {"correspondence": "unresolved"}
+                    if result_scope in {"unresolved", "mismatched"}
+                    else {}
+                ),
+                **(
+                    {"proposal_relation": proposal_relation}
+                    if isinstance(proposal_relation, str)
+                    else {}
+                ),
                 **(
                     {"result_scope_details": failure_details}
                     if isinstance(failure_details, dict)
@@ -804,6 +923,30 @@ def score(
                         hard_failure["result_scope_details"] = failure_details
                     hard_failures.append(hard_failure)
             continue
+        adjudication = bundle.get("scope_adjudication")
+        result_scope_details = bundle.get("result_scope_details")
+        if not isinstance(result_scope_details, dict):
+            result_scope_details = {
+                "mechanical_match": adjudication is None,
+                "differing_facets": [],
+                "proposal_relation": bundle.get("proposal_relation"),
+            }
+        review_required = item.get("scope_review_required")
+        if isinstance(review_required, str) and review_required.strip():
+            pending = {
+                "outcome": outcome,
+                "trial": trial,
+                "primary_status": item.get("primary_status"),
+                "proposal_relation": bundle.get("proposal_relation"),
+                "result_scope": "unresolved",
+                "correspondence": "unresolved",
+                "result_scope_details": result_scope_details,
+                "scope_review_required": review_required.strip(),
+                **({"scope_adjudication": adjudication} if adjudication is not None else {}),
+            }
+            review_required_cases.append(pending)
+            excluded.append({**pending, "reason": review_required.strip()})
+            continue
         # Read gold labels only after the artifact has passed the frozen Result
         # scope gate. A wrong-scope new attempt must fail without entering scoring.
         if references is None:
@@ -814,7 +957,14 @@ def score(
             )
             continue
         expected = references[(outcome, trial)]
-        adjudication = bundle.get("scope_adjudication")
+        if result_scope_details.get("mechanical_match") is True:
+            correspondence = "mechanically_matched"
+        elif not isinstance(adjudication, dict):
+            correspondence = "unresolved"
+        elif adjudication.get("decision") == "equivalent":
+            correspondence = "adjudicated_equivalent"
+        else:
+            correspondence = "accepted_with_scope_difference"
         case = {
             "outcome": outcome,
             "trial": trial,
@@ -833,12 +983,10 @@ def score(
             "bundle": bundle["bundle"],
             **({"scope_adjudication": adjudication} if adjudication is not None else {}),
             "result": bundle.get("result"),
-            "result_scope": (
-                "accepted_with_scope_difference"
-                if isinstance(adjudication, dict)
-                and adjudication.get("decision") == "accepted_with_scope_difference"
-                else "matched"
-            ),
+            "proposal_relation": bundle.get("proposal_relation"),
+            "result_scope": correspondence,
+            "correspondence": correspondence,
+            "result_scope_details": result_scope_details,
         }
         if (
             isinstance(adjudication, dict)
@@ -851,24 +999,54 @@ def score(
     primary_aggregates = _aggregates(scored)
     sensitivity_cases = [*scored, *scope_difference_scored]
     sensitivity_aggregates = _aggregates(sensitivity_cases)
-    mismatch_cases = sum(
-        isinstance(item.get("result_scope_details"), dict)
-        and item["result_scope_details"].get("code") == "result_scope_mismatch"
-        for item in excluded
-    )
-    unavailable_result_cases = sum(
-        isinstance(item.get("result_scope_details"), dict)
-        and item["result_scope_details"].get("code") == "approved_result_unavailable"
-        for item in excluded
-    )
+    all_reported_cases = [*scored, *scope_difference_scored, *review_required_cases]
+    scope_population = [
+        *all_reported_cases,
+        *(row for row in excluded if "scope_review_required" not in row),
+    ]
+    relation_counts = {
+        relation: sum(case.get("proposal_relation") == relation for case in scope_population)
+        for relation in ("exact", "broader", "narrower", "component", "related")
+    }
+    relation_counts["unknown"] = len(rows) - sum(relation_counts.values())
     result_scope_denominators = {
-        "exact": len(scored),
-        "approved_proxy": len(scope_difference_scored),
-        "unavailable": unavailable_result_cases,
-        "mismatch": mismatch_cases,
+        "mechanical_match": sum(
+            isinstance(case.get("result_scope_details"), dict)
+            and case["result_scope_details"].get("mechanical_match") is True
+            for case in scope_population
+        ),
+        "mechanical_mismatch": sum(
+            isinstance(case.get("result_scope_details"), dict)
+            and case["result_scope_details"].get("mechanical_match") is False
+            for case in scope_population
+        ),
+        "adjudicated_equivalent": sum(
+            case.get("result_scope") == "adjudicated_equivalent" for case in scored
+        ),
+        "accepted_with_scope_difference": len(scope_difference_scored),
+        "unavailable": sum(
+            isinstance(case.get("result_scope_details"), dict)
+            and case["result_scope_details"].get("code") == "approved_result_unavailable"
+            for case in scope_population
+        ),
+        "mismatch": sum(
+            isinstance(case.get("result_scope_details"), dict)
+            and case["result_scope_details"].get("code") == "result_scope_mismatch"
+            for case in scope_population
+        ),
+        "unresolved": sum(
+            case.get("correspondence") == "unresolved"
+            or case.get("result_scope")
+            in {
+                "scope_unresolved",
+                "missing_frozen_scope",
+                "incomplete_frozen_scope",
+            }
+            for case in scope_population
+        ),
     }
     return {
-        "schema": "rob2-kit.trial-benchmark-score.v1",
+        "schema": "rob2-kit.trial-benchmark-score.v2",
         "manifest": str(manifest_path),
         "model": manifest.get("model"),
         "reasoning_effort": manifest.get("reasoning_effort", manifest.get("effort")),
@@ -883,10 +1061,21 @@ def score(
             "sensitivity_scored_cases": len(sensitivity_cases),
             "sensitivity_domain_cells": len(sensitivity_cases) * len(DOMAINS),
             "scope_difference_cases": len(scope_difference_scored),
+            "review_required_cases": len(review_required_cases),
             "excluded_cases": len(excluded),
+            "combined_primary_score": {
+                "cases": len(scored),
+                "domain_cells": len(scored) * len(DOMAINS),
+            },
             "result_scope_denominators": result_scope_denominators,
+            "proposal_relation_denominators": relation_counts,
         },
         **primary_aggregates,
+        "primary_score": {
+            "case_count": len(scored),
+            "domain_cells": len(scored) * len(DOMAINS),
+            **primary_aggregates,
+        },
         "sensitivity": {
             "added_scope_difference_cases": len(scope_difference_scored),
             **sensitivity_aggregates,
@@ -895,6 +1084,7 @@ def score(
         "hard_failures": hard_failures,
         "cases": scored,
         "scope_difference_cases": scope_difference_scored,
+        "review_required_cases": review_required_cases,
     }
 
 
@@ -904,9 +1094,129 @@ def _metric_text(metric: dict[str, Any]) -> str:
     return f"{metric['correct']}/{metric['total']} ({percentage})"
 
 
-def render_markdown(result: dict[str, Any]) -> str:
+def _scope_adjudication_markdown(
+    result: dict[str, Any], *, publish_adjudication_details: bool
+) -> list[str]:
+    cases = [
+        *result.get("cases", []),
+        *result.get("scope_difference_cases", []),
+        *result.get("review_required_cases", []),
+    ]
+    case_keys = {
+        (case.get("outcome"), case.get("trial"), case.get("primary_status")) for case in cases
+    }
+    cases.extend(
+        row
+        for row in result.get("excluded", [])
+        if isinstance(row.get("result_scope_details"), dict)
+        and (row.get("outcome"), row.get("trial"), row.get("primary_status")) not in case_keys
+    )
+    if not cases:
+        return []
+    lines = [
+        "## Result-scope correspondence",
+        "",
+        (
+            "Mechanical comparison, recorded Proposal relation, reviewer adjudication, and "
+            "scoring eligibility are separate report fields. Proposal relation compares the "
+            "requested target with the reported Result; it does not establish correspondence "
+            "to the frozen expected Result. An adjudication decision is the recorded reviewer "
+            "claim; scorer identity checks do not validate its scientific meaning."
+        ),
+        "",
+    ]
+    for case in sorted(cases, key=lambda item: (str(item.get("outcome")), str(item.get("trial")))):
+        details = case.get("result_scope_details")
+        facets = details.get("differing_facets", []) if isinstance(details, dict) else []
+        adjudication = case.get("scope_adjudication")
+        lines.extend(
+            [
+                f"- **{case.get('outcome')} / {case.get('trial')}**",
+                f"  - Proposal relation: `{case.get('proposal_relation') or 'unknown'}`",
+                f"  - Result status: `{case.get('result_scope') or 'unresolved'}`",
+                "  - Differing facets: " + (", ".join(f"`{facet}`" for facet in facets) or "none"),
+            ]
+        )
+        if isinstance(adjudication, dict):
+            identity = "; ".join(
+                f"{key}={adjudication.get(key)}"
+                for key in ("expected_result_sha256", "review_identity", "result_identity")
+            )
+            lines.extend(
+                [
+                    f"  - Adjudication identity: `{identity}`",
+                    f"  - Decision: `{adjudication.get('decision')}`",
+                ]
+            )
+            if publish_adjudication_details:
+                lines.extend(
+                    [
+                        f"  - Rationale: {adjudication.get('rationale')}",
+                        f"  - Source locator: {adjudication.get('source_citation')}",
+                    ]
+                )
+        if case.get("scope_review_required"):
+            reason = (
+                case["scope_review_required"]
+                if publish_adjudication_details
+                else "A separate source-grounded decision is required."
+            )
+            lines.append(f"  - Review required: {reason}")
+        lines.append("")
+    return lines + [""]
+
+
+def render_markdown(result: dict[str, Any], *, publish_adjudication_details: bool = False) -> str:
     """Render a short reference report from the machine-readable score."""
     pooled = result["pooled"]
+    scope = result["scope"]
+    denominators = scope["result_scope_denominators"]
+    legacy_report = result.get("schema") == "rob2-kit.trial-benchmark-score.v1"
+    if legacy_report:
+        scope_lines = [
+            (
+                "- Result-scope cases: "
+                f"exact {denominators['exact']}; "
+                f"approved proxy {denominators['approved_proxy']}; "
+                f"unavailable {denominators['unavailable']}; "
+                f"mismatch {denominators['mismatch']}."
+            )
+        ]
+    else:
+        primary_denominator = scope["combined_primary_score"]
+        relations = scope["proposal_relation_denominators"]
+        relation_summary = "; ".join(
+            f"{relation} {relations[relation]}"
+            for relation in ("exact", "broader", "narrower", "component", "related", "unknown")
+        )
+        scope_lines = [
+            (
+                f"- Combined primary score: {primary_denominator['cases']} cases "
+                f"({primary_denominator['domain_cells']} domain cells)."
+            ),
+            (
+                "- Result-scope denominators: "
+                f"mechanical matches {denominators['mechanical_match']}; "
+                f"mechanical mismatches {denominators['mechanical_mismatch']}; "
+                f"adjudicated equivalents {denominators['adjudicated_equivalent']}; "
+                f"accepted scope differences {denominators['accepted_with_scope_difference']}; "
+                f"unavailable {denominators['unavailable']}; "
+                f"unadjudicated mismatches {denominators['mismatch']}; "
+                f"unresolved {denominators['unresolved']}."
+            ),
+            (
+                "- The mechanical mismatch count includes cases later accepted as equivalent "
+                "or held for review."
+            ),
+            (
+                f"- Recorded Proposal relations: {relation_summary} "
+                f"(manifest denominator {scope['manifest_rows']})."
+            ),
+            (
+                f"- Cases held for separate review: {scope['review_required_cases']}; "
+                "they remain in manifest coverage and are excluded from the combined primary score."
+            ),
+        ]
     lines = [
         "# Trial-specific rob2-kit benchmark",
         "",
@@ -925,13 +1235,7 @@ def render_markdown(result: dict[str, Any]) -> str:
             f"({result['scope']['finalized_domain_cells']} domain cells)."
         ),
         f"- Cases excluded from scoring: {result['scope']['excluded_cases']}.",
-        (
-            "- Result-scope cases: "
-            f"exact {result['scope']['result_scope_denominators']['exact']}; "
-            f"approved proxy {result['scope']['result_scope_denominators']['approved_proxy']}; "
-            f"unavailable {result['scope']['result_scope_denominators']['unavailable']}; "
-            f"mismatch {result['scope']['result_scope_denominators']['mismatch']}."
-        ),
+        *scope_lines,
         (
             "- Exact scoring compares Low, Some Concerns, and High. Binary scoring maps "
             "Some Concerns and High to Non-Low."
@@ -941,6 +1245,13 @@ def render_markdown(result: dict[str, Any]) -> str:
             "is not estimable from this cohort."
         ),
         "",
+        *(
+            _scope_adjudication_markdown(
+                result, publish_adjudication_details=publish_adjudication_details
+            )
+            if not legacy_report
+            else []
+        ),
         "## Pooled result",
         "",
         "| Measure | Exact | Low vs Non-Low |",
@@ -1068,13 +1379,14 @@ def render_markdown(result: dict[str, Any]) -> str:
         )
     lines.extend(["", "## Excluded cases", "", "| Outcome | Trial | Reason |", "|---|---|---|"])
     for row in result["excluded"]:
-        lines.append(f"| {row['outcome']} | {row['trial']} | {row['reason']} |")
+        reason = row["reason"] if publish_adjudication_details else row.get("code", "excluded")
+        lines.append(f"| {row['outcome']} | {row['trial']} | {reason} |")
     lines.extend(
         [
             "",
             (
-                "The complete case-level expected and observed labels are in the adjacent "
-                "`score.json` file. The benchmark manifest records each trial-specific "
+                "The machine-readable scorer output contains complete case-level expected "
+                "and observed labels. The benchmark manifest records each trial-specific "
                 "definition, abstract effect estimate, role, prompt, and run directory."
             ),
             "",

@@ -17,6 +17,7 @@ if str(SCRIPTS) not in sys.path:
 _scorer = runpy.run_path(str(SCRIPTS / "score_trial_benchmark.py"))
 _result_dimensions = _scorer["_result_dimensions"]
 _result_mismatches = _scorer["_result_mismatches"]
+_mismatch_facets = _scorer["_mismatch_facets"]
 score = _scorer["score"]
 render_markdown = _scorer["render_markdown"]
 
@@ -167,10 +168,23 @@ def test_score_keeps_legacy_case_unscored_and_excludes_unfinished_cases(tmp_path
         "scope_difference_cases": 0,
         "excluded_cases": 2,
         "result_scope_denominators": {
-            "exact": 0,
-            "approved_proxy": 0,
+            "mechanical_match": 0,
+            "mechanical_mismatch": 0,
+            "adjudicated_equivalent": 0,
+            "accepted_with_scope_difference": 0,
             "unavailable": 0,
             "mismatch": 0,
+            "unresolved": 0,
+        },
+        "review_required_cases": 0,
+        "combined_primary_score": {"cases": 0, "domain_cells": 0},
+        "proposal_relation_denominators": {
+            "exact": 0,
+            "broader": 0,
+            "narrower": 0,
+            "component": 0,
+            "related": 0,
+            "unknown": 2,
         },
     }
 
@@ -319,6 +333,9 @@ def test_score_requires_exact_result_scope_before_reading_labels(
     assert result["scope"]["finalized_scored_cases"] == 0
     assert result["scope"]["excluded_cases"] == 1
     assert "population" in result["excluded"][0]["reason"]
+    assert result["excluded"][0]["result_scope"] == "mismatched"
+    assert result["excluded"][0]["correspondence"] == "unresolved"
+    assert "population" in result["excluded"][0]["result_scope_details"]["differing_facets"]
 
 
 def test_result_scope_mismatch_preserves_bounded_field_details(tmp_path: Path) -> None:
@@ -431,6 +448,7 @@ def test_result_scope_mismatch_preserves_bounded_field_details(tmp_path: Path) -
     result = score(manifest, reference)
 
     excluded = result["excluded"][0]
+    markdown = render_markdown(result)
     details = excluded["result_scope_details"]
     assert details["code"] == "result_scope_mismatch"
     definition = next(item for item in details["fields"] if item["field"] == "endpoint_definition")
@@ -445,6 +463,83 @@ def test_result_scope_mismatch_preserves_bounded_field_details(tmp_path: Path) -
     }
     assert result["scope"]["result_scope_denominators"]["mismatch"] == 1
     assert result["hard_failures"][0]["result_scope_details"]["code"] == ("result_scope_mismatch")
+    assert excluded["correspondence"] == "unresolved"
+    assert "endpoint_definition" in details["differing_facets"]
+    assert "PRIVATE_SOURCE_TEXT" not in markdown
+    assert "endpoint_definition" in markdown
+
+
+def test_identity_mismatched_scope_adjudication_remains_unresolved(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference"
+    _write_reference(reference)
+    run_dir = _write_case(tmp_path, state="succeeded")
+    bundle = run_dir / "workspace" / ".rob2-kit" / "finalized" / "case.rob2.zip"
+    with zipfile.ZipFile(bundle) as archive:
+        canonical = json.loads(archive.read("canonical.json"))
+        verification = archive.read("verification.json")
+    canonical["snapshots"]["GETUG-AFU-15"] = canonical["snapshots"].pop("getug")
+    result_record = canonical["proposal"]["payload"]["results"][0]
+    result_record["relation"] = "narrower"
+    with zipfile.ZipFile(bundle, "w") as archive:
+        archive.writestr("canonical.json", json.dumps(canonical))
+        archive.writestr("verification.json", verification)
+
+    expected = _expected_result()
+    expected["population"] = "a different frozen population"
+    expected_hash = score.__globals__["expected_result_sha256"](expected)
+    adjudications = tmp_path / "scope-adjudications.json"
+    adjudications.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.benchmark-scope-adjudications.v2",
+                "adjudications": [
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "expected_result_sha256": expected_hash,
+                        "review_identity": "sha256:stale-review",
+                        "result_identity": "sha256:stale-result",
+                        "observed_relation": "narrower",
+                        "decision": "equivalent",
+                        "rationale": "A stale decision must not settle this correspondence.",
+                        "source_citation": "Main article, p. 1.",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.benchmark-manifest.v2",
+                "rows": [
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "run_dir": str(run_dir),
+                        "expected_result": expected,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = score(manifest, reference, adjudications)
+    excluded = result["excluded"][0]
+
+    assert excluded["result_scope"] == "unresolved"
+    assert excluded["correspondence"] == "unresolved"
+    assert excluded["result_scope_details"]["code"] == "scope_adjudication_identity_mismatch"
+    assert excluded["proposal_relation"] == "narrower"
+    assert "population" in excluded["result_scope_details"]["differing_facets"]
+    assert result["scope"]["finalized_scored_cases"] == 0
+    assert result["scope"]["result_scope_denominators"]["unresolved"] == 1
+    assert result["scope"]["result_scope_denominators"]["adjudicated_equivalent"] == 0
 
 
 def test_result_scope_rejects_changed_group_bound_values() -> None:
@@ -587,10 +682,13 @@ def test_score_keeps_scope_difference_out_of_primary_and_adds_it_to_sensitivity(
     assert result["scope"]["sensitivity_scored_cases"] == 2
     assert result["scope"]["scope_difference_cases"] == 1
     assert result["scope"]["result_scope_denominators"] == {
-        "exact": 1,
-        "approved_proxy": 1,
+        "mechanical_match": 1,
+        "mechanical_mismatch": 1,
+        "adjudicated_equivalent": 0,
+        "accepted_with_scope_difference": 1,
         "unavailable": 0,
         "mismatch": 0,
+        "unresolved": 0,
     }
     assert result["pooled"]["case_count"] == 1
     assert result["sensitivity"]["pooled"]["case_count"] == 2
@@ -605,10 +703,253 @@ def test_score_keeps_scope_difference_out_of_primary_and_adds_it_to_sensitivity(
         result["scope_difference_cases"][0]["scope_adjudication"]["decision"]
         == "accepted_with_scope_difference"
     )
+    assert result["scope_difference_cases"][0]["result_scope"] == ("accepted_with_scope_difference")
     markdown = render_markdown(result)
     assert "Scope-difference sensitivity" in markdown
     assert "accepted_with_scope_difference" in markdown
-    assert "Result-scope cases: exact 1; approved proxy 1; unavailable 0; mismatch 0." in markdown
+    assert "mechanical matches 1; mechanical mismatches 1;" in markdown
+    assert "accepted scope differences 1" in markdown
+
+
+def test_score_report_separates_format_and_wording_equivalents_from_proposal_relation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    labels = {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns",
+    }
+    monkeypatch.setitem(
+        score.__globals__,
+        "_load_reference",
+        lambda _root: {("Overall Survival", "GETUG-AFU-15"): labels},
+    )
+    records = [
+        {
+            "observed": labels,
+            "bundle": "format.rob2.zip",
+            "proposal_relation": "exact",
+            "scope_adjudication": {
+                "expected_result_sha256": "a" * 64,
+                "review_identity": "sha256:review-format",
+                "result_identity": "sha256:result-format",
+                "decision": "equivalent",
+                "rationale": "The estimate uses a different number format for the same result.",
+                "source_citation": "Main article, p. 1.",
+            },
+            "result_scope_details": {
+                "mechanical_match": False,
+                "differing_facets": ["reported_scope.estimate"],
+                "proposal_relation": "exact",
+            },
+        },
+        {
+            "observed": labels,
+            "bundle": "wording.rob2.zip",
+            "proposal_relation": "narrower",
+            "scope_adjudication": {
+                "expected_result_sha256": "b" * 64,
+                "review_identity": "sha256:review-wording",
+                "result_identity": "sha256:result-wording",
+                "decision": "equivalent",
+                "rationale": (
+                    "The endpoint wording differs, but the cited passage "
+                    "identifies the same endpoint."
+                ),
+                "source_citation": "Supplement, p. 4.",
+            },
+            "result_scope_details": {
+                "mechanical_match": False,
+                "differing_facets": ["endpoint_definition", "reported_scope.endpoint.definition"],
+                "proposal_relation": "narrower",
+            },
+        },
+    ]
+    monkeypatch.setitem(
+        score.__globals__,
+        "_bundle_snapshot",
+        lambda *_args, **_kwargs: (records.pop(0), None),
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.benchmark-manifest.v2",
+                "rows": [
+                    {
+                        "outcome": "Overall Survival",
+                        "trial": "GETUG-AFU-15",
+                        "run_dir": str(tmp_path / name),
+                        "expected_result": _expected_result(),
+                    }
+                    for name in ("format", "wording")
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = score(manifest, tmp_path / "reference")
+    markdown = render_markdown(result, publish_adjudication_details=True)
+
+    assert result["scope"]["combined_primary_score"] == {"cases": 2, "domain_cells": 10}
+    assert result["scope"]["result_scope_denominators"]["mechanical_match"] == 0
+    assert result["scope"]["result_scope_denominators"]["mechanical_mismatch"] == 2
+    assert result["scope"]["result_scope_denominators"]["adjudicated_equivalent"] == 2
+    assert result["scope"]["proposal_relation_denominators"] == {
+        "exact": 1,
+        "broader": 0,
+        "narrower": 1,
+        "component": 0,
+        "related": 0,
+        "unknown": 0,
+    }
+    assert result["cases"][0]["result_scope"] == "adjudicated_equivalent"
+    assert "reported_scope.estimate" in markdown
+    assert "reported_scope.endpoint.definition" in markdown
+    assert "sha256:result-format" in markdown
+    assert "The estimate uses a different number format" in markdown
+    assert "Supplement, p. 4." in markdown
+    public_default = render_markdown(result)
+    assert "The estimate uses a different number format" not in public_default
+    assert "Supplement, p. 4." not in public_default
+
+
+def test_changed_safety_grouping_facets_are_reported_without_claiming_equivalence() -> None:
+    observed = {
+        "trial_id": "GETUG-AFU-15",
+        "target": {
+            "comparison_groups": [
+                {"id": "darolutamide", "assignment": "actual treatment"},
+                {"id": "placebo", "assignment": "assigned control"},
+            ],
+            "outcome_definition": "grade 3 or higher adverse events",
+            "intended_analysis_population": "all randomized participants",
+            "time_point_or_window": "during treatment",
+        },
+        "reported": {
+            "form": "group_bound_values",
+            "analysis_population": "safety set",
+            "endpoint": {"name": "grade 3 or 4 adverse events"},
+            "group_values": [
+                {"group_id": "darolutamide", "value": "66.1"},
+                {"group_id": "placebo", "value": "63.5"},
+            ],
+        },
+    }
+    expected = {
+        "trial": "GETUG-AFU-15",
+        "comparison": [
+            {"id": "treatment", "assignment": "assigned treatment"},
+            {"id": "control", "assignment": "assigned control"},
+        ],
+        "endpoint_definition": "grade 3 or higher adverse events",
+        "population": "all randomized participants",
+        "window": "during treatment",
+        "reported_scope": {
+            "form": "group_bound_values",
+            "analysis_population": "safety set",
+            "endpoint": {"name": "grade 3 or 4 adverse events"},
+            "group_values": [
+                {"group_id": "treatment", "value": "66.1"},
+                {"group_id": "control", "value": "63.5"},
+            ],
+        },
+    }
+
+    mismatches = _result_mismatches(
+        expected, _result_dimensions(observed, "GETUG-AFU-15"), "GETUG-AFU-15"
+    )
+    facets = _mismatch_facets(mismatches)
+
+    assert "comparison[0].id" in facets
+    assert "reported_scope.group_values[0].group_id" in facets
+    assert "reported_scope.group_values[1].group_id" in facets
+
+
+def test_scope_review_required_grouping_case_stays_unresolved_and_unscored(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    review = {
+        "expected_result_sha256": "a" * 64,
+        "review_identity": "sha256:review-arasens",
+        "result_identity": "sha256:result-arasens",
+        "decision": "equivalent",
+        "rationale": (
+            "The generic rationale does not address the treatment-received group membership."
+        ),
+        "source_citation": "ARASENS main article, p. 4; Table 3, p. 8.",
+    }
+    bundle = {
+        "observed": {},
+        "bundle": "arasens-ae.rob2.zip",
+        "proposal_relation": "narrower",
+        "scope_adjudication": review,
+        "result_scope_details": {
+            "mechanical_match": False,
+            "differing_facets": [
+                "comparison[0].id",
+                "reported_scope.group_values[0].group_id",
+            ],
+            "proposal_relation": "narrower",
+        },
+    }
+    monkeypatch.setitem(
+        score.__globals__,
+        "_bundle_snapshot",
+        lambda *_args, **_kwargs: (bundle, None),
+    )
+    monkeypatch.setitem(
+        score.__globals__,
+        "_load_reference",
+        lambda _root: (_ for _ in ()).throw(AssertionError("labels must not be loaded")),
+    )
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "schema": "rob2-kit.fresh-benchmark-index.v1",
+                "rows": [
+                    {
+                        "outcome": "Adverse Events",
+                        "trial": "ARASENS",
+                        "run_dir": str(tmp_path / "arasens"),
+                        "expected_result": _expected_result(),
+                        "scope_review_required": (
+                            "A separate source-grounded decision is required for group membership."
+                        ),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = score(manifest, tmp_path / "reference")
+    pending = result["review_required_cases"][0]
+
+    assert result["scope"]["combined_primary_score"] == {"cases": 0, "domain_cells": 0}
+    assert result["scope"]["result_scope_denominators"] == {
+        "mechanical_match": 0,
+        "mechanical_mismatch": 1,
+        "adjudicated_equivalent": 0,
+        "accepted_with_scope_difference": 0,
+        "unavailable": 0,
+        "mismatch": 0,
+        "unresolved": 1,
+    }
+    assert result["scope"]["proposal_relation_denominators"]["narrower"] == 1
+    assert pending["result_scope"] == "unresolved"
+    assert pending["scope_adjudication"]["decision"] == "equivalent"
+    assert pending["scope_review_required"].startswith("A separate")
+    markdown = render_markdown(result, publish_adjudication_details=True)
+    assert "reported_scope.group_values[0].group_id" in markdown
+    assert "sha256:result-arasens" in markdown
+    assert "A separate source-grounded decision is required" in markdown
+    assert "A separate source-grounded decision is required" in render_markdown(result)
 
 
 def test_legacy_manifest_row_without_expected_result_is_visible_and_unscored(
@@ -649,6 +990,33 @@ def test_legacy_manifest_row_without_expected_result_is_visible_and_unscored(
     ]
 
 
+def test_historical_score_schema_remains_renderable_with_its_original_scope_labels(
+    tmp_path: Path,
+) -> None:
+    reference = tmp_path / "reference"
+    _write_reference(reference)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"schema": "rob2-kit.benchmark-manifest.v2", "rows": []}),
+        encoding="utf-8",
+    )
+    result = score(manifest, reference)
+    result["schema"] = "rob2-kit.trial-benchmark-score.v1"
+    result["scope"]["result_scope_denominators"] = {
+        "exact": 26,
+        "approved_proxy": 0,
+        "unavailable": 0,
+        "mismatch": 0,
+    }
+
+    markdown = render_markdown(result)
+
+    assert "Result-scope cases: exact 26; approved proxy 0; unavailable 0; mismatch 0." in markdown
+    assert "## Pooled result" in markdown
+    assert "## Excluded cases" in markdown
+    assert "## Result-scope correspondence" not in markdown
+
+
 def test_missing_approved_result_has_its_own_unavailable_denominator(
     tmp_path: Path,
 ) -> None:
@@ -685,10 +1053,13 @@ def test_missing_approved_result_has_its_own_unavailable_denominator(
     result = score(manifest, reference)
 
     assert result["scope"]["result_scope_denominators"] == {
-        "exact": 0,
-        "approved_proxy": 0,
+        "mechanical_match": 0,
+        "mechanical_mismatch": 0,
+        "adjudicated_equivalent": 0,
+        "accepted_with_scope_difference": 0,
         "unavailable": 1,
         "mismatch": 0,
+        "unresolved": 0,
     }
     assert result["excluded"][0]["result_scope_details"] == {"code": "approved_result_unavailable"}
 

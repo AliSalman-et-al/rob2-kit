@@ -752,7 +752,7 @@ def _approved_result_scope(
         )
     mismatches = _result_mismatches(expected_result, _result_dimensions(result, trial), trial)
     if not mismatches:
-        return None, "matched", None, result_identity
+        return None, "mechanical_match", None, result_identity
 
     proposal_review = canonical.get("proposal_review")
     acknowledgment = canonical.get("proposal_acknowledgment")
@@ -776,9 +776,9 @@ def _approved_result_scope(
     if adjudication is not None:
         return (
             adjudication,
-            "approved_proxy"
+            "accepted_with_scope_difference"
             if adjudication.get("decision") == "accepted_with_scope_difference"
-            else "matched",
+            else "adjudicated_equivalent",
             None,
             result_identity,
         )
@@ -1383,10 +1383,14 @@ def collect(
                 completion = str(selected_draw["completion"])
         scope_status = (
             "eligible"
-            if result_scope_status in {"matched", "approved_proxy"}
+            if result_scope_status
+            in {"mechanical_match", "adjudicated_equivalent", "accepted_with_scope_difference"}
             else "scope_uncertain"
         )
-        scope_comparable = result_scope_status == "matched"
+        scope_comparable = result_scope_status in {
+            "mechanical_match",
+            "adjudicated_equivalent",
+        }
         selected_draw = next((item for item in attempt_draws if item.get("selected") is True), None)
         operational_state = (
             execution.get("state")
