@@ -249,7 +249,7 @@ class ModelAccess(_StrictModel):
 
 class CohortPartitions(_StrictModel):
     development_case_ids: tuple[StrictStr, ...] = ()
-    held_out_case_ids: tuple[StrictStr, ...] = Field(min_length=1)
+    held_out_case_ids: tuple[StrictStr, ...] = ()
 
     @model_validator(mode="after")
     def validate_partitions(self) -> CohortPartitions:
@@ -261,6 +261,8 @@ class CohortPartitions(_StrictModel):
             raise ValueError("partition case identities must be unique")
         if development & held_out:
             raise ValueError("development and held-out cases overlap")
+        if not development and not held_out:
+            raise ValueError("at least one development or held-out case is required")
         return self
 
 

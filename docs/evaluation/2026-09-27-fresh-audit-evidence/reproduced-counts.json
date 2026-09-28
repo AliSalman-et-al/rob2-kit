@@ -1,0 +1,112 @@
+{
+  "campaigns": {
+    "issue-465-e2e": {
+      "segments": 7,
+      "malformed_lines": [],
+      "mcp_status": {
+        "completed": 258,
+        "failed": 1
+      },
+      "mcp_tools": {
+        "get_status": 23,
+        "prepare_batch": 3,
+        "read_pages": 52,
+        "search_sources_batch": 21,
+        "validate_proposal": 5,
+        "save_proposal": 3,
+        "get_domain_context": 81,
+        "select_text_evidence": 26,
+        "save_domain_judgment": 20,
+        "search_sources": 14,
+        "review_trial": 3,
+        "close_trial": 3,
+        "finalize_batch": 3,
+        "request_proposal_approval": 1,
+        "list_sources": 1
+      }
+    },
+    "latest-rob2-kit-luna-medium": {
+      "segments": 33,
+      "malformed_lines": [],
+      "mcp_status": {
+        "completed": 585,
+        "failed": 16
+      },
+      "mcp_tools": {
+        "get_status": 112,
+        "prepare_batch": 31,
+        "read_pages": 167,
+        "search_sources_batch": 34,
+        "validate_proposal": 71,
+        "select_text_evidence": 23,
+        "save_proposal": 25,
+        "search_sources": 22,
+        "list_sources": 7,
+        "list_mcp_resources": 2,
+        "read_mcp_resource": 2,
+        "request_proposal_approval": 5,
+        "get_domain_context": 79,
+        "save_domain_judgment": 20,
+        "list_mcp_resource_templates": 1
+      }
+    },
+    "rob2-trial-benchmark-fresh-4e03e798": {
+      "segments": 62,
+      "malformed_lines": [],
+      "mcp_status": {
+        "completed": 2495,
+        "failed": 89
+      },
+      "mcp_tools": {
+        "get_status": 185,
+        "prepare_batch": 33,
+        "read_pages": 428,
+        "search_sources": 186,
+        "validate_proposal": 116,
+        "select_text_evidence": 218,
+        "save_proposal": 30,
+        "search_sources_batch": 169,
+        "list_mcp_resource_templates": 1,
+        "list_mcp_resources": 1,
+        "read_mcp_resource": 1,
+        "request_proposal_approval": 24,
+        "get_domain_context": 639,
+        "list_sources": 117,
+        "save_domain_judgment": 194,
+        "review_trial": 36,
+        "close_trial": 27,
+        "finalize_batch": 26,
+        "render_page": 131,
+        "select_visual_evidence": 22
+      }
+    }
+  },
+  "duplicate_logs": [],
+  "fresh": {
+    "cases": 26,
+    "domain_matches": {
+      "D1": 26,
+      "D2": 14,
+      "D3": 12,
+      "D4": 19,
+      "D5": 12
+    },
+    "domain_exact": 83,
+    "domain_denominator": 130,
+    "reference_classes": {
+      "low": 104,
+      "some_concerns": 26
+    },
+    "observed_classes": {
+      "low": 80,
+      "high": 18,
+      "some_concerns": 32
+    },
+    "scope_adjudications": 26,
+    "proposal_relations_in_adjudications": {
+      "narrower": 11,
+      "exact": 15
+    },
+    "overall_exact": 2
+  }
+}

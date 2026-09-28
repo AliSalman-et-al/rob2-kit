@@ -1,0 +1,1399 @@
+{
+  "adjudication_sha256": "cb88cb6599ff3e205e6bf8823a43f60b9647d89085786223d3d98f5a9e321f50",
+  "cases": [
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "536cfcc52952e313b6e3c7d5c02c43a00c79793dcb4fbf729ef32191d92070eb",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:0cd2e673d84bfb8d54b4fa07c136515137384c57e5792307fa3c1e118eed8878",
+        "review_identity": "sha256:dd3d3125a44b7dddb5b8458eeedecc345db533fa34d055348c8f3bc97f7bcfef",
+        "source_citation": "ARASENS main_article.pdf, pp. 3, 4"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].id",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "ARASENS"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "56f2550fbacc7d7534b0765e8eb3605ed38438886316800202bd4d1942e779b4",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:dbe530ee7803f2c458013b30e6c522be6d6116bbdb8452c44082c6b2f7cfcf64",
+        "review_identity": "sha256:2664c5280f875a5c40af47ec3b2bc4f1915dcdf9fc21383acbb11ea094b902d8",
+        "source_citation": "ARCHES main_article.pdf, pp. 2, 3, 7"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "secondary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "ARCHES"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e48908ca91bb3e2689daa4f303981c65cb26b8bcc55da7d3404df5d0301bd168",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:63e698f0288e16ec991b8fdeb7063a77b68bee3ffbb1db758600676ef8c92213",
+        "review_identity": "sha256:f71acf1d6db590e69969b9aecf87eda994bdaf519aa0f41b69f07f09ca5fee9a",
+        "source_citation": "CHAARTED main_article.pdf, pp. 2, 3, 4, 6"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "CHAARTED"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "be0fe5f1296118f64fe41da0614a3936cad1d45c9c17f1416e62fd859aef5ae7",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:2fa48ffad7541057e652dc682bd24f5ff4b7141587f403634afcc9842b1a99f5",
+        "review_identity": "sha256:9cd5a5056cee4562dcc2cf92f3e4553423e7e5ae1ab4cb25944da049bd5ccd9f",
+        "source_citation": "ENZAMET main_article.pdf, pp. 3, 5"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "ENZAMET"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "4544b7416346eba4a2f0e9443a929c55549109996f64ccec428d395710635d45",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:6c6088a5b1c88859161ee72e7a59ea04f8dbeabd9a90c1231280b02c01c27d8c",
+        "review_identity": "sha256:cb36c967fe5993e004e6a9ab135e4182450889f28c69b41282c9a14e6cf899f3",
+        "source_citation": "GETUG-AFU-15 main_article.pdf, pp. 1, 2, 3, 4"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "estimate",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.estimate",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "fcfba3ff5675b9e595f61ec94b79eec5a09d48b6bf7ccb09bd02f0f0a8d1fe99",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:25a6d3a1335ffa3e1f422e2311d3f0470ae6f110b053a630f45a93b2085ae536",
+        "review_identity": "sha256:cb7eeb593e8f8d051bcb2543a7b54a066e293da61ec16b95fe8b4dfc85b45ffb",
+        "source_citation": "LATITUDE main_article.pdf, pp. 1, 3, 4"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].id",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "LATITUDE"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e96690701f6252b1a25ac24091c5fdb537ade46fb1177801ce1f0add3ddabd54",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:7d04dc2fae75ada93202abf40f49e3112092792aec90f846663f209bd1392364",
+        "review_identity": "sha256:9e5c724454d73ccaa94d6dcbceaf863069951afc688fce8378392c4fa58b76a1",
+        "source_citation": "PEACE-1 main_article.pdf, pp. 1, 3, 5, 6, 9"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "estimate",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.estimate",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "PEACE-1"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "c9b94a864d2cf8ab17d2db4119811acf25e9d41600f82648c1f403fa4cd7de37",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:721d4be0e60f09ae13811e24f0e32d643b78a6fe80b8bea2a0527c3461db6512",
+        "review_identity": "sha256:1c88bf7a4ca4033cb9f605a7d7cabbabc296045aaf50853b201ed6618b2a1307",
+        "source_citation": "STAMPEDE main_article.pdf, pp. 1, 2, 3, 4"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "STAMPEDE"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "b43130c8eb8ca76c0709d67cedadfd0960d4058ddfdd1709d6d4383410aed0d8",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:635965b7b41783bb4723d0e9fda31f169393bdf0e2e8469847acfdd1754cbe0c",
+        "review_identity": "sha256:e0593acb34943d89d6ab1cfc8a73a679ec8027742ae30888c037ca3bafcc4308",
+        "source_citation": "SWOG-1216 main_article.pdf, pp. 2, 3, 4"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "SWOG-1216"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "2df3aea252a3871dca93f3d61d7110fa7ec60b9c7a1967e5da64baf812f7c500",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:6caab9da6eae7e8dc10aead1fbfd67020fd3334e373ed1add233645dd2f30162",
+        "review_identity": "sha256:1f048192d719a97d6990fe0a7fbe6fc5d09f2dacf3a441fca3392c810a28fb28",
+        "source_citation": "TITAN main_article.pdf, pp. 2, 3, 4, 7"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].id",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Overall Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "TITAN"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "64c5ac33eb741226ba02a50603217d6f2a26acebcb8f5961927d6dfc6c2f4780",
+        "rationale": "The proposal selects the same trial result and estimate supplied in the prompt. The source describes the endpoint scope or measurement differently from the frozen wording; the cited main-article passages identify the same comparison, analysis, and reported estimate. The scope relation remains recorded for the RoB 2 assessment.",
+        "result_identity": "sha256:28c038cb703285b742f4c896e586596340659fd57253b38ab78f9bba7370eeba",
+        "review_identity": "sha256:282e672d44854180b0931ea4fa891884cc44a582941c5aba2c746f4d822c0aa2",
+        "source_citation": "ARCHES main_article.pdf, pp. 2, 3, 7"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "ARCHES"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "75b54c8f2aba7bf6b60aa34df599643b8ee5fc370ba9a0952dad9fb1d8a0fbf5",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:b4fc03f068a0f99f83595aece509a7306808ca16e79802ad7f4a26cf0975cca5",
+        "review_identity": "sha256:823a1b62dfbe4ebd014f3c49e5bd25e4ac85438b5d73d008938d866305fe1b18",
+        "source_citation": "CHAARTED main_article.pdf, pp. 3, 4, 7, 8"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "CHAARTED"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "8a28cf3532d0335cf66f76230d9e2fd09c4e7ad1372591cfba76110bff566186",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:9ca7f44510c810b8cc8b5651bb08401e89bccd16840010fd9b116ee625e5741e",
+        "review_identity": "sha256:76550ccfaa239b1c5f7f7bf79e7524d6cf1ac3f3c08dd9398942dc651597178b",
+        "source_citation": "ENZAMET main_article.pdf, pp. 2, 3, 5, 6"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].id",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "ENZAMET"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "5b0c82abb1e04862207c98e676563b7d41ddf7e36a1343d447988aefbab4b6ac",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:cd528df14996640057922edaa8e79131155f620462bc9780018048a132c79e98",
+        "review_identity": "sha256:0170ef952b2eaed01cf6ed257965f3efcd27af0800a2c251b39f60929b9df634",
+        "source_citation": "GETUG-AFU-15 main_article.pdf, pp. 1, 2, 3, 5"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "GETUG-AFU-15"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "b81c430d15cc08b9a53fea867c3d5d07b9dcfa133c4114a677814c5c7fe5eab7",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:27612de6d85bac8933b6906a64706824b4c3cd8f74871427ecce6e29961b3f30",
+        "review_identity": "sha256:fa3e32219b452eea321680ff9f06e9ec41269e43015e7e603464173df151cd70",
+        "source_citation": "LATITUDE main_article.pdf, pp. 1, 3, 4, 5"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "low",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "LATITUDE"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "ff60c68ac40b3b2097cd3871c54b2a289018f5d243bea491b471a06f58ebe033",
+        "rationale": "The replacement proposal identifies PEACE-1 radiographic progression-free survival in the overall randomized population and retains the prompted PCWG2 definition in its target measurement. The reported endpoint wording is shorter than the supplied definition, and the comparison arm labels describe the same pooled abiraterone allocation across radiotherapy strata. The adjusted HR and 99.9% confidence interval match the source-reported overall-population result; the one consent withdrawal is disclosed. These wording and analysis-population details do not identify a different result.",
+        "result_identity": "sha256:232464e560cd7d1d3b3bfd53bd1d222295fe9dfa7d26153ab9a278d0e063c133",
+        "review_identity": "sha256:786d7c324d7cd46c2878f5b256b5d84870e367f493c38e08045cfffbdbebba22",
+        "source_citation": "PEACE-1 main_article.pdf, pp. 3, 4, 5, 6"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "estimate",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.estimate",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "PEACE-1"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e5fd5ce4158b29270cf39dfda02d3b11421fb2177380e07adc38266efbc9278c",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:3c85479aab65443812fb13ae26ab2f03273c19f11d8c13c8aa96c639fe48e80c",
+        "review_identity": "sha256:618d2211ff3dabb9fb40c86307ac2846d180bb4d87650b0b6ec81a6b6f851398",
+        "source_citation": "STAMPEDE main_article.pdf, pp. 2, 3, 4, 6"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "high",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "STAMPEDE"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "0321301459f5dcbe58dc3b6b295dc0782a9074aa862ee79632b9ad2cc9d1679b",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:7e8004b1cd1611ee546e0f2ba494b933c7944d1b7593a9e79d98c74231bafd74",
+        "review_identity": "sha256:f6ba48d0f5a1813765e08d04957ab7c65ee824b1068bb001e9decf441c5b311d",
+        "source_citation": "SWOG-1216 main_article.pdf, pp. 1, 2, 3, 4"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.effect_measure",
+        "reported_scope.endpoint.definition",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "some_concerns",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "SWOG-1216"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "b05bca3cdc8741c7b49e12c8b017a24949a71e997cf1101bc4ca1977057b4073",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:2b6b2f815db48aaf77f7a97c3a22a14db1ad79b58d529c9ad9b96d7eb6ac4328",
+        "review_identity": "sha256:d6d7ee4b0016595ef7840a627c60bf04db2301c092db374a74e1f2b7b2dee3e5",
+        "source_citation": "TITAN main_article.pdf, pp. 1, 3, 5, 9"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "precision",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.precision"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Progression-Free Survival",
+      "primary_status": "primary",
+      "proposal_relation": "exact",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "TITAN"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "844f01008b7db0111cb36bae8d3c592125b6000b9718710c079e8298f31137f0",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:eebb8afe8a9de9395e1abafc11552e7d61dfe537d5c1372819aeb5d5b0b941b4",
+        "review_identity": "sha256:3a1af0596040884536d0abf2b24380bc640fbbc4efe4b6240d99aa06a5922bdc",
+        "source_citation": "ARCHES main_article.pdf, pp. 2, 10"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.group_values[0].group_id",
+        "reported_scope.group_values[0].statistic",
+        "reported_scope.group_values[0].unit",
+        "reported_scope.group_values[0].value",
+        "reported_scope.group_values[1].group_id",
+        "reported_scope.group_values[1].statistic",
+        "reported_scope.group_values[1].unit",
+        "reported_scope.group_values[1].value"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "ARCHES"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "65cca14d9a2db91df95d4c4c803e588a08fd6b15758bec9cb9033c0544ec132e",
+        "rationale": "The requested endpoint is Grade 3 adverse events under NCI-CTCAE version 4.0.2. The proposal target states that definition and its reported safety-population Grade 3 row is 277/563 (49%) versus 194/558 (35%), matching the frozen result. \u201cAny adverse event\u201d is the table heading; the selected category is the Grade 3 row.",
+        "result_identity": "sha256:85c7cae027ca9535d066d84c32d2be17a2db88d50895c52d1d276228c2531114",
+        "review_identity": "sha256:0667da5bbdb358a0ff50f9f1ffbeb041289314e1934955ba6500c4562c17c00e",
+        "source_citation": "ENZAMET main_article.pdf, pp. 2, 3, 9"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.group_values[0].group_id",
+        "reported_scope.group_values[0].statistic",
+        "reported_scope.group_values[0].value",
+        "reported_scope.group_values[1].group_id",
+        "reported_scope.group_values[1].statistic",
+        "reported_scope.group_values[1].value"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "ENZAMET"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "2fd5257b0a7c6574c568fda38110c75e9aae8d46bae15ed310ae498e45d75e87",
+        "rationale": "The proposal selects the same trial result and estimate supplied in the prompt. The source describes the endpoint scope or measurement differently from the frozen wording; the cited main-article passages identify the same comparison, analysis, and reported estimate. The scope relation remains recorded for the RoB 2 assessment.",
+        "result_identity": "sha256:81090da1ee861352cb232e65340861c265befb80013e16b7593905d62f50991a",
+        "review_identity": "sha256:02bd452fe5d76f1e82a7cb4a50e7fb0325a1e4b9ff1e872f9f8cd38ed730a965",
+        "source_citation": "LATITUDE main_article.pdf, pp. 3, 4, 8"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.group_values[0].group_id",
+        "reported_scope.group_values[0].statistic",
+        "reported_scope.group_values[0].unit",
+        "reported_scope.group_values[0].value",
+        "reported_scope.group_values[1].group_id",
+        "reported_scope.group_values[1].statistic",
+        "reported_scope.group_values[1].unit",
+        "reported_scope.group_values[1].value"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "low",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "low",
+        "overall": "low"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "LATITUDE"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "bd9716cc0a31ce9b4e94532d8f3b8d36e517ccd4f1af0882d1c9b5e0dd96c861",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:dc69459b3b9dd18c43e48060f1f94118f6edee7fb8e0e5af080270b270af9c79",
+        "review_identity": "sha256:e4de8a800f75fcbbf8ddb67c903cb9c0247769e82731c0cc446e153f5478446f",
+        "source_citation": "PEACE-1 main_article.pdf, pp. 3, 4, 11"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.group_values[0].group_id",
+        "reported_scope.group_values[0].statistic",
+        "reported_scope.group_values[0].unit",
+        "reported_scope.group_values[0].value",
+        "reported_scope.group_values[1].group_id",
+        "reported_scope.group_values[1].statistic",
+        "reported_scope.group_values[1].unit",
+        "reported_scope.group_values[1].value"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "low",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "PEACE-1"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "e722bcde3716f8c3b3baf80048439710c65d6cc151ecef10453c73be88c0cda2",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:acb22ff6863d490dcf1835936441e2a1c5575a618abc239d00f6c6932ebb5bd5",
+        "review_identity": "sha256:2dd1dd4677b18c40e90a23c00b65c279f7e65a143a8b1e4b13ba10ddd8dca5dc",
+        "source_citation": "STAMPEDE main_article.pdf, pp. 1, 6, 10"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].assignment",
+        "comparison[0].id",
+        "comparison[1].assignment",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.group_values[0].group_id",
+        "reported_scope.group_values[0].statistic",
+        "reported_scope.group_values[0].unit",
+        "reported_scope.group_values[0].value",
+        "reported_scope.group_values[1].group_id",
+        "reported_scope.group_values[1].statistic",
+        "reported_scope.group_values[1].unit",
+        "reported_scope.group_values[1].value"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "some_concerns",
+        "D4": "some_concerns",
+        "D5": "low",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "low",
+        "D4": "high",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "STAMPEDE"
+    },
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "3acdf67ea7c4481b4e8238afa2fb543c9ec81415b9d4a63fb820e1d1423b03b1",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:7fe09c97c70fcd1d13d11b85c07d281f874411acc7edd9146ef6cee7c5a71a18",
+        "review_identity": "sha256:6f97b4e7080188c2fef00ac81a5d3d4101272efcca4bb681c0b9e8ad2965eb9b",
+        "source_citation": "TITAN main_article.pdf, pp. 2, 3, 10"
+      },
+      "correspondence": "adjudicated_equivalent",
+      "differing_facets": [
+        "comparison[0].id",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.group_values[0].group_id",
+        "reported_scope.group_values[0].statistic",
+        "reported_scope.group_values[0].unit",
+        "reported_scope.group_values[0].value",
+        "reported_scope.group_values[1].group_id",
+        "reported_scope.group_values[1].statistic",
+        "reported_scope.group_values[1].unit",
+        "reported_scope.group_values[1].value"
+      ],
+      "expected": {
+        "D1": "low",
+        "D2": "low",
+        "D3": "low",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "some_concerns"
+      },
+      "observed": {
+        "D1": "low",
+        "D2": "some_concerns",
+        "D3": "high",
+        "D4": "low",
+        "D5": "some_concerns",
+        "overall": "high"
+      },
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "adjudicated_equivalent",
+      "review_reason": null,
+      "review_required": false,
+      "trial": "TITAN"
+    }
+  ],
+  "pooled": {
+    "case_count": 25,
+    "domain_cells": 125,
+    "domains": {
+      "D1": {
+        "exact": {
+          "correct": 25,
+          "rate": 1.0,
+          "total": 25
+        },
+        "low_vs_non_low": {
+          "correct": 25,
+          "rate": 1.0,
+          "total": 25
+        }
+      },
+      "D2": {
+        "exact": {
+          "correct": 14,
+          "rate": 0.56,
+          "total": 25
+        },
+        "low_vs_non_low": {
+          "correct": 14,
+          "rate": 0.56,
+          "total": 25
+        }
+      },
+      "D3": {
+        "exact": {
+          "correct": 11,
+          "rate": 0.44,
+          "total": 25
+        },
+        "low_vs_non_low": {
+          "correct": 18,
+          "rate": 0.72,
+          "total": 25
+        }
+      },
+      "D4": {
+        "exact": {
+          "correct": 18,
+          "rate": 0.72,
+          "total": 25
+        },
+        "low_vs_non_low": {
+          "correct": 24,
+          "rate": 0.96,
+          "total": 25
+        }
+      },
+      "D5": {
+        "exact": {
+          "correct": 12,
+          "rate": 0.48,
+          "total": 25
+        },
+        "low_vs_non_low": {
+          "correct": 12,
+          "rate": 0.48,
+          "total": 25
+        }
+      }
+    },
+    "overall": {
+      "exact": {
+        "correct": 2,
+        "rate": 0.08,
+        "total": 25
+      },
+      "low_vs_non_low": {
+        "correct": 20,
+        "rate": 0.8,
+        "total": 25
+      }
+    },
+    "pooled_domains": {
+      "exact": {
+        "correct": 80,
+        "rate": 0.64,
+        "total": 125
+      },
+      "low_vs_non_low": {
+        "correct": 93,
+        "rate": 0.744,
+        "total": 125
+      }
+    }
+  },
+  "review_required_cases": [
+    {
+      "adjudication": {
+        "decision": "equivalent",
+        "expected_result_sha256": "983c51392a5fdba287fb785bf03d9b13b08ef60a7e3a1432c0ad654efc0ffe32",
+        "rationale": "The proposal selects the same trial endpoint/result and point estimate supplied in the prompt. Arm identifiers, table formatting, confidence-interval punctuation, and source-reported analysis-set wording differ from the frozen metadata but do not identify a different result; any narrower analysis set remains disclosed in the proposal relation rationale for RoB assessment.",
+        "result_identity": "sha256:28622307e5a94f9c3ee01bc782acf3a29164495e1769aa04f8ea3fe656c160b8",
+        "review_identity": "sha256:715ec2c0c86977ad9df708c8506a829792df0f1b67ab1095fd209bc79f4dfce1",
+        "source_citation": "ARASENS main_article.pdf, pp. 3, 4, 8"
+      },
+      "correspondence": "unresolved",
+      "differing_facets": [
+        "comparison[0].id",
+        "comparison[1].id",
+        "endpoint_definition",
+        "population",
+        "window_or_cutoff.description",
+        "reported_scope.analysis_population",
+        "reported_scope.endpoint.definition",
+        "reported_scope.endpoint.name",
+        "reported_scope.group_values[0].group_id",
+        "reported_scope.group_values[0].statistic",
+        "reported_scope.group_values[0].unit",
+        "reported_scope.group_values[0].value",
+        "reported_scope.group_values[1].group_id",
+        "reported_scope.group_values[1].statistic",
+        "reported_scope.group_values[1].unit",
+        "reported_scope.group_values[1].value"
+      ],
+      "expected": null,
+      "observed": null,
+      "outcome": "Adverse Events",
+      "primary_status": "secondary",
+      "proposal_relation": "narrower",
+      "result_scope": "unresolved",
+      "review_reason": "The approved safety Result uses treatment-received group membership, including a participant assigned to placebo who received darolutamide. The existing generic equivalence rationale does not address this grouping facet; obtain a separate source-grounded decision before including this case in the primary score.",
+      "review_required": true,
+      "trial": "ARASENS"
+    }
+  ],
+  "schema": "rob2-kit.trial-benchmark-public-scope-score.v1",
+  "scope": {
+    "combined_primary_score": {
+      "cases": 25,
+      "domain_cells": 125
+    },
+    "excluded_cases": 1,
+    "finalized_domain_cells": 125,
+    "finalized_scored_cases": 25,
+    "manifest_rows": 26,
+    "proposal_relation_denominators": {
+      "broader": 0,
+      "component": 0,
+      "exact": 15,
+      "narrower": 11,
+      "related": 0,
+      "unknown": 0
+    },
+    "result_scope_denominators": {
+      "accepted_with_scope_difference": 0,
+      "adjudicated_equivalent": 25,
+      "mechanical_match": 0,
+      "mechanical_mismatch": 26,
+      "mismatch": 0,
+      "unavailable": 0,
+      "unresolved": 1
+    },
+    "review_required_cases": 1,
+    "scope_difference_cases": 0,
+    "sensitivity_domain_cells": 125,
+    "sensitivity_scored_cases": 25
+  },
+  "scope_difference_cases": [],
+  "source_manifest_sha256": "716601e15b8bfa4f220aa90d922ba3c1456d189a4e862d0a66ecd3d6be7f5acc",
+  "source_schema": "rob2-kit.trial-benchmark-score.v2"
+}
