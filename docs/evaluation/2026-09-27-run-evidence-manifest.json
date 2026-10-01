@@ -1,0 +1,2721 @@
+{
+  "schema": "rob2-kit.run-evidence-index.v1",
+  "description": "Selected JSONL, prompts, metadata, stderr, and verified bundles for September 27 issue audit. Original campaign raw sources remain in the local eval tree.",
+  "files": [
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/evaluator-key.json",
+      "size": 2928,
+      "sha256": "5e05991724abd31852b6c710af1a0c0b74b5cba7f1c000210dc2979f07e7a2fc"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-01.txt",
+      "size": 83501,
+      "sha256": "4d2afc70700b8b65a08e8b54f11aae58eb3ff176cacb6573c5aa6122b17a6fec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-02.txt",
+      "size": 83546,
+      "sha256": "286246e1bde6cd44ebb5841fc351714990598805e8a04706a2e144a20f57e670"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-03.txt",
+      "size": 83546,
+      "sha256": "286246e1bde6cd44ebb5841fc351714990598805e8a04706a2e144a20f57e670"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-04.txt",
+      "size": 83501,
+      "sha256": "4d2afc70700b8b65a08e8b54f11aae58eb3ff176cacb6573c5aa6122b17a6fec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-05.txt",
+      "size": 83501,
+      "sha256": "4d2afc70700b8b65a08e8b54f11aae58eb3ff176cacb6573c5aa6122b17a6fec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-06.txt",
+      "size": 83546,
+      "sha256": "286246e1bde6cd44ebb5841fc351714990598805e8a04706a2e144a20f57e670"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-07.txt",
+      "size": 83501,
+      "sha256": "4d2afc70700b8b65a08e8b54f11aae58eb3ff176cacb6573c5aa6122b17a6fec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-08.txt",
+      "size": 83546,
+      "sha256": "286246e1bde6cd44ebb5841fc351714990598805e8a04706a2e144a20f57e670"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-09.txt",
+      "size": 83546,
+      "sha256": "286246e1bde6cd44ebb5841fc351714990598805e8a04706a2e144a20f57e670"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-10.txt",
+      "size": 83501,
+      "sha256": "4d2afc70700b8b65a08e8b54f11aae58eb3ff176cacb6573c5aa6122b17a6fec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-11.txt",
+      "size": 83501,
+      "sha256": "4d2afc70700b8b65a08e8b54f11aae58eb3ff176cacb6573c5aa6122b17a6fec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/inputs/input-12.txt",
+      "size": 83546,
+      "sha256": "286246e1bde6cd44ebb5841fc351714990598805e8a04706a2e144a20f57e670"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-01.jsonl",
+      "size": 2644,
+      "sha256": "410fcc8e47a742319b44a97e8cce98059a4d62c356743217e40bd82711aa7dbb"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-01.stderr.txt",
+      "size": 159,
+      "sha256": "a803a31a586b9825388faeb70a1d3ca7a7ee4a3b18e2b55a3d56aa113e6f32e3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-02.jsonl",
+      "size": 1545,
+      "sha256": "94c78147e4b209d3007845aeed11627dab031d23dce1a6bff1ed7ec5c9c5b232"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-02.stderr.txt",
+      "size": 159,
+      "sha256": "b343c32bee71284a2484d64cb32d2157b216995f68c478bed35351ee33252b07"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-03.jsonl",
+      "size": 2314,
+      "sha256": "ef84100890f82a8f0f04396e785bdb4fe0df2f70d4ebf560b877b5b2a1d7f618"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-03.stderr.txt",
+      "size": 159,
+      "sha256": "43f7fe6188f6f9d619cfe40bedb149617edb75130a96ccb001025bd662ca8b99"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-04.jsonl",
+      "size": 2765,
+      "sha256": "2916da9347e8627742018a0ce6452f2adf2afbbe5186e020bdb6308638ed4abc"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-04.stderr.txt",
+      "size": 159,
+      "sha256": "95f71a662ad72584d40d00f602aad77f844e3f2949a581e47c694d7ca18fc12b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-05.jsonl",
+      "size": 1947,
+      "sha256": "ee8ddbec135b8a3345eb0a913ed874bcc1c177a08da2a1222ec1d7bcff72e819"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-05.stderr.txt",
+      "size": 159,
+      "sha256": "f963c88bd6d336a1465c6a138e110f7fae9e2d8493de045935bd6cdf51fd6b38"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-06.jsonl",
+      "size": 2086,
+      "sha256": "a0544cdb6601af75b68ad2edd6d30e1184e5da832cc434858eaf000499fd5195"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-06.stderr.txt",
+      "size": 159,
+      "sha256": "fd4649f0eede84df73d7d1edc9f60dc66c94af29ec8ced225683e4994f1fbbff"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-07.jsonl",
+      "size": 2361,
+      "sha256": "afd459445a8c8b5de456cc4a475afc5862ffd2ac015b582104fcb9f5f9c3cc18"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-07.stderr.txt",
+      "size": 159,
+      "sha256": "ff45ae139d17320e23ce26ec47edffdf99130c2e48fe7844f654806112fb5ea1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-08.jsonl",
+      "size": 2605,
+      "sha256": "016c32d55409262be51819d4c402aba1d653fb7580f8ae654b11401a82822719"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-08.stderr.txt",
+      "size": 159,
+      "sha256": "610c5e0d288df3ddac419a7c803fb644a95bab322a03622a800784cc28f9f266"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-09.jsonl",
+      "size": 2129,
+      "sha256": "18624c8015228787ec6a5a794420f52c10543f8ca1cec0dacfce16df31bbde6c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-09.stderr.txt",
+      "size": 159,
+      "sha256": "bd1cb6a3d4394cc2c70fd7bba3db9496f8a2b4b31be74f69a21a78da027a8c84"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-10.jsonl",
+      "size": 2495,
+      "sha256": "6149ece0adb92733ddf4563c256bce3d2b5a8cf76843b96d0f4e3b3641e5c90f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-10.stderr.txt",
+      "size": 159,
+      "sha256": "61248f634a16b80442a09f4e757affb91c8a90396d10e54e5a7f6a6beda079e1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-11.jsonl",
+      "size": 2909,
+      "sha256": "a3ab3e4ab507c35b218d0cc6a013053e5d3ab4238bddeb59f2af427554731783"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-11.stderr.txt",
+      "size": 279,
+      "sha256": "d51258006f2b9a3a444adf0d0d3468527c91d3c96a1162b8cff7a68335f797df"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-12.jsonl",
+      "size": 2239,
+      "sha256": "ce47eb08d08850399cef514b34c1c31982bd02e45569af6b71fc8408a32b25f6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs/input-12.stderr.txt",
+      "size": 159,
+      "sha256": "523750ae2084de17666d5a3fde0cacdb7a8f6186e483f44e680c930e58c174b0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-01.jsonl",
+      "size": 1696,
+      "sha256": "03e7d0da1147fcc97e944ff15fc4299e41bac90ce77caa5d3401180ad2b9191b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-01.stderr.txt",
+      "size": 159,
+      "sha256": "21d0dcccf983b2f8580aaa5ea3fbe634aaf2020a91ce4596bb0e65e25147c1e3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-02.jsonl",
+      "size": 1280,
+      "sha256": "5037b6faf35c977800fe6fc58996f8112bd94273671653af68c7173ead428fc6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-02.stderr.txt",
+      "size": 159,
+      "sha256": "9bb37e89c39e27bfead7af92178c267f8588641895776e9447136c8b34183f44"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-03.jsonl",
+      "size": 2499,
+      "sha256": "d6b1e8cba96588465a8407b3c525462d9922b78aa713239b8016c92c90a8567c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-03.stderr.txt",
+      "size": 1558,
+      "sha256": "dfa17bdf2740eeaec15ae644df5fdc2c1e2e428ee79e606b8c10a821c70c5917"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-04-disabled-probe.jsonl",
+      "size": 2515,
+      "sha256": "1663cfb19ff6b7b78add9a6195c67c755b6c912a0b8fd3d4ff5e9cd80b9f124f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-04-disabled-probe.stderr.txt",
+      "size": 159,
+      "sha256": "3b77e29c997024e65aa069452c271d25801f84feea7f93b5fdbd9f4feed59ffa"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-04.jsonl",
+      "size": 10945,
+      "sha256": "a4450f3643095f67b7e77b1ab5ffc59d3095704a982441afd8c5ae306cfcba19"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-04.stderr.txt",
+      "size": 632,
+      "sha256": "a9bc3ab04546d6c5fed9e8e0943de447990abc0dea4b73fe6e14d73f1a7de2da"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-05.jsonl",
+      "size": 1398,
+      "sha256": "d2b69ce8a09ae35bc4cec10c39fc639fe15786862d5d4b141c555cab5ad13807"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-05.stderr.txt",
+      "size": 601,
+      "sha256": "bb73704915bfb25e5e2f4a496879aa3fe078b9df42f63ffeec60b7cc952f256d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-06.jsonl",
+      "size": 3045,
+      "sha256": "4c643382487ca62b7dd4ac8b70355dc76b5d991dbc68ca35b667f92e8c23ccf4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-06.stderr.txt",
+      "size": 159,
+      "sha256": "667cfe222cd8d406979cac48d1385a77d7894c2929bbdab2ef23172d0db18882"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-07.jsonl",
+      "size": 407,
+      "sha256": "9b903c7e3ec5ebea6b4328bc0a5d47cf23cb41abfbb5d373814a1609578d4b2e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/logs-exploratory/input-07.stderr.txt",
+      "size": 159,
+      "sha256": "fed509f3b851d7140cd6f468fbc4dd622aad49ec7c7876e3e24bca2f97885ff2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/manifest.json",
+      "size": 7137,
+      "sha256": "ac1c1b40e882376b36e64589e0ce3a27922700523c1d635d563eac82ce41b2a9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/arasens-os-d3-card-prompt-contrast-final/run-plan.jsonl",
+      "size": 2730,
+      "sha256": "132b9631208b5707aff38eb11f4ae25d4203bd22efb200f09422a39ed414ede1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/evaluator-key.json",
+      "size": 3134,
+      "sha256": "4f59bc59023f1ef7eab86eee2547b6534ddff6fac702c94a79d1a1a870611021"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/inputs/input-01.txt",
+      "size": 60261,
+      "sha256": "322bb09dae20e58c9bc5ed8babf0b4c6c9d6de4bd61f13f9e0cf468bcfa92104"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/inputs/input-02.txt",
+      "size": 60566,
+      "sha256": "ef31df0c667f88e27e2734111e4166f7e4a6845b45ba1e80d049cf2e04757e04"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/inputs/input-03.txt",
+      "size": 60566,
+      "sha256": "ef31df0c667f88e27e2734111e4166f7e4a6845b45ba1e80d049cf2e04757e04"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/inputs/input-04.txt",
+      "size": 60261,
+      "sha256": "322bb09dae20e58c9bc5ed8babf0b4c6c9d6de4bd61f13f9e0cf468bcfa92104"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/inputs/input-05.txt",
+      "size": 60261,
+      "sha256": "322bb09dae20e58c9bc5ed8babf0b4c6c9d6de4bd61f13f9e0cf468bcfa92104"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/inputs/input-06.txt",
+      "size": 60566,
+      "sha256": "ef31df0c667f88e27e2734111e4166f7e4a6845b45ba1e80d049cf2e04757e04"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-01.jsonl",
+      "size": 2493,
+      "sha256": "aeeced4a079363c950fa66dcc55726707e509c2311e12e7d3715224055c8f052"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-01.stderr.txt",
+      "size": 158,
+      "sha256": "c8fc010661496bdc4fae4c0984e3f207ad6042e50a389300750289cf1a4a98b7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-02.jsonl",
+      "size": 3574,
+      "sha256": "612c7c3b24c8e9cd5f4695a2894b009abfff7c3fca7a6c41bdebcb87a6b11a23"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-02.stderr.txt",
+      "size": 158,
+      "sha256": "3c235e3e1bab150142f3c95004691d2358139fd5cd454c6e0894183c20684626"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-03.jsonl",
+      "size": 3109,
+      "sha256": "d0d29a912c230ec4feadb1aea3d452fb7777d0e65d190efb63c788872152cb99"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-03.stderr.txt",
+      "size": 158,
+      "sha256": "7ebb1afae8c4938b99b8fa81d07593b29c63349bd8bdcdfae18a01e7972993da"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-04.jsonl",
+      "size": 2473,
+      "sha256": "f4aa1ac3ef8b52214e45650ea88954eef1df144345643229b81400be16158955"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-04.stderr.txt",
+      "size": 158,
+      "sha256": "c03145aaa6eb502c588ea43714d77eb25cf304dbaef112a6b1c79229baeb5de9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-05.jsonl",
+      "size": 2426,
+      "sha256": "09ae94a7ee1a27a1948085cc7620c4e86c3de06b10a2f9ccd5aa4aa70d287e65"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-05.stderr.txt",
+      "size": 158,
+      "sha256": "b5bf00b69e89328622f2b2448adb0f04059f3f9be6add9742f28a0dcbba2c1a1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-06.jsonl",
+      "size": 3283,
+      "sha256": "67bc128911e1a0c62a8d19409c5c0530b7f709b9f9bb891d7e41df5e5094d87c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/logs/input-06.stderr.txt",
+      "size": 158,
+      "sha256": "d8a5ccf085bf1e4439fc9edb2d76c82d74f0eade83f3dde9182710f101b3e110"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/manifest.json",
+      "size": 13767,
+      "sha256": "7edc3c18517c374b0ced7db60060ffd8a1cad7944708e749b8932464f380792a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/chaarted-os-d3-temporal-contrast-executed/run-plan.jsonl",
+      "size": 2373,
+      "sha256": "06c8843d77f28d70f8da2a9d3c8be0078bf4776a4c9e1d9803e6c075e35e0254"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ARASENS/overall-survival.json",
+      "size": 2421,
+      "sha256": "f6e368fb3b8b43e333808965107d1c4ea951f32b2d66bf1d02b7c1b45e8e07c5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ARASENS/overall-survival.txt",
+      "size": 67,
+      "sha256": "686fa7d75d4f927132b74698424d19f1a65609b5b73a0d57f43781085e5e04ba"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/CHAARTED/adverse-events.json",
+      "size": 1096,
+      "sha256": "6e775a61b25f9d0aac6700ae05187692357bfa29bf582d53dbe6b1867c590e14"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/CHAARTED/adverse-events.txt",
+      "size": 66,
+      "sha256": "36a1dc318dd6546f304b60b7fe5a0c280273bb2ef1628c542cf0333431bf4b01"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/CHAARTED/overall-survival.json",
+      "size": 2192,
+      "sha256": "1a9d93dadb2660336938cec431648c5f58c533edcdc29d04d253bf35bf18923c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/CHAARTED/overall-survival.txt",
+      "size": 68,
+      "sha256": "6f51d2878c033cce7c9298111d11b8f9b9b68a930e1e762e64d28c24c744471c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/CHAARTED/progression-free-survival.json",
+      "size": 1107,
+      "sha256": "73b8d75e53fb5331e184fcfb1fb706b13959df0a59210bc9657ccd6bda3a3de4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/CHAARTED/progression-free-survival.txt",
+      "size": 77,
+      "sha256": "2f619f1a4fa44c0f64728afc379b6981746c3fcb699196b1bc66279cc56ce724"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ENZAMET/adverse-events.json",
+      "size": 2690,
+      "sha256": "191166100a261923b22c0aab9ba369cdcebf70a3c924e0eca80f96e10e248adf"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ENZAMET/adverse-events.txt",
+      "size": 65,
+      "sha256": "0e5706efc31ad40278dae5c780c2b4eeb9cfa90ed9b9936c90a3398b7faf751e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ENZAMET/overall-survival.json",
+      "size": 2520,
+      "sha256": "e5ecd0d94ac3fb1ef955880694663258764152cff31c25983266f69530ece887"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ENZAMET/overall-survival.txt",
+      "size": 67,
+      "sha256": "a0f5561873323ac330f53e77fb7b625810da868718c39fc4e2df0e2509d75917"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ENZAMET/progression-free-survival.json",
+      "size": 2887,
+      "sha256": "0709ac421895c8e03b80320903af2a39d322df55a789f6ecf8c3153a89f39bf1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/inputs/ENZAMET/progression-free-survival.txt",
+      "size": 76,
+      "sha256": "9ea00e6435c0c12fde457fc876803744576905d04accdb5854eaf58a696384ce"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/approved-scope.json",
+      "size": 833,
+      "sha256": "ca8ac9f10fc836121ef1380a4caf5728d3465ec1dfe353545477eae86af9fb4e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/execution.json",
+      "size": 22723,
+      "sha256": "eb6caa108f20072cb4fdff765e3318ad82e3fd9d0f9a477d932058b13e09a1b8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/execution.lock",
+      "size": 66,
+      "sha256": "a90d8b40b9f846d2d1d9f785f35443c00e8d90888c18d1beca982ad0cd80873c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-1.codex-config.toml",
+      "size": 432,
+      "sha256": "a1d16953f62aedc2b5982a3d1875524f664e2d2182ea78e03138576b126f33d2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-1.jsonl",
+      "size": 274281,
+      "sha256": "2808593cc8c4cb93ec335f497d16b92f8a87ed6e178db455af50413ae94562a7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-1.last-message.txt",
+      "size": 548,
+      "sha256": "97d805b7b5861050fcb6e2407cf616bfbf6866ae2fd76c981eab91a10b6e6b3e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-1.meta.json",
+      "size": 10003,
+      "sha256": "180fadd53ed21e5c58f492f9d961b5b61602c3f05e689d703525a5d1d2d3bd70"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-1.stderr.txt",
+      "size": 505,
+      "sha256": "0f5b8366ca00095a0334475ebac9d11b642415d25ce3db7fa38f02583146d393"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-2.codex-config.toml",
+      "size": 432,
+      "sha256": "a1d16953f62aedc2b5982a3d1875524f664e2d2182ea78e03138576b126f33d2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-2.jsonl",
+      "size": 1347119,
+      "sha256": "ffd531fa84cec744124587418d89295ac5731babddf7d1c29487a81193659372"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-2.last-message.txt",
+      "size": 893,
+      "sha256": "b1b6b5628103b10335f14f927f01ef6fc6b5e3974e4a30372ac06877160d8b44"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-2.meta.json",
+      "size": 10063,
+      "sha256": "c355dc280e5f0789c36bbcec789d780d8665f636c79fe810e3eeb705976faa63"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/phase-2.stderr.txt",
+      "size": 158,
+      "sha256": "fc04a4644ff829543f398e73fcf582691440dbec0cdcd5fb638999f1d41e11a1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/researcher-review-rationale.txt",
+      "size": 334,
+      "sha256": "97a4c4c281809da99bf1b563aba2e24cf905e43fd0230c316969898929bb9444"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/researcher-review.txt",
+      "size": 21957,
+      "sha256": "4ca96e1c40a66f509752c16df95ecbaf5edcf6eb9c9d677110ca12f4989e7037"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/run-inputs.json",
+      "size": 2772,
+      "sha256": "da9c7edd16756329d9c73d009ac09383e8fc73889c158b8fb2c7040ffa40256b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ARASENS/overall-survival/workspace/.rob2-kit/finalized/a8579d5b6dd051319e76832651d1887a3f4c0b44014e08d1745483c97d00e84b.rob2.zip",
+      "size": 229260,
+      "sha256": "8dece58503383eafd18f7d99797ce4aafad8411f44c9070cc47146e2d64944d4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/approved-scope.json",
+      "size": 834,
+      "sha256": "cfc2b1053d9bdc9ba7dc4725162027d86547e87ef15d4b6668e9f6587c4d31c7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/execution.json",
+      "size": 22535,
+      "sha256": "c8fb773b5fa96548bbf18a64af7afdc304f953d1c2c12196dcef660b9e9cb996"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/execution.lock",
+      "size": 66,
+      "sha256": "734c3ceedddabf1def156e9eca84ce917f2b0374fb7dfcfec60f0675a2e6ed6f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-1.codex-config.toml",
+      "size": 433,
+      "sha256": "29a5a279bdca23ba7a57b2ac5a9d39718d026be6befb3c994ef90bf8616d8140"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-1.jsonl",
+      "size": 238567,
+      "sha256": "87c503b06991af461490faf985afbfcf4e33ea74de17da7f1ce6a774523e12a8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-1.last-message.txt",
+      "size": 1078,
+      "sha256": "eadf2f737f3afcf83c38da624984950ca789dc53e7878bd0878c94be23168f03"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-1.meta.json",
+      "size": 10011,
+      "sha256": "634f522dfdca38eb9f14bf3ab7a06f15342951a7dd6502fcc7b94af3c4c8d5d7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-1.stderr.txt",
+      "size": 325,
+      "sha256": "aee9e089a1ebeaa1b8af1d0db976b4972ea372a942da7e091937728db8d5b0c1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-2.codex-config.toml",
+      "size": 433,
+      "sha256": "29a5a279bdca23ba7a57b2ac5a9d39718d026be6befb3c994ef90bf8616d8140"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-2.jsonl",
+      "size": 987955,
+      "sha256": "4db4ba06abad424a196944ec2bd9432a874c1f45332081415369f0758140d5fc"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-2.last-message.txt",
+      "size": 1036,
+      "sha256": "8fe8a10a8c2bc614feb429c8932414c368ba1c038b5e5ffef710bf2af31160a9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-2.meta.json",
+      "size": 10046,
+      "sha256": "baea322d91f5989b6fd98dba4b062751120de418170081b54fd46cba714af423"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/phase-2.stderr.txt",
+      "size": 277,
+      "sha256": "b875e4c42f1f8bfd5e6ccc53eca682153a334257412e3df6871af2abecf872e9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/researcher-review.txt",
+      "size": 28386,
+      "sha256": "83ad0f541cc63343c1ffe77b2f3566803e6257b29bb01e687f2176b014547dbe"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/run-inputs.json",
+      "size": 2532,
+      "sha256": "093caafb733165bb8b05201c2150eee5a9d4439438b719856674212acf2b720d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/CHAARTED/overall-survival/workspace/.rob2-kit/finalized/295b96f22589c143564c1a223ea4111893441793da87e9f3b4527cb61e0d0996.rob2.zip",
+      "size": 180533,
+      "sha256": "9068bf309daa133c3eb754f05fec71311c344239af0aca7143b4867b381be686"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/approved-scope.json",
+      "size": 833,
+      "sha256": "c25edc3ba3ba739564f0ef325324132acac259eb01b41d913d391825883d51eb"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/execution.json",
+      "size": 22581,
+      "sha256": "b21363822c54b9b136987bf684ef876d4e49ecd140d1c73592ca259dfea8875f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/execution.lock",
+      "size": 66,
+      "sha256": "64828511945536d45bfce6b4a4d38fb22d09fd7fba3b734dcb9145b737efdf4d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-1.codex-config.toml",
+      "size": 430,
+      "sha256": "84e4e5778bfca257450f4ba656d8678ed2c41fa9376e1059ffb526c29ba089ac"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-1.jsonl",
+      "size": 167448,
+      "sha256": "cc96db1695f713e955b5bd861d2b37db9b75971caefe348f455a48e5531483cc"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-1.last-message.txt",
+      "size": 561,
+      "sha256": "a72dd7acf5a4039b030635bd2a358fe56fd713a0c925b740940b4af163a6513f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-1.meta.json",
+      "size": 9967,
+      "sha256": "e50a716025e27b61405cc89d345fd7a08df80f01fe99a686805401d45bd0e9e9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-1.stderr.txt",
+      "size": 325,
+      "sha256": "5385f1c996ccf63d420e90c8818d07a8fb3137b5f949a01f0ccd433d3279d9a8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-2.codex-config.toml",
+      "size": 430,
+      "sha256": "84e4e5778bfca257450f4ba656d8678ed2c41fa9376e1059ffb526c29ba089ac"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-2.jsonl",
+      "size": 764623,
+      "sha256": "2e4e0d472a3decad87228e5265fa79751e525bff37e6301c137df477babaf0d4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-2.last-message.txt",
+      "size": 752,
+      "sha256": "ee1fca6ac6c8774abc865d3730b062b500e305f4ac14b6ba6ef43ea349d71472"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-2.meta.json",
+      "size": 9973,
+      "sha256": "4106e1fba676458e66ade0c35881f4f220f82945126d37f89cb374539540d607"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/phase-2.stderr.txt",
+      "size": 342,
+      "sha256": "69100fc584047086d35a6e2c4b7a9a8578abd37d9719438a7aa120b72156309a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/researcher-review.txt",
+      "size": 16552,
+      "sha256": "6e1267bf0aeda692b8d3d597780b503b49e32bdead40cc5a610a12ddbdcfc963"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/run-inputs.json",
+      "size": 3041,
+      "sha256": "ef3394899fda48b55d8cdff4e09869c95ab0b1b776d47abe4daea9e472652c71"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/adverse-events/workspace/.rob2-kit/finalized/ae2bb56b3ed6aaf4eb6a0fdc30677d443e14245ae96ae8ba12dadd9598e568ac.rob2.zip",
+      "size": 57785,
+      "sha256": "953d1f3a928c3244091f3ad169d31b3e310738b5d040cde9334c3e97c40399d2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/approved-scope.json",
+      "size": 833,
+      "sha256": "ea6dabb7d8c385ce4134c6a46460356b3f243a1d3a3643c16d1c867c9df3cf28"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/execution.json",
+      "size": 22690,
+      "sha256": "8b7eef7a12cec5ff2a2a3fd4c95904ba31931c07ac76bec1d297b0a246d0bc74"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/execution.lock",
+      "size": 65,
+      "sha256": "22bdc22d89db6174f3d53a842ca4dae44c8998eeeee4200f33c31f110e9e296c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-1.codex-config.toml",
+      "size": 432,
+      "sha256": "4866dbe1117f254b5812a8741a3624cc2d3a6a37f6363ca279df0b2af61747c0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-1.jsonl",
+      "size": 327669,
+      "sha256": "6bd1713a677482a22450047c866ddf1c5950649a20cb022d6e8f0ae31e316bbb"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-1.last-message.txt",
+      "size": 1151,
+      "sha256": "cf96a7071478b167703a03b3ae1684ee7d9a560afe75958d2bcecf2632cb1f28"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-1.meta.json",
+      "size": 10024,
+      "sha256": "bffd8593e216bdf121021d21e5482ed2466e941279ac7143aa402189b64fbef2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-1.stderr.txt",
+      "size": 158,
+      "sha256": "471d74e775df98e5b694e705a8792b248e662c8c4cb4085354f01eb4488138d1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-2.codex-config.toml",
+      "size": 432,
+      "sha256": "4866dbe1117f254b5812a8741a3624cc2d3a6a37f6363ca279df0b2af61747c0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-2.jsonl",
+      "size": 994773,
+      "sha256": "49580871fe16fb475b352bd6a109f878edf898a71df711b6e68e2346770253e7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-2.last-message.txt",
+      "size": 921,
+      "sha256": "bec86820e0d316a456c160b4ed775a8985c1756fa95d49737845dfbfc72d2c3c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-2.meta.json",
+      "size": 10013,
+      "sha256": "5a054ec527ba902c6a3042a602597d82fcf3c902e8f94fc397c49c81f28e70ed"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/phase-2.stderr.txt",
+      "size": 461,
+      "sha256": "48076df47e9c336b106d0925485e706c5f90026c112aa5e2f81add604099a080"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/researcher-review.txt",
+      "size": 26773,
+      "sha256": "b90abd01a45b8739079c164ca3ab0a811f13ae35e1d9eb024281462d9632aa0c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/run-inputs.json",
+      "size": 2871,
+      "sha256": "0887ae47f779a96d966e225b323c7380cc674fc04cfe8503dfcc9e8bac07a038"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/overall-survival/workspace/.rob2-kit/finalized/af04f8f3a47a3d8a91739ae0b8bc6707283c7fba406e5528785d8dfc4066e855.rob2.zip",
+      "size": 102339,
+      "sha256": "2960e5bbe3c222da17086c2bc70a1a6c8d5a2e081c8a6edc39c645c301fd8472"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/approved-scope.json",
+      "size": 833,
+      "sha256": "af0b07c4cf915adf324d80132817997575332d01f2f6e66294d00e6c0f67508b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/execution.json",
+      "size": 22758,
+      "sha256": "5101a90efd957618f81214b9fe96e0909c35950e365f9fdc69da32b49840002d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/execution.lock",
+      "size": 66,
+      "sha256": "a9a196e95acc65fb60272e7a25bd6b1fd1f0ca7f80472cfefaf03b559bec7e9d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-1.codex-config.toml",
+      "size": 441,
+      "sha256": "b892192bd59671bc5a73078c2a1e5c222bb2a00868e11304003bd47bed6c692e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-1.jsonl",
+      "size": 392101,
+      "sha256": "d5ce2b9cb272311286c0e5db416ce217f6e0d13c405abc2c54c890ce29c1aedd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-1.last-message.txt",
+      "size": 1179,
+      "sha256": "4d2802e83d738818a2af758f2eca4f84d35d0f4a7b66ab09a6a245d27ba343c9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-1.meta.json",
+      "size": 10017,
+      "sha256": "a856d32ffb6b9c20f5ac1593d43e8dc31da8ab22152b225d91cf654d20e6ff67"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-1.stderr.txt",
+      "size": 158,
+      "sha256": "bf060eff5b1cb4eecc5bc1cbd2873804e5e3d9c55d84240c1197aacde88f762d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-2.codex-config.toml",
+      "size": 441,
+      "sha256": "b892192bd59671bc5a73078c2a1e5c222bb2a00868e11304003bd47bed6c692e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-2.jsonl",
+      "size": 1217798,
+      "sha256": "f63bd618a5031d77279845f665b41186d28397f99dbc3b8c97dc46bbd52122f6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-2.last-message.txt",
+      "size": 999,
+      "sha256": "b05a149313e842a6f08e6bb9f089e1baa6ba7f37718ff4699359a5c0a1de6ab7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-2.meta.json",
+      "size": 10086,
+      "sha256": "bbc4b9cd4788fe283e8ce57253ce11f7f829e939f5fb39aef3c12881f65e27d4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/phase-2.stderr.txt",
+      "size": 158,
+      "sha256": "0ac954887d013b00be57bf789f3db20c48da303e4d34a030c4d4c3ed405b7cca"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/researcher-review.txt",
+      "size": 31413,
+      "sha256": "a01de84e1f7994311736acb813897c1df69fdebe67549915bae4d553b8bc0394"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/run-inputs.json",
+      "size": 3238,
+      "sha256": "1a2cf37e27a9e6a326a943ddbeb8aa4ab903f2fc2fff15357d6b196c2a0364c0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v2/ENZAMET/progression-free-survival/workspace/.rob2-kit/finalized/2939543006dd52a9c78067e54a4c1fe111522be18f18f3ab8c85037d1b01630c.rob2.zip",
+      "size": 169594,
+      "sha256": "849496053a70f4c782e9a6cbfd748546059a8c2eb7df79493be02f88b7111d56"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/approved-scope.json",
+      "size": 834,
+      "sha256": "83d23699f5f348b0b8fcf3c56588622649d8afa1af15eefa801c38ce48c3b869"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/execution.json",
+      "size": 22599,
+      "sha256": "ea48e31870cec32b83d221299abec955ca1dc6cf9fadeceec6fff7126894e7b9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/execution.lock",
+      "size": 66,
+      "sha256": "b508f1d3b0f3b9612736137b9bdce9d6244440f12e291306f2e59dbd2b416649"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-1.codex-config.toml",
+      "size": 433,
+      "sha256": "2dd37c41c23c3c905268949540ea7003a6eb5c69e9393648069a54e7efc659a3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-1.jsonl",
+      "size": 261400,
+      "sha256": "9bcbd6e28e5895b9a1b04626565a5a93e8ab749e2c3e5d0ca7a27609643741ef"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-1.last-message.txt",
+      "size": 1028,
+      "sha256": "8861bd039dd410eaa2381a4572ee0ee8ab274b63816597f4272860aa4623ec36"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-1.meta.json",
+      "size": 10011,
+      "sha256": "77d9b419c3ef0be01ae683d02f04f6237ea0f51d3db92ffed2d0c210ff509748"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-1.stderr.txt",
+      "size": 342,
+      "sha256": "f2be11f6938ab197d43e57708926c2f535d5db0ceb62875e28e330b581c1ce0a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-2.codex-config.toml",
+      "size": 433,
+      "sha256": "2dd37c41c23c3c905268949540ea7003a6eb5c69e9393648069a54e7efc659a3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-2.jsonl",
+      "size": 863569,
+      "sha256": "f1f4ba1620e5b0dec3691904c3c66b2c1abb904e6b0b935eb481d6013f9b950e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-2.last-message.txt",
+      "size": 822,
+      "sha256": "6439d328da9ebe6ad50227802830fe5d4b4361bcb72d32aadb29d0818c2a7ae9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-2.meta.json",
+      "size": 10102,
+      "sha256": "432a519e46c11141cc79464cd30b383b338c5959e179540d67a25d523717a238"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/phase-2.stderr.txt",
+      "size": 158,
+      "sha256": "ef7882e1cfdc10e3c8785058dd4102025b23023b6a59f586dc079bd7535ce4f6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/researcher-approval.txt",
+      "size": 31303,
+      "sha256": "b5993041981ac27400babdb9afaef0f570c483368c7c250c5d1c5fd8b2d172d3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/researcher-review.txt",
+      "size": 30659,
+      "sha256": "b47e6af9ab315cbbc630addc592e1df214e6a8aec177bcd2788b76b30ca37f78"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/run-inputs.json",
+      "size": 2532,
+      "sha256": "94d93cad9f43f8e050bb574d1a5ed90973ba997b1eda639005e244f56868a59b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/CHAARTED/overall-survival/workspace/.rob2-kit/finalized/cd6cd6dcfaca879581446d715ad32e1439d5f4fc7eebbf53c8e739b793fbdfb9.rob2.zip",
+      "size": 163176,
+      "sha256": "8cd95f880bb71eda6cae9df462eb6e83cca48d523fd8b7545e9fc5ce061caee3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/approved-scope.json",
+      "size": 833,
+      "sha256": "081dc08b53020f51b1fc474669b7ef4907444d187929818ec9fcc64411f73ad3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/clarification.txt",
+      "size": 124,
+      "sha256": "a119224f0abed155b8eb4ca88f16b3adcf81602738de8edaae35f88c5614871e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/correction.txt",
+      "size": 104,
+      "sha256": "8bf54a5abdc80de7f4c23b429ffdc010676a45e7cb4f774a6dd6d81862f0d71b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/execution.json",
+      "size": 35732,
+      "sha256": "b1a7fc7b0d1554c4e89865cbdbc554edcaec2e14d3a1ff41fe38e8da7cc79267"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/execution.lock",
+      "size": 65,
+      "sha256": "648776ba8c39bfb0cd5978710abc724492389c2cb1228d52d178d8dd8ebe8252"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-1.codex-config.toml",
+      "size": 430,
+      "sha256": "588b92aadba0c8d3810ef1c400e89ad19faf363eb5c6383b926b39798b3c4d14"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-1.jsonl",
+      "size": 347849,
+      "sha256": "fd6f7392c5dffe361447b800c58aab0bcc7fb558d256b68378c53d7148897842"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-1.last-message.txt",
+      "size": 1024,
+      "sha256": "96fd152863f672cc86ffdfeeffe745f36c0ba3aa6d2aa4792e667e1d813f96ca"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-1.meta.json",
+      "size": 10032,
+      "sha256": "5ec5ad6866be4460724c2e57f0ad4ee4e5b70d81693e4caeedf999a7f372a02d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-1.stderr.txt",
+      "size": 158,
+      "sha256": "23989886d3f53afeb7a889e93aef75af71bac646ec163983a9543fa79fc49f0e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-2.codex-config.toml",
+      "size": 430,
+      "sha256": "588b92aadba0c8d3810ef1c400e89ad19faf363eb5c6383b926b39798b3c4d14"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-2.jsonl",
+      "size": 88661,
+      "sha256": "e128482005aa9489f7b564adf9f822cb2e5536ac2ae42bd2fb77c4ae9195956c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-2.last-message.txt",
+      "size": 451,
+      "sha256": "b4c00cd169d383c4fefaffb39ec19767d3d90690398fe2b615371ed73d12c16f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-2.meta.json",
+      "size": 9872,
+      "sha256": "70faf6db11a626cfea8a7b2dcb3c9db2856946aca8b22f445547db056a11eafe"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-2.stderr.txt",
+      "size": 338,
+      "sha256": "1bd376eda515b41cd8a93762f1ae1680900899e527c16907b9f3fc544147ad82"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-3.codex-config.toml",
+      "size": 430,
+      "sha256": "588b92aadba0c8d3810ef1c400e89ad19faf363eb5c6383b926b39798b3c4d14"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-3.jsonl",
+      "size": 107656,
+      "sha256": "0b5ea0ea54bb22a7796438e148f3dcd608e5d885e4b697757b71bfe7ac84a93c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-3.last-message.txt",
+      "size": 865,
+      "sha256": "4f9b47eef04d264e29b7cb4ddad8119a9b2701f2014a8039860493e89e2d7d8b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-3.meta.json",
+      "size": 9871,
+      "sha256": "d1f1b94a5edf8c3848600a4b9480940fe44441714979394c90fa1ab721ea0021"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-3.stderr.txt",
+      "size": 158,
+      "sha256": "c0f715b541f2ee485ffb63ab96b098f9dd867d0bda34c33d1db5fc71b39ab9f3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-4.codex-config.toml",
+      "size": 430,
+      "sha256": "588b92aadba0c8d3810ef1c400e89ad19faf363eb5c6383b926b39798b3c4d14"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-4.jsonl",
+      "size": 1661943,
+      "sha256": "de622cf11cb9c3ebde786073de9e332d8eb071cc433f26c06122bcf9b6d9705a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-4.last-message.txt",
+      "size": 1344,
+      "sha256": "a56fafaaca00d8965d754b3e32e5a9d25ae0e672bf592fc6b087f61d70a8fae6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-4.meta.json",
+      "size": 10063,
+      "sha256": "f978f92abc7235eda1a9443c59a8770af14f65ac74cd4ac1c0b34c07bfd99546"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/phase-4.stderr.txt",
+      "size": 158,
+      "sha256": "71c45080f8cd0b2cb27c769f9a70d3bf1d692d28719be53db6fefe67184b810e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/researcher-approval.txt",
+      "size": 20528,
+      "sha256": "bf8a07471386a9e282efe02020e187042f8c575fe2c25deed829fa6c76e3fe09"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/researcher-correction-rationale.txt",
+      "size": 431,
+      "sha256": "43089986fc6b9111574ac30dc43fd8eef00f448c072ac8828c01e80c313e7ce3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/researcher-review-corrected.txt",
+      "size": 19885,
+      "sha256": "df03da17b0457c40fbd1d777a096825870b58752a7c0458b29a1bfe4a14d6a6c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/researcher-review.txt",
+      "size": 22284,
+      "sha256": "5568ce7d17df78241ff613843eb2a988586962f1b207b3c6ee9da206a0d1f1d6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/run-inputs.json",
+      "size": 3041,
+      "sha256": "050793b8f287003a30b2ad9a1f6253052e4afaa18af7c75e4729ed3bf4ea59b7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/adverse-events/workspace/.rob2-kit/finalized/6205e9f1053c80df433e8f17ea855475ba46bbe9b7fe342bf2c72bb44705a08e.rob2.zip",
+      "size": 87964,
+      "sha256": "681caabe314afc4ad12936e1076a68fb50177f48f17c45b1e137bc488a1c7767"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/approved-scope.json",
+      "size": 833,
+      "sha256": "5565b5b67a99de6579a8bd83c3d47a1c81397e7e2eca0f44f2518e5796184318"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/execution.json",
+      "size": 22748,
+      "sha256": "061f8bc5d0a67c422ae7142f874014a104a8e2b1fe1400858ae6af608d9653c5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/execution.lock",
+      "size": 66,
+      "sha256": "99324259c50127fb8bf798fbeb97bf44d345f809ecd3ef84dd539e35266d72b3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-1.codex-config.toml",
+      "size": 432,
+      "sha256": "8aea5c831524c31d74c1b5b0af16ff73d4b0b65b1dc34ec14cfa413fdedd807f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-1.jsonl",
+      "size": 322137,
+      "sha256": "860ea71a83b4297e443fb5602e92c029b95a9e8863e643b806fe72002185f821"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-1.last-message.txt",
+      "size": 1379,
+      "sha256": "33cbbe81f22717362983ee3ebe45af939b74eea6c325d2f7b316541dc9a6f86e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-1.meta.json",
+      "size": 10038,
+      "sha256": "07108487a27e32beea82c94a1b4ea4d826e86f64951011d14b962b3e05335988"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-1.stderr.txt",
+      "size": 158,
+      "sha256": "2c097795f257b85273192f8521170b92464c008ec43a93acd2e49d4ed5a46ffd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-2.codex-config.toml",
+      "size": 432,
+      "sha256": "8aea5c831524c31d74c1b5b0af16ff73d4b0b65b1dc34ec14cfa413fdedd807f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-2.jsonl",
+      "size": 1332333,
+      "sha256": "bc44d4122d65805c123afa745c0550b3556ef74cd2114c1497beea8513c30d5c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-2.last-message.txt",
+      "size": 806,
+      "sha256": "64785a35821d265be885782e661fc49fd76a9d32d4202ddae95a01365ae81e73"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-2.meta.json",
+      "size": 10053,
+      "sha256": "1e517bea9e19a129521d305a7f8bb5559723ddb3f82d31bd8223a97f2ab0a812"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/phase-2.stderr.txt",
+      "size": 277,
+      "sha256": "2d073267834f7ed483d0d42f3d71c7d0add36e3cef03030f618b6877801da007"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/researcher-approval.txt",
+      "size": 17876,
+      "sha256": "5d54e2e467bace30194c0524feed30452e2ec5f35b043d4cda756abb38f64d43"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/researcher-review.txt",
+      "size": 17233,
+      "sha256": "b586adbdb67fab80f2aaf2298e13688d754008785a3302880e282ee56ee57039"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/run-inputs.json",
+      "size": 2871,
+      "sha256": "c4717cc04ad96005cd5353e70976402686efef9cb78c7004544d985e9c9e0f81"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/overall-survival/workspace/.rob2-kit/finalized/13a465e95973212506f1f6ed7313c914a86d1f87e03862156bce0d3fe64d4320.rob2.zip",
+      "size": 75107,
+      "sha256": "3adb1006ec9ceb233d4def0c3b9bc132c01e9b01cf42f1dbc31ece2b23cdcbb0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/approved-scope.json",
+      "size": 833,
+      "sha256": "b54cb4a95533ab40c4ca9b5616527d7bc5b547d112d59897a61b33685b3db72a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/continue.txt",
+      "size": 11,
+      "sha256": "f9823f83e586d97020b451ccbce761a8f5796374ece42b6586a9394ba7ef031e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/correction.txt",
+      "size": 113,
+      "sha256": "130713c29dbfe094432736d50ef8ed351d9e2632bafae695d4cee76026c49480"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/execution.json",
+      "size": 29220,
+      "sha256": "e83eae33e641e2ec56dbb9d4db40a3ea34a5696fcb813bf1a63338ed6efa1d71"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/execution.lock",
+      "size": 66,
+      "sha256": "fbe00c4354258d09d3efcae6f2dc46931390af10829fabb7fd37b711d9d150c8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/host-isolation.json",
+      "size": 104,
+      "sha256": "6022fdd4e5190968581eb6473fe6807ced5730e611856e2facbe0b69373c6df0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-1.codex-config.toml",
+      "size": 441,
+      "sha256": "991206e3e999688a6f2f731f845655bb46f23b8695c8252bae93756b0dd62297"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-1.jsonl",
+      "size": 360403,
+      "sha256": "0162ce0cb32125478fad830af84f81d15ae6fc651e90ade42526857cecb1ecee"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-1.last-message.txt",
+      "size": 1089,
+      "sha256": "73236dc5a1ae7bec4ce02a76ff77fddd7b4d8ada9ab40ac7b31252ba6903d075"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-1.meta.json",
+      "size": 10034,
+      "sha256": "6474f3d77e3b5df29a8b96c05aefd8f8499c76fc8d61053891ca4d62b8f36a17"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-1.stderr.txt",
+      "size": 277,
+      "sha256": "fe9dda5385f82e9cf5671215370d35d9352e304d68719d2ee9995edce8accf8f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-2.codex-config.toml",
+      "size": 441,
+      "sha256": "991206e3e999688a6f2f731f845655bb46f23b8695c8252bae93756b0dd62297"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-2.jsonl",
+      "size": 172139,
+      "sha256": "c6a6a8e4d799b06444ea7e5c9162c792b4ec729aa565b7d5074f42cf12b3a442"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-2.last-message.txt",
+      "size": 932,
+      "sha256": "dda4e5072e8fec3568946b61614b733d1f140f0e80ae4bc7c4724a5e6e465d2f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-2.meta.json",
+      "size": 9911,
+      "sha256": "83f34bd2556f94b39ea8eb029258b58caaffc991a8098d9fdd22983b0ee5048b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-2.stderr.txt",
+      "size": 158,
+      "sha256": "6c355c95abc9b2ca9308b9b6bcfb60e34643d250700192ff359c57d038ca9193"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-3.codex-config.toml",
+      "size": 441,
+      "sha256": "991206e3e999688a6f2f731f845655bb46f23b8695c8252bae93756b0dd62297"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-3.jsonl",
+      "size": 984439,
+      "sha256": "19061d3a7c9095ba5cf56c413feef58c72c5576a8745e08298066311499beb23"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-3.last-message.txt",
+      "size": 1136,
+      "sha256": "dee077921d31d7dd62c5085606d13336676de7b1d12f66a101dea7e7672c9c1e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-3.meta.json",
+      "size": 10028,
+      "sha256": "75b868feab3a87302bffbecf4d303221b02bf3f78da8482f3168c7d699fc194d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/phase-3.stderr.txt",
+      "size": 158,
+      "sha256": "b121ca8d8fd0e714c8ae5b9d27ec77019c8680a605138374f4aed45995d60e56"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/researcher-approval.txt",
+      "size": 33240,
+      "sha256": "b5a70c898daf28e626ab42147903ffd6b425a2364aa86e8c18b237c198077adf"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/researcher-correction-rationale.txt",
+      "size": 218,
+      "sha256": "f2192e09856f4ed10cab6e847f01a392a3afb44bb3f18fa0c49b69486f206e8f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/researcher-review-corrected.txt",
+      "size": 32597,
+      "sha256": "4820082aaf61e77e5029b2ea2188588a91b629917d41a50bf1dbdf8626ae8caa"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/researcher-review.txt",
+      "size": 27388,
+      "sha256": "2329ca13d7e0604cac696b5403256e61cf0d794fc156a4e8a502ce406ae51fd7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/run-inputs.json",
+      "size": 3238,
+      "sha256": "fd9e0fbec545a2453944342269b06f7f3e93499502c2119eb50135fbbc19b71d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/issues-472-476-live/runs-v3/ENZAMET/progression-free-survival/workspace/.rob2-kit/finalized/25d23922fd2e0c9437f1b13bafb18ce7c8c7d5052ab9093780f52c3c0ac8cdac.rob2.zip",
+      "size": 104642,
+      "sha256": "2d372398a1d29e27a39d6c56aabc9754e1b8b455f75c271532d81103b9bcfb27"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/evaluator-key.json",
+      "size": 4979,
+      "sha256": "a489ea13e64039279a55a0e4602e7fd5dc218eccbee5048608c3608c8f09ba78"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-01.txt",
+      "size": 46805,
+      "sha256": "199e66273f642ab883ff140cd7471e65399496adaba8ed8a21c9d676ac1c9ebd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-02.txt",
+      "size": 46962,
+      "sha256": "fc84373e892cec5d4754528bd481b1266e558247c704cca8d834403353a7b8a0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-03.txt",
+      "size": 46962,
+      "sha256": "fc84373e892cec5d4754528bd481b1266e558247c704cca8d834403353a7b8a0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-04.txt",
+      "size": 46805,
+      "sha256": "199e66273f642ab883ff140cd7471e65399496adaba8ed8a21c9d676ac1c9ebd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-05.txt",
+      "size": 46805,
+      "sha256": "199e66273f642ab883ff140cd7471e65399496adaba8ed8a21c9d676ac1c9ebd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-06.txt",
+      "size": 46962,
+      "sha256": "fc84373e892cec5d4754528bd481b1266e558247c704cca8d834403353a7b8a0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-07.txt",
+      "size": 5019,
+      "sha256": "ae6deca97be61fd2425c0a64339ee52c2bff7e9c513f5137e51aa95882409fbf"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-08.txt",
+      "size": 5176,
+      "sha256": "c1ad600e3e964d9602193194ca8a302c9137f15282217805d857665e69efff8d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-09.txt",
+      "size": 5176,
+      "sha256": "c1ad600e3e964d9602193194ca8a302c9137f15282217805d857665e69efff8d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-10.txt",
+      "size": 5019,
+      "sha256": "ae6deca97be61fd2425c0a64339ee52c2bff7e9c513f5137e51aa95882409fbf"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-11.txt",
+      "size": 5019,
+      "sha256": "ae6deca97be61fd2425c0a64339ee52c2bff7e9c513f5137e51aa95882409fbf"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/inputs/input-12.txt",
+      "size": 5176,
+      "sha256": "c1ad600e3e964d9602193194ca8a302c9137f15282217805d857665e69efff8d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-01.jsonl",
+      "size": 992,
+      "sha256": "b464b11d50ef47d5c89c0eb589f6dbebe18f6ca29e6d31052799575f7392e97d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-01.stderr.txt",
+      "size": 277,
+      "sha256": "ade2d89c70b30d1b67866ed6985ffd7af30c63bb8c36c76984a46e8901c1578a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-02.jsonl",
+      "size": 1105,
+      "sha256": "715dbabafb10e04382ecd4de244ba5225605157e122a8b7292281d0b0e49ef83"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-02.stderr.txt",
+      "size": 158,
+      "sha256": "d1e36037ec7495d98216d9b5b08547b58f7344772ff578e761f6cb76a5ba9d13"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-03.jsonl",
+      "size": 967,
+      "sha256": "1e01c411aa8f961f817375a64d2b2d530a8196fc60e35493050afe2fb240431a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-03.stderr.txt",
+      "size": 158,
+      "sha256": "5ea8eddd76493bf6d54c1ec486a2e281bcd8853f1a682001f3be1c6f9d314d79"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-04.jsonl",
+      "size": 960,
+      "sha256": "e3747f1a88a4d5929386d61b0e9ad75d9ed28f6d62440630dd2791edfde668d6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-04.stderr.txt",
+      "size": 158,
+      "sha256": "9b41cd96caf73d32336504156814418bd2e045342374ce5d2fe3fe84dfb5eae5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-05.jsonl",
+      "size": 1239,
+      "sha256": "6b513add9dc70efc33176a987499b7e6266c313b7624ed074c440b1eb0df2ed0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-05.stderr.txt",
+      "size": 158,
+      "sha256": "0efdc383d1223cf3384281da396fab87f94f9093bd62b2003096e87721b17245"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-06.jsonl",
+      "size": 1328,
+      "sha256": "606d87297e9ca8248f60d8f7d0bf6ad37ce1b265cc241d76f75f05cb0799bbdb"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-06.stderr.txt",
+      "size": 158,
+      "sha256": "653f492c498ada692fddda4935aab8d6a852824335d885ef81dd5d0b967bda2d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-07.jsonl",
+      "size": 944,
+      "sha256": "c11910ee400d63cdfb82344299df20af48e9569b6c98e3fd70b840fb3462b9bd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-07.stderr.txt",
+      "size": 158,
+      "sha256": "ed95ae88caa1975fcd4b8530faa4ac24c8c9807ea9b274a8efc4c2066d0a50f2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-08.jsonl",
+      "size": 1240,
+      "sha256": "a84ccdead14d915836bd9b88bd4e594d064342cafc969192a415e4b3f8085e98"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-08.stderr.txt",
+      "size": 158,
+      "sha256": "834d9c5b6af476c77aef0685916b880b1827f4bcab2de994a119f37b37052bc6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-09.jsonl",
+      "size": 1561,
+      "sha256": "d96e3b99f71577c993938f0c251baee03062b382afedc0268d91a99749c5ddc7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-09.stderr.txt",
+      "size": 158,
+      "sha256": "9efde0b665c5bd72fe69ced980befb50ea3db40df9114e808b27ea663404d09f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-10.jsonl",
+      "size": 963,
+      "sha256": "b4c47645bc6a6782ff8f759f59ca4b79225f2903552c75fa16c65ee0f57d2792"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-10.stderr.txt",
+      "size": 158,
+      "sha256": "cb504cc0e15113beb80205e585b72ce3c9a1b74e9aada13f0f3802e5dfffc9dd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-11.jsonl",
+      "size": 1057,
+      "sha256": "f9b4733783b325d8f5949711ff35ce9cf1c39c1d07038c355894a7b0fed0a028"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-11.stderr.txt",
+      "size": 158,
+      "sha256": "274763bb660c480310a8126e8e0f059c2b8abed26d79d74248dbdc15dfb93caa"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-12.jsonl",
+      "size": 1582,
+      "sha256": "fb2d3629e301fd20f3d39cdaccd8470cd0228b8f5e24e90d37bba57244cc497b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/logs/input-12.stderr.txt",
+      "size": 158,
+      "sha256": "03ef7033a3debed73494be94e342cd8755e7b55e9b9cb5b8b810a4b80be4a360"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/manifest.json",
+      "size": 22029,
+      "sha256": "c07c704a9c23c3d58a3abe149120459f9ad0cad6aa72468ad14b8746157b40f8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/latitude-d4-card-prompt-contrast-luna-medium-controlled/run-plan.jsonl",
+      "size": 4680,
+      "sha256": "53c58a6997cd88a537431593aae08e649e54545bac615075b0d763de98bdeede"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/evaluator-key.json",
+      "size": 7181,
+      "sha256": "af1ed5632fae64aa623668b1cebf6d29949409876ad95248e4e6347d808c28ad"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-1-r1-c-14.txt",
+      "size": 335,
+      "sha256": "8bef6648cd8768980fcf11ee63dd5630287e280e9f72047a169c34bb70b938ec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-1-r1-c-27.txt",
+      "size": 380,
+      "sha256": "64d6b6cafc9b08a76ab35fa65fd003a5648583b357782ea5fa86a1e79d2a7c57"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-1-r2-c-14.txt",
+      "size": 335,
+      "sha256": "8bef6648cd8768980fcf11ee63dd5630287e280e9f72047a169c34bb70b938ec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-1-r2-c-27.txt",
+      "size": 380,
+      "sha256": "64d6b6cafc9b08a76ab35fa65fd003a5648583b357782ea5fa86a1e79d2a7c57"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-1-r3-c-14.txt",
+      "size": 335,
+      "sha256": "8bef6648cd8768980fcf11ee63dd5630287e280e9f72047a169c34bb70b938ec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-1-r3-c-27.txt",
+      "size": 380,
+      "sha256": "64d6b6cafc9b08a76ab35fa65fd003a5648583b357782ea5fa86a1e79d2a7c57"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-2-r1-c-31.txt",
+      "size": 627,
+      "sha256": "be1fd17d831f720acf2244a0501aec31dbcf3e77b27b4b3c0b08845112bb9f29"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-2-r1-c-42.txt",
+      "size": 631,
+      "sha256": "fc46ca4388be5113777b3ae634093db56d6f653a476936ac3f293919d9c8b862"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-2-r2-c-31.txt",
+      "size": 627,
+      "sha256": "be1fd17d831f720acf2244a0501aec31dbcf3e77b27b4b3c0b08845112bb9f29"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-2-r2-c-42.txt",
+      "size": 631,
+      "sha256": "fc46ca4388be5113777b3ae634093db56d6f653a476936ac3f293919d9c8b862"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-2-r3-c-31.txt",
+      "size": 627,
+      "sha256": "be1fd17d831f720acf2244a0501aec31dbcf3e77b27b4b3c0b08845112bb9f29"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-2-r3-c-42.txt",
+      "size": 631,
+      "sha256": "fc46ca4388be5113777b3ae634093db56d6f653a476936ac3f293919d9c8b862"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-3-r1-c-53.txt",
+      "size": 475,
+      "sha256": "1ecd7c6155de3f92f222f034a9b0793d67a181dc305366d8f2f73b60c8735d26"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-3-r1-c-68.txt",
+      "size": 547,
+      "sha256": "30c885f7fb5efa9ff26902185f9b26de43835efc9b1755e59420a918d7ae0abd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-3-r2-c-53.txt",
+      "size": 475,
+      "sha256": "1ecd7c6155de3f92f222f034a9b0793d67a181dc305366d8f2f73b60c8735d26"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-3-r2-c-68.txt",
+      "size": 547,
+      "sha256": "30c885f7fb5efa9ff26902185f9b26de43835efc9b1755e59420a918d7ae0abd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-3-r3-c-53.txt",
+      "size": 475,
+      "sha256": "1ecd7c6155de3f92f222f034a9b0793d67a181dc305366d8f2f73b60c8735d26"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-3-r3-c-68.txt",
+      "size": 547,
+      "sha256": "30c885f7fb5efa9ff26902185f9b26de43835efc9b1755e59420a918d7ae0abd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-4-r1-c-75.txt",
+      "size": 364,
+      "sha256": "a15ff1860365e4bf3dc6e7519b40eb57fdd41ac02f1a375b8c1caf82f03e41f4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-4-r1-c-86.txt",
+      "size": 385,
+      "sha256": "9aff403fb81984bfe97ca48c5b77fe3270e58019e8beef5df7adc4f7a4318ae3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-4-r2-c-75.txt",
+      "size": 364,
+      "sha256": "a15ff1860365e4bf3dc6e7519b40eb57fdd41ac02f1a375b8c1caf82f03e41f4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-4-r2-c-86.txt",
+      "size": 385,
+      "sha256": "9aff403fb81984bfe97ca48c5b77fe3270e58019e8beef5df7adc4f7a4318ae3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-4-r3-c-75.txt",
+      "size": 364,
+      "sha256": "a15ff1860365e4bf3dc6e7519b40eb57fdd41ac02f1a375b8c1caf82f03e41f4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-4-r3-c-86.txt",
+      "size": 385,
+      "sha256": "9aff403fb81984bfe97ca48c5b77fe3270e58019e8beef5df7adc4f7a4318ae3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-5-r1-c-04.txt",
+      "size": 437,
+      "sha256": "69c2a7f7d48c2c78af373ef44060f82790c6b9895d45b770f7af6b57ecad862b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-5-r1-c-93.txt",
+      "size": 386,
+      "sha256": "cd92c4fe085d57e291938ff41ec7fe1a74dddbc91e7c6cc34e5b18b9095a15f8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-5-r2-c-04.txt",
+      "size": 437,
+      "sha256": "69c2a7f7d48c2c78af373ef44060f82790c6b9895d45b770f7af6b57ecad862b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-5-r2-c-93.txt",
+      "size": 386,
+      "sha256": "cd92c4fe085d57e291938ff41ec7fe1a74dddbc91e7c6cc34e5b18b9095a15f8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-5-r3-c-04.txt",
+      "size": 437,
+      "sha256": "69c2a7f7d48c2c78af373ef44060f82790c6b9895d45b770f7af6b57ecad862b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/inputs/p-5-r3-c-93.txt",
+      "size": 386,
+      "sha256": "cd92c4fe085d57e291938ff41ec7fe1a74dddbc91e7c6cc34e5b18b9095a15f8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r1-c-14.jsonl",
+      "size": 819,
+      "sha256": "d0890d66e598e79e6112f5dc954218f103acd2484375d1cb7633875dfd10b54c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r1-c-14.stderr.txt",
+      "size": 158,
+      "sha256": "8b15af29cf6e37bb9f7d6f0c4c17ef5fd6cca7de48c513d3939cb3e67c5474e1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r1-c-27.jsonl",
+      "size": 722,
+      "sha256": "93a23369d88e7f82f74a96021487283cf96029c74604531c8203fe38bc2882b1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r1-c-27.stderr.txt",
+      "size": 158,
+      "sha256": "e1e047930a893c480294dd151836d288e100a39687df3b5d0cf3bf194d8db52a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r2-c-14.jsonl",
+      "size": 755,
+      "sha256": "0ee055c50ae3b88056eb9060372cb48a08d3b576eb1470c88a943ee6be41feca"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r2-c-14.stderr.txt",
+      "size": 158,
+      "sha256": "00e57c755e68306b83625a0a0dd2775e8d90580436d486c73a9cf166642188d8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r2-c-27.jsonl",
+      "size": 684,
+      "sha256": "77951e4342c9070f294d6445177d1c0d7c1f8286c631f29304a3428b18cac845"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r2-c-27.stderr.txt",
+      "size": 158,
+      "sha256": "d92be0255920721427cf69cd927e730f731e3d30de52385ba336e7e2e6adea5e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r3-c-14.jsonl",
+      "size": 718,
+      "sha256": "85cd8ca1a0d46fb57f5b65827af8f052ca65e77193b299bd1767010af141d207"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r3-c-14.stderr.txt",
+      "size": 158,
+      "sha256": "79d586d7857e3f5358debf24bea8fc7d2362158569ab5446de50ba5725ab6f1b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r3-c-27.jsonl",
+      "size": 843,
+      "sha256": "6777242372f9ca140a3b02c87def19fa504ac0b097f44dbda4742129f40a7ff7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-1-r3-c-27.stderr.txt",
+      "size": 158,
+      "sha256": "b7f0f56e4ce5cd1552724666e409a81e256819af7e675a350f09256fd1f438a8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r1-c-31.jsonl",
+      "size": 1069,
+      "sha256": "8700ff6009ba086091dedd8f48b1819d52a945ed8e38d128529428a0a5547aba"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r1-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "cb1989b00b516a78d1d7739c17056cef5b98482eeda6590fae368ad351f8a874"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r1-c-42.jsonl",
+      "size": 834,
+      "sha256": "3e5ec810bc59e1d7c8385837d2218034afe213af111f6970fd521ba265850788"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r1-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "8b335561210cc4f14ef7a22648960f8b40e2b6e883d1112a999d91d2450efbdf"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r2-c-31.jsonl",
+      "size": 1466,
+      "sha256": "eb7cbc6e896021daf32058a1d4ccb7cbd30b2b6ea17318a1ac2cec7bb4a0f066"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r2-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "c896cd7f581466c27308a12253f00686639a63d4473f50e95df32b8130912105"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r2-c-42.jsonl",
+      "size": 865,
+      "sha256": "318374e26b8e4d8983dd3b1697a1fddf085a3cfbe4094e3c424f725dc1620113"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r2-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "aae0fecd3e7c0b89c851097052f6959f9002ed6d30dc144e0de1d70d6b8f0416"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r3-c-31.jsonl",
+      "size": 1180,
+      "sha256": "ab452fa4c8652dacc5fb33b8a532756a733b50dfd9faf333b83d7de4d4085cfd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r3-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "0a31be62b4a9215c27e2eaf82ca1030793b44f38f5b8ce14e8434c5486657263"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r3-c-42.jsonl",
+      "size": 949,
+      "sha256": "2a65e24da0fa34cdd28abfa4bdcf1861094bee0405f790a543117c0809f70696"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-2-r3-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "232ece5f733422435dbfd34f75c4c1855407413f4a9555f7604e51d1bc9b3d2f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r1-c-53.jsonl",
+      "size": 850,
+      "sha256": "8dc349a286d266bf2133c9d8baf3a2efebac1aaeda8d8859562109ba6acba91b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r1-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "3daa089f556e479346ec40811d90cdac093ce405fe686c584f5a64952d893206"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r1-c-68.jsonl",
+      "size": 894,
+      "sha256": "fc26a3a891cfff6408e7f25bd7d1bed08d05fd2f39cad6574c9bed0f3c48f6b4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r1-c-68.stderr.txt",
+      "size": 158,
+      "sha256": "4c12b4641fbfa333dfe631d772c63b9df3c27a1769f7518ad1768085807fc08a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r2-c-53.jsonl",
+      "size": 842,
+      "sha256": "bc31945c9a42375e639fae22f6a0a791747e6bfe57804375931fcfa302c0a852"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r2-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "b2a7ae9c82f1400493916a29cb3c7efaa59bbccc98ce01cfde427f965331c12c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r2-c-68.jsonl",
+      "size": 943,
+      "sha256": "30769bdb44df04a4b427a85c034f1c25e66a3285f5dc421bc6c954c928a2e9f7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r2-c-68.stderr.txt",
+      "size": 158,
+      "sha256": "9bd5ba043ae72d275a6398f6be87c34023b6bb267180656d3487fd2daa416137"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r3-c-53.jsonl",
+      "size": 980,
+      "sha256": "4a2329535f64098a32e5347daad359be64a9f3421af78fa001d361341afe89f4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r3-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "520483ec06f87fb1195a68123ebe5de5d6cab2c9e054f55ac966245365dc4273"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r3-c-68.jsonl",
+      "size": 809,
+      "sha256": "0ae2b45a9ff8bd43e5c5a0ac25d66d28d7e6dc0c1b52517410c6246546fbe8aa"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-3-r3-c-68.stderr.txt",
+      "size": 158,
+      "sha256": "595268b31007b51545844344a0061e5317f36b582d34a1f83d4dd4ba7eff228d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r1-c-75.jsonl",
+      "size": 521,
+      "sha256": "2f73e1a47709179c1db80c8e963cf4664761096eae7db4f5e684e96c1167f443"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r1-c-75.stderr.txt",
+      "size": 158,
+      "sha256": "782e2339071632dec3603a5446a9d0fa9dbc97de571bdb9bc7ef230fb2d070c6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r1-c-86.jsonl",
+      "size": 700,
+      "sha256": "f164754291972bf242f385ec1e03301d6039bc762d1435188a7a428781b816b5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r1-c-86.stderr.txt",
+      "size": 158,
+      "sha256": "4578edf3c0a6b07ac6c51e9d58428e487b341108158a1617bf3750e7232fef19"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r2-c-75.jsonl",
+      "size": 544,
+      "sha256": "24608e952e5aea509496e9081b981df0bf923fb42ce2bbb94a8596e48e71041f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r2-c-75.stderr.txt",
+      "size": 158,
+      "sha256": "6920f1987cc8cc30dba436f2da456224d0bb91d0eead2e0b5165d8f5b3256473"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r2-c-86.jsonl",
+      "size": 687,
+      "sha256": "e6b166256a4836af149ff6bf8112fd71a9f3ccdfd63d0d324ca1c702e967d5cd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r2-c-86.stderr.txt",
+      "size": 158,
+      "sha256": "5197d9f58200d1267ce4cb12825e49ac2bd54a1dcac451e84fc951543f5518f1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r3-c-75.jsonl",
+      "size": 617,
+      "sha256": "882b54b2c6a8e2b5f17892afdff9fc8406df9cbc909c3ee8af8af5cf8a74c40f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r3-c-75.stderr.txt",
+      "size": 158,
+      "sha256": "7fd7775ad2dd157759b5888d4630194506b8d4fa874c9aecc99fd08843a761ce"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r3-c-86.jsonl",
+      "size": 844,
+      "sha256": "68220a862eadf1447c9991d7f97850087b59e7c986cb1c0f6058d48abe186795"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-4-r3-c-86.stderr.txt",
+      "size": 158,
+      "sha256": "dcc11ab8eb78f588d24f220b08c2c285f9b19b6cff4db5d1f6bc7fd2eea9ec32"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r1-c-04.jsonl",
+      "size": 644,
+      "sha256": "4c4fa6941d157d80d4309c47ff9db108450b1a723e521faf3f4df992a872e2b9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r1-c-04.stderr.txt",
+      "size": 158,
+      "sha256": "987ddfea2dc87448f44e103270b114463f44dec0c483b26436256b26134c0dcd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r1-c-93.jsonl",
+      "size": 646,
+      "sha256": "9a883b74e3472224d399798a1aafaeb23b8cb52a38304eff459a96e74be6edba"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r1-c-93.stderr.txt",
+      "size": 158,
+      "sha256": "4551b984c892bcf36103539a3d0587490a59f30e7ffc6cd7f477799cd4716037"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r2-c-04.jsonl",
+      "size": 667,
+      "sha256": "5fba18da93fcb8e6826e509f10f7223d0d043bd6732135febd26fff80d91122f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r2-c-04.stderr.txt",
+      "size": 158,
+      "sha256": "7c0d1692bf89569845a1315ef6eb1f6dec6c9ab881c7afaff05ea315b1118ad3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r2-c-93.jsonl",
+      "size": 660,
+      "sha256": "7cdf8fbf37cf0fd1d8a0ee9faf92abf165d27e11099bb8f2663209b1b5545301"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r2-c-93.stderr.txt",
+      "size": 158,
+      "sha256": "7f01e336bc1e2e3985dd3b00100b5d13e4854389379d4761055d2a9136a967a6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r3-c-04.jsonl",
+      "size": 651,
+      "sha256": "c39f5d8f105353ec7d915903b07e287fcf5a51fe30ab2a5173e0898ed27f2d42"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r3-c-04.stderr.txt",
+      "size": 158,
+      "sha256": "7a801d8e0acf72e0518a2bde9fcb844b8af3f10788740bd2c8632d640e6130aa"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r3-c-93.jsonl",
+      "size": 663,
+      "sha256": "1a820dfc15b069e602544d02494a5e8fc00e90434b29c988ce98f41e2b4ca402"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/logs/p-5-r3-c-93.stderr.txt",
+      "size": 158,
+      "sha256": "36ae0163d11e6a82a4b5ff5ea554f1fb4b15d0a184307b27993c36a6f67463ba"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/manifest.json",
+      "size": 50023,
+      "sha256": "60135cf0312c6b1e4203dcfc365ccff644ccfb1cab47d60f8216f5be8f0072e2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-luna-medium/run-plan.jsonl",
+      "size": 11610,
+      "sha256": "490df144463583ad030ea0f2fd841ac2ca065b808f82ce96f6e54d0e328776a2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/evaluator-key.json",
+      "size": 7181,
+      "sha256": "af1ed5632fae64aa623668b1cebf6d29949409876ad95248e4e6347d808c28ad"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-1-r1-c-14.txt",
+      "size": 335,
+      "sha256": "8bef6648cd8768980fcf11ee63dd5630287e280e9f72047a169c34bb70b938ec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-1-r1-c-27.txt",
+      "size": 380,
+      "sha256": "64d6b6cafc9b08a76ab35fa65fd003a5648583b357782ea5fa86a1e79d2a7c57"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-1-r2-c-14.txt",
+      "size": 335,
+      "sha256": "8bef6648cd8768980fcf11ee63dd5630287e280e9f72047a169c34bb70b938ec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-1-r2-c-27.txt",
+      "size": 380,
+      "sha256": "64d6b6cafc9b08a76ab35fa65fd003a5648583b357782ea5fa86a1e79d2a7c57"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-1-r3-c-14.txt",
+      "size": 335,
+      "sha256": "8bef6648cd8768980fcf11ee63dd5630287e280e9f72047a169c34bb70b938ec"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-1-r3-c-27.txt",
+      "size": 380,
+      "sha256": "64d6b6cafc9b08a76ab35fa65fd003a5648583b357782ea5fa86a1e79d2a7c57"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-2-r1-c-31.txt",
+      "size": 627,
+      "sha256": "be1fd17d831f720acf2244a0501aec31dbcf3e77b27b4b3c0b08845112bb9f29"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-2-r1-c-42.txt",
+      "size": 631,
+      "sha256": "fc46ca4388be5113777b3ae634093db56d6f653a476936ac3f293919d9c8b862"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-2-r2-c-31.txt",
+      "size": 627,
+      "sha256": "be1fd17d831f720acf2244a0501aec31dbcf3e77b27b4b3c0b08845112bb9f29"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-2-r2-c-42.txt",
+      "size": 631,
+      "sha256": "fc46ca4388be5113777b3ae634093db56d6f653a476936ac3f293919d9c8b862"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-2-r3-c-31.txt",
+      "size": 627,
+      "sha256": "be1fd17d831f720acf2244a0501aec31dbcf3e77b27b4b3c0b08845112bb9f29"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-2-r3-c-42.txt",
+      "size": 631,
+      "sha256": "fc46ca4388be5113777b3ae634093db56d6f653a476936ac3f293919d9c8b862"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-3-r1-c-53.txt",
+      "size": 475,
+      "sha256": "1ecd7c6155de3f92f222f034a9b0793d67a181dc305366d8f2f73b60c8735d26"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-3-r1-c-68.txt",
+      "size": 547,
+      "sha256": "30c885f7fb5efa9ff26902185f9b26de43835efc9b1755e59420a918d7ae0abd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-3-r2-c-53.txt",
+      "size": 475,
+      "sha256": "1ecd7c6155de3f92f222f034a9b0793d67a181dc305366d8f2f73b60c8735d26"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-3-r2-c-68.txt",
+      "size": 547,
+      "sha256": "30c885f7fb5efa9ff26902185f9b26de43835efc9b1755e59420a918d7ae0abd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-3-r3-c-53.txt",
+      "size": 475,
+      "sha256": "1ecd7c6155de3f92f222f034a9b0793d67a181dc305366d8f2f73b60c8735d26"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-3-r3-c-68.txt",
+      "size": 547,
+      "sha256": "30c885f7fb5efa9ff26902185f9b26de43835efc9b1755e59420a918d7ae0abd"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-4-r1-c-75.txt",
+      "size": 364,
+      "sha256": "a15ff1860365e4bf3dc6e7519b40eb57fdd41ac02f1a375b8c1caf82f03e41f4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-4-r1-c-86.txt",
+      "size": 385,
+      "sha256": "9aff403fb81984bfe97ca48c5b77fe3270e58019e8beef5df7adc4f7a4318ae3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-4-r2-c-75.txt",
+      "size": 364,
+      "sha256": "a15ff1860365e4bf3dc6e7519b40eb57fdd41ac02f1a375b8c1caf82f03e41f4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-4-r2-c-86.txt",
+      "size": 385,
+      "sha256": "9aff403fb81984bfe97ca48c5b77fe3270e58019e8beef5df7adc4f7a4318ae3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-4-r3-c-75.txt",
+      "size": 364,
+      "sha256": "a15ff1860365e4bf3dc6e7519b40eb57fdd41ac02f1a375b8c1caf82f03e41f4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-4-r3-c-86.txt",
+      "size": 385,
+      "sha256": "9aff403fb81984bfe97ca48c5b77fe3270e58019e8beef5df7adc4f7a4318ae3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-5-r1-c-04.txt",
+      "size": 437,
+      "sha256": "69c2a7f7d48c2c78af373ef44060f82790c6b9895d45b770f7af6b57ecad862b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-5-r1-c-93.txt",
+      "size": 386,
+      "sha256": "cd92c4fe085d57e291938ff41ec7fe1a74dddbc91e7c6cc34e5b18b9095a15f8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-5-r2-c-04.txt",
+      "size": 437,
+      "sha256": "69c2a7f7d48c2c78af373ef44060f82790c6b9895d45b770f7af6b57ecad862b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-5-r2-c-93.txt",
+      "size": 386,
+      "sha256": "cd92c4fe085d57e291938ff41ec7fe1a74dddbc91e7c6cc34e5b18b9095a15f8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-5-r3-c-04.txt",
+      "size": 437,
+      "sha256": "69c2a7f7d48c2c78af373ef44060f82790c6b9895d45b770f7af6b57ecad862b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/inputs/p-5-r3-c-93.txt",
+      "size": 386,
+      "sha256": "cd92c4fe085d57e291938ff41ec7fe1a74dddbc91e7c6cc34e5b18b9095a15f8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r1-c-14.jsonl",
+      "size": 869,
+      "sha256": "1cd48db31d66eaf6fdedead0a8b2d085e7a6fbd2b54ad20cbd9b10c381bda950"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r1-c-14.stderr.txt",
+      "size": 158,
+      "sha256": "486556f115e6cc62b53b7c2b1b07783ba55b4e90fe27d01c459381466976a706"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r1-c-27.jsonl",
+      "size": 870,
+      "sha256": "6d30b7d6e22e973410593ba3f486b0a98636bf0f06aa668cd6ada021ee933865"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r1-c-27.stderr.txt",
+      "size": 158,
+      "sha256": "5dfa69b02f47d5309ce1a7ac1a08ad8eabccda0636767c439cee8510c116e5f7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r2-c-14.jsonl",
+      "size": 968,
+      "sha256": "7639f738206c3b014e82ddb44aa092977cc0ec2b304f47adbc1dad1514b2cdf8"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r2-c-14.stderr.txt",
+      "size": 158,
+      "sha256": "c7ee6db6114a2992a870084fb4aa5b0c93f8d1d13421339d0b238ae21be67865"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r2-c-27.jsonl",
+      "size": 751,
+      "sha256": "8b057a92abd3ae7ebb89e702a104d6e31ecac29df0e3e84e15265dac603ea1da"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r2-c-27.stderr.txt",
+      "size": 158,
+      "sha256": "2427d29e8cea9815bc57cb4ef92df9969fbb63b19b4f634e5189279c9a7f3e15"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r3-c-14.jsonl",
+      "size": 903,
+      "sha256": "cb5ccae6df28662a71b760e02929e0eaf88f399bee1c6614e0f786102ee996b6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r3-c-14.stderr.txt",
+      "size": 158,
+      "sha256": "ea27bd582050f5da0a31c58068fadc100e7b583b62d26490320d8b1beb12f929"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r3-c-27.jsonl",
+      "size": 828,
+      "sha256": "707c2e1b1b40436c41ad770fda094fe4b486759d34e943ecfe299f96272d88c0"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-1-r3-c-27.stderr.txt",
+      "size": 158,
+      "sha256": "cb10bb71bb1bbc2bc13421b297b59c026d96bd6d93627592f1504cbf044beb29"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r1-c-31.jsonl",
+      "size": 1383,
+      "sha256": "64919f2aa5b49b008316cb9a327a8d10b465fead26178e77f6ec3123f2c8f121"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r1-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "f697ea8eea895d729d009d23f91004cf202973d4340ec7cdf81cf394598419dc"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r1-c-42.jsonl",
+      "size": 1070,
+      "sha256": "68da01ba40d5074c5b0a6829b01b364fc6b9f78bf8b9bf58bf685b49c16edb48"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r1-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "79756ad97c3bd172d41a8080cbd12aa2c48c7dcb34a89959e76604dca05c4028"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r2-c-31.jsonl",
+      "size": 1125,
+      "sha256": "04c3c5fc8cb6db6b53a762a6c3a6770374229c1f8b3f771392724be347451869"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r2-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "92d93c7f8ee822b0dcef2112173114559fd88926daaaa053ab51b3943e3ea6ae"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r2-c-42.jsonl",
+      "size": 975,
+      "sha256": "94604ec8b0df3c62788651676273d107e9e263aa29f3c5e393283f1d7e2f70e2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r2-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "77a4b784269cad5f9c1a1cb15e1f46d6aaea8afc7fc8c068912c73d7092a53c2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r3-c-31.jsonl",
+      "size": 1360,
+      "sha256": "cbf4d7f7d4ff7d393b051bc36336d6d6a9796f24eebab504d98ea9fc3ddba87f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r3-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "d204af905989b8641f8a3883847033d4cda64a34d3d945cceba46fd6170d0de4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r3-c-42.jsonl",
+      "size": 931,
+      "sha256": "398b9f43bf1f823b6a73747d007d7bc05d8fd0ae6e997123d2172e53e90b1720"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-2-r3-c-42.stderr.txt",
+      "size": 487,
+      "sha256": "a58180fe42afbb83e63c1d7fd5589676dcde6d876ffc2a846a701a8e18d93bc7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r1-c-53.jsonl",
+      "size": 942,
+      "sha256": "15c5169896a3989a4ffef4089fed97ef21b317cc43f51c648daa83007303bdd3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r1-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "b4cf1d068c2dd2bc6e67abd05eda04e02c17ba3e39a075204c367bf279e10f06"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r1-c-68.jsonl",
+      "size": 1305,
+      "sha256": "682be01e1650292ce9ec39c36afcb5a872bd8640903baaff581a0aade617f1e5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r1-c-68.stderr.txt",
+      "size": 158,
+      "sha256": "b571201abea2b97e560c53e0e559cbb448d1152042c12b5e48f6a3a2c37f941f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r2-c-53.jsonl",
+      "size": 990,
+      "sha256": "e62c78fe4752a1dfa6e6f121c22da35cea591f1e703082df01a746f481d88d1b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r2-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "337da633c3710d47712342f9e7501dba93f9aeafa780724342b8465b416b2f7a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r2-c-68.jsonl",
+      "size": 935,
+      "sha256": "6e2ca0a2c314b053e17d151e9f773bee1830642f44d2abf171a2b7e5c0543e9c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r2-c-68.stderr.txt",
+      "size": 158,
+      "sha256": "ebc22935f9fe8333108b8c525f5482d75b0606184446dcf54f16cc98f2b3bb52"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r3-c-53.jsonl",
+      "size": 985,
+      "sha256": "22dcd99ea2dd27332cdeaa9aac5f81cfe16b7ceff0696ff395f8a438c9d82a76"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r3-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "6b30b69f3c04cb875dbaa7178d4dbcc2eebb19e7c7bf4dbc101ca26db0c8e022"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r3-c-68.jsonl",
+      "size": 1154,
+      "sha256": "9d68d8f5671081d73af346f1dfb43666e8f112140b85cf4ff7e2c4c3f8e62e10"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-3-r3-c-68.stderr.txt",
+      "size": 2524,
+      "sha256": "2aed2499383e27709323c343d18d3a21541125528bc21c88e716d9ddb08c04f5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r1-c-75.jsonl",
+      "size": 614,
+      "sha256": "3832b3d4e008ca28e8b7188c2f635651c00585f19cff727fdd69765253664924"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r1-c-75.stderr.txt",
+      "size": 158,
+      "sha256": "51068b25961bb20a767f770bf298a07e87cf93c5a2e975c058d59b118c7ab84b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r1-c-86.jsonl",
+      "size": 802,
+      "sha256": "969e726122ab20a92931876475e1f8242afab0b220b7e346d1f592175f81e5c5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r1-c-86.stderr.txt",
+      "size": 158,
+      "sha256": "e4c1c7b6a9818787ae19771a0a9f6d2aba6a76506583f3b5df32f1578be97235"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r2-c-75.jsonl",
+      "size": 593,
+      "sha256": "6b53f55cac24558aec9a44df966b9c5f1daca5ef0a148fc381ae32f8f7bf174b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r2-c-75.stderr.txt",
+      "size": 158,
+      "sha256": "9585248161559f015dceb692a212d65bad9c7e99e5b3afe7445462f553732362"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r2-c-86.jsonl",
+      "size": 782,
+      "sha256": "816c9f52dbc179f8b1abefbfe3bf7e2a41aa6be4a1c3266263f130f5e0c6348c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r2-c-86.stderr.txt",
+      "size": 158,
+      "sha256": "61bee0c0741b2692c946aee1f6462a729505c25594c1ec04f17c55b86fcd26b4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r3-c-75.jsonl",
+      "size": 643,
+      "sha256": "a42e01b2986d3ebacf626eaa116a5006543f9e3381e2920ec2d0960d4725de63"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r3-c-75.stderr.txt",
+      "size": 158,
+      "sha256": "719b599a4f2ccb8271ad5a134507da4e5bdc3314012ddff85ffc0a4ad35a1bf7"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r3-c-86.jsonl",
+      "size": 732,
+      "sha256": "b8212a785c5ad1e5443fd0d74f62d2afe05166260b416ed5f7b13e3d73ee2adb"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-4-r3-c-86.stderr.txt",
+      "size": 158,
+      "sha256": "9e3fa60b71700522ae79247a974a7d518a35b2a9bb6c5d95b6934b8bf27c6df6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r1-c-04.jsonl",
+      "size": 730,
+      "sha256": "78b5a40ebc7ff5fb333f9cafaad9335d316b504d71c83276046e8b3d2b29df4d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r1-c-04.stderr.txt",
+      "size": 158,
+      "sha256": "cc057ef5b8cd95bbb941c683b02a81bdd440436b7be370188ac5dc5ab295fb3b"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r1-c-93.jsonl",
+      "size": 709,
+      "sha256": "dd091271fbf3346fe259be38a2f4c60ecb20d9cbb7595d8ff10a0f7934108d63"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r1-c-93.stderr.txt",
+      "size": 158,
+      "sha256": "12375122454243fa4ada5fb2db8c42ac85c898b770cf3707bfe370de9c4073c1"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r2-c-04.jsonl",
+      "size": 765,
+      "sha256": "43afc0bc0649176002423fa54d4f49d5b2a228bf3e9f41c8953c3297901b844e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r2-c-04.stderr.txt",
+      "size": 158,
+      "sha256": "da87a90e36e1d8e44a4ddf077746fee1159ffd58a19e43998de3dab919de3294"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r2-c-93.jsonl",
+      "size": 694,
+      "sha256": "7fe75e8ea8537d5b4f4193d08e56478a8dcb0eb6b254d9dcb854d4a4beeb29ff"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r2-c-93.stderr.txt",
+      "size": 158,
+      "sha256": "4f73a005073324ee66488c3571a412eb91b3b8f2a7b5d5094d4f070de3457845"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r3-c-04.jsonl",
+      "size": 746,
+      "sha256": "58208543e66cb325215671d7efc0ef847c93c702e7b692083341bc30dff07fd4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r3-c-04.stderr.txt",
+      "size": 158,
+      "sha256": "5d4f720f9ef9785a03fe8b673eed88cd2573388bdb69bb9cc5cc6070e613c6c4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r3-c-93.jsonl",
+      "size": 656,
+      "sha256": "ac36119fcc9010523b76c59a8d90fc67107d3456a9850936aaff5c74c4edd098"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/logs/p-5-r3-c-93.stderr.txt",
+      "size": 158,
+      "sha256": "0c9fcc39e7d619f790fe7d81c135b08699be9e29cef2dcfc53d2243ca3aa306c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/manifest.json",
+      "size": 49750,
+      "sha256": "1191b7dfdf4a83e2c0d37f5e1ec61681e530b5c05d86249e44f417aec67d58b2"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-baseline-sol-high/run-plan.jsonl",
+      "size": 11520,
+      "sha256": "3e32be7db13d617d9f602b51d1fa960dcf24956ceae86bee6c944a95505307d6"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/evaluator-key.json",
+      "size": 3196,
+      "sha256": "9f77fb71f8fcf97d7751ee00d574cc1326c85745e72d7473072c46a2e775a66f"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-2-r1-c-31.txt",
+      "size": 4819,
+      "sha256": "888241869b5d0bd4ec6327100ea34e17f31af2674d3a103a107b3b3ff13d4b8c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-2-r1-c-42.txt",
+      "size": 4823,
+      "sha256": "e0df43855ca7891955fc7e73e6a35d3dac2cd27cf67f4fe475077de768252895"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-2-r2-c-31.txt",
+      "size": 4819,
+      "sha256": "888241869b5d0bd4ec6327100ea34e17f31af2674d3a103a107b3b3ff13d4b8c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-2-r2-c-42.txt",
+      "size": 4823,
+      "sha256": "e0df43855ca7891955fc7e73e6a35d3dac2cd27cf67f4fe475077de768252895"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-2-r3-c-31.txt",
+      "size": 4819,
+      "sha256": "888241869b5d0bd4ec6327100ea34e17f31af2674d3a103a107b3b3ff13d4b8c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-2-r3-c-42.txt",
+      "size": 4823,
+      "sha256": "e0df43855ca7891955fc7e73e6a35d3dac2cd27cf67f4fe475077de768252895"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-3-r1-c-53.txt",
+      "size": 5012,
+      "sha256": "642758ce43cbb982916167bce1ba858b2512daa8fb19317d9d3a790161c008d5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-3-r1-c-68.txt",
+      "size": 5084,
+      "sha256": "9f5b6ec474a9f10eb11b2e6a864c2f19f7e5519b958f210fa659613bdc3f4230"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-3-r2-c-53.txt",
+      "size": 5012,
+      "sha256": "642758ce43cbb982916167bce1ba858b2512daa8fb19317d9d3a790161c008d5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-3-r2-c-68.txt",
+      "size": 5084,
+      "sha256": "9f5b6ec474a9f10eb11b2e6a864c2f19f7e5519b958f210fa659613bdc3f4230"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-3-r3-c-53.txt",
+      "size": 5012,
+      "sha256": "642758ce43cbb982916167bce1ba858b2512daa8fb19317d9d3a790161c008d5"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/inputs/p-3-r3-c-68.txt",
+      "size": 5084,
+      "sha256": "9f5b6ec474a9f10eb11b2e6a864c2f19f7e5519b958f210fa659613bdc3f4230"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r1-c-31.jsonl",
+      "size": 1326,
+      "sha256": "41c47b63441ff362823987ee430e3369aaefbc5a558f2b687bacc81a7d75f3ed"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r1-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "d0af0299a25a86f0942614ca4f6ff6862e66ec057c9b85e3c4220b359293c965"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r1-c-42.jsonl",
+      "size": 1112,
+      "sha256": "3fa8211b568297dbe6003788cbe3289b226a03425a169ce1edd39c9304b748e3"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r1-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "7771651c2d0ab470e38d926530528f740d689f384f4481f0cbd98c25b1f53c92"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r2-c-31.jsonl",
+      "size": 1250,
+      "sha256": "f62055023f10d9a6adf8378777009c5a792f11ad046c7239177bc92f8e45e109"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r2-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "1df042aade7dd1e93db2a6ff78aa2e98cb24e657efb13f0f06e51afca9d2ee4d"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r2-c-42.jsonl",
+      "size": 1204,
+      "sha256": "aa704cdc63bbd6f4afbf81a991a9773aecb89ee7337bde0bdb48738eceee9843"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r2-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "276243e1ace7b9267ddeee39fdb281cb6c4a1a8a82135ae9129dcde4b5fda646"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r3-c-31.jsonl",
+      "size": 1004,
+      "sha256": "02b58044a57323e5faa063e54b62c3301ce2c088bffc042d1ac1ea289f38a65e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r3-c-31.stderr.txt",
+      "size": 158,
+      "sha256": "cacecceef60bddda2ce75fb0b6dc0b8a84f649185c51996e7f84c556fa41c763"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r3-c-42.jsonl",
+      "size": 1320,
+      "sha256": "0021b01fe2ffd4e28ff56bf28a05efe2aef74e6a2d250e4347a0d00aa42686a4"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-2-r3-c-42.stderr.txt",
+      "size": 158,
+      "sha256": "373bab16bf847b18ece3a46709759cd02eadf2da03b0e72149050f5137a9556c"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r1-c-53.jsonl",
+      "size": 1201,
+      "sha256": "e471f51b9b87837f60c391f9972f8f2c586a455ffca00cccac501b2466b51a6e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r1-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "b1f631bf19304befbee346c8c5bcfe3167f56c1de4d2eda7519e87695830392e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r1-c-68.jsonl",
+      "size": 1281,
+      "sha256": "f8d9ba0c0caa1047b9000ef7577c55b72a3eb689524d10188ea0f32133c44cea"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r1-c-68.stderr.txt",
+      "size": 158,
+      "sha256": "36c1a9297cb2ffaa058573257b6ce075bb1efcaff04e2ac22778628e483afb2e"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r2-c-53.jsonl",
+      "size": 1392,
+      "sha256": "c9cf0a05cecb6a5be2e3c8ea33f2557cc607628f5d6573da3bd7bb2ecb11b677"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r2-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "a452e4bbf8c29c62bb6556b0d1913d0e4af689bf9ff95c7985fc86e11add3224"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r2-c-68.jsonl",
+      "size": 1107,
+      "sha256": "8ff041f9cd72a4a36649bdea4566d6ac029aa7616b7f21e84043bb952383e035"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r2-c-68.stderr.txt",
+      "size": 158,
+      "sha256": "1328c26d5ce752c9dc0c79c40e3d284e4a5ca82491f50e5e358acacdc6d72ba9"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r3-c-53.jsonl",
+      "size": 1018,
+      "sha256": "1d6456e749a74d1fa614ef51ab00d5abadf8bc8438b71dffcf1e2d99ddb82b85"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r3-c-53.stderr.txt",
+      "size": 158,
+      "sha256": "41fa7ba0616dc4e5f662145160f52bd489e7f1aa6a88bbb1812504d5a67f0033"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r3-c-68.jsonl",
+      "size": 951,
+      "sha256": "ed0701f23cf04f781892a911d76f6c6fe23b05dbd902959167d29694c251b17a"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/logs/p-3-r3-c-68.stderr.txt",
+      "size": 487,
+      "sha256": "3f56044061faf7c100118c1a2fc0484f1b2208689280c31b721a8e2dd2618091"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/manifest.json",
+      "size": 21317,
+      "sha256": "b8a13dcfa933b47b898b2711677f828154139fca08b75ddfc5079b2a2b635033"
+    },
+    {
+      "path": "eval/runs/2026-09-27/scientific-premise-guided-luna-medium/run-plan.jsonl",
+      "size": 4644,
+      "sha256": "8e80599b3f543edb0c2a765ed057447e643800de0da10ce642c1478f9f63ec74"
+    }
+  ]
+}

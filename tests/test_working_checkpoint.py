@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+import os
 import sqlite3
 from pathlib import Path
 
 import pytest
+from fastmcp import Client
 from pydantic import ValidationError
 from support.rob2 import (
     _call,
@@ -20,6 +23,7 @@ from support.rob2 import (
 
 from rob2_kit.application._state import _state
 from rob2_kit.application.status import _active_trial_and_domain
+from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.packs.scientific import SCIENTIFIC_PACK
 from rob2_kit.workflow_models import WorkingCheckpoint, WorkingPremiseRecord
@@ -77,6 +81,76 @@ def _proposal_waiting_for_review(workspace: Path) -> dict:
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required", proposed
     return evidence
+
+
+def _public_call(
+    workspace: Path,
+    calls: list[str],
+    tool: str,
+    arguments: dict,
+    *,
+    approve: bool = False,
+) -> dict:
+    """Make and record exactly one public MCP call, including approval elicitation."""
+
+    async def invoke() -> dict:
+        previous_workspace = os.environ.get("ROB2_WORKSPACE")
+        os.environ["ROB2_WORKSPACE"] = str(workspace)
+
+        async def elicit(
+            _message: str, _response_type: type | None, _params: object, _context: object
+        ) -> dict[str, bool]:
+            return {"approved": True}
+
+        try:
+            options = {"elicitation_handler": elicit} if approve else {}
+            async with Client(mcp, **options) as client:
+                result = await client.call_tool(tool, arguments)
+                return dict(result.structured_content or {})
+        finally:
+            if previous_workspace is None:
+                os.environ.pop("ROB2_WORKSPACE", None)
+            else:
+                os.environ["ROB2_WORKSPACE"] = previous_workspace
+
+    calls.append(tool)
+    return asyncio.run(invoke())
+
+
+def _handoff_checkpoint(source_id: str, *, result_bound: bool) -> dict:
+    facts = [
+        {
+            "text": (
+                "The report defines Overall Survival as death from any cause and states "
+                "that assessment continued through 30 June 2024."
+                if result_bound
+                else "Participants were individually randomly assigned to intervention and control."
+            ),
+            "sources": [{"source_id": source_id, "page": 1, "start_line": 1, "end_line": 1}],
+            "domain_id": "domain:randomization",
+        }
+    ]
+    return {
+        "trial_id": "trial",
+        "main_report_source_id": source_id,
+        "observations": facts,
+        "premise_records": [
+            {
+                "proposition": "The allocation sequence was generated unpredictably.",
+                "status": "unresolved",
+                "observations": facts,
+                "inference": (
+                    "The report describes individual random assignment but does not state "
+                    "how its sequence was generated."
+                ),
+                "unresolved_component": "The sequence-generation method is not reported.",
+                "next_action": "Check the methods section for the sequence-generation method.",
+                "domain_id": "domain:randomization",
+                "question_id": "sq:randomization:sequence",
+            }
+        ],
+        "next_action": "Inspect the allocation-method passage before answering D1.",
+    }
 
 
 def test_active_trial_follows_captured_batch_order() -> None:
@@ -157,6 +231,199 @@ def test_current_notes_avoid_duplicate_read_gate_on_approved_proposal_retry(
 
     assert retry["outcome"] == "success", retry
     assert retry["data"].get("retry") is True
+
+
+def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
+    tmp_path: Path,
+) -> None:
+    def run_handoff_case(case_dir: Path, *, rebind_notes: bool) -> dict:
+        workspace = _workspace(case_dir, "Overall Survival")
+        (workspace / "input" / "trial" / "main.txt").write_text(
+            "Participants were individually randomly assigned to intervention and control groups. "
+            "The Overall Survival was measured in the analyzed population. It was defined as "
+            "death from any cause through 30 June 2024; death ascertainment; end of follow-up; "
+            "assigned to intervention; assigned to control; randomized population; risk ratio; "
+            "risk; 1; events; 2.\n",
+            encoding="utf-8",
+        )
+        calls: list[str] = []
+        reads: list[dict[str, int | bool]] = []
+        repairs = 0
+        after_approval = False
+
+        def call(tool: str, arguments: dict, *, approve: bool = False) -> dict:
+            nonlocal repairs
+            receipt = _public_call(workspace, calls, tool, arguments, approve=approve)
+            if receipt.get("outcome") == "repair":
+                repairs += 1
+            if tool == "read_pages":
+                pages = receipt.get("data", {}).get("pages", [])
+                reads.append(
+                    {
+                        "postapproval": after_approval,
+                        "bytes": sum(
+                            len(line.partition("|")[2].encode("utf-8"))
+                            for page in pages
+                            for line in str(page.get("numbered_text", "")).splitlines()
+                        ),
+                    }
+                )
+            return receipt
+
+        prepared = call(
+            "prepare_batch",
+            {"requested_outcome": "Overall Survival", "expected_revision": 0},
+        )
+        assert prepared["outcome"] == "success", prepared
+        initial_status = call("get_status", {})
+        reading = initial_status["data"]["main_report_reading"]["trial"]
+        assert reading["status"] == "required", reading
+        initial_read = call(
+            "read_pages",
+            {"trial_id": "trial", "windows": reading["required_ranges"]},
+        )
+        assert initial_read["outcome"] == "success", initial_read
+
+        sources = call("list_sources", {"trial_id": "trial"})["data"]["sources"]
+        source = next(item for item in sources if item["label"] == "main.txt")
+        evidence = call(
+            "select_text_evidence",
+            {
+                "trial_id": "trial",
+                "source_id": source["id"],
+                "page": 1,
+                "start_line": 1,
+                "end_line": 1,
+            },
+        )["data"]["evidence"]
+
+        preproposal = call(
+            "save_working_checkpoint",
+            {"checkpoint": _handoff_checkpoint(source["id"], result_bound=False)},
+        )
+        assert preproposal["outcome"] == "success", preproposal
+
+        result = _result(evidence, "Overall Survival")
+        revision = int(call("get_status", {})["head"]["state_revision"])
+        validation = call(
+            "validate_proposal",
+            {
+                "results": [result],
+                "assessments": [
+                    {
+                        "trial_id": "trial",
+                        "evidence_basis": [evidence["handle"]],
+                        "scope_justification": (
+                            "The selected endpoint and follow-up match the captured passage."
+                        ),
+                        "population_justification": (
+                            "The randomized population is the reported analysis population."
+                        ),
+                        "unknowns": [],
+                        "counterevidence": [],
+                    }
+                ],
+                "expected_revision": revision,
+            },
+        )
+        assert validation["outcome"] == "success", validation
+        proposal = call("save_proposal", validation["data"]["next_action"])
+        assert proposal["outcome"] == "review_required", proposal
+
+        status = call("get_status", {})
+        assert status["data"]["working_checkpoint"]["status"] == "stale"
+        assert status["data"]["working_checkpoint"]["reason"] == "result_changed"
+        if rebind_notes:
+            rebound = call(
+                "save_working_checkpoint",
+                {"checkpoint": _handoff_checkpoint(source["id"], result_bound=True)},
+            )
+            assert rebound["outcome"] == "success", rebound
+            current = call("get_status", {})["data"]["working_checkpoint"]
+            assert current["status"] == "current"
+            assert current["checkpoint"]["result_identity"] == rebound["data"]["result_identity"]
+
+        approved = call("request_proposal_approval", {}, approve=True)
+        assert approved["outcome"] == "success", approved
+        after_approval = True
+        status = call("get_status", {})
+        assert status["head"]["phase"] == "assessment"
+        draft = _domain_draft(
+            "trial",
+            "domain:randomization",
+            int(status["head"]["state_revision"]),
+            evidence,
+        )
+
+        context = call(
+            "get_domain_context",
+            {
+                "trial_id": "trial",
+                "domain_id": "domain:randomization",
+                "max_response_bytes": 16_384,
+            },
+        )
+        assert context["outcome"] == "success", context
+        recovery = context["data"]["reading_recovery"]
+        investigation = context["data"]["investigation"]
+        context_page = context["data"]["context_page"]
+        while context_page["next_cursor"] is not None:
+            context = call(
+                "get_domain_context",
+                {
+                    "trial_id": "trial",
+                    "domain_id": "domain:randomization",
+                    "cursor": context_page["next_cursor"],
+                },
+            )
+            assert context["outcome"] == "success", context
+            context_page = context["data"]["context_page"]
+        if rebind_notes:
+            assert recovery is None
+            assert investigation["status"] == "unresolved"
+            assert investigation["proposition"] == (
+                "The allocation sequence was generated unpredictably."
+            )
+            assert investigation["stale"] == []
+            saved = call("save_domain_judgment", draft)
+            assert saved["outcome"] == "success", saved
+        else:
+            blocked = call("save_domain_judgment", draft)
+            assert blocked["outcome"] == "repair", blocked
+            assert any(
+                item["code"] == "post_approval_main_report_reading_required"
+                for item in blocked["repairs"]
+            )
+            assert recovery["status"] == "required"
+            reread = call(
+                "read_pages",
+                {"trial_id": "trial", "windows": recovery["windows"]},
+            )
+            assert reread["outcome"] == "success", reread
+            saved = call("save_domain_judgment", draft)
+            assert saved["outcome"] == "success", saved
+
+        assert calls.count("request_proposal_approval") == 1
+        assert calls.count("read_pages") == (1 if rebind_notes else 2)
+        assert calls.count("save_domain_judgment") == (1 if rebind_notes else 2)
+        return {
+            "repairs": repairs,
+            "reads": reads,
+            "repeated_source_bytes": sum(
+                int(item["bytes"]) for item in reads if item["postapproval"]
+            ),
+            "postapproval_read_calls": sum(bool(item["postapproval"]) for item in reads),
+        }
+
+    without_rebind = run_handoff_case(tmp_path / "without-rebind", rebind_notes=False)
+    with_rebind = run_handoff_case(tmp_path / "with-rebind", rebind_notes=True)
+
+    assert without_rebind["postapproval_read_calls"] == 1
+    assert with_rebind["postapproval_read_calls"] == 0
+    assert without_rebind["repeated_source_bytes"] > 0
+    assert with_rebind["repeated_source_bytes"] == 0
+    assert without_rebind["repairs"] == 1
+    assert with_rebind["repairs"] == 0
 
 
 def test_working_checkpoint_yields_to_a_newer_canonical_domain_commit(tmp_path: Path) -> None:

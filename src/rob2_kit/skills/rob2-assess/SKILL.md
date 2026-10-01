@@ -178,15 +178,37 @@ returned revision; the server keeps the validated draft and its audit identity.
 
 ### 4. Complete Proposal Review
 
+After saving the complete Proposal, inspect `data.working_checkpoint` with
+`get_status` for the current assessable Trial. A checkpoint saved before the
+Proposal has no Result identity.
+`get_status` marks it stale. Reassess its source-located observations against
+the selected Result. Keep facts that remain relevant to the Result and
+supported by the source. Revise or drop interpretations and drafts that no
+longer fit. If notes are absent, record useful source-located observations from
+the Result review.
+Record unresolved premises honestly. Save the reassessed notes with
+`save_working_checkpoint`, then call `get_status` and confirm that the
+checkpoint is `current` before presenting the Review. The checkpoint binds the
+notes to the saved Result and preserves their source locations. Notes are host
+working memory; their presence does not establish comprehension, Evidence
+authority, or scientific sufficiency.
+
 Present the exact immutable Proposal Review and stop for the researcher. If the
-researcher corrects a Result, use it as source-review direction and save a
-complete replacement card. Present the fresh Review.
+researcher corrects a Result, use it as source-review direction, validate and
+save a complete replacement card, then reassess the notes against that Result
+again before presenting the fresh Review.
 
 After explicit approval in conversation, call `request_proposal_approval` with
 the empty arguments object `{}`. Its
 client elicitation binds approval to that Review. Then call `get_status`.
-For each approved assessable Trial, recover its approved Result and current
-source-bound working context when the Trial becomes active. Researcher messages
+For each approved assessable Trial, recover its approved Result and
+source-bound working context when the Trial becomes active. If the checkpoint is
+current, use its observations and open premises to carry the completed
+main-report pass through approval or restart. Recover an exact passage with
+`read_pages` when its content is missing or uncertain. If
+notes are absent or stale, reorient from the current Sources, complete any
+required bounded reading, and save useful notes against the approved Result.
+Discard Result-dependent drafts after a Result change. Researcher messages
 after approval do not set or revise signalling answers.
 
 ### 5. Assess a Domain
@@ -195,8 +217,9 @@ Call `get_domain_context` for the active Trial and Domain in `head.next_action`,
 or pass an explicit `domain_id` to inspect or assess another Domain before
 committing the next one. If `reading_recovery.status` is `required`, read its
 issued windows and then fetch the remaining windows. Confirm `complete` or
-`budget_limited` before drafting the first Domain. Repeat this orientation only
-when no valid checkpoint is available. Follow
+`budget_limited` before drafting the first Domain when recovery is required.
+When current notes make recovery unnecessary, use them to resume orientation
+and inspect exact passages as needed. Follow
 [Read the main report](references/read-main-report.md) for the bounded pass.
 
 Read `data.pack.version` and treat every returned

@@ -1,0 +1,187 @@
+{
+  "schema": "rob2-kit.scientific-premise-contrasts.v1",
+  "purpose": "development_only",
+  "reference_status": "provisional_until_issue_475_adjudication",
+  "model_access": "model_input_only",
+  "model_inputs": [
+    {
+      "case_id": "C-14",
+      "model_input": "/rob2-assess Assess risk of bias for the reported survival result based on these supplied extracts.\n\nArticle: The report lists 100 analyzed participants, 62 deaths, and 38 censored observations. It does not state how many randomized participants had usable follow-up or why follow-up ended.\n\nProtocol: Overall survival was the prespecified outcome."
+    },
+    {
+      "case_id": "C-27",
+      "model_input": "/rob2-assess Assess risk of bias for the reported survival result based on these supplied extracts.\n\nArticle: The report lists 100 analyzed participants, 62 deaths, and 38 censored observations. Every randomized participant contributed follow-up through death or the common administrative data cutoff; none was lost before that cutoff.\n\nProtocol: Overall survival was the prespecified outcome."
+    },
+    {
+      "case_id": "C-31",
+      "model_input": "/rob2-assess Assess risk of bias for the reported week-12 symptom result based on these supplied extracts.\n\nArticle: The study was open label. Eight participants in the intervention group stopped assigned tablets before week 12 and started the same prohibited rescue treatment, which directly reduces the target symptoms; no control participants received it. All randomized participants were analyzed in their assigned groups. The participants asked their usual-care clinicians for the rescue treatment, and study personnel did not suggest or arrange the changes.\n\nProtocol: Rescue treatment was prohibited except for a specified emergency."
+    },
+    {
+      "case_id": "C-42",
+      "model_input": "/rob2-assess Assess risk of bias for the reported week-12 symptom result based on these supplied extracts.\n\nArticle: The study was open label. Eight participants in the intervention group stopped assigned tablets before week 12 and started the same prohibited rescue treatment, which directly reduces the target symptoms; no control participants received it. All randomized participants were analyzed in their assigned groups. Study clinicians directed all eight treatment changes during trial visits because they expected the assigned intervention to be ineffective.\n\nProtocol: Rescue treatment was prohibited except for a specified emergency."
+    },
+    {
+      "case_id": "C-53",
+      "model_input": "/rob2-assess Assess risk of bias for the reported grade 3 or worse laboratory toxicity result through month 12 based on these supplied extracts.\n\nArticle: Median treatment exposure was 12 months in the intervention group and 9 months in the control group. All participants were assessed at months 3, 6, 9, and 12, including after treatment stopped. The same laboratory methods and grading criteria were used in both groups.\n\nProtocol: Laboratory toxicity through month 12 was the outcome."
+    },
+    {
+      "case_id": "C-68",
+      "model_input": "/rob2-assess Assess risk of bias for the reported grade 3 or worse laboratory toxicity result through month 12 based on these supplied extracts.\n\nArticle: Median treatment exposure was 12 months in the intervention group and 9 months in the control group. All participants were assessed at months 3, 6, 9, and 12, including after treatment stopped, and the intervention group also had laboratory testing every two weeks. The same laboratory methods and grading criteria were used in both groups.\n\nProtocol: Laboratory toxicity through month 12 was the outcome."
+    },
+    {
+      "case_id": "C-75",
+      "model_input": "/rob2-assess Assess risk of bias for the reported day-90 relapse result based on these supplied extracts.\n\nReport: The day-90 relapse risk ratio for all randomized participants is presented as the primary result.\n\nAnalysis plan: A version signed before outcome data were unblinded specifies day-90 relapse, all randomized participants, and a risk ratio as the primary analysis."
+    },
+    {
+      "case_id": "C-86",
+      "model_input": "/rob2-assess Assess risk of bias for the reported day-90 relapse result based on these supplied extracts.\n\nReport: The day-90 relapse risk ratio for all randomized participants is presented as the primary result.\n\nAnalysis plan: A version signed before outcome data were unblinded says relapse outcomes will be compared between groups, but does not specify the time point, population, or estimator."
+    },
+    {
+      "case_id": "C-93",
+      "model_input": "/rob2-assess Assess risk of bias for the reported day-90 relapse result based on these supplied extracts.\n\nReport: The day-90 relapse risk ratio for all randomized participants is presented as the primary result.\n\nAnalysis plan: The plan specifies day-90 relapse, all randomized participants, and a risk ratio as the primary analysis. It was signed before the first unblinded access to outcome data."
+    },
+    {
+      "case_id": "C-04",
+      "model_input": "/rob2-assess Assess risk of bias for the reported day-90 relapse result based on these supplied extracts.\n\nReport: The day-90 relapse risk ratio for all randomized participants is presented as the primary result.\n\nAnalysis plan: The plan specifies day-90 relapse, all randomized participants, and a risk ratio as the primary analysis. The available records do not establish when the plan was signed relative to first unblinded access to outcome data."
+    }
+  ],
+  "evaluator_key": {
+    "contrasts": [
+      {
+        "pair_id": "P-1",
+        "theme": "analyzed_event_censor_totals_vs_outcome_completeness",
+        "domain_id": "domain:missing",
+        "question_id": "sq:missing:data-available",
+        "changed_premise": "all_randomized_had_observed_followup",
+        "cases": ["C-14", "C-27"],
+        "controlled_facts": {
+          "reported_analyzed": 100,
+          "deaths": 62,
+          "censored": 38,
+          "outcome": "overall survival"
+        }
+      },
+      {
+        "pair_id": "P-2",
+        "theme": "ordinary_care_vs_trial_context_departure",
+        "domain_id": "domain:deviations",
+        "question_id": "sq:deviations:context-deviations",
+        "changed_premise": "trial_personnel_caused_prohibited_changes",
+        "cases": ["C-31", "C-42"],
+        "controlled_facts": {
+          "open_label": true,
+          "affected_participants": 8,
+          "arm": "intervention",
+          "timing": "before week 12 outcome",
+          "rescue_treatment": "same prohibited treatment",
+          "rescue_effect": "directly reduces target symptoms",
+          "control_arm_changes": 0,
+          "analysis": "all randomized participants in assigned groups"
+        }
+      },
+      {
+        "pair_id": "P-3",
+        "theme": "unequal_exposure_vs_actual_ascertainment_opportunity",
+        "domain_id": "domain:measurement",
+        "question_id": "sq:measurement:differential",
+        "changed_premise": "one_group_had_extra_assessment_opportunity",
+        "cases": ["C-53", "C-68"],
+        "controlled_facts": {
+          "median_exposure_months": {"intervention": 12, "control": 9},
+          "shared_assessment_months": [3, 6, 9, 12],
+          "followup_after_treatment_stop": true,
+          "laboratory_method_and_grading": "same",
+          "outcome_window": "through month 12"
+        }
+      },
+      {
+        "pair_id": "P-4",
+        "theme": "plan_applicability",
+        "domain_id": "domain:selection",
+        "question_id": "sq:selection:prespecified-analysis",
+        "changed_premise": "analysis_plan_specifies_the_reported_result",
+        "cases": ["C-75", "C-86"],
+        "controlled_facts": {
+          "plan_timing": "signed before outcome data were unblinded",
+          "reported_result": "day-90 relapse risk ratio in all randomized participants",
+          "reported_as_primary": true
+        }
+      },
+      {
+        "pair_id": "P-5",
+        "theme": "plan_chronology",
+        "domain_id": "domain:selection",
+        "question_id": "sq:selection:prespecified-analysis",
+        "changed_premise": "plan_preceded_first_unblinded_outcome_access",
+        "cases": ["C-93", "C-04"],
+        "controlled_facts": {
+          "plan_scope": "day-90 relapse risk ratio in all randomized participants",
+          "reported_result": "day-90 relapse risk ratio in all randomized participants",
+          "reported_as_primary": true
+        }
+      }
+    ],
+    "case_expectations": {
+      "C-14": {
+        "changed_premise_value": "unknown_from_reported_totals",
+        "expected_answers": {"sq:missing:data-available": "no_information"},
+        "expected_domain_judgment": "some_concerns",
+        "rationale": "Analyzed, event, and censor totals do not establish outcome availability for every randomized participant when the randomized denominator and follow-up completeness are unreported."
+      },
+      "C-27": {
+        "changed_premise_value": "observed_for_all_to_common_cutoff",
+        "expected_answers": {"sq:missing:data-available": "yes"},
+        "expected_domain_judgment": "low",
+        "rationale": "The source explicitly establishes observed follow-up for every randomized participant; censoring remains an outcome observation through the shared cutoff."
+      },
+      "C-31": {
+        "changed_premise_value": "participant_initiated_outside_trial_context",
+        "expected_answers": {"sq:deviations:context-deviations": "no"},
+        "expected_domain_judgment": "low",
+        "rationale": "Participants independently sought rescue treatment from their usual-care clinicians, and study personnel did not prompt or arrange the change. The prohibited treatment alone does not establish a departure caused by trial context."
+      },
+      "C-42": {
+        "changed_premise_value": "trial_clinicians_directed_prohibited_changes",
+        "expected_answers": {"sq:deviations:context-deviations": "yes"},
+        "expected_domain_judgment": "high",
+        "rationale": "The source directly attributes prohibited, imbalanced, pre-outcome changes to assignment-aware study clinicians."
+      },
+      "C-53": {
+        "changed_premise_value": "no_extra_ascertainment_opportunity",
+        "expected_answers": {"sq:measurement:differential": "no"},
+        "expected_domain_judgment": "low",
+        "rationale": "Unequal exposure does not establish differential measurement when a fixed outcome window has the same completed visits, methods, and grading in both groups."
+      },
+      "C-68": {
+        "changed_premise_value": "extra_intervention_group_laboratory_ascertainment",
+        "expected_answers": {"sq:measurement:differential": "yes"},
+        "expected_domain_judgment": "some_concerns",
+        "rationale": "Additional laboratory testing in one group creates a documented differential opportunity to detect laboratory toxicities; no magnitude is stated."
+      },
+      "C-75": {
+        "changed_premise_value": "plan_scope_matches_reported_result",
+        "expected_answers": {"sq:selection:prespecified-analysis": "yes"},
+        "expected_domain_judgment": "low",
+        "rationale": "The dated, pre-unblinding plan specifies the reported population, time point, and estimator."
+      },
+      "C-86": {
+        "changed_premise_value": "plan_scope_does_not_identify_reported_result",
+        "expected_answers": {"sq:selection:prespecified-analysis": "no_information"},
+        "expected_domain_judgment": "some_concerns",
+        "rationale": "The plan exists and predates unblinding but does not establish whether this reported estimate was prespecified; the mismatch alone does not establish results-based selection."
+      },
+      "C-93": {
+        "changed_premise_value": "chronology_established_before_unblinding",
+        "expected_answers": {"sq:selection:prespecified-analysis": "yes"},
+        "expected_domain_judgment": "low",
+        "rationale": "The matching plan is explicitly finalized before first unblinded access to the outcome data."
+      },
+      "C-04": {
+        "changed_premise_value": "chronology_unknown",
+        "expected_answers": {"sq:selection:prespecified-analysis": "no_information"},
+        "expected_domain_judgment": "some_concerns",
+        "rationale": "A matching plan without established chronology does not demonstrate prespecification; uncertainty is retained rather than treated as proof of selection or reassurance."
+      }
+    }
+  }
+}
