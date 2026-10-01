@@ -45,6 +45,7 @@ from rob2_kit.interfaces.mcp.server import (
     mcp,
 )
 from rob2_kit.packs import SCIENTIFIC_PACK
+from scripts.profile_domain_context_delivery import _omit_empty_section_arrays
 
 
 def _wire_context(
@@ -295,6 +296,41 @@ def test_domain_context_pages_retain_scope_and_all_conditional_questions(
         {"trial_id": "trial", "domain_id": "domain:deviations"},
     )
     assert reconstructed == full["data"]
+
+
+def test_empty_delta_arrays_are_omittable_without_changing_reconstructed_context(
+    tmp_path: Path,
+) -> None:
+    workspace, _evidence, _revision = _assessment_workspace(tmp_path)
+    pages: list[dict] = []
+    request: dict[str, object] = {"max_response_bytes": 32_768}
+    while True:
+        page, _bytes = _wire_context(workspace, request)
+        pages.append(page)
+        cursor = page["data"]["context_page"]["next_cursor"]
+        if cursor is None:
+            break
+        request = {"cursor": cursor}
+
+    assert len(pages) > 1
+    candidate_pages = [_omit_empty_section_arrays(page)[0] for page in pages]
+    assert any(
+        section not in candidate_pages[index]["data"]
+        for index in range(1, len(candidate_pages))
+        for section in ("questions", "evidence", "comparison_cards")
+    )
+    for candidate in candidate_pages[1:]:
+        validated = mcp_server.validate_output("get_domain_context", candidate)
+        assert validated["data"]["context_page"] == candidate["data"]["context_page"]
+
+    reconstructed = dict(candidate_pages[0]["data"])
+    for section in ("questions", "comparison_cards", "evidence"):
+        reconstructed[section] = [
+            item for page in candidate_pages for item in page["data"].get(section, [])
+        ]
+    reconstructed.pop("context_page")
+    full = _call(workspace, "get_domain_context", {})["data"]
+    assert reconstructed == full
 
 
 def test_public_context_previews_later_active_question_and_associated_evidence_first(

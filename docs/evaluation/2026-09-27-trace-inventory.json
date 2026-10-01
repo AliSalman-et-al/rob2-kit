@@ -1,0 +1,2733 @@
+{
+  "schema": "rob2-kit.september-trace-inventory.v1",
+  "scope": "Every JSONL under both date roots. The September 27 issue-465 E2E tree is separately identified.",
+  "totals": {
+    "2026-09-26": {
+      "files": 59,
+      "bytes": 45968548,
+      "completed_items": 3206,
+      "started_items": 2842,
+      "errors": 0,
+      "malformed_lines": 0,
+      "selected_segments": 52,
+      "issue_465_e2e_segments": 0
+    },
+    "2026-09-27": {
+      "files": 64,
+      "bytes": 49153210,
+      "completed_items": 3255,
+      "started_items": 2874,
+      "errors": 3,
+      "malformed_lines": 0,
+      "selected_segments": 54,
+      "issue_465_e2e_segments": 7
+    }
+  },
+  "duplicate_content_groups": [],
+  "files": [
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ARASENS/phase-1.jsonl",
+      "sha256": "bb00674567b6b2c48dc82609f1c14ab7f4d1f7ef2896a931d665470b954187aa",
+      "bytes": 351713,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 27,
+        "item.started": 24,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 44
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ARASENS/phase-2.jsonl",
+      "sha256": "7da4df0a3331467cbca269735097f7111dcdb8127035ab7632f8dadeea351156",
+      "bytes": 1194507,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 74,
+        "item.started": 66,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 8,
+        "mcp_tool_call": 132
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ARCHES/phase-1.jsonl",
+      "sha256": "dba6f6f5e6db616508f5fb84c97f905d1a53fa7bada136327ffaffec402d8f1f",
+      "bytes": 318548,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 23,
+        "item.started": 20,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 10,
+        "mcp_tool_call": 30
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ARCHES/phase-2.jsonl",
+      "sha256": "50f19b215ddae4e1bcaf075250ad6e0a15fa00ade58532ab4f039858bdc45f58",
+      "bytes": 6786171,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 118,
+        "item.started": 107,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 206,
+        "command_execution": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET/phase-1.jsonl",
+      "sha256": "f52226dd1a8150207832b59f9eed93cd20cd7f82ce4c23382b40cfd59fdaa05c",
+      "bytes": 261698,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 23,
+        "item.started": 19,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 4,
+        "mcp_tool_call": 34
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET/phase-2.jsonl",
+      "sha256": "35dcd5227e87b192e7c07214a5f209cc93bdc925e31734940a2296bdf4717ec2",
+      "bytes": 75727,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 7,
+        "item.started": 5,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 2,
+        "mcp_tool_call": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET-grade3-assessment/phase-1.jsonl",
+      "sha256": "5074489b040aaa46c41c020d6f0ae8d5e940ed95355f5bd27c3e227b39882b1a",
+      "bytes": 202529,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 19,
+        "item.started": 16,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 28
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET-grade3-assessment/phase-2.jsonl",
+      "sha256": "71f169085c2ccc91ea867e0b1068a0db06c2f70726e8c4a2c121cfaee0c724f7",
+      "bytes": 2558585,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 218,
+        "item.started": 209,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 408,
+        "command_execution": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET-v2/phase-1.jsonl",
+      "sha256": "4a88be19634dbc5917806394ee2c6b111eeb52f8bb3647cc89a4239b6bb62352",
+      "bytes": 191393,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 19,
+        "item.started": 16,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 28
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET-v2/phase-2.jsonl",
+      "sha256": "22a906153afd8369dc93936688db09f67d5270a1f1e0e70567a78b6a7511a1af",
+      "bytes": 9483,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 3,
+        "item.started": 1,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 2,
+        "mcp_tool_call": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET-v2/phase-3.jsonl",
+      "sha256": "247c26f612d376168e8eaa2c7bbedf0759b94b6baa6fb65259d86368b5769b8b",
+      "bytes": 13183,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.started": 2,
+        "item.completed": 3,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "mcp_tool_call": 2,
+        "command_execution": 2,
+        "agent_message": 1
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET-v2/phase-4.jsonl",
+      "sha256": "d54e404b6392f87364cf5880868330aa44f4942090cf26e6828b08b6f431d1d1",
+      "bytes": 1388928,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 105,
+        "item.started": 94,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "command_execution": 22,
+        "mcp_tool_call": 166
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/ENZAMET-v3/phase-1.jsonl",
+      "sha256": "141ba0efc0df729e8dcaed621f54faee19aed1a7c1d59983907400d214c3e406",
+      "bytes": 236553,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 24,
+        "item.started": 20,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 4,
+        "mcp_tool_call": 36
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/LATITUDE/phase-1.jsonl",
+      "sha256": "3d0a8287e750f8e4144ceab2804052dc237dbdca3738d6785555ae11f04a0888",
+      "bytes": 185926,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 20,
+        "item.started": 17,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 12,
+        "mcp_tool_call": 22
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/LATITUDE/phase-2.jsonl",
+      "sha256": "15f8501ecb257c4406be151f97308304f69e0a61eab653da688bbd408f11fdf5",
+      "bytes": 881860,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 102,
+        "item.started": 96,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 6,
+        "mcp_tool_call": 188,
+        "command_execution": 4
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/PEACE-1/phase-1.jsonl",
+      "sha256": "1615e85fc5c146167caa30077901853dcb27d3b2c6d800b5f3ffc2e1164a1173",
+      "bytes": 253782,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 17,
+        "item.started": 14,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 24
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/PEACE-1/phase-2.jsonl",
+      "sha256": "ba3a544514c531602156d98028e74d75e32fffd8f64ac7d5c6d87d118f938639",
+      "bytes": 977557,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 68,
+        "item.started": 63,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "mcp_tool_call": 126
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/STAMPEDE/phase-1.jsonl",
+      "sha256": "2e2b55d4466af4edfb9de3cf2562c84edf8205e63770f014fa0ec68caddc283e",
+      "bytes": 258315,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 24,
+        "item.started": 21,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 38
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/STAMPEDE/phase-2.jsonl",
+      "sha256": "b6ba2756d9f74769a1a32b7033339f243897576a743da996acca9aaef580ebe3",
+      "bytes": 905511,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 73,
+        "item.started": 64,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 126,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/TITAN/phase-1.jsonl",
+      "sha256": "a852c400e2e86893831dd88db5d41a30b73b505788e5641b4be39c1411c8ba43",
+      "bytes": 266693,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 20,
+        "item.started": 16,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 4,
+        "mcp_tool_call": 28
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/adverse-events/TITAN/phase-2.jsonl",
+      "sha256": "ef939b8197c08bb53b9a6187fbad06e8b008055895b758cad4119c3823a6b7ae",
+      "bytes": 1156523,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 81,
+        "item.started": 70,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 138,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/ARASENS/phase-1.jsonl",
+      "sha256": "962be9443a159cd80e998cd7b19cf983caa7450e23b95a51352de564366970b9",
+      "bytes": 147180,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 19,
+        "item.started": 14,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "command_execution": 6,
+        "mcp_tool_call": 22
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/ARASENS/phase-2.jsonl",
+      "sha256": "b17b8fed163a5368ded85706914490290c95f4de813172a8d31f7d19c35d0170",
+      "bytes": 1023195,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 68,
+        "item.started": 54,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 14,
+        "mcp_tool_call": 106,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/ARCHES/phase-1.jsonl",
+      "sha256": "df7bc4552b06b34d92ae4be85cbfae4f1568766b9b0c7d058fd470f6d043532c",
+      "bytes": 395741,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 30,
+        "item.started": 25,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "command_execution": 6,
+        "mcp_tool_call": 44
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/ARCHES/phase-2.jsonl",
+      "sha256": "d2ca7dc23683d4b46bc953227369349acbd298d289951333596cdbff05ef63cb",
+      "bytes": 1236779,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 93,
+        "item.started": 84,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 160,
+        "command_execution": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/CHAARTED/phase-1.jsonl",
+      "sha256": "2ed2d62280645772e4ff78d87a56c71cc5ab3a7f13f511471fc91f042918bb89",
+      "bytes": 274266,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 23,
+        "item.started": 19,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 8,
+        "mcp_tool_call": 30
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/CHAARTED/phase-2.jsonl",
+      "sha256": "a85ca9f87a07b1793d49ae2dee44aeb7bceec42dd7fb0b4d373c47e2975ecd06",
+      "bytes": 1124851,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 78,
+        "item.started": 68,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 132,
+        "command_execution": 4
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/ENZAMET/phase-1.jsonl",
+      "sha256": "98e60228fcb28fed66b9c44d19a74df98b2446d98fb984e8b62d443b2209c9e4",
+      "bytes": 199405,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 18,
+        "item.started": 15,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 24
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/ENZAMET/phase-2.jsonl",
+      "sha256": "79549053a681112f41c511d9b43dccc3fab63d266750b81f6f5bbef925da3dd6",
+      "bytes": 991477,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 75,
+        "item.started": 65,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 126,
+        "command_execution": 4
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/GETUG-AFU-15/phase-1.jsonl",
+      "sha256": "1bee2a52bba8b47ae95c5161d11ab3b084f1d302d58a9a7edad0f7339863504b",
+      "bytes": 225811,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 22,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 6,
+        "mcp_tool_call": 30
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/GETUG-AFU-15/phase-2.jsonl",
+      "sha256": "eefdfe11326b63f00053c48c5c965994397e1cb2979c5cc32a873d6ded96b924",
+      "bytes": 794733,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 89,
+        "item.started": 79,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 146,
+        "command_execution": 12
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/LATITUDE/phase-1.jsonl",
+      "sha256": "bed35ffc4f166306ab071987b5371dd2dd1f8cc3d2e6c86abad80dfb9cb17f55",
+      "bytes": 157106,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 14,
+        "item.started": 12,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 2,
+        "command_execution": 4,
+        "mcp_tool_call": 20
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/LATITUDE/phase-2.jsonl",
+      "sha256": "889379a30df72ac14cbee42111bc202714ff154cb956290b3760b5129c02bfec",
+      "bytes": 1160571,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 107,
+        "item.started": 100,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 190,
+        "command_execution": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/PEACE-1/phase-1.jsonl",
+      "sha256": "092bd71e37976ae9b5ac14b8411dce066ef9f542baf51e0720b025c6bb10ca32",
+      "bytes": 343315,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 33,
+        "item.started": 29,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 6,
+        "mcp_tool_call": 52
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/PEACE-1/phase-2.jsonl",
+      "sha256": "c5172cbae49180fb18f0705ccbfc7cb264430f46c74ebf0afdde78a30994f781",
+      "bytes": 783661,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 69,
+        "item.started": 60,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 120
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/STAMPEDE/phase-1.jsonl",
+      "sha256": "14c53831b32b1d05d105f1e045a7d404a07cd1a6dcf03076597ecd558b274dbd",
+      "bytes": 206638,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 17,
+        "item.started": 14,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 22
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/STAMPEDE/phase-2.jsonl",
+      "sha256": "7c2d40fae83addafd2edd663fdde8607fa795fcc4d43e8c1082461793d777431",
+      "bytes": 1170972,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 98,
+        "item.started": 91,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 180,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/SWOG-1216/phase-1.jsonl",
+      "sha256": "03d0fab457dc2fe0d6210d9d3aa70cb9ff0f0e256a566318c1d3b8f682ec37cc",
+      "bytes": 187556,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 19,
+        "item.started": 16,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 10,
+        "mcp_tool_call": 22
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/SWOG-1216/phase-2.jsonl",
+      "sha256": "bf4d34a92f9ffc4496b8ade37b783624970f48729f0b2bd6d197485ab905f220",
+      "bytes": 1486174,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 84,
+        "item.started": 77,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 144,
+        "command_execution": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/TITAN/phase-1.jsonl",
+      "sha256": "0a05085fad87cd44f1e49a68a2f8c5eb0b014142fdd333af2f4406aa16b3d05d",
+      "bytes": 256486,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 19,
+        "item.started": 16,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 28
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/overall-survival/TITAN/phase-2.jsonl",
+      "sha256": "def3ad54941c97ae08773e68bb1a5dddbd9491d8c1297a444a647fe882a34ad6",
+      "bytes": 1053682,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 63,
+        "item.started": 59,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "mcp_tool_call": 116,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/ARCHES/phase-1.jsonl",
+      "sha256": "b87b49ad8fa0f71a699d5c1a592e994e6af101616508ef91ba9fa7ee82d566f3",
+      "bytes": 293489,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 25,
+        "item.started": 21,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 8,
+        "mcp_tool_call": 34
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/ARCHES/phase-2.jsonl",
+      "sha256": "715d6ed84a6f802add2f68ace890c310d10999138276f8c1c9d668499effaf0c",
+      "bytes": 2798895,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 132,
+        "item.started": 116,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 16,
+        "mcp_tool_call": 222,
+        "command_execution": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/CHAARTED/phase-1.jsonl",
+      "sha256": "099bb715fc8241a33b66bc64d1662c31617113b26cf0473a13407de5b9b0562b",
+      "bytes": 199678,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 17,
+        "item.started": 14,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 22
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/CHAARTED/phase-2.jsonl",
+      "sha256": "009f7092c15d5d5f3b411a6ca1e4fcfc301528fadb67d24ed72be6b1f85caf4c",
+      "bytes": 881770,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 66,
+        "item.started": 55,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 110
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/ENZAMET/phase-1.jsonl",
+      "sha256": "09f521ae1bcc984d7349394208aff1b816942d55e31608754247cbe5997c9a0c",
+      "bytes": 255063,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 26,
+        "item.started": 20,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 6,
+        "command_execution": 4,
+        "mcp_tool_call": 36
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/ENZAMET/phase-2.jsonl",
+      "sha256": "4a848aeea8f5f9e6c4330be1a196dd1374e17a9ba0d9c51527a35c899a073f05",
+      "bytes": 1014644,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 79,
+        "item.started": 69,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 136,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/GETUG-AFU-15/phase-1.jsonl",
+      "sha256": "ee21903957403ff950b7a8e480ef75fd358b6d84f0a56c59e5da853de12a18ee",
+      "bytes": 220870,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 21,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 30
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/GETUG-AFU-15/phase-2.jsonl",
+      "sha256": "804c489c60b565e87bab6b10b73d096f275366928091afad15dcd8802bc4c632",
+      "bytes": 896098,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 78,
+        "item.started": 71,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 128,
+        "web_search": 6,
+        "command_execution": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/LATITUDE/phase-1.jsonl",
+      "sha256": "749ac79872ec3dd6eab28ee3558c052b8565bdcd41579429fee2f600d2367c22",
+      "bytes": 239861,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 23,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "command_execution": 4,
+        "mcp_tool_call": 32
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/LATITUDE/phase-2.jsonl",
+      "sha256": "9b865d8bfb8336f7ccd447682acd4117a6a0fbe731f510c9da814a6ea407de04",
+      "bytes": 1521956,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 117,
+        "item.started": 103,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 14,
+        "mcp_tool_call": 192,
+        "command_execution": 14
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/PEACE-1/phase-1.jsonl",
+      "sha256": "ba8cdaee8c33121e67d886d07ea4e8ecca6a376ed3733839386aa3eb51a6ad56",
+      "bytes": 245058,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 20,
+        "item.started": 17,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 30
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/PEACE-1/phase-2.jsonl",
+      "sha256": "afd60340cbdc48ee4d71140f90bfb6203bced792722ebe85eb6f0f892d876b1a",
+      "bytes": 1140156,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 86,
+        "item.started": 77,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 154
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/STAMPEDE/phase-1.jsonl",
+      "sha256": "06b6f3f75143ee876e2685790272f1d66b3e1c4eab5694b83e88f0a24730c100",
+      "bytes": 204370,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 17,
+        "item.started": 14,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 24
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/STAMPEDE/phase-2.jsonl",
+      "sha256": "36edb3c165582aed3b7bc010414f607afde025cc62729fbb0d72f1e72e893e27",
+      "bytes": 1201294,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 102,
+        "item.started": 88,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 14,
+        "mcp_tool_call": 166,
+        "command_execution": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/SWOG-1216/phase-1.jsonl",
+      "sha256": "1ab10c4a87b87cdbc753ad9c9d3d38b4bc67c6dbbd70566364bc14d02d8a0f93",
+      "bytes": 273924,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 24,
+        "item.started": 21,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 36
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/SWOG-1216/phase-2.jsonl",
+      "sha256": "75045d6f1873921190b8dc7b40e91e39b91daab54455232f4c551c5564d78cf5",
+      "bytes": 1186442,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 121,
+        "item.started": 112,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 216,
+        "command_execution": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/TITAN/phase-1.jsonl",
+      "sha256": "8930fc26c5d7b529fd1fe7056b0e46ea09aeb019d33140449a29b5447186974c",
+      "bytes": 342911,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 32,
+        "item.started": 29,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 52
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-26",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-26/rob2-trial-benchmark-luna-medium/isolated-worktree-run/rob2-trial-benchmark/progression-free-survival/TITAN/phase-2.jsonl",
+      "sha256": "b29c2c2ab4723a45a7e6498d9e9e63d760ac117e2aced19b484d38f699b8019d",
+      "bytes": 1357285,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 114,
+        "item.started": 104,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 200,
+        "command_execution": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "issue-465-e2e",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/issue-465-e2e/runs/adverse-events/ENZAMET/phase-1.jsonl",
+      "sha256": "4b6fae39bd1f9447f658dbb1f25fb5fdc57df8d67c35356fe29860e0f6dcde66",
+      "bytes": 167040,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 15,
+        "item.started": 12,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 18
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "issue-465-e2e",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/issue-465-e2e/runs/adverse-events/ENZAMET/phase-2.jsonl",
+      "sha256": "c141789607f75cad21516daf9cb4dc343c1253710400bd58f4792d36bca8b68a",
+      "bytes": 75986,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 9,
+        "item.started": 5,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "mcp_tool_call": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "issue-465-e2e",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/issue-465-e2e/runs/adverse-events/ENZAMET/phase-3.jsonl",
+      "sha256": "6f28f170fbb47b997a45500c83e5fbba9e9393764d4924181d32968546e0f6b7",
+      "bytes": 1321413,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 94,
+        "item.started": 85,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 156,
+        "command_execution": 14
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "issue-465-e2e",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/issue-465-e2e/runs/overall-survival/ENZAMET/phase-1.jsonl",
+      "sha256": "563df209a6a386fab862bc21046db949fb7826fadf1d0f53f0161c0e485283f4",
+      "bytes": 212545,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 17,
+        "item.started": 14,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 22
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "issue-465-e2e",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/issue-465-e2e/runs/overall-survival/ENZAMET/phase-2.jsonl",
+      "sha256": "7c55f464853e5f53210aff72175496e89daa70651475254baddde6fef9d8f796",
+      "bytes": 1013991,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 67,
+        "item.started": 60,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 108,
+        "command_execution": 12
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "issue-465-e2e",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/issue-465-e2e/runs/progression-free-survival/ENZAMET/phase-1.jsonl",
+      "sha256": "716668ce8e2e657cbd99ff64b9ad1cc8c644c85ba8769a05de410bd6fb7575c7",
+      "bytes": 212586,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 19,
+        "item.started": 16,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 26
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "issue-465-e2e",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/issue-465-e2e/runs/progression-free-survival/ENZAMET/phase-2.jsonl",
+      "sha256": "abd5c4384dffdd59dc25021d133187117f6429c78107530ee7d72e75f3d34235",
+      "bytes": 1062870,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 111,
+        "item.started": 102,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 178,
+        "command_execution": 26
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ARASENS/phase-1.jsonl",
+      "sha256": "3c0f766575b0ac6869fadc5057308fd89e097cd0f043b974748f87b5f4f38ef9",
+      "bytes": 306708,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 29,
+        "item.started": 23,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 6,
+        "command_execution": 6,
+        "mcp_tool_call": 40
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ARASENS/phase-2.jsonl",
+      "sha256": "726ac6123a5de0bc80994705e93d662e42cbdd886201a4fddf2e86de13cfbedb",
+      "bytes": 1467455,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 87,
+        "item.started": 76,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 134,
+        "command_execution": 18
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ARCHES/phase-1.jsonl",
+      "sha256": "5013020d99f3a265ce62b220d353e784799d0ff833add3be61f64402344590ef",
+      "bytes": 227313,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 24,
+        "item.started": 21,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 36
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ARCHES/phase-2.jsonl",
+      "sha256": "f54bc75c1f4ad8b67be4a51e1c733afa05144bffbb35563ed2778c78e5ebbd92",
+      "bytes": 9237067,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 128,
+        "item.started": 116,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 12,
+        "mcp_tool_call": 214,
+        "command_execution": 18
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ENZAMET/phase-1.jsonl",
+      "sha256": "1264803e29cfb8d25ac81bf4e36dc5779d17e58f2135c2a7f399efb221a6d91e",
+      "bytes": 235502,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 21,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 4,
+        "mcp_tool_call": 32
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ENZAMET/phase-2.jsonl",
+      "sha256": "931ccad6ffc885253c6eae6102bb9aedb33ccfa4ad95927c9924a9cedea05c73",
+      "bytes": 32685,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 6,
+        "item.started": 4,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 2,
+        "mcp_tool_call": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "non_selected_attempt_or_continuation",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ENZAMET-attempt-2/phase-1.jsonl",
+      "sha256": "0ef07932e298d907b563a044aa288a8b28d3f9dcaee5d6a627962072513ded15",
+      "bytes": 201808,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 22,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 6,
+        "mcp_tool_call": 30
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ENZAMET-attempt-3/phase-1.jsonl",
+      "sha256": "e9a4337081c64a2a14ad9138238f7c684037609f338e6f45fac9cc5743a0b8c4",
+      "bytes": 248742,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 23,
+        "item.started": 19,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 4,
+        "mcp_tool_call": 34
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/ENZAMET-attempt-3/phase-2.jsonl",
+      "sha256": "a58f8deb9a3f491bbb1c38a2b4295d4016df419ab6221041f8e7d4e0f643ab77",
+      "bytes": 947264,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 72,
+        "item.started": 63,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 110,
+        "command_execution": 16
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/LATITUDE/phase-1.jsonl",
+      "sha256": "6e3c27db3c93ea538bbcd623ff8a052f71715ed1ef3d4a8632fec8af2fb40809",
+      "bytes": 170784,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 21,
+        "item.started": 17,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 10,
+        "mcp_tool_call": 24
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/LATITUDE/phase-2.jsonl",
+      "sha256": "2dbd5dde84c3253053826be73285d83c1848057f7064f18ea0aa0352a0a7fa7c",
+      "bytes": 655202,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 55,
+        "item.started": 47,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 8,
+        "mcp_tool_call": 90,
+        "command_execution": 4
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/PEACE-1/phase-1.jsonl",
+      "sha256": "a94d72a3210d1705756199e282e554e7e5df51770c915cbb3da5a2766ab6c1a2",
+      "bytes": 258116,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 20,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 2,
+        "command_execution": 4,
+        "mcp_tool_call": 32
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/PEACE-1/phase-2.jsonl",
+      "sha256": "8f44f493bab22b11805f4f2df7241f5ed2b52222e6433ed7ce1166c5090b140c",
+      "bytes": 812274,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 62,
+        "item.started": 57,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "mcp_tool_call": 112,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/STAMPEDE/phase-1.jsonl",
+      "sha256": "9b135cede1e629ff3f2e1cf1a1fa360c6a029c023b4d5ea2c89d6a797e2dd205",
+      "bytes": 691788,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 29,
+        "item.started": 25,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 6,
+        "mcp_tool_call": 44
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/STAMPEDE/phase-2.jsonl",
+      "sha256": "9b63233c9d8d9cd8f3ce5a0c32b4b538f294d481bb83741f16a437cddd21c1c7",
+      "bytes": 864932,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 72,
+        "item.started": 61,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 112,
+        "command_execution": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/TITAN/phase-1.jsonl",
+      "sha256": "c12dbba633065f6a02a2909e0f1a83e3ae3e525a438fd92f8939eea93cdec071",
+      "bytes": 234696,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 24,
+        "item.started": 20,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 4,
+        "mcp_tool_call": 36
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/adverse-events/TITAN/phase-2.jsonl",
+      "sha256": "fa2174630c942d0f72ca5bf36f01f7ce6e1602c00409835a527be700efc78a1a",
+      "bytes": 1250083,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 111,
+        "item.started": 103,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 8,
+        "mcp_tool_call": 186,
+        "command_execution": 20
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/ARASENS/phase-1.jsonl",
+      "sha256": "a0fabe3cc77220ea38e53122e298288f4899d0daf58d1a78ed92dee154254b0a",
+      "bytes": 222843,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 28,
+        "item.started": 24,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 10,
+        "mcp_tool_call": 38
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/ARASENS/phase-2.jsonl",
+      "sha256": "d2dce34a8d9966d128f0ca1ed7acf564794749026e3ebffeb2c9004421f5558e",
+      "bytes": 1449397,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 101,
+        "item.started": 92,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 172,
+        "command_execution": 12
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/ARCHES/phase-1.jsonl",
+      "sha256": "fd18b5c4f1bb9552f26292958e8364cdcac4cb2df8cc10d4dc7cc6e49cf41adb",
+      "bytes": 240202,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 25,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "command_execution": 4,
+        "mcp_tool_call": 32
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/ARCHES/phase-2.jsonl",
+      "sha256": "828c9a37d8b69896a549ee1f9680beff0f6d35d2b81b2e680f0c2dd3c04261f3",
+      "bytes": 785743,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 55,
+        "item.started": 49,
+        "error": 1
+      },
+      "item_types": {
+        "agent_message": 6,
+        "mcp_tool_call": 92,
+        "command_execution": 6
+      },
+      "errors": [
+        "Reconnecting... 2/5 (request timed out)"
+      ],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/ARCHES/phase-3.jsonl",
+      "sha256": "1229044e5e3c7274504af9c911a2c9d0ce18feaac2f3b6fcd2860ee90e8823f7",
+      "bytes": 1905198,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 48,
+        "item.started": 41,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 74,
+        "command_execution": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/ENZAMET/phase-1.jsonl",
+      "sha256": "25271260997fb08769c3f4ae88af36fb21e08bc851ee3ae5543a22daf90e6562",
+      "bytes": 273948,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 22,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 8,
+        "mcp_tool_call": 28
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/ENZAMET/phase-2.jsonl",
+      "sha256": "3a856245a75407181d3a6c35ad2fa6834aa225111e913f7479d6fe6cd4eef408",
+      "bytes": 955668,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 69,
+        "item.started": 59,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 106,
+        "command_execution": 12
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/GETUG-AFU-15/phase-1.jsonl",
+      "sha256": "abf1d5f1fa3e0fd75f4f21b4377ed4d24ec03ac3f162d093a0001f5025bb44dd",
+      "bytes": 200837,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 17,
+        "item.started": 15,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 2,
+        "command_execution": 4,
+        "mcp_tool_call": 26
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/GETUG-AFU-15/phase-2.jsonl",
+      "sha256": "9a7ab4fb69a2dfa1d32392f508c19ab2b63ae31d646c873c0aca38f0322cf5e0",
+      "bytes": 875784,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 91,
+        "item.started": 84,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 160,
+        "command_execution": 8
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/LATITUDE/phase-1.jsonl",
+      "sha256": "dee3ab999abfb4945c77c6e05590e21a158be9db4ca8f98cf7bb5e5f5ee40abe",
+      "bytes": 199718,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 20,
+        "item.started": 17,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 8,
+        "mcp_tool_call": 26
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/LATITUDE/phase-2.jsonl",
+      "sha256": "65c57eb6639ad8ce187f3a251b616e3aec4c5e74a7a5fc08c7c4bd4606119b25",
+      "bytes": 1324309,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 103,
+        "item.started": 92,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 166,
+        "command_execution": 18
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/PEACE-1/phase-1.jsonl",
+      "sha256": "39131cc90d4382faa757f3deea794580591063be5f4c81fdd62bab4db4e6b29b",
+      "bytes": 254502,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 22,
+        "item.started": 18,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 4,
+        "mcp_tool_call": 32
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/PEACE-1/phase-2.jsonl",
+      "sha256": "23d163b67483a911a73ced3bcae96154ab4e5c2a948316404fbfcae9a126ceb6",
+      "bytes": 874015,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 80,
+        "item.started": 73,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 130,
+        "command_execution": 16
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/setup-retry-1/CHAARTED/phase-1.jsonl",
+      "sha256": "95e31ab813c3ca70b49f2bbb492c77eace0c96d64f57d92818c79b48e828554d",
+      "bytes": 247191,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 29,
+        "item.started": 25,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 6,
+        "mcp_tool_call": 44
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/setup-retry-1/CHAARTED/phase-2.jsonl",
+      "sha256": "d2dcc80e0ab19d3042b7bbebd9e437650be0d7ea65194fea66a1c1efdbf4b841",
+      "bytes": 1255900,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 101,
+        "item.started": 92,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 174,
+        "command_execution": 10
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/STAMPEDE/phase-1.jsonl",
+      "sha256": "f61cb773697924855d1f2a1e019093a9e17528a9c7aafe0f7db5e5013bc8f7cb",
+      "bytes": 184666,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 21,
+        "item.started": 16,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "command_execution": 10,
+        "mcp_tool_call": 22
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/STAMPEDE/phase-2.jsonl",
+      "sha256": "bba0569fdf481330804676821b824a9179f944e96213e6f90dbe5fa7d9fe49ed",
+      "bytes": 958727,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 76,
+        "item.started": 71,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "mcp_tool_call": 138,
+        "command_execution": 4
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/SWOG-1216/phase-1.jsonl",
+      "sha256": "e60fa4716d86ec7cd855d7e16776dbc3c9e97f8b43c0bb5063c04f6cd505a458",
+      "bytes": 299969,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 32,
+        "item.started": 27,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "command_execution": 4,
+        "mcp_tool_call": 50
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/SWOG-1216/phase-2.jsonl",
+      "sha256": "77fcb70d52b6d47d65a0f70c545ddb89b301ace85ae9c7bf01ba65fd90580b41",
+      "bytes": 1114606,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 85,
+        "item.started": 78,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 7,
+        "mcp_tool_call": 144,
+        "command_execution": 12
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/TITAN/phase-1.jsonl",
+      "sha256": "18ca0c48259c672cf09eb888efac904ac497cdc43f950e99b0525c60412a8290",
+      "bytes": 366329,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 30,
+        "item.started": 27,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 8,
+        "mcp_tool_call": 46
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/overall-survival/TITAN/phase-2.jsonl",
+      "sha256": "fdb8361c7052459f908ff0795cce5ef3906158797a3d0a1283e990ee7f678461",
+      "bytes": 1557127,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 103,
+        "item.started": 93,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 174,
+        "command_execution": 12
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/ARCHES/phase-1.jsonl",
+      "sha256": "f45bfa77a62ae089113e7ede11b82930374bfd50f0be8ad77de654e294353e4c",
+      "bytes": 295026,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 31,
+        "item.started": 26,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "command_execution": 10,
+        "mcp_tool_call": 42
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/ARCHES/phase-2.jsonl",
+      "sha256": "c798a0d0ddb5430e9df195ca73ee58f7134858f379cce75ba474f606e5d5e9c1",
+      "bytes": 771534,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 72,
+        "item.started": 63,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 122,
+        "command_execution": 4
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/CHAARTED/phase-1.jsonl",
+      "sha256": "7420fa2e5923be0c919d7fe37a164f0c226413a50105c20d43d1a4b2b4bd171d",
+      "bytes": 155081,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 17,
+        "item.started": 12,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 5,
+        "command_execution": 4,
+        "mcp_tool_call": 20
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/CHAARTED/phase-2.jsonl",
+      "sha256": "334f4b903e84dfdc88b9f16db048c45a58f44ca1c3cb9ec7d91280d93cf78f67",
+      "bytes": 965241,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 63,
+        "item.started": 54,
+        "error": 1,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 9,
+        "mcp_tool_call": 104,
+        "command_execution": 4
+      },
+      "errors": [
+        "Reconnecting... 2/5 (request timed out)"
+      ],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/ENZAMET/phase-1.jsonl",
+      "sha256": "40095d265ed1e6ad27306dc9983486a96b1fe6bcdbd60d3ef338f9efb001204a",
+      "bytes": 227299,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 19,
+        "item.started": 15,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 6,
+        "mcp_tool_call": 24
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/ENZAMET/phase-2.jsonl",
+      "sha256": "ac96de26ca4f44bbe2ce13e8c38558a3c4a430cc78e199f0c213c5645d7afff9",
+      "bytes": 921550,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 56,
+        "item.started": 48,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 8,
+        "mcp_tool_call": 94,
+        "command_execution": 2
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/GETUG-AFU-15/phase-1.jsonl",
+      "sha256": "59c9eea3ab0e595676819c740a17b39d512fd904d3dd80467ac94ca63640fa50",
+      "bytes": 226100,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 22,
+        "item.started": 19,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 32
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/GETUG-AFU-15/phase-2.jsonl",
+      "sha256": "2b81937e01751e0b18f50bf8f7b30018a8b7dd8bbf77ddf0e27152807dd11f4c",
+      "bytes": 942579,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 88,
+        "item.started": 80,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 8,
+        "mcp_tool_call": 146,
+        "command_execution": 14
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/LATITUDE/phase-1.jsonl",
+      "sha256": "9925ed51b929c0c701de189ef44b9d5857cfc8696e75a0ea1382136558d29c9d",
+      "bytes": 238541,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 20,
+        "item.started": 17,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 8,
+        "mcp_tool_call": 26
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/LATITUDE/phase-2.jsonl",
+      "sha256": "b9917645a8903b904ece27005f495c99a669eec113e9258997e04a10929c0824",
+      "bytes": 986235,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 69,
+        "item.started": 59,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 10,
+        "mcp_tool_call": 114,
+        "command_execution": 4
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/PEACE-1/phase-1.jsonl",
+      "sha256": "8bfa0908f681141ba4c1a49c148d1ab379a2c6b4c2e6a198851c86b1c653d05d",
+      "bytes": 303742,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 27,
+        "item.started": 23,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 4,
+        "command_execution": 4,
+        "mcp_tool_call": 42
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/PEACE-1/phase-2.jsonl",
+      "sha256": "9b658477d8b8d5e7fc920d3617b55ed66c4e44eedc9a30ce99b6ab5bd3634c8b",
+      "bytes": 1132335,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 96,
+        "item.started": 85,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 154,
+        "command_execution": 16
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/STAMPEDE/phase-1.jsonl",
+      "sha256": "17685609133bac4ff27ae2563feceed62f368d93df2a8557ca13751e68dedbcc",
+      "bytes": 267977,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 27,
+        "item.started": 24,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 8,
+        "mcp_tool_call": 40
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/STAMPEDE/phase-2.jsonl",
+      "sha256": "1af0ec1d655ef842ffe6305ef1a7ab84fce5dad0975914e89f5d37a576d2c452",
+      "bytes": 1180281,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 90,
+        "item.started": 79,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 11,
+        "mcp_tool_call": 140,
+        "command_execution": 18
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/SWOG-1216/phase-1.jsonl",
+      "sha256": "2f7ec6a2af690ffa41e58a7c653da25384e60e88eac55c950d2865ba6cac9436",
+      "bytes": 280163,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 31,
+        "item.started": 28,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 50
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/SWOG-1216/phase-2.jsonl",
+      "sha256": "52e79570f28034b759271bf98a5e45ff9dec5ed8689a0a8553f56f7f91e2727b",
+      "bytes": 1145461,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 99,
+        "item.started": 93,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 6,
+        "mcp_tool_call": 180,
+        "command_execution": 6
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/TITAN/phase-1.jsonl",
+      "sha256": "e6a9aee0816b9ce0df5cdcd6de2c64b15ed2a169f5fbc79c3eab9bdaaa9853c7",
+      "bytes": 450005,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 34,
+        "item.started": 31,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "agent_message": 3,
+        "command_execution": 6,
+        "mcp_tool_call": 56
+      },
+      "errors": [],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/TITAN/phase-2.jsonl",
+      "sha256": "9da5050dd7bfce2ea4c82bf2ee673c9918c0e2f6cd1f960de273dae4a1dadc44",
+      "bytes": 1010869,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.completed": 85,
+        "item.started": 77,
+        "error": 1
+      },
+      "item_types": {
+        "agent_message": 8,
+        "mcp_tool_call": 132,
+        "command_execution": 22
+      },
+      "errors": [
+        "Reconnecting... 2/5 (request timed out)"
+      ],
+      "malformed_lines": []
+    },
+    {
+      "date": "2026-09-27",
+      "run_tree": "benchmark",
+      "selection": "selected",
+      "path": "eval/runs/2026-09-27/rob2-trial-benchmark-latest-8ae8016/runs/progression-free-survival/TITAN/phase-3.jsonl",
+      "sha256": "b9164c470c3217875d7425bbfe57b7e23f813cef71de079f54923767b3c99dfd",
+      "bytes": 197662,
+      "events": {
+        "thread.started": 1,
+        "turn.started": 1,
+        "item.started": 12,
+        "item.completed": 13,
+        "turn.completed": 1
+      },
+      "item_types": {
+        "mcp_tool_call": 24,
+        "agent_message": 1
+      },
+      "errors": [],
+      "malformed_lines": []
+    }
+  ]
+}

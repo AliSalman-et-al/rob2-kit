@@ -1,18 +1,20 @@
 # Read the main report
 
-Read each Trial's main report at two checkpoints:
+Orient to each Trial's main report at two checkpoints:
 
 1. Before choosing its Result and submitting the Proposal.
 2. After approval, when that Trial becomes active, before answering its first
-   Domain. Recover the approved Result first. If a current source-bound
-   working checkpoint is available, use it for orientation and continue the
-   unfinished read only; otherwise complete the bounded post-approval pass.
+   Domain. Recover the approved Result first. If a current Result-bound and
+   source-bound working checkpoint is available, use it for orientation and
+   read only unfinished required ranges or exact passages needed for an answer.
+   If notes are absent or stale, complete the bounded post-approval pass.
 
-Use the same full captured Source for both reads. Copy the returned `source_id`
-exactly. Use it with the same `trial_id`. Both passes
-use text only and the same source-order prefix, up to 65,536 UTF-8 bytes of
-source text per report per pass, stopping at whole-line boundaries. When the
-Source text fits, read all of it.
+For any required pass, use the same full captured Source and source-order
+prefix. Copy the returned `source_id` exactly and use it with the same
+`trial_id`. The text-only limit is 65,536 UTF-8 bytes of source text per report
+per pass, stopping at whole-line boundaries. Read all required text when the
+Source fits; do not repeat completed orientation solely because approval or a
+restart occurred.
 Proposal Review remains the only researcher gate.
 
 ## Read consecutive windows
