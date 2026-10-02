@@ -1,0 +1,40 @@
+[
+  {
+    "case": "an-2021",
+    "model_owned_checkpoint": false,
+    "server_judgment": null,
+    "checkpoint_identity": null,
+    "rejected_submissions": 2,
+    "usage": {
+      "input_tokens": 429018,
+      "cached_input_tokens": 380160,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 4827,
+      "reasoning_output_tokens": 1708,
+      "total_tokens": 433845
+    },
+    "uncached_input": 48858,
+    "elapsed_seconds": 144.22,
+    "input_overshoot": 29018,
+    "stop_reason": "two rejected submissions"
+  },
+  {
+    "case": "monarch-plus",
+    "model_owned_checkpoint": true,
+    "server_judgment": "high",
+    "checkpoint_identity": "sha256:1f18744f37d8360b3311af1dd9d2024ee807c37610d9fea8f916ebb097031f29",
+    "rejected_submissions": 0,
+    "usage": {
+      "input_tokens": 352130,
+      "cached_input_tokens": 259072,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2456,
+      "reasoning_output_tokens": 501,
+      "total_tokens": 354586
+    },
+    "uncached_input": 93058,
+    "elapsed_seconds": 71.16,
+    "input_overshoot": 0,
+    "stop_reason": null
+  }
+]

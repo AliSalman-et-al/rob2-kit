@@ -1,0 +1,14 @@
+{
+  "evaluation": {
+    "domain_id": "domain:deviations",
+    "judgment": "some_concerns",
+    "trace": [
+      "deviations.some_concerns"
+    ],
+    "driver_questions": [
+      "sq:deviations:context-deviations"
+    ]
+  },
+  "production_checkpoint_exists": false,
+  "qualification": "Deterministic mapping of last draft answer enums only. No argument, answer or prose repaired; this does not validate submission structure or scientific warrant and is not counted as an accepted judgment when checkpoint absent."
+}

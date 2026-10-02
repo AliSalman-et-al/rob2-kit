@@ -1,0 +1,110 @@
+{
+  "code_sha": "9d73225752353916e641910a1f68bb7925a5bddb",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "cli_version": "codex-cli 0.159.0",
+  "case": "monarch-plus",
+  "domain_id": "domain:missing",
+  "guards": {
+    "wall_seconds": 480,
+    "idle_seconds": 120,
+    "tool_calls": 16,
+    "rejected_submissions": 2,
+    "input_tokens": 400000,
+    "uncached_input_tokens": 100000,
+    "output_tokens": 5000
+  },
+  "source_database_sha256": {
+    "canonical.sqlite3": "9f075b290664c0f22deee798e5673777754dedebfb650c491c41c443c168eda5",
+    "derivative.sqlite3": "425fc0de4582c3a0f56c76bb47f7ed94aae9976b33c04276101eda0ed38d0267"
+  },
+  "restored_source_hash_verified": [
+    {
+      "declared_role": "main_article",
+      "id": "source_47103491fa1bd48352af4535eff74248e2bea2d748e4ebcbe6ca6474c59057ad",
+      "label": "10.1177_1758835920963925.pdf",
+      "logical_path": "10.1177_1758835920963925.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 14,
+      "projection_hash": "sha256:087a9733f00cf1d9dad3a1b5ac2740f76cabdc175e68f485d8e0e0f40312ab73",
+      "role": "main_article",
+      "sha256": "sha256:4df36e3a8613807f9c045d3d2ffbae52302b0145f50fb8322c0d39bf5632f0f0",
+      "trial_id": "monarch-plus"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_387909bc4879725e5367813eeba0848330cb79a15572f3d1736947c3e062323c",
+      "label": "monarch_plus_supplement_27jul20.pdf",
+      "logical_path": "monarch_plus_supplement_27jul20.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 9,
+      "projection_hash": "sha256:cb16752837cf347cef4dd2849f5b81f018093ca447ae500e36b971ff0f552407",
+      "role": "supplement",
+      "sha256": "sha256:76c11a1c074bf3b2d46276e721fc234c0d9fcf9011857f74f3242363c98d0183",
+      "trial_id": "monarch-plus"
+    }
+  ],
+  "raw_sources_unavailable": [
+    {
+      "declared_role": null,
+      "id": "source_fcbabefc57f2c4482e6e0888b899663d40cff702c27f5c7dce498aa7e53a2c92",
+      "label": "ClinicalTrials.gov NCT02763566",
+      "logical_path": "registry/NCT02763566.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:cf1970e2eb27268320478008bfeebf94b74462a7ffbbe9e27f540dfa391b5d78",
+      "role": "registry",
+      "sha256": "sha256:68573eebcf4c1b95f033218470842ce89985c0de0bb5020d6c6cfbb8d002e3dd",
+      "trial_id": "monarch-plus"
+    }
+  ],
+  "approved_target": {
+    "comparison_groups": [
+      {
+        "assignment": "Abemaciclib plus NSAI (anastrozole or letrozole)",
+        "id": "abemaciclib_nsai"
+      },
+      {
+        "assignment": "Placebo plus NSAI (anastrozole or letrozole)",
+        "id": "placebo_nsai"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Hazard ratio",
+    "measurement": {
+      "method": "Investigator-assessed radiographic PFS; objective progression assessed by CT or MRI under RECIST 1.1, or death from any cause.",
+      "metric": "investigator-assessed progression-free survival"
+    },
+    "outcome_definition": "investigator-assessed progression-free survival",
+    "time_point_or_window": {
+      "description": "Interim analysis after 119 PFS events in cohort A; data cut-off 29 March 2019 (median follow-up approximately 16 months in both groups).",
+      "kind": "described"
+    }
+  },
+  "reported_result": {
+    "analysis_population": "Intent-to-treat population: all 306 randomly assigned cohort A participants (207 abemaciclib plus NSAI; 99 placebo plus NSAI).",
+    "effect_measure": "Hazard ratio",
+    "endpoint": {
+      "definition": null,
+      "name": "Progression Free Survival (PFS)"
+    },
+    "estimate": "0.499",
+    "form": "comparative_effect",
+    "group_values": [],
+    "precision": "95% CI 0.346-0.719; p = 0.0001"
+  },
+  "prior_scoped_fixture": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/production-d3-monarch-plus-separated",
+  "prior_retained_domains": [
+    "domain:deviations",
+    "domain:randomization"
+  ],
+  "initial_revision": 13,
+  "prompt_sha256": "cc6aa80fac9837c09943bb6ef0ce7012c41ebaca5b6104a6bffc67429c58a75e",
+  "qualification": "Known-case seeded repair check. Original Code approved Result and earlier Domain checkpoints retained; tested/later active Domain records, retrieval handles/deliveries and working notes cleared in this new copy. Historical canonical rows retained for integrity, no history/status tool exposed. Not an independent holdout, cold replay, full end-to-end benchmark or reference-label accuracy test. Prior labels are not supplied. Raw registry projection without original bytes remains unavailable, not replaced. Operator restored only exact hash-matched local raw Sources.",
+  "no_invocation_retry": true,
+  "manual_repairs_during_run": false
+}

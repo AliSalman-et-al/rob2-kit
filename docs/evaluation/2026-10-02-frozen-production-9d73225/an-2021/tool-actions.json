@@ -1,0 +1,403 @@
+[
+  {
+    "event_ordinal": 3,
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "an-2021",
+      "domain_id": "domain:deviations",
+      "max_response_bytes": 80000
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 5,
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "an-2021",
+      "windows": [
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 100
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 100
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 100
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 100
+        }
+      ]
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 7,
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "pages": [
+        4,
+        8
+      ],
+      "start_line": 1
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 9,
+    "tool": "search_sources",
+    "arguments": {
+      "trial_id": "an-2021",
+      "query": "protocol deviation",
+      "mode": "phrase",
+      "purpose_domain_id": "domain:deviations"
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 11,
+    "tool": "search_sources",
+    "arguments": {
+      "trial_id": "an-2021",
+      "query": "adherence",
+      "mode": "any",
+      "purpose_domain_id": "domain:deviations"
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 13,
+    "tool": "render_page",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "page": 4
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 15,
+    "tool": "select_text_evidence",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "page": 3,
+      "start_line": 12,
+      "end_line": 29
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 17,
+    "tool": "select_visual_evidence",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "delivery_receipt": "sha256:b0a877d271592d5e297edae4663ed80defb1cb31759d2e6e7e52d44357f81776",
+      "region": [
+        "0",
+        "0",
+        "1",
+        "0.6"
+      ],
+      "transcription": "Figure 1, Participant flow diagram. Assessed for eligibility n=237; excluded n=177: not meeting inclusion criteria (prior surgical experience n=21; walk over 10 m without help n=17; revision surgery n=5; not smartphone user n=71), declined consent n=63. Randomized n=60. Allocation: experimental 1 preoperative telerehabilitation n=20; experimental 2 preoperative patient education n=20; control usual care n=20. Postintervention (preop 1 day): experimental 1 lost to follow-up n=2, discontinued intervention n=2; experimental 2 lost to follow-up n=3, surgery cancelled n=3; control lost to follow-up n=1, surgery cancelled n=1. Follow-up (postop 6 weeks): first two groups lost to follow-up n=0; control lost to follow-up n=1, fall event n=1. Analysis: experimental 1 n=18; experimental 2 n=17; control n=18."
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 19,
+    "tool": "select_text_evidence",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "page": 4,
+      "start_line": 5,
+      "end_line": 25
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 21,
+    "tool": "select_text_evidence",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "page": 5,
+      "start_line": 5,
+      "end_line": 20
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 23,
+    "tool": "select_text_evidence",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "page": 6,
+      "start_line": 20,
+      "end_line": 25
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 25,
+    "tool": "select_text_evidence",
+    "arguments": {
+      "trial_id": "an-2021",
+      "source_id": "sh_4709acc6c24f9168",
+      "page": 6,
+      "start_line": 68,
+      "end_line": 73
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 27,
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "an-2021",
+      "domain_id": "domain:deviations",
+      "expected_revision": 13,
+      "answers": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "answer": "probably_yes",
+          "justification": "Although the report calls participants blinded, the assigned experiences were distinguishable: telerehabilitation used scheduled live video-supervised exercise, education used self-directed home exercise and calls, and control received usual care. This makes participant awareness probable despite the stated blinding; it does not establish certainty.",
+          "unknowns": [
+            "Whether participants were in fact told or inferred their assignments."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_65b78104db331182",
+              "role": "counterevidence"
+            },
+            {
+              "evidence": "eh_c051884d1e9a0feb",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_b659559d51cc6fbc",
+              "role": "indirect_support"
+            }
+          ],
+          "counterevidence": [
+            {
+              "basis_indexes": [
+                0
+              ],
+              "explanation": "The authors explicitly state participants were blinded; this weighs against awareness, but does not resolve how masking was maintained across materially different assigned experiences."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "answer": "probably_yes",
+          "justification": "The report describes a therapist supervising the telerehabilitation sessions with real-time feedback, daily calls motivating the education group, and usual care in control. These different delivery roles and intervention modes make awareness by intervention personnel probable, though the report does not explicitly identify their knowledge.",
+          "unknowns": [
+            "Whether carers or delivery personnel were explicitly blinded or knew individual assignments."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_c051884d1e9a0feb",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_b659559d51cc6fbc",
+              "role": "indirect_support"
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:deviations:context-deviations",
+          "answer": "no_information",
+          "justification": "The report describes the interventions and flow but does not establish whether any observed departures were inconsistent with protocol and caused by trial context. The protocol was retrospectively registered; the report does not explain adherence or causes. A phrase search for \u201cprotocol deviation\u201d returned no hits, but that lexical result is not evidence of absence.",
+          "unknowns": [
+            "Whether participants failed to implement assigned interventions or received non-protocol interventions; whether any such change was trial-context-caused and protocol-inconsistent."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_65b78104db331182",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_c051884d1e9a0feb",
+              "role": "indirect_support"
+            }
+          ],
+          "absence_searches": [
+            "sr_376fec828fc04455"
+          ],
+          "limitations": [
+            {
+              "premise": "Whether any intervention change was both protocol-inconsistent and caused by trial context is unresolved.",
+              "stopping_rationale": "The report describes planned regimens and calls the protocol retrospectively registered, but provides no direct account linking a departure to trial context. The bounded search found no exact phrase; it cannot establish absence."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "answer": "probably_yes",
+          "justification": "The reported comparison retains the three randomized assignment groups (18, 17, 18; total 53 versus 60 randomized). The flow diagram attributes exclusions to lost to follow-up, discontinuation, surgery cancellation, and a fall event. This is compatible with a modified ITT analysis excluding unavailable outcomes, which the guidance considers appropriate; however, the report does not make clear whether every excluded participant lacked the approved outcome or whether any eligible participant with observed outcome data was omitted.",
+          "unknowns": [
+            "For each of the seven randomized participants not analyzed, whether the quadriceps endpoint was missing, whether surgery cancellation made the participant ineligible for this endpoint, and whether any observed endpoint was omitted."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_09ab27f35ec709e3",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_67871806e4e060ec",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_5aa006f15b82d58d",
+              "role": "direct_support"
+            }
+          ],
+          "counterevidence": [],
+          "limitations": [
+            {
+              "premise": "Whether all seven non-analyzed participants had missing endpoint data, rather than eligible participants with observed outcomes being excluded, is unresolved.",
+              "stopping_rationale": "The flow diagram reports categories and analyzed counts but not endpoint availability or analysis exclusions by outcome; no further eligible captured report text clarifies these details."
+            }
+          ]
+        }
+      ]
+    },
+    "status": "failed"
+  },
+  {
+    "event_ordinal": 29,
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "an-2021",
+      "domain_id": "domain:deviations",
+      "expected_revision": 13,
+      "answers": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "answer": "probably_yes",
+          "justification": "Although the report calls participants blinded, the assigned experiences were distinguishable: telerehabilitation used scheduled live video-supervised exercise, education used self-directed home exercise and calls, and control received usual care. This makes participant awareness probable despite the stated blinding; it does not establish certainty.",
+          "unknowns": [
+            "Whether participants were in fact told or inferred their assignments."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_65b78104db331182",
+              "role": "contradiction"
+            },
+            {
+              "evidence": "eh_c051884d1e9a0feb",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_b659559d51cc6fbc",
+              "role": "indirect_support"
+            }
+          ],
+          "counterevidence": [
+            {
+              "basis_indexes": [
+                0
+              ],
+              "implication": "The explicit statement that participants were blinded weighs against awareness, while differing assigned experiences make effective masking uncertain and awareness probable rather than certain."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "answer": "probably_yes",
+          "justification": "The report describes a therapist supervising the telerehabilitation sessions with real-time feedback, daily calls motivating the education group, and usual care in control. These different delivery roles and intervention modes make awareness by intervention personnel probable, though the report does not explicitly identify their knowledge.",
+          "unknowns": [
+            "Whether carers or delivery personnel were explicitly blinded or knew individual assignments."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_c051884d1e9a0feb",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_b659559d51cc6fbc",
+              "role": "indirect_support"
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:deviations:context-deviations",
+          "answer": "no_information",
+          "justification": "The report describes the interventions and flow but does not establish whether any observed departures were inconsistent with protocol and caused by trial context. The protocol was retrospectively registered; the report does not explain adherence or causes. A phrase search for \u201cprotocol deviation\u201d returned no hits, but that lexical result is not evidence of absence.",
+          "unknowns": [
+            "Whether participants failed to implement assigned interventions or received non-protocol interventions; whether any such change was trial-context-caused and protocol-inconsistent."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_65b78104db331182",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_c051884d1e9a0feb",
+              "role": "indirect_support"
+            }
+          ],
+          "absence_searches": [
+            "sr_376fec828fc04455"
+          ],
+          "limitations": [
+            {
+              "premise": "Whether any intervention change was both protocol-inconsistent and caused by trial context is unresolved.",
+              "stopping_rationale": "The report describes planned regimens and calls the protocol retrospectively registered, but provides no direct account linking a departure to trial context. The bounded search found no exact phrase; it cannot establish absence."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "answer": "probably_yes",
+          "justification": "The reported comparison retains the three randomized assignment groups (18, 17, 18; total 53 versus 60 randomized). The flow diagram attributes exclusions to lost to follow-up, discontinuation, surgery cancellation, and a fall event. This is compatible with a modified ITT analysis excluding unavailable outcomes, which the guidance considers appropriate; however, the report does not make clear whether every excluded participant lacked the approved outcome or whether any eligible participant with observed outcome data was omitted.",
+          "unknowns": [
+            "For each of the seven randomized participants not analyzed, whether the quadriceps endpoint was missing, whether surgery cancellation made the participant ineligible for this endpoint, and whether any observed endpoint was omitted."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_09ab27f35ec709e3",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_67871806e4e060ec",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_5aa006f15b82d58d",
+              "role": "direct_support"
+            }
+          ],
+          "counterevidence": [],
+          "limitations": [
+            {
+              "premise": "Whether all seven non-analyzed participants had missing endpoint data, rather than eligible participants with observed outcomes being excluded, is unresolved.",
+              "stopping_rationale": "The flow diagram reports categories and analyzed counts but not endpoint availability or analysis exclusions by outcome; no further eligible captured report text clarifies these details."
+            }
+          ]
+        }
+      ]
+    },
+    "status": "completed"
+  }
+]

@@ -1,0 +1,171 @@
+{
+  "active_questions": [
+    "sq:missing:data-available",
+    "sq:missing:evidence-unbiased",
+    "sq:missing:true-value-dependent",
+    "sq:missing:likely-dependent"
+  ],
+  "answers": [
+    {
+      "answer": "no_information",
+      "bases": [
+        {
+          "evidence": "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+          "kind": "context",
+          "source": "At the interim analysis cut-off (29 March 2019),\n148 patients in cohort A and 67 in cohort B were\ncontinuing to receive study treatment (online\nSupplemental Figure 1). In cohort A, 91 patients\n(44.0%) in the abemaciclib arm and 65 patients\n(65.7%) in the placebo arm had discontinued\ntreatment. In cohort B, 50 patients (48.1%) in\nthe abemaciclib arm and 40 patients (75.5%) in\nthe placebo arm had discontinued treatment. The\nmajority of patients discontinued treatment due\nto progressive disease. The comparable median\nnumber of cycles received per patient in cohort A\n(15 for the abemaciclib arm and 13 for the pla-\ncebo arm) was due to the limited duration of fol-\nlow-up, while in cohort B, the median number of\ncycles was 9.5 for the abemaciclib arm and 6.0 for\nthe placebo arm. More patients had dose reduc-\ntions or omissions in the abemaciclib arm (cohort\nA: 40.5%/62.4%; cohort B: 39.4%/52.9%) than\nthe placebo arm (cohort A: 2.0%/30.3%; cohort\nB: 1.9%/17.0%).\nEfficacy\nThe interim analysis occurred after 119 PFS\nevents were observed in the ITT population in\ncohort A [66 (31.9%) of 207 patients in the abe-\nmaciclib arm and 53 (53.5%) of 99 patients in\nthe placebo arm] and the median follow-up was\napproximately 16 months in both arms. The\nstudy met its primary endpoint with an investiga-\ntor-assessed PFS hazard ratio of 0.499 (95% CI\n0.346-0.719; p = 0.0001) in cohort A. Median\nPFS was not reached in the abemaciclib arm and\nwas 14.7 months in the placebo arm (Figure 2A)."
+        },
+        {
+          "evidence": "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956",
+          "kind": "context",
+          "source": "Supplementary Figure 1, Trial Profile. Cohort A: 207 assigned abemaciclib + NSAI; 2 not treated (2 inclusion criteria not met); 91 discontinued treatment (57 disease progression, 20 adverse event, 7 withdrawal by patient, 3 physician decision, 2 death, 2 protocol deviation); 114 on treatment at data cutoff; 207 in ITT analysis. Placebo + NSAI: 99 assigned; 65 discontinued treatment (51 disease progression, 8 withdrawal by patient, 3 adverse event, 2 lost to follow-up, 1 death); 34 on treatment at data cutoff; 99 in ITT analysis."
+        },
+        {
+          "kind": "limitation",
+          "stopping_rationale": "Inspected the article's outcome/disposition text and supplement flow figure. A scoped search attempt failed with source/search projection integrity error and produced no search result (not a no-hit). Historical registry projection raw bytes unavailable; did not replace it or access network.",
+          "unresolved_premise": "Outcome availability for all or nearly all randomized participants is unresolved."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "For the approved cohort A investigator-assessed PFS at 29 March 2019, the article reports 119 events among 207 abemaciclib+NSAI and 99 placebo+NSAI participants and ITT analysis, but event and analysis denominators do not establish the number with outcome ascertainment. The flow diagram identifies two placebo participants as lost to follow-up, while treatment discontinuation/on-treatment counts are not outcome availability. No arm-specific PFS observed/censored accounting was established.",
+      "question_id": "sq:missing:data-available",
+      "unknowns": [
+        "Actual outcome-observed/censored counts at this interim cutoff by randomized arm; whether follow-up continued after treatment discontinuation; reasons and timing of missing PFS observations."
+      ]
+    },
+    {
+      "answer": "no",
+      "bases": [
+        {
+          "evidence": "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+          "kind": "context",
+          "source": "At the interim analysis cut-off (29 March 2019),\n148 patients in cohort A and 67 in cohort B were\ncontinuing to receive study treatment (online\nSupplemental Figure 1). In cohort A, 91 patients\n(44.0%) in the abemaciclib arm and 65 patients\n(65.7%) in the placebo arm had discontinued\ntreatment. In cohort B, 50 patients (48.1%) in\nthe abemaciclib arm and 40 patients (75.5%) in\nthe placebo arm had discontinued treatment. The\nmajority of patients discontinued treatment due\nto progressive disease. The comparable median\nnumber of cycles received per patient in cohort A\n(15 for the abemaciclib arm and 13 for the pla-\ncebo arm) was due to the limited duration of fol-\nlow-up, while in cohort B, the median number of\ncycles was 9.5 for the abemaciclib arm and 6.0 for\nthe placebo arm. More patients had dose reduc-\ntions or omissions in the abemaciclib arm (cohort\nA: 40.5%/62.4%; cohort B: 39.4%/52.9%) than\nthe placebo arm (cohort A: 2.0%/30.3%; cohort\nB: 1.9%/17.0%).\nEfficacy\nThe interim analysis occurred after 119 PFS\nevents were observed in the ITT population in\ncohort A [66 (31.9%) of 207 patients in the abe-\nmaciclib arm and 53 (53.5%) of 99 patients in\nthe placebo arm] and the median follow-up was\napproximately 16 months in both arms. The\nstudy met its primary endpoint with an investiga-\ntor-assessed PFS hazard ratio of 0.499 (95% CI\n0.346-0.719; p = 0.0001) in cohort A. Median\nPFS was not reached in the abemaciclib arm and\nwas 14.7 months in the placebo arm (Figure 2A)."
+        },
+        {
+          "kind": "limitation",
+          "stopping_rationale": "Bounded article and supplement review; lexical search was blocked by integrity failure; registry raw projection unavailable.",
+          "unresolved_premise": "No reassuring missing-outcome analysis was identified in inspected accessible text."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The inspected report gives the ITT analysis and primary PFS estimate, but these do not demonstrate protection from bias due to unobserved outcomes. Available passages disclose no bias-correcting analysis or sensitivity analysis over plausible missing-outcome assumptions. This is absence of reassurance, not proof bias occurred.",
+      "question_id": "sq:missing:evidence-unbiased",
+      "unknowns": [
+        "Whether an uninspected analysis addressed plausible missing PFS outcomes."
+      ]
+    },
+    {
+      "answer": "no_information",
+      "bases": [
+        {
+          "evidence": "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956",
+          "kind": "context",
+          "source": "Supplementary Figure 1, Trial Profile. Cohort A: 207 assigned abemaciclib + NSAI; 2 not treated (2 inclusion criteria not met); 91 discontinued treatment (57 disease progression, 20 adverse event, 7 withdrawal by patient, 3 physician decision, 2 death, 2 protocol deviation); 114 on treatment at data cutoff; 207 in ITT analysis. Placebo + NSAI: 99 assigned; 65 discontinued treatment (51 disease progression, 8 withdrawal by patient, 3 adverse event, 2 lost to follow-up, 1 death); 34 on treatment at data cutoff; 99 in ITT analysis."
+        },
+        {
+          "kind": "limitation",
+          "stopping_rationale": "The flow figure supplies a count but no reason or outcome linkage; search/retrieval was bounded and impaired as stated above.",
+          "unresolved_premise": "Whether PFS missingness could depend on its true value is unresolved."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "Loss to follow-up is mentioned for two placebo participants in the flow figure, but there is no explanation tying it to health status, progression, or an unrelated administrative cause. Treatment cessation and the event counts do not establish the missingness mechanism.",
+      "question_id": "sq:missing:true-value-dependent",
+      "unknowns": [
+        "Reasons/timing for lost follow-up and whether progression or health status influenced ascertainment."
+      ]
+    },
+    {
+      "answer": "no_information",
+      "bases": [
+        {
+          "evidence": "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956",
+          "kind": "context",
+          "source": "Supplementary Figure 1, Trial Profile. Cohort A: 207 assigned abemaciclib + NSAI; 2 not treated (2 inclusion criteria not met); 91 discontinued treatment (57 disease progression, 20 adverse event, 7 withdrawal by patient, 3 physician decision, 2 death, 2 protocol deviation); 114 on treatment at data cutoff; 207 in ITT analysis. Placebo + NSAI: 99 assigned; 65 discontinued treatment (51 disease progression, 8 withdrawal by patient, 3 adverse event, 2 lost to follow-up, 1 death); 34 on treatment at data cutoff; 99 in ITT analysis."
+        },
+        {
+          "evidence": "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+          "kind": "context",
+          "source": "At the interim analysis cut-off (29 March 2019),\n148 patients in cohort A and 67 in cohort B were\ncontinuing to receive study treatment (online\nSupplemental Figure 1). In cohort A, 91 patients\n(44.0%) in the abemaciclib arm and 65 patients\n(65.7%) in the placebo arm had discontinued\ntreatment. In cohort B, 50 patients (48.1%) in\nthe abemaciclib arm and 40 patients (75.5%) in\nthe placebo arm had discontinued treatment. The\nmajority of patients discontinued treatment due\nto progressive disease. The comparable median\nnumber of cycles received per patient in cohort A\n(15 for the abemaciclib arm and 13 for the pla-\ncebo arm) was due to the limited duration of fol-\nlow-up, while in cohort B, the median number of\ncycles was 9.5 for the abemaciclib arm and 6.0 for\nthe placebo arm. More patients had dose reduc-\ntions or omissions in the abemaciclib arm (cohort\nA: 40.5%/62.4%; cohort B: 39.4%/52.9%) than\nthe placebo arm (cohort A: 2.0%/30.3%; cohort\nB: 1.9%/17.0%).\nEfficacy\nThe interim analysis occurred after 119 PFS\nevents were observed in the ITT population in\ncohort A [66 (31.9%) of 207 patients in the abe-\nmaciclib arm and 53 (53.5%) of 99 patients in\nthe placebo arm] and the median follow-up was\napproximately 16 months in both arms. The\nstudy met its primary endpoint with an investiga-\ntor-assessed PFS hazard ratio of 0.499 (95% CI\n0.346-0.719; p = 0.0001) in cohort A. Median\nPFS was not reached in the abemaciclib arm and\nwas 14.7 months in the placebo arm (Figure 2A)."
+        },
+        {
+          "kind": "limitation",
+          "stopping_rationale": "No sufficient mechanism or actual outcome-availability accounting in inspected passages; source-search integrity failure and registry raw bytes unavailable.",
+          "unresolved_premise": "Likelihood that missingness depended on true outcome remains unresolved."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The evidence does not establish that the two lost-to-follow-up placebo participants' missingness likely depended on true PFS, nor does it document a benign reason. Other treatment discontinuations are not shown to represent loss of outcome follow-up.",
+      "question_id": "sq:missing:likely-dependent",
+      "unknowns": [
+        "Missingness reasons/rates and follow-up after treatment stopping by group; evidence of outcome-related loss."
+      ]
+    }
+  ],
+  "domain_id": "domain:missing",
+  "driver_questions": [
+    "sq:missing:likely-dependent"
+  ],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+          "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956"
+        ],
+        "question_id": "sq:missing:data-available",
+        "search_receipts": [],
+        "status": "unresolved",
+        "unresolved_premises": [
+          "Outcome availability for all or nearly all randomized participants is unresolved."
+        ]
+      },
+      {
+        "evidence": [
+          "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568"
+        ],
+        "question_id": "sq:missing:evidence-unbiased",
+        "search_receipts": [],
+        "status": "unresolved",
+        "unresolved_premises": [
+          "No reassuring missing-outcome analysis was identified in inspected accessible text."
+        ]
+      },
+      {
+        "evidence": [
+          "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956"
+        ],
+        "question_id": "sq:missing:true-value-dependent",
+        "search_receipts": [],
+        "status": "unresolved",
+        "unresolved_premises": [
+          "Whether PFS missingness could depend on its true value is unresolved."
+        ]
+      },
+      {
+        "evidence": [
+          "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956",
+          "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568"
+        ],
+        "question_id": "sq:missing:likely-dependent",
+        "search_receipts": [],
+        "status": "unresolved",
+        "unresolved_premises": [
+          "Likelihood that missingness depended on true outcome remains unresolved."
+        ]
+      }
+    ],
+    "identity": "sha256:4fde78dc4007b025ead1f18db7a99172c958f81458cf33a6fa317c324d80b378"
+  },
+  "identity": "sha256:1f18744f37d8360b3311af1dd9d2024ee807c37610d9fea8f916ebb097031f29",
+  "inactive_questions": [],
+  "judgment": "high",
+  "observed_at": "2026-10-02T10:39:02.555503+00:00",
+  "result_identity": "sha256:c7fe65c9ce4f123d90b92f099840fa3b228c0124043ba153e6f750a3b8cb32b8",
+  "revision_basis": null,
+  "search_accounts": [],
+  "supersedes": null,
+  "trace": [
+    "missing.likely_dependent"
+  ],
+  "trial_id": "monarch-plus"
+}

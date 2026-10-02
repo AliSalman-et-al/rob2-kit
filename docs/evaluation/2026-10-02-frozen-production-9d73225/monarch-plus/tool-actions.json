@@ -1,0 +1,228 @@
+[
+  {
+    "event_ordinal": 3,
+    "tool": "get_domain_context",
+    "arguments": {
+      "domain_id": "domain:missing",
+      "max_response_bytes": 80000
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 5,
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "windows": [
+        {
+          "source_id": "sh_47103491fa1bd483",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 112
+        },
+        {
+          "source_id": "sh_47103491fa1bd483",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 101
+        },
+        {
+          "source_id": "sh_47103491fa1bd483",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 124
+        }
+      ]
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 7,
+    "tool": "search_sources",
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "query": "loss to follow-up",
+      "mode": "phrase",
+      "purpose_domain_id": "domain:missing",
+      "purpose_question_id": "sq:missing:data-available",
+      "limit": 20
+    },
+    "status": "failed"
+  },
+  {
+    "event_ordinal": 9,
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "source_id": "sh_387909bc4879725e",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 11,
+    "tool": "render_page",
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "source_id": "sh_387909bc4879725e",
+      "page": 8
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 13,
+    "tool": "select_visual_evidence",
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "source_id": "sh_387909bc4879725e",
+      "delivery_receipt": "sha256:1a56edea86500224b83ca7d38028403e8a7709c68b4ea6a0f2446744fd78e38f",
+      "region": [
+        "0.07",
+        "0.12",
+        "0.88",
+        "0.89"
+      ],
+      "transcription": "Supplementary Figure 1, Trial Profile. Cohort A: 207 assigned abemaciclib + NSAI; 2 not treated (2 inclusion criteria not met); 91 discontinued treatment (57 disease progression, 20 adverse event, 7 withdrawal by patient, 3 physician decision, 2 death, 2 protocol deviation); 114 on treatment at data cutoff; 207 in ITT analysis. Placebo + NSAI: 99 assigned; 65 discontinued treatment (51 disease progression, 8 withdrawal by patient, 3 adverse event, 2 lost to follow-up, 1 death); 34 on treatment at data cutoff; 99 in ITT analysis."
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 15,
+    "tool": "get_domain_context",
+    "arguments": {
+      "domain_id": "domain:missing",
+      "max_response_bytes": 80000
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 17,
+    "tool": "select_text_evidence",
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "source_id": "sh_47103491fa1bd483",
+      "page": 5,
+      "start_line": 69,
+      "end_line": 101
+    },
+    "status": "completed"
+  },
+  {
+    "event_ordinal": 19,
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "domain_id": "domain:missing",
+      "expected_revision": 13,
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "no_information",
+          "justification": "For the approved cohort A investigator-assessed PFS at 29 March 2019, the article reports 119 events among 207 abemaciclib+NSAI and 99 placebo+NSAI participants and ITT analysis, but event and analysis denominators do not establish the number with outcome ascertainment. The flow diagram identifies two placebo participants as lost to follow-up, while treatment discontinuation/on-treatment counts are not outcome availability. No arm-specific PFS observed/censored accounting was established.",
+          "bases": [
+            {
+              "evidence": "eh_e5cd30eae058fb58",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_71aaea21fea44104",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Actual outcome-observed/censored counts at this interim cutoff by randomized arm; whether follow-up continued after treatment discontinuation; reasons and timing of missing PFS observations."
+          ],
+          "limitations": [
+            {
+              "premise": "Outcome availability for all or nearly all randomized participants is unresolved.",
+              "stopping_rationale": "Inspected the article's outcome/disposition text and supplement flow figure. A scoped search attempt failed with source/search projection integrity error and produced no search result (not a no-hit). Historical registry projection raw bytes unavailable; did not replace it or access network."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "answer": "no",
+          "justification": "The inspected report gives the ITT analysis and primary PFS estimate, but these do not demonstrate protection from bias due to unobserved outcomes. Available passages disclose no bias-correcting analysis or sensitivity analysis over plausible missing-outcome assumptions. This is absence of reassurance, not proof bias occurred.",
+          "bases": [
+            {
+              "evidence": "eh_e5cd30eae058fb58",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Whether an uninspected analysis addressed plausible missing PFS outcomes."
+          ],
+          "limitations": [
+            {
+              "premise": "No reassuring missing-outcome analysis was identified in inspected accessible text.",
+              "stopping_rationale": "Bounded article and supplement review; lexical search was blocked by integrity failure; registry raw projection unavailable."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "answer": "no_information",
+          "justification": "Loss to follow-up is mentioned for two placebo participants in the flow figure, but there is no explanation tying it to health status, progression, or an unrelated administrative cause. Treatment cessation and the event counts do not establish the missingness mechanism.",
+          "bases": [
+            {
+              "evidence": "eh_71aaea21fea44104",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Reasons/timing for lost follow-up and whether progression or health status influenced ascertainment."
+          ],
+          "limitations": [
+            {
+              "premise": "Whether PFS missingness could depend on its true value is unresolved.",
+              "stopping_rationale": "The flow figure supplies a count but no reason or outcome linkage; search/retrieval was bounded and impaired as stated above."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "answer": "no_information",
+          "justification": "The evidence does not establish that the two lost-to-follow-up placebo participants' missingness likely depended on true PFS, nor does it document a benign reason. Other treatment discontinuations are not shown to represent loss of outcome follow-up.",
+          "bases": [
+            {
+              "evidence": "eh_71aaea21fea44104",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_e5cd30eae058fb58",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Missingness reasons/rates and follow-up after treatment stopping by group; evidence of outcome-related loss."
+          ],
+          "limitations": [
+            {
+              "premise": "Likelihood that missingness depended on true outcome remains unresolved.",
+              "stopping_rationale": "No sufficient mechanism or actual outcome-availability accounting in inspected passages; source-search integrity failure and registry raw bytes unavailable."
+            }
+          ],
+          "counterevidence": []
+        }
+      ]
+    },
+    "status": "completed"
+  }
+]

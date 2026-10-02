@@ -1,0 +1,26 @@
+{
+  "an-2021": {
+    "raw_events_sha256": "64f8968a1839456d01203b105e4b5d7a541be99df8df53c3a35ac76acdacb4df",
+    "sanitized_events_sha256": "94df08d86fed6338d674fd621e88bc7a60fa114100714bb3001d3d20f7e41d76",
+    "omitted_images": [
+      {
+        "event_ordinal": 13,
+        "content_index": 1,
+        "base64_sha256": "4ef83f6bb394f46a555c1839b72497b977a1cf69df036b14cd3b8dbd934832f6"
+      }
+    ],
+    "raw_local_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-production-9d73225/an-2021/events.jsonl"
+  },
+  "monarch-plus": {
+    "raw_events_sha256": "c870993d9507e57c505156c803d8ef61358719fb17e51f4367e0ef7bfc8d517f",
+    "sanitized_events_sha256": "8175132effaa542b8f1060782480433ea81359219d6c4dfd340403ce4a904932",
+    "omitted_images": [
+      {
+        "event_ordinal": 11,
+        "content_index": 1,
+        "base64_sha256": "7525a0c7e26c3d941c38722149975f22c998c376e10ed0c97de218dd1f61f503"
+      }
+    ],
+    "raw_local_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-production-9d73225/monarch-plus/events.jsonl"
+  }
+}

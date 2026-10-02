@@ -1,0 +1,195 @@
+[
+  {
+    "event_ordinal": 19,
+    "arguments": {
+      "trial_id": "monarch-plus",
+      "domain_id": "domain:missing",
+      "expected_revision": 13,
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "no_information",
+          "justification": "For the approved cohort A investigator-assessed PFS at 29 March 2019, the article reports 119 events among 207 abemaciclib+NSAI and 99 placebo+NSAI participants and ITT analysis, but event and analysis denominators do not establish the number with outcome ascertainment. The flow diagram identifies two placebo participants as lost to follow-up, while treatment discontinuation/on-treatment counts are not outcome availability. No arm-specific PFS observed/censored accounting was established.",
+          "bases": [
+            {
+              "evidence": "eh_e5cd30eae058fb58",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_71aaea21fea44104",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Actual outcome-observed/censored counts at this interim cutoff by randomized arm; whether follow-up continued after treatment discontinuation; reasons and timing of missing PFS observations."
+          ],
+          "limitations": [
+            {
+              "premise": "Outcome availability for all or nearly all randomized participants is unresolved.",
+              "stopping_rationale": "Inspected the article's outcome/disposition text and supplement flow figure. A scoped search attempt failed with source/search projection integrity error and produced no search result (not a no-hit). Historical registry projection raw bytes unavailable; did not replace it or access network."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "answer": "no",
+          "justification": "The inspected report gives the ITT analysis and primary PFS estimate, but these do not demonstrate protection from bias due to unobserved outcomes. Available passages disclose no bias-correcting analysis or sensitivity analysis over plausible missing-outcome assumptions. This is absence of reassurance, not proof bias occurred.",
+          "bases": [
+            {
+              "evidence": "eh_e5cd30eae058fb58",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Whether an uninspected analysis addressed plausible missing PFS outcomes."
+          ],
+          "limitations": [
+            {
+              "premise": "No reassuring missing-outcome analysis was identified in inspected accessible text.",
+              "stopping_rationale": "Bounded article and supplement review; lexical search was blocked by integrity failure; registry raw projection unavailable."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "answer": "no_information",
+          "justification": "Loss to follow-up is mentioned for two placebo participants in the flow figure, but there is no explanation tying it to health status, progression, or an unrelated administrative cause. Treatment cessation and the event counts do not establish the missingness mechanism.",
+          "bases": [
+            {
+              "evidence": "eh_71aaea21fea44104",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Reasons/timing for lost follow-up and whether progression or health status influenced ascertainment."
+          ],
+          "limitations": [
+            {
+              "premise": "Whether PFS missingness could depend on its true value is unresolved.",
+              "stopping_rationale": "The flow figure supplies a count but no reason or outcome linkage; search/retrieval was bounded and impaired as stated above."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "answer": "no_information",
+          "justification": "The evidence does not establish that the two lost-to-follow-up placebo participants' missingness likely depended on true PFS, nor does it document a benign reason. Other treatment discontinuations are not shown to represent loss of outcome follow-up.",
+          "bases": [
+            {
+              "evidence": "eh_71aaea21fea44104",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_e5cd30eae058fb58",
+              "role": "context"
+            }
+          ],
+          "absence_searches": [],
+          "unknowns": [
+            "Missingness reasons/rates and follow-up after treatment stopping by group; evidence of outcome-related loss."
+          ],
+          "limitations": [
+            {
+              "premise": "Likelihood that missingness depended on true outcome remains unresolved.",
+              "stopping_rationale": "No sufficient mechanism or actual outcome-availability accounting in inspected passages; source-search integrity failure and registry raw bytes unavailable."
+            }
+          ],
+          "counterevidence": []
+        }
+      ]
+    },
+    "status": "completed",
+    "result": {
+      "content": [],
+      "structured_content": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 14,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "monarch-plus",
+            "domain_id": "domain:measurement"
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "checkpoint": {
+            "identity": "sha256:1f18744f37d8360b3311af1dd9d2024ee807c37610d9fea8f916ebb097031f29",
+            "trial_id": "monarch-plus",
+            "domain_id": "domain:missing",
+            "judgment": "high",
+            "driver_questions": [
+              "sq:missing:likely-dependent"
+            ],
+            "evidence_sufficiency": {
+              "claims": [
+                {
+                  "question_id": "sq:missing:data-available",
+                  "status": "unresolved",
+                  "evidence": [
+                    "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+                    "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956"
+                  ],
+                  "search_receipts": [],
+                  "unresolved_premises": [
+                    "Outcome availability for all or nearly all randomized participants is unresolved."
+                  ],
+                  "support_attribution": "not_established"
+                },
+                {
+                  "question_id": "sq:missing:evidence-unbiased",
+                  "status": "unresolved",
+                  "evidence": [
+                    "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568"
+                  ],
+                  "search_receipts": [],
+                  "unresolved_premises": [
+                    "No reassuring missing-outcome analysis was identified in inspected accessible text."
+                  ],
+                  "support_attribution": "not_established"
+                },
+                {
+                  "question_id": "sq:missing:true-value-dependent",
+                  "status": "unresolved",
+                  "evidence": [
+                    "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956"
+                  ],
+                  "search_receipts": [],
+                  "unresolved_premises": [
+                    "Whether PFS missingness could depend on its true value is unresolved."
+                  ],
+                  "support_attribution": "not_established"
+                },
+                {
+                  "question_id": "sq:missing:likely-dependent",
+                  "status": "unresolved",
+                  "evidence": [
+                    "sha256:71aaea21fea44104c1ebc1ba484e88651d6d2151975a8cb79c947be88d5aa956",
+                    "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568"
+                  ],
+                  "search_receipts": [],
+                  "unresolved_premises": [
+                    "Likelihood that missingness depended on true outcome remains unresolved."
+                  ],
+                  "support_attribution": "not_established"
+                }
+              ],
+              "identity": "sha256:4fde78dc4007b025ead1f18db7a99172c958f81458cf33a6fa317c324d80b378"
+            }
+          },
+          "trial_ready_for_review": false,
+          "retry": false
+        }
+      }
+    },
+    "error": null
+  }
+]
