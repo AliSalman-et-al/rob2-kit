@@ -1429,7 +1429,9 @@ class PageData(PublicModel):
     returned_end_line: NonNegativeInt
     page_remainder: EvidenceReadWindow | None = Field(
         default=None,
-        description="Unread physical lines after the returned page range, when any.",
+        description=(
+            "Unread physical text after the returned range, including a same-line suffix, when any."
+        ),
     )
     truncated: StrictBool
     next_start_line: PageNumber | None = None

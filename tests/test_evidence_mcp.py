@@ -2273,19 +2273,20 @@ def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: 
     assert seen == list(range(1, 1_001))
 
 
+@pytest.mark.parametrize(
+    "oversized_text", ["x" * 30_000, "é🧪|数\t" * 6_000], ids=["ascii", "unicode-table"]
+)
 def test_read_pages_oversized_single_line_makes_progress(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, oversized_text: str
 ) -> None:
     workspace = _workspace(tmp_path)
-    (workspace / "input" / "trial" / "main.txt").write_text("x" * 30_000, encoding="utf-8")
+    (workspace / "input" / "trial" / "main.txt").write_text(oversized_text, encoding="utf-8")
     _call(
         workspace,
         "prepare_batch",
         {"requested_outcome": "requested outcome", "expected_revision": 0},
     )
     source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
-
-    oversized_text = "x" * 30_000
 
     def fake_read_pages(
         _workspace_path: Path, _trial_id: str, _source_id: str, _pages: list[int]
@@ -2747,3 +2748,108 @@ def test_render_cache_returns_pixels_by_default_and_allows_metadata_only(
     )
     assert unavailable["outcome"] == "condition"
     assert "delivered ImageContent" in unavailable["condition"]["detail"]
+
+
+@pytest.mark.parametrize("tail", ["", "\nLater context."])
+@pytest.mark.parametrize("end_char", [0, 9])
+def test_read_pages_remainder_preserves_explicit_end_char_suffix(
+    tmp_path: Path, tail: str, end_char: int
+) -> None:
+    workspace = _workspace(tmp_path)
+    line = "Observed évents; exclusions remain unexplained."
+    (workspace / "input" / "trial" / "main.txt").write_text(line + tail, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    result = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 1,
+                    "end_char": end_char,
+                }
+            ],
+        },
+    )["data"]
+    page = result["pages"][0]
+    assert page["numbered_text"] == "1|" + line[:end_char]
+    assert page["truncated"] is False
+    assert page["next_start_line"] is None
+    assert result["remaining_windows"] == []
+    assert page["passage_ref"] is None
+    assert page["page_remainder"] == {
+        "source_id": source["id"],
+        "page": 1,
+        "start_line": 1,
+        "end_line": 2 if tail else 1,
+        "start_char": end_char,
+    }
+    recovered = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [page["page_remainder"]],
+        },
+    )["data"]["pages"][0]
+    assert recovered["numbered_text"] == "1|" + line[end_char:] + (
+        "\n2|Later context." if tail else ""
+    )
+    assert recovered["page_remainder"] is None
+
+
+@pytest.mark.parametrize("start_char,end_char", [(9, 20), (9, 9)])
+def test_read_pages_deferred_window_preserves_character_bounds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, start_char: int, end_char: int
+) -> None:
+    workspace = _workspace(tmp_path)
+    line = "Observed évents; exclusions remain unexplained."
+    (workspace / "input" / "trial" / "main.txt").write_text(line, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"][0]
+    window = {
+        "source_id": source["id"],
+        "page": 1,
+        "start_line": 1,
+        "end_line": 1,
+        "start_char": start_char,
+        "end_char": end_char,
+    }
+    original = mcp_server._read_pages_transport_bytes
+
+    def one_page_budget(value: dict[str, Any], head: dict[str, Any]) -> int:
+        if len(value["pages"]) > 1:
+            return mcp_server._READ_PAGES_RESPONSE_BYTES + 1
+        return original(value, head)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(mcp_server, "_read_pages_transport_bytes", one_page_budget)
+        first = _call(
+            workspace,
+            "read_pages",
+            {
+                "trial_id": "trial",
+                "windows": [
+                    {"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1},
+                    window,
+                ],
+            },
+        )["data"]
+    assert len(first["pages"]) == 1
+    assert first["remaining_windows"] == [window]
+    resumed = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": first["remaining_windows"],
+        },
+    )["data"]
+    assert resumed["remaining_windows"] == []
+    assert resumed["pages"][0]["numbered_text"] == "1|" + line[start_char:end_char]
+    assert resumed["pages"][0]["passage_ref"] is None

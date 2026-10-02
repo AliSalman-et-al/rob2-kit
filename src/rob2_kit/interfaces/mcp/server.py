@@ -1000,17 +1000,26 @@ def _read_pages_transport_bytes(value: dict[str, Any], head: dict[str, Any]) -> 
     )
 
 
-def _compact_read_window_fields(value: Any) -> None:
+def _compact_read_window_fields(value: Any, *, preserve_zero_start: bool = False) -> None:
     """Keep zero/default fragment coordinates out of ordinary public windows."""
 
     if isinstance(value, dict):
         if all(key in value for key in ("source_id", "page", "start_line", "end_line")):
-            if value.get("start_char") in (None, 0):
+            if value.get("start_char") is None or (
+                value.get("start_char") == 0 and not preserve_zero_start
+            ):
                 value.pop("start_char", None)
             if value.get("end_char") is None:
                 value.pop("end_char", None)
-        for item in value.values():
-            _compact_read_window_fields(item)
+        for key, item in value.items():
+            _compact_read_window_fields(
+                item,
+                preserve_zero_start=(
+                    key == "page_remainder"
+                    and isinstance(item, dict)
+                    and item.get("start_line") == value.get("returned_end_line")
+                ),
+            )
     elif isinstance(value, list):
         for item in value:
             _compact_read_window_fields(item)
@@ -2625,7 +2634,7 @@ def search_sources_batch(
         '"sh_0123456789abcdef","pages":[2],"start_line":10} or '
         '{"trial_id":"trial-a","windows":[{"source_id":'
         '"sh_0123456789abcdef","page":2,"start_line":10,"end_line":20}]}. '
-        "Each page includes page_remainder for unread physical lines after returned_end_line; "
+        "Each page includes page_remainder for unread physical text, including a same-line suffix; "
         "truncated, next_start_line, and remaining_windows retain requested-window semantics. "
         "To finish a partial batch, call read_pages with the same trial_id and windows set to "
         "data.remaining_windows, omitting source_id, pages, and start_line. Repeat until no "
@@ -2779,11 +2788,8 @@ def read_pages(
             start_char: int = 0,
             end_char: int | None = None,
         ) -> dict[str, Any]:
-            # EvidenceReadWindow is intentionally line-addressable.  The
-            # PageData next_start_char field carries a continuation inside a
-            # physical line without pretending the line is complete.  Keep
-            # the ordinary line-window shape compact; a nonzero offset is
-            # required to resume a split line losslessly.
+            # Preserve character bounds for exact recovery; omit the default
+            # zero start offset to keep ordinary line windows compact.
             record = {
                 "source_id": item["source_id"],
                 "page": item["page"],
@@ -2839,6 +2845,11 @@ def read_pages(
             next_char: int | None,
             truncated: bool,
         ) -> dict[str, Any]:
+            delivered_end_char = len(returned[-1].split("|", 1)[1]) + (
+                returned_start_char if end_line == requested_start else 0
+            )
+            unread_suffix = delivered_end_char < len(lines[end_line - 1])
+            remainder_line = end_line if unread_suffix else end_line + 1
             next_line = end_line if fragment and next_char is not None else end_line + 1
             return {
                 **({"source_id": item["source_id"]} if include_source else {}),
@@ -2851,13 +2862,11 @@ def read_pages(
                     {
                         "source_id": item["source_id"],
                         "page": item["page"],
-                        "start_line": (
-                            end_line if fragment and next_char is not None else end_line + 1
-                        ),
+                        "start_line": remainder_line,
                         "end_line": len(lines),
-                        **({"start_char": next_char} if fragment and next_char is not None else {}),
+                        **({"start_char": delivered_end_char} if unread_suffix else {}),
                     }
-                    if end_line < len(lines) or (fragment and next_char is not None)
+                    if remainder_line <= len(lines)
                     else None
                 ),
                 "truncated": truncated,
@@ -3117,7 +3126,7 @@ def read_pages(
                             item,
                             end_line if fragment and next_char is not None else end_line + 1,
                             available_end,
-                            start_char=next_char or 0,
+                            start_char=(requested_start_char if not returned else next_char or 0),
                             end_char=requested_end_char,
                         ),
                     )

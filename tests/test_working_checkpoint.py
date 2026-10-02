@@ -1048,12 +1048,22 @@ def test_trial_review_retains_source_observations_after_domain_commits(tmp_path:
         {"trial_id": "trial", "expected_revision": revision},
     )
     assert review["outcome"] == "success", review
-    randomization = next(
-        item
-        for item in review["data"]["domain_findings"]
-        if item["domain_id"] == "domain:randomization"
+    assert review["data"]["review_page"]["counts"]["premise_records"] == 1
+    assert "premise_records" in review["data"]["review_page"]["deferred_fields"]
+    recovered = _call(
+        workspace,
+        "review_trial",
+        {
+            "trial_id": "trial",
+            "expected_revision": review["head"]["state_revision"],
+            "domain_id": "domain:randomization",
+        },
     )
+    assert recovered["outcome"] == "success", recovered
+    assert recovered["data"]["review_page"]["complete"] is True
+    randomization = recovered["data"]["domain_findings"][0]
     assert randomization["premise_records"][0]["observations"]
+    assert randomization["premise_records"][0]["observations"] == checkpoint["observations"]
     concealment = next(
         item
         for item in randomization["answers"]
