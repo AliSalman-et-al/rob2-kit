@@ -255,3 +255,28 @@ mechanism changes and adjudicate their source-grounded warrants before adding
 more unmeasured runtime rules. No new checklist, label heuristic or deterministic
 semantic gate was manufactured in this final pass. Earlier test totals remain
 checkpoint-specific; no latest-full-suite or latest-CI-green claim is made.
+
+## Registry replay recovery follow-up
+
+A bounded search of the authorized Code benchmark checkout, current archives and
+reachable Git history found neither proposed case's raw registry hash. Logical
+registry paths and physical source-ID paths were considered; path-independent
+hashing covered 1051 current JSON candidates, 2122 archive members across 112
+archives and 523 candidate Git blobs. The repository has one reachable commit.
+There were no inspection errors, network captures, model calls or changes to
+original benchmark data. This distinguishes absence in the searched scope from
+an assumed path-remapping issue; it does not establish absence elsewhere.
+
+Both full structured projections survive: NCT02597049 has 2323 lines and
+NCT00975286 has 2205. Each reproduces its recorded projection identity using the
+captured Source metadata and exact retained pages. That confirms projection
+preservation, not recovery of the original source bytes. The isolated preserved
+files are explicitly `.projection.txt`, not reconstructed raw JSON.
+
+The AWARD-10 warrant used mixed-model analysis, denominators 132/134/133 and the
+population receiving a dose with evaluable data. The GetGoal-Duo1 warrant used
+mITT counts 221/215, at least one postbaseline assessment and LOCF. Those semantics
+are inspectable in the retained projections; endpoint-observed week-24 counts
+are not established by those fields alone. Any future new capture must be labeled
+as changed input, fingerprinted and semantically compared before a model call.
+The two-case D3 hypothesis and committed stop guards are unchanged and unexecuted.

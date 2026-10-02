@@ -69,3 +69,21 @@ answer needs actual endpoint-availability or follow-up evidence; analysis counts
 alone do not establish it. A changed risk label is not itself success. Both cases
 would be diagnostic only; neither establishes cohort accuracy or improvement over
 All-Low. Decide whether to continue only after inspecting these two retained warrants.
+
+## Replay preparation result
+
+Authorized recovery inspection found no matching raw bytes for either registry
+capture. It hashed 1051 current JSON candidates, 2122 JSON archive members from
+112 archives, and 523 candidate Git blobs; this benchmark repository has one
+reachable commit. No network fetch or model call was made. Both complete retained
+text projections reproduce their recorded projection hashes and are preserved
+locally as `NCT02597049.projection.txt` and `NCT00975286.projection.txt`, distinctly
+from raw JSON. Details are in `2026-10-02-registry-replay-recovery.json`.
+
+The existing raw-replay prerequisite therefore remains unresolved in the searched
+scope; path-independent hashing found no moved copy there. A future approved
+capture should be labeled `new_registry_capture_not_exact_oct1_replay`, retain
+its new capture timestamp/raw hash/projection hash, and compare the endpoint,
+population, imputation and denominator fields with the preserved old projection.
+Record differences before any model call. Semantic similarity does not establish
+byte-identical replay. The proposal and its guards above remain unexecuted.

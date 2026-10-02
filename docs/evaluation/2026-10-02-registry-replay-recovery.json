@@ -1,0 +1,61 @@
+{
+  "scope": "Authorized Code benchmark checkout, its current archives and reachable Git history only; no unrelated personal files, hidden model/session stores or network captures.",
+  "search": {
+    "search_root": "/home/ali/Documents/Code/rob2-kit-benchmark",
+    "excluded_stores": [
+      ".git filesystem traversal",
+      ".codex",
+      ".agents",
+      "homes",
+      "sessions",
+      "auth.json",
+      "models_cache.json",
+      "node_modules",
+      ".venv"
+    ],
+    "current_json_candidates_hashed": 1051,
+    "archives_inspected": 112,
+    "archive_members_hashed": 2122,
+    "git_history_commits": 1,
+    "git_blob_candidates_hashed": 523,
+    "matches": []
+  },
+  "preserved_projections": [
+    {
+      "case": "award-10-2018",
+      "registry_id": "NCT02597049",
+      "captured_at": "2026-10-01T12:03:30.437818Z",
+      "logical_path": "registry/NCT02597049.json",
+      "source_id": "source_edfbc7235f273527b1c583bcaceffb1629946bb7f63513a67029d2376b99afb9",
+      "raw_sha256": "sha256:be01058f91d9d7c137c698bfbb4881efbdac6759bb9b081e736c6dc70fd88ede",
+      "projection_hash": "sha256:9d954e65d49f44437b48a87a01ef2b0021ac98db1f3f6b8532a8e1d8270d74d3",
+      "reproduced_projection_hash_matches": true,
+      "projection_page_count": 1,
+      "projection_line_count": 2323,
+      "projection_file_sha256": "sha256:dca89ee1e0a5a3f795b66dcac80930c0256985b6b2100e682f39a440d5add296",
+      "projection_file": "NCT02597049.projection.txt",
+      "raw_json_recovered": false
+    },
+    {
+      "case": "getgoal-duo1-2013",
+      "registry_id": "NCT00975286",
+      "captured_at": "2026-10-01T12:42:32.615142Z",
+      "logical_path": "registry/NCT00975286.json",
+      "source_id": "source_2ef5a0adeb49efec24b348312378d20652acf728d23ff3dca0a0bed6a4f346f6",
+      "raw_sha256": "sha256:c7ab42ed391584f4bc42fad0be8ab6a5be1c1d481844aafee7cf2fa384af8c49",
+      "projection_hash": "sha256:f01f7e5c782fa1d3823f2bc6328ad693834fdf01461d5ea9b5dc3ae09cc16c0f",
+      "reproduced_projection_hash_matches": true,
+      "projection_page_count": 1,
+      "projection_line_count": 2205,
+      "projection_file_sha256": "sha256:16c7418b865aeeed952b71296b5749892f0b57bacf3bfe72adc57062c31d78c8",
+      "projection_file": "NCT00975286.projection.txt",
+      "raw_json_recovered": false
+    }
+  ],
+  "conclusion": "Neither requested raw byte hash was found in the searched scope, including path-independent hashing. Complete structured text projections remain and reproduce their recorded projection identities. This does not establish that raw captures are unavailable outside the searched scope.",
+  "new_capture_label_if_approved": "new_registry_capture_not_exact_oct1_replay",
+  "semantics_used": {
+    "award-10-2018": "MMRM analysis; outcome denominators132/134/133; population all randomized participants receiving at least one dose with evaluable data. This does not separately establish observed week24 HbA1c counts.",
+    "getgoal-duo1-2013": "mITT analyzed counts221/215; baseline and at least one postbaseline assessment; last observation carried forward. This does not separately establish observed week24 HbA1c counts."
+  }
+}
