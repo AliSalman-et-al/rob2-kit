@@ -1,0 +1,174 @@
+[
+  {
+    "event_ordinal": 19,
+    "whole_answers_wire_bytes": 5426,
+    "question_projections": [
+      {
+        "question_id": "sq:deviations:participants-aware",
+        "answer": "yes",
+        "wire_bytes": 881,
+        "standalone_shape_errors": [
+          {
+            "path": [
+              "bases",
+              0,
+              "evidence"
+            ],
+            "type": "string_type"
+          }
+        ],
+        "unresolved_premises": []
+      },
+      {
+        "question_id": "sq:deviations:personnel-aware",
+        "answer": "yes",
+        "wire_bytes": 761,
+        "standalone_shape_errors": [
+          {
+            "path": [
+              "bases",
+              0,
+              "evidence"
+            ],
+            "type": "string_type"
+          }
+        ],
+        "unresolved_premises": []
+      },
+      {
+        "question_id": "sq:deviations:context-deviations",
+        "answer": "probably_no",
+        "wire_bytes": 1323,
+        "standalone_shape_errors": [
+          {
+            "path": [
+              "bases",
+              0,
+              "evidence"
+            ],
+            "type": "string_type"
+          }
+        ],
+        "unresolved_premises": [
+          "Trial-context causation of the reported non-completion/attrition."
+        ]
+      },
+      {
+        "question_id": "sq:deviations:appropriate-analysis",
+        "answer": "no",
+        "wire_bytes": 1450,
+        "standalone_shape_errors": [
+          {
+            "path": [
+              "bases",
+              0,
+              "evidence"
+            ],
+            "type": "string_type"
+          }
+        ],
+        "unresolved_premises": [
+          "Whether excluded participants had missing versus observed outcome data, and actual analysis grouping."
+        ]
+      },
+      {
+        "question_id": "sq:deviations:substantial-impact",
+        "answer": "probably_yes",
+        "wire_bytes": 1005,
+        "standalone_shape_errors": [
+          {
+            "path": [
+              "bases",
+              0,
+              "evidence"
+            ],
+            "type": "string_type"
+          }
+        ],
+        "unresolved_premises": [
+          "Magnitude/direction of effect of excluded participants on the reported result."
+        ]
+      }
+    ],
+    "actual_server_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "5 validation errors for call[save_domain_judgment]\nanswers.0.bases.0.evidence\n  Input should be a valid string [type=string_type, input_value=['eh_6a3a61395c2666c3', 'eh_0815ad60e1dc1f4e'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type\nanswers.1.bases.0.evidence\n  Input should be a valid string [type=string_type, input_value=['eh_0815ad60e1dc1f4e', 'eh_6a3a61395c2666c3'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type\nanswers.2.bases.0.evidence\n  Input should be a valid string [type=string_type, input_value=['eh_6cc2e1f4d915b54c', 'eh_3c87e963806cb79d'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type\nanswers.3.bases.0.evidence\n  Input should be a valid string [type=string_type, input_value=['eh_3c87e963806cb79d', '..., 'eh_f628fda610788e52'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type\nanswers.4.bases.0.evidence\n  Input should be a valid string [type=string_type, input_value=['eh_3c87e963806cb79d'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type"
+        }
+      ],
+      "structured_content": null
+    }
+  },
+  {
+    "event_ordinal": 21,
+    "whole_answers_wire_bytes": 5429,
+    "question_projections": [
+      {
+        "question_id": "sq:deviations:participants-aware",
+        "answer": "yes",
+        "wire_bytes": 900,
+        "standalone_shape_errors": [],
+        "unresolved_premises": []
+      },
+      {
+        "question_id": "sq:deviations:personnel-aware",
+        "answer": "yes",
+        "wire_bytes": 774,
+        "standalone_shape_errors": [],
+        "unresolved_premises": []
+      },
+      {
+        "question_id": "sq:deviations:context-deviations",
+        "answer": "probably_no",
+        "wire_bytes": 1291,
+        "standalone_shape_errors": [],
+        "unresolved_premises": [
+          "Trial-context causation of the reported non-completion/attrition."
+        ]
+      },
+      {
+        "question_id": "sq:deviations:appropriate-analysis",
+        "answer": "no",
+        "wire_bytes": 1487,
+        "standalone_shape_errors": [],
+        "unresolved_premises": [
+          "Whether excluded participants had missing versus observed outcome data, and actual analysis grouping."
+        ]
+      },
+      {
+        "question_id": "sq:deviations:substantial-impact",
+        "answer": "probably_yes",
+        "wire_bytes": 971,
+        "standalone_shape_errors": [],
+        "unresolved_premises": [
+          "Magnitude/direction of effect of excluded participants on the reported result."
+        ]
+      }
+    ],
+    "actual_server_result": {
+      "content": [],
+      "structured_content": {
+        "outcome": "repair",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 13,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "an-2021",
+            "domain_id": "domain:deviations"
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "repairs": [
+          {
+            "path": "/answers/3/bases",
+            "code": "complete_claim_has_unresolved_premise",
+            "detail": "a definitive claim cannot be saved while a required premise is unresolved; use a probable answer or resolve the limitation first."
+          }
+        ]
+      }
+    }
+  }
+]
