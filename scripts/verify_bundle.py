@@ -154,13 +154,18 @@ _QUESTION_ALLOWED_ANSWERS = {
 _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
-    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+    "result_semantics_version": "rob2-kit.result-semantics.v0.9",
     "content_hash": "sha256:ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
     },
 }
+_PREVIOUS_RESULT_PROOF = {
+    **_SCIENTIFIC_PACK,
+    "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+}
+
 _CURRENT_PACK_PRE_SEMANTIC_GUIDANCE = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
@@ -2931,6 +2936,7 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
         if not (
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
+            or (leaf_path.endswith("/statistic") and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
@@ -2961,7 +2967,7 @@ def _decimal_text(value: Decimal) -> str:
 def _valid_requested_result(
     result: object,
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.8",
+    semantics_version: str = "rob2-kit.result-semantics.v0.9",
 ) -> bool:
     if not isinstance(result, dict) or _relation_name(
         result.get("requested_outcome")
@@ -2983,7 +2989,7 @@ def _valid_requested_result(
 def _valid_result_shape(
     result: dict[str, object],
     requested_outcome: str,
-    semantics_version: str = "rob2-kit.result-semantics.v0.8",
+    semantics_version: str = "rob2-kit.result-semantics.v0.9",
 ) -> bool:
     if not _valid_requested_result(result, requested_outcome, semantics_version):
         return False
@@ -3135,10 +3141,17 @@ def _valid_result_shape(
             if (
                 not isinstance(item, dict)
                 or set(item) != {"group_id", "statistic", "value", "unit"}
-                or not all(
-                    _nonblank(item.get(key)) for key in ("group_id", "statistic", "value", "unit")
+                or not all(_nonblank(item.get(key)) for key in ("group_id", "value", "unit"))
+                or not (
+                    _nonblank(item.get("statistic"))
+                    or (
+                        semantics_version == "rob2-kit.result-semantics.v0.9"
+                        and item.get("statistic") is None
+                    )
                 )
             ):
+                return False, set()
+            if item.get("statistic") is None and clarity.get("source_table_meaning") == "specified":
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
@@ -3163,7 +3176,10 @@ def _valid_result_shape(
         valid, reported_ids = valid_values(reported["group_values"], optional=True)
     elif form == "group_bound_values":
         values_key = (
-            "group_values" if semantics_version == "rob2-kit.result-semantics.v0.8" else "values"
+            "group_values"
+            if semantics_version
+            in {"rob2-kit.result-semantics.v0.8", "rob2-kit.result-semantics.v0.9"}
+            else "values"
         )
         if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
             return False
@@ -3219,7 +3235,7 @@ def _reported_result_has_coherent_anchor(
     by_handle: dict[str, dict[str, object]],
     *,
     strict_numeric: bool = True,
-    semantics_version: str = "rob2-kit.result-semantics.v0.8",
+    semantics_version: str = "rob2-kit.result-semantics.v0.9",
 ) -> bool:
     reported = cast(dict[str, Any], result["reported"])
     endpoint = reported["endpoint"]
@@ -3283,7 +3299,10 @@ def _reported_result_has_coherent_anchor(
         ]
     elif reported["form"] == "group_bound_values":
         values_key = (
-            "group_values" if semantics_version == "rob2-kit.result-semantics.v0.8" else "values"
+            "group_values"
+            if semantics_version
+            in {"rob2-kit.result-semantics.v0.8", "rob2-kit.result-semantics.v0.9"}
+            else "values"
         )
         quantitative_tuples = [
             (
@@ -3309,6 +3328,11 @@ def _reported_result_has_coherent_anchor(
             )
             for index, item in enumerate(reported["categories"])
         ]
+
+    quantitative_tuples = [
+        tuple((path, value) for path, value in items if value is not None)
+        for items in quantitative_tuples
+    ]
 
     def multispan_anchor(reference: dict[str, object]) -> bool:
         spans = reference.get("spans")
@@ -3391,7 +3415,7 @@ def _valid_result_evidence(
     sources: dict[str, dict[str, object]],
     requested_outcomes: dict[str, str],
     batch: object = None,
-    semantics_version: str = "rob2-kit.result-semantics.v0.8",
+    semantics_version: str = "rob2-kit.result-semantics.v0.9",
 ) -> bool:
     """Replay the closed Result Evidence contract from exported selections."""
     if not isinstance(result, dict) or not isinstance(result.get("trial_id"), str):
@@ -3479,7 +3503,10 @@ def _valid_result_evidence(
         return False
     if not _valid_result_shape(result, requested_outcome, semantics_version):
         return False
-    strict_numeric = semantics_version == "rob2-kit.result-semantics.v0.8"
+    strict_numeric = semantics_version in {
+        "rob2-kit.result-semantics.v0.8",
+        "rob2-kit.result-semantics.v0.9",
+    }
 
     def supports_material(material: str, value: str, field_path: str | None = None) -> bool:
         return (
@@ -4178,6 +4205,7 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _PREVIOUS_RESULT_PROOF,
                 _CURRENT_PACK_PRE_SEMANTIC_GUIDANCE,
                 _CURRENT_PACK_PRE_INFERENCE_GATES,
                 _CURRENT_PACK_PRE_DEVIATIONS_GUIDANCE,

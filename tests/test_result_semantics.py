@@ -765,3 +765,75 @@ def test_domain_context_missing_data_preview_is_typed_read_only_and_scope_bounde
     after = _state(workspace)
     assert after["revision"] == before["revision"]
     assert after.get("domain_records") == before.get("domain_records")
+
+
+def test_unidentified_group_statistic_survives_assessment_without_inventing_a_label(
+    tmp_path: Path,
+) -> None:
+    import runpy
+    import zipfile
+
+    from rob2_kit.application.finalization import _valid_result_shape, verify_bundle
+    from rob2_kit.packs import SCIENTIFIC_PACK
+
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/main.txt").write_text(
+        "At one year the requested outcome was 5.7 points for intervention and 14 points "
+        "for control; participants were individually randomized.\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    result = _result(evidence)
+    result["relation"] = "narrower"
+    result["relation_rationale"] = "The reported one-year values do not identify their statistic."
+    result["clarity"]["source_table_meaning"] = "unclear"
+    reported: dict[str, Any] = {
+        "form": "group_bound_values",
+        "endpoint": {"name": "requested outcome"},
+        "analysis_population": "Not identified for these values.",
+        "group_values": [
+            {"group_id": "a", "statistic": "mean", "value": "5.7", "unit": "points"},
+            {"group_id": "b", "statistic": "mean", "value": "14", "unit": "points"},
+        ],
+    }
+    result["reported"] = reported
+    invented = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert invented["outcome"] == "repair", invented
+    assert any(item["code"] == "result_value_not_supported" for item in invented["repairs"])
+
+    reported["group_values"] = [{**value, "statistic": None} for value in reported["group_values"]]
+    saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert saved["outcome"] == "review_required", saved
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+    for domain in SCIENTIFIC_PACK.domains:
+        committed = _call(
+            workspace,
+            "save_domain_judgment",
+            _domain_draft("trial", domain.id, revision, evidence),
+        )
+        assert committed["outcome"] == "success", committed
+        revision = int(committed["head"]["state_revision"])
+    finalized = _finalize_assessment(workspace, revision)
+    artifact = workspace / str(finalized["data"]["artifact"]["path"])
+    assert verify_bundle(artifact)
+    assert _standalone_verify(artifact).returncode == 0
+
+    with zipfile.ZipFile(artifact) as archive:
+        canonical = json.loads(archive.read("canonical.json"))
+    stored = canonical["proposal"]["payload"]["results"][0]
+    assert all(value["statistic"] is None for value in stored["reported"]["group_values"])
+    assert not any(
+        binding["field"]["path"].endswith("/statistic") for binding in stored["bindings"]
+    )
+    assert (
+        canonical["scientific_pack"]["result_semantics_version"] == "rob2-kit.result-semantics.v0.9"
+    )
+    standalone_shape = runpy.run_path("scripts/verify_bundle.py")["_valid_result_shape"]
+    # v0.8 claimed complete statistic labels; its interpretation must stay strict.
+    for validator in (_valid_result_shape, standalone_shape):
+        assert not validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.8")
+        stored["clarity"]["source_table_meaning"] = "specified"
+        assert not validator(stored, "requested outcome", "rob2-kit.result-semantics.v0.9")
+        stored["clarity"]["source_table_meaning"] = "unclear"

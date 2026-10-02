@@ -692,7 +692,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
             "version": official_version,
             "source_sha256": official_sha256,
         },
-        "result_semantics_version": "rob2-kit.result-semantics.v0.8",
+        "result_semantics_version": "rob2-kit.result-semantics.v0.9",
     }
     assert _standalone_verify(artifact).returncode == 0
 
@@ -701,6 +701,7 @@ def test_prior_v08_scientific_pack_remains_verifiable(tmp_path: Path) -> None:
     source = _artifact(tmp_path / "source")
 
     def use_prior_guidance(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.8"
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60"
         )

@@ -365,6 +365,11 @@ and independent-verifier input. It excludes Source files, credentials, prompts,
 host traces, and absolute paths. The product verifier and standalone verifier
 replay the same scientific and integrity invariants independently.
 
+Result semantics v0.9 allow an explicitly null group statistic when its meaning
+is not identified in the Source. Values, units, and endpoint identifiers remain
+source-bound, and unclear statistic meaning cannot be marked specified.
+Historical result semantics v0.8 continue to require nonblank statistic labels.
+
 Fresh v0.9 Proposals contain Result cards without caller-selected report scopes
 and require a source-bound reasoning assessment before the receipt-only save.
 Historical v0.5 through v0.8 bundles retain their recorded semantics for

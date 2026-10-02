@@ -64,7 +64,8 @@ _FORBIDDEN_PATH_FIELDS = frozenset(
     }
 )
 
-_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
+_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.9"
+_GROUP_VALUES_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.8"
 _PREVIOUS_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.7"
 _LEGACY_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.6"
 _HISTORICAL_RESULT_SEMANTICS_VERSION = "rob2-kit.result-semantics.v0.5"
@@ -444,6 +445,7 @@ def _source_bound_leaves(value: object, path: str) -> dict[str, object]:
         if not (
             leaf_path in caller_owned
             or (leaf_path == "/reported/precision" and leaf is None)
+            or (leaf_path.endswith("/statistic") and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
@@ -1529,10 +1531,17 @@ def _valid_result_shape(
             if (
                 not isinstance(item, dict)
                 or set(item) != {"group_id", "statistic", "value", "unit"}
-                or not all(
-                    _nonblank(item.get(key)) for key in ("group_id", "statistic", "value", "unit")
+                or not all(_nonblank(item.get(key)) for key in ("group_id", "value", "unit"))
+                or not (
+                    _nonblank(item.get("statistic"))
+                    or (
+                        semantics_version == "rob2-kit.result-semantics.v0.9"
+                        and item.get("statistic") is None
+                    )
                 )
             ):
+                return False, set()
+            if item.get("statistic") is None and clarity.get("source_table_meaning") == "specified":
                 return False, set()
             ids.append(item["group_id"])
         return len(ids) == len(set(ids)), set(ids)
@@ -1556,7 +1565,12 @@ def _valid_result_shape(
             return False
         valid, reported_ids = valid_values(reported["group_values"], optional=True)
     elif form == "group_bound_values":
-        values_key = "group_values" if semantics_version == _RESULT_SEMANTICS_VERSION else "values"
+        values_key = (
+            "group_values"
+            if semantics_version
+            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            else "values"
+        )
         if set(reported) != {"form", "analysis_population", "endpoint", values_key}:
             return False
         valid, reported_ids = valid_values(reported[values_key])
@@ -1677,7 +1691,12 @@ def _reported_result_has_coherent_anchor(
             ),
         ]
     elif reported["form"] == "group_bound_values":
-        values_key = "group_values" if semantics_version == _RESULT_SEMANTICS_VERSION else "values"
+        values_key = (
+            "group_values"
+            if semantics_version
+            in {_RESULT_SEMANTICS_VERSION, _GROUP_VALUES_RESULT_SEMANTICS_VERSION}
+            else "values"
+        )
         quantitative_tuples = [
             (
                 (f"/reported/{values_key}/{index}/statistic", item["statistic"]),
@@ -1702,6 +1721,11 @@ def _reported_result_has_coherent_anchor(
             )
             for index, item in enumerate(reported["categories"])
         ]
+
+    quantitative_tuples = [
+        tuple((path, value) for path, value in items if value is not None)
+        for items in quantitative_tuples
+    ]
 
     def multispan_anchor(reference: dict[str, object]) -> bool:
         spans = reference.get("spans")
@@ -1871,7 +1895,10 @@ def _verify_result_evidence(
         return False
     if not _valid_result_shape(result, requested_outcome, semantics_version):
         return False
-    strict_numeric = semantics_version == _RESULT_SEMANTICS_VERSION
+    strict_numeric = semantics_version in {
+        _RESULT_SEMANTICS_VERSION,
+        _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+    }
 
     def supports_material(material: str, value: str, field_path: str | None = None) -> bool:
         return (
@@ -2982,21 +3009,21 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
     current_pack_legacy_proof = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:86ad209ba3504bbe353049245b44cebf3b7d83862b2b3e475c431c6fec0a581f",
         "official_source": expected["official_source"],
     }
     current_pack_prior_guidance = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60",
         "official_source": expected["official_source"],
     }
     current_pack_pre_semantic_guidance = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
-        "result_semantics_version": _RESULT_SEMANTICS_VERSION,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
         "content_hash": "sha256:bb4f07a86662df2decaad739013e1178a6767aceb9b63e6b438c7f98074d5d84",
         "official_source": expected["official_source"],
     }
@@ -3035,7 +3062,12 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "content_hash": "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4",
         "official_source": expected["official_source"],
     }
+    previous_result_proof = {
+        **expected,
+        "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
+    }
     return value in (
+        previous_result_proof,
         current_pack_legacy_proof,
         current_pack_prior_guidance,
         current_pack_pre_semantic_guidance,

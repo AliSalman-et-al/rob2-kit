@@ -77,6 +77,7 @@ def _source_bound_leaves(value: Any, path: str) -> dict[str, Any]:
             }
             or leaf_path.startswith("/target/time_point_or_window/")
             or (leaf_path == "/reported/precision" and leaf is None)
+            or (leaf_path.endswith("/statistic") and leaf is None)
             or (leaf_path == "/reported/endpoint/definition" and leaf is None)
             or (leaf_path.startswith("/target/comparison_groups/") and leaf_path.endswith("/id"))
             or (
@@ -201,6 +202,21 @@ def _proposal_shape_repairs(
             reported_ids = []
         if reported_path:
             for value_index, value in enumerate(reported_values):
+                if (
+                    value.statistic is None
+                    and result.clarity is not None
+                    and result.clarity.source_table_meaning == "specified"
+                ):
+                    result_repairs.append(
+                        {
+                            "path": f"{path}/clarity/source_table_meaning",
+                            "code": "unknown_statistic_conflicts_with_clarity",
+                            "detail": (
+                                "A null statistic preserves unresolved meaning; do not mark "
+                                "source_table_meaning as specified."
+                            ),
+                        }
+                    )
                 if value.unit == MISSING_GROUP_VALUE_UNIT:
                     result_repairs.append(
                         {
@@ -845,6 +861,10 @@ def _coherent_anchor_indices(
     endpoint_name = reported["endpoint"]["name"]
 
     quantitative_tuples = _reported_quantitative_paths(reported)
+    quantitative_tuples = [
+        tuple((path, value) for path, value in items if value is not None)
+        for items in quantitative_tuples
+    ]
 
     def multi_span_anchor(item: dict[str, Any]) -> bool:
         """Check each cited fragment without treating them as one quotation."""

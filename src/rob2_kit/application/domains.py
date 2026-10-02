@@ -1649,7 +1649,7 @@ def _comparison_cards(
                 "target or analyzed populations do not establish observed outcomes. Classify "
                 "remaining propositions; do not infer causation, availability, censoring, "
                 "measurement influence, plan correspondence, or risk from metadata, arithmetic, "
-                "or wording alone. Empty passage groups are unopened; inspect "
+                "or wording alone. An empty passage group is unopened; inspect "
                 "relevant Sources before recording an information limitation."
             ),
         }

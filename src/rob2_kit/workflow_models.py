@@ -950,7 +950,9 @@ class GroupResultValue(StrictModel):
             "id but does not require a separate Source Evidence mapping."
         ),
     )
-    statistic: NonBlankText = Field(description="Source-reported statistic label for this group.")
+    statistic: NonBlankText | None = Field(
+        description="Source statistic label; use null when the Source does not identify it."
+    )
     value: NonBlankText = Field(description="Source-reported value for this group.")
     unit: NonBlankText = Field(description="Source-reported unit for this group value.")
 

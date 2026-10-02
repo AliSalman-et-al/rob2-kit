@@ -204,7 +204,10 @@ captured outcome, target metric, and `effect_of_interest:"assignment"`.
 For every assessable Result, explain the complete correspondence in
 `relation_rationale`, including population, outcome, measurement, time,
 comparison, and analysis scope. Matching endpoint names alone do not establish
-exactness. State any material difference. For other assessable Results:
+exactness. State any material difference. For `exact`, submit `clarity` with all
+eight facets supported as `specified`; omitting it records all facets as unclear
+and cannot establish exactness. For a non-exact Result, identify which facets
+remain unclear, unavailable, or conflicting. For other assessable Results:
 
 - `broader`: the reported event, population, or time scope is a superset;
 - `narrower`: it is a subset or adds restrictions;
@@ -245,7 +248,10 @@ row label such as `Total`.
 
 Keep quantities as Source strings. Put a comparative estimate's reported
 interval in `precision`. Keep a group statistic's label, value, and unit in
-their separate fields. Do not invent statistics or units. For a
+their separate fields. Use `statistic: null` when the source gives a group value
+but does not identify its statistic; keep `source_table_meaning` unclear and
+explain the unresolved meaning in the Result rationale. A nearby verb such as
+“changed” is not a statistic label. Do not invent statistics or units. For a
 comparative effect, omit optional `group_values` unless the Source states one
 unambiguous statistic and unit for every target group. Reported group IDs are
 structural references and must match target group IDs.
