@@ -54,3 +54,31 @@ Three focused context controls passed, with lint/type checks. At most one
 bounded production D2 diagnostic is authorized after this checkpoint; its
 outcome will be reported separately, including durable usage and rationale
 comparison. No full benchmark or automatic retry is authorized.
+
+## Production diagnostic and refinement
+
+The authorized single An D2 attempt is frozen in `production-an/`. Its rationale
+now distinguishes intervention burden from trial context, but the model submission
+failed a counterpoint field-name validation and no production checkpoint was
+saved. An independent clerical-only offline control yields High via a different
+D2 branch. No accuracy or risk-label improvement is claimed.
+
+Failure review identified a contradictory D2.6 consideration in production
+guidance. Cochrane printed p.29 permits modified ITT analyses excluding missing
+outcomes. The clarification removes the blanket eligible-exclusion statement:
+missing-only exclusions, observed-but-omitted outcomes, wrong grouping and unknown
+exclusion mechanisms are separate. It preserves the original timing distinction
+and the ineligible-participant exception. This refinement was not retested with
+paid inference. The D3.2 scoped negative-evidence exception is also now explicit
+in the shared Domain context instructions, matching its existing save/export
+implementation rather than contradicting it with a generic certainty statement.
+
+Matching source-byte hashes were checked against the Code corpus. Primary local
+PDF pages supporting the causal audit: An p.11; Bendix p.4; Guitton main p.5 and
+protocol sections; Boeree p.9. `source-page-checks.json` retains exact retrieved
+page text and coordinates. An's complete main report was supplied through MCP
+in the production attempt.
+
+Validation after the refinement: three causal/card controls and seven targeted
+D2 guidance/evaluator/pack/export controls passed (10 unique focused checks).
+Type, lint and format checks passed. No full benchmark, merge or automatic retry.

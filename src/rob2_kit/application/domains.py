@@ -606,7 +606,9 @@ _DOMAIN_GUIDANCE = (
     "a stale checkpoint requires the stated recovery action and never carries a prior Domain "
     "judgment into this assessment.",
     "A definitive yes or no needs direct_support, indirect_support, or contradiction; "
-    "a limitation or absence alone supports uncertainty, not a definitive answer.",
+    "a limitation or absence alone supports uncertainty, not a definitive answer. "
+    "For D3.2 No, inspected context/inference or a valid scoped no-hit receipt can instead "
+    "support the scoped absence of reassuring evidence; it does not assert bias occurred.",
     "Evaluate activation against your draft answers. If validation reports missing active "
     "question IDs, add those questions with allowed answer values and supported bases, then "
     "resubmit the complete active set in one validation call. The server commits only active "

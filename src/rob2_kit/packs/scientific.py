@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.4"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.5"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -331,7 +331,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "The question is about effect of assignment, so grouping must follow randomized assignment.",
             "Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.",
             "Never-treated participants are not automatically participants with no adverse event or unavailable outcome. Recover the documented eligibility, outcome availability, and exclusion reason before judging the approved assignment-effect estimand.",
-            "A post-randomization exclusion of an eligible participant remains an analysis concern whether it happened before the endpoint was measured or after an outcome value was recorded. Record that timing separately: an outcome not collected may also matter to D3, while an observed value omitted from the assignment analysis is not thereby missing outcome data. Judge 2.7 from the excluded participants, reasons, outcome rarity, and prognostic relevance for this Result.",
+            "Excluding participants solely because their outcome data are missing can be an appropriate modified ITT analysis for D2; assess the missing outcomes in D3. An eligible participant with an observed outcome omitted from the assignment analysis, or analysed in the wrong randomized group, is a distinct D2 concern. Record whether exclusions occurred before the endpoint was measured or after an outcome value was recorded, but timing alone does not establish availability or the exclusion reason. An observed value omitted from analysis is not thereby missing outcome data. An analyzed count below the randomized count alone does not establish inappropriate analysis; if the exclusion mechanism cannot support a reasonable probable judgment, retain no_information. Judge 2.7 only for the identified assignment-analysis failure, using the participants affected, reasons, outcome rarity, and prognostic relevance for this Result.",
         ),
         (
             "an endpoint definition",

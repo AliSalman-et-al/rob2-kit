@@ -1,0 +1,228 @@
+{
+  "clerical_changes": [
+    "/answers/3/counterevidence/0/basis_indexes -> basis_index",
+    "/answers/4/counterevidence/0/basis_indexes -> basis_index"
+  ],
+  "science_unchanged": true,
+  "submitted_arguments": {
+    "trial_id": "an-2021",
+    "domain_id": "domain:deviations",
+    "expected_revision": 13,
+    "answers": [
+      {
+        "question_id": "sq:deviations:participants-aware",
+        "answer": "no",
+        "justification": "The report directly states that participants were blinded to group assignments (p. 3). Intervention groups differed in format and care (p. 4-5), but these differences do not override the explicit report of participant blinding.",
+        "bases": [
+          {
+            "evidence": "eh_6a3a61395c2666c3",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [],
+        "counterevidence": [],
+        "limitations": []
+      },
+      {
+        "question_id": "sq:deviations:personnel-aware",
+        "answer": "probably_yes",
+        "justification": "The therapists delivered the telerehabilitation sessions with real-time video supervision and cues, while education participants performed unsupervised home exercise with daily therapist calls and controls received usual care. Those materially distinct delivery modes make awareness by delivery personnel probable; the report does not directly state their awareness or blinding.",
+        "bases": [
+          {
+            "evidence": "eh_1bab811d458a1ff5",
+            "role": "indirect_support"
+          },
+          {
+            "evidence": "eh_0815ad60e1dc1f4e",
+            "role": "indirect_support"
+          }
+        ],
+        "unknowns": [
+          "Whether carers and intervention-delivery personnel were explicitly blinded or knew each participant's allocation."
+        ],
+        "counterevidence": [],
+        "limitations": [
+          {
+            "premise": "Direct report of personnel awareness/blinding is absent.",
+            "stopping_rationale": "The source describes differentiated intervention delivery but does not directly document personnel knowledge; this supports a probable rather than definitive judgment."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:deviations:context-deviations",
+        "answer": "probably_no",
+        "justification": "Two telerehabilitation participants discontinued because of high intensity; other losses included cancelled surgery and a fall. This describes ordinary intervention burden or clinical/follow-up events, not evidence that trial recruitment, trial-specific engagement, or staff decisions caused protocol-inconsistent deviations. The report does not provide protocol adherence details sufficient for a definitive no.",
+        "bases": [
+          {
+            "evidence": "eh_2be359e180b64479",
+            "role": "direct_support"
+          },
+          {
+            "evidence": "eh_78e3b4fe4bcba223",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [
+          "Whether any protocol-inconsistent changes occurred and whether trial context caused them."
+        ],
+        "counterevidence": [],
+        "limitations": [
+          {
+            "premise": "Full protocol adherence and causal reasons for all deviations are not reported.",
+            "stopping_rationale": "The available report gives attrition reasons but no indication of trial-context causation; therefore probable no rather than a definitive absence."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:deviations:appropriate-analysis",
+        "answer": "probably_no",
+        "justification": "The approved effect is assignment to intervention. Sixty participants were randomized, but the analysis included only 53 (18/17/18); the flow reports post-randomization discontinuation, surgery cancellation, and a fall event among those not analyzed. The paper does not establish that all excluded participants had missing outcome data, or that the assignment groups were retained, so the analysis cannot confidently be treated as an appropriate ITT/mITT. Some exclusions following surgery cancellation may reflect no relevant TKA outcome, which tempers certainty.",
+        "bases": [
+          {
+            "evidence": "eh_78e3b4fe4bcba223",
+            "role": "direct_support"
+          },
+          {
+            "evidence": "eh_6dcb1571e0fcd182",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [
+          "Whether each non-analyzed participant's quadriceps outcome was missing, observed but omitted, or excluded for a justified eligibility reason."
+        ],
+        "counterevidence": [
+          {
+            "implication": "Three participants' surgery was cancelled, which may mean they did not undergo the targeted TKA follow-up and may explain exclusion without revealing an as-treated analysis.",
+            "basis_index": 0
+          }
+        ],
+        "limitations": [
+          {
+            "premise": "The report does not state the analysis grouping rule or outcome availability/reasons for each exclusion.",
+            "stopping_rationale": "Despite group-specific randomized and analyzed counts, the disposition and analysis of all randomized participants are not fully specified."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:deviations:substantial-impact",
+        "answer": "probably_yes",
+        "justification": "Seven of 60 randomized participants were not analyzed (2/20 telerehabilitation, 3/20 education, 2/20 control), about 12%, with unequal counts and reasons including discontinuation, cancellation and a fall. This is enough attrition to plausibly substantially affect an assignment-effect estimate, although prognostic relation and actual endpoint values for excluded participants are unknown.",
+        "bases": [
+          {
+            "evidence": "eh_78e3b4fe4bcba223",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [
+          "Prognostic relevance and quadriceps strength outcomes for the seven excluded participants."
+        ],
+        "counterevidence": [
+          {
+            "implication": "The excluded counts are small in absolute terms and several exclusions arose from surgery cancellation; outcome rarity and prognostic relevance are not known.",
+            "basis_index": 0
+          }
+        ],
+        "limitations": [
+          {
+            "premise": "The outcome values and prognostic profiles of excluded participants are not reported.",
+            "stopping_rationale": "The unequal 7/60 attrition supports a probable concern but does not establish the magnitude of its effect."
+          }
+        ]
+      }
+    ]
+  },
+  "server_result": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 14,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "an-2021",
+        "domain_id": "domain:missing"
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:907d4bf24f141f86825b4e715bc3c8d1560726a4f05554240e6b8e99d8cee721",
+        "trial_id": "an-2021",
+        "domain_id": "domain:deviations",
+        "judgment": "high",
+        "driver_questions": [
+          "sq:deviations:appropriate-analysis",
+          "sq:deviations:substantial-impact"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:deviations:participants-aware",
+              "status": "supported",
+              "evidence": [
+                "sha256:6a3a61395c2666c356b0a48c534e639ec8c00489c2aeee68b04769c55ac937c3"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:personnel-aware",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:1bab811d458a1ff50def98b21e3158df2866c6a7e3d7df435579b2704fa2eda8",
+                "sha256:0815ad60e1dc1f4e7378fe9e35fe1a52dff081297e524ee98b7fcb9f748eccd6"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Direct report of personnel awareness/blinding is absent."
+              ],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:context-deviations",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:2be359e180b64479a93effc4ee29695824645a13a53698f262be6812a78156e7",
+                "sha256:78e3b4fe4bcba2236c42382a2e0ce19805e1dcf43db958c8ccff11411c93ed9d"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Full protocol adherence and causal reasons for all deviations are not reported."
+              ],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:appropriate-analysis",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:78e3b4fe4bcba2236c42382a2e0ce19805e1dcf43db958c8ccff11411c93ed9d",
+                "sha256:6dcb1571e0fcd1821e68c1bd5dc99380122012c9d15887306001c225cfed0145"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "The report does not state the analysis grouping rule or outcome availability/reasons for each exclusion."
+              ],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:substantial-impact",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:78e3b4fe4bcba2236c42382a2e0ce19805e1dcf43db958c8ccff11411c93ed9d"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "The outcome values and prognostic profiles of excluded participants are not reported."
+              ],
+              "support_attribution": "not_established"
+            }
+          ],
+          "identity": "sha256:98fdd4bb67f8975caec5a5df244969111cd49357db6dabe9124b8c07920e4118"
+        }
+      },
+      "trial_ready_for_review": false,
+      "retry": false
+    }
+  }
+}

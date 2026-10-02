@@ -523,3 +523,18 @@ def test_domain_cards_hold_d2_and_d5_paired_controls_constant() -> None:
     assert "before unblinded results" in selection_left
     assert "after unblinding" in selection_right
     assert "because its estimate was favorable" in selection_right
+
+
+def test_d2_exclusion_guidance_does_not_conflate_missing_with_omitted_outcomes() -> None:
+    guidance = _guidance_text(("sq:deviations:appropriate-analysis",))
+    assert "solely because their outcome data are missing" in guidance
+    assert "appropriate modified itt analysis for d2" in guidance
+    assert "observed outcome omitted" in guidance
+    assert "wrong randomized group" in guidance
+    assert (
+        "analyzed count below the randomized count alone does not establish inappropriate analysis"
+        in guidance
+    )
+    assert "timing alone does not establish availability or the exclusion reason" in guidance
+    assert "judge 2.7 only for the identified assignment-analysis failure" in guidance
+    assert "eligible participant remains an analysis concern" not in guidance
