@@ -157,3 +157,55 @@ preview pagination check; source type, lint and format checks passed. A broad
 repository-wide type invocation included 67 diagnostics in existing scripts and
 audit utilities outside the source-check scope; no blanket type-clean claim is
 made for that invocation.
+
+## Second lean round: preserve question-level retrieval provenance
+
+Read-only inspection of the existing Code Oct 1 corpus covered 101 canonical
+case states containing 964 D2/D3/D5 answer records. Search receipts include 1299
+question-scoped requests across 72 case directories. In the retained tool captures, six active-candidate
+groups in five cases pooled every passage under every Domain question. That is
+an observed presentation defect in those groups, not evidence that all 101
+cases have a scientific error.
+
+Two source-verified examples motivate the change. Allsop's 15 D5 candidates came
+from prespecification-purpose queries but were grouped under all three D5
+questions. ENVISION pooled searches for missing-outcome availability with
+searches for bias-correcting sensitivity analyses under all four D3 questions.
+The recorded purpose is available in the existing receipt; the context projection
+was discarding it. This makes the availability and bias-correction premises
+harder to distinguish and can select an unrelated first-page evidence preview.
+
+The projection now preserves unambiguous recorded question scope in existing
+workspace groups and in typed comparison passage references. The first active
+question's preview can use its associated candidate. All candidates and source
+coordinates remain available in every comparison card; canonical identities,
+answers, counterevidence and read recovery are unchanged. Search intent is
+provenance, not proof of support or exclusivity. An unqualified or ambiguous
+session remains broad, and an exact passage retrieved through multiple purposes
+retains their combined scope. No risk label, trial name or percentage threshold
+is encoded in the implementation. The default compact context does not newly
+include candidates; this applies when candidate views are requested.
+
+Focused checks exercise availability versus sensitivity evidence, first-page
+preview, exact passage reuse across two questions, broad unqualified reuse,
+unchanged candidate identity sets, and recovery of adjacent uncited source text.
+Ordinary conditional-question delivery, frozen cursors after new searches,
+existing active-question previews and question-preserving search continuations
+also passed. Source typing and changed-file lint/format checks passed. No paid
+rerun or broad test rerun was used; this is a tested presentation mechanism fix,
+not demonstrated improvement in agent judgments or benchmark accuracy.
+
+A tempting alternative was rejected after checking source and final reasoning:
+142 unread literal SAP mentions occurred in five D5 No-information cases, but
+all five final records had inspected applicable analysis plans. Their remaining
+issue concerned chronology. Unread repeated headers or alternative versions do
+not prove a missed applicable plan, and do not justify forcing Probably Yes.
+Other suspect count-based D3 warrants, including evaluable mixed-model
+populations, require outcome-specific source adjudication; grammar alone cannot
+safely decide whether their availability judgments are wrong. This round does
+not manufacture a decision rule for that unresolved scientific question.
+
+Final cheap validation for this round: five focused context/search checks passed,
+the strengthened multi-question/adjacent-read integration check passed, and 13
+comparison-card/contract-budget checks passed. These checks establish projection,
+reuse and recovery behavior, not a measured agent accuracy benefit.

@@ -1328,3 +1328,128 @@ def test_public_boundary_exposes_executable_narrative_recovery(monkeypatch, tmp_
     read_result = asyncio.run(invoke())
     assert read_result.structured_content is not None
     assert read_result.structured_content["outcome"] == "success"
+
+
+def test_question_scoped_discoveries_keep_their_premises_without_hiding_evidence(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    supplement = workspace / "input" / "trial" / "supplement.txt"
+    supplement.write_text(
+        "Ascertainment was incomplete at the outcome visit.\n\n"
+        + "An unrelated neutral passage.\n" * 20
+        + "\nSensitivity analysis varied the unobserved outcome assumptions.\n",
+        encoding="utf-8",
+    )
+    evidence = _prepared_evidence(workspace)
+    _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    source_id = next(
+        source["id"]
+        for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if source["label"] == "supplement.txt"
+    )
+    domain = "domain:missing"
+    availability = "sq:missing:data-available"
+    bias = "sq:missing:evidence-unbiased"
+    handles = {}
+    for query, question in (("Ascertainment", availability), ("Sensitivity", bias)):
+        searched = _call(
+            workspace,
+            "search_sources",
+            {
+                "trial_id": "trial",
+                "source_id": source_id,
+                "query": query,
+                "mode": "all",
+                "purpose_domain_id": domain,
+                "purpose_question_id": question,
+            },
+        )["data"]
+        handles[question] = searched["hits"][0]["passage_ref"]
+
+    arguments = {"trial_id": "trial", "domain_id": domain, "include_candidates": True}
+    context, _bytes = _wire_context(workspace, arguments)
+    data = context["data"]
+    groups = data["evidence_workspace"]["groups"]
+    scopes = {
+        handle: set(group["question_ids"])
+        for group in groups
+        if group["inclusion_reason"] == "active_domain_candidate"
+        for handle in group["evidence_handles"]
+    }
+    assert scopes[handles[availability]] == {availability}
+    assert scopes[handles[bias]] == {bias}
+    first, _bytes = _wire_context(
+        workspace, {**arguments, "max_response_bytes": 32_768}, drain=False
+    )
+    assert first["data"]["evidence"][0]["handle"] == handles[availability]
+    identities = {item["handle"]: item["identity"] for item in data["evidence"]}
+    for card in data["comparison_cards"]:
+        refs = {ref["handle"]: ref for group in card["passage_groups"] for ref in group["passages"]}
+        for question, handle in handles.items():
+            assert refs[handle]["retrieval_question_ids"] == [question]
+
+    reused = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source_id,
+            "query": "Ascertainment",
+            "mode": "all",
+            "purpose_domain_id": domain,
+            "purpose_question_id": bias,
+        },
+    )["data"]
+    assert reused["hits"][0]["passage_ref"] == handles[availability]
+    shared, _bytes = _wire_context(workspace, arguments)
+    shared_scope = next(
+        group["question_ids"]
+        for group in shared["data"]["evidence_workspace"]["groups"]
+        if handles[availability] in group["evidence_handles"]
+    )
+    assert availability in shared_scope and bias in shared_scope
+    assert identities == {item["handle"]: item["identity"] for item in shared["data"]["evidence"]}
+
+    # An unqualified reuse must broaden discovery scope, rather than implying
+    # that a search purpose determines where the passage can be scientific support.
+    _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "source_id": source_id,
+            "query": "Ascertainment",
+            "mode": "all",
+            "purpose_domain_id": domain,
+        },
+    )
+    widened, _bytes = _wire_context(workspace, arguments)
+    widened_groups = widened["data"]["evidence_workspace"]["groups"]
+    scope = next(
+        group["question_ids"]
+        for group in widened_groups
+        if handles[availability] in group["evidence_handles"]
+    )
+    assert availability in scope and bias in scope
+    assert identities == {item["handle"]: item["identity"] for item in widened["data"]["evidence"]}
+    original = refs[handles[availability]]
+    adjacent = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": original["source_id"],
+                    "page": original["page"],
+                    "start_line": original["start_line"],
+                    "end_line": original["end_line"] + 2,
+                }
+            ],
+        },
+    )["data"]["pages"][0]["numbered_text"]
+    assert "Ascertainment was incomplete" in adjacent
+    assert "An unrelated neutral passage" in adjacent

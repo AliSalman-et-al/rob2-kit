@@ -29,6 +29,7 @@ from .evidence import (
     _search_continuation,
     _search_evidence_identities,
     _search_receipt,
+    _search_session_question_purpose,
     _unassigned_search_continuation,
     _unassigned_search_evidence,
     main_report_reading_status,
@@ -696,6 +697,7 @@ def _comparison_cards(
     registry_navigation: dict[str, dict[str, Any]] | None = None,
     registry_capture: dict[str, Any] | None = None,
     participant_flow_data: dict[str, Any] | None = None,
+    candidate_questions: dict[str, set[str]] | None = None,
 ) -> list[dict[str, Any]]:
     """Return a small deterministic read projection for D2/D3/D5.
 
@@ -1220,6 +1222,11 @@ def _comparison_cards(
                 "page": item["page"],
                 "start_line": item.get("start_line", 1),
                 "end_line": item.get("end_line", item.get("start_line", 1)),
+                **(
+                    {"retrieval_question_ids": sorted(candidate_questions[item["identity"]])}
+                    if candidate_questions and item.get("identity") in candidate_questions
+                    else {}
+                ),
             }
         )
     refs.sort(
@@ -3462,6 +3469,27 @@ def get_domain_context(
     domain_question_ids = tuple(
         item.id for item in SCIENTIFIC_PACK.questions if item.domain_id == domain_id
     )
+    visible_candidates = {
+        value["identity"]
+        for value in catalog.values()
+        if value.get("inclusion_reason") == "active_domain_candidate"
+    }
+    session_questions = {
+        session: _search_session_question_purpose(root, session, domain_id)
+        for session in {
+            session
+            for identity, session, _rank in associated_rows
+            if identity in visible_candidates
+        }
+    }
+    candidate_questions: dict[str, set[str]] = {}
+    for evidence_identity, session, _rank in associated_rows:
+        if evidence_identity not in visible_candidates:
+            continue
+        question_id = session_questions[session]
+        candidate_questions.setdefault(evidence_identity, set()).update(
+            (question_id,) if question_id is not None else domain_question_ids
+        )
     questions_by_evidence: dict[str, set[str]] = {}
     for answer in checkpoint_answers:
         question_id = answer.get("question_id")
@@ -3598,13 +3626,22 @@ def get_domain_context(
             if reason in {"active_domain_candidate", "explicit_carry_forward"}
             else []
         )
-        workspace_groups.append(
-            {
-                "inclusion_reason": reason,
-                "question_ids": scoped_questions,
-                "evidence_handles": sorted(value["handle"] for value in items),
-            }
-        )
+        grouped_handles: dict[tuple[str, ...], list[str]] = {}
+        for value in items:
+            questions = (
+                sorted(candidate_questions.get(value["identity"], domain_question_ids))
+                if reason == "active_domain_candidate"
+                else scoped_questions
+            )
+            grouped_handles.setdefault(tuple(questions), []).append(value["handle"])
+        for questions, handles in sorted(grouped_handles.items()):
+            workspace_groups.append(
+                {
+                    "inclusion_reason": reason,
+                    "question_ids": list(questions),
+                    "evidence_handles": sorted(handles),
+                }
+            )
 
     def result_projection(value: dict[str, Any]) -> dict[str, Any]:
         if value.get("kind") == "unavailable":
@@ -3828,6 +3865,7 @@ def get_domain_context(
             participant_flow_data=(
                 reconcile_missing_data(participant_flow_rows) if participant_flow_rows else None
             ),
+            candidate_questions=candidate_questions,
         ),
         "coverage": _source_coverage(
             trial_id,

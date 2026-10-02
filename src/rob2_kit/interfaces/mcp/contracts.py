@@ -2078,6 +2078,13 @@ class ComparisonPassageRef(PublicModel):
     page: PageNumber
     start_line: PageNumber
     end_line: PageNumber
+    retrieval_question_ids: tuple[QuestionId, ...] | None = Field(
+        default=None,
+        description=(
+            "Recorded search-purpose scope; domain-wide if unqualified or ambiguous. "
+            "Discovery provenance, not proof that the passage supports those answers."
+        ),
+    )
 
 
 class ComparisonPassageGroup(PublicModel):
