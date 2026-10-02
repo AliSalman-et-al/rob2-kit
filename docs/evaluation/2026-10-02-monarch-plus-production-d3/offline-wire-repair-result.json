@@ -1,0 +1,161 @@
+{
+  "outcome": "success",
+  "state_revision": 14,
+  "phase": "assessment",
+  "checkpoint": {
+    "trial_id": "monarch-plus",
+    "domain_id": "domain:missing",
+    "result_identity": "sha256:c7fe65c9ce4f123d90b92f099840fa3b228c0124043ba153e6f750a3b8cb32b8",
+    "answers": [
+      {
+        "question_id": "sq:missing:data-available",
+        "answer": "no_information",
+        "bases": [
+          {
+            "kind": "direct_support",
+            "evidence": "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+            "source": "At the interim analysis cut-off (29 March 2019),\n148 patients in cohort A and 67 in cohort B were\ncontinuing to receive study treatment (online\nSupplemental Figure 1). In cohort A, 91 patients\n(44.0%) in the abemaciclib arm and 65 patients\n(65.7%) in the placebo arm had discontinued\ntreatment. In cohort B, 50 patients (48.1%) in\nthe abemaciclib arm and 40 patients (75.5%) in\nthe placebo arm had discontinued treatment. The\nmajority of patients discontinued treatment due\nto progressive disease. The comparable median\nnumber of cycles received per patient in cohort A\n(15 for the abemaciclib arm and 13 for the pla-\ncebo arm) was due to the limited duration of fol-\nlow-up, while in cohort B, the median number of\ncycles was 9.5 for the abemaciclib arm and 6.0 for\nthe placebo arm. More patients had dose reduc-\ntions or omissions in the abemaciclib arm (cohort\nA: 40.5%/62.4%; cohort B: 39.4%/52.9%) than\nthe placebo arm (cohort A: 2.0%/30.3%; cohort\nB: 1.9%/17.0%).\nEfficacy\nThe interim analysis occurred after 119 PFS\nevents were observed in the ITT population in\ncohort A [66 (31.9%) of 207 patients in the abe-\nmaciclib arm and 53 (53.5%) of 99 patients in\nthe placebo arm] and the median follow-up was\napproximately 16 months in both arms. The\nstudy met its primary endpoint with an investiga-\ntor-assessed PFS hazard ratio of 0.499 (95% CI\n0.346-0.719; p = 0.0001) in cohort A. Median\nPFS was not reached in the abemaciclib arm and\nwas 14.7 months in the placebo arm (Figure 2A)."
+          },
+          {
+            "kind": "direct_support",
+            "evidence": "sha256:3995c43a8f8c996af0c4a7932057033f36dc5cdbb6714a02d010a3cbd1208429",
+            "source": "Supplementary Figure 1, Trial Profile (ITT, intent-to-treat; NSAI, nonsteroidal aromatase inhibitor). Cohort A: 306 enrolled; 207 assigned abemaciclib + NSAI (2 not treated; 91 discontinued treatment: 57 disease progression, 20 adverse event, 7 withdrawal by patient, 3 physician decision, 2 death, 2 protocol deviation); 114 on treatment at data cutoff; all 207 in ITT analysis. 99 assigned placebo + NSAI (65 discontinued treatment: 51 disease progression, 8 withdrawal by patient, 3 adverse event, 2 lost to follow-up, 1 death); 34 on treatment at data cutoff; all 99 in ITT analysis. Figure reports treatment disposition and ITT analysis membership; it does not explicitly report PFS outcome-observed counts."
+          },
+          {
+            "kind": "limitation",
+            "unresolved_premise": "Whether PFS data were available for all or nearly all randomized cohort A participants at cutoff.",
+            "stopping_rationale": "Inspected article and full supplement; no endpoint-observed counts. Registry projection read failed integrity verification; no replacement/network retrieval attempted."
+          },
+          {
+            "kind": "context",
+            "evidence": "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+            "source": "At the interim analysis cut-off (29 March 2019),\n148 patients in cohort A and 67 in cohort B were\ncontinuing to receive study treatment (online\nSupplemental Figure 1). In cohort A, 91 patients\n(44.0%) in the abemaciclib arm and 65 patients\n(65.7%) in the placebo arm had discontinued\ntreatment. In cohort B, 50 patients (48.1%) in\nthe abemaciclib arm and 40 patients (75.5%) in\nthe placebo arm had discontinued treatment. The\nmajority of patients discontinued treatment due\nto progressive disease. The comparable median\nnumber of cycles received per patient in cohort A\n(15 for the abemaciclib arm and 13 for the pla-\ncebo arm) was due to the limited duration of fol-\nlow-up, while in cohort B, the median number of\ncycles was 9.5 for the abemaciclib arm and 6.0 for\nthe placebo arm. More patients had dose reduc-\ntions or omissions in the abemaciclib arm (cohort\nA: 40.5%/62.4%; cohort B: 39.4%/52.9%) than\nthe placebo arm (cohort A: 2.0%/30.3%; cohort\nB: 1.9%/17.0%).\nEfficacy\nThe interim analysis occurred after 119 PFS\nevents were observed in the ITT population in\ncohort A [66 (31.9%) of 207 patients in the abe-\nmaciclib arm and 53 (53.5%) of 99 patients in\nthe placebo arm] and the median follow-up was\napproximately 16 months in both arms. The\nstudy met its primary endpoint with an investiga-\ntor-assessed PFS hazard ratio of 0.499 (95% CI\n0.346-0.719; p = 0.0001) in cohort A. Median\nPFS was not reached in the abemaciclib arm and\nwas 14.7 months in the placebo arm (Figure 2A)."
+          }
+        ],
+        "justification": "For cohort A PFS at 29 March 2019 (207 vs 99 randomized), 119 events (66/207; 53/99) and approximately 16-month median follow-up are reported, but event counts are not observed-outcome counts. Flow figure reports two placebo losses and ITT membership, not endpoint ascertainment. Treatment discontinuation is not itself missing outcome data.",
+        "unknowns": [
+          "Arm-specific PFS observation/censoring status and follow-up after treatment cessation."
+        ],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "no",
+        "bases": [
+          {
+            "kind": "direct_support",
+            "evidence": "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+            "source": "At the interim analysis cut-off (29 March 2019),\n148 patients in cohort A and 67 in cohort B were\ncontinuing to receive study treatment (online\nSupplemental Figure 1). In cohort A, 91 patients\n(44.0%) in the abemaciclib arm and 65 patients\n(65.7%) in the placebo arm had discontinued\ntreatment. In cohort B, 50 patients (48.1%) in\nthe abemaciclib arm and 40 patients (75.5%) in\nthe placebo arm had discontinued treatment. The\nmajority of patients discontinued treatment due\nto progressive disease. The comparable median\nnumber of cycles received per patient in cohort A\n(15 for the abemaciclib arm and 13 for the pla-\ncebo arm) was due to the limited duration of fol-\nlow-up, while in cohort B, the median number of\ncycles was 9.5 for the abemaciclib arm and 6.0 for\nthe placebo arm. More patients had dose reduc-\ntions or omissions in the abemaciclib arm (cohort\nA: 40.5%/62.4%; cohort B: 39.4%/52.9%) than\nthe placebo arm (cohort A: 2.0%/30.3%; cohort\nB: 1.9%/17.0%).\nEfficacy\nThe interim analysis occurred after 119 PFS\nevents were observed in the ITT population in\ncohort A [66 (31.9%) of 207 patients in the abe-\nmaciclib arm and 53 (53.5%) of 99 patients in\nthe placebo arm] and the median follow-up was\napproximately 16 months in both arms. The\nstudy met its primary endpoint with an investiga-\ntor-assessed PFS hazard ratio of 0.499 (95% CI\n0.346-0.719; p = 0.0001) in cohort A. Median\nPFS was not reached in the abemaciclib arm and\nwas 14.7 months in the placebo arm (Figure 2A)."
+          }
+        ],
+        "justification": "No passage reports bias correction or missing-outcome sensitivity analysis; ITT/event totals do not establish freedom from missing-data bias.",
+        "unknowns": [
+          "Whether SAP sensitivity analyses addressed missing outcomes."
+        ],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:missing:true-value-dependent",
+        "answer": "no_information",
+        "bases": [
+          {
+            "kind": "direct_support",
+            "evidence": "sha256:3995c43a8f8c996af0c4a7932057033f36dc5cdbb6714a02d010a3cbd1208429",
+            "source": "Supplementary Figure 1, Trial Profile (ITT, intent-to-treat; NSAI, nonsteroidal aromatase inhibitor). Cohort A: 306 enrolled; 207 assigned abemaciclib + NSAI (2 not treated; 91 discontinued treatment: 57 disease progression, 20 adverse event, 7 withdrawal by patient, 3 physician decision, 2 death, 2 protocol deviation); 114 on treatment at data cutoff; all 207 in ITT analysis. 99 assigned placebo + NSAI (65 discontinued treatment: 51 disease progression, 8 withdrawal by patient, 3 adverse event, 2 lost to follow-up, 1 death); 34 on treatment at data cutoff; all 99 in ITT analysis. Figure reports treatment disposition and ITT analysis membership; it does not explicitly report PFS outcome-observed counts."
+          }
+        ],
+        "justification": "Two placebo losses are identified but reasons or relationship to true PFS are not; treatment discontinuation does not establish follow-up loss.",
+        "unknowns": [
+          "Reasons/timing for losses and further censoring."
+        ],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:missing:likely-dependent",
+        "answer": "no_information",
+        "bases": [
+          {
+            "kind": "direct_support",
+            "evidence": "sha256:3995c43a8f8c996af0c4a7932057033f36dc5cdbb6714a02d010a3cbd1208429",
+            "source": "Supplementary Figure 1, Trial Profile (ITT, intent-to-treat; NSAI, nonsteroidal aromatase inhibitor). Cohort A: 306 enrolled; 207 assigned abemaciclib + NSAI (2 not treated; 91 discontinued treatment: 57 disease progression, 20 adverse event, 7 withdrawal by patient, 3 physician decision, 2 death, 2 protocol deviation); 114 on treatment at data cutoff; all 207 in ITT analysis. 99 assigned placebo + NSAI (65 discontinued treatment: 51 disease progression, 8 withdrawal by patient, 3 adverse event, 2 lost to follow-up, 1 death); 34 on treatment at data cutoff; all 99 in ITT analysis. Figure reports treatment disposition and ITT analysis membership; it does not explicitly report PFS outcome-observed counts."
+          }
+        ],
+        "justification": "Missing outcome/censoring rates and reasons are not established sufficiently to judge likely dependence on true PFS.",
+        "unknowns": [
+          "Differential censoring and reasons, including after treatment discontinuation."
+        ],
+        "counterevidence": []
+      }
+    ],
+    "supersedes": null,
+    "revision_basis": null,
+    "search_accounts": [],
+    "active_questions": [
+      "sq:missing:data-available",
+      "sq:missing:evidence-unbiased",
+      "sq:missing:true-value-dependent",
+      "sq:missing:likely-dependent"
+    ],
+    "inactive_questions": [],
+    "judgment": "high",
+    "trace": [
+      "missing.likely_dependent"
+    ],
+    "driver_questions": [
+      "sq:missing:likely-dependent"
+    ],
+    "observed_at": "2026-10-02T08:09:45.196205+00:00",
+    "evidence_sufficiency": {
+      "claims": [
+        {
+          "question_id": "sq:missing:data-available",
+          "status": "unresolved",
+          "evidence": [
+            "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568",
+            "sha256:3995c43a8f8c996af0c4a7932057033f36dc5cdbb6714a02d010a3cbd1208429"
+          ],
+          "search_receipts": [],
+          "unresolved_premises": [
+            "Whether PFS data were available for all or nearly all randomized cohort A participants at cutoff."
+          ]
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "status": "supported",
+          "evidence": [
+            "sha256:e5cd30eae058fb586882ea3f48554db276316ad34f342e8abe64120e000b4568"
+          ],
+          "search_receipts": [],
+          "unresolved_premises": []
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "status": "supported",
+          "evidence": [
+            "sha256:3995c43a8f8c996af0c4a7932057033f36dc5cdbb6714a02d010a3cbd1208429"
+          ],
+          "search_receipts": [],
+          "unresolved_premises": []
+        },
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "status": "supported",
+          "evidence": [
+            "sha256:3995c43a8f8c996af0c4a7932057033f36dc5cdbb6714a02d010a3cbd1208429"
+          ],
+          "search_receipts": [],
+          "unresolved_premises": []
+        }
+      ],
+      "identity": "sha256:516b56ec8cb711f5bd61b973b0189078cb89382bf4835d4d7e0fd3d57b429384"
+    },
+    "identity": "sha256:588bd659ebf30bba811edf9050ee567fc135419ad59f373f3508dd5aa24a7a42"
+  },
+  "trial_ready_for_review": false,
+  "continuation": {
+    "operation": "get_domain_context",
+    "authority": "host",
+    "trial_id": "monarch-plus",
+    "domain_id": "domain:measurement"
+  }
+}

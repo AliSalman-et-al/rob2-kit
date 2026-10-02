@@ -191,6 +191,7 @@ def test_cards_keep_d3_d4_d5_propositions_and_neutral_pairs_separate() -> None:
     )[0]
     assert {item["name"] for item in d3["propositions"]} == {
         "availability",
+        "material_incompleteness",
         "mitigation",
         "possible_dependence",
         "likely_dependence",

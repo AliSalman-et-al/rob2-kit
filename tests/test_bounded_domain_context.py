@@ -1369,7 +1369,11 @@ def test_question_scoped_discoveries_keep_their_premises_without_hiding_evidence
         )["data"]
         handles[question] = searched["hits"][0]["passage_ref"]
 
-    arguments = {"trial_id": "trial", "domain_id": domain, "include_candidates": True}
+    arguments: dict[str, object] = {
+        "trial_id": "trial",
+        "domain_id": domain,
+        "include_candidates": True,
+    }
     context, _bytes = _wire_context(workspace, arguments)
     data = context["data"]
     groups = data["evidence_workspace"]["groups"]

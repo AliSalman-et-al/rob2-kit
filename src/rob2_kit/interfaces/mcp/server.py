@@ -3837,7 +3837,13 @@ def get_domain_context(
     description=(
         "Submit the complete Domain draft once with its expected revision. For every active "
         "answer, explain why its cited bases support the option for the approved Result, list "
-        "unknowns (use [] when none), and list counterevidence by index into the original bases "
+        "unknowns (use [] when none). Bases are flat tagged objects, for example "
+        '{"kind":"context","evidence":"eh_0123456789abcdef"} or '
+        '{"kind":"limitation","unresolved_premise":"A material premise remains unresolved.",'
+        '"stopping_rationale":"The inspected sources did not establish it."}. '
+        "Use kind, not use; do not nest a basis inside context or limitation. "
+        "List counterevidence as objects with basis_index and implication, by index into "
+        "the original bases "
         "(use [] when none). Inactive branch answers may omit those fields. A limitation basis "
         "includes unresolved_premise and stopping_rationale. For a correction, supply the exact "
         "prior checkpoint identity and a new_evidence, self_correction, or mechanical_repair "
