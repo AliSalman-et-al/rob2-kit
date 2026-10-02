@@ -2141,13 +2141,22 @@ def prepare_batch(
         "orientation only. When coverage status is required, read its required_ranges before "
         "scientific work. "
         "Check again after finishing the returned windows. Omitted Evidence quotes retain exact "
-        "read_pages recovery; recover unfamiliar passages before using them."
+        "read_pages recovery; recover unfamiliar passages before using them. Selected narrative "
+        "Evidence is returned as locators by default; include_evidence_text=true restores its "
+        "bounded text when needed for reorientation."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("get_status"),
 )
-def get_status() -> ToolResult:
-    return _invoke("get_status", lambda: _get_status(_workspace()))
+def get_status(
+    include_evidence_text: Annotated[
+        bool, Field(description="Include bounded selected narrative text for reorientation.")
+    ] = False,
+) -> ToolResult:
+    return _invoke(
+        "get_status",
+        lambda: _get_status(_workspace(), include_evidence_text=include_evidence_text),
+    )
 
 
 @mcp.tool(

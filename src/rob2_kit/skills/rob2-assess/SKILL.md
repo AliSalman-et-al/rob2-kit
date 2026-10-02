@@ -161,6 +161,10 @@ specified. Clarity is your report of the scope, not a server-verified scientific
 conclusion. The server reconstructs the captured outcome and closed effect of
 interest, then derives retained Evidence and bindings. Do not put Evidence
 objects inside `reported`.
+Selected narrative Evidence in `get_status` is locator-only by default. Reuse
+familiar inspected passages; set `include_evidence_text:true` for bounded text
+when reorienting, or follow exact `read_pages` recovery for unfamiliar passages.
+
 Copy `reported.endpoint.name`, `reported.precision`, and other Source-owned
 quantities from the quantitative passage. Include `reported.endpoint.definition`
 only when one selected passage explicitly joins that name and definition.

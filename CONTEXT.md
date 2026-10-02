@@ -140,6 +140,11 @@ range on one page; the server stores that exact projected text. Rebuilding the
 disposable FTS derivative must not change Source, projection, Evidence, or
 workflow identities. The immutable captured bytes remain available for audit.
 
+Routine `get_status` returns selected narrative Evidence identities and exact
+recovery coordinates without repeating quotes. `include_evidence_text=true`
+restores the bounded text for reorientation; omitted text is never a no-hit or
+evidence of absence.
+
 An **Evidence handle** is a short, Trial-scoped transport pointer to selected
 text or a selected visual region. Returned handles have a fixed compact form;
 the input schema admits plausibly copied handle shapes so the application can

@@ -10,10 +10,10 @@ from .working import investigation_projection, working_checkpoint_status
 _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
 
 
-def _selected_evidence(workspace: Path) -> list[dict[str, Any]]:
+def _selected_evidence(workspace: Path, *, include_text: bool = True) -> list[dict[str, Any]]:
     """Expose only the selected-material records needed to resume a proposal."""
     selected: list[dict[str, Any]] = []
-    remaining = _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET
+    remaining = _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET if include_text else 0
     for item in _evidence_catalog(workspace).values():
         if item.get("kind") == "narrative":
             keys = (
@@ -142,7 +142,7 @@ def presentation(state: dict[str, Any]) -> dict[str, Any]:
     return {"counts": counts, "wording": wording}
 
 
-def get_status(workspace: str | Path) -> dict[str, Any]:
+def get_status(workspace: str | Path, *, include_evidence_text: bool = False) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
@@ -224,7 +224,11 @@ def get_status(workspace: str | Path) -> dict[str, Any]:
             active_question_ids=active_question_ids,
         ),
         trial_review=_current_trial_review(state),
-        selected_evidence=_selected_evidence(root) if state.get("phase") == "proposal" else [],
+        selected_evidence=(
+            _selected_evidence(root, include_text=include_evidence_text)
+            if state.get("phase") == "proposal"
+            else []
+        ),
         main_report_reading=main_report_reading,
         conditions=conditions,
         authoritative_wording=public["wording"],

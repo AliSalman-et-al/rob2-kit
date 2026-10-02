@@ -1122,7 +1122,18 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
 
     # A new Client invocation stands in for a fresh host process.  The only
     # material it needs from the old process is the bounded selection record.
-    resumed = _call(tmp_path, "get_status", {})
+    compact = _call(tmp_path, "get_status", {})
+    locator = next(
+        item
+        for item in compact["data"]["selected_evidence"]
+        if item["handle"] == selected["handle"]
+    )
+    assert locator.get("quote") is None
+    assert locator["text_status"] == "omitted"
+    assert locator["recovery"]["windows"] == [
+        {"source_id": selected["source_id"], "page": 1, "start_line": 1, "end_line": 1}
+    ]
+    resumed = _call(tmp_path, "get_status", {"include_evidence_text": True})
     recovered = next(
         item
         for item in resumed["data"]["selected_evidence"]
