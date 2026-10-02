@@ -305,9 +305,9 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         "absence_searches",
     }
     direct = _resolve_local(draft, answer["properties"]["bases"]["items"])
-    assert set(direct["properties"]) == {"kind", "evidence"}
+    assert set(direct["properties"]) == {"role", "evidence"}
     assert "oneOf" not in answer["properties"]["bases"]["items"]
-    assert direct["properties"]["kind"]["enum"] == [
+    assert direct["properties"]["role"]["enum"] == [
         "direct_support",
         "indirect_support",
         "contradiction",
@@ -316,7 +316,7 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
     ]
     limit = _resolve_local(draft, answer["properties"]["limitations"]["items"])
     assert set(limit["properties"]) == {
-        "unresolved_premise",
+        "premise",
         "stopping_rationale",
         "search_receipt",
     }

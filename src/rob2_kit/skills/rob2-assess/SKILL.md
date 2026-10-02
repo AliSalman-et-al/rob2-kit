@@ -321,7 +321,7 @@ For each active answer, supply at least one premise in the live submission schem
 - `bases`: selected Evidence with an explicit `direct_support`, `indirect_support`,
   `contradiction`, `context`, or `inference` role;
 - `absence_searches`: untruncated no-hit search receipt handles;
-- `limitations`: objects with `unresolved_premise` and `stopping_rationale`, plus
+- `limitations`: objects with `premise` and `stopping_rationale`, plus
   an optional current-Trial `search_receipt`.
 
 Do not put absence or limitation objects in `bases`. The server derives their

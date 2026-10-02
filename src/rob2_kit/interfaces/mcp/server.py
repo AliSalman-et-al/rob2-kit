@@ -3875,7 +3875,7 @@ def save_domain_judgment(
                     {
                         "question_id": "sq:randomization:sequence",
                         "answer": "yes",
-                        "bases": [{"kind": "direct_support", "evidence": "eh_0123456789abcdef"}],
+                        "bases": [{"role": "direct_support", "evidence": "eh_0123456789abcdef"}],
                         "justification": (
                             "The inspected passage states that a computer generated random "
                             "allocation sequence."

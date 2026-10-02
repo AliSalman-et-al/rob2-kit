@@ -1948,8 +1948,13 @@ class EvidenceSufficiencySummary(StrictModel):
         return _identity(self, self.identity)
 
 
+class DomainEvidenceCitation(StrictModel):
+    evidence: SubmittedEvidenceHandle
+    role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"]
+
+
 class DomainInformationLimit(StrictModel):
-    unresolved_premise: NonBlankText
+    premise: NonBlankText
     stopping_rationale: NonBlankText
     search_receipt: SubmittedSearchReceiptHandle | None = None
 
@@ -1963,7 +1968,7 @@ class DomainSaveAnswer(StrictModel):
 
     question_id: QuestionId
     answer: Answer
-    bases: tuple[DirectEvidenceUse, ...] = Field(
+    bases: tuple[DomainEvidenceCitation, ...] = Field(
         default=(),
         description="Selected Evidence and its explicit scientific role; no nested basis objects.",
     )
@@ -1991,11 +1996,20 @@ class DomainSaveAnswer(StrictModel):
 
     def canonical_payload(self) -> dict[str, Any]:
         payload = self.model_dump(mode="json", exclude={"absence_searches", "limitations"})
+        payload["bases"] = [
+            {"kind": citation.role, "evidence": citation.evidence} for citation in self.bases
+        ]
         payload["bases"] += [
             {"kind": "absence", "search_receipt": receipt} for receipt in self.absence_searches
         ]
         payload["bases"] += [
-            {"kind": "limitation", **limit.model_dump(mode="json")} for limit in self.limitations
+            {
+                "kind": "limitation",
+                "unresolved_premise": limit.premise,
+                "stopping_rationale": limit.stopping_rationale,
+                "search_receipt": limit.search_receipt,
+            }
+            for limit in self.limitations
         ]
         return payload
 

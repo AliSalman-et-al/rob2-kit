@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 from fastmcp import Client
-from support.rob2 import _assessment_workspace, _domain_draft
+from support.rob2 import _assessment_workspace, _domain_draft, _domain_submission
 
 from rob2_kit.application._state import _state
 from rob2_kit.interfaces.mcp.server import mcp
@@ -56,7 +56,7 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
 @pytest.mark.parametrize(
     ("shape", "expected_error"),
     [
-        ("obsolete_kind", "union_tag_invalid"),
+        ("obsolete_kind", "literal_error"),
         ("scalar_counterevidence", "DomainCounterevidence"),
         ("identity_as_handle", "string_pattern_mismatch"),
         ("array_evidence", "string_type"),
@@ -99,7 +99,9 @@ def test_observed_domain_shapes_fail_at_public_boundary_without_state_change(
 
     async def invoke() -> Any:
         async with Client(mcp) as client:
-            return await client.call_tool("save_domain_judgment", draft, raise_on_error=False)
+            return await client.call_tool(
+                "save_domain_judgment", _domain_submission(draft), raise_on_error=False
+            )
 
     result = asyncio.run(invoke())
     error = result.content[0].text

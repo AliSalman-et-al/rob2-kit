@@ -1,0 +1,37 @@
+{
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/production-d3-monarch-plus-separated/response.txt",
+    "-"
+  ],
+  "started_at_utc": "2026-10-02T08:34:30.464279+00:00",
+  "completed_at_utc": "2026-10-02T08:35:55.939455+00:00",
+  "elapsed_seconds": 85.48,
+  "exit_code": 0,
+  "stop_reason": "one correction limit reached",
+  "tool_calls_started": 11,
+  "save_calls_started": 2,
+  "durable_usage_records": 11,
+  "usage": {
+    "input_tokens": 361845,
+    "cached_input_tokens": 293120,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 2031,
+    "reasoning_output_tokens": 501,
+    "total_tokens": 363876
+  },
+  "response_sha256": null,
+  "prediction_frozen_before_review": true
+}

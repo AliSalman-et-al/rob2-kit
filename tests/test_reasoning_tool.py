@@ -15,6 +15,7 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _read_required_main_reports,
     _result,
@@ -371,7 +372,7 @@ def test_stale_competing_domain_draft_cannot_overwrite_winner(tmp_path: Path) ->
 
     async def submit(draft: dict[str, Any]) -> dict[str, Any]:
         async with Client(mcp) as client:
-            result = await client.call_tool("save_domain_judgment", draft)
+            result = await client.call_tool("save_domain_judgment", _domain_submission(draft))
             return dict(result.structured_content or {})
 
     async def compete() -> list[dict[str, Any]]:

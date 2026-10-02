@@ -26,7 +26,15 @@ def test_explicit_information_limit_preserves_failed_run_science_and_evidence() 
     original = REJECTED[-1]["answers"][0]
     submitted = copy.deepcopy(original)
     mixed = submitted["bases"].pop()
-    submitted["limitations"] = [mixed["limitation"]]
+    submitted["limitations"] = [
+        {
+            ("premise" if key == "unresolved_premise" else key): value
+            for key, value in mixed["limitation"].items()
+        }
+    ]
+    submitted["bases"] = [
+        {"evidence": basis["evidence"], "role": basis["kind"]} for basis in submitted["bases"]
+    ]
     # Its redundant evidence citation already occurs in the first selected basis.
     assert mixed["evidence"] == submitted["bases"][0]["evidence"]
     parsed = DomainSaveAnswer.model_validate(submitted)
@@ -44,8 +52,8 @@ def test_explicit_information_limit_preserves_failed_run_science_and_evidence() 
 @pytest.mark.parametrize(
     "change",
     [
-        {"limitations": [{"unresolved_premise": " ", "stopping_rationale": "stopped"}]},
-        {"bases": [{"kind": "context", "evidence": ""}]},
+        {"limitations": [{"premise": " ", "stopping_rationale": "stopped"}]},
+        {"bases": [{"role": "context", "evidence": ""}]},
         {"bases": [{"kind": "limitation", "unresolved_premise": "unknown"}]},
         {"answer": "invented_answer"},
         {"counterevidence": [{"basis_index": 1, "implication": "counterpoint"}]},
@@ -56,7 +64,7 @@ def test_new_submission_rejects_invalid_scientific_or_citation_content(change: d
     value = {
         "question_id": "sq:missing:data-available",
         "answer": "no_information",
-        "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+        "bases": [{"role": "context", "evidence": "eh_0123456789abcdef"}],
         "justification": "Availability remains unresolved.",
         "unknowns": ["Observed count"],
         "counterevidence": [],
@@ -73,10 +81,47 @@ def test_limitation_only_does_not_authorize_definitive_science(tmp_path: Path) -
     draft["answers"][0]["bases"] = []
     draft["answers"][0]["limitations"] = [
         {
-            "unresolved_premise": "Sequence method remains unknown.",
+            "premise": "Sequence method remains unknown.",
             "stopping_rationale": "The bounded sources were inspected.",
         }
     ]
     response = _call(workspace, "save_domain_judgment", draft)
     assert response["outcome"] == "repair"
     assert any(item["code"] == "answer_requires_direct_basis" for item in response["repairs"])
+
+
+def test_explicit_roles_and_information_limits_need_no_semantic_coercion() -> None:
+    attempts = json.loads(
+        (
+            Path(__file__).parent / "fixtures/monarch-plus-separated-rejected-submissions.json"
+        ).read_text()
+    )
+    for original in attempts[0]["answers"]:
+        submission = DomainSaveAnswer.model_validate(original)
+        saved = DomainAnswer.model_validate(submission.canonical_payload())
+        assert saved.answer.value == original["answer"]
+        assert saved.justification == original["justification"]
+        assert saved.unknowns == tuple(original["unknowns"])
+        assert [basis.model_dump() for basis in saved.bases[: len(original["bases"])]] == [
+            {"kind": citation["role"], "evidence": citation["evidence"]}
+            for citation in original["bases"]
+        ]
+    with pytest.raises(ValidationError):
+        DomainSaveAnswer.model_validate(attempts[1]["answers"][0])
+
+
+def test_direct_citation_does_not_erase_an_explicit_information_limit(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
+    draft["answers"][0]["answer"] = "yes"
+    draft["answers"][0]["limitations"] = [
+        {
+            "premise": "The sequence-generation premise remains unresolved.",
+            "stopping_rationale": "The scoped source review did not resolve it.",
+        }
+    ]
+    response = _call(workspace, "save_domain_judgment", draft)
+    assert response["outcome"] == "repair"
+    assert any(
+        item["code"] == "complete_claim_has_unresolved_premise" for item in response["repairs"]
+    )

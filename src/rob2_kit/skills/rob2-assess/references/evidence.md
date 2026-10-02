@@ -216,7 +216,7 @@ Use the question card's `options`; the example values are fictional.
 	"question_id": "sq:randomization:sequence",
 	"answer": "yes",
 	"bases": [
-		{"kind": "direct_support", "evidence": "eh_0123456789abcdef"}
+		{"role": "direct_support", "evidence": "eh_0123456789abcdef"}
 	],
 	"justification": "The inspected passage states that a computer generated random allocations.",
 	"unknowns": [],
@@ -228,10 +228,10 @@ Keep inspected Evidence separate from unresolved information in the submission:
 
 ```json
 {
-  "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+  "bases": [{"role": "context", "evidence": "eh_0123456789abcdef"}],
   "absence_searches": ["sr_0123456789abcdef"],
   "limitations": [{
-    "unresolved_premise": "The captured reports leave this premise unresolved.",
+    "premise": "The captured reports leave this premise unresolved.",
     "stopping_rationale": "The relevant section was read, but the premise remains unresolved."
   }]
 }

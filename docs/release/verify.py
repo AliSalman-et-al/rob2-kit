@@ -517,9 +517,21 @@ def _domain_answers(
             {
                 "question_id": question["id"],
                 "answer": answer,
-                "bases": [] if answer == "no_information" else [basis],
+                "bases": (
+                    []
+                    if answer == "no_information"
+                    else [
+                        {("role" if key == "kind" else key): value for key, value in basis.items()}
+                    ]
+                ),
                 "limitations": (
-                    [{key: value for key, value in basis.items() if key != "kind"}]
+                    [
+                        {
+                            ("premise" if key == "unresolved_premise" else key): value
+                            for key, value in basis.items()
+                            if key != "kind"
+                        }
+                    ]
                     if answer == "no_information"
                     else []
                 ),

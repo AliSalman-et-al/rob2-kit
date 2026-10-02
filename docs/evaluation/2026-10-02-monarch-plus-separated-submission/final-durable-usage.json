@@ -1,0 +1,12 @@
+{
+  "usage": {
+    "input_tokens": 361845,
+    "cached_input_tokens": 293120,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 2031,
+    "reasoning_output_tokens": 501,
+    "total_tokens": 363876
+  },
+  "has_turn_completed": false,
+  "interrupted_after_correction_limit": true
+}

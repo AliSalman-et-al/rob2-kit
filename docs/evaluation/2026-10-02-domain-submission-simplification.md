@@ -43,3 +43,15 @@ An attempted test command included a nonexistent test_workflow_models.py and
 collected no tests; it was replaced with the actual suites. No paid rerun has
 been used to support these structural conclusions. Model completion or scientific
 accuracy benefit remains unmeasured at this checkpoint.
+
+## Final named fields after the sole bounded follow-up
+
+At 4dd280d, source-only bases retained their earlier field name kind. The
+follow-up still failed: the model used role for scientific Evidence and premise
+within limitations. The final public contract adopts those clear names with no
+aliases. Source-only MCP callers must also use role now; canonical records keep
+kind. The server copies explicit roles and premise text without inferring their
+scientific meaning. The unchanged first call passes transport in an offline
+control but still receives complete_claim_has_unresolved_premise for definitive
+D3.2 No with a declared information limit. No further paid check ran. See the
+separated-submission diagnostic for exact usage and retained failures.

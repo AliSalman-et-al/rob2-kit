@@ -1,0 +1,208 @@
+[
+  {
+    "trial_id": "monarch-plus",
+    "domain_id": "domain:missing",
+    "expected_revision": 13,
+    "answers": [
+      {
+        "question_id": "sq:missing:data-available",
+        "answer": "no_information",
+        "justification": "For the approved cohort A investigator-assessed PFS interim result (29 March 2019; randomized abemaciclib+NSAI vs placebo+NSAI), the article reports ITT and 119 events, 66/207 vs 53/99, with median follow-up about 16 months (eh_97a4618cbe20d154); event counts and ITT membership do not establish how many participants had observed/censored PFS data or the missing-outcome extent. Treatment discontinuation is reported but follow-up after stopping is not established here. Thus neither near-complete nor materially incomplete outcome availability is demonstrated.",
+        "bases": [
+          {
+            "evidence": "eh_97a4618cbe20d154",
+            "role": "direct_support"
+          },
+          {
+            "evidence": "eh_40041818a00a52ba",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [
+          "Arm-specific PFS outcome availability/censoring counts and reasons at the cutoff; whether outcome ascertainment continued after treatment discontinuation."
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "premise": "The extent of observed PFS outcome data for all randomized participants remains unknown.",
+            "stopping_rationale": "Inspected the main article and all supplement pages; the participant-flow figure extraction did not yield readable flow counts, the bounded source search failed integrity verification, and retained registry bytes are unavailable. No replacement or network retrieval was attempted."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "no",
+        "justification": "The available inspected reporting gives the primary ITT analysis and event results but no bias-correcting or missing-outcome sensitivity analysis (eh_40041818a00a52ba; eh_97a4618cbe20d154). This is not evidence that bias occurred; it does not show the result was unbiased.",
+        "bases": [
+          {
+            "evidence": "eh_40041818a00a52ba",
+            "role": "direct_support"
+          },
+          {
+            "evidence": "eh_97a4618cbe20d154",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [
+          "Whether an unobserved-outcome sensitivity analysis was conducted elsewhere; whether missing outcomes biased the estimate."
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "premise": "No retrieved evidence demonstrates that the approved estimate was unbiased by missing outcome data.",
+            "stopping_rationale": "Only captured local material was used; search projection integrity failed and registry raw bytes were unavailable."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:true-value-dependent",
+        "answer": "no_information",
+        "justification": "Neither reasons for loss/censoring nor their relationship to true PFS outcome are reported in the inspected passages. Treatment discontinuation, including discontinuation commonly due to progression (eh_97a4618cbe20d154), does not establish loss of outcome follow-up or the mechanism.",
+        "bases": [
+          {
+            "evidence": "eh_97a4618cbe20d154",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [
+          "Reasons/timing for PFS censoring or loss to follow-up and whether related to health/outcome."
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "premise": "Whether missingness could depend on true PFS remains unresolved.",
+            "stopping_rationale": "No cause-specific censoring or loss-to-follow-up accounting was recovered in the inspected local Sources."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:likely-dependent",
+        "answer": "no_information",
+        "justification": "The inspected evidence does not quantify differential missingness/censoring or provide reasons permitting assessment of likely outcome dependence. The reported event proportions are not missingness proportions.",
+        "bases": [
+          {
+            "evidence": "eh_97a4618cbe20d154",
+            "role": "direct_support"
+          }
+        ],
+        "unknowns": [
+          "Differential censoring/missingness and its causes across randomized groups."
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "premise": "Likelihood that missingness depended on true PFS cannot be assessed.",
+            "stopping_rationale": "Captured-source retrieval was bounded; the historical registry projection was unavailable and not replaced."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "trial_id": "monarch-plus",
+    "domain_id": "domain:missing",
+    "expected_revision": 13,
+    "answers": [
+      {
+        "question_id": "sq:missing:data-available",
+        "answer": "no_information",
+        "justification": "For the approved cohort A investigator-assessed PFS interim result at 29 March 2019, randomized abemaciclib+NSAI versus placebo+NSAI, the article reports ITT and 119 events (66/207 vs 53/99), with about 16 months median follow-up (eh_97a4618cbe20d154). Event counts and ITT membership do not establish observed/censored outcome counts or missing-outcome extent. Treatment discontinuation is reported, but outcome ascertainment after stopping is not established. Neither near-complete nor materially incomplete data are demonstrated.",
+        "unknowns": [
+          "Arm-specific PFS availability/censoring and reasons; ascertainment after treatment discontinuation."
+        ],
+        "bases": [
+          {
+            "kind": "evidence",
+            "evidence": "eh_97a4618cbe20d154"
+          },
+          {
+            "kind": "evidence",
+            "evidence": "eh_40041818a00a52ba"
+          }
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "unresolved_premise": "Extent of observed PFS outcome data among randomized participants remains unknown.",
+            "stopping_rationale": "Inspected article and supplement. Figure flow counts were not recoverable as readable text; bounded search and registry read failed integrity verification/unavailability. No replacement or network retrieval."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "no",
+        "justification": "The inspected reporting presents the ITT analysis and event results but no bias-correcting or missing-outcome sensitivity analysis (eh_40041818a00a52ba; eh_97a4618cbe20d154). This is not proof bias occurred; evidence that the result was unbiased is absent.",
+        "unknowns": [
+          "Whether a relevant sensitivity analysis was conducted elsewhere; whether missing outcomes biased the estimate."
+        ],
+        "bases": [
+          {
+            "kind": "evidence",
+            "evidence": "eh_40041818a00a52ba"
+          },
+          {
+            "kind": "evidence",
+            "evidence": "eh_97a4618cbe20d154"
+          }
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "unresolved_premise": "No retrieved evidence demonstrates that the approved estimate was unbiased by missing outcome data.",
+            "stopping_rationale": "Bounded local sources only; search integrity failed and registry raw bytes were unavailable."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:true-value-dependent",
+        "answer": "no_information",
+        "justification": "Reasons for PFS loss/censoring and their relationship to true outcome are not reported in inspected passages. Treatment discontinuation, often due to progression (eh_97a4618cbe20d154), does not establish loss of follow-up or its mechanism.",
+        "unknowns": [
+          "Timing/reasons for censoring or loss to follow-up and relationship to outcome."
+        ],
+        "bases": [
+          {
+            "kind": "evidence",
+            "evidence": "eh_97a4618cbe20d154"
+          }
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "unresolved_premise": "Whether missingness could depend on true PFS remains unresolved.",
+            "stopping_rationale": "No cause-specific censoring/loss accounting was recovered in captured local sources."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:likely-dependent",
+        "answer": "no_information",
+        "justification": "Inspected sources do not quantify differential missingness/censoring or provide reasons to assess likely outcome dependence. Event proportions are not missingness proportions.",
+        "unknowns": [
+          "Differential censoring/missingness and causes across randomized groups."
+        ],
+        "bases": [
+          {
+            "kind": "evidence",
+            "evidence": "eh_97a4618cbe20d154"
+          }
+        ],
+        "counterevidence": [],
+        "absence_searches": [],
+        "limitations": [
+          {
+            "unresolved_premise": "Likelihood that missingness depended on true PFS cannot be assessed.",
+            "stopping_rationale": "Bounded captured-source retrieval; retained historical registry projection unavailable, not replaced."
+          }
+        ]
+      }
+    ]
+  }
+]
