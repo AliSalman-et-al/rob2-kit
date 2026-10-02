@@ -1,0 +1,94 @@
+{
+  "code_sha": "9497c9f6c2323dd2bbff550663c453856bf441f2",
+  "guard_identity": "sha256:3baa1d86fce0b5b9f4b5654915b17cacab77dd62e40821ff2eadb22a1e4f3c59",
+  "guards": {
+    "wall_seconds": 480,
+    "idle_seconds": 120,
+    "tool_calls": 20,
+    "rejected_submissions": 2,
+    "input_tokens": 800000,
+    "uncached_input_tokens": 100000,
+    "output_tokens": 5000
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-deliver-d3-9497c9f/response.txt",
+    "-"
+  ],
+  "stop_reason": "accepted Domain checkpoint",
+  "exit_code": 0,
+  "elapsed_seconds": 70.72398179700394,
+  "model_code_calls": 0,
+  "mcp_calls": 15,
+  "save_calls": 1,
+  "model_code_calls_completed": 0,
+  "mcp_calls_completed": 15,
+  "accepted_checkpoint": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 14,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "deliver",
+        "domain_id": "domain:measurement"
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:e27ad9dc058af254d4e2c68468c9688e6ab26046f07dd8a1ec08fdb7f44f9f76",
+        "trial_id": "deliver",
+        "domain_id": "domain:missing",
+        "judgment": "low",
+        "driver_questions": [],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:missing:data-available",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:02d101d80ce97e2297d17b7f897b1756d2413fdd5c8e72f85d81e04b117cdfb9",
+                "sha256:72111e484eb053149b15fa5fec7d4294a84145e6799f5ff5ca3bab9734d205a7",
+                "sha256:ab76fee22551207db5242555a62094c1859fec34b3fcad65521d90aa900ad5fa"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Whether the unavailable historical registry contains additional endpoint-follow-up accounting or missing-data analyses relevant to this result."
+              ],
+              "support_attribution": "not_established"
+            }
+          ],
+          "identity": "sha256:6e10ffe3493cd3c04a53cb02a503c51ddfda2a401d491ed303443ca289d8ecf5"
+        }
+      },
+      "trial_ready_for_review": false,
+      "retry": false
+    }
+  },
+  "rejections": 0,
+  "usage": {
+    "input_tokens": 535127,
+    "cached_input_tokens": 473600,
+    "output_tokens": 1952,
+    "reasoning_output_tokens": 351
+  },
+  "uncached_input_tokens": 61527,
+  "input_overshoot": 0,
+  "no_invocation_retry": true
+}

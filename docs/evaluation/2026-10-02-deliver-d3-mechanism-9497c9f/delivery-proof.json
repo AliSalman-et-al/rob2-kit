@@ -1,0 +1,77 @@
+[
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 570
+  },
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 17297
+  },
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 21135
+  },
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 17767
+  },
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 18779
+  },
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 16507
+  },
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 14311
+  },
+  {
+    "tool": "get_domain_context",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 10775
+  },
+  {
+    "tool": "read_pages",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 4156
+  },
+  {
+    "tool": "search_sources_batch",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 2834
+  },
+  {
+    "tool": "search_sources_batch",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 15103
+  },
+  {
+    "tool": "select_text_evidence",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 1842
+  },
+  {
+    "tool": "select_text_evidence",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 1540
+  },
+  {
+    "tool": "select_text_evidence",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 1215
+  },
+  {
+    "tool": "save_domain_judgment",
+    "native_model_exact": true,
+    "native_json_utf8_bytes": 1337
+  }
+]

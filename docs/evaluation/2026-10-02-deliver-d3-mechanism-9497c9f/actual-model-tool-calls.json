@@ -1,0 +1,107 @@
+[
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":12000}",
+    "call_id": "call_nZC7vPLPF3AR5ryZLfYkIpUd"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":24000}",
+    "call_id": "call_FVvDWY9B0y8Fe6goJhdW8G1e"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":24000,\"cursor\":\"dcp2.31597b53dd1b406ab32572413b850f60.1\"}",
+    "call_id": "call_IxOYabu1mHuskti2DOnorpWo"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":24000,\"cursor\":\"dcp2.31597b53dd1b406ab32572413b850f60.2\"}",
+    "call_id": "call_gjYGcu3Y5t5aeI5xGXxysVx0"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":24000,\"cursor\":\"dcp2.31597b53dd1b406ab32572413b850f60.3\"}",
+    "call_id": "call_FzLgSVRLhoijyh8IDAm0Z1ny"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":24000,\"cursor\":\"dcp2.31597b53dd1b406ab32572413b850f60.4\"}",
+    "call_id": "call_qTYhbR29eQIHiFqLHWNfWdcx"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":24000,\"cursor\":\"dcp2.31597b53dd1b406ab32572413b850f60.5\"}",
+    "call_id": "call_vV7K5aSOxg1607iUkWePAJSm"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":24000,\"cursor\":\"dcp2.31597b53dd1b406ab32572413b850f60.6\"}",
+    "call_id": "call_LwW7JUTdPYbhu3i5JFMy6NgZ"
+  },
+  {
+    "type": "function_call",
+    "name": "read_pages",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"deliver\",\"windows\":[{\"source_id\":\"sh_86d70138cf26cc52\",\"page\":27,\"start_line\":6,\"end_line\":38},{\"source_id\":\"sh_1c0a1debdbb871f5\",\"page\":3,\"start_line\":73,\"end_line\":84},{\"source_id\":\"sh_1c0a1debdbb871f5\",\"page\":2,\"start_line\":95,\"end_line\":111},{\"source_id\":\"sh_1c0a1debdbb871f5\",\"page\":5,\"start_line\":21,\"end_line\":33}]}",
+    "call_id": "call_5aDfX1xxC6KfksF1lRnnx9t8"
+  },
+  {
+    "type": "function_call",
+    "name": "search_sources_batch",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"requests\":[{\"trial_id\":\"deliver\",\"query\":\"sensitivity analysis missing data primary endpoint\",\"mode\":\"all\",\"limit\":5,\"purpose_domain_id\":\"domain:missing\",\"purpose_question_id\":\"sq:missing:evidence-unbiased\"},{\"trial_id\":\"deliver\",\"query\":\"censoring incomplete follow-up primary endpoint\",\"mode\":\"all\",\"limit\":5,\"purpose_domain_id\":\"domain:missing\",\"purpose_question_id\":\"sq:missing:data-available\"},{\"trial_id\":\"deliver\",\"query\":\"survival status unknown\",\"mode\":\"phrase\",\"limit\":5,\"purpose_domain_id\":\"domain:missing\",\"purpose_question_id\":\"sq:missing:data-available\"}]}",
+    "call_id": "call_1SZFinCb6uYQcCYiVb8YaR01"
+  },
+  {
+    "type": "function_call",
+    "name": "search_sources_batch",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"requests\":[{\"trial_id\":\"deliver\",\"source_id\":\"sh_1c0a1debdbb871f5\",\"query\":\"vital status known\",\"mode\":\"phrase\",\"limit\":5,\"purpose_domain_id\":\"domain:missing\",\"purpose_question_id\":\"sq:missing:data-available\"},{\"trial_id\":\"deliver\",\"source_id\":\"sh_86d70138cf26cc52\",\"query\":\"incomplete follow-up primary endpoint\",\"mode\":\"all\",\"limit\":5,\"purpose_domain_id\":\"domain:missing\",\"purpose_question_id\":\"sq:missing:data-available\"},{\"trial_id\":\"deliver\",\"source_id\":\"sh_d52b7960a872d313\",\"query\":\"missing outcome sensitivity analysis\",\"mode\":\"all\",\"limit\":5,\"purpose_domain_id\":\"domain:missing\",\"purpose_question_id\":\"sq:missing:evidence-unbiased\"}]}",
+    "call_id": "call_V9hSGiCndFcP9mgI0Qe0HpWL"
+  },
+  {
+    "type": "function_call",
+    "name": "select_text_evidence",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"deliver\",\"source_id\":\"sh_86d70138cf26cc52\",\"page\":27,\"start_line\":6,\"end_line\":38}",
+    "call_id": "call_pYNJVxLMb1LWUsd7uTOLT4i1"
+  },
+  {
+    "type": "function_call",
+    "name": "select_text_evidence",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"deliver\",\"source_id\":\"sh_1c0a1debdbb871f5\",\"page\":3,\"start_line\":73,\"end_line\":84}",
+    "call_id": "call_rv1eE4vywq6gQofno5nDrgzv"
+  },
+  {
+    "type": "function_call",
+    "name": "select_text_evidence",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"deliver\",\"source_id\":\"sh_1c0a1debdbb871f5\",\"page\":2,\"start_line\":95,\"end_line\":99}",
+    "call_id": "call_PFfhx3P6yrvlak0HcrX69Niz"
+  },
+  {
+    "type": "function_call",
+    "name": "save_domain_judgment",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"deliver\",\"domain_id\":\"domain:missing\",\"expected_revision\":13,\"answers\":[{\"question_id\":\"sq:missing:data-available\",\"answer\":\"probably_yes\",\"justification\":\"The approved result is the full-population primary time-to-first composite (worsening HF hospitalization/urgent visit or CV death), from randomization through follow-up, for all 6263 randomized participants; it reports HR 0.82 (95% CI 0.73\u20130.92). The article says vital status was known at trial end for all but two participants in each group. The participant-flow figure separately reports incomplete primary-endpoint follow-up in 29 dapagliflozin and 23 placebo participants, against randomized groups of 3131 and 3132. This supports availability for nearly all; the small and balanced number is unlikely to change the estimate importantly. It is not complete ascertainment, and the flow counts do not specify the endpoint status of each participant. Treatment discontinuations (444/442) are not themselves missing outcome data.\",\"bases\":[{\"evidence\":\"eh_02d101d80ce97e22\",\"role\":\"direct_support\"},{\"evidence\":\"eh_72111e484eb05314\",\"role\":\"direct_support\"},{\"evidence\":\"eh_ab76fee22551207d\",\"role\":\"context\"}],\"counterevidence\":[{\"evidence\":[\"eh_02d101d80ce97e22\"],\"implication\":\"The flow diagram identifies 29 and 23 participants with incomplete follow-up for the primary endpoint and two with unknown survival status in each arm; endpoint completeness is therefore not total, and the diagram does not establish the exact composite-outcome status for those individuals.\"}],\"unknowns\":[\"The flow diagram does not give a detailed endpoint-specific censoring breakdown or clarify overlap between incomplete follow-up and unknown survival status.\",\"The historical registry projection is unavailable; no replacement was sought.\"],\"limitations\":[{\"premise\":\"Whether the unavailable historical registry contains additional endpoint-follow-up accounting or missing-data analyses relevant to this result.\",\"stopping_rationale\":\"The captured registry raw bytes are unavailable. The main article and local PDFs were restored and read; per instruction I did not recapture the registry or access the network. The assessed evidence supports near-complete availability, while exact endpoint status for the small residual group remains unknown.\"}]}]}",
+    "call_id": "call_ESxfEDQaR74nrpH0qOAFCX8p"
+  }
+]
