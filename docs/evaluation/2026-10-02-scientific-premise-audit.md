@@ -129,3 +129,31 @@ Cumulative retained usage: Albert last observed 10,355,485 input tokens,
 measurement-led compression. They are diagnostic expenditure, not an estimate
 of cost per successful autonomous case. No extra paid cases, full benchmark,
 merge, or demonstrated accuracy-gain claim accompanies this checkpoint.
+
+## Offline transport refinement after the case diagnostic
+
+A larger explicit context budget previously still forced separate section pages.
+The transport now returns one complete page when the unchanged full projection,
+including metadata and envelope headroom, fits that larger budget. Default
+pagination, oversized-item checks, frozen cursors and completeness gates remain.
+Offline replay of actual first D3 views changes Albert from four calls to one
+(51,712 bytes), and DAPA from four to one (59,055 bytes), with all scientific
+projection data exactly equal. No paid rerun was used. The oversized preview
+still requires bounded pages; tests retain that path and prove complete-view
+identity and the save continuation for the fitting path.
+
+The Albert final page already supplied the correct save action. Its later
+nonresponse therefore does not establish a transition bug or a pagination cause:
+the prior duplicate drain is observed agent behavior, while the later inactive
+model/provider call remains unexplained. Only task-owned isolated CLI processes
+were stopped and their absence confirmed.
+
+The new single-page path also exposed a registration seam: its only cursor is
+`stable_recovery`, so view registration must use that cursor when both current
+and next cursors are absent. A regression check now recovers the frozen complete
+view and submits its Domain draft successfully. Focused ordinary cursor,
+conditional-question and oversized-evidence checks passed, as did the large
+preview pagination check; source type, lint and format checks passed. A broad
+repository-wide type invocation included 67 diagnostics in existing scripts and
+audit utilities outside the source-check scope; no blanket type-clean claim is
+made for that invocation.

@@ -1246,6 +1246,16 @@ def _paginate_domain_context_transport(
         remaining = items[initial_offset:]
         if remaining:
             page_sections.append((section, remaining, initial_offset))
+    # An explicitly larger budget should not force section-by-section calls
+    # when the unchanged full scientific view fits, including page metadata.
+    # Keep default pagination and all oversized-item safeguards unchanged.
+    if (
+        page_size > _DOMAIN_CONTEXT_DEFAULT_PAGE_BYTES
+        and _domain_context_transport_bytes({**value, "data": header_probe_for(data)})
+        <= working_budget
+    ):
+        data_template = dict(data)
+        page_sections = []
     records: list[tuple[str, int, list[dict[str, Any]]]] = [("complete", 0, [])]
     for section, section_items, initial_offset in page_sections:
         start = 0
@@ -1669,7 +1679,11 @@ def _content(
             if isinstance(page, dict):
                 delivery_trial_id = str(page["trial_id"])
                 delivery_domain_id = str(page["domain_id"])
-                page_cursor = page.get("next_cursor") or page.get("cursor")
+                page_cursor = (
+                    page.get("next_cursor")
+                    or page.get("cursor")
+                    or page.get("stable_recovery", {}).get("cursor")
+                )
                 if domain_context_view_id is None and isinstance(page_cursor, str):
                     decoded_page_cursor = _decode_domain_context_cursor(page_cursor)
                     domain_context_view_id = decoded_page_cursor.get("view_id")

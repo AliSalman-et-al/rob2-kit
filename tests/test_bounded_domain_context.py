@@ -742,6 +742,35 @@ def test_domain_context_intermediate_page_bounds_large_missing_preview(tmp_path:
     assert intermediate["next_cursor"] is not None
 
 
+def test_larger_budget_delivers_unchanged_full_context_in_one_call(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    expected, _bytes = _wire_context(workspace)
+    actual, transport_bytes = _wire_context(workspace, {"max_response_bytes": 131_072}, drain=False)
+    data = dict(actual["data"])
+    page = data.pop("context_page")
+    assert page["count"] == 1
+    assert page["next_cursor"] is None
+    assert transport_bytes <= 131_072
+    assert data == expected["data"]
+    assert actual["head"]["next_action"] == expected["head"]["next_action"]
+    assert actual["head"]["next_action"]["operation"] == "save_domain_judgment"
+    recovered, _bytes = _wire_context(
+        workspace, {"cursor": page["stable_recovery"]["cursor"]}, drain=False
+    )
+    assert recovered["outcome"] == "success", recovered
+    recovered_data = dict(recovered["data"])
+    recovered_page = recovered_data.pop("context_page")
+    assert recovered_page["count"] == 1
+    assert recovered_data == data
+
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+
+
 def test_domain_context_pagination_rejects_oversized_unicode_evidence(
     tmp_path: Path,
 ) -> None:
