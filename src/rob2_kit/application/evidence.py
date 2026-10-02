@@ -6,6 +6,7 @@ import math
 import re
 import sqlite3
 import unicodedata
+from array import array
 from bisect import bisect_right
 from collections import Counter, OrderedDict
 from collections.abc import Callable, Iterator
@@ -38,6 +39,11 @@ from ._state import (
 )
 from .contracts import COUNTERS
 from .source_handles import source_handle
+
+
+class EvidenceIntegrityError(ValueError):
+    """Captured evidence or its derivative failed an internal integrity check."""
+
 
 MAIN_REPORT_TEXT_BUDGET = 65_536
 _SEARCH_PREVIEW_MAX_BYTES = 512
@@ -625,7 +631,7 @@ def _verified_source_projections(
             try:
                 indexed_source = json.loads(bytes(cached[3]))
             except (UnicodeDecodeError, json.JSONDecodeError) as error:
-                raise ValueError("source index payload is corrupt") from error
+                raise EvidenceIntegrityError("source index payload is corrupt") from error
             if (
                 cached[1] != batch.get("identity")
                 or cached[2] != trial_id
@@ -633,14 +639,14 @@ def _verified_source_projections(
                 or indexed_source.get("id") != source_id
                 or canonical_json_bytes(indexed_source) != canonical_json_bytes(source)
             ):
-                raise ValueError("source index payload is stale or corrupt")
+                raise EvidenceIntegrityError("source index payload is stale or corrupt")
         path = internal_path(root, "sources", trial_id, f"{source_id}.bin")
         if not path.is_file():
-            raise ValueError("captured Source bytes are unavailable")
+            raise EvidenceIntegrityError("captured Source bytes are unavailable")
         data = path.read_bytes()
         COUNTERS["source_bytes_hashed"] += len(data)
         if "sha256:" + hashlib.sha256(data).hexdigest() != source["sha256"]:
-            raise ValueError("captured Source bytes do not match Canonical identity")
+            raise EvidenceIntegrityError("captured Source bytes do not match Canonical identity")
         # Intake (or an explicit derivative rebuild) owns extraction.  Normal
         # Evidence operations verify the persisted projection instead of
         # reopening and parsing the captured PDF on every call.
@@ -648,11 +654,11 @@ def _verified_source_projections(
         COUNTERS["projection_rows_read"] += len(source_pages)
         page_numbers = tuple(row[1] for row in source_pages)
         if any(not isinstance(row[2], str) for row in source_pages):
-            raise ValueError("captured Source page text is corrupt")
+            raise EvidenceIntegrityError("captured Source page text is corrupt")
         pages = tuple(row[2] for row in source_pages)
         media_type = source.get("media_type", "text/plain")
         if _projection_hash(source["sha256"], media_type, pages) != source.get("projection_hash"):
-            raise ValueError("captured Source projection identity is corrupt")
+            raise EvidenceIntegrityError("captured Source projection identity is corrupt")
         page_count = source.get("page_count")
         if (
             not isinstance(page_count, int)
@@ -661,7 +667,7 @@ def _verified_source_projections(
             or not pages
             or page_numbers != tuple(range(1, page_count + 1))
         ):
-            raise ValueError("captured Source page count is corrupt")
+            raise EvidenceIntegrityError("captured Source page count is corrupt")
         verified[key] = (source, pages)
     COUNTERS["source_projection_verifications"] += len(verified)
     return verified
@@ -870,108 +876,25 @@ def search_sources(
     # checked below for integrity, but its corpus also contains other Trials;
     # using it for BM25 would make a receipt depend on unrelated documents.
     if not allowed:
-        session_spec = {
-            "version": _SEARCH_SESSION_VERSION,
-            "candidate_version": _SEARCH_CANDIDATE_VERSION,
-            "normalization": _SEARCH_NORMALIZATION_VERSION,
-            "ranking_version": _SEARCH_RANKING_VERSION,
-            "trial_id": trial_id,
-            "sources": [],
-            "query": " ".join(terms),
-            "normalized_query": " ".join(terms),
-            "mode": mode,
-            "profile": _SEARCH_PROFILE,
-            "ranking": _SEARCH_RANKING_VERSION,
-        }
-        session_identity = _identity(session_spec)
-        session_handle = _session_handle(session_identity)
-        session_payload = {
-            "identity": session_identity,
-            "handle": session_handle,
-            "spec": session_spec,
-            "matching_page_count": 0,
-            "candidate_count": 0,
-            "complete": True,
-            "ranked_pages": [],
-            "term_feedback": [],
-        }
-        with _db(root, "derivative.sqlite3") as connection:
-            inserted = connection.execute(
-                "INSERT OR IGNORE INTO search_sessions VALUES (?,?)",
-                (session_identity, canonical_json_bytes(session_payload)),
-            ).rowcount
-        COUNTERS["search_cache_writes"] += inserted
-        receipt = {
-            "trial_id": trial_id,
-            "sources": [],
-            "query": query,
-            "normalized_query": " ".join(terms),
-            "mode": mode,
-            "profile": _SEARCH_PROFILE,
-            "purpose_domain_id": purpose_domain_id,
-            "purpose_question_id": purpose_question_id,
-            "hits": [],
-            "limit": bounded_limit,
-            "total_matches": 0,
-            "truncated": False,
-            "condition": "no_hits",
-            "batch_identity": (_read(root, "batch") or {}).get("identity"),
-            "session_id": session_identity,
-            "session_handle": session_handle,
-            "candidate_count": 0,
-            "matching_page_count": 0,
-            "ranking_complete": True,
-            "returned_rank_start": None,
-            "returned_rank_end": None,
-            "next_cursor": None,
-            "exhausted": True,
-            "returned_material": 0,
-            "returned_candidates": [],
-        }
-        receipt["identity"] = _identity(receipt)
-        receipt["handle"] = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
-        with _db(root, "derivative.sqlite3") as connection:
-            inserted = connection.execute(
-                "INSERT OR IGNORE INTO search_receipts VALUES (?,?)",
-                (receipt["identity"], canonical_json_bytes(receipt)),
-            ).rowcount
-        COUNTERS["search_cache_writes"] += inserted
-        diagnostic = _no_hits_diagnostic(
-            normalized_query=" ".join(terms),
-            mode=mode,
-            total_matches=0,
-            returned_count=0,
-        )
         return {
-            "outcome": "success",
-            "hits": [],
-            "query": query,
-            "mode": mode,
-            "profile": _SEARCH_PROFILE,
-            "total_matches": 0,
-            "truncated": False,
-            "condition": "no_hits",
-            "search_receipt": receipt,
-            "session_id": session_identity,
-            "session_handle": session_handle,
-            "matching_page_count": 0,
-            "candidate_count": 0,
-            "distinct_passage_count": 0,
-            "distinct_page_count": 0,
-            "distinct_source_count": 0,
-            "ranking_complete": True,
-            "returned_rank_start": None,
-            "returned_rank_end": None,
-            "next_cursor": None,
-            "exhausted": True,
-            "term_feedback": [],
-            "term_feedback_truncated": False,
-            "term_feedback_sources_truncated": False,
-            "diagnostic": diagnostic,
-            "purpose_domain_id": purpose_domain_id,
-            "purpose_question_id": purpose_question_id,
-            "spelling_suggestions": [],
-            "spelling_suggestions_incomplete": False,
+            "outcome": "condition",
+            "code": "no_sources",
+            "condition": (
+                "No captured Sources were available in this Trial search scope; no text was "
+                "searched. Inspect list_sources and intake conditions before deciding what "
+                "evidence is unavailable. This is not a lexical no-hit or an absence receipt."
+            ),
+        }
+    if not any(text.strip() for _source, pages in verified.values() for text in pages):
+        return {
+            "outcome": "condition",
+            "code": "no_searchable_sources",
+            "condition": (
+                "Captured Sources in this search scope have no searchable text; no text was "
+                "searched. Call list_sources for the Trial, then render_page for relevant "
+                "captured PDF pages. Their images may contain evidence. This is not a lexical "
+                "no-hit or an absence receipt."
+            ),
         }
     ordered_sources = _ordered_sources(sources)
     ordered_source_ids = [str(source["id"]) for source in ordered_sources]
@@ -990,7 +913,7 @@ def search_sources(
             for page, text in enumerate(verified[(trial_id, source_id)][1], 1)
         ]
         if [tuple(row) for row in cached_rows] != expected_rows:
-            raise ValueError("text search projection is corrupt")
+            raise EvidenceIntegrityError("text search projection is corrupt")
     page_map = {source_id: verified[(trial_id, source_id)][1] for source_id in ordered_source_ids}
     scope_key = _search_scope_key(root, ordered_sources)
     feedback_terms = list(dict.fromkeys(terms))
@@ -1048,7 +971,7 @@ def search_sources(
                 or isinstance(stored.get("candidate_count"), bool)
                 or not isinstance(stored.get("term_feedback"), list)
             ):
-                raise ValueError("search session configuration is stale")
+                raise EvidenceIntegrityError("search session configuration is stale")
             with _db(root, "derivative.sqlite3") as connection:
                 candidate_rows = connection.execute(
                     "SELECT payload FROM search_candidates WHERE session_identity=? ORDER BY rank",
@@ -1057,13 +980,13 @@ def search_sources(
             candidates = [json.loads(bytes(row[0])) for row in candidate_rows]
             term_feedback = stored["term_feedback"]
             if len(candidates) != stored["candidate_count"]:
-                raise ValueError("search session candidate count is stale")
+                raise EvidenceIntegrityError("search session candidate count is stale")
             ranked_pages = stored["ranked_pages"]
             if (
                 not isinstance(ranked_pages, list)
                 or len(ranked_pages) != stored["matching_page_count"]
             ):
-                raise ValueError("search session ranking is incomplete")
+                raise EvidenceIntegrityError("search session ranking is incomplete")
             all_pairs = []
             for page_entry in ranked_pages:
                 if (
@@ -1075,10 +998,10 @@ def search_sources(
                     or isinstance(page_entry.get("page"), bool)
                     or not 1 <= page_entry["page"] <= len(page_map[page_entry["source_id"]])
                 ):
-                    raise ValueError("search session ranking is corrupt")
+                    raise EvidenceIntegrityError("search session ranking is corrupt")
                 all_pairs.append((page_entry["source_id"], page_entry["page"]))
             if len(all_pairs) != len(set(all_pairs)):
-                raise ValueError("search session ranking contains duplicate pages")
+                raise EvidenceIntegrityError("search session ranking contains duplicate pages")
             with _SEARCH_CORPUS_LOCK:
                 cached_projection = _SEARCH_RANKING_CACHE.pop(cache_key, None)
                 if cached_projection is not None:
@@ -1089,11 +1012,11 @@ def search_sources(
                 cached_feedback = cached_projection["term_feedback"]
                 cached_candidates = cached_projection["candidates"]
                 if all_pairs != cached_pairs:
-                    raise ValueError("search session ranking is stale or corrupt")
+                    raise EvidenceIntegrityError("search session ranking is stale or corrupt")
                 if term_feedback != cached_feedback:
-                    raise ValueError("search session term feedback is stale or corrupt")
+                    raise EvidenceIntegrityError("search session term feedback is stale or corrupt")
                 if candidates != cached_candidates:
-                    raise ValueError("search session candidates are stale or corrupt")
+                    raise EvidenceIntegrityError("search session candidates are stale or corrupt")
                 COUNTERS["search_ranking_cache_hits"] += 1
             else:
                 # A process restart drops only this disposable cache.  Rebuild
@@ -1113,7 +1036,7 @@ def search_sources(
                     ordered_source_ids, expected_all_pairs, expected_term_pages
                 )
                 if all_pairs != expected_all_pairs:
-                    raise ValueError("search session ranking is stale or corrupt")
+                    raise EvidenceIntegrityError("search session ranking is stale or corrupt")
                 expected_term_feedback = _term_page_feedback(
                     page_map,
                     feedback_terms[:_TERM_FEEDBACK_MAX_TERMS],
@@ -1122,12 +1045,12 @@ def search_sources(
                     expected_term_pages,
                 )
                 if term_feedback != expected_term_feedback:
-                    raise ValueError("search session term feedback is stale or corrupt")
+                    raise EvidenceIntegrityError("search session term feedback is stale or corrupt")
                 expected_candidates = _session_candidates(
                     page_map, normalized_query, mode, ordered_source_ids, expected_all_pairs
                 )
                 if candidates != expected_candidates:
-                    raise ValueError("search session candidates are stale or corrupt")
+                    raise EvidenceIntegrityError("search session candidates are stale or corrupt")
                 with _SEARCH_CORPUS_LOCK:
                     _SEARCH_RANKING_CACHE[cache_key] = {
                         "all_pairs": list(all_pairs),
@@ -1137,9 +1060,13 @@ def search_sources(
                     while len(_SEARCH_RANKING_CACHE) > _SEARCH_RANKING_CACHE_MAX:
                         _SEARCH_RANKING_CACHE.popitem(last=False)
         except (UnicodeDecodeError, json.JSONDecodeError, KeyError) as error:
-            raise ValueError("search session derivative is corrupt; restart the search") from error
+            raise EvidenceIntegrityError(
+                "search session derivative is corrupt; restart the search"
+            ) from error
         except (TypeError, AttributeError) as error:
-            raise ValueError("search session derivative is corrupt; restart the search") from error
+            raise EvidenceIntegrityError(
+                "search session derivative is corrupt; restart the search"
+            ) from error
     else:
         COUNTERS["search_ranking_builds"] += 1
         all_pairs, term_pages = _recompute_search_projection(
@@ -2199,6 +2126,18 @@ def _canonical_search_text_with_spans(value: str) -> tuple[str, list[tuple[int, 
     return "".join(output), output_spans
 
 
+@lru_cache(maxsize=2)
+def _cached_large_search_projection(text: str) -> tuple[str, array, array]:
+    """Reuse exact immutable page projections across receipt revalidation.
+
+    Admission is limited by the caller to 64 KiB–2 MiB pages. Packed raw
+    offsets bound retained memory without changing localization or FTS checks.
+    The private arrays are read-only to callers.
+    """
+    normalized, spans = _canonical_search_text_with_spans(text)
+    return normalized, array("Q", (s for s, _ in spans)), array("Q", (e for _, e in spans))
+
+
 def _osa_distance(left: str, right: str, cutoff: int) -> int:
     """Bounded optimal-string-alignment distance for spelling feedback."""
     if abs(len(left) - len(right)) > cutoff:
@@ -2328,7 +2267,14 @@ def _native_fts_match_spans(
 ) -> list[tuple[int, int]]:
     """Use SQLite highlight as the authority for Porter token boundaries."""
     expression = _search_expression(query, mode)
-    normalized_text = _canonical_search_text(text)
+    large_projection = (
+        _cached_large_search_projection(text) if 65_536 <= len(text) <= 2_097_152 else None
+    )
+    normalized_text = (
+        large_projection[0]
+        if large_projection is not None
+        else _cached_normalized_search_text(text)
+    )
     marker_pairs = (("\x01", "\x02"), ("\ue000", "\ue001"), ("\u241e", "\u241f"))
     markers = next(
         (
@@ -2388,12 +2334,18 @@ def _native_fts_match_spans(
 
     raw = ranges(str(row[0]), text)
     normalized = ranges(str(row[1]), normalized_text)
-    _normalized, character_spans = _canonical_search_text_with_spans(text)
-    if any(not 0 <= start < end <= len(character_spans) for start, end in normalized):
-        raise ValueError("search match localization failed: normalized span is unmappable")
-    mapped_normalized = [
-        (character_spans[start][0], character_spans[end - 1][1]) for start, end in normalized
-    ]
+    if large_projection is not None:
+        _, starts, ends = large_projection
+        if any(not 0 <= start < end <= len(starts) for start, end in normalized):
+            raise ValueError("search match localization failed: normalized span is unmappable")
+        mapped_normalized = [(starts[start], ends[end - 1]) for start, end in normalized]
+    else:
+        _normalized, character_spans = _canonical_search_text_with_spans(text)
+        if any(not 0 <= start < end <= len(character_spans) for start, end in normalized):
+            raise ValueError("search match localization failed: normalized span is unmappable")
+        mapped_normalized = [
+            (character_spans[start][0], character_spans[end - 1][1]) for start, end in normalized
+        ]
     # FTS indexes both the captured wording and its presentation-normalized
     # derivative. A query can match one occurrence in each representation, so
     # returning the first non-empty column would silently lose recoverable
@@ -2431,7 +2383,7 @@ def _all_search_match_spans(
         _create_search_fts(connection)
         connection.execute(
             "INSERT INTO pages_fts VALUES (?,?,?,?)",
-            ("source", 1, text, _canonical_search_text(text)),
+            ("source", 1, text, _cached_normalized_search_text(text)),
         )
         for term in dict.fromkeys(terms):
             occurrences.extend(

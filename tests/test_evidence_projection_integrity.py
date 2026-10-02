@@ -15,6 +15,7 @@ from fastmcp import Client
 
 from rob2_kit.application._state import _identity, _state, canonical_json_bytes
 from rob2_kit.application.evidence import (
+    EvidenceIntegrityError,
     _evidence_catalog,
     _search_receipt,
     list_sources,
@@ -179,7 +180,7 @@ def test_live_search_rejects_tampered_fts_projection(tmp_path: Path) -> None:
             ("fabricated search result", source["id"]),
         )
 
-    with pytest.raises(ValueError, match="text search projection is corrupt"):
+    with pytest.raises(EvidenceIntegrityError, match="text search projection is corrupt"):
         search_sources(workspace, "trial", "fabricated")
 
 

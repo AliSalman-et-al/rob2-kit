@@ -29,8 +29,11 @@ the structured receipt and inspect the image when layout carries meaning.
 
 If `structuredContent` is missing, branch before transport recovery. When
 `isError` is true or the result contains a validation error without
-`structuredContent`, read the text in `content`, correct the named argument
-using the published schema, and retry the corrected call. When the result has
+`structuredContent`, read the text in `content`. For
+`internal_output_contract_error` or `internal_evidence_integrity_error`, stop the
+affected operation and report the failure; changing arguments or repeating the
+call does not repair server state. For an input validation error, correct the
+named argument using the published schema and retry the corrected call. When the result has
 `outcome:"repair"`, fix every listed path and resubmit the complete draft.
 Raise the output limit only when the host explicitly reports truncation. Do
 not treat a missing structured receipt as a no-hit or absence result.
@@ -361,13 +364,15 @@ recovery or discharge alone does not establish later vital status. Use
 [Missing outcome data](references/missing.md) to reconcile outcome-specific
 counts, follow-up, and censoring.
 
-Questions 2.3, 2.6, and 3.1 may carry `missing_data` rows for deviations,
-analysis, and outcome availability. Keep randomized, observed, analyzed,
-imputed, excluded, and event counts distinct; an analyzed or safety count does
-not establish outcome availability. The server reuses answer Evidence as row
-provenance and performs only scope-matched arithmetic. For an optional count
-preview before saving, follow
-[Reconcile availability](references/missing.md#reconcile-availability).
+When participant-count comparisons support 3.1, retain the source-supported
+`missing_data` rows with that answer. Name the arm, population, unit, and time
+point; keep randomized, observed, analyzed, imputed, excluded, and event counts
+distinct. Leave `observed` unknown unless ascertainment supports it. These rows
+also remain available for 2.3 and 2.6 analysis/deviation facts; they do not make
+those facts observed outcomes. Rate-only evidence or an explicit ascertainment
+statement need not invent counts. The server retains provenance and derives only
+scope-matched arithmetic. Use the existing preview when reconciliation helps;
+follow [Reconcile availability](references/missing.md#reconcile-availability).
 
 Supply the complete draft and current expected revision to `save_domain_judgment`.
 If its response is lost, retry the identical request with the original revision;
@@ -395,7 +400,17 @@ blocker on a supported Trial, provide a typed `needs_input` or `failed` request.
 Inspect the review's exact Result, checkpoint identities, and compact
 `domain_findings` projection. Use its decisive justifications, material
 unknowns, counterevidence, and exact Evidence expansion actions to reconcile
-concrete contradictions or unsupported links in one bounded pass. Correct only
+concrete contradictions or unsupported links in one bounded pass. Large reviews
+return `data.review_page.mode:"summary"`: all answer headers and actual driver
+flags remain visible, but named deferred fields and counts identify incomplete
+support. Use `review_trial` with `domain_id` and, when needed, `question_id` to
+inspect decisive answers and material unknowns or counterevidence. A complete
+selected detail has `mode:"complete"`; an oversized detail has `mode:"fragment"`.
+Follow `next_cursor`, concatenate `fragment` strings in Unicode codepoint offset
+order, and parse the JSON once complete. The summary's `stable_recovery` also
+recovers the exact full review. Use the current revision and returned recovery
+arguments; do not interpret a preview or deferred count row as complete evidence.
+Correct only
 the affected Domain; do not force a second assessment or change an answer just
 to make the projection consistent. Search and reading activity alone does not
 invalidate the review. Close the Trial with the exact `review_reference` and

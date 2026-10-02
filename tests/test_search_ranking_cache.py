@@ -15,6 +15,7 @@ from rob2_kit.application.evidence import (
     _SEARCH_CORPUS_CACHE_MAX,
     _SEARCH_CORPUS_LEASES,
     _SEARCH_CORPUS_RETIRED,
+    EvidenceIntegrityError,
     _evidence_for_handles,
     _recomputed_search_projection,
     _release_search_corpus,
@@ -169,7 +170,9 @@ def test_warm_ranking_still_rejects_mutated_source_bytes(tmp_path: Path) -> None
 
     source_path = next((workspace / ".rob2-kit" / "sources" / "trial").glob("*.bin"))
     source_path.write_bytes(b"changed source bytes\n")
-    with pytest.raises(ValueError, match="Source bytes do not match Canonical identity"):
+    with pytest.raises(
+        EvidenceIntegrityError, match="Source bytes do not match Canonical identity"
+    ):
         search_sources(workspace, "trial", "alpha beta")
 
     assert COUNTERS["search_ranking_builds"] == 1

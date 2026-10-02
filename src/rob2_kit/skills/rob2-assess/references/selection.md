@@ -56,15 +56,15 @@ outcomes. Preserve the second chronology as unknown. Posting, approval,
 amendment, retrieval, data cutoff, and database lock do not fill in a missing
 access date.
 
-The selected plan passage establishes plan content. A registry identifier,
-endpoint label, or report-level prespecification claim alone leaves plan timing
-and correspondence unresolved. A probable answer still needs a stated basis for
-the timing judgment; the report's "a priori" label alone does not supply it.
-For a platform trial, establish that the plan applies to the approved intervention
-comparison and cohort. An embedded SAP can supply plan Evidence when its scope
-and chronology match the Result; an absent or ambiguous plan preserves
-legitimate uncertainty. A protocol or SAP
-describes intent; check the report for what was actually done.
+The selected plan passage establishes plan content. For 5.1, use the returned
+question card's proposition, answer directions, probable-inference allowance,
+uncertainty rule, and treatment of later changes unrelated to results. This
+reference guides source investigation; it does not add a competing decision rule.
+Compare the applicable plan's content with what was actually done. Keep content,
+applicability, finalization, and unblinded access as separate premises. For a
+platform trial, establish the intervention comparison and cohort. An embedded
+SAP may supply the relevant passages; a registry identifier or report-level
+prespecification label alone does not resolve those premises.
 
 If the plan is unavailable after bounded source-specific discovery, record that
 information limit. Missing plans do not prove selective reporting.

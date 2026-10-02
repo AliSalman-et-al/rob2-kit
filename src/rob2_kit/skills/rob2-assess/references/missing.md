@@ -99,14 +99,20 @@ describe deviations or analysis populations; they do not become observed
 outcomes. Only an explicit `observed` count participates in missing-count
 arithmetic.
 
-When a count comparison would help before answering, call `get_domain_context`
-with `missing_data` rows. Every preview row needs a nonempty `basis` containing
+When participant-count comparisons support the 3.1 answer, retain the
+source-supported `missing_data` rows in `save_domain_judgment`. Give each row its
+named scope and keep the reported analysis population distinct from the approved
+randomized target. Leave `observed` unknown when only analyzed or event counts
+are established. Rate-only evidence and explicit ascertainment statements do
+not require invented counts or denominators.
+
+Use `get_domain_context` with those rows when a preview would resolve an arithmetic
+or scope question. Every preview row needs a nonempty `basis` containing
 current-Trial Evidence references: no answer exists to supply inherited Evidence.
-Inspect `comparison_cards[].missing_data`
-for differences, fractions, and conflicting reports. The preview changes no
-checkpoint or State revision. To retain the chosen rows, submit them with the
-3.1 answer in `save_domain_judgment`; omit row `basis` there only to reuse
-the answer's Evidence when it supports those counts.
+Inspect `comparison_cards[].missing_data` for differences, fractions, and
+conflicting reports. The preview changes no checkpoint or State revision and is
+not an additional mandatory call. Retain the chosen rows with the answer; omit
+row `basis` there only to reuse answer Evidence that supports those counts.
 
 Check each input against its source passage before using the arithmetic. The
 helper subtracts supplied observed counts from randomized counts; it does not
@@ -144,10 +150,16 @@ Result. Documented reasons support reassurance only when they address the
 outcome relationship.
 
 Keep possible dependence in 3.3 separate from likely dependence in 3.4. For
-3.4, state which reasons or trial circumstances support the likelihood judgment.
-Absent contrary evidence alone does not establish likely dependence. Preserve
-`no_information` when the card's uncertainty rule applies, even when that answer
-leads to High risk of bias.
+3.4, state which reasons, arm differences, prognostic factors, or trial
+circumstances support the likelihood judgment and why they make missing
+participants' true outcomes likely to differ. A documented reason for every
+missing outcome is not required; available rates, reasons, and circumstances
+may support the inference when their relation to the true outcome is explained.
+A sensitivity analysis that assumes particular unobserved outcomes shows their
+potential effect under that assumption, but does not by itself establish that
+missingness likely depended on the true outcome. Absent contrary evidence alone
+does not establish likely dependence. Preserve `no_information` when the card's
+uncertainty rule applies, even when that answer leads to High risk of bias.
 
 D3.2 does not allow `no_information`. When no bias-correcting evidence is found,
 use the question card to choose a permitted negative or probably-negative answer

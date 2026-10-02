@@ -1381,7 +1381,9 @@ def _comparison_cards(
             ),
             None,
         )
-        if preview_missing_data is not None:
+        if participant_flow_data is not None:
+            answer = {"missing_data": participant_flow_data}
+        elif preview_missing_data is not None:
             missing_data = reconcile_missing_data(preview_missing_data)
             answer = {"missing_data": missing_data}
         if isinstance(answer, dict) and isinstance(answer.get("missing_data"), dict):

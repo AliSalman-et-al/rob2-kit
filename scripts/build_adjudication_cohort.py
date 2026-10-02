@@ -126,6 +126,8 @@ def _trace_receipt(
         call["receipt"].get("data", {}).get("review")
         for call in calls
         if call["tool"] == "review_trial"
+        and call["receipt"].get("data", {}).get("review_page", {}).get("mode", "complete")
+        == "complete"
         and isinstance(call["receipt"].get("data", {}).get("review"), dict)
     ]
     review = next(
@@ -137,6 +139,8 @@ def _trace_receipt(
         call["receipt"].get("data", {}).get("domain_findings")
         for call in calls
         if call["tool"] == "review_trial"
+        and call["receipt"].get("data", {}).get("review_page", {}).get("mode", "complete")
+        == "complete"
         and isinstance(call["receipt"].get("data", {}).get("domain_findings"), list)
     ]
     finding_list = next((item for item in reversed(findings) if len(item) == len(DOMAINS)), None)

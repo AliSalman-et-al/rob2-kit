@@ -60,6 +60,54 @@ def _answer_review(workspace: Path, answer: bytes) -> subprocess.CompletedProces
     )
 
 
+def _recover_full_review(workspace: Path, reviewed: dict[str, Any]) -> dict[str, Any]:
+    page = reviewed["data"].get("review_page")
+    if page is None or page["mode"] == "complete":
+        return reviewed
+
+    assert page["mode"] == "summary"
+    assert page["complete"] is False
+    assert "result" in page["deferred_fields"]
+    assert reviewed["data"].get("result") is None
+
+    cursor = page["stable_recovery"]["cursor"]
+    fragments: list[str] = []
+    offset = 0
+    total: int | None = None
+    for _ in range(64):
+        continued = _call(
+            workspace,
+            "review_trial",
+            {
+                "trial_id": reviewed["data"]["review"]["trial_id"],
+                "expected_revision": reviewed["head"]["state_revision"],
+                "cursor": cursor,
+            },
+        )
+        assert continued["outcome"] == "success", continued
+        assert continued["head"] == reviewed["head"]
+        fragment_page = continued["data"]["review_page"]
+        assert fragment_page["mode"] == "fragment"
+        assert fragment_page["complete"] is False
+        assert fragment_page["offset_unit"] == "unicode_codepoints"
+        assert fragment_page["offset"] == offset
+        total = fragment_page["total"] if total is None else total
+        assert fragment_page["total"] == total
+        fragment = fragment_page["fragment"]
+        assert fragment
+        fragments.append(fragment)
+        offset += len(fragment)
+        cursor = fragment_page["next_cursor"]
+        if cursor is None:
+            assert offset == total
+            recovered = json.loads("".join(fragments))
+            assert recovered["head"] == reviewed["head"]
+            assert recovered["data"]["review"]["identity"] == reviewed["data"]["review"]["identity"]
+            return recovered
+        assert offset < total
+    pytest.fail("full review receipt did not terminate within 64 fragments")
+
+
 @pytest.mark.parametrize("answer", [b"yes\n", b"yes\r\n", b"\xef\xbb\xbfyes\r\n", b"YES\n"])
 def test_piped_acknowledgment_survives_a_byte_order_mark(tmp_path: Path, answer: bytes) -> None:
     workspace = _review_candidate(tmp_path)
@@ -96,10 +144,11 @@ def test_trial_requires_review_and_explicit_closure_before_finalization(tmp_path
     assert reviewed["outcome"] == "success", reviewed
     assert reviewed["data"]["review"]["disposition"] == "assessed"
     assert len(reviewed["data"]["review"]["checkpoint_ids"]) == 5
-    assert reviewed["data"]["result"]["trial_id"] == "trial"
+    full_review = _recover_full_review(workspace, reviewed)
+    assert full_review["data"]["result"]["trial_id"] == "trial"
     assert all(
         basis["assertion"] == "host_asserted"
-        for finding in reviewed["data"]["domain_findings"]
+        for finding in full_review["data"]["domain_findings"]
         for answer in finding["answers"]
         for basis in answer["bases"]
     )

@@ -666,6 +666,11 @@ def _review_domain_findings(
                     ),
                     "driver": answer["question_id"] in record.get("driver_questions", ()),
                     "answer": answer.get("answer"),
+                    **(
+                        {"missing_data": answer["missing_data"]}
+                        if answer.get("missing_data") is not None
+                        else {}
+                    ),
                     "facts": facts,
                     "warrant": answer.get("justification"),
                     "justification": answer.get("justification"),
@@ -680,6 +685,9 @@ def _review_domain_findings(
                 }
             )
         if answer_findings:
+            # Lead with the saved deterministic drivers, preserving all answers
+            # and stable within-group order. Do not invent driver question IDs.
+            answer_findings.sort(key=lambda finding: not finding["driver"])
             findings.append(
                 {
                     "domain_id": domain.id,

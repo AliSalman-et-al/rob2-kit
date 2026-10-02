@@ -8,7 +8,9 @@ import hashlib
 import json
 import os
 import re
+import sqlite3
 import uuid
+from pathlib import Path
 from typing import Annotated, Any, Literal
 
 import mcp_types
@@ -47,6 +49,7 @@ from rob2_kit.application.domains import (
 )
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
 from rob2_kit.application.evidence import (
+    EvidenceIntegrityError,
     _cursor_handle,
 )
 from rob2_kit.application.evidence import list_sources as _list_sources
@@ -195,6 +198,18 @@ _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
 _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
 _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES = 64
 _DOMAIN_CONTEXT_PAGE_SECTIONS = ("questions", "evidence", "comparison_cards")
+_REVIEW_TRIAL_RESPONSE_BYTES = 24_000
+_REVIEW_NATIVE_WRAPPER_OVERHEAD_BYTES = 256
+_REVIEW_PREVIEW_TEXT_CHARS = 220
+_REVIEW_PREVIEW_ARRAYS = (
+    "facts",
+    "unknowns",
+    "counterevidence",
+    "limitations",
+    "conflicts",
+    "uninvestigated_routes",
+)
+_REVIEW_DETAIL_ARRAYS = (*_REVIEW_PREVIEW_ARRAYS, "bases", "evidence_expansions")
 
 
 def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
@@ -361,6 +376,607 @@ def _domain_context_transport_bytes(value: dict[str, Any]) -> int:
     return len(json.dumps(envelope, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
 
 
+def _review_transport_bytes(value: dict[str, Any]) -> int:
+    """Bound the structured envelope and reserve room for FastMCP's native wrapper."""
+
+    envelope = {"content": [], "structured_content": value}
+    return (
+        len(json.dumps(envelope, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+        + _REVIEW_NATIVE_WRAPPER_OVERHEAD_BYTES
+    )
+
+
+def _review_cursor(view_id: str, offset: int) -> str:
+    if not re.fullmatch(r"[0-9a-f]{32}", view_id) or offset < 0:
+        raise ValueError("review_cursor_invalid: malformed view or offset")
+    return f"rv1.{view_id}.{offset}"
+
+
+def _decode_review_cursor(cursor: str) -> tuple[str, int]:
+    match = re.fullmatch(r"rv1\.([0-9a-f]{32})\.(\d+)", cursor)
+    if match is None:
+        raise ValueError("review_cursor_invalid: malformed cursor")
+    return match.group(1), int(match.group(2))
+
+
+def _review_view(root: Path, view_id: str) -> dict[str, Any] | None:
+    try:
+        with _db(root, "derivative.sqlite3") as connection:
+            row = connection.execute(
+                "SELECT view_id,trial_id,review_identity,digest,selection,snapshot "
+                "FROM review_views WHERE view_id=?",
+                (view_id,),
+            ).fetchone()
+    except sqlite3.OperationalError as error:
+        if "no such table: review_views" in str(error):
+            return None
+        raise
+    if row is None:
+        return None
+    try:
+        selection = json.loads(bytes(row["selection"]))
+        snapshot = json.loads(bytes(row["snapshot"]))
+    except (TypeError, ValueError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("review_cursor_expired: stored review snapshot is corrupt") from error
+    if not isinstance(selection, dict) or not isinstance(snapshot, dict):
+        raise ValueError("review_cursor_expired: stored review snapshot is corrupt")
+    view = {key: row[key] for key in ("view_id", "trial_id", "review_identity", "digest")}
+    view.update(selection=selection or None, snapshot=snapshot)
+    if view["digest"] != _review_view_digest(snapshot, view["selection"]):
+        raise ValueError("review_cursor_expired: stored review snapshot failed its digest")
+    return view
+
+
+def _review_view_digest(snapshot: dict[str, Any], selection: dict[str, str] | None) -> str:
+    data = snapshot.get("data")
+    review = data.get("review") if isinstance(data, dict) else None
+    identity = review.get("identity") if isinstance(review, dict) else None
+    payload = {"review_identity": identity, "selection": selection, "snapshot": snapshot}
+    return hashlib.sha256(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+            "utf-8"
+        )
+    ).hexdigest()
+
+
+def _record_review_view(
+    root: Path,
+    view_id: str,
+    trial_id: str,
+    review_identity: str,
+    digest: str,
+    selection: dict[str, str] | None,
+    snapshot: dict[str, Any],
+) -> None:
+    with _db(root, "derivative.sqlite3") as connection:
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS review_views ("
+            "view_id TEXT PRIMARY KEY, trial_id TEXT NOT NULL, review_identity TEXT NOT NULL, "
+            "digest TEXT NOT NULL, selection BLOB NOT NULL, snapshot BLOB NOT NULL)"
+        )
+        connection.execute(
+            "INSERT OR IGNORE INTO review_views "
+            "(view_id,trial_id,review_identity,digest,selection,snapshot) VALUES (?,?,?,?,?,?)",
+            (
+                view_id,
+                trial_id,
+                review_identity,
+                digest,
+                canonical_json_bytes(selection or {}),
+                canonical_json_bytes(snapshot),
+            ),
+        )
+
+
+def _review_detail_counts(answer: dict[str, Any]) -> dict[str, int]:
+    missing = answer.get("missing_data")
+    return {
+        "missing_data_rows": len(missing.get("rows", ())) if isinstance(missing, dict) else 0,
+        "missing_data_conflicts": (
+            len(missing.get("conflicts", ())) if isinstance(missing, dict) else 0
+        ),
+        "facts": len(answer.get("facts", ())),
+        "warrant": int(bool(answer.get("warrant"))),
+        "justification": int(bool(answer.get("justification"))),
+        "unknowns": len(answer.get("unknowns", ())),
+        "counterevidence": len(answer.get("counterevidence", ())),
+        "limitations": len(answer.get("limitations", ())),
+        "conflicts": len(answer.get("conflicts", ())),
+        "uninvestigated_routes": len(answer.get("uninvestigated_routes", ())),
+        "evidence": len(answer.get("evidence", ())),
+        "bases": len(answer.get("bases", ())),
+        "evidence_expansions": len(answer.get("evidence_expansions", ())),
+    }
+
+
+def _review_counts(
+    domain_findings: list[dict[str, Any]], review: dict[str, Any] | None = None
+) -> dict[str, int]:
+    answers = [
+        answer
+        for domain in domain_findings
+        for answer in domain.get("answers", [])
+        if isinstance(answer, dict)
+    ]
+    answer_counts = [_review_detail_counts(answer) for answer in answers]
+    return {
+        "domains": len(domain_findings),
+        "answers": len(answers),
+        "drivers": sum(bool(answer.get("driver")) for answer in answers),
+        "review_facts": len(review.get("facts", ())) if isinstance(review, dict) else 0,
+        "review_reason_characters": (
+            len(review.get("reason", ""))
+            if isinstance(review, dict) and isinstance(review.get("reason"), str)
+            else 0
+        ),
+        "premise_records": sum(
+            len(domain.get("premise_records", ()))
+            for domain in domain_findings
+            if isinstance(domain, dict)
+        ),
+        "investigations": sum(
+            isinstance(domain, dict) and domain.get("investigation") is not None
+            for domain in domain_findings
+        ),
+        "missing_data_rows": sum(item["missing_data_rows"] for item in answer_counts),
+        "missing_data_conflicts": sum(item["missing_data_conflicts"] for item in answer_counts),
+        "facts": sum(item["facts"] for item in answer_counts),
+        "warrants": sum(item["warrant"] for item in answer_counts),
+        "justifications": sum(item["justification"] for item in answer_counts),
+        "unknowns": sum(item["unknowns"] for item in answer_counts),
+        "counterevidence": sum(item["counterevidence"] for item in answer_counts),
+        "limitations": sum(item["limitations"] for item in answer_counts),
+        "conflicts": sum(item["conflicts"] for item in answer_counts),
+        "uninvestigated_routes": sum(item["uninvestigated_routes"] for item in answer_counts),
+        "evidence": sum(item["evidence"] for item in answer_counts),
+        "bases": sum(item["bases"] for item in answer_counts),
+        "evidence_expansions": sum(item["evidence_expansions"] for item in answer_counts),
+    }
+
+
+def _review_target(
+    snapshot: dict[str, Any], selection: dict[str, str] | None
+) -> tuple[str, dict[str, Any] | None]:
+    if selection is None:
+        return "full_receipt", snapshot
+    data = snapshot.get("data")
+    findings = data.get("domain_findings") if isinstance(data, dict) else None
+    if not isinstance(findings, list):
+        raise ValueError("review_selector_invalid: review has no Domain findings")
+    domain = next(
+        (
+            item
+            for item in findings
+            if isinstance(item, dict) and item.get("domain_id") == selection.get("domain_id")
+        ),
+        None,
+    )
+    if domain is None:
+        raise ValueError("review_selector_invalid: Domain is absent from this review")
+    question_id = selection.get("question_id")
+    if question_id is None:
+        return "domain_finding", domain
+    answers = domain.get("answers", [])
+    answer = next(
+        (
+            item
+            for item in answers
+            if isinstance(item, dict) and item.get("question_id") == question_id
+        ),
+        None,
+    )
+    if answer is None:
+        raise ValueError("review_selector_invalid: question is absent from this Domain review")
+    return "answer_finding", answer
+
+
+def _select_review_receipt(
+    snapshot: dict[str, Any], selection: dict[str, str] | None
+) -> dict[str, Any]:
+    if selection is None:
+        return snapshot
+    target_kind, _target = _review_target(snapshot, selection)
+    data = snapshot.get("data")
+    assert isinstance(data, dict)
+    domain = next(
+        item
+        for item in data.get("domain_findings", [])
+        if item.get("domain_id") == selection["domain_id"]
+    )
+    selected_domain = dict(domain)
+    if target_kind == "answer_finding":
+        selected_domain["answers"] = [
+            item
+            for item in domain.get("answers", [])
+            if item.get("question_id") == selection["question_id"]
+        ]
+    return {
+        **snapshot,
+        "data": {
+            **data,
+            "domain_findings": [selected_domain],
+        },
+    }
+
+
+def _review_preview_text(
+    value: str, preview_chars: int = _REVIEW_PREVIEW_TEXT_CHARS
+) -> tuple[str, bool]:
+    if len(value) <= preview_chars:
+        return value, False
+    return (
+        value[:preview_chars].rstrip() + " … [preview; select this answer for full detail]",
+        True,
+    )
+
+
+def _review_preview_array(
+    field: str, values: list[Any], preview_chars: int
+) -> tuple[list[Any], bool]:
+    if not values:
+        return [], False
+    if field in {"bases", "evidence_expansions"}:
+        return [], True
+    first = values[0]
+    if field == "facts" and isinstance(first, dict):
+        preview = dict(first)
+        if isinstance(first.get("text"), str):
+            preview["text"], clipped = _review_preview_text(first["text"], preview_chars)
+        else:
+            clipped = False
+        return [preview], len(values) > 1 or clipped
+    if field == "unknowns" and isinstance(first, str):
+        preview, clipped = _review_preview_text(first, preview_chars)
+        return [preview], len(values) > 1 or clipped
+    prose_field = {
+        "counterevidence": "implication",
+        "limitations": "unresolved_premise",
+        "conflicts": "detail",
+        "uninvestigated_routes": "detail",
+    }.get(field)
+    if prose_field is not None and isinstance(first, dict):
+        preview = dict(first)
+        clipped = False
+        if isinstance(first.get(prose_field), str):
+            preview[prose_field], clipped = _review_preview_text(first[prose_field], preview_chars)
+        if field == "limitations" and isinstance(first.get("stopping_rationale"), str):
+            preview["stopping_rationale"], rationale_clipped = _review_preview_text(
+                first["stopping_rationale"], preview_chars
+            )
+            clipped = clipped or rationale_clipped
+        if field == "uninvestigated_routes" and isinstance(first.get("detail"), str):
+            preview["detail"], detail_clipped = _review_preview_text(first["detail"], preview_chars)
+            clipped = clipped or detail_clipped
+        return [preview], len(values) > 1 or clipped
+    return [], True
+
+
+def _bounded_review_header(
+    review: dict[str, Any], preview_chars: int
+) -> tuple[dict[str, Any], set[str]]:
+    header = dict(review)
+    deferred: set[str] = set()
+    reason = review.get("reason")
+    if isinstance(reason, str):
+        header["reason"], clipped = _review_preview_text(reason, preview_chars)
+        if clipped:
+            deferred.add("review_reason")
+    facts = review.get("facts")
+    if isinstance(facts, list):
+        preview: list[str] = []
+        clipped = len(facts) > 2
+        for item in facts[:2]:
+            if isinstance(item, str):
+                value, item_clipped = _review_preview_text(item, preview_chars)
+                preview.append(value)
+                clipped = clipped or item_clipped
+            else:
+                preview.append(item)
+        header["facts"] = preview
+        if clipped:
+            deferred.add("review_facts")
+    return header, deferred
+
+
+def _review_summary(
+    snapshot: dict[str, Any],
+    digest: str,
+    view_id: str,
+    *,
+    keep_previews: bool,
+    keep_missing: bool,
+    keep_evidence: bool,
+    keep_result: bool,
+    preview_chars: int,
+) -> dict[str, Any]:
+    data = snapshot.get("data")
+    if not isinstance(data, dict):
+        raise ValueError("review_summary_unrecoverable: review data is unavailable")
+    deferred: set[str] = set()
+    findings: list[dict[str, Any]] = []
+    review_header, review_deferred = _bounded_review_header(data["review"], preview_chars)
+    deferred.update(review_deferred)
+    for domain in data.get("domain_findings", []):
+        if not isinstance(domain, dict):
+            continue
+        summary_domain = {
+            key: domain[key]
+            for key in (
+                "domain_id",
+                "checkpoint_identity",
+                "judgment",
+                "premise_checkpoint_identity",
+            )
+            if key in domain
+        }
+        if domain.get("premise_records"):
+            deferred.add("premise_records")
+        if domain.get("investigation") is not None:
+            deferred.add("investigation")
+        answers: list[dict[str, Any]] = []
+        for answer in domain.get("answers", []):
+            if not isinstance(answer, dict):
+                continue
+            counts = _review_detail_counts(answer)
+            answer_deferred: set[str] = set()
+            summary_answer = {
+                key: answer[key] for key in ("question_id", "question", "driver", "answer")
+            }
+            if keep_missing and isinstance(answer.get("missing_data"), dict):
+                summary_answer["missing_data"] = answer["missing_data"]
+            elif isinstance(answer.get("missing_data"), dict):
+                answer_deferred.add("missing_data")
+                deferred.add("missing_data")
+            if keep_evidence and answer.get("evidence"):
+                summary_answer["evidence"] = answer["evidence"]
+            elif counts["evidence"]:
+                answer_deferred.add("evidence")
+                deferred.add("evidence")
+            if keep_previews:
+                for field in _REVIEW_DETAIL_ARRAYS:
+                    values = answer.get(field)
+                    if not isinstance(values, list) or not values:
+                        continue
+                    preview, truncated = _review_preview_array(field, values, preview_chars)
+                    summary_answer[field] = preview
+                    if truncated:
+                        answer_deferred.add(field)
+                        deferred.add(field)
+                for field in ("warrant", "justification"):
+                    value = answer.get(field)
+                    if isinstance(value, str) and value:
+                        preview, truncated = _review_preview_text(value, preview_chars)
+                        summary_answer[field] = preview
+                        if truncated:
+                            answer_deferred.add(field)
+                            deferred.add(field)
+            else:
+                answer_deferred.update(
+                    field
+                    for field in (*_REVIEW_DETAIL_ARRAYS, "warrant", "justification")
+                    if counts.get(field, 0)
+                )
+                deferred.update(answer_deferred)
+            summary_answer["detail_projection"] = {
+                "mode": "summary",
+                "counts": counts,
+                "deferred_fields": sorted(answer_deferred),
+            }
+            answers.append(summary_answer)
+        summary_domain["answers"] = answers
+        findings.append(summary_domain)
+    summary_data = {
+        "review": review_header,
+        "domain_findings": findings,
+        "retry": data.get("retry", False),
+    }
+    if keep_result and isinstance(data.get("result"), dict):
+        summary_data["result"] = data["result"]
+    elif isinstance(data.get("result"), dict):
+        deferred.add("result")
+    recovery = {
+        "operation": "review_trial",
+        "trial_id": data["review"]["trial_id"],
+        "cursor": _review_cursor(view_id, 0),
+    }
+    page = {
+        "mode": "summary",
+        "complete": False,
+        "snapshot_digest": f"sha256:{digest}",
+        "target": "full_receipt",
+        "counts": _review_counts(data.get("domain_findings", []), data["review"]),
+        "deferred_fields": sorted(deferred),
+        "stable_recovery": recovery,
+    }
+    return {
+        **snapshot,
+        "data": {**summary_data, "review_page": page},
+    }
+
+
+def _review_fragment_response(
+    current: dict[str, Any],
+    snapshot: dict[str, Any],
+    selection: dict[str, str] | None,
+    digest: str,
+    view_id: str,
+    offset: int,
+) -> dict[str, Any]:
+    target_kind, target = _review_target(snapshot, selection)
+    assert target is not None
+    text = json.dumps(target, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    if offset >= len(text):
+        raise ValueError("review_cursor_invalid: offset is outside the review projection")
+    current_data = current.get("data")
+    snapshot_data = snapshot.get("data")
+    if not isinstance(current_data, dict) or not isinstance(snapshot_data, dict):
+        raise ValueError("review_cursor_stale: current review data is unavailable")
+    selector = dict(selection) if selection else None
+    review_header, review_deferred = _bounded_review_header(current_data["review"], 80)
+    counts = _review_counts(
+        [target]
+        if target_kind == "domain_finding"
+        else (
+            [{"answers": [target]}]
+            if target_kind == "answer_finding"
+            else snapshot_data.get("domain_findings", [])
+        ),
+        snapshot_data.get("review"),
+    )
+
+    def page_for(fragment: str, next_cursor: str | None) -> dict[str, Any]:
+        return {
+            **current,
+            "data": {
+                "review": review_header,
+                "retry": current_data.get("retry", False),
+                "review_page": {
+                    "mode": "fragment",
+                    "complete": False,
+                    "snapshot_digest": f"sha256:{digest}",
+                    "selector": selector,
+                    "target": target_kind,
+                    "counts": counts,
+                    "deferred_fields": sorted(review_deferred),
+                    "fragment": fragment,
+                    "offset": offset,
+                    "total": len(text),
+                    "offset_unit": "unicode_codepoints",
+                    "next_cursor": next_cursor,
+                },
+            },
+        }
+
+    low, high = 1, len(text) - offset
+    best: dict[str, Any] | None = None
+    while low <= high:
+        length = (low + high) // 2
+        end = offset + length
+        next_cursor = _review_cursor(view_id, end) if end < len(text) else None
+        candidate = page_for(text[offset:end], next_cursor)
+        validated = _validate_response("review_trial", candidate)
+        if _review_transport_bytes(validated) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+            best = validated
+            low = length + 1
+        else:
+            high = length - 1
+    if best is None:
+        raise ValueError("review_fragment_unrecoverable: response metadata exceeds the byte limit")
+    return best
+
+
+def _project_review_trial(
+    normalized: dict[str, Any],
+    *,
+    cursor: str | None,
+    selector: dict[str, str] | None,
+    root: Path,
+    persist: bool,
+) -> dict[str, Any]:
+    data = normalized.get("data")
+    if not isinstance(data, dict) or not isinstance(data.get("review"), dict):
+        return normalized
+    review = data["review"]
+    trial_id = review.get("trial_id")
+    review_identity = review.get("identity")
+    if not isinstance(trial_id, str) or not isinstance(review_identity, str):
+        raise ValueError("review_delivery_unavailable: review identity is missing")
+    if selector is not None:
+        _review_target(normalized, selector)
+    if cursor is not None:
+        view_id, offset = _decode_review_cursor(cursor)
+        view = _review_view(root, view_id)
+        if view is None:
+            raise ValueError("review_cursor_expired: view unavailable; restart review_trial")
+        if view["trial_id"] != trial_id:
+            raise ValueError("review_cursor_invalid: cursor belongs to a different Trial")
+        if selector is not None and selector != view.get("selection"):
+            raise ValueError("review_cursor_invalid: selector differs from cursor")
+        if view["review_identity"] != review_identity:
+            raise ValueError("review_cursor_stale: the Trial review changed; restart review_trial")
+        stored = view.get("snapshot")
+        if not isinstance(stored, dict):
+            raise ValueError(
+                "review_cursor_expired: stored review is unavailable; restart review_trial"
+            )
+        response = _review_fragment_response(
+            normalized,
+            stored,
+            view.get("selection"),
+            str(view["digest"]),
+            view_id,
+            offset,
+        )
+        if _review_transport_bytes(response) > _REVIEW_TRIAL_RESPONSE_BYTES:
+            raise ValueError("review_page_oversized: native response exceeded the byte limit")
+        return _validate_response("review_trial", response)
+
+    selected = _select_review_receipt(normalized, selector)
+    digest = _review_view_digest(normalized, selector)
+    if selector is None and _review_transport_bytes(normalized) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+        return normalized
+    target_kind, _target = _review_target(normalized, selector)
+    page = {
+        "mode": "complete",
+        "complete": True,
+        "snapshot_digest": f"sha256:{digest}",
+        "selector": selector,
+        "target": target_kind if selector else None,
+        "counts": _review_counts(
+            selected["data"].get("domain_findings", []),
+            selected["data"].get("review"),
+        ),
+    }
+    selected = {
+        **selected,
+        "data": {**selected["data"], "review_page": page},
+    }
+    selected = _validate_response("review_trial", selected)
+    if _review_transport_bytes(selected) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+        return selected
+
+    view_id = uuid.uuid4().hex
+    if selector is None:
+        for keep_previews, keep_missing, keep_evidence, keep_result, preview_chars in (
+            (True, True, True, True, _REVIEW_PREVIEW_TEXT_CHARS),
+            (True, True, True, True, 80),
+            (False, True, True, True, 0),
+            (False, True, True, False, 0),
+            (False, False, True, False, 0),
+            (False, False, False, False, 0),
+        ):
+            summary = _validate_response(
+                "review_trial",
+                _review_summary(
+                    normalized,
+                    digest,
+                    view_id,
+                    keep_previews=keep_previews,
+                    keep_missing=keep_missing,
+                    keep_evidence=keep_evidence,
+                    keep_result=keep_result,
+                    preview_chars=preview_chars,
+                ),
+            )
+            if _review_transport_bytes(summary) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+                break
+        else:
+            raise ValueError("review_summary_unrecoverable: answer headers exceed the byte limit")
+        if _review_transport_bytes(summary) > _REVIEW_TRIAL_RESPONSE_BYTES:
+            raise ValueError("review_summary_unrecoverable: typed summary exceeds the byte limit")
+        if persist:
+            _record_review_view(root, view_id, trial_id, review_identity, digest, None, normalized)
+        return summary
+
+    fragment = _review_fragment_response(normalized, normalized, selector, digest, view_id, 0)
+    fragment = _validate_response("review_trial", fragment)
+    if _review_transport_bytes(fragment) > _REVIEW_TRIAL_RESPONSE_BYTES:
+        raise ValueError("review_page_oversized: native response exceeded the byte limit")
+    if persist:
+        _record_review_view(root, view_id, trial_id, review_identity, digest, selector, normalized)
+    return fragment
+
+
 def _read_pages_transport_bytes(value: dict[str, Any], head: dict[str, Any]) -> int:
     """Measure the serialized envelope that the read_pages caller receives."""
 
@@ -374,7 +990,7 @@ def _read_pages_transport_bytes(value: dict[str, Any], head: dict[str, Any]) -> 
         ),
         "authoritative_wording": head.get("authoritative_wording"),
     }
-    normalized = validate_output("read_pages", normalize("read_pages", enriched))
+    normalized = _validate_response("read_pages", normalize("read_pages", enriched))
     return len(
         json.dumps(
             {"content": [], "structured_content": normalized},
@@ -842,10 +1458,16 @@ def _content(
     domain_cursor: str | None = None,
     domain_page_size: int | None = None,
     domain_preview_missing_data: list[dict[str, Any]] | None = None,
+    review_cursor: str | None = None,
+    review_domain_id: str | None = None,
+    review_question_id: str | None = None,
 ) -> ToolResult:
     # Pixel bytes are transport content, never part of the typed JSON receipt.
     png_bytes = value.get("_png_bytes")
     read_coverage = value.get("_read_coverage")
+    review_prevalidated_receipt = (
+        value.pop("_review_prevalidated_receipt", None) if tool == "review_trial" else None
+    )
     render_value = value.get("render") if tool == "render_page" else None
     render_source_id = render_value.get("source_id") if isinstance(render_value, dict) else None
     domain_context_basis_identity = (
@@ -868,7 +1490,7 @@ def _content(
             "continuation": value.get("continuation", current.get("continuation")),
             "authoritative_wording": current.get("authoritative_wording"),
         }
-    normalized = validate_output(tool, normalize(tool, value))
+    normalized = _validate_response(tool, normalize(tool, value))
     if tool == "get_domain_context":
         # Validate the compact public variant as well as the application
         # projection while preserving every question and pack-guidance field.
@@ -989,7 +1611,30 @@ def _content(
                 if domain_context_view_id is not None
                 else (uuid.uuid4().hex if domain_cursor is None else None),
             )
-        validate_output(tool, normalized)
+        _validate_response(tool, normalized)
+    if tool == "review_trial":
+        # Review pages and cursors must be derived from the exact public
+        # projection validated before the workflow commit. The application
+        # regenerates its returned receipt after commit, so carry the frozen
+        # validated receipt through as private transport metadata.
+        if isinstance(review_prevalidated_receipt, dict):
+            normalized = review_prevalidated_receipt
+        _compact_read_window_fields(normalized)
+        selector = (
+            {
+                "domain_id": review_domain_id,
+                **({"question_id": review_question_id} if review_question_id else {}),
+            }
+            if review_domain_id is not None
+            else None
+        )
+        normalized = _project_review_trial(
+            normalized,
+            cursor=review_cursor,
+            selector=selector,
+            root=_root(_workspace()),
+            persist=True,
+        )
     _compact_read_window_fields(normalized)
     if tool == "read_pages":
         data = normalized.get("data")
@@ -1135,7 +1780,7 @@ def _content(
                 render["identity"],
                 png_bytes,
             )
-        normalized = validate_output(
+        normalized = _validate_response(
             tool,
             {**normalized, "data": {**data, "delivery_receipt": receipt}},
         )
@@ -1154,6 +1799,16 @@ def _content(
     return ToolResult(content=content, structured_content=normalized)
 
 
+def _validate_response(tool: str, value: dict[str, Any]) -> dict[str, Any]:
+    try:
+        return validate_output(tool, value)
+    except ValueError as error:
+        raise ToolError(
+            "internal_output_contract_error: the server produced a receipt that does not "
+            "match the published tool response schema. Report this failure to the maintainer."
+        ) from error
+
+
 def _invoke(
     tool: str,
     operation: Any,
@@ -1162,16 +1817,35 @@ def _invoke(
     domain_cursor: str | None = None,
     domain_page_size: int | None = None,
     domain_preview_missing_data: list[dict[str, Any]] | None = None,
+    review_cursor: str | None = None,
+    review_domain_id: str | None = None,
+    review_question_id: str | None = None,
 ) -> ToolResult:
     try:
-        return _content(
-            tool,
-            operation(),
-            render_trial_id=render_trial_id,
-            domain_cursor=domain_cursor,
-            domain_page_size=domain_page_size,
-            domain_preview_missing_data=domain_preview_missing_data,
-        )
+        value = operation()
+        try:
+            return _content(
+                tool,
+                value,
+                render_trial_id=render_trial_id,
+                domain_cursor=domain_cursor,
+                domain_page_size=domain_page_size,
+                domain_preview_missing_data=domain_preview_missing_data,
+                review_cursor=review_cursor,
+                review_domain_id=review_domain_id,
+                review_question_id=review_question_id,
+            )
+        except ValidationError as error:
+            raise ToolError(
+                "internal_output_contract_error: the server produced a receipt that does not "
+                "match the published tool response schema. Report this failure to the maintainer."
+            ) from error
+    except EvidenceIntegrityError as error:
+        raise ToolError(
+            "internal_evidence_integrity_error: captured source or search projection integrity "
+            "verification failed. No search result was returned; do not treat this as evidence "
+            "absence. Report this failure to the maintainer."
+        ) from error
     except WorkflowConflict as error:
         return _content(
             tool,
@@ -1328,6 +2002,14 @@ def _invoke(
                 },
             )
         for prefix, code in (
+            ("review_cursor_invalid:", "review_cursor_invalid"),
+            ("review_cursor_expired:", "review_cursor_expired"),
+            ("review_cursor_stale:", "review_cursor_stale"),
+            ("review_selector_invalid:", "review_selector_invalid"),
+            ("review_delivery_unavailable:", "review_delivery_unavailable"),
+            ("review_summary_unrecoverable:", "review_summary_unrecoverable"),
+            ("review_fragment_unrecoverable:", "review_fragment_unrecoverable"),
+            ("review_page_oversized:", "review_page_oversized"),
             ("domain_context_delivery_unavailable:", "domain_context_delivery_unavailable"),
             ("domain_context_delivery_stale:", "domain_context_delivery_stale"),
             (
@@ -1336,12 +2018,18 @@ def _invoke(
             ),
         ):
             if condition.startswith(prefix):
+                detail = condition.removeprefix(prefix)
+                if code == "review_cursor_expired":
+                    detail = (
+                        f"{detail}; restart review_trial with trial_id and current "
+                        "expected_revision, omitting cursor"
+                    )
                 return _content(
                     tool,
                     {
                         "outcome": "condition",
                         "code": code,
-                        "condition": condition.removeprefix(prefix),
+                        "condition": detail,
                     },
                 )
         if tool in {
@@ -1857,7 +2545,29 @@ def search_sources_batch(
                 request.purpose_domain_id,
                 request.purpose_question_id,
             )
-            result = {"outcome": "success", "data": data}
+            receipt = normalize("search_sources", data)
+            result = (
+                {"outcome": "success", "data": receipt["data"]}
+                if receipt["outcome"] == "success"
+                else {"outcome": "condition", "condition": receipt["condition"]}
+            )
+        except EvidenceIntegrityError:
+            result = {
+                "outcome": "condition",
+                "condition": {
+                    "code": "internal_evidence_integrity_error",
+                    "detail": (
+                        "Captured source or search projection integrity verification failed; "
+                        "no search result was returned. Do not treat this as evidence absence. "
+                        "Report this failure to the maintainer."
+                    ),
+                },
+            }
+        except ValidationError as error:
+            raise ToolError(
+                "internal_output_contract_error: a search result does not match the published "
+                "tool response schema. Report this failure to the maintainer."
+            ) from error
         except ValueError as error:
             detail = str(error)
             if detail.startswith("search_cursor_stale:"):
@@ -1879,19 +2589,11 @@ def search_sources_batch(
         )
     try:
         _bound_search_batch(results)
-    except ValidationError:
-        return _content(
-            "search_sources_batch",
-            {
-                "outcome": "condition",
-                "code": "search_batch_response_contract_invalid",
-                "condition": (
-                    "A search result failed the batch output contract before serialized size "
-                    "could be measured. Retry the affected query separately; reducing the hit "
-                    "limit only addresses actual response-size exhaustion."
-                ),
-            },
-        )
+    except ValidationError as error:
+        raise ToolError(
+            "internal_output_contract_error: the server produced a batch receipt that does not "
+            "match the published tool response schema. Report this failure to the maintainer."
+        ) from error
     except ValueError as error:
         return _content(
             "search_sources_batch",
@@ -1901,7 +2603,13 @@ def search_sources_batch(
                 "condition": str(error),
             },
         )
-    return _content("search_sources_batch", {"outcome": "success", "results": results})
+    try:
+        return _content("search_sources_batch", {"outcome": "success", "results": results})
+    except ValidationError as error:
+        raise ToolError(
+            "internal_output_contract_error: the server produced a batch receipt that does not "
+            "match the published tool response schema. Report this failure to the maintainer."
+        ) from error
 
 
 @mcp.tool(
@@ -3197,7 +3905,11 @@ def save_domain_judgment(
         "exact Evidence when more context is needed, then read a narrower Source window. Review "
         "expansion objects contain operation and Evidence metadata, not direct tool arguments; "
         "pass only each operation's declared arguments. Then close using the exact review "
-        "reference."
+        "reference. Large reviews return every Domain and answer with driver flags, named counts, "
+        "Evidence handles, and marked detail previews. Follow review_page.stable_recovery.cursor "
+        "to reconstruct the exact full receipt, or select domain_id and question_id for one "
+        "answer. Fragment offsets count Unicode code points; concatenate fragments in cursor "
+        "order and parse the resulting JSON."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("review_trial"),
@@ -3219,21 +3931,119 @@ def review_trial(
             ),
         ),
     ] = None,
+    cursor: Annotated[
+        StrictStr | None,
+        Field(
+            description=(
+                "Opaque review_page.next_cursor, or summary review_page.stable_recovery.cursor. "
+                "Every call still requires the Trial and current expected revision."
+            )
+        ),
+    ] = None,
+    domain_id: Annotated[
+        DomainId | None,
+        Field(description="Optional exact Domain selector for complete review detail."),
+    ] = None,
+    question_id: Annotated[
+        QuestionId | None,
+        Field(
+            description=(
+                "Optional exact question selector; requires domain_id and returns complete "
+                "answer detail when it fits."
+            )
+        ),
+    ] = None,
 ) -> ToolResult:
+    if question_id is not None and domain_id is None:
+        return _content(
+            "review_trial",
+            {
+                "outcome": "condition",
+                "condition": {
+                    "code": "review_selector_invalid",
+                    "detail": "question_id requires domain_id; no Trial review was changed.",
+                },
+            },
+        )
+    selector = (
+        {"domain_id": domain_id, **({"question_id": question_id} if question_id else {})}
+        if domain_id is not None
+        else None
+    )
     review_request = TrialReviewRequest(
         trial_id=trial_id,
         expected_revision=expected_revision,
         request=request,
     )
 
+    pending_review_receipt: dict[str, Any] | None = None
+
     def validate_pending_receipt(value: dict[str, Any]) -> None:
-        validate_output("review_trial", normalize("review_trial", value))
+        nonlocal pending_review_receipt
+        head = _get_status_head(_workspace())
+        enriched = {
+            **value,
+            "phase": value.get("phase", head.get("phase", "empty")),
+            "state_revision": value.get("state_revision", head.get("state_revision", 0)),
+            "continuation": value.get("continuation", head.get("continuation")),
+            "authoritative_wording": value.get(
+                "authoritative_wording", head.get("authoritative_wording")
+            ),
+        }
+        try:
+            normalized = _validate_response("review_trial", normalize("review_trial", enriched))
+        except ValidationError as error:
+            raise ToolError(
+                "internal_output_contract_error: the server produced a receipt that does not "
+                "match the published tool response schema. Report this failure to the maintainer."
+            ) from error
+        _compact_read_window_fields(normalized)
+        _project_review_trial(
+            normalized,
+            cursor=cursor,
+            selector=selector,
+            root=_root(_workspace()),
+            persist=False,
+        )
+        pending_review_receipt = normalized
+
+    def operation() -> dict[str, Any]:
+        if cursor is not None:
+            view_id, _offset = _decode_review_cursor(cursor)
+            view = _review_view(_root(_workspace()), view_id)
+            if view is None:
+                raise ValueError("review_cursor_expired: view unavailable; restart review_trial")
+            if view.get("trial_id") != trial_id:
+                raise ValueError("review_cursor_invalid: cursor belongs to a different Trial")
+            if selector is not None and selector != view.get("selection"):
+                raise ValueError("review_cursor_invalid: selector differs from cursor")
+            if request is not None:
+                raise ValueError("review_cursor_invalid: omit request when continuing a review")
+        try:
+            response = _review_trial(
+                _workspace(), review_request, precommit_validator=validate_pending_receipt
+            )
+            if pending_review_receipt is not None:
+                response["_review_prevalidated_receipt"] = pending_review_receipt
+            return response
+        except ValueError as error:
+            if (
+                cursor is not None
+                and not isinstance(error, EvidenceIntegrityError)
+                and not str(error).startswith("review_cursor_")
+            ):
+                raise ValueError(
+                    "review_cursor_stale: the Trial review is no longer current; "
+                    "restart review_trial"
+                ) from error
+            raise
 
     return _invoke(
         "review_trial",
-        lambda: _review_trial(
-            _workspace(), review_request, precommit_validator=validate_pending_receipt
-        ),
+        operation,
+        review_cursor=cursor,
+        review_domain_id=domain_id,
+        review_question_id=question_id,
     )
 
 

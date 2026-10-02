@@ -135,6 +135,7 @@ def _trace(
         review, findings = data.get("review"), data.get("domain_findings")
         if (
             tool == "review_trial"
+            and data.get("review_page", {}).get("mode", "complete") == "complete"
             and isinstance(review, dict)
             and review.get("disposition") == "assessed"
             and isinstance(findings, list)

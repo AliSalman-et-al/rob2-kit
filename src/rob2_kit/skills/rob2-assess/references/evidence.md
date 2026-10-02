@@ -7,8 +7,10 @@ Use this reference while locating Result support and answering Domain questions.
 Most MCP calls return their typed result in `structuredContent`. Keep the full
 receipt, including `head`, `data`, and any `next_action`, `recovery`, or cursor.
 When `structuredContent` is absent, inspect the text in `content`. If the result
-is an error or a validation error, use the named schema path to correct the
-argument and retry the call. A structured `outcome:"repair"` lists paths in
+names `internal_output_contract_error` or `internal_evidence_integrity_error`,
+stop the affected operation and report the failure; do not treat it as missing
+scientific information or retry it by changing arguments. For an input
+validation error, use the named schema path to correct the argument and retry. A structured `outcome:"repair"` lists paths in
 `repairs`; fix those paths in the complete draft and resubmit it. Increase a
 host output limit only after the host reports truncation. A missing receipt is
 not a no-hit result.
@@ -48,8 +50,11 @@ stemming, `any` for broad discovery, and `prefix` for token prefixes.
 Suggestions are alternatives, not a checklist.
 To inspect further candidates, pass `next_cursor` as `cursor` with the same
 query, mode, Source scope, and limit. A truncated batch is not the full ranking.
-A zero-hit response states what its explicit lexical mode matched and only
-establishes that the issued query matched no captured text. It does not establish
+A `no_sources` or `no_searchable_sources` condition means no text was searched;
+inspect the Source inventory and use `render_page` for image-only Sources. It
+is not a lexical no-hit or an absence receipt. A zero-hit response states what
+its explicit lexical mode matched and only establishes that the issued query
+matched no captured searchable text. It does not establish
 that the method or fact is absent. Compare the complete-query page count with
 the per-term counts; individual terms do not imply co-occurrence or a phrase
 match. For a Source-scoped miss, inspect the returned navigation entries and

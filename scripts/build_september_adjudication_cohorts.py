@@ -536,7 +536,8 @@ def _review_from_trace(
         review = data.get("review")
         findings = data.get("domain_findings")
         if (
-            isinstance(review, dict)
+            data.get("review_page", {}).get("mode", "complete") == "complete"
+            and isinstance(review, dict)
             and review.get("disposition") == "assessed"
             and isinstance(findings, list)
             and len(findings) == len(DOMAINS)

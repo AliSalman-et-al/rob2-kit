@@ -1044,7 +1044,12 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     reviewed = _call(
         workspace,
         "review_trial",
-        {"trial_id": "trial", "expected_revision": revision},
+        {
+            "trial_id": "trial",
+            "expected_revision": revision,
+            "domain_id": domain_id,
+            "question_id": target["question_id"],
+        },
     )
     assert reviewed["outcome"] == "success", reviewed
     finding = next(

@@ -118,6 +118,14 @@ def test_public_d2_and_d3_contexts_share_result_bound_source_flow(tmp_path: Path
         assert all(item["value"] is None for item in unknown_stage)
         assert all(item["status"] == "unknown" for item in unknown_stage)
         assert all(item["passages"] for item in unknown_stage)
+        if domain_id == "domain:missing":
+            slots = {item["name"]: item for item in card["slots"]}
+            assert slots["randomized"]["status"] == "supported"
+            assert slots["observed"]["status"] == "supported"
+            assert slots["randomized"]["passages"]
+            assert slots["observed"]["passages"]
+            assert card["missing_data"]["conflicts"] == []
+            assert len(card["missing_data"]["rows"]) == 2
 
 
 def test_public_cards_expose_neutral_paired_contrasts_without_answers(tmp_path: Path) -> None:

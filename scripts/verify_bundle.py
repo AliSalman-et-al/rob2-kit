@@ -3880,6 +3880,20 @@ def _claims(canonical: dict[str, object]) -> dict[str, object]:
             f"RoB 2 assessments completed for {counts['assessed']}/{total} Trials. "
             f"{counts['needs_input']} Trials need input; {counts['failed']} Trials failed."
         )
+    batch = canonical.get("batch")
+    conditions = batch.get("conditions", []) if isinstance(batch, dict) else []
+    if modern and any(
+        isinstance(condition, dict)
+        and condition.get("code")
+        in {"unsupported_source", "unreadable_source", "declared_source_missing"}
+        for condition in conditions
+    ):
+        wording += (
+            " Inspect intake conditions before concluding that evidence is unavailable. Search "
+            "covers captured text projections only. Supplied files listed as unsupported, "
+            "unreadable, or missing were not searched. A declared role does not establish "
+            "document contents."
+        )
     snapshots = canonical.get("snapshots", {})
     if not isinstance(snapshots, dict):
         snapshots = {}

@@ -4761,7 +4761,13 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
             report = archive.read("report.html").decode("utf-8")
             claims = json.loads(archive.read("claims.json"))
             if has_trial_reviews:
-                public = presentation({"phase": "finalized", "trial_dispositions": dispositions})
+                public = presentation(
+                    {
+                        "phase": "finalized",
+                        "trial_dispositions": dispositions,
+                        "batch": canonical_value.get("batch"),
+                    }
+                )
             else:
                 legacy_counts = {
                     name: sum(value == name for value in dispositions.values())

@@ -13,6 +13,7 @@ from typing import Any
 
 import pymupdf
 import pytest
+from fastmcp.exceptions import ToolError
 from support.rob2 import *  # noqa: F401,F403
 
 import rob2_kit.interfaces.mcp.server as mcp_server
@@ -1494,23 +1495,16 @@ def test_search_batch_schema_failure_is_not_reported_as_oversized(
     _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
     monkeypatch.setattr(mcp_server, "_search_sources", lambda *_args: {})
 
-    result = _call(
-        workspace,
-        "search_sources_batch",
-        {
-            "requests": [
-                {"trial_id": "trial", "query": "alpha", "mode": "any"},
-            ]
-        },
-    )
-
-    assert result["outcome"] == "condition"
-    assert result["condition"]["code"] == "search_batch_response_contract_invalid"
-    assert "failed the batch output contract" in result["condition"]["detail"]
-    assert (
-        "reducing the hit limit only addresses actual response-size exhaustion"
-        in result["condition"]["detail"]
-    )
+    with pytest.raises(ToolError, match="internal_output_contract_error"):
+        _call(
+            workspace,
+            "search_sources_batch",
+            {
+                "requests": [
+                    {"trial_id": "trial", "query": "alpha", "mode": "any"},
+                ]
+            },
+        )
 
 
 def test_search_session_keeps_distinct_sibling_passages_through_cursor_traversal(

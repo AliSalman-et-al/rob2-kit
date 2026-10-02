@@ -134,6 +134,42 @@ def test_incompatible_counts_do_not_produce_a_bound() -> None:
     assert result["rows"][0]["missing_bounds"] is None
 
 
+def test_d3_count_summary_retains_cross_domain_conflicts() -> None:
+    row = {
+        "arm": "active",
+        "population": "all randomized participants",
+        "unit": "participants",
+        "time_point": "day 90",
+        "randomized": 100,
+        "observed": 95,
+        "basis": ["sha256:" + "b" * 64],
+    }
+    saved_d3 = reconcile_missing_data([row])
+    combined = reconcile_missing_data([row, row | {"observed": 92}])
+    card = _comparison_cards(
+        "domain:missing",
+        _result(),
+        {},
+        [{"question_id": "sq:missing:data-available", "missing_data": saved_d3}],
+        [],
+        participant_flow_data=combined,
+    )[0]
+
+    slots = {item["name"]: item for item in card["slots"]}
+    assert slots["randomized"]["status"] == "supported"
+    assert slots["observed"]["status"] == "conflicted"
+    assert "95" in slots["observed"]["value"]
+    assert "92" in slots["observed"]["value"]
+    assert card["missing_data"]["conflicts"] == combined["conflicts"]
+    assert all(
+        item["status"] == "conflicted"
+        for item in card["participant_flow"]
+        if item["kind"] == "observed"
+    )
+    availability = next(item for item in card["propositions"] if item["name"] == "availability")
+    assert availability["status"] == "conflicted"
+
+
 def test_cards_keep_d3_d4_d5_propositions_and_neutral_pairs_separate() -> None:
     d3 = _comparison_cards(
         "domain:missing",

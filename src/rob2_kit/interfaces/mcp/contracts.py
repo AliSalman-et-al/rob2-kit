@@ -237,8 +237,16 @@ class SearchInvalidRequestCondition(PublicModel):
     detail: str = Field(min_length=1)
 
 
+class SearchUnavailableCondition(PublicModel):
+    code: Literal["no_sources", "no_searchable_sources"]
+    detail: str = Field(min_length=1)
+
+
 SearchCursorCondition = Annotated[
-    SearchCursorStaleCondition | SearchCursorExpiredCondition | SearchInvalidRequestCondition,
+    SearchCursorStaleCondition
+    | SearchCursorExpiredCondition
+    | SearchInvalidRequestCondition
+    | SearchUnavailableCondition,
     Field(discriminator="code"),
 ]
 
@@ -2580,6 +2588,72 @@ ReviewEvidenceExpansion = Annotated[
 ]
 
 
+ReviewDetailField = Literal[
+    "review_reason",
+    "review_facts",
+    "result",
+    "premise_records",
+    "investigation",
+    "missing_data",
+    "facts",
+    "warrant",
+    "justification",
+    "unknowns",
+    "counterevidence",
+    "limitations",
+    "conflicts",
+    "uninvestigated_routes",
+    "evidence",
+    "bases",
+    "evidence_expansions",
+]
+
+
+class ReviewAnswerDetailCounts(PublicModel):
+    missing_data_rows: NonNegativeInt = 0
+    missing_data_conflicts: NonNegativeInt = 0
+    facts: NonNegativeInt = 0
+    warrant: NonNegativeInt = 0
+    justification: NonNegativeInt = 0
+    unknowns: NonNegativeInt = 0
+    counterevidence: NonNegativeInt = 0
+    limitations: NonNegativeInt = 0
+    conflicts: NonNegativeInt = 0
+    uninvestigated_routes: NonNegativeInt = 0
+    evidence: NonNegativeInt = 0
+    bases: NonNegativeInt = 0
+    evidence_expansions: NonNegativeInt = 0
+
+
+class ReviewTrialCounts(PublicModel):
+    domains: NonNegativeInt
+    answers: NonNegativeInt
+    drivers: NonNegativeInt
+    review_facts: NonNegativeInt
+    review_reason_characters: NonNegativeInt
+    premise_records: NonNegativeInt
+    investigations: NonNegativeInt
+    missing_data_rows: NonNegativeInt
+    missing_data_conflicts: NonNegativeInt
+    facts: NonNegativeInt
+    warrants: NonNegativeInt
+    justifications: NonNegativeInt
+    unknowns: NonNegativeInt
+    counterevidence: NonNegativeInt
+    limitations: NonNegativeInt
+    conflicts: NonNegativeInt
+    uninvestigated_routes: NonNegativeInt
+    evidence: NonNegativeInt
+    bases: NonNegativeInt
+    evidence_expansions: NonNegativeInt
+
+
+class ReviewAnswerDetailProjection(PublicModel):
+    mode: Literal["summary"]
+    counts: ReviewAnswerDetailCounts
+    deferred_fields: tuple[ReviewDetailField, ...] = ()
+
+
 class ReviewAnswerFinding(PublicModel):
     question_id: QuestionId
     question: str = Field(min_length=1)
@@ -2587,6 +2661,14 @@ class ReviewAnswerFinding(PublicModel):
         description="Whether this question contributed to the deterministic Domain judgment."
     )
     answer: Answer
+    missing_data: MissingDataReconciliation | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description=(
+            "Saved source-bound participant counts and scoped arithmetic, unchanged from the "
+            "checkpoint. These quantities do not determine outcome availability or risk."
+        ),
+    )
     facts: tuple[ReviewFact, ...] = ()
     warrant: str | None = Field(
         default=None,
@@ -2612,6 +2694,14 @@ class ReviewAnswerFinding(PublicModel):
         ),
     )
     evidence_expansions: tuple[ReviewEvidenceExpansion, ...] = ()
+    detail_projection: ReviewAnswerDetailProjection | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description=(
+            "Counts and explicitly deferred fields for a bounded summary preview. Select this "
+            "Domain and question to recover the complete saved detail."
+        ),
+    )
 
 
 class ReviewDomainFinding(PublicModel):
@@ -2642,6 +2732,56 @@ class ReviewDomainFinding(PublicModel):
     )
 
 
+class ReviewTrialSelector(PublicModel):
+    domain_id: DomainId | None = None
+    question_id: QuestionId | None = None
+
+
+class ReviewTrialRecovery(PublicModel):
+    operation: Literal["review_trial"]
+    trial_id: TrialId
+    cursor: StrictStr = Field(min_length=1)
+
+
+class ReviewTrialPage(PublicModel):
+    mode: Literal["complete", "summary", "fragment"]
+    complete: StrictBool
+    snapshot_digest: StrictStr = Field(pattern=r"^sha256:[0-9a-f]{64}$")
+    selector: ReviewTrialSelector | None = None
+    target: Literal["full_receipt", "domain_finding", "answer_finding"] | None = None
+    counts: ReviewTrialCounts | None = None
+    deferred_fields: tuple[ReviewDetailField, ...] = ()
+    fragment: StrictStr | None = None
+    offset: NonNegativeInt | None = None
+    total: NonNegativeInt | None = None
+    offset_unit: Literal["unicode_codepoints"] | None = None
+    next_cursor: StrictStr | None = None
+    stable_recovery: ReviewTrialRecovery | None = None
+
+    @model_validator(mode="after")
+    def fragment_has_exact_offsets(self) -> ReviewTrialPage:
+        if self.mode == "fragment":
+            if (
+                self.complete
+                or self.fragment is None
+                or self.offset is None
+                or self.total is None
+                or self.offset_unit != "unicode_codepoints"
+                or self.target is None
+            ):
+                raise ValueError("review fragment requires exact Unicode code-point offsets")
+        elif any(
+            value is not None
+            for value in (self.fragment, self.offset, self.total, self.offset_unit)
+        ):
+            raise ValueError("review offsets are only valid for a fragment")
+        if self.mode == "complete" and not self.complete:
+            raise ValueError("complete review projection must set complete=true")
+        if self.mode != "complete" and self.complete:
+            raise ValueError("summary and fragment review projections must set complete=false")
+        return self
+
+
 class ReviewTrialData(PublicModel):
     review: TrialReviewSummary
     result: dict[str, Any] | None = Field(
@@ -2656,6 +2796,11 @@ class ReviewTrialData(PublicModel):
         description="Current checkpoint support and exact Evidence expansion actions for review.",
     )
     retry: StrictBool = False
+    review_page: ReviewTrialPage | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Completeness, summary counts, and explicit detail recovery for this review.",
+    )
 
 
 class TrialClosureSummary(PublicModel):
@@ -2927,7 +3072,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
     if tool == "review_trial":
         return {
             key: _public_review(value[key]) if key == "review" else value[key]
-            for key in ("review", "result", "domain_findings", "retry")
+            for key in ("review", "result", "domain_findings", "retry", "review_page")
             if key in value
         }
     if tool == "close_trial":

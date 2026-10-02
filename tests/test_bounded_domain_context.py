@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from fastmcp import Client
+from fastmcp.exceptions import ToolError
 from mcp import types as mcp_types
 from pydantic import ValidationError
 from support.rob2 import (
@@ -565,7 +566,7 @@ def test_domain_context_delivery_does_not_advance_on_validation_failure(
         return original_validate(tool, candidate)
 
     monkeypatch.setattr(mcp_server, "validate_output", fail_get_domain_context)
-    with pytest.raises(ValueError, match="synthetic validation failure"):
+    with pytest.raises(ToolError, match="internal_output_contract_error"):
         mcp_server._content("get_domain_context", value)
 
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
