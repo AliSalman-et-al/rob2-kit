@@ -1467,6 +1467,7 @@ def _comparison_cards(
     ):
         result_scope = {
             "result_identity": _identity(result),
+            "scope_basis": "assessment_target",
             "endpoint": target["outcome_definition"],
             "measurement": measurement_method,
             "time_window": timing_description,
@@ -1620,7 +1621,7 @@ def _comparison_cards(
 
     card_id = _identity(
         {
-            "version": "rob2-kit.comparison-card.v0.5",
+            "version": "rob2-kit.comparison-card.v0.6",
             "domain_id": domain_id,
             "question_id": question_by_domain[domain_id],
             "result": _identity(result),
@@ -1632,6 +1633,10 @@ def _comparison_cards(
             "question_id": question_by_domain[domain_id],
             "result_identity": _identity(result),
             "result_scope": result_scope,
+            "reported_result": reported
+            if isinstance(reported.get("analysis_population"), str)
+            else None,
+            "target_relation": result.get("relation"),
             "passage_groups": passage_groups,
             "slots": slots,
             "propositions": proposition_rows,
@@ -1639,10 +1644,12 @@ def _comparison_cards(
             "participant_flow": participant_flow,
             "missing_data": missing_data,
             "prompt": (
-                "Use the exact Result scope, passages, and quantities above. Classify only the "
+                "Compare result_scope (target), reported_result, and target_relation. Retain "
+                "scope differences; assess the reported Result. "
+                "target or analyzed populations do not establish observed outcomes. Classify "
                 "remaining propositions; do not infer causation, availability, censoring, "
                 "measurement influence, plan correspondence, or risk from metadata, arithmetic, "
-                "or wording alone. An empty passage group is unopened, not a no-hit; inspect "
+                "or wording alone. Empty passage groups are unopened; inspect "
                 "relevant Sources before recording an information limitation."
             ),
         }

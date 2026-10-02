@@ -2158,9 +2158,10 @@ class ComparisonExample(PublicModel):
 
 
 class ComparisonResultScope(PublicModel):
-    """Exact Result scope used to interpret a comparison card."""
+    """Approved assessment target, which can differ from the reported estimate."""
 
     result_identity: Identity
+    scope_basis: Literal["assessment_target"] = "assessment_target"
     endpoint: str = Field(min_length=1)
     measurement: str = Field(min_length=1)
     time_window: str = Field(min_length=1)
@@ -2174,6 +2175,18 @@ class ComparisonCard(PublicModel):
     question_id: QuestionId
     result_identity: Identity
     result_scope: ComparisonResultScope | None = None
+    reported_result: Annotated[
+        ComparativeEffectResult | GroupBoundValuesResult | DomainCategoryProfileResult | None,
+        Field(
+            discriminator="form",
+            description=(
+                "Exact selected reported Result from the approved Proposal, including its "
+                "analysis population and quantitative tuple. This source-supported host summary "
+                "does not establish outcome availability or correspondence with the target."
+            ),
+        ),
+    ] = None
+    target_relation: AssessableTargetRelation | None = None
     passage_groups: tuple[ComparisonPassageGroup, ...] = ()
     slots: tuple[ComparisonSlot, ...] = Field(min_length=1)
     propositions: tuple[ComparisonProposition, ...] = ()

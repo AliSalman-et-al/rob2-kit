@@ -16,8 +16,11 @@ without asking for signalling answers, progress confirmation, or final approval.
 Overall risk is deterministic: all five Low Domains produce Low overall; one
 Some concerns Domain with no High produces Some concerns overall; any High
 Domain, or at least two Some concerns Domains with no High Domain, produces
-High overall. The server applies this Cochrane-style aggregation at the Trial
-snapshot; no researcher decision is requested for it.
+High overall. This is the kit's retained aggregation policy (ADR 0035). Cochrane
+guidance qualifies the multiple-concerns escalation by whether the combination
+substantially lowers confidence; the kit currently uses the count rule instead.
+Keep that policy effect separate from evidence supporting individual Domains.
+The server applies it at the Trial snapshot; no researcher decision is requested.
 
 ## Read one complete MCP receipt
 
@@ -279,6 +282,13 @@ you have inspected its complete passage and can assess the cited premise. If
 the passage is unfamiliar or its content is uncertain after a restart or
 compaction, follow
 [Recover omitted Evidence](references/evidence.md#recover-omitted-evidence).
+
+The card's `result_scope` is the assessment target. Its `reported_result` is
+the selected reported endpoint, quantitative tuple, and analysis population;
+`target_relation` preserves their relation. Compare these before using a
+population or count. A randomized target or an ITT analysis population does not
+establish observed outcomes. Preserve exclusions, incomplete follow-up, and
+source disagreements from the reported Result when investigating D2, D3, and D5.
 
 Review inspected passages against each active proposition and check material
 contradictions. Reuse adequate Evidence without another search.

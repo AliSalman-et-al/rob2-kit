@@ -337,8 +337,11 @@ to coach an answer; disagreement requires discard and a fresh run.
 
 Five active Domain checkpoints produce an **AssessmentSnapshot** and make the
 Trial `reviewable`; the Trial is still correctable until closed. The server
-computes the overall judgment at the fifth checkpoint using the deterministic
-Cochrane rule; the model does not submit or override that aggregation.
+computes the overall judgment at the fifth checkpoint using the retained
+deterministic policy in ADR 0035; the model does not submit or override that
+aggregation. Its automatic escalation for multiple Some concerns Domains is a
+local policy: Cochrane guidance additionally qualifies escalation by whether
+the combination substantially lowers confidence in the Result.
 `review_trial` binds the approved Result and
 pack-ordered checkpoint identities to an assessed or typed terminal outcome.
 The server rejects closure when that review is stale. `close_trial` accepts only

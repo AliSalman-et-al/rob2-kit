@@ -210,6 +210,51 @@ def test_result_slot_uses_only_field_bound_passages() -> None:
     assert [item["handle"] for item in slot["passages"]] == [evidence_b["handle"]]
 
 
+def test_card_keeps_reported_completers_distinct_from_randomized_target() -> None:
+    result = {
+        "kind": "assessable",
+        "relation": "narrower",
+        "target": {
+            "outcome_definition": "Disability at one year",
+            "measurement": {"method": "Disability questionnaire"},
+            "time_point_or_window": {"description": "One year"},
+            "intended_analysis_population": "All randomized participants",
+            "intended_effect_measure": "Between-group comparison",
+            "comparison_groups": [
+                {"id": "a", "assignment": "Intervention"},
+                {"id": "b", "assignment": "Placebo"},
+            ],
+        },
+        "reported": {
+            "form": "group_bound_values",
+            "endpoint": {"name": "Disability score"},
+            "analysis_population": "One-year completers: 144 of 162 randomized participants",
+            "group_values": [
+                {"group_id": "a", "statistic": "median", "value": "7", "unit": "points"},
+                {"group_id": "b", "statistic": "median", "value": "14", "unit": "points"},
+            ],
+        },
+        "evidence": [],
+    }
+
+    for domain in ("domain:deviations", "domain:missing", "domain:selection"):
+        card = _comparison_cards(domain, result, {}, [], [])[0]
+        assert card["result_scope"]["scope_basis"] == "assessment_target"
+        assert card["result_scope"]["population"] == "All randomized participants"
+        assert card["reported_result"] == result["reported"]
+        assert card["target_relation"] == "narrower"
+        assert "definition" not in card["reported_result"]["endpoint"]
+        assert "effect_measure" not in card["reported_result"]
+        assert (
+            next(
+                p
+                for p in card["propositions"]
+                if p["name"] in {"protocol_inconsistency", "availability", "document_availability"}
+            )["status"]
+            == "unknown"
+        )
+
+
 def test_selection_card_keeps_unopened_supplement_and_combined_protocol_navigable() -> None:
     def source(source_id: str, role: str, logical_path: str) -> dict[str, object]:
         return {

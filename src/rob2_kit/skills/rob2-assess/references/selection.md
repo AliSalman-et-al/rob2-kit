@@ -66,6 +66,14 @@ platform trial, establish the intervention comparison and cohort. An embedded
 SAP may supply the relevant passages; a registry identifier or report-level
 prespecification label alone does not resolve those premises.
 
+A protocol commitment to finish or amend a SAP before unblinding states an
+intended safeguard, not that the safeguard was carried out. Compare the actual
+plan version and reported analysis with evidence about conduct. If matching
+content and trial circumstances support timing only by inference, use the
+question card's probable answer and state the unresolved timing; do not turn
+future-tense intent into a definitive chronology fact. Exact timestamps are not
+required for a supported probable inference.
+
 If the plan is unavailable after bounded source-specific discovery, record that
 information limit. Missing plans do not prove selective reporting.
 Keep unknown dates and historical applicability explicit. Use captured versions
