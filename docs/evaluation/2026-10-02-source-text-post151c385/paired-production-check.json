@@ -1,0 +1,47 @@
+[
+  {
+    "case": "award-10-2018",
+    "baseline_answers": {
+      "sq:missing:data-available": "probably_no",
+      "sq:missing:evidence-unbiased": "probably_no",
+      "sq:missing:true-value-dependent": "yes",
+      "sq:missing:likely-dependent": "no_information"
+    },
+    "post_answers": {
+      "sq:missing:data-available": "no_information",
+      "sq:missing:evidence-unbiased": "probably_no",
+      "sq:missing:true-value-dependent": "yes",
+      "sq:missing:likely-dependent": "no_information"
+    },
+    "post_missing_active_questions": [],
+    "production_evaluator": {
+      "domain_id": "domain:missing",
+      "judgment": "high",
+      "trace": [
+        "missing.likely_dependent"
+      ],
+      "driver_questions": [
+        "sq:missing:likely-dependent"
+      ]
+    },
+    "model_asserted_judgment": "Some concerns due to unresolved outcome availability and no demonstrated bias-correcting analysis; likelihood that missingness depended on true HbA1c is unknown."
+  },
+  {
+    "case": "getgoal-duo1-2013",
+    "baseline_answers": {
+      "sq:missing:data-available": "probably_no",
+      "sq:missing:evidence-unbiased": "probably_no",
+      "sq:missing:true-value-dependent": "yes"
+    },
+    "post_answers": {
+      "sq:missing:data-available": "no_information"
+    },
+    "post_missing_active_questions": [
+      "sq:missing:evidence-unbiased"
+    ],
+    "production_evaluator": {
+      "rejected": "answers must be supplied exactly for active questions; missing=['sq:missing:evidence-unbiased'], inactive=[]"
+    },
+    "model_asserted_judgment": "No information: the supplied evidence does not establish whether HbA1c outcome data were available for all or nearly all randomized participants. The modified ITT/LOCF result is not itself evidence of complete observed outcome data."
+  }
+]
