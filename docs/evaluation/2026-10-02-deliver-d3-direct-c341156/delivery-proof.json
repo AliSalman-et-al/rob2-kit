@@ -1,0 +1,39 @@
+{
+  "all_13_direct_outputs_match_native_server_response": true,
+  "custom_code_calls": 0,
+  "context_pages": [
+    {
+      "index": 0,
+      "count": 4,
+      "requested_bytes": 24000,
+      "model_received_exact_native_response": true,
+      "next_cursor": "dcp2.0b63681b86c646f2a526c77957bdab99.1",
+      "model_output_bytes": 22598
+    },
+    {
+      "index": 1,
+      "count": 4,
+      "requested_bytes": 24000,
+      "model_received_exact_native_response": true,
+      "next_cursor": "dcp2.0b63681b86c646f2a526c77957bdab99.2",
+      "model_output_bytes": 10826
+    },
+    {
+      "index": 2,
+      "count": 4,
+      "requested_bytes": 24000,
+      "model_received_exact_native_response": true,
+      "next_cursor": "dcp2.0b63681b86c646f2a526c77957bdab99.3",
+      "model_output_bytes": 14345
+    },
+    {
+      "index": 3,
+      "count": 4,
+      "requested_bytes": 24000,
+      "model_received_exact_native_response": true,
+      "next_cursor": null,
+      "model_output_bytes": 10809
+    }
+  ],
+  "schema_visibility": "Direct function calls observed. Both save payloads use correct nested answer/basis types; first repair is active-path completeness, not argument-shape validation. Raw model-request JSON schemas are not stored in the rollout. Contemporaneous complete server inputs recorded in ../2026-10-02-direct-mcp-delivery/selected-input-schemas.json."
+}
