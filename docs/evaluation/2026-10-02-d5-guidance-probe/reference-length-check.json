@@ -1,0 +1,10 @@
+{
+  "before": {
+    "all_justifications_at_most_55_words": true,
+    "all_real_case_source_refs_supplied": true
+  },
+  "after": {
+    "all_justifications_at_most_55_words": true,
+    "all_real_case_source_refs_supplied": true
+  }
+}

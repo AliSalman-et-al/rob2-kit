@@ -1,0 +1,33 @@
+{
+  "case": "after",
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-02-d5-guidance-probe/after/response.txt",
+    "-"
+  ],
+  "started_at_utc": "2026-10-02T10:15:37.427841+00:00",
+  "completed_at_utc": "2026-10-02T10:16:09.820221+00:00",
+  "elapsed_seconds": 32.39,
+  "exit_code": 0,
+  "stop_reason": null,
+  "usage": {
+    "input_tokens": 17310,
+    "cached_input_tokens": 3840,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 1424,
+    "reasoning_output_tokens": 0
+  },
+  "response_sha256": "335f53f4649c4a4c6f73300a1db513a2ea4d28a8185366534f305e1e55333505"
+}
