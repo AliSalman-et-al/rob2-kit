@@ -34,7 +34,11 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     save = next(tool for tool in tools if tool.name == "save_domain_judgment")
     answer = save.input_schema["properties"]["answers"]["items"]
     assert set(answer["required"]) == {
-        "question_id", "answer", "justification", "unknowns", "counterevidence"
+        "question_id",
+        "answer",
+        "justification",
+        "unknowns",
+        "counterevidence",
     }
     assert answer["additionalProperties"] is False
     citation = answer["properties"]["bases"]["items"]
@@ -45,11 +49,15 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     assert point["properties"]["evidence"]["type"] == "array"
     assert set(point["required"]) == {"evidence", "implication"}
     assert set(answer["properties"]["answer"]["enum"]) == {
-        "yes", "probably_yes", "probably_no", "no", "no_information"
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information",
     }
 
 
-@pytest.mark.parametrize("failure", ["wrong_names", "handle_list"])
+@pytest.mark.parametrize("failure", ["wrong_names", "handle_list", "missing_data"])
 def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
     tmp_path: Path, failure: str
 ) -> None:
@@ -58,10 +66,25 @@ def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
     basis = draft["answers"][0]["bases"][0]
     if failure == "wrong_names":
         draft["answers"][0]["bases"][0] = {
-            "evidence_handle": basis["evidence"], "relationship": basis["role"]
+            "evidence_handle": basis["evidence"],
+            "relationship": basis["role"],
         }
-    else:
+    elif failure == "handle_list":
         basis["evidence"] = [basis["evidence"]]
+    else:
+        draft["answers"][0]["missing_data"] = [
+            {
+                "arm": "trial arm",
+                "population": "randomized participants",
+                "unit": "participants",
+                "time_point": "follow-up",
+                "randomized": 100,
+                "observed": 80,
+                "outcome_status": "unknown",
+                "population_role": "randomized",
+                "post_randomization_exclusions": [],
+            }
+        ]
     before = _state(workspace)
 
     async def call():
@@ -73,7 +96,18 @@ def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
     assert result.is_error
     text = "\n".join(item.text for item in result.content if hasattr(item, "text"))
     assert "invalid_tool_arguments" in text
-    assert "/answers/0/bases/0/evidence" in text
+    if failure == "missing_data":
+        assert "/answers/0/missing_data/0/outcome_status" in text
+        recovery = json.loads(text.split(" Argument recovery: ", 1)[1])
+        row_schema = recovery["missing_data_row_schema"]
+        assert row_schema["additionalProperties"] is False
+        assert {"arm", "population", "unit", "time_point"} <= set(row_schema["required"])
+        assert not {"outcome_status", "population_role", "post_randomization_exclusions"} & set(
+            row_schema["properties"]
+        )
+        assert {"semantics", "exclusions", "observed"} <= set(row_schema["properties"])
+    else:
+        assert "/answers/0/bases/0/evidence" in text
     assert "errors.pydantic.dev" not in text
     example_text = text.split("real Evidence): ", 1)[1].split(" bases[].evidence", 1)[0]
     example = DomainSaveAnswer.model_validate(json.loads(example_text))

@@ -1,0 +1,168 @@
+{
+  "is_error": false,
+  "structured_content": {
+    "outcome": "repair",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 15,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "albert-2013",
+        "domain_id": "domain:missing"
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "repairs": [
+      {
+        "path": "/answers",
+        "code": "answers_must_match_active_questions",
+        "detail": "active IDs: [sq:missing:data-available, sq:missing:evidence-unbiased]; missing active IDs: [sq:missing:evidence-unbiased]. Supplied inactive branch answers are ignored.",
+        "answer_path": {
+          "active_question_ids": [
+            "sq:missing:data-available",
+            "sq:missing:evidence-unbiased"
+          ],
+          "missing_question_ids": [
+            "sq:missing:evidence-unbiased"
+          ],
+          "minimal_answer_schema": {
+            "additionalProperties": false,
+            "properties": {
+              "question_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+                "type": "string"
+              },
+              "answer": {
+                "enum": [
+                  "yes",
+                  "probably_yes",
+                  "probably_no",
+                  "no",
+                  "no_information"
+                ],
+                "type": "string"
+              },
+              "bases": {
+                "default": [],
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "evidence": {
+                      "pattern": "^eh_[0-9a-f]{8,64}$",
+                      "type": "string"
+                    },
+                    "role": {
+                      "enum": [
+                        "direct_support",
+                        "indirect_support",
+                        "contradiction",
+                        "context",
+                        "inference"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "evidence",
+                    "role"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "absence_searches": {
+                "default": [],
+                "items": {
+                  "pattern": "^sr_[0-9a-f]{8,64}$",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "limitations": {
+                "default": [],
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "premise": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "stopping_rationale": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "search_receipt": {
+                      "anyOf": [
+                        {
+                          "pattern": "^sr_[0-9a-f]{8,64}$",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "required": [
+                    "premise",
+                    "stopping_rationale"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "justification": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "unknowns": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "counterevidence": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "evidence": {
+                      "items": {
+                        "pattern": "^eh_[0-9a-f]{8,64}$",
+                        "type": "string"
+                      },
+                      "minItems": 1,
+                      "type": "array"
+                    },
+                    "implication": {
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "evidence",
+                    "implication"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "question_id",
+              "answer",
+              "justification",
+              "unknowns",
+              "counterevidence"
+            ],
+            "type": "object"
+          },
+          "instruction": "Supply host-owned answers for every listed active question using its context guidance. Preserve supported answers and bases. Later answers can activate further questions; follow any subsequent path repair. No checkpoint was saved."
+        }
+      }
+    ]
+  },
+  "content_text": []
+}

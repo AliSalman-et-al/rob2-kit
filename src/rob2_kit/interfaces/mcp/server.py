@@ -145,6 +145,29 @@ _DOMAIN_ANSWER_EXAMPLE = {
 }
 
 
+def _construction_schema(
+    model: type[StrictModel], *, minimal_answer: bool = False
+) -> dict[str, Any]:
+    """Return grammar from the actual input model, without scientific recommendations."""
+    schema = dereference_refs(model.model_json_schema())
+    if minimal_answer:
+        names = set(schema["required"]) | {"bases", "absence_searches", "limitations"}
+        schema["properties"] = {k: v for k, v in schema["properties"].items() if k in names}
+
+    def compact(value: Any) -> Any:
+        if isinstance(value, dict):
+            return {
+                k: compact(v)
+                for k, v in value.items()
+                if k not in {"title", "description", "$defs"}
+            }
+        if isinstance(value, list):
+            return [compact(item) for item in value]
+        return value
+
+    return compact(schema)
+
+
 class _InputSchemaDelivery(Middleware):
     async def on_list_tools(
         self,
@@ -174,6 +197,11 @@ class _InputSchemaDelivery(Middleware):
                 {"path": "/" + "/".join(map(str, item["loc"])), "detail": item["msg"]}
                 for item in cause.errors(include_url=False, include_input=False)
             ]
+            recovery = {
+                "minimal_answer_schema": _construction_schema(DomainSaveAnswer, minimal_answer=True)
+            }
+            if any("/missing_data" in defect["path"] for defect in defects):
+                recovery["missing_data_row_schema"] = _construction_schema(MissingDataRow)
             raise ToolError(
                 "invalid_tool_arguments: no assessment was submitted or saved. "
                 + json.dumps(defects)
@@ -182,6 +210,8 @@ class _InputSchemaDelivery(Middleware):
                 + " bases[].evidence is one handle string; counterevidence[].evidence is a "
                 "nonempty handle list paired with implication. Preserve your scientific "
                 "choices and reasoning; correct only the reported construction errors."
+                + " Argument recovery: "
+                + json.dumps(recovery, separators=(",", ":"))
             ) from error
 
 
@@ -1572,6 +1602,22 @@ def _content(
             "continuation": value.get("continuation", current.get("continuation")),
             "authoritative_wording": current.get("authoritative_wording"),
         }
+    if tool == "save_domain_judgment":
+        for defect in value.get("repairs", []):
+            if "answer_path" in defect:
+                defect["answer_path"].update(
+                    minimal_answer_schema=_construction_schema(
+                        DomainSaveAnswer, minimal_answer=True
+                    ),
+                    instruction=(
+                        "Supply host-owned answers for every listed active question using "
+                        "its context "
+                        "guidance. Preserve supported answers and bases. Later answers can "
+                        "activate "
+                        "further questions; follow any subsequent path repair. "
+                        "No checkpoint was saved."
+                    ),
+                )
     normalized = _validate_response(tool, normalize(tool, value))
     if tool == "get_domain_context":
         # Validate the compact public variant as well as the application

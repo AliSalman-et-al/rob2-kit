@@ -184,10 +184,18 @@ class PublicHead(PublicModel):
     authoritative_wording: str = Field(min_length=1)
 
 
+class AnswerPathRecovery(PublicModel):
+    active_question_ids: tuple[QuestionId, ...]
+    missing_question_ids: tuple[QuestionId, ...]
+    minimal_answer_schema: dict[str, Any]
+    instruction: str
+
+
 class RepairDefect(PublicModel):
     path: str = Field(min_length=1)
     code: str = Field(min_length=1)
     detail: str = Field(min_length=1)
+    answer_path: AnswerPathRecovery | None = None
 
 
 class ConflictData(PublicModel):

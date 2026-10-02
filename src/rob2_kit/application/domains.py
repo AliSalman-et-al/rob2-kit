@@ -2614,13 +2614,19 @@ def save_domain_judgment(
     missing_active = [item for item in active if item not in answers]
     if missing_active:
         repairs.append(
-            _repair(
-                "/answers",
-                "answers_must_match_active_questions",
-                "active IDs: "
-                f"[{_ids(active)}]; missing active IDs: [{_ids(missing_active)}]. "
-                "Supplied inactive branch answers are ignored.",
-            )
+            {
+                **_repair(
+                    "/answers",
+                    "answers_must_match_active_questions",
+                    "active IDs: "
+                    f"[{_ids(active)}]; missing active IDs: [{_ids(missing_active)}]. "
+                    "Supplied inactive branch answers are ignored.",
+                ),
+                "answer_path": {
+                    "active_question_ids": active,
+                    "missing_question_ids": missing_active,
+                },
+            }
         )
     active_answer_items = [
         items_by_question[question_id][0] for question_id in active if question_id in answers
