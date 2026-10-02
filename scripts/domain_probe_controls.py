@@ -17,7 +17,8 @@ class ProbeLimits(BaseModel):
     wall_seconds: int = Field(ge=1)
     idle_seconds: int = Field(ge=1)
     tool_calls: int = Field(ge=1)
-    rejected_submissions: int = Field(ge=1)
+    save_attempts: int = Field(ge=1)
+    identical_rejections: int = Field(ge=2)
     input_tokens: int = Field(ge=1)
     uncached_input_tokens: int = Field(ge=1)
     output_tokens: int = Field(ge=1)
@@ -34,8 +35,11 @@ class ProbeLimits(BaseModel):
         return (
             "\n\nProbe guards (one invocation; reactive checks may overshoot within a generation): "
             + json.dumps(self.model_dump(), sort_keys=True)
-            + ". Stop after an accepted save, the rejection limit or first observed guard. "
-            "At most one model-owned construction correction is allowed within these same "
+            + f". Stop after an accepted save, {self.save_attempts} total save attempts, "
+            f"{self.identical_rejections} consecutive identical rejections "
+            "or first observed guard. "
+            f"At most {self.save_attempts - 1} model-owned construction corrections are allowed "
+            "within these same "
             "guards; no new invocation or automatic retry. Use returned source recovery and "
             "preserve unresolved scientific premises. The launcher exposes rob2 tools directly "
             "with their complete typed inputs. Follow every returned Domain context and source "
@@ -86,12 +90,14 @@ def guard_stop(
     usage: Mapping[str, int],
     *,
     tools: int,
-    rejections: int,
+    saves: int,
+    identical_rejections: int,
     wall_seconds: float,
     idle_seconds: float,
 ) -> str | None:
     checks = (
-        (rejections >= limits.rejected_submissions, "rejected submission limit"),
+        (saves >= limits.save_attempts, "save attempt limit"),
+        (identical_rejections >= limits.identical_rejections, "repeated identical rejection"),
         (tools >= limits.tool_calls, "tool limit"),
         (usage.get("input_tokens", 0) >= limits.input_tokens, "total input threshold"),
         (
@@ -104,3 +110,34 @@ def guard_stop(
         (idle_seconds >= limits.idle_seconds, "idle threshold"),
     )
     return next((reason for reached, reason in checks if reached), None)
+
+
+def rejection_fingerprint(result: dict[str, Any]) -> str:
+    """Compare validation defects, ignoring volatile receipt heads and syntax examples."""
+    structured = result.get("structured_content") or {}
+    repairs = structured.get("repairs")
+    if repairs:
+        defects = [
+            {
+                "code": row["code"],
+                "path": row["path"],
+                "active": (row.get("answer_path") or {}).get("active_question_ids"),
+                "missing": (row.get("answer_path") or {}).get("missing_question_ids"),
+                "detail": None if row.get("answer_path") else row["detail"],
+            }
+            for row in repairs
+        ]
+    else:
+        text = "\n".join(item.get("text", "") for item in result.get("content", []))
+        prefix = "invalid_tool_arguments: no assessment was submitted or saved. "
+        if text.startswith(prefix):
+            defects, _ = json.JSONDecoder().raw_decode(text[len(prefix) :])
+        else:
+            defects = [{"error": text or structured}]
+    return hashlib.sha256(
+        json.dumps(
+            sorted(defects, key=lambda row: json.dumps(row, sort_keys=True)),
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode()
+    ).hexdigest()

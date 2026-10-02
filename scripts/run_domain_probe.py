@@ -13,7 +13,7 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from domain_probe_controls import ProbeLimits, guard_stop, load_controls
+from domain_probe_controls import ProbeLimits, guard_stop, load_controls, rejection_fingerprint
 
 _REPO = Path(__file__).resolve().parents[1]
 
@@ -67,6 +67,9 @@ def run(root: Path) -> None:
     records: dict[str, dict[str, Any]] = {}
     code_calls = code_completed = mcp_calls = mcp_completed = rejections = saves = 0
     accepted = None
+    saves_completed = identical_rejections = 0
+    previous_rejection = None
+    rejection_records: list[dict[str, Any]] = []
     start = last = time.monotonic()
     reason = None
     usage: dict[str, int] = {}
@@ -109,6 +112,7 @@ def run(root: Path) -> None:
 
     def consume(raw: bytes) -> None:
         nonlocal last, mcp_calls, mcp_completed, saves, rejections, reason, accepted
+        nonlocal saves_completed, identical_rejections, previous_rejection
         log.write(raw)
         log.flush()
         event = json.loads(raw)
@@ -121,12 +125,26 @@ def run(root: Path) -> None:
             if event.get("type") == "item.completed":
                 mcp_completed += 1
                 if item.get("tool") == "save_domain_judgment":
+                    saves_completed += 1
                     result = (item.get("result") or {}).get("structured_content") or {}
                     if result.get("outcome") == "success":
                         accepted = result
                         reason = reason or "accepted Domain checkpoint"
                     else:
                         rejections += 1
+                        fingerprint = rejection_fingerprint(item.get("result") or {})
+                        identical_rejections = (
+                            identical_rejections + 1 if fingerprint == previous_rejection else 1
+                        )
+                        previous_rejection = fingerprint
+                        rejection_records.append(
+                            {
+                                "save_attempt": saves_completed,
+                                "fingerprint": fingerprint,
+                                "consecutive_identical": identical_rejections,
+                                "result": item.get("result"),
+                            }
+                        )
         if item.get("type") == "command_execution":
             reason = reason or "unapproved shell access"
 
@@ -155,11 +173,14 @@ def run(root: Path) -> None:
                 read_usage()
                 if max(code_calls, mcp_calls) > limits.tool_calls:
                     reason = reason or "tool-start limit exceeded"
+                if saves > limits.save_attempts:
+                    reason = reason or "save-start limit exceeded"
                 reason = reason or guard_stop(
                     limits,
                     usage,
                     tools=max(code_completed, mcp_completed),
-                    rejections=rejections,
+                    saves=saves_completed,
+                    identical_rejections=identical_rejections,
                     wall_seconds=time.monotonic() - start,
                     idle_seconds=time.monotonic() - last,
                 )
@@ -194,10 +215,22 @@ def run(root: Path) -> None:
                 "mcp_calls_completed": mcp_completed,
                 "accepted_checkpoint": accepted,
                 "rejections": rejections,
+                "save_calls_completed": saves_completed,
+                "rejection_records": rejection_records,
+                "consecutive_identical_rejections": identical_rejections,
                 "usage": usage,
                 "uncached_input_tokens": usage.get("input_tokens", 0)
                 - usage.get("cached_input_tokens", 0),
                 "input_overshoot": max(0, usage.get("input_tokens", 0) - limits.input_tokens),
+                "uncached_input_overshoot": max(
+                    0,
+                    usage.get("input_tokens", 0)
+                    - usage.get("cached_input_tokens", 0)
+                    - limits.uncached_input_tokens,
+                ),
+                "output_overshoot": max(0, usage.get("output_tokens", 0) - limits.output_tokens),
+                "tool_start_overshoot": max(0, max(code_calls, mcp_calls) - limits.tool_calls),
+                "save_start_overshoot": max(0, saves - limits.save_attempts),
                 "no_invocation_retry": True,
             },
             indent=2,
