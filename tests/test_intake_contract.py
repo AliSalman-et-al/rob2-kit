@@ -1120,6 +1120,32 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         },
     )["data"]["evidence"]
 
+    note = {
+        "text": "A randomized population label does not establish observed outcome availability.",
+        "sources": [
+            {"source_id": selected["source_id"], "page": 1, "start_line": 1, "end_line": 1}
+        ],
+    }
+    notes = _call(
+        tmp_path,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "premise_records": [
+                    {
+                        "proposition": "Outcome availability was nearly complete.",
+                        "status": "unresolved",
+                        "counterevidence": [note],
+                        "unresolved_component": "Observed counts and follow-up losses are unknown.",
+                        "next_action": "Read the outcome-status accounting.",
+                    }
+                ],
+            }
+        },
+    )
+    assert notes["outcome"] == "success", notes
+
     # A new Client invocation stands in for a fresh host process.  The only
     # material it needs from the old process is the bounded selection record.
     compact = _call(tmp_path, "get_status", {})
@@ -1134,6 +1160,12 @@ def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Pat
         {"source_id": selected["source_id"], "page": 1, "start_line": 1, "end_line": 1}
     ]
     resumed = _call(tmp_path, "get_status", {"include_evidence_text": True})
+    assert {key: value for key, value in compact["data"].items() if key != "selected_evidence"} == {
+        key: value for key, value in resumed["data"].items() if key != "selected_evidence"
+    }
+    premise = compact["data"]["working_checkpoint"]["checkpoint"]["premise_records"][0]
+    assert premise["counterevidence"] and premise["unresolved_component"]
+    assert premise["next_action"] == "Read the outcome-status accounting."
     recovered = next(
         item
         for item in resumed["data"]["selected_evidence"]
