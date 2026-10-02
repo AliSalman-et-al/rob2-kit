@@ -87,3 +87,27 @@ its new capture timestamp/raw hash/projection hash, and compare the endpoint,
 population, imputation and denominator fields with the preserved old projection.
 Record differences before any model call. Semantic similarity does not establish
 byte-identical replay. The proposal and its guards above remain unexecuted.
+
+## Authorized supplied-evidence diagnostic preflight
+
+A later instruction authorized precisely two supplied-evidence D3 diagnostics
+(AWARD-10 and GetGoal-Duo1) using the preserved projections and existing dossiers.
+These would isolate interpretation under production guidance; they would not be
+exact benchmark replay, natural retrieval, or end-to-end fresh assessments. No
+raw JSON or new network capture is required for this distinct diagnostic.
+
+The instruction tightened per-case limits to 30,000 cumulative input tokens,
+20,000 uncached input tokens, 4,000 output tokens, 15 tool calls, 8 minutes wall
+and 2 minutes idle, with no retry or third case. It required preflight reporting
+before any model call if the harness could not safely enforce these caps.
+
+Preflight stopped before launch. Installed `codex-cli 0.159.0` rejected
+`model_max_output_tokens = 4000` under strict configuration validation as an
+unknown field. This local check used an empty isolated auth home and a nonexistent
+output-schema sentinel, and exited during configuration loading. No diagnostic
+model turn started. No supported hard completion cap was verified. Completion-time
+usage events can support monitored stop triggers, but cannot guarantee that an
+in-flight response stays within a hard charged-output limit. A supported request
+cap, or an explicit decision allowing monitored limits with in-flight overshoot,
+is needed before launch. Neither the strict caps nor the model/provider have
+been silently changed. The earlier broader proposal remains unexecuted as well.

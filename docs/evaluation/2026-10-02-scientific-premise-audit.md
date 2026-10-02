@@ -280,3 +280,16 @@ are inspectable in the retained projections; endpoint-observed week-24 counts
 are not established by those fields alone. Any future new capture must be labeled
 as changed input, fingerprinted and semantically compared before a model call.
 The two-case D3 hypothesis and committed stop guards are unchanged and unexecuted.
+
+## Supplied-evidence diagnostic cap preflight
+
+The next authorized step changed from exact raw-input replay to two explicitly
+labeled supplied-evidence projection diagnostics under current production D3
+guidance, using `gpt-6-luna` medium. Its stricter caps were 30k total input, 20k
+uncached input, 4k output, 15 tools, 8 minutes wall and 2 minutes idle per case.
+A local strict-config check rejected the proposed hard completion-limit field
+in installed CLI 0.159.0 before any model call. Completion-time usage observations
+cannot guarantee an in-flight charged-token ceiling. The preflight blocker was
+reported as required; no scientific output, retry, new capture or model substitution
+occurred. Local structured evidence is retained in
+`diagnostics/registry-recovery/diagnostic-cap-preflight.json`.
