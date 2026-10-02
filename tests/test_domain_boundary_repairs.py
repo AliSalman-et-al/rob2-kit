@@ -650,8 +650,10 @@ def test_domain_context_recovers_uncommitted_trial_evidence(tmp_path: Path) -> N
     assert recovered[domain_evidence["handle"]]["inclusion_reason"] == "explicit_carry_forward"
 
 
+@pytest.mark.parametrize("counter_kind", ["direct_support", "context"])
 def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
     tmp_path: Path,
+    counter_kind: str,
 ) -> None:
     workspace = _workspace(tmp_path)
     main = workspace / "input" / "trial" / "main.txt"
@@ -679,11 +681,18 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
         },
     )["data"]["evidence"]
     revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
-    saved = _call(
-        workspace,
-        "save_domain_judgment",
-        _domain_draft("trial", "domain:randomization", revision, evidence=domain_evidence),
-    )
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence=domain_evidence)
+    counter_index = 1 if counter_kind == "context" else 0
+    for answer in draft["answers"]:
+        if counter_kind == "context":
+            answer["bases"].append({"kind": counter_kind, "evidence": domain_evidence["handle"]})
+        answer["counterevidence"] = [
+            {
+                "basis_index": counter_index,
+                "implication": "This passage limits certainty in the answer.",
+            }
+        ]
+    saved = _call(workspace, "save_domain_judgment", draft)
     assert saved["outcome"] == "success", saved
     (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
 
@@ -694,12 +703,34 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
     context = _call(
         workspace,
         "get_domain_context",
-        {"domain_id": "domain:randomization", "include_candidates": True},
+        {"domain_id": "domain:randomization"},
     )["data"]
 
     recovered = {item["identity"]: item for item in context["evidence"]}
     assert recovered[domain_evidence["identity"]]["handle"] == domain_evidence["handle"]
     assert recovered[domain_evidence["identity"]]["quote"] == domain_evidence["quote"]
+
+    for answer in context["answers"]:
+        assert answer["counterevidence"] == [
+            {
+                "basis_index": counter_index,
+                "implication": "This passage limits certainty in the answer.",
+            }
+        ]
+        assert answer["bases"][counter_index]["kind"] == counter_kind
+        assert answer["bases"][counter_index]["evidence"] == domain_evidence["identity"]
+    passage = recovered[domain_evidence["identity"]]
+    reread = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {key: passage[key] for key in ("source_id", "page", "start_line", "end_line")}
+            ],
+        },
+    )["data"]["pages"][0]["numbered_text"]
+    assert domain_evidence["quote"] in reread
 
 
 def test_domain_context_scopes_candidates_before_applying_the_budget(tmp_path: Path) -> None:

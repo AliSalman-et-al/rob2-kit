@@ -209,3 +209,49 @@ Final cheap validation for this round: five focused context/search checks passed
 the strengthened multi-question/adjacent-read integration check passed, and 13
 comparison-card/contract-budget checks passed. These checks establish projection,
 reuse and recovery behavior, not a measured agent accuracy benefit.
+
+## Final bounded pass and decision point
+
+The remaining strongest source-verified hypothesis is semantic enactment after
+reading, rather than another demonstrated delivery failure. AWARD-10 read its
+registry's evaluable-data population definition (line 1323, recorded read window
+1250–1330); its D3 Probably Yes warrant nevertheless treats the evaluable MMRM
+population as near-complete availability while admitting observed week-24 counts
+are unknown. MONARCH-plus read its censored-population definition (line 3190,
+windows 3156–3337 and 3165–3339); its affirmative warrant leans on events plus
+censoring accounting, while actual post-discontinuation assessment remains a gap.
+GetGoal-Duo1 read the analogous postbaseline/LOCF definition (line 1830, windows
+1816–1835 and 1830–1857) and retained No information about observed week-24 outcomes.
+These contrasting warrants justify a targeted hypothesis, not a retrospective
+error count or forced answer. Full-source adjudication is needed before deciding
+whether the affirmative judgments are defensible.
+
+Across the previously extracted D2/D3/D5 records, 55 counterpoints refer to bases:
+27 direct support, 15 context, five contradiction, three indirect support and five
+inference. Fifty non-contradiction counterpoints occur across 28 cases. A basis's
+relationship kind therefore cannot alone identify counterevidence. The existing
+checkpoint projection retains the actual counterpoint array and referenced bases;
+no observed dropped-counterpoint mechanism justified another runtime change.
+Instead, the existing cache-loss regression now covers direct-support and context
+counterpoints with candidate delivery off. It checks implication/index preservation,
+canonical identity retention and an exact source reread after derivative-cache loss.
+The explicit-contradiction grouping check also passed. An initial test fixture
+incorrectly duplicated an identical direct-support basis and was rightly rejected;
+the corrected two variants passed. No unresolved failure from this focused batch
+remains, and no broad suite rerun was made.
+
+Reproducibility also needs a preflight decision: all 70 registry Sources in these
+retained Code states lack raw bytes at their expected server-owned paths in this
+checkout. Text projections and fingerprints survive; this does not prove that raw
+bytes are unavailable everywhere. Exact future replay requires recovering matching
+captures or explicitly declaring new captures as changed input. No registry data
+were reconstructed or silently substituted.
+
+The companion `2026-10-02-next-validation-proposal.md` proposes two cold-start,
+D3-only probes using the existing AWARD-10 and GetGoal-Duo1 dossiers, with explicit
+scope review, registry replay preflight and token/tool/time/idle stop guards.
+It has not been executed. This is the decision point: validate the cumulative
+mechanism changes and adjudicate their source-grounded warrants before adding
+more unmeasured runtime rules. No new checklist, label heuristic or deterministic
+semantic gate was manufactured in this final pass. Earlier test totals remain
+checkpoint-specific; no latest-full-suite or latest-CI-green claim is made.
