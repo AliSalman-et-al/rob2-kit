@@ -89,9 +89,9 @@ from rob2_kit.application.working import save_working_checkpoint as _save_workin
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
     MISSING_GROUP_VALUE_UNIT,
-    DomainAnswer,
     DomainId,
     DomainRevisionBasis,
+    DomainSaveAnswer,
     ExpectedRevision,
     Identity,
     MissingDataRow,
@@ -3837,15 +3837,12 @@ def get_domain_context(
     description=(
         "Submit the complete Domain draft once with its expected revision. For every active "
         "answer, explain why its cited bases support the option for the approved Result, list "
-        "unknowns (use [] when none). Bases are flat tagged objects, for example "
-        '{"kind":"context","evidence":"eh_0123456789abcdef"} or '
-        '{"kind":"limitation","unresolved_premise":"A material premise remains unresolved.",'
-        '"stopping_rationale":"The inspected sources did not establish it."}. '
-        "Use kind, not use; do not nest a basis inside context or limitation. "
-        "List counterevidence as objects with basis_index and implication, by index into "
-        "the original bases "
-        "(use [] when none). Inactive branch answers may omit those fields. A limitation basis "
-        "includes unresolved_premise and stopping_rationale. For a correction, supply the exact "
+        "unknowns (use [] when none). Put selected Evidence with its role in bases, zero-hit "
+        "search receipts in absence_searches, and unresolved premises plus stopping rationales "
+        "in limitations. The server derives the absence/limitation tags; do not put them in bases. "
+        "Counterevidence objects reference Evidence basis indexes and explain their implication. "
+        "Inactive branch answers may omit reasoning fields. "
+        "For a correction, supply the exact "
         "prior checkpoint identity and a new_evidence, self_correction, or mechanical_repair "
         "revision basis. The server checks structure, references, activation, and workflow rules; "
         "success does not establish scientific correctness. If a repair is returned, correct the "
@@ -3864,7 +3861,7 @@ def save_domain_judgment(
         ExpectedRevision, Field(description="Current revision from get_domain_context.")
     ],
     answers: Annotated[
-        list[DomainAnswer],
+        list[DomainSaveAnswer],
         Field(
             min_length=1,
             description=(
@@ -3917,7 +3914,7 @@ def save_domain_judgment(
         "trial_id": trial_id,
         "domain_id": domain_id,
         "expected_revision": expected_revision,
-        "answers": [answer.model_dump(mode="json") for answer in answers],
+        "answers": [answer.canonical_payload() for answer in answers],
         "supersedes": supersedes,
         "revision_basis": (
             revision_basis.model_dump(mode="json") if revision_basis is not None else None

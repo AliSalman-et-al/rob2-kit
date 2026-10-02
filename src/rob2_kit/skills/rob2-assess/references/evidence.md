@@ -224,24 +224,27 @@ Use the question card's `options`; the example values are fictional.
 }
 ```
 
-Use a limitation basis separately when the source leaves a premise unresolved.
-
-Use these exact shapes for the three basis forms:
+Keep inspected Evidence separate from unresolved information in the submission:
 
 ```json
-{"kind": "context", "evidence": "eh_0123456789abcdef"}
-{"kind": "absence", "search_receipt": "sr_0123456789abcdef"}
-{"kind": "limitation", "unresolved_premise": "The captured reports leave this premise unresolved.", "stopping_rationale": "Relevant retrieval was reviewed, but the premise remains unresolved.", "search_receipt": "sr_0123456789abcdef"}
-{"kind": "limitation", "unresolved_premise": "The captured reports leave this premise unresolved.", "stopping_rationale": "The relevant section was read, but the premise remains unresolved."}
+{
+  "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+  "absence_searches": ["sr_0123456789abcdef"],
+  "limitations": [{
+    "unresolved_premise": "The captured reports leave this premise unresolved.",
+    "stopping_rationale": "The relevant section was read, but the premise remains unresolved."
+  }]
+}
 ```
 
-`context`, `direct_support`, `indirect_support`, `contradiction`, and
-`inference` use a selected `evidence` handle. `absence` uses an untruncated
-zero-hit `search_receipt`. `limitation` uses an explicit `unresolved_premise`
-and `stopping_rationale`. Its current-Trial `search_receipt` is optional and
-may be truncated. When present, copy the actual receipt returned for the
-current Trial. A basis kind describes how the premise is used;
-it does not add facts to the cited passage.
+Use only the collections that apply. `bases` entries carry selected Evidence and
+an explicit scientific role; that role adds no facts. `absence_searches` accepts
+untruncated zero-hit receipts, not claims of scientific absence. A limitation
+can include a current-Trial `search_receipt` when useful; direct reads require
+none. The server derives the canonical absence/limitation tags. Do not nest a
+basis under `context` or `limitation`, or use those tags in the Evidence array.
+Counterevidence objects reference Evidence basis indexes and state their
+implication; an index alone does not explain a counterpoint.
 
 ## Recover an unresolved premise
 

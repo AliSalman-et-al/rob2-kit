@@ -14,6 +14,7 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -261,7 +262,9 @@ def _call_raw(workspace: Path, arguments: dict[str, Any]) -> dict[str, Any]:
                     for answer in arguments["answers"]
                 ],
             }
-            result = await client.call_tool("save_domain_judgment", reasoning, raise_on_error=False)
+            result = await client.call_tool(
+                "save_domain_judgment", _domain_submission(reasoning), raise_on_error=False
+            )
             return dict(result.structured_content or {})
 
     return asyncio.run(invoke())
@@ -298,42 +301,27 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         "missing_data",
         "unknowns",
         "counterevidence",
+        "limitations",
+        "absence_searches",
     }
-    bases = [
-        _resolve_local(draft, item) for item in answer["properties"]["bases"]["items"]["oneOf"]
-    ]
-    kinds = {
-        item["properties"]["kind"].get("const") or item["properties"]["kind"]["enum"][0]
-        for item in bases
-    }
-    assert kinds == {
-        "direct_support",
-        "absence",
-        "limitation",
-    }
-    assert all("question_id" not in item["properties"] for item in bases)
-    direct = next(
-        item
-        for item in bases
-        if item["properties"]["kind"].get("enum")
-        == ["direct_support", "indirect_support", "contradiction", "context", "inference"]
-    )
+    direct = _resolve_local(draft, answer["properties"]["bases"]["items"])
     assert set(direct["properties"]) == {"kind", "evidence"}
-    absence = next(item for item in bases if item["properties"]["kind"].get("const") == "absence")
-    assert absence["properties"]["search_receipt"]["pattern"] == r"^sr_[0-9a-f]{8,64}$"
-    limitation = next(
-        item for item in bases if item["properties"]["kind"].get("const") == "limitation"
-    )
-    assert set(limitation["properties"]) == {
-        "kind",
+    assert "oneOf" not in answer["properties"]["bases"]["items"]
+    assert direct["properties"]["kind"]["enum"] == [
+        "direct_support",
+        "indirect_support",
+        "contradiction",
+        "context",
+        "inference",
+    ]
+    limit = _resolve_local(draft, answer["properties"]["limitations"]["items"])
+    assert set(limit["properties"]) == {
         "unresolved_premise",
         "stopping_rationale",
         "search_receipt",
     }
-    receipt_schema = limitation["properties"]["search_receipt"]
-    receipt_options = receipt_schema.get("anyOf", [receipt_schema])
-    assert any(option.get("pattern") == r"^sr_[0-9a-f]{8,64}$" for option in receipt_options)
-    assert "search_receipt" not in limitation.get("required", [])
+    assert "kind" not in limit["properties"]
+    assert answer["properties"]["absence_searches"]["items"]["pattern"] == (r"^sr_[0-9a-f]{8,64}$")
     missing_row = _resolve_local(draft, answer["properties"]["missing_data"]["anyOf"][0]["items"])
     assert missing_row["properties"]["basis"]["items"]["pattern"] == r"^eh_[0-9a-f]{8,64}$"
 

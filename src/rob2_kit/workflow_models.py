@@ -1948,52 +1948,56 @@ class EvidenceSufficiencySummary(StrictModel):
         return _identity(self, self.identity)
 
 
-class DomainSaveAnswer(StrictModel):
-    question_id: QuestionId = Field(description="Question ID from the current Domain card.")
-    answer: Answer = Field(
-        description=(
-            "Official RoB 2 answer value from this question card's options. The server checks "
-            "that this value is allowed for the stated question."
-        ),
-    )
-    bases: tuple[DomainBasis, ...] = Field(
-        min_length=1,
-        description=(
-            "Evidence premises for this answer. Definitive yes or no needs direct_support, "
-            "indirect_support, or contradiction; probable answers may also use a limitation, "
-            "valid absence receipt, context, or inference."
-        ),
-    )
-    missing_data: tuple[MissingDataRow, ...] | None = Field(
-        default=None,
-        min_length=1,
-        description=(
-            "Optional source-bound participant-flow facts for the always-active Domain 2.6 "
-            "analysis question, the Domain 2.3 deviation question, or the Domain 3.1 "
-            "outcome-availability question. Counts remain descriptive and do not answer "
-            "any question."
-        ),
-    )
-    justification: str | None = Field(
-        default=None,
-        description=(
-            "Explain how cited facts support this answer when inference, conflict, or "
-            "uncertainty matters."
-        ),
-    )
+class DomainInformationLimit(StrictModel):
+    unresolved_premise: NonBlankText
+    stopping_rationale: NonBlankText
+    search_receipt: SubmittedSearchReceiptHandle | None = None
 
-    @field_validator("justification")
-    @classmethod
-    def justification_is_meaningful(cls, value: str | None) -> str | None:
-        if value is not None and not value.strip():
-            raise ValueError("justification must contain non-whitespace text")
-        return value
+
+class DomainSaveAnswer(StrictModel):
+    """Submission separates inspected Evidence from unresolved information.
+
+    Only the server adds the non-scientific absence/limitation tags. Canonical
+    answers retain their original audit representation.
+    """
+
+    question_id: QuestionId
+    answer: Answer
+    bases: tuple[DirectEvidenceUse, ...] = Field(
+        default=(),
+        description="Selected Evidence and its explicit scientific role; no nested basis objects.",
+    )
+    absence_searches: tuple[SubmittedSearchReceiptHandle, ...] = Field(
+        default=(),
+        description="Scoped zero-hit search receipts; not scientific absence.",
+    )
+    limitations: tuple[DomainInformationLimit, ...] = Field(
+        default=(),
+        description="Unresolved premises and why investigation stopped.",
+    )
+    missing_data: tuple[MissingDataRow, ...] | None = Field(default=None, min_length=1)
+    justification: str | None = None
+    unknowns: tuple[str, ...] | None = None
+    counterevidence: tuple[DomainCounterevidence, ...] | None = Field(
+        default=None,
+        description="Counterpoints use indexes into this answer's Evidence bases only.",
+    )
 
     @model_validator(mode="after")
-    def missing_data_has_flow_question(self) -> DomainSaveAnswer:
-        if self.missing_data is not None and self.question_id not in MISSING_DATA_QUESTION_IDS:
-            raise ValueError("missing_data is only valid for Domain 2.3, Domain 2.6, or Domain 3.1")
+    def counterpoints_reference_evidence(self) -> DomainSaveAnswer:
+        if any(item.basis_index >= len(self.bases) for item in self.counterevidence or ()):
+            raise ValueError("counterevidence must reference a selected Evidence basis")
         return self
+
+    def canonical_payload(self) -> dict[str, Any]:
+        payload = self.model_dump(mode="json", exclude={"absence_searches", "limitations"})
+        payload["bases"] += [
+            {"kind": "absence", "search_receipt": receipt} for receipt in self.absence_searches
+        ]
+        payload["bases"] += [
+            {"kind": "limitation", **limit.model_dump(mode="json")} for limit in self.limitations
+        ]
+        return payload
 
 
 class NewEvidenceRevision(StrictModel):

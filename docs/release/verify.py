@@ -517,7 +517,12 @@ def _domain_answers(
             {
                 "question_id": question["id"],
                 "answer": answer,
-                "bases": [basis],
+                "bases": [] if answer == "no_information" else [basis],
+                "limitations": (
+                    [{key: value for key, value in basis.items() if key != "kind"}]
+                    if answer == "no_information"
+                    else []
+                ),
                 "justification": "The cited basis supports the selected uncertainty option.",
                 "unknowns": [],
                 "counterevidence": [],

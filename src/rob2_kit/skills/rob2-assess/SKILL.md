@@ -316,14 +316,18 @@ the submitted proposition literal in the repair; do not change `no` to
 `probably_yes`, or infer a different answer from the repair wording. Reconsider
 the scientific conclusion only from the evidence and your own reasoning.
 
-For each active answer, use at least one closed basis from the live schema:
+For each active answer, supply at least one premise in the live submission schema:
 
-- selected Evidence for `direct_support`, `indirect_support`, `contradiction`,
-  `context`, or `inference`;
-- an untruncated no-hit search receipt for `absence`;
-- an explicit `unresolved_premise` and `stopping_rationale` for `limitation`, with an
-  optional current-Trial search receipt when retrieval provenance is useful; a direct
-  read does not require a search receipt.
+- `bases`: selected Evidence with an explicit `direct_support`, `indirect_support`,
+  `contradiction`, `context`, or `inference` role;
+- `absence_searches`: untruncated no-hit search receipt handles;
+- `limitations`: objects with `unresolved_premise` and `stopping_rationale`, plus
+  an optional current-Trial `search_receipt`.
+
+Do not put absence or limitation objects in `bases`. The server derives their
+canonical tags without choosing a scientific answer. Counterevidence indexes
+refer only to the Evidence entries in `bases`; include an explicit implication.
+A direct read does not require a search receipt.
 
 Selected Evidence must contain the complete premise. A relationship kind adds
 no facts. Definitive `yes` or `no` requires direct,

@@ -35,6 +35,41 @@ def _proposal_receipt_key(workspace: Path, request: dict[str, object]) -> tuple[
     return str(workspace), json.dumps(request, sort_keys=True, default=str)
 
 
+def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
+    """Translate durable draft fixtures to the separated public submission shape."""
+    result = dict(arguments)
+    answers = []
+    for original in result["answers"]:
+        answer = dict(original)
+        bases = []
+        limitations = list(answer.get("limitations", []))
+        searches = list(answer.get("absence_searches", []))
+        indexes = {}
+        for index, basis in enumerate(answer.get("bases", [])):
+            if basis.get("kind") == "limitation":
+                limitations.append({key: value for key, value in basis.items() if key != "kind"})
+            elif basis.get("kind") == "absence":
+                searches.append(basis["search_receipt"])
+            else:
+                indexes[index] = len(bases)
+                bases.append(basis)
+        answer["bases"] = bases
+        if limitations:
+            answer["limitations"] = limitations
+        if searches:
+            answer["absence_searches"] = searches
+        if isinstance(answer.get("counterevidence"), list):
+            answer["counterevidence"] = [
+                {**item, "basis_index": indexes.get(item["basis_index"], item["basis_index"])}
+                if isinstance(item, dict) and "basis_index" in item
+                else item
+                for item in answer["counterevidence"]
+            ]
+        answers.append(answer)
+    result["answers"] = answers
+    return result
+
+
 def _call(
     workspace: Path,
     tool: str,
@@ -50,7 +85,9 @@ def _call(
                 and "cursor" not in arguments
                 and "max_response_bytes" not in arguments
             )
-            request = dict(arguments)
+            request = (
+                _domain_submission(arguments) if tool == "save_domain_judgment" else dict(arguments)
+            )
             if not _raw and tool == "save_proposal" and "results" in request:
                 cache_key = _proposal_receipt_key(workspace, request)
                 cached = _PROPOSAL_RECEIPTS.get(cache_key)
