@@ -488,8 +488,10 @@ def test_domain_cards_hold_d2_and_d5_paired_controls_constant() -> None:
     protocol_pair = d2_by_id["d2-protocol-status-same-trial-context"]
     protocol_left = " ".join(protocol_pair["left_facts"]).casefold()
     protocol_right = " ".join(protocol_pair["right_facts"]).casefold()
-    assert "trial staff encouraged" in protocol_left and "permitted" in protocol_left
-    assert "trial staff encouraged the same" in protocol_right and "prohibited" in protocol_right
+    assert "knowledge of experimental allocation" in protocol_left and "permitted" in protocol_left
+    assert (
+        "knowledge of experimental allocation" in protocol_right and "prohibited" in protocol_right
+    )
 
     cause_pair = d2_by_id["d2-cause-same-protocol-inconsistency"]
     cause_left = " ".join(cause_pair["left_facts"]).casefold()
@@ -497,7 +499,13 @@ def test_domain_cards_hold_d2_and_d5_paired_controls_constant() -> None:
     assert "protocol prohibited rescue treatment" in cause_left
     assert "protocol prohibited rescue treatment" in cause_right
     assert "ordinary care" in cause_left
-    assert "trial staff directed" in cause_right
+    assert "same treating clinician" in cause_right
+    assert "knowledge of experimental allocation changed the decision" in cause_right
+    assert "treating clinician" in cause_left
+    burden = d2_by_id["d2-regimen-burden-versus-research-engagement"]
+    assert "physically difficult" in " ".join(burden["left_facts"])
+    assert "research-only appointments" in " ".join(burden["right_facts"])
+    assert not any("answer" in pair for pair in d2)
 
     d5 = _comparison_cards("domain:selection", {}, {}, [], [])[0]["paired_examples"]
     selection_pair = next(

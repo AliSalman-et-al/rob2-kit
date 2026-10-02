@@ -761,7 +761,10 @@ def _comparison_cards(
             (
                 "sq:deviations:context-deviations",
                 "trial_context_cause",
-                "The trial context caused the protocol-inconsistent change.",
+                "Recruitment, research-only engagement, or trial-specific personnel decisions "
+                "caused the protocol-inconsistent change beyond what could occur during "
+                "ordinary delivery of the same intervention. Intervention burden or being "
+                "treated by trial staff does not establish that causal link.",
                 ("sq:deviations:context-deviations",),
             ),
             (
@@ -888,36 +891,62 @@ def _comparison_cards(
             {
                 "pair_id": "d2-protocol-status-same-trial-context",
                 "changed_premise": (
-                    "whether the same trial-context conduct was protocol-consistent"
+                    "whether the same allocation-driven conduct was protocol-consistent"
                 ),
                 "left_facts": (
-                    "Trial staff encouraged rescue treatment during participation; "
-                    "the protocol permitted it.",
+                    "The treating clinician reported that knowledge of experimental allocation "
+                    "prompted rescue treatment. The protocol permitted that rescue.",
                 ),
                 "right_facts": (
-                    "Trial staff encouraged the same rescue treatment during participation; "
-                    "the protocol prohibited it.",
+                    "The same treating clinician reported that knowledge of "
+                    "experimental allocation "
+                    "prompted the same rescue treatment. The protocol prohibited that rescue.",
                 ),
                 "reasoning_focus": (
-                    "Hold trial-context conduct fixed while changing protocol consistency."
+                    "Hold the documented allocation-driven cause fixed while "
+                    "changing protocol consistency."
                 ),
             },
             {
                 "pair_id": "d2-cause-same-protocol-inconsistency",
                 "changed_premise": (
-                    "whether the same prohibited conduct was caused by trial participation"
+                    "the documented reason for the same clinician's prohibited conduct"
                 ),
                 "left_facts": (
-                    "The protocol prohibited rescue treatment. A clinician independently "
-                    "provided it as ordinary care; trial staff did not direct the change.",
+                    "The protocol prohibited rescue treatment. The treating "
+                    "clinician provided rescue "
+                    "because of the patient's symptoms, as the clinician would in ordinary care.",
                 ),
                 "right_facts": (
-                    "The protocol prohibited rescue treatment. Trial staff directed the same "
-                    "change during participation.",
+                    "The protocol prohibited rescue treatment. The same "
+                    "treating clinician provided the "
+                    "same rescue because knowledge of experimental "
+                    "allocation changed the decision.",
                 ),
                 "reasoning_focus": (
-                    "Hold the protocol inconsistency and conduct fixed while changing the "
-                    "source of the change."
+                    "Hold protocol inconsistency, personnel and conduct fixed; "
+                    "distinguish ordinary care from an allocation-driven "
+                    "decision. Personnel identity alone supplies no cause."
+                ),
+            },
+            {
+                "pair_id": "d2-regimen-burden-versus-research-engagement",
+                "changed_premise": "the documented reason for stopping the same assigned program",
+                "left_facts": (
+                    "The protocol required twelve exercise sessions. A participant stopped because "
+                    "the assigned exercises were physically difficult, as "
+                    "could occur in ordinary treatment.",
+                ),
+                "right_facts": (
+                    "The same protocol required twelve exercise sessions. A "
+                    "participant stopped the "
+                    "same program because additional research-only "
+                    "appointments prevented attendance.",
+                ),
+                "reasoning_focus": (
+                    "Keep non-adherence fixed. Treatment burden and trial-"
+                    "specific engagement are different causes; insufficient "
+                    "cause information remains unresolved."
                 ),
             },
             {
