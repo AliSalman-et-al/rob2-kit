@@ -426,8 +426,12 @@ schemas are generated from `src/rob2_kit/interfaces/mcp/server.py`; regenerate
 `docs/release/public-contract.json` to inspect them.
 
 Input and output schemas are closed Pydantic unions. Tool descriptions state the
-single operation, required caller inputs, and server-owned fields. The live
-`rob2://current-batch` resource is the restart-safe projection. The package ships
+single operation, required caller inputs, and server-owned fields.
+MCP input schemas inline their shared definitions so code-mode clients can expose
+the nested required fields instead of unknown argument objects. Output schemas
+retain shared definitions. Domain argument errors include a complete fictitious
+syntax example; neither schema delivery nor error formatting changes validation
+or the caller's scientific choices. The live `rob2://current-batch` resource is the restart-safe projection. The package ships
 one portable, progressive-disclosure `rob2-assess` skill shared by Codex and
 Claude Code.
 

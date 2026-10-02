@@ -1,0 +1,34 @@
+{
+  "historical_input_models_identical": true,
+  "snapshots": [
+    {
+      "snapshot": "5a3e580",
+      "input_definition_hashes": {
+        "DomainEvidenceCitation": "a4fe24dab919a4f2eeb7661fa633ea3114cd8aceeb9794559fa632e6d820487c",
+        "DomainInformationLimit": "d16b3b07cb3b9238cb7fd3a75ec162ed706055bd6bde73c0b21e71a590cfa487",
+        "DomainCounterpoint": "1947a8ceb49ab66944c54497ae7d7aea3d2c97e7fe551bf4dcef81129ca56517",
+        "DomainSaveAnswer": "50889407f7dcdf31c5731a342475c13735322ff9503f3e2fc1d312932c1221b0"
+      }
+    },
+    {
+      "snapshot": "9c7ba8c",
+      "input_definition_hashes": {
+        "DomainEvidenceCitation": "a4fe24dab919a4f2eeb7661fa633ea3114cd8aceeb9794559fa632e6d820487c",
+        "DomainInformationLimit": "d16b3b07cb3b9238cb7fd3a75ec162ed706055bd6bde73c0b21e71a590cfa487",
+        "DomainCounterpoint": "1947a8ceb49ab66944c54497ae7d7aea3d2c97e7fe551bf4dcef81129ca56517",
+        "DomainSaveAnswer": "50889407f7dcdf31c5731a342475c13735322ff9503f3e2fc1d312932c1221b0"
+      }
+    },
+    {
+      "snapshot": "3b5c51c",
+      "input_definition_hashes": {
+        "DomainEvidenceCitation": "a4fe24dab919a4f2eeb7661fa633ea3114cd8aceeb9794559fa632e6d820487c",
+        "DomainInformationLimit": "d16b3b07cb3b9238cb7fd3a75ec162ed706055bd6bde73c0b21e71a590cfa487",
+        "DomainCounterpoint": "1947a8ceb49ab66944c54497ae7d7aea3d2c97e7fe551bf4dcef81129ca56517",
+        "DomainSaveAnswer": "50889407f7dcdf31c5731a342475c13735322ff9503f3e2fc1d312932c1221b0"
+      }
+    }
+  ],
+  "paid_model_and_effort_verified_from_turn_context": "gpt-6-luna / medium",
+  "no_historical_tools_list_capture": "model code declaration and errors are directly captured; native pre-fix tools/list reconstructed at3b5c51c"
+}

@@ -1,0 +1,18 @@
+{
+  "no_inference": true,
+  "output_schemas_unchanged": true,
+  "pre_fix_compact_schema_bytes": 470550,
+  "post_fix_compact_schema_bytes": 475047,
+  "cases": [
+    {
+      "case": "deliver",
+      "first_original_payload_rejected": true,
+      "canonical_state_unchanged": true
+    },
+    {
+      "case": "an",
+      "first_original_payload_rejected": true,
+      "canonical_state_unchanged": true
+    }
+  ]
+}

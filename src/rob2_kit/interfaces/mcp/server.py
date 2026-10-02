@@ -10,18 +10,22 @@ import os
 import re
 import sqlite3
 import uuid
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
 import mcp_types
 from fastmcp import Context, FastMCP
 from fastmcp.exceptions import ToolError
+from fastmcp.exceptions import ValidationError as ToolArgumentValidationError
 from fastmcp.server.context import (
     AcceptedElicitation,
     CancelledElicitation,
     DeclinedElicitation,
 )
-from fastmcp.tools import InputRequiredToolResult, ToolResult
+from fastmcp.server.middleware import CallNext, Middleware, MiddlewareContext
+from fastmcp.tools import InputRequiredToolResult, Tool, ToolResult
+from fastmcp.utilities.json_schema import dereference_refs
 from mcp.shared.exceptions import MCPError
 from mcp.types import ImageContent, TextContent, ToolAnnotations
 from pydantic import (
@@ -117,9 +121,8 @@ mcp = FastMCP(
     "rob2-kit",
     version=__version__,
     website_url="https://github.com/AliSalman-et-al/rob2-kit",
-    # Keep shared public types as JSON Schema references. Dereferencing copies
-    # the same large response models into every tool and needlessly inflates
-    # the MCP surface presented to the host.
+    # Keep large output models shared. Input references are resolved separately
+    # below because some hosts expose referenced argument objects as unknown.
     dereference_schemas=False,
     # JSON arrays and enum values must be decoded by Pydantic before invoking
     # the typed workflow models. FastMCP 4's strict adapter rejects those
@@ -128,6 +131,61 @@ mcp = FastMCP(
     strict_input_validation=False,
 )
 PUBLIC_TOOL_NAMES = TOOL_NAMES
+
+
+_DOMAIN_ANSWER_EXAMPLE = {
+    "question_id": "sq:randomization:sequence",
+    "answer": "yes",
+    "bases": [{"role": "direct_support", "evidence": "eh_0123456789abcdef"}],
+    "absence_searches": [],
+    "limitations": [],
+    "justification": "The inspected passage states computer-generated random allocation.",
+    "unknowns": [],
+    "counterevidence": [],
+}
+
+
+class _InputSchemaDelivery(Middleware):
+    async def on_list_tools(
+        self,
+        context: MiddlewareContext[mcp_types.ListToolsRequest],
+        call_next: CallNext[mcp_types.ListToolsRequest, Sequence[Tool]],
+    ) -> Sequence[Tool]:
+        tools = await call_next(context)
+        return [
+            tool.model_copy(update={"parameters": dereference_refs(tool.parameters)})
+            for tool in tools
+        ]
+
+    async def on_call_tool(
+        self,
+        context: MiddlewareContext[mcp_types.CallToolRequestParams],
+        call_next: CallNext[mcp_types.CallToolRequestParams, ToolResult],
+    ) -> ToolResult:
+        try:
+            return await call_next(context)
+        except ToolArgumentValidationError as error:
+            if context.message.name != "save_domain_judgment":
+                raise
+            cause = error.__cause__
+            if not isinstance(cause, ValidationError):
+                raise
+            defects = [
+                {"path": "/" + "/".join(map(str, item["loc"])), "detail": item["msg"]}
+                for item in cause.errors(include_url=False, include_input=False)
+            ]
+            raise ToolError(
+                "invalid_tool_arguments: no assessment was submitted or saved. "
+                + json.dumps(defects)
+                + " Complete answer syntax example (not a recommended answer or real Evidence): "
+                + json.dumps(_DOMAIN_ANSWER_EXAMPLE)
+                + " bases[].evidence is one handle string; counterevidence[].evidence is a "
+                "nonempty handle list paired with implication. Preserve your scientific "
+                "choices and reasoning; correct only the reported construction errors."
+            ) from error
+
+
+mcp.add_middleware(_InputSchemaDelivery())
 
 
 def _reject_scalar_coercion(value: Any) -> Any:
@@ -3871,21 +3929,7 @@ def save_domain_judgment(
                 "evidence values are selected Evidence handles; no array indexes are needed. "
                 "Submit only answers on the active path, with all reasoning fields explicit."
             ),
-            examples=[
-                [
-                    {
-                        "question_id": "sq:randomization:sequence",
-                        "answer": "yes",
-                        "bases": [{"role": "direct_support", "evidence": "eh_0123456789abcdef"}],
-                        "justification": (
-                            "The inspected passage states that a computer generated random "
-                            "allocation sequence."
-                        ),
-                        "unknowns": [],
-                        "counterevidence": [],
-                    }
-                ]
-            ],
+            examples=[[_DOMAIN_ANSWER_EXAMPLE]],
         ),
     ],
     supersedes: Annotated[

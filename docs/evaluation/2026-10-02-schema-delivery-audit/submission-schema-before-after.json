@@ -1,0 +1,1473 @@
+{
+  "pre_fix_tools_list_reconstructed_at": "3b5c51c; historical native tools/list was not retained in paid rollout. The saved model-visible code declarations are direct trace evidence. DomainSaveAnswer field definitions match both paid snapshots.",
+  "historical_input_field_sha256": "50889407f7dcdf31c5731a342475c13735322ff9503f3e2fc1d312932c1221b0",
+  "before": {
+    "$defs": {
+      "Answer": {
+        "enum": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "type": "string"
+      },
+      "DomainCounterpoint": {
+        "additionalProperties": false,
+        "description": "One scientific counterclaim citing inspected Evidence directly.",
+        "properties": {
+          "evidence": {
+            "description": "Distinct current-Trial Evidence handles supporting this counterclaim.",
+            "items": {
+              "pattern": "^eh_[0-9a-f]{8,64}$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "implication": {
+            "description": "How the cited passages together limit or challenge the answer.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence",
+          "implication"
+        ],
+        "type": "object"
+      },
+      "DomainEvidenceCitation": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence": {
+            "description": "Current-Trial selected Evidence handle.",
+            "pattern": "^eh_[0-9a-f]{8,64}$",
+            "type": "string"
+          },
+          "role": {
+            "description": "Scientific relationship of the inspected Evidence to this question.",
+            "enum": [
+              "direct_support",
+              "indirect_support",
+              "contradiction",
+              "context",
+              "inference"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence",
+          "role"
+        ],
+        "type": "object"
+      },
+      "DomainInformationLimit": {
+        "additionalProperties": false,
+        "properties": {
+          "premise": {
+            "description": "Unresolved premise needed to answer this question.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "stopping_rationale": {
+            "description": "Why the bounded investigation stopped with this premise unresolved.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "search_receipt": {
+            "anyOf": [
+              {
+                "pattern": "^sr_[0-9a-f]{8,64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional current-Trial search receipt documenting the investigation."
+          }
+        },
+        "required": [
+          "premise",
+          "stopping_rationale"
+        ],
+        "type": "object"
+      },
+      "DomainSaveAnswer": {
+        "additionalProperties": false,
+        "description": "Submission separates inspected Evidence from unresolved information.\n\nOnly the server adds the non-scientific absence/limitation tags. Canonical\nanswers retain their original audit representation.",
+        "properties": {
+          "question_id": {
+            "description": "Active signalling question from the current Domain card.",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "type": "string"
+          },
+          "answer": {
+            "$ref": "#/$defs/Answer",
+            "description": "Submitted response; must be among this question card's permitted options."
+          },
+          "bases": {
+            "default": [],
+            "description": "Selected Evidence and its explicit scientific role; no nested basis objects.",
+            "items": {
+              "$ref": "#/$defs/DomainEvidenceCitation"
+            },
+            "type": "array"
+          },
+          "absence_searches": {
+            "default": [],
+            "description": "Scoped zero-hit search receipts; not scientific absence.",
+            "items": {
+              "pattern": "^sr_[0-9a-f]{8,64}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "limitations": {
+            "default": [],
+            "description": "Unresolved premises and why investigation stopped.",
+            "items": {
+              "$ref": "#/$defs/DomainInformationLimit"
+            },
+            "type": "array"
+          },
+          "missing_data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/$defs/MissingDataRow"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional source-grounded participant-flow rows for this question."
+          },
+          "justification": {
+            "description": "Explain how the inspected sources support the response.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "unknowns": {
+            "description": "Remaining material unknowns; explicitly use [] when none remain.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "counterevidence": {
+            "description": "Counterclaims cite Evidence handles directly; explicitly use [] when none.",
+            "items": {
+              "$ref": "#/$defs/DomainCounterpoint"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "answer",
+          "justification",
+          "unknowns",
+          "counterevidence"
+        ],
+        "type": "object"
+      },
+      "MechanicalRepairRevision": {
+        "additionalProperties": false,
+        "description": "Record a mechanical repair without claiming that the science changed.",
+        "properties": {
+          "kind": {
+            "const": "mechanical_repair",
+            "description": "Use when repairing identifiers or structure without changing the claim.",
+            "type": "string"
+          },
+          "repair_id": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional identity of the repair operation or receipt."
+          },
+          "codes": {
+            "default": [],
+            "description": "Codes describing the mechanical repairs applied.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      "MissingDataCensoring": {
+        "additionalProperties": false,
+        "description": "Metadata about why and when a time-to-event observation stopped.",
+        "properties": {
+          "kind": {
+            "description": "Censoring or follow-up-stop category.",
+            "enum": [
+              "administrative",
+              "loss_to_follow_up",
+              "withdrawal",
+              "treatment_change",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number of participants represented by this censoring fact."
+          },
+          "timing": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Time or window when censoring occurred, when reported."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Reported reason for censoring, when available."
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      "MissingDataRow": {
+        "additionalProperties": false,
+        "description": "One scope-matched participant-flow record supplied for Domain 2 or 3.\n\nThe legacy randomized/observed/analyzed/imputed fields remain the compact\nD3 form.  The additional fields make the other participant transitions\nexplicit without allowing an analysis, treatment, exclusion, or event\ncount to masquerade as outcome availability.",
+        "properties": {
+          "arm": {
+            "description": "Trial arm for this participant-flow row.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "population": {
+            "description": "Population represented by this participant-flow row.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "unit": {
+            "description": "Unit counted, such as participants.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "time_point": {
+            "description": "Outcome time point represented by this row.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "result_identity": {
+            "anyOf": [
+              {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Identity of the exact approved Result represented by this row. Omit when drafting; the server binds the row to the approved Result."
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Result-specific endpoint or event definition, when reported."
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Outcome severity or threshold represented by this row, when relevant."
+          },
+          "window": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Result-specific outcome window; time_point remains the legacy alias."
+          },
+          "randomized": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number randomized when reported."
+          },
+          "eligible": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number eligible under the reported analysis or outcome scope."
+          },
+          "treated": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number receiving or starting the assigned intervention."
+          },
+          "observed": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number with observed outcome data when reported."
+          },
+          "analyzed": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number included in the analysis when reported."
+          },
+          "imputed": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number whose outcome data were imputed when reported."
+          },
+          "excluded": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Number excluded from a reported analysis or participant flow."
+          },
+          "event_count": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Event numerator; never a participant availability count."
+          },
+          "event_definition": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Definition or severity threshold for event_count, when supplied."
+          },
+          "exclusions": {
+            "default": [],
+            "description": "Reported reasons for exclusion or missingness.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "basis": {
+            "default": [],
+            "description": "Evidence handles supporting this row. When saving an answer, omit to reuse all Evidence handles attached to that answer. A get_domain_context preview requires explicit current-Trial Evidence handles for every row.",
+            "items": {
+              "pattern": "^eh_[0-9a-f]{8,64}$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "semantics": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/MissingDataSemantics"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional typed meaning of the quantities in this row. Omitted for legacy rows; event, analysis, and safety counts never establish outcome availability."
+          }
+        },
+        "required": [
+          "arm",
+          "population",
+          "unit",
+          "time_point"
+        ],
+        "type": "object"
+      },
+      "MissingDataSemantics": {
+        "additionalProperties": false,
+        "description": "Optional typed meaning for a participant-flow row.\n\nThese fields are deliberately orthogonal: an event numerator, an analysis\ndenominator, or a safety population is not an observation-availability\nclaim. Availability is represented only by ``outcome_status``.",
+        "properties": {
+          "population_role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "randomized",
+                  "safety",
+                  "analyzed",
+                  "per_protocol",
+                  "follow_up",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Role of the population represented by the row."
+          },
+          "outcome_status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "observed",
+                  "missing",
+                  "imputed",
+                  "unknown",
+                  "not_reported"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Explicit status of outcome availability, when reported."
+          },
+          "event_count": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Event numerator; never a participant availability count."
+          },
+          "event_definition": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Definition or severity threshold for the event count."
+          },
+          "post_randomization_exclusions": {
+            "default": [],
+            "description": "Reported exclusions kept separate from missing outcomes.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "censoring": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/MissingDataCensoring"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Censoring metadata kept separate from outcome availability."
+          }
+        },
+        "type": "object"
+      },
+      "NewEvidenceRevision": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "new_evidence",
+            "description": "Use when newly selected Evidence changes a saved Domain.",
+            "type": "string"
+          },
+          "evidence": {
+            "description": "New Evidence handle copied for this revision.",
+            "pattern": "^eh_[0-9a-f]{8,64}$",
+            "type": "string"
+          },
+          "rationale": {
+            "description": "Why the new Evidence changes the Domain.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "evidence",
+          "rationale"
+        ],
+        "type": "object"
+      },
+      "SelfCorrectionRevision": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "self_correction",
+            "description": "Use when correcting the interpretation of already available Evidence.",
+            "type": "string"
+          },
+          "rationale": {
+            "description": "Why the prior checkpoint was incorrect.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "rationale"
+        ],
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "properties": {
+      "trial_id": {
+        "description": "Trial being assessed.",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+        "type": "string"
+      },
+      "domain_id": {
+        "description": "RoB 2 Domain being assessed.",
+        "enum": [
+          "domain:randomization",
+          "domain:deviations",
+          "domain:missing",
+          "domain:measurement",
+          "domain:selection"
+        ],
+        "type": "string"
+      },
+      "expected_revision": {
+        "description": "Current revision from get_domain_context.",
+        "ge": 0,
+        "type": "integer"
+      },
+      "answers": {
+        "description": "Complete answers for the current Domain path. Every active answer requires a nonblank justification, an unknowns array, and a counterevidence array whose evidence values are selected Evidence handles; no array indexes are needed. Submit only answers on the active path, with all reasoning fields explicit.",
+        "examples": [
+          [
+            {
+              "answer": "yes",
+              "bases": [
+                {
+                  "evidence": "eh_0123456789abcdef",
+                  "role": "direct_support"
+                }
+              ],
+              "counterevidence": [],
+              "justification": "The inspected passage states that a computer generated random allocation sequence.",
+              "question_id": "sq:randomization:sequence",
+              "unknowns": []
+            }
+          ]
+        ],
+        "items": {
+          "$ref": "#/$defs/DomainSaveAnswer"
+        },
+        "minItems": 1,
+        "type": "array"
+      },
+      "supersedes": {
+        "anyOf": [
+          {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Exact prior checkpoint identity when revising a Domain."
+      },
+      "revision_basis": {
+        "anyOf": [
+          {
+            "discriminator": {
+              "mapping": {
+                "mechanical_repair": "#/$defs/MechanicalRepairRevision",
+                "new_evidence": "#/$defs/NewEvidenceRevision",
+                "self_correction": "#/$defs/SelfCorrectionRevision"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/NewEvidenceRevision"
+              },
+              {
+                "$ref": "#/$defs/SelfCorrectionRevision"
+              },
+              {
+                "$ref": "#/$defs/MechanicalRepairRevision"
+              }
+            ]
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Closed new_evidence, self_correction, or mechanical_repair basis for a revision. For new_evidence, evidence is one exact handle string, not a list or object.",
+        "examples": [
+          {
+            "evidence": "eh_0123456789abcdef",
+            "kind": "new_evidence",
+            "rationale": "This passage changes the interpretation of the saved answer."
+          }
+        ]
+      }
+    },
+    "required": [
+      "trial_id",
+      "domain_id",
+      "expected_revision",
+      "answers"
+    ],
+    "type": "object"
+  },
+  "after": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "trial_id": {
+        "description": "Trial being assessed.",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+        "type": "string"
+      },
+      "domain_id": {
+        "description": "RoB 2 Domain being assessed.",
+        "enum": [
+          "domain:randomization",
+          "domain:deviations",
+          "domain:missing",
+          "domain:measurement",
+          "domain:selection"
+        ],
+        "type": "string"
+      },
+      "expected_revision": {
+        "description": "Current revision from get_domain_context.",
+        "ge": 0,
+        "type": "integer"
+      },
+      "answers": {
+        "description": "Complete answers for the current Domain path. Every active answer requires a nonblank justification, an unknowns array, and a counterevidence array whose evidence values are selected Evidence handles; no array indexes are needed. Submit only answers on the active path, with all reasoning fields explicit.",
+        "examples": [
+          [
+            {
+              "absence_searches": [],
+              "answer": "yes",
+              "bases": [
+                {
+                  "evidence": "eh_0123456789abcdef",
+                  "role": "direct_support"
+                }
+              ],
+              "counterevidence": [],
+              "justification": "The inspected passage states computer-generated random allocation.",
+              "limitations": [],
+              "question_id": "sq:randomization:sequence",
+              "unknowns": []
+            }
+          ]
+        ],
+        "items": {
+          "additionalProperties": false,
+          "description": "Submission separates inspected Evidence from unresolved information.\n\nOnly the server adds the non-scientific absence/limitation tags. Canonical\nanswers retain their original audit representation.",
+          "properties": {
+            "question_id": {
+              "description": "Active signalling question from the current Domain card.",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            "answer": {
+              "enum": [
+                "yes",
+                "probably_yes",
+                "probably_no",
+                "no",
+                "no_information"
+              ],
+              "type": "string",
+              "description": "Submitted response; must be among this question card's permitted options."
+            },
+            "bases": {
+              "default": [],
+              "description": "Selected Evidence and its explicit scientific role; no nested basis objects.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "evidence": {
+                    "description": "Current-Trial selected Evidence handle.",
+                    "pattern": "^eh_[0-9a-f]{8,64}$",
+                    "type": "string"
+                  },
+                  "role": {
+                    "description": "Scientific relationship of the inspected Evidence to this question.",
+                    "enum": [
+                      "direct_support",
+                      "indirect_support",
+                      "contradiction",
+                      "context",
+                      "inference"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "evidence",
+                  "role"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "absence_searches": {
+              "default": [],
+              "description": "Scoped zero-hit search receipts; not scientific absence.",
+              "items": {
+                "pattern": "^sr_[0-9a-f]{8,64}$",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "limitations": {
+              "default": [],
+              "description": "Unresolved premises and why investigation stopped.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "premise": {
+                    "description": "Unresolved premise needed to answer this question.",
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "stopping_rationale": {
+                    "description": "Why the bounded investigation stopped with this premise unresolved.",
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "search_receipt": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sr_[0-9a-f]{8,64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "Optional current-Trial search receipt documenting the investigation."
+                  }
+                },
+                "required": [
+                  "premise",
+                  "stopping_rationale"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "missing_data": {
+              "anyOf": [
+                {
+                  "items": {
+                    "additionalProperties": false,
+                    "description": "One scope-matched participant-flow record supplied for Domain 2 or 3.\n\nThe legacy randomized/observed/analyzed/imputed fields remain the compact\nD3 form.  The additional fields make the other participant transitions\nexplicit without allowing an analysis, treatment, exclusion, or event\ncount to masquerade as outcome availability.",
+                    "properties": {
+                      "arm": {
+                        "description": "Trial arm for this participant-flow row.",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "population": {
+                        "description": "Population represented by this participant-flow row.",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "unit": {
+                        "description": "Unit counted, such as participants.",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "time_point": {
+                        "description": "Outcome time point represented by this row.",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "result_identity": {
+                        "anyOf": [
+                          {
+                            "pattern": "^sha256:[0-9a-f]{64}$",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Identity of the exact approved Result represented by this row. Omit when drafting; the server binds the row to the approved Result."
+                      },
+                      "endpoint": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Result-specific endpoint or event definition, when reported."
+                      },
+                      "severity": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Outcome severity or threshold represented by this row, when relevant."
+                      },
+                      "window": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Result-specific outcome window; time_point remains the legacy alias."
+                      },
+                      "randomized": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Number randomized when reported."
+                      },
+                      "eligible": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Number eligible under the reported analysis or outcome scope."
+                      },
+                      "treated": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Number receiving or starting the assigned intervention."
+                      },
+                      "observed": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Number with observed outcome data when reported."
+                      },
+                      "analyzed": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Number included in the analysis when reported."
+                      },
+                      "imputed": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Number whose outcome data were imputed when reported."
+                      },
+                      "excluded": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Number excluded from a reported analysis or participant flow."
+                      },
+                      "event_count": {
+                        "anyOf": [
+                          {
+                            "minimum": 0,
+                            "type": "integer"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Event numerator; never a participant availability count."
+                      },
+                      "event_definition": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Definition or severity threshold for event_count, when supplied."
+                      },
+                      "exclusions": {
+                        "default": [],
+                        "description": "Reported reasons for exclusion or missingness.",
+                        "items": {
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "basis": {
+                        "default": [],
+                        "description": "Evidence handles supporting this row. When saving an answer, omit to reuse all Evidence handles attached to that answer. A get_domain_context preview requires explicit current-Trial Evidence handles for every row.",
+                        "items": {
+                          "pattern": "^eh_[0-9a-f]{8,64}$",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "semantics": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "description": "Optional typed meaning for a participant-flow row.\n\nThese fields are deliberately orthogonal: an event numerator, an analysis\ndenominator, or a safety population is not an observation-availability\nclaim. Availability is represented only by ``outcome_status``.",
+                            "properties": {
+                              "population_role": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      "randomized",
+                                      "safety",
+                                      "analyzed",
+                                      "per_protocol",
+                                      "follow_up",
+                                      "unknown"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null,
+                                "description": "Role of the population represented by the row."
+                              },
+                              "outcome_status": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      "observed",
+                                      "missing",
+                                      "imputed",
+                                      "unknown",
+                                      "not_reported"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null,
+                                "description": "Explicit status of outcome availability, when reported."
+                              },
+                              "event_count": {
+                                "anyOf": [
+                                  {
+                                    "minimum": 0,
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null,
+                                "description": "Event numerator; never a participant availability count."
+                              },
+                              "event_definition": {
+                                "anyOf": [
+                                  {
+                                    "minLength": 1,
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null,
+                                "description": "Definition or severity threshold for the event count."
+                              },
+                              "post_randomization_exclusions": {
+                                "default": [],
+                                "description": "Reported exclusions kept separate from missing outcomes.",
+                                "items": {
+                                  "minLength": 1,
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "censoring": {
+                                "anyOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "description": "Metadata about why and when a time-to-event observation stopped.",
+                                    "properties": {
+                                      "kind": {
+                                        "description": "Censoring or follow-up-stop category.",
+                                        "enum": [
+                                          "administrative",
+                                          "loss_to_follow_up",
+                                          "withdrawal",
+                                          "treatment_change",
+                                          "unknown"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "count": {
+                                        "anyOf": [
+                                          {
+                                            "minimum": 0,
+                                            "type": "integer"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "default": null,
+                                        "description": "Number of participants represented by this censoring fact."
+                                      },
+                                      "timing": {
+                                        "anyOf": [
+                                          {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "default": null,
+                                        "description": "Time or window when censoring occurred, when reported."
+                                      },
+                                      "reason": {
+                                        "anyOf": [
+                                          {
+                                            "minLength": 1,
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "default": null,
+                                        "description": "Reported reason for censoring, when available."
+                                      }
+                                    },
+                                    "required": [
+                                      "kind"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "default": null,
+                                "description": "Censoring metadata kept separate from outcome availability."
+                              }
+                            },
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "default": null,
+                        "description": "Optional typed meaning of the quantities in this row. Omitted for legacy rows; event, analysis, and safety counts never establish outcome availability."
+                      }
+                    },
+                    "required": [
+                      "arm",
+                      "population",
+                      "unit",
+                      "time_point"
+                    ],
+                    "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "Optional source-grounded participant-flow rows for this question."
+            },
+            "justification": {
+              "description": "Explain how the inspected sources support the response.",
+              "minLength": 1,
+              "type": "string"
+            },
+            "unknowns": {
+              "description": "Remaining material unknowns; explicitly use [] when none remain.",
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "counterevidence": {
+              "description": "Counterclaims cite Evidence handles directly; explicitly use [] when none.",
+              "items": {
+                "additionalProperties": false,
+                "description": "One scientific counterclaim citing inspected Evidence directly.",
+                "properties": {
+                  "evidence": {
+                    "description": "Distinct current-Trial Evidence handles supporting this counterclaim.",
+                    "items": {
+                      "pattern": "^eh_[0-9a-f]{8,64}$",
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "implication": {
+                    "description": "How the cited passages together limit or challenge the answer.",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "evidence",
+                  "implication"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "question_id",
+            "answer",
+            "justification",
+            "unknowns",
+            "counterevidence"
+          ],
+          "type": "object"
+        },
+        "minItems": 1,
+        "type": "array"
+      },
+      "supersedes": {
+        "anyOf": [
+          {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Exact prior checkpoint identity when revising a Domain."
+      },
+      "revision_basis": {
+        "anyOf": [
+          {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "new_evidence",
+                    "description": "Use when newly selected Evidence changes a saved Domain.",
+                    "type": "string"
+                  },
+                  "evidence": {
+                    "description": "New Evidence handle copied for this revision.",
+                    "pattern": "^eh_[0-9a-f]{8,64}$",
+                    "type": "string"
+                  },
+                  "rationale": {
+                    "description": "Why the new Evidence changes the Domain.",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "evidence",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "self_correction",
+                    "description": "Use when correcting the interpretation of already available Evidence.",
+                    "type": "string"
+                  },
+                  "rationale": {
+                    "description": "Why the prior checkpoint was incorrect.",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "description": "Record a mechanical repair without claiming that the science changed.",
+                "properties": {
+                  "kind": {
+                    "const": "mechanical_repair",
+                    "description": "Use when repairing identifiers or structure without changing the claim.",
+                    "type": "string"
+                  },
+                  "repair_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "default": null,
+                    "description": "Optional identity of the repair operation or receipt."
+                  },
+                  "codes": {
+                    "default": [],
+                    "description": "Codes describing the mechanical repairs applied.",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Closed new_evidence, self_correction, or mechanical_repair basis for a revision. For new_evidence, evidence is one exact handle string, not a list or object.",
+        "examples": [
+          {
+            "evidence": "eh_0123456789abcdef",
+            "kind": "new_evidence",
+            "rationale": "This passage changes the interpretation of the saved answer."
+          }
+        ]
+      }
+    },
+    "required": [
+      "trial_id",
+      "domain_id",
+      "expected_revision",
+      "answers"
+    ]
+  }
+}
