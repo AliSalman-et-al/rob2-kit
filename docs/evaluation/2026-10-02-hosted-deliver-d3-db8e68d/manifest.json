@@ -1,0 +1,151 @@
+{
+  "code_sha": "db8e68d2df7cb3b3720b2ce8ee3c9ab75d848052",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "cli_version": "codex-cli 0.159.0",
+  "case": "deliver",
+  "domain_id": "domain:missing",
+  "guards": {
+    "wall_seconds": 480,
+    "idle_seconds": 120,
+    "tool_calls": 16,
+    "rejected_submissions": 2,
+    "input_tokens": 400000,
+    "uncached_input_tokens": 100000,
+    "output_tokens": 5000
+  },
+  "source_database_sha256": {
+    "canonical.sqlite3": "a688e2e32b9f8c05f08c1e587da4f395bbf85189c309552758869f239d22f1ad",
+    "derivative.sqlite3": "8bb0c37ac48b629e14b06a8596160b359f68887b922c0cc7cedcbd2cd545fd3a"
+  },
+  "restored_source_hash_verified": [
+    {
+      "declared_role": "main_article",
+      "id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+      "label": "NEJMoa2206286.pdf",
+      "logical_path": "NEJMoa2206286.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 10,
+      "projection_hash": "sha256:0b3f23804e50facea65cd1396181b135e77a9ece93e901480fc0f0110008a1fd",
+      "role": "main_article",
+      "sha256": "sha256:e0ebc04bc7f19c0fd8ef6b8dcf23168c75f83cd35dd16b9714bc13b3065ee389",
+      "trial_id": "deliver"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+      "label": "nejmoa2206286_appendix.pdf",
+      "logical_path": "nejmoa2206286_appendix.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 44,
+      "projection_hash": "sha256:22f0d9f0d134df7d783eb0af6f7285672eeb1aae493006922a8e777698ae73b9",
+      "role": "supplement",
+      "sha256": "sha256:6d07f0425b3d4f715b3a3e5105700d482335c46df12ac24298fce2ed59b015cb",
+      "trial_id": "deliver"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_a475edbe3fac6ae2202af7ddeecbc60bd10217757168206317f6de5e253d58fe",
+      "label": "nejmoa2206286_data-sharing.pdf",
+      "logical_path": "nejmoa2206286_data-sharing.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 2,
+      "projection_hash": "sha256:3c58f7f5dd7c887385cf5c02cae5dcc18c2f1d049301c415267cd235cb4dcedd",
+      "role": "supplement",
+      "sha256": "sha256:6376811d3d49071d896a72ad1d39708b101a38ddffa9d98224755dfb9e05633e",
+      "trial_id": "deliver"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_e08fcefdda400f19592eaa5d8513c829312d0c864c1e0338c784c0562360ff2d",
+      "label": "nejmoa2206286_disclosures.pdf",
+      "logical_path": "nejmoa2206286_disclosures.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 77,
+      "projection_hash": "sha256:5c5619948adb5f26a12701beeb919b9bb43102709f24d4e25aa716272fa600e7",
+      "role": "supplement",
+      "sha256": "sha256:59e352bb88de7aa1c7f7b09557beb3fa0a552dab71cae02afdda4c1f0acd0436",
+      "trial_id": "deliver"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_d52b7960a872d313ccf248ebff006cd79c50d2abca0f1164185eba2c92832df3",
+      "label": "nejmoa2206286_protocol.pdf",
+      "logical_path": "nejmoa2206286_protocol.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 304,
+      "projection_hash": "sha256:b981d45515140765fa4f3a16a3553609b769f4654230d572f49d6a3dc53b9fc3",
+      "role": "supplement",
+      "sha256": "sha256:e4430897f72b7abb309c9b54cfda36e60f3da7173c5953192d63ea642ed685a3",
+      "trial_id": "deliver"
+    }
+  ],
+  "raw_sources_unavailable": [
+    {
+      "declared_role": null,
+      "id": "source_2e7f75bfcd50e8fb346acef354b90ade571eb5ba46dfc2fd4ad074e344b23e2c",
+      "label": "ClinicalTrials.gov NCT03619213",
+      "logical_path": "registry/NCT03619213.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:ab3721f482af306309778f8350bfbdf4e9b05d267e872ac29b3ce16dab5c45a3",
+      "role": "registry",
+      "sha256": "sha256:3ef2efbfb8421ff7e66b3d8422c3f27d281e85f213f2efc11cbd9fb9bece1200",
+      "trial_id": "deliver"
+    }
+  ],
+  "approved_target": {
+    "comparison_groups": [
+      {
+        "assignment": "Dapagliflozin 10 mg once daily plus usual therapy",
+        "id": "dapagliflozin"
+      },
+      {
+        "assignment": "Matching placebo plus usual therapy",
+        "id": "placebo"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Hazard ratio",
+    "measurement": {
+      "method": "Time to first occurrence of worsening heart failure (unplanned hospitalization or urgent visit for heart failure) or cardiovascular death; events were adjudicated by an independent committee blinded to assignment.",
+      "metric": "Composite of worsening heart failure (unplanned hospitalization or urgent visit) or cardiovascular death"
+    },
+    "outcome_definition": "Composite of worsening heart failure (unplanned hospitalization or urgent visit) or cardiovascular death",
+    "time_point_or_window": {
+      "description": "From randomization through trial follow-up (median 2.3 years; interquartile range 1.7 to 2.8 years).",
+      "kind": "described"
+    }
+  },
+  "reported_result": {
+    "analysis_population": "All 6263 randomized patients analyzed according to the intention-to-treat principle; 3131 assigned dapagliflozin and 3132 placebo.",
+    "effect_measure": "Hazard ratio",
+    "endpoint": {
+      "definition": null,
+      "name": "Primary outcome"
+    },
+    "estimate": "0.82",
+    "form": "comparative_effect",
+    "group_values": [],
+    "precision": "95% confidence interval [CI], 0.73 to 0.92; P<0.001"
+  },
+  "prior_retained_domains": [
+    "domain:deviations",
+    "domain:randomization"
+  ],
+  "initial_revision": 13,
+  "prompt_sha256": "48a81b8c5850470e8d767dc35825ebf49f2f74b503961474a35fc8debf86637b",
+  "selection_hypothesis": "Operator-only: distinguish discontinuation, incomplete composite follow-up and survival status; do not infer complete primary outcome data from ITT inclusion. Selected using original trial evidence, not reference judgments. No page/count/answer hint supplied to model.",
+  "qualification": "Fresh relative to today engineering probes; existing Oct1 Code approved Result retained, D1/D2 retained solely for workflow sequence; D3/later active records and derivative delivery removed in new copy. Historical canonical rows retained; no status/history tool exposed. Not a cold full-trial assessment. Human label scope unknown; no validated accuracy claim or relabeling. Reference metadata kept outside model workspace.",
+  "normal_correction_allowed_once": true,
+  "hosted_declaration_check_before_science": true,
+  "no_invocation_retry": true,
+  "manual_repairs_during_run": false
+}

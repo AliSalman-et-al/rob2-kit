@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-10-02T12:43:44.553503+00:00",
+  "authorized_input_threshold": 400000,
+  "observed_durable_input_tokens": 441823,
+  "owned_cli_process_group": 429462,
+  "termination_sent": true,
+  "reason": "Stop at observed authorized input threshold. Launcher substitution changed the numeric input threshold; this external intervention applies the authorized 400k limit without altering model input, answers or frozen runtime.",
+  "no_invocation_retry": true
+}
