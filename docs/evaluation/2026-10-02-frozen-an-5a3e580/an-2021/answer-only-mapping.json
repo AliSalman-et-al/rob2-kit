@@ -1,0 +1,15 @@
+{
+  "evaluation": {
+    "domain_id": "domain:deviations",
+    "judgment": "high",
+    "trace": [
+      "deviations.analysis_substantial_impact"
+    ],
+    "driver_questions": [
+      "sq:deviations:appropriate-analysis",
+      "sq:deviations:substantial-impact"
+    ]
+  },
+  "production_checkpoint_exists": false,
+  "qualification": "Last rejected draft enum mapping only; not accepted, validated scientifically, or scored."
+}
