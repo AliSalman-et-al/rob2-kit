@@ -245,6 +245,14 @@ def test_card_keeps_reported_completers_distinct_from_randomized_target() -> Non
         assert card["target_relation"] == "narrower"
         assert "definition" not in card["reported_result"]["endpoint"]
         assert "effect_measure" not in card["reported_result"]
+        if domain == "domain:missing":
+            premises = {item["name"]: item for item in card["propositions"]}
+            assert premises["availability"]["status"] == "unknown"
+            assert premises["material_incompleteness"]["status"] == "unknown"
+            assert premises["material_incompleteness"]["question_id"] == (
+                "sq:missing:data-available"
+            )
+            assert premises["material_incompleteness"]["passages"] == []
         assert (
             next(
                 p

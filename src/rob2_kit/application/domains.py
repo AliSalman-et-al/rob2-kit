@@ -785,6 +785,13 @@ def _comparison_cards(
                 (),
             ),
             (
+                "sq:missing:data-available",
+                "material_incompleteness",
+                "Outcome availability was materially incomplete for the approved Result; "
+                "unresolved availability alone does not establish this proposition.",
+                (),
+            ),
+            (
                 "sq:missing:evidence-unbiased",
                 "mitigation",
                 "The approved Result was not biased by missing outcome data.",
