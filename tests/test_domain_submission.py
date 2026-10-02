@@ -185,7 +185,7 @@ def test_d32_no_still_requires_inspected_evidence_or_valid_search(tmp_path: Path
     assert any(r["code"] == "answer_requires_direct_basis" for r in response["repairs"])
 
 
-@pytest.mark.parametrize("invalid", ["evidence", "search_receipt"])
+@pytest.mark.parametrize("invalid", ["evidence", "search_receipt", "counterpoint"])
 def test_d32_negative_evidence_exception_does_not_bypass_handle_validation(
     tmp_path: Path,
     invalid: str,
@@ -194,9 +194,13 @@ def test_d32_negative_evidence_exception_does_not_bypass_handle_validation(
     draft = _domain_draft("trial", "domain:missing", revision, evidence)
     if invalid == "evidence":
         draft["answers"][1]["bases"] = [{"kind": "context", "evidence": "eh_ffffffffffffffff"}]
-    else:
+    elif invalid == "search_receipt":
         draft["answers"][1]["bases"] = [
             {"kind": "absence", "search_receipt": "sr_ffffffffffffffff"}
+        ]
+    else:
+        draft["answers"][1]["counterevidence"] = [
+            {"evidence": ["eh_ffffffffffffffff"], "implication": "Unowned counterclaim."}
         ]
     response = _call(workspace, "save_domain_judgment", draft)
     assert response["outcome"] == "repair"
@@ -262,7 +266,22 @@ def test_captured_an_counterpoints_preserve_science_without_aliases() -> None:
         (Path(__file__).parent / "fixtures/an-d2-rejected-counterpoints.json").read_text()
     )
     for original in draft["answers"]:
-        public = DomainSaveAnswer.model_validate(original)
+        if original["counterevidence"]:
+            with pytest.raises(ValidationError):
+                DomainSaveAnswer.model_validate(original)
+        else:
+            DomainSaveAnswer.model_validate(original)
+        translated = copy.deepcopy(original)
+        translated["counterevidence"] = [
+            {
+                "evidence": [
+                    original["bases"][index]["evidence"] for index in point["basis_indexes"]
+                ],
+                "implication": point["implication"],
+            }
+            for point in original["counterevidence"]
+        ]
+        public = DomainSaveAnswer.model_validate(translated)
         canonical = DomainAnswer.model_validate(public.canonical_payload())
         assert canonical.answer.value == original["answer"]
         assert canonical.justification == original["justification"]
@@ -275,24 +294,18 @@ def test_captured_an_counterpoints_preserve_science_without_aliases() -> None:
         ]
 
 
-@pytest.mark.parametrize("indexes", [[], [0, 0], [0, 2], [-1], [0, "unresolved"]])
-def test_joint_counterpoints_validate_every_selected_support(indexes: list) -> None:
-    answer = {
-        "question_id": "sq:selection:prespecified-analysis",
-        "answer": "probably_no",
-        "bases": [
-            {"role": "context", "evidence": "eh_0123456789abcdef"},
-            {"role": "contradiction", "evidence": "eh_fedcba9876543210"},
-        ],
-        "counterevidence": [
-            {
-                "basis_indexes": indexes,
-                "implication": "The two passages jointly establish a contrary chronology.",
-            }
-        ],
-    }
+@pytest.mark.parametrize("handles", [[], ["eh_0123456789abcdef"] * 2, ["not-a-handle"], [0]])
+def test_joint_counterpoints_validate_every_selected_support(handles: list) -> None:
     with pytest.raises(ValidationError):
-        DomainSaveAnswer.model_validate(answer)
+        DomainSaveAnswer.model_validate(
+            {
+                "question_id": "sq:selection:prespecified-analysis",
+                "answer": "probably_no",
+                "justification": "The inspected passages challenge timing.",
+                "unknowns": [],
+                "counterevidence": [{"evidence": handles, "implication": "Joint chronology."}],
+            }
+        )
 
 
 def test_joint_counterpoint_keeps_all_citations_and_the_same_implication() -> None:
@@ -301,16 +314,20 @@ def test_joint_counterpoint_keeps_all_citations_and_the_same_implication() -> No
         {
             "question_id": "sq:selection:prespecified-analysis",
             "answer": "probably_no",
-            "bases": [
-                {"role": "context", "evidence": "eh_0123456789abcdef"},
-                {"role": "contradiction", "evidence": "eh_fedcba9876543210"},
+            "justification": "The inspected chronology supports a probable answer.",
+            "unknowns": [],
+            "bases": [{"role": "contradiction", "evidence": "eh_0123456789abcdef"}],
+            "counterevidence": [
+                {
+                    "evidence": ["eh_0123456789abcdef", "eh_fedcba9876543210"],
+                    "implication": implication,
+                }
             ],
-            "counterevidence": [{"basis_indexes": [0, 1], "implication": implication}],
         }
     )
     canonical = DomainAnswer.model_validate(public.canonical_payload())
-    assert canonical.counterevidence is not None
-    assert [(p.basis_index, p.implication) for p in canonical.counterevidence] == [
+    assert [basis.kind for basis in canonical.bases] == ["contradiction", "context"]
+    assert [(p.basis_index, p.implication) for p in canonical.counterevidence or ()] == [
         (0, implication),
         (1, implication),
     ]
@@ -318,6 +335,20 @@ def test_joint_counterpoint_keeps_all_citations_and_the_same_implication() -> No
         DomainSaveAnswer.model_validate(
             {
                 **public.model_dump(),
-                "counterevidence": [{"basis_index": 0, "implication": implication}],
+                "counterevidence": [{"basis_indexes": [0], "implication": implication}],
             }
         )
+
+
+@pytest.mark.parametrize("field", ["justification", "unknowns", "counterevidence"])
+def test_public_answer_schema_requires_all_reasoning_fields(field: str) -> None:
+    answer = {
+        "question_id": "sq:missing:data-available",
+        "answer": "no_information",
+        "justification": "The captured evidence leaves availability unresolved.",
+        "unknowns": [],
+        "counterevidence": [],
+    }
+    del answer[field]
+    with pytest.raises(ValidationError, match=field):
+        DomainSaveAnswer.model_validate(answer)

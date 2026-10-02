@@ -30,24 +30,26 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
 
     schema = public_tool.input_schema
     counterevidence_shape = schema["$defs"]["DomainCounterpoint"]
-    assert set(counterevidence_shape["required"]) == {"basis_indexes", "implication"}
-    assert counterevidence_shape["properties"]["basis_indexes"]["items"]["type"] == "integer"
+    assert set(counterevidence_shape["required"]) == {"evidence", "implication"}
+    assert counterevidence_shape["properties"]["evidence"]["items"]["type"] == "string"
     assert counterevidence_shape["properties"]["implication"]["type"] == "string"
     answer = DomainSaveAnswer.model_validate(
         {
             "question_id": "sq:randomization:sequence",
             "answer": "probably_no",
+            "justification": "The inspected passage challenges this premise.",
+            "unknowns": [],
             "bases": [{"role": "context", "evidence": "eh_0123456789abcdef"}],
             "counterevidence": [
                 {
-                    "basis_indexes": [0],
+                    "evidence": ["eh_0123456789abcdef"],
                     "implication": "The cited passage limits the premise under assessment.",
                 }
             ],
         }
     )
     assert answer.counterevidence is not None
-    assert answer.counterevidence[0].basis_indexes == (0,)
+    assert answer.counterevidence[0].evidence == ("eh_0123456789abcdef",)
     canonical = DomainAnswer.model_validate(answer.canonical_payload())
     assert canonical.counterevidence is not None
     assert canonical.counterevidence[0].basis_index == 0

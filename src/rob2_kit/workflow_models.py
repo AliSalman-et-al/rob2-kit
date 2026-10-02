@@ -1967,20 +1967,20 @@ class DomainInformationLimit(StrictModel):
 
 
 class DomainCounterpoint(StrictModel):
-    """One scientific counterclaim supported by one or several inspected bases."""
+    """One scientific counterclaim citing inspected Evidence directly."""
 
-    basis_indexes: tuple[NonNegativeInt, ...] = Field(
+    evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
         min_length=1,
-        description="Distinct zero-based indexes into this answer's selected Evidence bases.",
+        description="Distinct current-Trial Evidence handles supporting this counterclaim.",
     )
     implication: NonBlankText = Field(
-        description="How the cited bases, considered together, limit or challenge the answer.",
+        description="How the cited passages together limit or challenge the answer."
     )
 
     @model_validator(mode="after")
-    def indexes_are_distinct(self) -> DomainCounterpoint:
-        if len(set(self.basis_indexes)) != len(self.basis_indexes):
-            raise ValueError("counterpoint basis indexes must be distinct")
+    def evidence_is_distinct(self) -> DomainCounterpoint:
+        if len(set(self.evidence)) != len(self.evidence):
+            raise ValueError("counterpoint Evidence handles must be distinct")
         return self
 
 
@@ -2014,33 +2014,38 @@ class DomainSaveAnswer(StrictModel):
         min_length=1,
         description="Optional source-grounded participant-flow rows for this question.",
     )
-    justification: str | None = Field(
-        default=None, description="Explain how the inspected sources support the response."
+    justification: NonBlankText = Field(
+        description="Explain how the inspected sources support the response."
     )
-    unknowns: tuple[str, ...] | None = Field(
-        default=None,
-        description="Remaining material unknowns; use an empty array when none remain.",
+    unknowns: tuple[NonBlankText, ...] = Field(
+        description="Remaining material unknowns; explicitly use [] when none remain."
     )
-    counterevidence: tuple[DomainCounterpoint, ...] | None = Field(
-        default=None,
-        description="Counterpoints use indexes into this answer's Evidence bases only.",
+    counterevidence: tuple[DomainCounterpoint, ...] = Field(
+        description="Counterclaims cite Evidence handles directly; explicitly use [] when none."
     )
-
-    @model_validator(mode="after")
-    def counterpoints_reference_evidence(self) -> DomainSaveAnswer:
-        if any(
-            index >= len(self.bases)
-            for item in self.counterevidence or ()
-            for index in item.basis_indexes
-        ):
-            raise ValueError("counterevidence must reference a selected Evidence basis")
-        return self
 
     def canonical_payload(self) -> dict[str, Any]:
         payload = self.model_dump(mode="json", exclude={"absence_searches", "limitations"})
         payload["bases"] = [
             {"kind": citation.role, "evidence": citation.evidence} for citation in self.bases
         ]
+        counterpoints = []
+        for point in self.counterevidence:
+            for handle in point.evidence:
+                indexes = [
+                    index
+                    for index, basis in enumerate(payload["bases"])
+                    if basis["evidence"] == handle
+                ]
+                if not indexes:
+                    # A counterclaim references inspected material, not a new
+                    # support classification. Keep that extra citation neutral.
+                    indexes = [len(payload["bases"])]
+                    payload["bases"].append({"kind": "context", "evidence": handle})
+                counterpoints.extend(
+                    {"basis_index": index, "implication": point.implication} for index in indexes
+                )
+        payload["counterevidence"] = counterpoints
         payload["bases"] += [
             {"kind": "absence", "search_receipt": receipt} for receipt in self.absence_searches
         ]
@@ -2053,14 +2058,6 @@ class DomainSaveAnswer(StrictModel):
             }
             for limit in self.limitations
         ]
-        if self.counterevidence is not None:
-            # Canonical audit rows remain one citation each. Repeating the
-            # unchanged joint implication preserves every selected support.
-            payload["counterevidence"] = [
-                {"basis_index": index, "implication": point.implication}
-                for point in self.counterevidence
-                for index in point.basis_indexes
-            ]
         return payload
 
 

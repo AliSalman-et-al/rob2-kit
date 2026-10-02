@@ -1,0 +1,207 @@
+[
+  {
+    "path": "tests/fixtures/monarch-plus-rejected-submissions.json",
+    "sha256": "c47ea1486fac24056309e07a340d634a8d8641a6ca2bbd955effad0e0ad3b569",
+    "entries": 5,
+    "top_level_keys": [
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ],
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ],
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ],
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ],
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ]
+    ]
+  },
+  {
+    "path": "tests/fixtures/monarch-plus-separated-rejected-submissions.json",
+    "sha256": "e246c7e6b3870f202f880b9d031cef906d8ea6da173826d2f7eb5276727af6a1",
+    "entries": 2,
+    "top_level_keys": [
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ],
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ]
+    ]
+  },
+  {
+    "path": "tests/fixtures/an-d2-rejected-counterpoints.json",
+    "sha256": "a6c9618e2035d5a5c0c6bf7a41be20fc930288cee5affbc58eea5c014da22408",
+    "entries": 1,
+    "top_level_keys": [
+      [
+        "trial_id",
+        "domain_id",
+        "expected_revision",
+        "answers"
+      ]
+    ]
+  },
+  {
+    "path": "docs/evaluation/2026-10-02-d2-trial-context-audit/production-an/rejected-draft.json",
+    "sha256": "cb055190bcd9a666fa32cb93c8a42d2cd045b0f1d837312ed93f9db30ae245d8",
+    "entries": 1,
+    "top_level_keys": [
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ]
+    ]
+  },
+  {
+    "path": "docs/evaluation/2026-10-02-monarch-plus-production-d3/rejected-drafts.json",
+    "sha256": "a09c678db06b1d6d65abf703cadbbabce057e970e94b0f9e8bd0d7d304ccf7aa",
+    "entries": 5,
+    "top_level_keys": [
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ],
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ],
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ],
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ],
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ]
+    ]
+  },
+  {
+    "path": "docs/evaluation/2026-10-02-monarch-plus-separated-submission/rejected-drafts.json",
+    "sha256": "8ab3ef77556e8c4f111deefb57989c7c1b95eba11ba0ac2f2d99741c4b34c092",
+    "entries": 2,
+    "top_level_keys": [
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ],
+      [
+        "id",
+        "type",
+        "server",
+        "tool",
+        "arguments",
+        "result",
+        "error",
+        "status"
+      ]
+    ]
+  },
+  {
+    "path": "docs/evaluation/2026-10-02-frozen-production-9d73225/an-2021/submissions.json",
+    "sha256": "6127851c6ce0e8e13e73ed52aca3747e356f39e79f4760df85fd8f2d66fa8ae2",
+    "entries": 2,
+    "top_level_keys": [
+      [
+        "event_ordinal",
+        "arguments",
+        "status",
+        "result",
+        "error"
+      ],
+      [
+        "event_ordinal",
+        "arguments",
+        "status",
+        "result",
+        "error"
+      ]
+    ]
+  },
+  {
+    "path": "docs/evaluation/2026-10-02-frozen-production-9d73225/monarch-plus/submissions.json",
+    "sha256": "6e6e5d41b0374d6880775618ad0b445c7bf0c522cfd1c8d1ec3447c8789e4410",
+    "entries": 1,
+    "top_level_keys": [
+      [
+        "event_ordinal",
+        "arguments",
+        "status",
+        "result",
+        "error"
+      ]
+    ]
+  }
+]

@@ -8,7 +8,7 @@ array (use `[]` when none are identified), and a `counterevidence` array. A
 counterpoint refers to the answer's zero-based basis index, for example:
 
 ```json
-"counterevidence": [{"basis_indexes": [0], "implication": "This passage limits the strength of the selected answer."}]
+"counterevidence": [{"evidence": ["eh_0123456789abcdef"], "implication": "This passage limits the strength of the selected answer."}]
 ```
 
 Inactive branch answers may be omitted or retained without fabricated reasoning;

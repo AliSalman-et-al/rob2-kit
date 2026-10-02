@@ -44,7 +44,6 @@ def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
         bases = []
         limitations = list(answer.get("limitations", []))
         searches = list(answer.get("absence_searches", []))
-        indexes = {}
         for index, basis in enumerate(answer.get("bases", [])):
             if basis.get("kind") == "limitation":
                 limitations.append(
@@ -57,7 +56,6 @@ def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
             elif basis.get("kind") == "absence":
                 searches.append(basis["search_receipt"])
             else:
-                indexes[index] = len(bases)
                 bases.append(
                     {("role" if key == "kind" else key): value for key, value in basis.items()}
                 )
@@ -69,7 +67,7 @@ def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
         if isinstance(answer.get("counterevidence"), list):
             answer["counterevidence"] = [
                 {
-                    "basis_indexes": [indexes.get(item["basis_index"], item["basis_index"])],
+                    "evidence": [original["bases"][item["basis_index"]]["evidence"]],
                     "implication": item["implication"],
                 }
                 if isinstance(item, dict) and "basis_index" in item

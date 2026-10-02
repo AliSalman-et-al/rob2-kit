@@ -187,10 +187,12 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         domain_tool.parameters,
         domain_tool.parameters["properties"]["answers"]["items"],
     )
-    assert set(answer_schema["required"]) == {"question_id", "answer"}
+    assert set(answer_schema["required"]) == {
+        "question_id", "answer", "justification", "unknowns", "counterevidence"
+    }
     assert "support the response" in answer_schema["properties"]["justification"]["description"]
-    assert "empty array" in answer_schema["properties"]["unknowns"]["description"]
-    assert "inactive branch answers" in (domain_tool.description or "").lower()
+    assert "explicitly use []" in answer_schema["properties"]["unknowns"]["description"]
+    assert "submit only the active answer path" in (domain_tool.description or "").lower()
     assert "scientific correctness" in (domain_tool.description or "")
     assert "multiple_concerns" not in domain_tool.parameters["properties"]
     proposal_tool = by_name["validate_proposal"]

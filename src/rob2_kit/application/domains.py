@@ -3172,10 +3172,6 @@ def get_domain_context(
     checkpoint_identity = existing.get("identity") if isinstance(existing, dict) else None
     if not isinstance(checkpoint_identity, str):
         checkpoint_identity = None
-    trial_has_checkpoint = any(
-        isinstance(key, str) and key.startswith(f"{trial_id}:")
-        for key in (state.get("domain_records") or {})
-    )
     answer_rows = existing.get("answers", []) if isinstance(existing, dict) else []
     answers = {
         item["question_id"]: item["answer"]
@@ -3975,13 +3971,9 @@ def get_domain_context(
             ),
         ),
         "reading_recovery": (
-            (
-                None
-                if working_checkpoint_status(root, state, trial_id).get("status") == "current"
-                else _main_report_recovery(root, state, trial_id, include_budget=True)
-            )
-            if not trial_has_checkpoint
-            else None
+            None
+            if working_checkpoint_status(root, state, trial_id).get("status") == "current"
+            else _main_report_recovery(root, state, trial_id, include_budget=True)
         ),
         "continuation": continuation,
     }

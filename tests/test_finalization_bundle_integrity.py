@@ -1021,10 +1021,10 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
         for index in range(3)
     ]
 
-    malformed = deepcopy(draft)
-    malformed["answers"][0]["counterevidence"][1]["basis_index"] = 3
+    malformed = _domain_submission(deepcopy(draft))
+    malformed["answers"][0]["counterevidence"][1]["evidence"] = ["not-an-evidence-handle"]
     before = _state(workspace)
-    rejected = _public_tool_result(workspace, "save_domain_judgment", _domain_submission(malformed))
+    rejected = _public_tool_result(workspace, "save_domain_judgment", malformed)
     assert rejected.is_error
     assert _state(workspace)["revision"] == before["revision"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
@@ -1035,7 +1035,7 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     )
     joint["answers"][0]["counterevidence"] = [
         {
-            "basis_indexes": [0, 1, 2],
+            "evidence": [evidence["handle"], second_evidence["handle"]],
             "implication": joint_implication,
         }
     ]

@@ -243,10 +243,12 @@ untruncated zero-hit receipts, not claims of scientific absence. A limitation
 can include a current-Trial `search_receipt` when useful; direct reads require
 none. The server derives the canonical absence/limitation tags. Do not nest a
 basis under `context` or `limitation`, or use those tags in the Evidence array.
-Counterevidence objects use a nonempty `basis_indexes` array and state the joint
-`implication` of those selected Evidence bases. Use `[0]` for one basis or `[0, 1]`
-when two passages together support the counterclaim. Every index must reference
-this answer's Evidence bases; absence searches and limitations are not indexed.
+Counterevidence objects cite a nonempty `evidence` array of inspected handles and
+state their joint `implication`. Cite passages directly; do not calculate indexes
+or repeat a citation solely to make it indexable. Existing explicit citation roles
+are preserved. A counterpoint-only passage is retained as neutral context, never
+promoted to support. Every active answer requires justification, unknowns and
+counterevidence; explicitly use [] for the latter two when none remain.
 
 ## Recover an unresolved premise
 

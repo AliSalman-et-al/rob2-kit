@@ -1116,3 +1116,37 @@ def test_trial_review_retains_source_observations_after_domain_commits(
         if item["question_id"] == "sq:randomization:concealment"
     )
     assert concealment["uninvestigated_routes"]
+
+
+def test_earlier_domain_checkpoint_does_not_hide_missing_report_delivery(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    marker = "Participants stopped because the assigned regimen was too intense."
+    report = workspace / "input" / "trial" / "main.txt"
+    report.write_text(report.read_text() + marker + "\n")
+    evidence = _proposal_waiting_for_review(workspace)
+    _review(workspace)
+    _read_required_main_reports(workspace)
+    revision = _call(workspace, "get_domain_context", {"domain_id": "domain:randomization"})[
+        "head"
+    ]["state_revision"]
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", "domain:randomization", revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+    original = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    # Delivery state is disposable; a retained scientific checkpoint is not
+    # evidence that this restored host received the report's remaining text.
+    with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
+        connection.execute("DELETE FROM page_reads WHERE phase='assessment'")
+    context = _call(workspace, "get_domain_context", {"domain_id": "domain:deviations"})
+    recovery = context["data"]["reading_recovery"]
+    assert recovery is not None
+    delivered = _call(
+        workspace, "read_pages", {"trial_id": "trial", "windows": recovery["windows"]}
+    )
+    assert marker in json.dumps(delivered)
+    resumed = _call(workspace, "get_domain_context", {"domain_id": "domain:deviations"})
+    assert resumed["data"]["reading_recovery"] is None
+    assert _state(workspace)["domain_records"]["trial:domain:randomization"] == original

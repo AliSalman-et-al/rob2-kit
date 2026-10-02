@@ -1,0 +1,1306 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "assessment",
+    "state_revision": 13,
+    "next_action": {
+      "operation": "save_domain_judgment",
+      "authority": "host",
+      "trial_id": "an-2021",
+      "domain_id": "domain:deviations",
+      "expected_revision": 13,
+      "caller_inputs": [
+        "answers"
+      ]
+    },
+    "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+  },
+  "data": {
+    "trial_id": "an-2021",
+    "domain_id": "domain:deviations",
+    "result": {
+      "kind": "assessable",
+      "trial_id": "an-2021",
+      "requested_outcome": "Quadriceps muscle strength",
+      "relation": "exact",
+      "relation_rationale": "The requested quadriceps strength outcome is directly reported as knee extension peak torque at 60\u25e6/s for the three randomized groups at baseline, post-intervention, and six weeks after TKA. The reported time-by-group interaction compares those assigned groups over the requested measure and follow-up schedule.",
+      "target": {
+        "outcome_definition": "Quadriceps muscle strength",
+        "measurement": {
+          "metric": "Quadriceps muscle strength",
+          "method": "Isokinetic knee extension peak torque measured at 60\u25e6/s with a Biodex dynamometer; average of all three trials"
+        },
+        "time_point_or_window": {
+          "kind": "described",
+          "description": "Baseline (4 weeks before TKA), post-intervention (1 day before TKA after the 3-week program), and 6 weeks after TKA"
+        },
+        "effect_of_interest": "assignment",
+        "comparison_groups": [
+          {
+            "id": "ptg",
+            "assignment": "Preoperative telerehabilitation"
+          },
+          {
+            "id": "peg",
+            "assignment": "Preoperative patient education and home exercise"
+          },
+          {
+            "id": "control",
+            "assignment": "Usual care"
+          }
+        ],
+        "intended_analysis_population": "All randomized participants in the comparison groups",
+        "intended_effect_measure": "time-by-group interaction"
+      },
+      "reported": {
+        "form": "comparative_effect",
+        "effect_measure": "time-by-group interaction",
+        "estimate": "F(4, 100) = 2.499",
+        "precision": "p = 0.047, \u03b72p = 0.91",
+        "analysis_population": "53 participants analyzed: preoperative telerehabilitation n=18, preoperative patient education n=17, and control n=18; 60 participants were randomized.",
+        "endpoint": {
+          "name": "60\u25e6/s extension peak torque",
+          "definition": null
+        },
+        "group_values": []
+      },
+      "clarity": {
+        "outcome_definition": "specified",
+        "measurement": "specified",
+        "time_point": "specified",
+        "analysis_population": "specified",
+        "comparison_groups": "specified",
+        "effect_measure": "specified",
+        "source_table_meaning": "specified",
+        "eligible_result_choice": "specified"
+      },
+      "evidence": [
+        {
+          "kind": "narrative",
+          "handle": "eh_011fdfa6b6f87d64",
+          "identity": "sha256:011fdfa6b6f87d64668027a6f8f93506baf0bd7c731f4cceebd888f78a4462fe"
+        },
+        {
+          "kind": "narrative",
+          "handle": "eh_0815ad60e1dc1f4e",
+          "identity": "sha256:0815ad60e1dc1f4e7378fe9e35fe1a52dff081297e524ee98b7fcb9f748eccd6"
+        },
+        {
+          "kind": "narrative",
+          "handle": "eh_6a3a61395c2666c3",
+          "identity": "sha256:6a3a61395c2666c356b0a48c534e639ec8c00489c2aeee68b04769c55ac937c3"
+        },
+        {
+          "kind": "narrative",
+          "handle": "eh_f628fda610788e52",
+          "identity": "sha256:f628fda610788e52e01333bb1f2d6f0e104fd79b086bde1333fc8bff84a36a54"
+        }
+      ]
+    },
+    "investigation": {
+      "proposition": "Were participants aware of their assigned intervention during the trial?",
+      "status": "not_established",
+      "sufficiency": {
+        "status": "not_established",
+        "attribution": "not_established"
+      },
+      "workflow_permission": {
+        "permitted": true,
+        "operation": "save_domain_judgment",
+        "authority": "host",
+        "detail": "The complete Domain draft may be submitted; structural success does not establish scientific correctness or sufficiency."
+      },
+      "coverage": {
+        "source_scope": [
+          "sh_4709acc6c24f9168"
+        ],
+        "state": "partial",
+        "ranges": [
+          {
+            "source_id": "sh_4709acc6c24f9168",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 53,
+            "phase": "assessment"
+          },
+          {
+            "source_id": "sh_4709acc6c24f9168",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 25,
+            "phase": "assessment"
+          },
+          {
+            "source_id": "sh_4709acc6c24f9168",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 50,
+            "phase": "assessment"
+          },
+          {
+            "source_id": "sh_4709acc6c24f9168",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 78,
+            "phase": "assessment"
+          },
+          {
+            "source_id": "sh_4709acc6c24f9168",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 87,
+            "phase": "assessment"
+          },
+          {
+            "source_id": "sh_4709acc6c24f9168",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 109,
+            "phase": "assessment"
+          }
+        ],
+        "range_count": 6,
+        "delivered_sources": [
+          "sh_4709acc6c24f9168"
+        ],
+        "sources_without_delivery": [],
+        "ranges_truncated": false
+      },
+      "host_notes": {
+        "referenced_sources": [],
+        "unread_ranges": [],
+        "observation_count": 0
+      },
+      "observations": [],
+      "support": [],
+      "counterevidence": [],
+      "premises": [],
+      "unresolved": "Were participants aware of their assigned intervention during the trial?",
+      "recovery_choices": [
+        {
+          "operation": "save_working_checkpoint",
+          "available": true,
+          "rationale": "Save source-linked observations without committing an answer."
+        },
+        {
+          "operation": "search_sources",
+          "available": true,
+          "rationale": "Search captured Sources for Evidence that discriminates the premise."
+        },
+        {
+          "operation": "read_pages",
+          "available": true,
+          "rationale": "Read exact Source pages before relying on a passage as Evidence."
+        },
+        {
+          "operation": "accept_limitation",
+          "available": true,
+          "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+        },
+        {
+          "operation": "save_domain_judgment",
+          "available": true,
+          "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+        }
+      ],
+      "stopping_rationale": null,
+      "stale": [],
+      "checkpoint_identity": null,
+      "legacy": "supported"
+    },
+    "questions": [
+      {
+        "id": "sq:deviations:participants-aware",
+        "wording": "Were participants aware of their assigned intervention during the trial?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "If participants are aware of their assigned intervention it is more likely that health-related behaviours will differ between the intervention groups. Blinding participants, most commonly through use of a placebo or sham intervention, may prevent such differences. If participants experienced side effects or toxicities that they knew to be specific to one of the interventions, answer this question \u2018Yes\u2019 or \u2018Probably yes\u2019.",
+        "source_locator": "Full guidance p. 28, Box 6, signalling question 2.1",
+        "bias_construct": "Whether participants were aware of their assigned intervention during the trial.",
+        "decision_rule": "Answer yes or probably yes when participants knew their assignment, including when intervention-specific side effects or toxicities revealed it. Blinding participants, commonly with placebo or sham intervention, may prevent such differences.",
+        "evidence_needed": [
+          "A direct report of participant blinding, open-label conduct, or participant knowledge during the trial."
+        ],
+        "no_information_rule": "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; an absent explicit awareness statement alone is insufficient when those facts support a probable judgment.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "Participants were aware of their assigned intervention."
+          },
+          {
+            "answer": "no",
+            "text": "Participants were blinded to their assigned intervention."
+          }
+        ],
+        "considerations": [
+          "Awareness is about knowledge of assignment, not whether participants completed or received treatment."
+        ],
+        "invalid_shortcuts": [
+          "completed treatment",
+          "received the intervention",
+          "was randomized"
+        ],
+        "query_suggestions": [
+          {
+            "query": "participant blinding",
+            "mode": "all",
+            "source_role": null,
+            "purpose": "participant awareness"
+          },
+          {
+            "query": "open label",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "unblinded participant conduct"
+          },
+          {
+            "query": "side effects",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "intervention-specific unblinding"
+          }
+        ]
+      },
+      {
+        "id": "sq:deviations:personnel-aware",
+        "wording": "Were carers and people delivering the interventions aware of participants' assigned intervention during the trial?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "If carers or people delivering the interventions are aware of the assigned intervention then its implementation, or administration of non-protocol interventions, may differ between the intervention groups. Blinding may prevent such differences. If randomized allocation was not concealed, then it is likely that carers and people delivering the interventions were aware of participants\u2019 assigned intervention during the trial.",
+        "source_locator": "Full guidance p. 28, Box 6, signalling question 2.2",
+        "bias_construct": "Whether carers and people delivering interventions were aware of participants' assigned intervention.",
+        "decision_rule": "Answer yes or probably yes when carers or intervention personnel knew assignment, including when participant side effects or toxicities revealed it. If randomized allocation was not concealed, awareness by carers and delivery personnel is likely.",
+        "evidence_needed": [
+          "A direct report of blinding or awareness by carers and people delivering the intervention, plus the allocation process when it bears on their awareness."
+        ],
+        "no_information_rule": "Use no_information when awareness of carers or delivery personnel cannot be determined.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "Carers or intervention personnel were aware of assigned intervention."
+          },
+          {
+            "answer": "no",
+            "text": "Carers or intervention personnel were blinded to assigned intervention."
+          }
+        ],
+        "considerations": [
+          "Assess the people delivering interventions, not merely outcome assessors."
+        ],
+        "invalid_shortcuts": [
+          "completed treatment",
+          "received the intervention",
+          "was randomized"
+        ],
+        "query_suggestions": [
+          {
+            "query": "personnel blinding",
+            "mode": "all",
+            "source_role": null,
+            "purpose": "carer awareness"
+          },
+          {
+            "query": "double blind",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "blinding description"
+          },
+          {
+            "query": "intervention provider",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "delivery personnel"
+          }
+        ]
+      },
+      {
+        "id": "sq:deviations:context-deviations",
+        "wording": "If Y/PY/NI to 2.1 or 2.2: Were there deviations from the intended intervention that arose because of the trial context?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "question_id": "sq:deviations:participants-aware",
+              "accepted_answers": [
+                "yes",
+                "probably_yes",
+                "no_information"
+              ]
+            },
+            {
+              "question_id": "sq:deviations:personnel-aware",
+              "accepted_answers": [
+                "yes",
+                "probably_yes",
+                "no_information"
+              ]
+            }
+          ]
+        },
+        "official_guidance": "Answer \u2018Yes\u2019 or \u2018Probably yes\u2019 only if there is evidence, or strong reason to believe, that the trial context led to failure to implement the protocol interventions or to implementation of interventions not allowed by the protocol. Answer \u2018No\u2019 or \u2018Probably no\u2019 if there were changes from assigned intervention that are inconsistent with the trial protocol, such as non-adherence to intervention, but these are consistent with what could occur outside the trial context. The answer \u2018No information\u2019 may be appropriate.",
+        "source_locator": "Full guidance p. 28, Box 6, signalling question 2.3",
+        "bias_construct": "Whether deviations inconsistent with protocol arose because of the trial context.",
+        "decision_rule": "Answer yes or probably yes only after establishing both that the change was inconsistent with the protocol and that the trial context caused it; identify both premises in the justification. Answer no or probably no when no such deviation occurred, including ordinary non-adherence outside the trial context, protocol-consistent changes, and protocol-permitted subsequent care after progression.",
+        "evidence_needed": [
+          "Evidence linking the deviation to recruitment, engagement, or trial personnel and showing it was inconsistent with the protocol."
+        ],
+        "no_information_rule": "Use no_information when reported details are insufficient and trial circumstances do not support a reasonable probable judgment about trial-context-caused deviations.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "The trial context caused protocol-inconsistent deviations."
+          },
+          {
+            "answer": "no",
+            "text": "No protocol-inconsistent deviation arose because of the trial context."
+          },
+          {
+            "answer": "no_information",
+            "text": "Reported details and trial circumstances do not support a judgment about trial-context-caused deviations."
+          }
+        ],
+        "considerations": [
+          "Side-effect-related compromised blinding counts only when resulting changes were protocol-inconsistent and context-caused.",
+          "Subsequent treatment, rescue treatment, or cross-over is not itself a deviation for the effect of assignment: establish both protocol inconsistency and a trial-context cause before answering affirmatively.",
+          "Neutral contrast: protocol-permitted rescue after progression is ordinary subsequent care; prohibited rescue encouraged by trial staff is a candidate trial-context deviation. Change only the protocol-consistency and cause premises before changing the reasoning."
+        ],
+        "invalid_shortcuts": [
+          "nonadherence alone",
+          "an ITT analysis",
+          "participants switched treatment",
+          "unequal post-progression treatment without evidence that it was prohibited and trial-context-caused",
+          "a protocol deviation without its cause",
+          "discontinuation or crossover without protocol and cause evidence"
+        ],
+        "query_suggestions": [
+          {
+            "query": "nonadherence",
+            "mode": "any",
+            "source_role": null,
+            "purpose": "deviations from assigned intervention"
+          },
+          {
+            "query": "treatment contamination",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "cross-group intervention"
+          },
+          {
+            "query": "protocol deviation",
+            "mode": "phrase",
+            "source_role": "protocol",
+            "purpose": "reported deviations and their causes"
+          }
+        ]
+      },
+      {
+        "id": "sq:deviations:affected-outcome",
+        "wording": "If Y/PY to 2.3: Were these deviations likely to have affected the outcome?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "question_id": "sq:deviations:context-deviations",
+              "accepted_answers": [
+                "yes",
+                "probably_yes"
+              ]
+            }
+          ]
+        },
+        "official_guidance": "Changes from assigned intervention that are inconsistent with the trial protocol and arose because of the trial context will impact on the intervention effect estimate if they affect the outcome, but not otherwise.",
+        "source_locator": "Full guidance p. 28, Box 6, signalling question 2.4",
+        "bias_construct": "Whether context-caused protocol-inconsistent deviations were likely to affect the outcome.",
+        "decision_rule": "Answer yes or probably yes when the identified deviations were likely to affect the intervention effect estimate through this outcome; answer no or probably no when they were not likely to affect the outcome.",
+        "evidence_needed": [
+          "A direct link between the identified context-caused deviation and this outcome or its effect estimate."
+        ],
+        "no_information_rule": "Use no_information when the effect of the identified deviations on the outcome cannot be determined.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "The identified deviations were likely to affect the outcome."
+          },
+          {
+            "answer": "no",
+            "text": "The identified deviations were not likely to affect the outcome."
+          }
+        ],
+        "considerations": [
+          "This question concerns the deviations already identified in 2.3, not any non-adherence in isolation."
+        ],
+        "invalid_shortcuts": [
+          "nonadherence alone",
+          "an ITT analysis",
+          "a deviation without outcome impact"
+        ],
+        "query_suggestions": [
+          {
+            "query": "effect estimate",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "deviation impact on outcome"
+          },
+          {
+            "query": "outcome affected",
+            "mode": "all",
+            "source_role": null,
+            "purpose": "deviation effect"
+          }
+        ]
+      },
+      {
+        "id": "sq:deviations:balanced",
+        "wording": "If Y/PY/NI to 2.4: Were these deviations from intended intervention balanced between groups?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "question_id": "sq:deviations:affected-outcome",
+              "accepted_answers": [
+                "yes",
+                "probably_yes",
+                "no_information"
+              ]
+            }
+          ]
+        },
+        "official_guidance": "Changes from assigned intervention that are inconsistent with the trial protocol and arose because of the trial context are more likely to impact on intervention effect estimate if they are not balanced between the intervention groups.",
+        "source_locator": "Full guidance p. 29, Box 6, signalling question 2.5",
+        "bias_construct": "Whether context-caused protocol-inconsistent deviations were balanced between intervention groups.",
+        "decision_rule": "Answer yes or probably yes when the identified deviations were balanced between groups; answer no or probably no when they were not balanced.",
+        "evidence_needed": [
+          "Group-specific counts or descriptions of the identified deviations and their comparability between intervention groups."
+        ],
+        "no_information_rule": "Use no_information when balance of the identified deviations cannot be determined.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "The identified deviations were balanced between intervention groups."
+          },
+          {
+            "answer": "no",
+            "text": "The identified deviations were not balanced between intervention groups."
+          }
+        ],
+        "considerations": [
+          "Balance refers to the deviations identified in 2.3 and their potential effect, not to baseline group sizes."
+        ],
+        "invalid_shortcuts": [
+          "equal randomized group sizes",
+          "an ITT analysis",
+          "absence of a reported problem"
+        ],
+        "query_suggestions": [
+          {
+            "query": "between intervention groups",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "balance of deviations"
+          },
+          {
+            "query": "differential nonadherence",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "unequal deviations"
+          }
+        ]
+      },
+      {
+        "id": "sq:deviations:appropriate-analysis",
+        "wording": "Was an appropriate analysis used to estimate the effect of assignment to intervention?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "Both intention-to-treat (ITT) analyses and modified intention-to-treat (mITT) analyses excluding participants with missing outcome data should be considered appropriate. Both na\u00efve \u2018per-protocol\u2019 analyses and \u2018as treated\u2019 analyses should be considered inappropriate. Analyses excluding eligible trial participants post-randomization should also be considered inappropriate.",
+        "source_locator": "Full guidance p. 29, Box 6, signalling question 2.6",
+        "bias_construct": "Whether an appropriate analysis estimated the effect of assignment to intervention. Compare randomized assignment with the actual analysis population, grouping, reassignment, and exclusions, including their reasons; an ITT, modified ITT, or as-treated label alone does not establish this.",
+        "decision_rule": "Consider ITT and modified ITT excluding participants with missing outcome data appropriate. Consider naive per-protocol, as-treated, and post-randomization exclusion of eligible participants inappropriate; post-randomization exclusion of ineligible participants may be appropriate when eligibility could not have been influenced by assignment.",
+        "evidence_needed": [
+          "The actual analysis population and grouping rule: who was assigned, who was analysed in each group, who was excluded or reassigned after randomization, and why."
+        ],
+        "no_information_rule": "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; an incomplete analysis description alone is insufficient when those facts support a probable judgment about appropriateness.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "An ITT or appropriate modified ITT analysis estimated assignment effect."
+          },
+          {
+            "answer": "no",
+            "text": "A naive per-protocol, as-treated, or inappropriate post-randomization exclusion analysis was used."
+          }
+        ],
+        "considerations": [
+          "The question is about effect of assignment, so grouping must follow randomized assignment.",
+          "Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.",
+          "Never-treated participants are not automatically participants with no adverse event or unavailable outcome. Recover the documented eligibility, outcome availability, and exclusion reason before judging the approved assignment-effect estimand.",
+          "Excluding participants solely because their outcome data are missing can be an appropriate modified ITT analysis for D2; assess the missing outcomes in D3. An eligible participant with an observed outcome omitted from the assignment analysis, or analysed in the wrong randomized group, is a distinct D2 concern. Record whether exclusions occurred before the endpoint was measured or after an outcome value was recorded, but timing alone does not establish availability or the exclusion reason. An observed value omitted from analysis is not thereby missing outcome data. An analyzed count below the randomized count alone does not establish inappropriate analysis; if the exclusion mechanism cannot support a reasonable probable judgment, retain no_information. Judge 2.7 only for the identified assignment-analysis failure, using the participants affected, reasons, outcome rarity, and prognostic relevance for this Result."
+        ],
+        "invalid_shortcuts": [
+          "an endpoint definition",
+          "an ITT label without its population",
+          "a per-protocol label without the analysis population"
+        ],
+        "query_suggestions": [
+          {
+            "query": "intention-to-treat",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "analysis by assignment"
+          },
+          {
+            "query": "intent-to-treat",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "alternative analysis-by-assignment wording"
+          },
+          {
+            "query": "all randomized patients",
+            "mode": "all",
+            "source_role": null,
+            "purpose": "reported analysis population"
+          },
+          {
+            "query": "per protocol",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "analysis restrictions"
+          }
+        ]
+      },
+      {
+        "id": "sq:deviations:substantial-impact",
+        "wording": "If N/PN/NI to 2.6: Was there potential for a substantial impact (on the result) of the failure to analyse participants in the group to which they were randomized?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "question_id": "sq:deviations:appropriate-analysis",
+              "accepted_answers": [
+                "probably_no",
+                "no",
+                "no_information"
+              ]
+            }
+          ]
+        },
+        "official_guidance": "This question addresses whether the number of participants who were analysed in the wrong intervention group, or excluded from the analysis, was sufficient that there could have been a substantial impact on the result. It is not possible to specify a precise rule: there may be potential for substantial impact even if fewer than 5% of participants were analysed in the wrong group or excluded, if the outcome is rare or if exclusions are strongly related to prognostic factors.",
+        "source_locator": "Full guidance p. 29, Box 6, signalling question 2.7",
+        "bias_construct": "Whether failure to analyse participants in their randomized group could substantially affect the result.",
+        "decision_rule": "Assess whether the number analysed in the wrong group or excluded was sufficient for substantial impact. There is no precise percentage rule: fewer than 5% may still matter for rare outcomes or exclusions strongly related to prognostic factors.",
+        "evidence_needed": [
+          "Counts and reasons for participants analysed in the wrong group or excluded, outcome rarity, and prognostic relevance of exclusions."
+        ],
+        "no_information_rule": "Use no_information when the potential magnitude of impact cannot be assessed.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "The wrong-group analysis or exclusions could substantially affect the result."
+          },
+          {
+            "answer": "no",
+            "text": "The wrong-group analysis or exclusions could not substantially affect the result."
+          }
+        ],
+        "considerations": [
+          "This is conditional on an inappropriate or uncertain analysis in 2.6.",
+          "Assess potential impact only after deciding whether 2.6 was appropriate; a small or balanced exclusion can have low impact without making an inappropriate analysis appropriate.",
+          "Use facts about this endpoint and the excluded participants. Exclusion before outcome ascertainment may also leave outcome data missing; exclusion after ascertainment may omit observed values from the analysis. Neither timing alone settles the possible effect on the estimate."
+        ],
+        "invalid_shortcuts": [
+          "a small percentage alone",
+          "an ITT analysis",
+          "a group label without exclusion counts"
+        ],
+        "query_suggestions": [
+          {
+            "query": "excluded participants",
+            "mode": "all",
+            "source_role": null,
+            "purpose": "post-randomization exclusions"
+          },
+          {
+            "query": "wrong intervention group",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "analysis group mismatch"
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "kind": "figure",
+        "handle": "eh_09ab27f35ec709e3",
+        "identity": "sha256:09ab27f35ec709e347853d8c604a8792c8ccb9e4fe58ba8059f8efc7d292eb59",
+        "trial_id": "an-2021",
+        "source_id": "sh_4709acc6c24f9168",
+        "render": {
+          "identity": "sha256:adbf95934713121875e1c55f567a4c8e44cd4f661dc46bc76f774d5e7896db71",
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 4,
+          "png_sha256": "sha256:52e2e75efbeb56661dd1cf63f88e188c7b4b0fba247b9b5643d96a56b724c1ac",
+          "recipe": "pymupdf-1.5"
+        },
+        "delivery_receipt": "sha256:b0a877d271592d5e297edae4663ed80defb1cb31759d2e6e7e52d44357f81776",
+        "transcription": "Figure 1, Participant flow diagram. Assessed for eligibility n=237; excluded n=177: not meeting inclusion criteria (prior surgical experience n=21; walk over 10 m without help n=17; revision surgery n=5; not smartphone user n=71), declined consent n=63. Randomized n=60. Allocation: experimental 1 preoperative telerehabilitation n=20; experimental 2 preoperative patient education n=20; control usual care n=20. Postintervention (preop 1 day): experimental 1 lost to follow-up n=2, discontinued intervention n=2; experimental 2 lost to follow-up n=3, surgery cancelled n=3; control lost to follow-up n=1, surgery cancelled n=1. Follow-up (postop 6 weeks): first two groups lost to follow-up n=0; control lost to follow-up n=1, fall event n=1. Analysis: experimental 1 n=18; experimental 2 n=17; control n=18.",
+        "provenance": "host_visual",
+        "uncertainty": null,
+        "region": [
+          0.0,
+          0.0,
+          1.0,
+          0.6
+        ],
+        "inclusion_reason": "explicit_carry_forward",
+        "domain_id": "domain:deviations",
+        "question_id": null,
+        "search_session": null,
+        "returned_previously": null
+      },
+      {
+        "kind": "narrative",
+        "handle": "eh_011fdfa6b6f87d64",
+        "identity": "sha256:011fdfa6b6f87d64668027a6f8f93506baf0bd7c731f4cceebd888f78a4462fe",
+        "trial_id": "an-2021",
+        "source_id": "sh_4709acc6c24f9168",
+        "source_version": "sha256:ac028662e65a79eb25259ffed61dffb63bb250885700419846b9425d11d95e4c",
+        "page": 6,
+        "start_line": 15,
+        "end_line": 78,
+        "start": 865,
+        "end": 3250,
+        "quote": "within groups and between groups, and a post hoc test was used with the Bonferroni\nmethod. Statistical analysis was performed using the Statistical Package for the Social\nSciences (version 19; IBM, Chicago, IL, USA), and statistical significance was set at p < 0.05.\nData are presented as means and standard deviations.\n3. Results\nA total of 237 participants were recruited. Of them, 60 patients who met the inclusion\ncriteria and provided informed consent were randomized into the following groups: ex-\nperimental 1 (preoperative telerehabilitation) group, experimental 2 (patient education)\ngroup, and control (usual care) group. The flow of patients throughout the study is shown\nin Figure 1. All participants were women aged >65 years with Kellgren-Lawrence grade\n3-4 osteoarthritis that underwent TKA. The patient demographics are shown in Table 1.\nTable 1. Demographics of the participants.\nCharacteristics\nPTG\n(n = 18)\nPEG\n(n = 17)\nControl\n(n = 18)\nX2 F(p)\nAge (years)\n71.1 \u00b1 3.30\n70.05 \u00b1 2.41\n70.38 \u00b1 2.59\n0.650 (0.527)\nHeight (cm)\n152 \u00b1 6.35\n151.58 \u00b1 6.03\n151.70 \u00b1 5.58\n0.109 (0.897)\nWeight (kg)\n61.75 \u00b1 7.97\n60.47 \u00b1 9.29\n61.95 \u00b1 8.62\n0.146 (0.865)\nBMI (kg/m2)\n26.45 \u00b1 2.50\n26.25 \u00b1 3.26\n26.51 \u00b1 2.86\n0.176 (0.839)\nBMD (T-score)\n-2.27 \u00b1 1.03\n-2.58 \u00b1 0.91\n-2.40 \u00b1 0.93\n0.474 (0.626)\nDeviation of the knee\njoint axis (\u25e6)\n15.70 \u00b1 6.29\n11.17 \u00b1 5.48\n14.44 \u00b1 1.49\n2.636 (0.082)\nPTG, preoperative telerehabilitation group; PEG, preoperative patient education group; BMI, body mass index;\nBMD, bone mineral density. Values are expressed as mean \u00b1 standard deviation. Significant: p < 0.05.\n3.1. Primary Outcome\nQuadriceps Strength\nSignificant differences were observed across the three time points in 60\u25e6/s extension\npeak torque [F(2, 100) = 26.266, p < 0.001, \u03b72p = 0.344]. Significant differences between\ngroups were also observed [F(2, 50) = 8.625, p < 0.001, \u03b72p = 0.256], as well as a significant\ntime-by-group interaction [F(4, 100) = 2.499, p = 0.047, \u03b72p = 0.91]. For 180\u25e6/s extension\npeak torque, there was a significant difference in time effect [F(2, 100) = 31.373, p < 0.001,\n\u03b72p = 0.386], as well as significant differences between groups [F(2, 50) = 6.039, p = 0.004,\n\u03b72p = 0.195] and a significant time-by-group intervention interaction [F(4, 100) = 3.583,\np = 0.009, \u03b72p = 0.125] (Table 2). Figure 2 is represented the trend of quadriceps strength at\nthree-time points.",
+        "inclusion_reason": "result",
+        "domain_id": null,
+        "question_id": null,
+        "search_session": null,
+        "candidate_rank": null,
+        "returned_previously": null,
+        "text_status": "complete",
+        "recovery": null
+      },
+      {
+        "kind": "narrative",
+        "handle": "eh_0815ad60e1dc1f4e",
+        "identity": "sha256:0815ad60e1dc1f4e7378fe9e35fe1a52dff081297e524ee98b7fcb9f748eccd6",
+        "trial_id": "an-2021",
+        "source_id": "sh_4709acc6c24f9168",
+        "source_version": "sha256:ac028662e65a79eb25259ffed61dffb63bb250885700419846b9425d11d95e4c",
+        "page": 5,
+        "start_line": 1,
+        "end_line": 50,
+        "start": 0,
+        "end": 3609,
+        "quote": "Int. J. Environ. Res. Public Health 2021, 18, 6071\n5 of 15\ncomfortable position using an assistive device that can distribute weight while standing\nor sitting.\n2.5.2. Preoperative Patient Education Group\nThe preoperative patient education group initially participated in a preoperative\neducation session, which consisted of home exercise safety and the protocol of intervention\ndetails for 40 min and thereafter performed a self-home exercise. This non-supervised\nintervention was performed for 30 min per session, 2 times/day, 5 days/week for 3 weeks,\nand the exercise timing was adjustable. A physical therapist checked physical condition\nand provided daily notification, motivation and education of the preoperative exercise via\ntelephone calls once every day. The intervention protocol was the same as the preoperative\ntelerehabilitation program and the patients were encouraged to complete each exercise.\nThe intensity of each exercise was designed to not exacerbate the pain. The exercise details\nwere described in the patient guidebook.\n2.5.3. Control Group\nThe control group received the usual care, such as following the guideline of surgical\nprocedure, postoperative progress monitoring, discharge destination determination, and\nsimple quadriceps exercise intervention. The exercise was recommended to be performed\nseveral times daily as the patient's condition determined.\n2.6. Primary Outcome Measures\nIsokinetic Strength Assessment\nQuadriceps strength was measured using a dynamometer (Biodex 3 PRO; Biodex\nMedical Systems Inc., Shirley, NY, USA, 2015). The test-retest reliability showed a high\nintraclass correlation coefficient (ICC) of 0.947-0.966 in patients who underwent TKA [28].\nDuring the measurement, the patient's chest, abdomen, thigh, and ankles were fixed with\na strap, and the dynamometer rotation axis was aligned with the knee joint axis. Isokinetic\nforce was measured with knee flexion at 60\u25e6/s and 180\u25e6/s peak torque (N-m) and knee\nextension at 60/sec\u25e6and 180\u25e6/s peak torque (N-m) [29]. The average value of all three\ntrials was used for statistical analysis.\n2.7. Secondary Outcome Measures\n2.7.1. Western Ontario and McMaster Universities Osteoarthritis Index (WOMAC)\nThe WOMAC [ICC = 0.96, 95% confidence interval (CI) 0.94-0.98] evaluates the pain,\nstiffness, and function of patients with knee osteoarthritis who have undergone TKA [30].\nThis tool has a total of 24 items, consisting of 5 pain items, 2 stiffness items, and 17 functional\nitems. It is a five-point scale from 0 (lowest) to 4 (highest) for each item, with a lower score\nindicating fewer symptoms and less physical disability [31].\n2.7.2. Knee Flexion ROM\nThe self-passive knee flexion ROM was measured using a digital goniometer (Biomet-\nrics, Baton Rouge, LA, USA, 2008), which showed good intrarater ICC of 0.997-0.998 and\ninterrater reliability ICC of 0.994 for knee joint ROM [32]. To measure the knee ROM, the\naxis of the digital goniometer was attached to the lateral joint space of the knee; the fixed\narm was placed in the middle of the femur, between the greater trochanter and the lateral\njoint space of the knee; and the moving arm was lined up with the lateral malleolus of the\nfibula [33]. After the measurement, the angle of goniometer was reset to zero and the trial\nwas repeated three times.\n2.7.3. Timed Up-and-Go (TUG) Test\nThe TUG test (ICC = 0.54-0.97) is used to assess dynamic balance ability and to\npredict falls in the elderly population [34]. In this study, the participants stood up from an\narmless chair upon the assessor's signal, walked to the 3-m point, and returned to sit on",
+        "inclusion_reason": "result",
+        "domain_id": null,
+        "question_id": null,
+        "search_session": null,
+        "candidate_rank": null,
+        "returned_previously": null,
+        "text_status": "complete",
+        "recovery": null
+      },
+      {
+        "kind": "narrative",
+        "handle": "eh_6a3a61395c2666c3",
+        "identity": "sha256:6a3a61395c2666c356b0a48c534e639ec8c00489c2aeee68b04769c55ac937c3",
+        "trial_id": "an-2021",
+        "source_id": "sh_4709acc6c24f9168",
+        "source_version": "sha256:ac028662e65a79eb25259ffed61dffb63bb250885700419846b9425d11d95e4c",
+        "page": 3,
+        "start_line": 1,
+        "end_line": 53,
+        "start": 0,
+        "end": 4094,
+        "quote": "Int. J. Environ. Res. Public Health 2021, 18, 6071\n3 of 15\nhistory of knee surgery within 6 months, (5) neurological disorders (including Parkinson's\ndisease and stroke), and (6) neurological damage to the lower extremity.\n2.2. Ethical Statement\nBefore participation in this study, the test and intervention protocols were fully ex-\nplained to, and written informed consent was obtained from the patients or their caregivers.\nThis study was conducted in accordance with the Declaration of Helsinki and was ap-\nproved by the institutional review board of Sahmyook University in the Republic of Korea\n(2-7001793-AB-N-012019032HR). The protocol of this trial was retrospectively registered\nwith the Clinical Research Information Service of the Republic of Korea (KCT0005800).\n2.3. Study Design\nThe present study was a three-arm, parallel-group, single-blind randomized controlled\ntrial. A total of 231 patients who were scheduled to undergo TKA were assessed for\neligibility. Of them, 171 patients were excluded. For sample size determination in this study,\nwe performed a power analysis using G*Power (version 3.1.9.4; Heinrich-Heine-Universit\u00e4t,\nD\u00fcsseldorf, Germany, 2019) before participant recruitment. The overall effect size index\nfor all outcome measures and the power of the study were both 0.25; the probability was\n0.05; type II error (power 95%) was minimized; the number of groups was 3; and the\nnumber of measurements was 3. As the estimated target sample size was 54, we recruited\n60 participants who were scheduled for TKA [26]; the random allocation was generated by\na research nurse not involved in this study using a computerized random number generator.\nAfter the baseline assessment, 60 patients who consented to participate and were eligible\nfor randomization were allocated to the experimental 1 (preoperative telerehabilitation)\ngroup, experimental 2 (patient education) group, or control group by each patient choosing\none of three envelopes. The group assignments were concealed in envelopes. The assessors\nand participants were blinded to the group assignments. The assessors who measured all\nbaseline data, post-intervention data, and postoperative outcomes were unaware of the\nparticipants' allocation, and all measurements were performed in an independent room.\nAll interventions were individually performed. The enrollment period was from August\n2019 to April 2020.\n2.4. Procedure\nThe preoperative telerehabilitation intervention was conducted 3 weeks before the\nTKA procedure. Therefore, examinations were performed at three time points. Baseline\ndata and post-intervention data were collected at 4 weeks and 1 day before the TKA\nprocedure, respectively. Follow-up was completed at 6 weeks after TKA. These three\nmeasurement points were used to evaluate the effect of the preoperative intervention on\nthe patients' physical function, pain, muscle strength, activities of daily living, and quality\nof life after TKA.\nAfter the completion of the experimental procedure, all participants underwent TKA\nwith the same type of high-flexion mobile prosthesis (Implantcast; GMBH L\u00fcneburger\nSchanze, Buxtehude, Germany) with cement using a tricompartmental, minimally invasive\nquadriceps-sparing technique [27].\nAfter TKA, all patients participated in a standardized rehabilitation program for\ninpatients at an orthopedic rehabilitation hospital for 3 weeks. The postoperative physical\ntherapy program started on the day immediately post-TKA, was performed daily and\nincluded continuous passive motion exercises, intermittent pneumatic compression, and\ncold pack therapy. On the second postoperative day, weight-bearing with the aid of a\nwalker was started after drain removal and wearing a compression stocking, cryotherapy,\nand manual therapy added for physical therapy. For the first and second weeks, the\npatients completed knee ROM exercises, ankle pumping, straight leg raises, self-passive\nknee extension, balance training, and gait training with a walker. In the third week, strength\ntraining, endurance exercise, and walking up and down stairs were added (Figure 1).",
+        "inclusion_reason": "result",
+        "domain_id": null,
+        "question_id": null,
+        "search_session": null,
+        "candidate_rank": null,
+        "returned_previously": null,
+        "text_status": "complete",
+        "recovery": null
+      },
+      {
+        "kind": "narrative",
+        "handle": "eh_f628fda610788e52",
+        "identity": "sha256:f628fda610788e52e01333bb1f2d6f0e104fd79b086bde1333fc8bff84a36a54",
+        "trial_id": "an-2021",
+        "source_id": "sh_4709acc6c24f9168",
+        "source_version": "sha256:ac028662e65a79eb25259ffed61dffb63bb250885700419846b9425d11d95e4c",
+        "page": 7,
+        "start_line": 1,
+        "end_line": 87,
+        "start": 0,
+        "end": 2192,
+        "quote": null,
+        "inclusion_reason": "result",
+        "domain_id": null,
+        "question_id": null,
+        "search_session": null,
+        "candidate_rank": null,
+        "returned_previously": null,
+        "text_status": "omitted",
+        "recovery": {
+          "operation": "read_pages",
+          "trial_id": "an-2021",
+          "windows": [
+            {
+              "source_id": "sh_4709acc6c24f9168",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 87
+            }
+          ]
+        }
+      }
+    ],
+    "comparison_cards": [
+      {
+        "card_id": "sha256:e23b14cc5cd87c49b0483ef8c7ddcf3314c96fa91fc40b07fa6539856bedf420",
+        "question_id": "sq:deviations:context-deviations",
+        "result_identity": "sha256:0fde9e6b8590cd251c76e9333741d2489917e29092a5d7913d29d7a242211d2a",
+        "result_scope": {
+          "result_identity": "sha256:0fde9e6b8590cd251c76e9333741d2489917e29092a5d7913d29d7a242211d2a",
+          "scope_basis": "assessment_target",
+          "endpoint": "Quadriceps muscle strength",
+          "measurement": "Isokinetic knee extension peak torque measured at 60\u25e6/s with a Biodex dynamometer; average of all three trials",
+          "time_window": "Baseline (4 weeks before TKA), post-intervention (1 day before TKA after the 3-week program), and 6 weeks after TKA",
+          "population": "All randomized participants in the comparison groups",
+          "comparison_groups": [
+            "ptg: Preoperative telerehabilitation",
+            "peg: Preoperative patient education and home exercise",
+            "control: Usual care"
+          ],
+          "effect_measure": "time-by-group interaction"
+        },
+        "reported_result": {
+          "form": "comparative_effect",
+          "effect_measure": "time-by-group interaction",
+          "estimate": "F(4, 100) = 2.499",
+          "precision": "p = 0.047, \u03b72p = 0.91",
+          "analysis_population": "53 participants analyzed: preoperative telerehabilitation n=18, preoperative patient education n=17, and control n=18; 60 participants were randomized.",
+          "endpoint": {
+            "name": "60\u25e6/s extension peak torque",
+            "definition": null
+          },
+          "group_values": []
+        },
+        "target_relation": "exact",
+        "passage_groups": [
+          {
+            "source_id": "sh_4709acc6c24f9168",
+            "source_role": "main_article",
+            "source_label": "ijerph-18-06071.pdf",
+            "logical_path": "ijerph-18-06071.pdf",
+            "page_count": 15,
+            "sha256": "sha256:e551856c1d61b81620c6cc16ac5bdd8fc64a3041f3a2bf29c80ac3c4ecebd5ca",
+            "source_origin": "local_dossier",
+            "registry_url": null,
+            "registry_retrieved_at": null,
+            "registry_field_paths": [],
+            "registry_recovery": null,
+            "registry_window_count": 0,
+            "passages": [
+              {
+                "handle": "eh_6a3a61395c2666c3",
+                "source_id": "sh_4709acc6c24f9168",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 53,
+                "retrieval_question_ids": null
+              },
+              {
+                "handle": "eh_0815ad60e1dc1f4e",
+                "source_id": "sh_4709acc6c24f9168",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 50,
+                "retrieval_question_ids": null
+              },
+              {
+                "handle": "eh_011fdfa6b6f87d64",
+                "source_id": "sh_4709acc6c24f9168",
+                "page": 6,
+                "start_line": 15,
+                "end_line": 78,
+                "retrieval_question_ids": null
+              },
+              {
+                "handle": "eh_f628fda610788e52",
+                "source_id": "sh_4709acc6c24f9168",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 87,
+                "retrieval_question_ids": null
+              }
+            ]
+          }
+        ],
+        "slots": [
+          {
+            "name": "intended_intervention",
+            "status": "supported",
+            "value": "ptg: Preoperative telerehabilitation; peg: Preoperative patient education and home exercise; control: Usual care",
+            "passages": []
+          },
+          {
+            "name": "observed_conduct",
+            "status": "unknown",
+            "value": null,
+            "passages": []
+          },
+          {
+            "name": "trial_context_cause",
+            "status": "unknown",
+            "value": null,
+            "passages": []
+          },
+          {
+            "name": "protocol_consistency",
+            "status": "unknown",
+            "value": null,
+            "passages": []
+          },
+          {
+            "name": "outcome_effect",
+            "status": "unknown",
+            "value": null,
+            "passages": []
+          },
+          {
+            "name": "group_balance",
+            "status": "unknown",
+            "value": null,
+            "passages": []
+          }
+        ],
+        "propositions": [
+          {
+            "question_id": "sq:deviations:context-deviations",
+            "name": "protocol_inconsistency",
+            "proposition": "The observed change was inconsistent with the trial protocol.",
+            "status": "unknown",
+            "depends_on": [],
+            "passages": []
+          },
+          {
+            "question_id": "sq:deviations:context-deviations",
+            "name": "trial_context_cause",
+            "proposition": "Recruitment, research-only engagement, or trial-specific personnel decisions caused the protocol-inconsistent change beyond what could occur during ordinary delivery of the same intervention. Intervention burden or being treated by trial staff does not establish that causal link.",
+            "status": "unknown",
+            "depends_on": [
+              "sq:deviations:context-deviations"
+            ],
+            "passages": []
+          },
+          {
+            "question_id": "sq:deviations:affected-outcome",
+            "name": "outcome_pathway",
+            "proposition": "The identified trial-context deviation could affect the approved outcome.",
+            "status": "unknown",
+            "depends_on": [
+              "sq:deviations:context-deviations"
+            ],
+            "passages": []
+          },
+          {
+            "question_id": "sq:deviations:balanced",
+            "name": "group_balance",
+            "proposition": "The identified deviation was balanced between randomized groups.",
+            "status": "unknown",
+            "depends_on": [
+              "sq:deviations:context-deviations",
+              "sq:deviations:affected-outcome"
+            ],
+            "passages": []
+          }
+        ],
+        "paired_examples": [
+          {
+            "pair_id": "d2-protocol-status-same-trial-context",
+            "changed_premise": "whether the same allocation-driven conduct was protocol-consistent",
+            "left_facts": [
+              "The treating clinician reported that knowledge of experimental allocation prompted rescue treatment. The protocol permitted that rescue."
+            ],
+            "right_facts": [
+              "The same treating clinician reported that knowledge of experimental allocation prompted the same rescue treatment. The protocol prohibited that rescue."
+            ],
+            "reasoning_focus": "Hold the documented allocation-driven cause fixed while changing protocol consistency."
+          },
+          {
+            "pair_id": "d2-cause-same-protocol-inconsistency",
+            "changed_premise": "the documented reason for the same clinician's prohibited conduct",
+            "left_facts": [
+              "The protocol prohibited rescue treatment. The treating clinician provided rescue because of the patient's symptoms, as the clinician would in ordinary care."
+            ],
+            "right_facts": [
+              "The protocol prohibited rescue treatment. The same treating clinician provided the same rescue because knowledge of experimental allocation changed the decision."
+            ],
+            "reasoning_focus": "Hold protocol inconsistency, personnel and conduct fixed; distinguish ordinary care from an allocation-driven decision. Personnel identity alone supplies no cause."
+          },
+          {
+            "pair_id": "d2-regimen-burden-versus-research-engagement",
+            "changed_premise": "the documented reason for stopping the same assigned program",
+            "left_facts": [
+              "The protocol required twelve exercise sessions. A participant stopped because the assigned exercises were physically difficult, as could occur in ordinary treatment."
+            ],
+            "right_facts": [
+              "The same protocol required twelve exercise sessions. A participant stopped the same program because additional research-only appointments prevented attendance."
+            ],
+            "reasoning_focus": "Keep non-adherence fixed. Treatment burden and trial-specific engagement are different causes; insufficient cause information remains unresolved."
+          },
+          {
+            "pair_id": "d2-exclusion-before-versus-after-outcome",
+            "changed_premise": "when eligible participants were excluded relative to outcome assessment",
+            "left_facts": [
+              "The same 12 eligible randomized participants were excluded from analysis for the same recorded reasons.",
+              "The approved endpoint was assessed for all 12 participants at day 90.",
+              "The exclusions occurred before the day-90 endpoint assessment."
+            ],
+            "right_facts": [
+              "The same 12 eligible randomized participants were excluded from analysis for the same recorded reasons.",
+              "The approved endpoint was assessed for all 12 participants at day 90.",
+              "The exclusions occurred after the day-90 endpoint assessment."
+            ],
+            "reasoning_focus": "Keep exclusions fixed. Timing may distinguish observed-but-omitted outcomes from outcome availability, but does not set a risk label."
+          }
+        ],
+        "participant_flow": [],
+        "missing_data": null,
+        "prompt": "Compare result_scope (target), reported_result, and target_relation. Retain scope differences; assess the reported Result. target or analyzed populations do not establish observed outcomes. Classify remaining propositions; do not infer causation, availability, censoring, measurement influence, plan correspondence, or risk from metadata, arithmetic, or wording alone. An empty passage group is unopened; inspect relevant Sources before recording an information limitation."
+      }
+    ],
+    "answers": [],
+    "guidance": [
+      "Answer every initially active question plus each dependent question whose activation predicate is met by your earlier answers. Extra inactive branch answers are ignored and never committed. Preserve the approved Result target.",
+      "Evaluate activated questions in question order. Submit every activated question with a justification, unknowns, and counterevidence. Review the inspected passages against its exact proposition and check material contradictions. Reuse adequate Evidence. When a premise remains unresolved, state the unresolved premise and why you stopped, and use bounded discovery across relevant Sources, including a protocol or SAP when relevant. Inspect returned passages before using them. A limitation requires that explicit premise and stopping rationale; include a Trial-scoped search receipt when retrieval provenance is useful, but a direct read does not require a search receipt. Absence requires a scoped untruncated no-hit receipt.",
+      "Cite complete premises for the active question. One passage may support several facts. When an answer depends on separate passages, cite each with its own boundaries. A relationship kind describes the use of Evidence; it adds no scientific fact.",
+      "When inference, conflict, or uncertainty connects Evidence to an answer, include a concise question-specific justification. State what the passages establish, what remains unresolved, and why the selected option follows. Any support relationship is host-asserted: the server checks structure, ownership, and exact Evidence provenance but does not independently judge semantic entailment.",
+      "Working premise records are source-grounded resumable notes. Reuse them only when the working checkpoint is current for this exact approved Result and captured Source projection; a stale checkpoint requires the stated recovery action and never carries a prior Domain judgment into this assessment.",
+      "A definitive yes or no needs direct_support, indirect_support, or contradiction; a limitation or absence alone supports uncertainty, not a definitive answer. For D3.2 No, inspected context/inference or a valid scoped no-hit receipt can instead support the scoped absence of reassuring evidence; it does not assert bias occurred.",
+      "Evaluate activation against your draft answers. If validation reports missing active question IDs, add those questions with allowed answer values and supported bases, then resubmit the complete active set in one validation call. The server commits only active answers.",
+      "Apply every reported repair and retain other drafted answers. Add missing questions to the existing answer set. Resolve further activation from the repaired answers before resubmitting. The server ignores inactive answers."
+    ],
+    "response_framework": {
+      "version": "22 August 2019",
+      "source_locator": "Full guidance p. 3, sections 1.1 and 1.1.1",
+      "response_options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "firm_evidence_rule": "The definitive versions (\u2018Yes\u2019 and \u2018No\u2019) would typically imply that firm evidence is available in relation to the signalling question.",
+      "probable_judgment_rule": "The \u2018Probably\u2019 versions would typically imply that a judgement has been made. \u2018Yes\u2019 and \u2018Probably yes\u2019 have the same implications for risk of bias, as do \u2018No\u2019 and \u2018Probably no\u2019.",
+      "no_information_rule": "Use \u2018No information\u2019 only when both (i) insufficient details are reported to permit a response of \u2018Probably yes\u2019 or \u2018Probably no\u2019, and (ii) in the absence of these details it would be unreasonable to respond \u2018Probably yes\u2019 or \u2018Probably no\u2019 in the circumstances of the trial.",
+      "independence_rule": "Signalling questions should be answered independently: the answer to one question should not affect answers to other questions in the same or other domains other than through determining which subsequent questions are answered.",
+      "quotation_rule": "Brief direct quotations from the text of the study report should be used whenever possible to support the answer."
+    },
+    "traps": [
+      "A no-hit search describes one lexical query, not scientific absence.",
+      "A planned method does not prove conduct; a time origin or analysis population does not prove complete follow-up or equal assessment.",
+      "An endpoint label or definition does not prove objectivity, blinding, prespecification, or no alternative analyses.",
+      "A treatment assignment or visibly different intervention does not by itself prove that participants or personnel knew the assignment.",
+      "Different treatment or visit schedules do not by themselves prove that outcome measurement differed between groups.",
+      "Stratification does not prove allocation concealment."
+    ],
+    "completion_rule": "Ground each active proposition and its uncertainty in inspected Evidence or bounded discovery for unresolved premises. Supply every question activated by the submitted answer path with an Evidence use, scoped absence receipt, or limitation. Inactive extras are ignored.",
+    "working_checkpoint": {
+      "status": "absent",
+      "reason": "not_saved",
+      "trial_id": "an-2021",
+      "checkpoint_identity": null,
+      "recovery": "reorient_from_sources",
+      "checkpoint": null
+    },
+    "coverage": [
+      {
+        "source_id": "sh_4709acc6c24f9168",
+        "source_role": "main_article",
+        "page_count": 15,
+        "status": "render_delivered",
+        "search": "searched_no_match",
+        "read": "partially_read",
+        "render": "render_delivered",
+        "recovery": []
+      }
+    ],
+    "pack": {
+      "id": "rob2.parallel.assignment",
+      "version": "2019.1",
+      "content_hash": "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
+    },
+    "official_guidance": {
+      "pack": {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "content_hash": "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
+      },
+      "sections": [
+        {
+          "question_ids": [
+            "sq:deviations:participants-aware"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 28, Box 6, signalling question 2.1",
+          "excerpt": "If participants are aware of their assigned intervention it is more likely that health-related behaviours will differ between the intervention groups. Blinding participants, most commonly through use of a placebo or sham intervention, may prevent such differences. If participants experienced side effects or toxicities that they knew to be specific to one of the interventions, answer this question \u2018Yes\u2019 or \u2018Probably yes\u2019."
+        },
+        {
+          "question_ids": [
+            "sq:deviations:personnel-aware"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 28, Box 6, signalling question 2.2",
+          "excerpt": "If carers or people delivering the interventions are aware of the assigned intervention then its implementation, or administration of non-protocol interventions, may differ between the intervention groups. Blinding may prevent such differences. If randomized allocation was not concealed, then it is likely that carers and people delivering the interventions were aware of participants\u2019 assigned intervention during the trial."
+        },
+        {
+          "question_ids": [
+            "sq:deviations:context-deviations"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 28, Box 6, signalling question 2.3",
+          "excerpt": "Answer \u2018Yes\u2019 or \u2018Probably yes\u2019 only if there is evidence, or strong reason to believe, that the trial context led to failure to implement the protocol interventions or to implementation of interventions not allowed by the protocol. Answer \u2018No\u2019 or \u2018Probably no\u2019 if there were changes from assigned intervention that are inconsistent with the trial protocol, such as non-adherence to intervention, but these are consistent with what could occur outside the trial context. The answer \u2018No information\u2019 may be appropriate."
+        },
+        {
+          "question_ids": [
+            "sq:deviations:affected-outcome"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 28, Box 6, signalling question 2.4",
+          "excerpt": "Changes from assigned intervention that are inconsistent with the trial protocol and arose because of the trial context will impact on the intervention effect estimate if they affect the outcome, but not otherwise."
+        },
+        {
+          "question_ids": [
+            "sq:deviations:balanced"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 29, Box 6, signalling question 2.5",
+          "excerpt": "Changes from assigned intervention that are inconsistent with the trial protocol and arose because of the trial context are more likely to impact on intervention effect estimate if they are not balanced between the intervention groups."
+        },
+        {
+          "question_ids": [
+            "sq:deviations:appropriate-analysis"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 29, Box 6, signalling question 2.6",
+          "excerpt": "Both intention-to-treat (ITT) analyses and modified intention-to-treat (mITT) analyses excluding participants with missing outcome data should be considered appropriate. Both na\u00efve \u2018per-protocol\u2019 analyses and \u2018as treated\u2019 analyses should be considered inappropriate. Analyses excluding eligible trial participants post-randomization should also be considered inappropriate."
+        },
+        {
+          "question_ids": [
+            "sq:deviations:substantial-impact"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 29, Box 6, signalling question 2.7",
+          "excerpt": "This question addresses whether the number of participants who were analysed in the wrong intervention group, or excluded from the analysis, was sufficient that there could have been a substantial impact on the result. It is not possible to specify a precise rule: there may be potential for substantial impact even if fewer than 5% of participants were analysed in the wrong group or excluded, if the outcome is rare or if exclusions are strongly related to prognostic factors."
+        }
+      ],
+      "complete": true,
+      "next_cursor": null
+    },
+    "reading_recovery": {
+      "operation": "read_pages",
+      "trial_id": "an-2021",
+      "windows": [
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 87
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 55
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 130
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 57
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 54
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 81
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 13,
+          "start_line": 1,
+          "end_line": 76
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 14,
+          "start_line": 1,
+          "end_line": 85
+        },
+        {
+          "source_id": "sh_4709acc6c24f9168",
+          "page": 15,
+          "start_line": 1,
+          "end_line": 9
+        }
+      ],
+      "window_count": 9,
+      "status": "required",
+      "unread_ranges": [],
+      "unread_range_count": 0
+    },
+    "evidence_workspace": {
+      "selection_policy_version": "rob2-kit.domain-projection.v0.7",
+      "groups": [
+        {
+          "inclusion_reason": "result",
+          "question_ids": [],
+          "evidence_handles": [
+            "eh_011fdfa6b6f87d64",
+            "eh_0815ad60e1dc1f4e",
+            "eh_6a3a61395c2666c3",
+            "eh_f628fda610788e52"
+          ]
+        },
+        {
+          "inclusion_reason": "explicit_carry_forward",
+          "question_ids": [
+            "sq:deviations:participants-aware",
+            "sq:deviations:personnel-aware",
+            "sq:deviations:context-deviations",
+            "sq:deviations:affected-outcome",
+            "sq:deviations:balanced",
+            "sq:deviations:appropriate-analysis",
+            "sq:deviations:substantial-impact"
+          ],
+          "evidence_handles": [
+            "eh_09ab27f35ec709e3"
+          ]
+        }
+      ],
+      "omitted_count": 0,
+      "omitted_by_category": {
+        "result": 0,
+        "checkpoint": 0,
+        "contradiction": 0,
+        "active_domain_candidate": 0,
+        "explicit_carry_forward": 0,
+        "trial_discovery": 0,
+        "deduplicated": 0
+      },
+      "continuation": null,
+      "continuations": [],
+      "recoverable_narrative_text_budget": 12288,
+      "recoverable_narrative_text_bytes": 10130,
+      "omitted_narrative_text_bytes": 2226,
+      "omitted_narrative_text_count": 1,
+      "unrecoverable_inline_text_bytes": 809
+    },
+    "context_page": {
+      "view_version": "rob2-kit.domain-context.v1",
+      "snapshot_digest": "6ce3bd1b4dfcf35cd61e840f86acbfc9ae032fb1d0961a422b8b62d2d91157f0",
+      "trial_id": "an-2021",
+      "domain_id": "domain:deviations",
+      "state_revision": 13,
+      "index": 0,
+      "count": 1,
+      "section": "complete",
+      "item_start": 0,
+      "item_count": 0,
+      "max_response_bytes": 80000,
+      "cursor": null,
+      "next_cursor": null,
+      "stable_recovery": {
+        "operation": "get_domain_context",
+        "cursor": "dcp2.7f106173d0ea43958e0fd383fa129d2b.0"
+      }
+    }
+  },
+  "_image_content": []
+}
