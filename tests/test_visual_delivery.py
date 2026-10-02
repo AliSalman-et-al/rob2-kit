@@ -285,7 +285,11 @@ def test_narrative_and_vector_figure_remain_separate_evidence(
 
     status = _call(workspace, "get_status", {})["data"]["selected_evidence"]
     by_handle = {item["handle"]: item for item in status}
-    assert by_handle[passage["handle"]]["quote"] == passage["quote"]
+    assert by_handle[passage["handle"]]["quote"] is None
+    assert by_handle[passage["handle"]]["recovery"]["operation"] == "read_pages"
+    expanded = _call(workspace, "get_status", {"include_evidence_text": True})["data"]
+    expanded_by_handle = {item["handle"]: item for item in expanded["selected_evidence"]}
+    assert expanded_by_handle[passage["handle"]]["quote"] == passage["quote"]
     assert by_handle[visual["handle"]]["transcription"] == visual["transcription"]
     assert by_handle[visual["handle"]]["provenance"] == "host_visual"
     assert by_handle[visual["handle"]]["delivery_receipt"] == rendered["data"]["delivery_receipt"]
