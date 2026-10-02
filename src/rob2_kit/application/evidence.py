@@ -50,7 +50,7 @@ _SEARCH_PREVIEW_MAX_BYTES = 512
 _SEARCH_CANDIDATE_MAX_BYTES = 2_048
 _TERM_FEEDBACK_MAX_TERMS = 16
 _TERM_FEEDBACK_MAX_SOURCES = 64
-_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.2"
+_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.3"
 _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
@@ -319,6 +319,7 @@ def _source_navigation_entries(
 
     page_lines = [page.splitlines() for page in pages]
     page_marker = re.compile(r"^(?:page\s+\d+(?:\s+of\s+\d+)?|version\s+\S+)$", re.I)
+    caption = re.compile(r"^(?:figure|table)\s+(?:[a-z]*\d+|[ivx]+)[.:]?\s+\S.+", re.I)
     numbered_heading = re.compile(r"^(?:\d+[.)]\s*|\d+(?:\.\d+)+\s+)[A-Z][^.!?:;]{0,119}$")
     contents_row = re.compile(r"^.{2,180}?\.{2,}\s*\d{1,4}\s*$")
     date_pattern = re.compile(
@@ -484,14 +485,17 @@ def _source_navigation_entries(
                     }
                 )
         for line_number, text in useful:
-            if len(text) > 120 or text.endswith((".", ":", ";", "?", "!")):
+            is_caption = caption.match(text) is not None
+            if len(text) > 120 or (not is_caption and text.endswith((".", ":", ";", "?", "!"))):
                 continue
             if "@" in text or ";" in text:
                 continue
             blank_before = line_number == 1 or not lines[line_number - 2].strip()
             blank_after = line_number == len(lines) or not lines[line_number].strip()
-            if not numbered_heading.fullmatch(text) and not (
-                blank_before and blank_after and len(text.split()) <= 10
+            if (
+                not is_caption
+                and not numbered_heading.fullmatch(text)
+                and not (blank_before and blank_after and len(text.split()) <= 10)
             ):
                 continue
             entries.append(
@@ -2946,7 +2950,7 @@ def record_read_coverage(
     start_line: int,
     end_line: int,
 ) -> None:
-    """Persist only the numbered range actually delivered by ``read_pages``."""
+    """Persist only the numbered range actually delivered to the host."""
 
     record_read_coverage_batch(
         workspace,
@@ -3212,6 +3216,58 @@ def main_report_read_gaps(
                         }
                     )
     return gaps
+
+
+def primary_report_context(workspace: str | Path, trial_id: str) -> list[dict[str, Any]]:
+    """Inline unread report-prefix lines without marking undelivered context as read."""
+    root = _root(workspace)
+    state = _state(root)
+    trials = [t for t in (state.get("batch") or {}).get("trials", []) if t.get("id") == trial_id]
+    gaps = main_report_read_gaps(root, trials, phase="assessment")
+    verified = _verified_source_projections(root, {(trial_id, gap["source_id"]) for gap in gaps})
+    result: list[dict[str, Any]] = []
+    for gap in gaps:
+        lines = verified[(trial_id, gap["source_id"])][1][gap["page"] - 1].splitlines()
+        if gap.get("no_readable_text"):
+            continue  # Empty/image pages retain their explicit read/render recovery.
+        start = gap["start_line"]
+        while start <= gap["end_line"]:
+            end, size = start, 0
+            while end <= gap["end_line"]:
+                line_size = len(f"{end}|{lines[end - 1]}\n".encode())
+                if size + line_size > 8192:
+                    break
+                size += line_size
+                end += 1
+            if end == start:
+                # A long physical line needs read_pages' existing fragment protocol.
+                start += 1
+                continue
+            last = end - 1
+            result.append(
+                {
+                    "source_id": gap["source_id"],
+                    "page": gap["page"],
+                    "numbered_text": "\n".join(f"{n}|{lines[n - 1]}" for n in range(start, end)),
+                    "line_count": len(lines),
+                    "returned_start_line": start,
+                    "returned_end_line": last,
+                    "truncated": last < len(lines),
+                    "next_start_line": last + 1 if last < len(lines) else None,
+                    "page_remainder": (
+                        {
+                            "source_id": gap["source_id"],
+                            "page": gap["page"],
+                            "start_line": last + 1,
+                            "end_line": len(lines),
+                        }
+                        if last < len(lines)
+                        else None
+                    ),
+                }
+            )
+            start = end
+    return result
 
 
 def main_report_reading_status(

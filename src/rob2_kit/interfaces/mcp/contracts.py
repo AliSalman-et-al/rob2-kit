@@ -1011,7 +1011,7 @@ class SourceNavigationData(PublicModel):
     source_label: str = Field(min_length=1)
     logical_path: str = Field(min_length=1)
     projection_hash: Identity
-    navigation_version: Literal["rob2-kit.source-navigation.v0.2"]
+    navigation_version: Literal["rob2-kit.source-navigation.v0.3"]
     entries: tuple[SourceNavigationEntry, ...] = Field(max_length=12)
     total_entries: NonNegativeInt = Field(
         description="Total entries in the complete deterministic Source navigation index."
@@ -1975,6 +1975,14 @@ class DomainContextData(PublicModel):
         ),
     )
     result: DomainResultChoice | None = None
+    primary_report: tuple[PageData, ...] = Field(
+        default=(),
+        description=(
+            "Unread bounded primary-report text, delivered before question/evidence deltas. "
+            "Read every context page; coverage proves delivery, not comprehension. Long-line or "
+            "beyond-budget text retains reading_recovery through read_pages."
+        ),
+    )
     evidence: tuple[DomainEvidence, ...] = ()
     answers: tuple[CheckpointAnswer, ...] = ()
     investigation: InvestigationView | None = Field(
@@ -2065,7 +2073,7 @@ class DomainContextPage(PublicModel):
     )
     index: NonNegativeInt
     count: PositiveInt
-    section: Literal["complete", "questions", "comparison_cards", "evidence"]
+    section: Literal["complete", "primary_report", "questions", "comparison_cards", "evidence"]
     item_start: NonNegativeInt = 0
     item_count: NonNegativeInt = 0
     max_response_bytes: StrictInt = Field(

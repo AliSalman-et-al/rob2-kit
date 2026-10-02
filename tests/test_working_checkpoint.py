@@ -254,9 +254,10 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
         reads: list[dict[str, int | bool]] = []
         repairs = 0
         after_approval = False
+        inline_report_bytes = 0
 
         def call(tool: str, arguments: dict, *, approve: bool = False) -> dict:
-            nonlocal repairs
+            nonlocal repairs, inline_report_bytes
             receipt = _public_call(workspace, calls, tool, arguments, approve=approve)
             if receipt.get("outcome") == "repair":
                 repairs += 1
@@ -271,6 +272,12 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
                             for line in str(page.get("numbered_text", "")).splitlines()
                         ),
                     }
+                )
+            if tool == "get_domain_context" and after_approval:
+                inline_report_bytes += sum(
+                    len(line.partition("|")[2].encode("utf-8"))
+                    for page in receipt.get("data", {}).get("primary_report", [])
+                    for line in str(page.get("numbered_text", "")).splitlines()
                 )
             return receipt
 
@@ -364,7 +371,7 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
             {
                 "trial_id": "trial",
                 "domain_id": "domain:randomization",
-                "max_response_bytes": 16_384,
+                "max_response_bytes": 24_000,
             },
         )
         assert context["outcome"] == "success", context
@@ -392,26 +399,17 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
             saved = call("save_domain_judgment", draft)
             assert saved["outcome"] == "success", saved
         else:
-            blocked = call("save_domain_judgment", draft)
-            assert blocked["outcome"] == "repair", blocked
-            assert any(
-                item["code"] == "post_approval_main_report_reading_required"
-                for item in blocked["repairs"]
-            )
             assert recovery["status"] == "required"
-            reread = call(
-                "read_pages",
-                {"trial_id": "trial", "windows": recovery["windows"]},
-            )
-            assert reread["outcome"] == "success", reread
+            assert inline_report_bytes > 0
             saved = call("save_domain_judgment", draft)
             assert saved["outcome"] == "success", saved
 
         assert calls.count("request_proposal_approval") == 1
-        assert calls.count("read_pages") == (1 if rebind_notes else 2)
-        assert calls.count("save_domain_judgment") == (1 if rebind_notes else 2)
+        assert calls.count("read_pages") == 1
+        assert calls.count("save_domain_judgment") == 1
         return {
             "repairs": repairs,
+            "inline_report_bytes": inline_report_bytes,
             "reads": reads,
             "repeated_source_bytes": sum(
                 int(item["bytes"]) for item in reads if item["postapproval"]
@@ -422,11 +420,13 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
     without_rebind = run_handoff_case(tmp_path / "without-rebind", rebind_notes=False)
     with_rebind = run_handoff_case(tmp_path / "with-rebind", rebind_notes=True)
 
-    assert without_rebind["postapproval_read_calls"] == 1
+    assert without_rebind["inline_report_bytes"] > 0
+    assert with_rebind["inline_report_bytes"] == 0
+    assert without_rebind["postapproval_read_calls"] == 0
     assert with_rebind["postapproval_read_calls"] == 0
-    assert without_rebind["repeated_source_bytes"] > 0
+    assert without_rebind["repeated_source_bytes"] == 0
     assert with_rebind["repeated_source_bytes"] == 0
-    assert without_rebind["repairs"] == 1
+    assert without_rebind["repairs"] == 0
     assert with_rebind["repairs"] == 0
 
 

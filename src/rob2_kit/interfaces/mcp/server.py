@@ -255,7 +255,7 @@ _DOMAIN_CONTEXT_MIN_PAGE_BYTES = 4_096
 _DOMAIN_CONTEXT_MAX_PAGE_BYTES = 131_072
 _DOMAIN_CONTEXT_PAGE_HEADROOM_BYTES = 1_024
 _DOMAIN_CONTEXT_RETRY_MARGIN_BYTES = 64
-_DOMAIN_CONTEXT_PAGE_SECTIONS = ("questions", "evidence", "comparison_cards")
+_DOMAIN_CONTEXT_PAGE_SECTIONS = ("primary_report", "questions", "evidence", "comparison_cards")
 _REVIEW_TRIAL_RESPONSE_BYTES = 24_000
 _REVIEW_NATIVE_WRAPPER_OVERHEAD_BYTES = 256
 _REVIEW_PREVIEW_TEXT_CHARS = 220
@@ -290,6 +290,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "trial_id",
             "domain_id",
             "result",
+            "primary_report",
             "investigation",
             "questions",
             "evidence",
@@ -1250,12 +1251,16 @@ def _paginate_domain_context_transport(
             full_sections["evidence"][0] if full_sections["evidence"] else None,
         ),
     )
-    preview_options = [
-        (active_question, relevant_evidence),
-        (active_question, None),
-        (None, relevant_evidence),
-        (None, None),
-    ]
+    preview_options = (
+        [(None, None)]
+        if full_sections["primary_report"]
+        else [
+            (active_question, relevant_evidence),
+            (active_question, None),
+            (None, relevant_evidence),
+            (None, None),
+        ]
+    )
     preview_question = None
     preview_evidence = None
     header_probe: dict[str, Any] | None = None
@@ -1829,6 +1834,23 @@ def _content(
             raise ValueError(
                 "read_pages_response_oversized: serialized response exceeds "
                 f"{_READ_PAGES_RESPONSE_BYTES} UTF-8 bytes"
+            )
+    if tool == "get_domain_context":
+        data = normalized.get("data", {})
+        trial_id = (data.get("context_page") or {}).get("trial_id") or data.get("trial_id")
+        if isinstance(trial_id, str):
+            _record_read_coverage_batch(
+                _workspace(),
+                [
+                    (
+                        trial_id,
+                        _resolve_source_handle(_workspace(), trial_id, item["source_id"]),
+                        item["page"],
+                        item["returned_start_line"],
+                        item["returned_end_line"],
+                    )
+                    for item in data.get("primary_report", [])
+                ],
             )
     if tool == "read_pages" and isinstance(read_coverage, list):
         _record_read_coverage_batch(_workspace(), read_coverage)
@@ -3749,8 +3771,10 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     name="get_domain_context",
     title="Get Domain context",
     description=(
-        "Read the approved Result, current Domain checkpoint, Evidence, comparison cards, and "
-        "question cards. The investigation projection separates host-asserted sufficiency from "
+        "Read unread bounded primary-report text, the approved Result, current Domain checkpoint, "
+        "Evidence, comparison cards, and "
+        "question cards. Primary-report pages precede question deltas; complete the context chain. "
+        "The investigation projection separates host-asserted sufficiency from "
         "workflow permission and keeps recovery choices visible. Complete required reading before "
         "answering. Use the returned revision "
         "and official answer values when validating. Follow context_page.next_cursor until it is "

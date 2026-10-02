@@ -70,8 +70,8 @@ Evidence, a Domain answer, or Canonical state. `get_status` suppresses its
 contents after a Source or Result mismatch; absence or staleness calls for
 reorientation from the current Sources. Its source locators are host assertions;
 they do not establish that a passage was delivered or understood. Status reports
-the ranges actually returned by `read_pages` separately from Sources referenced
-in working notes.
+the ranges actually returned by `read_pages` or `primary_report` context pages
+separately from Sources referenced in working notes.
 
 Each text pass covers the same source-order prefix of the full captured Source,
 up to 65,536 UTF-8 source-text bytes per report at whole-line boundaries. A
@@ -80,6 +80,24 @@ unread-range navigation. Relevant omitted passages remain subject to targeted
 discovery. Appended material remains part of the captured Source; the host does
 not select a report boundary. Coverage records prove delivery, not comprehension
 or retention in a later host context.
+
+`get_domain_context` delivers unread bounded primary-report text as source-located
+`primary_report` pages before Domain question-card deltas when a current working
+checkpoint does not already support resumption. Only returned ranges enter read
+coverage; constructing a frozen context does not mark its future pages delivered.
+A manageable report is therefore complete in the context chain. Longer reports
+retain the same bounded prefix and explicit `reading_recovery` for the omitted
+tail or oversized physical lines. An existing Domain does not substitute for
+that delivered prefix when a new Domain is submitted. Identical accepted saves
+and current source-bound working checkpoints retain their existing semantics.
+
+D2/D3 context coverage exposes bounded, unread document-structure recovery for
+flow/disposition captions and outcome/follow-up headings in captured supplements.
+This reuses literal Source navigation and exact `read_pages` windows. It is not
+selected Evidence, extracted participant counts, a lexical absence receipt, or
+an automatic requirement to read every appendix page. A No information answer
+retains the host's bounded scientific stopping rationale; the server does not
+turn a navigation match into a signaling answer or risk label.
 
 Main-report identification is separate from reading coverage. A unique declared
 `main_article` role identifies the report. Inferred roles and fallback reading

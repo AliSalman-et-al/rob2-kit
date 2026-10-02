@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,7 @@ from ._state import (
     _result,
     _root,
     _state,
+    internal_path,
 )
 from .contracts import WorkflowConflict
 from .evidence import (
@@ -30,9 +32,12 @@ from .evidence import (
     _search_evidence_identities,
     _search_receipt,
     _search_session_question_purpose,
+    _source_navigation_entries,
     _unassigned_search_continuation,
     _unassigned_search_evidence,
+    _verified_source_projections,
     main_report_reading_status,
+    primary_report_context,
 )
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .status import _active_trial_and_domain, _continuation
@@ -1808,11 +1813,59 @@ def _search_session_complete(accounts: list[dict[str, Any]]) -> bool:
     return ranks == set(range(1, expected_count + 1))
 
 
+def _flow_navigation(
+    root: Path, trial_id: str, sources: list[dict[str, Any]]
+) -> dict[str, list[dict[str, Any]]]:
+    """Find structural flow/disposition captions, never infer endpoint counts from them."""
+    headings = re.compile(
+        r"\b(?:consort|(?:patient|participant|subject|study)\s+(?:flow|disposition)|"
+        r"(?:follow[- ]up|outcome)\s+(?:status|availability|ascertainment))\b",
+        re.IGNORECASE,
+    )
+    available = {
+        (trial_id, source["id"])
+        for source in sources
+        if source.get("role") == "supplement"
+        and internal_path(root, "sources", trial_id, f"{source['id']}.bin").is_file()
+    }
+    verified = _verified_source_projections(root, available)
+    state = _state(root)
+    with _db(root, "derivative.sqlite3") as connection:
+        reads = connection.execute(
+            "SELECT source_id,page,start_line,end_line FROM page_reads "
+            "WHERE batch_id=? AND phase=? AND trial_id=?",
+            ((state.get("batch") or {}).get("identity"), state.get("phase"), trial_id),
+        ).fetchall()
+    result: dict[str, list[dict[str, Any]]] = {}
+    for (_, source_id), (_, pages) in verified.items():
+        windows = []
+        for entry in _source_navigation_entries(pages):
+            if entry["kind"] != "heading_candidate" or not headings.search(entry["text"]):
+                continue
+            page, number = entry["page"], entry["start_line"]
+            end = min(len(pages[page - 1].splitlines()), entry["end_line"] + 79)
+            covered = all(
+                any(
+                    row[0] == source_id and row[1] == page and row[2] <= n <= row[3]
+                    for row in reads
+                )
+                for n in range(number, end + 1)
+            )
+            if not covered and len(windows) < 20:
+                windows.append(
+                    {"source_id": source_id, "page": page, "start_line": number, "end_line": end}
+                )
+        if windows:
+            result[source_id] = windows
+    return result
+
+
 def _source_coverage(
     trial_id: str,
     sources: list[dict[str, Any]],
     catalog: dict[str, dict[str, Any]],
     search_accounts: dict[str, dict[str, Any]],
+    structural_windows: dict[str, list[dict[str, Any]]] | None = None,
 ) -> list[dict[str, Any]]:
     """Project bounded retrieval state without making a scientific claim.
 
@@ -1915,6 +1968,16 @@ def _source_coverage(
                         ],
                     }
                 )
+        structural_recovery = (structural_windows or {}).get(source_id)
+        if structural_recovery:
+            recovery.insert(
+                0,
+                {
+                    "operation": "read_pages",
+                    "trial_id": trial_id,
+                    "windows": structural_recovery,
+                },
+            )
         if render_state == "render_delivered":
             status = "render_delivered"
         elif read_state == "partially_read":
@@ -2432,9 +2495,6 @@ def save_domain_judgment(
     is_revision = parsed.supersedes is not None
     records = state.get("domain_records") or {}
     existing_domain = f"{parsed.trial_id}:{parsed.domain_id}" in records
-    trial_has_checkpoint = any(
-        isinstance(key, str) and key.startswith(f"{parsed.trial_id}:") for key in records
-    )
     disposition = state.get("trial_dispositions", {}).get(parsed.trial_id)
     if disposition == "assessed" and (is_revision or not existing_domain):
         raise ValueError("Trial is closed; Domain revisions are not allowed")
@@ -2455,7 +2515,7 @@ def save_domain_judgment(
         )
     if disposition not in {"pending", "reviewable", "assessed"}:
         raise ValueError("Trial is not available for Domain assessment")
-    if state.get("phase") == "assessment" and not trial_has_checkpoint:
+    if state.get("phase") == "assessment" and not existing_domain:
         notes = working_checkpoint_status(root, state, parsed.trial_id)
         recovery = (
             None
@@ -2472,7 +2532,7 @@ def save_domain_judgment(
                         "code": "post_approval_main_report_reading_required",
                         "detail": (
                             "Finish the post-approval bounded text pass before saving this Trial's "
-                            "first Domain. Call get_domain_context to receive the typed "
+                            "Domain. Call get_domain_context to receive the typed "
                             "reading_recovery windows, use them with read_pages, then retry."
                         ),
                     }
@@ -3917,7 +3977,11 @@ def get_domain_context(
             "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
             "discovery for unresolved premises. Supply every question activated by the submitted "
             "answer path with an Evidence use, scoped absence receipt, or limitation. "
-            "Inactive extras are ignored."
+            "Inspect primary_report and every context continuation before deciding. "
+            "Document-structure "
+            "flow/disposition recovery in coverage is navigation, not selected Evidence; inspect "
+            "relevant unopened windows before claiming information is unreported, or retain an "
+            "explicit bounded stopping rationale. Inactive extras are ignored."
         ),
         "evidence_workspace": {
             "selection_policy_version": "rob2-kit.domain-projection.v0.7",
@@ -3969,6 +4033,14 @@ def get_domain_context(
                     if isinstance(item, dict) and isinstance(item.get("identity"), str)
                 },
             ),
+            _flow_navigation(root, trial_id, trial_sources)
+            if domain_id in {"domain:deviations", "domain:missing"}
+            else None,
+        ),
+        "primary_report": (
+            []
+            if premise_status.get("status") == "current"
+            else primary_report_context(root, trial_id)
         ),
         "reading_recovery": (
             None

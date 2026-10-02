@@ -46,7 +46,8 @@ def replay(events: Path) -> dict[str, Any]:
         cursor = data["context_page"]["next_cursor"]
         if cursor is None:
             break
-    assert {**header, **sections} == original["data"], "scientific data changed during pagination"
+    recovered = {**header, **{k: v for k, v in sections.items() if k in original["data"]}}
+    assert recovered == original["data"], "scientific data changed during pagination"
     return {
         "recorded_requested_bytes": item["arguments"]["max_response_bytes"],
         "recorded_native_bytes": _domain_context_transport_bytes(
