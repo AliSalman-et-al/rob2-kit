@@ -1,0 +1,122 @@
+{
+  "scientific_sha": "9497c9f6c2323dd2bbff550663c453856bf441f2",
+  "runtime_sha": "3069334ac25f831086ea5562c746c19215b6494f",
+  "case": "albert-2013",
+  "exact_model": "gpt-6-luna",
+  "effort": "medium",
+  "one_invocation": true,
+  "manual_repairs": false,
+  "main_report_physical_pages_delivered": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "flow_analysis_outcome_pages_explicitly_reread": [
+    4,
+    5,
+    7
+  ],
+  "counts_used_in_both_submissions": true,
+  "no_new_selected_passages": true,
+  "used_existing_context_evidence_handles": true,
+  "model_3_1_answer": "probably_no",
+  "accepted_checkpoint": null,
+  "server_judgment": null,
+  "first_save_failure": "extra fields outcome_status/population_role/post_randomization_exclusions within missing_data records",
+  "second_save_failure": "missing active sq:missing:evidence-unbiased (3.2)",
+  "stop_reason": "rejected submission limit",
+  "cost_tokens": {
+    "input_tokens": 446129,
+    "cached_input_tokens": 393216,
+    "output_tokens": 1883,
+    "reasoning_output_tokens": 0,
+    "uncached_input_tokens": 52913
+  },
+  "elapsed_seconds": 66.5731512689963,
+  "tools": 13,
+  "rejections": 2,
+  "overshoot": {
+    "total_input_tokens": 0,
+    "uncached_input_tokens": 0,
+    "output_tokens": 0,
+    "tool_starts": 0
+  },
+  "coverage_rows": [
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      1,
+      1,
+      82
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      2,
+      1,
+      106
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      3,
+      1,
+      101
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      4,
+      1,
+      89
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      5,
+      1,
+      74
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      6,
+      1,
+      146
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      7,
+      1,
+      147
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      8,
+      1,
+      158
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      9,
+      1,
+      242
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      10,
+      1,
+      118
+    ],
+    [
+      "source_99261d402821f95acd9bfda127804ae49e69a4779521a5ad985134007252041c",
+      11,
+      1,
+      76
+    ]
+  ],
+  "remaining_owned_probe_processes": [],
+  "qualification": "Generalization of evidence reading and 3.1 discrimination observed; complete assessment failed. No risk label can be inferred from Probably No alone. Corpus already audited, reference alignment provisional, no held-out or accuracy claim."
+}

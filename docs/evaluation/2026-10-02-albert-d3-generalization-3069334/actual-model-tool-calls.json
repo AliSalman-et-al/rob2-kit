@@ -1,0 +1,93 @@
+[
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"trial_id\":\"albert-2013\",\"include_candidates\":true}",
+    "call_id": "call_XsGiqTBuw6KTGc6ssbbmywrF"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"trial_id\":\"albert-2013\",\"cursor\":\"dcp2.8d8ac906d25f41fba87b6d391d3de1b5.1\",\"include_candidates\":true}",
+    "call_id": "call_nCLO2VMYUAVjyg1MqhzyEjxO"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"trial_id\":\"albert-2013\",\"cursor\":\"dcp2.8d8ac906d25f41fba87b6d391d3de1b5.2\",\"include_candidates\":true}",
+    "call_id": "call_5SFp9BCCNkgsdauJTB0ifTjG"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"trial_id\":\"albert-2013\",\"cursor\":\"dcp2.8d8ac906d25f41fba87b6d391d3de1b5.3\",\"include_candidates\":true}",
+    "call_id": "call_O3BC7TTf11P6eWiqH6JCd44H"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"trial_id\":\"albert-2013\",\"cursor\":\"dcp2.8d8ac906d25f41fba87b6d391d3de1b5.4\",\"include_candidates\":true}",
+    "call_id": "call_1C6VNxTpM5IwaVBSzZWZ6dEh"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"trial_id\":\"albert-2013\",\"cursor\":\"dcp2.8d8ac906d25f41fba87b6d391d3de1b5.5\",\"include_candidates\":true}",
+    "call_id": "call_kjQUaAmasAtffqoFC1hoWKyo"
+  },
+  {
+    "type": "function_call",
+    "name": "list_sources",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"albert-2013\"}",
+    "call_id": "call_Zpd1q36z6peSUal5KdH31c0g"
+  },
+  {
+    "type": "function_call",
+    "name": "list_sources",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"albert-2013\",\"source_id\":\"sh_5377b985a3cf49d3\"}",
+    "call_id": "call_6U94ZwM7WvyzfArv89REZyTD"
+  },
+  {
+    "type": "function_call",
+    "name": "read_pages",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"albert-2013\",\"source_id\":\"sh_5377b985a3cf49d3\",\"pages\":[1]}",
+    "call_id": "call_eGl6weizjDdJDbPYYNIbjyxN"
+  },
+  {
+    "type": "function_call",
+    "name": "read_pages",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"albert-2013\",\"source_id\":\"sh_99261d402821f95a\",\"pages\":[4]}",
+    "call_id": "call_wm7DCBJNxMYEJ0hMOX429fEV"
+  },
+  {
+    "type": "function_call",
+    "name": "read_pages",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"albert-2013\",\"source_id\":\"sh_99261d402821f95a\",\"pages\":[5,7]}",
+    "call_id": "call_SGxAp57rTTFMshBAT23qWKy0"
+  },
+  {
+    "type": "function_call",
+    "name": "save_domain_judgment",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"albert-2013\",\"domain_id\":\"domain:missing\",\"expected_revision\":15,\"answers\":[{\"question_id\":\"sq:missing:data-available\",\"answer\":\"probably_no\",\"justification\":\"Approved scope is one-year RMDQ among all randomized participants, antibiotic combined-dose versus placebo combined-dose; assignment effect. The report says 144/162 (88.9%) completed one-year follow-up (page 4) and flow chart breaks this down as 77/90 antibiotic (85.6%) and 67/72 placebo (93.1%), while the analyzed follow-up table reports those same denominators and median RMDQ values 7 versus 14 (page 7). Thus 18/162 lack follow-up, materially below near-complete ascertainment; the 5.7 antibiotic abstract value conflicts with detailed table value 7.0 but both refer to followed participants, so missing outcomes remain consequentially unresolved. ITT-group analysis applies only to one-year participants, not all randomized.\",\"bases\":[{\"evidence\":\"eh_045e822a138b4c8a\",\"role\":\"direct_support\"},{\"evidence\":\"eh_c6a6273e53cebd16\",\"role\":\"direct_support\"},{\"evidence\":\"eh_da065b49b6d10a34\",\"role\":\"direct_support\"}],\"unknowns\":[\"RMDQ-specific observed counts beyond general one-year questionnaire completion are not separately given.\",\"Outcomes for 18 participants without one-year follow-up and their relation to true RMDQ values are unknown.\",\"Abstract reports antibiotic RMDQ 5.7, conflicting with table median 7.0.\"],\"counterevidence\":[{\"evidence\":[\"eh_045e822a138b4c8a\"],\"implication\":\"144 completed one-year questionnaire follow-up; 88.9% is not nearly all for this continuous outcome and smokers were more frequent among those lost.\"}],\"limitations\":[{\"premise\":\"RMDQ-specific exact observed/missing counts and the missingness mechanism for the 18 without one-year follow-up are not reported.\",\"stopping_rationale\":\"Read the complete restored main article and relevant flow/outcome pages; the historical registry capture integrity check fails, so it cannot be used and no replacement was sought. Retain uncertainty rather than infer RMDQ availability or missing values.\"}],\"missing_data\":[{\"result_identity\":\"sha256:f250de0162b21db737dc497f072ace4b9e60e80c2e22e0480c01c376392265d6\",\"population\":\"All randomized participants in antibiotic and placebo comparison groups\",\"arm\":\"antibiotic\",\"endpoint\":\"Disease-specific disability measured by RMDQ\",\"time_point\":\"One-year follow-up\",\"unit\":\"participants\",\"randomized\":90,\"observed\":77,\"analyzed\":77,\"excluded\":13,\"event_definition\":\"RMDQ questionnaire available at one-year follow-up\",\"outcome_status\":\"unknown\",\"population_role\":\"randomized\",\"post_randomization_exclusions\":[\"13 not attending one-year follow-up\"]},{\"result_identity\":\"sha256:f250de0162b21db737dc497f072ace4b9e60e80c2e22e0480c01c376392265d6\",\"population\":\"All randomized participants in antibiotic and placebo comparison groups\",\"arm\":\"placebo\",\"endpoint\":\"Disease-specific disability measured by RMDQ\",\"time_point\":\"One-year follow-up\",\"unit\":\"participants\",\"randomized\":72,\"observed\":67,\"analyzed\":67,\"excluded\":5,\"event_definition\":\"RMDQ questionnaire available at one-year follow-up\",\"outcome_status\":\"unknown\",\"population_role\":\"randomized\",\"post_randomization_exclusions\":[\"5 not attending one-year follow-up\"]}]}]}",
+    "call_id": "call_z0N3QyizfPp6FnnVx3dv0H2V"
+  },
+  {
+    "type": "function_call",
+    "name": "save_domain_judgment",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"albert-2013\",\"domain_id\":\"domain:missing\",\"expected_revision\":15,\"answers\":[{\"question_id\":\"sq:missing:data-available\",\"answer\":\"probably_no\",\"justification\":\"Approved scope is one-year RMDQ among all randomized participants, antibiotic combined-dose versus placebo combined-dose; assignment effect. The report says 144/162 (88.9%) completed one-year follow-up (page 4) and flow chart breaks this down as 77/90 antibiotic (85.6%) and 67/72 placebo (93.1%), while the analyzed follow-up table reports those same denominators and median RMDQ values 7 versus 14 (page 7). Thus 18/162 lack follow-up, materially below near-complete ascertainment; the 5.7 antibiotic abstract value conflicts with detailed table value 7.0 but both refer to followed participants, so missing outcomes remain consequentially unresolved. ITT-group analysis applies only to one-year participants, not all randomized.\",\"bases\":[{\"evidence\":\"eh_045e822a138b4c8a\",\"role\":\"direct_support\"},{\"evidence\":\"eh_c6a6273e53cebd16\",\"role\":\"direct_support\"},{\"evidence\":\"eh_da065b49b6d10a34\",\"role\":\"direct_support\"}],\"unknowns\":[\"RMDQ-specific observed counts beyond general one-year questionnaire completion are not separately given.\",\"Outcomes for 18 participants without one-year follow-up and their relation to true RMDQ values are unknown.\",\"Abstract reports antibiotic RMDQ 5.7, conflicting with table median 7.0.\"],\"counterevidence\":[{\"evidence\":[\"eh_045e822a138b4c8a\"],\"implication\":\"144 completed one-year questionnaire follow-up; 88.9% is not nearly all for this continuous outcome and smokers were more frequent among those lost.\"}],\"limitations\":[{\"premise\":\"RMDQ-specific exact observed/missing counts and the missingness mechanism for the 18 without one-year follow-up are not reported.\",\"stopping_rationale\":\"Read the complete restored main article and relevant flow/outcome pages; the historical registry capture integrity check fails, so it cannot be used and no replacement was sought. Retain uncertainty rather than infer RMDQ availability or missing values.\"}]}]}",
+    "call_id": "call_feTdYKM3IUYCQ8uuGvUs3P1s"
+  }
+]

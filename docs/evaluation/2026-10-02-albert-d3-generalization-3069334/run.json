@@ -1,0 +1,51 @@
+{
+  "code_sha": "3069334ac25f831086ea5562c746c19215b6494f",
+  "guard_identity": "sha256:3baa1d86fce0b5b9f4b5654915b17cacab77dd62e40821ff2eadb22a1e4f3c59",
+  "guards": {
+    "wall_seconds": 480,
+    "idle_seconds": 120,
+    "tool_calls": 20,
+    "rejected_submissions": 2,
+    "input_tokens": 800000,
+    "uncached_input_tokens": 100000,
+    "output_tokens": 5000
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-albert-d3-3069334/response.txt",
+    "-"
+  ],
+  "stop_reason": "rejected submission limit",
+  "exit_code": 0,
+  "elapsed_seconds": 66.5731512689963,
+  "model_code_calls": 0,
+  "mcp_calls": 13,
+  "save_calls": 2,
+  "model_code_calls_completed": 0,
+  "mcp_calls_completed": 13,
+  "accepted_checkpoint": null,
+  "rejections": 2,
+  "usage": {
+    "input_tokens": 446129,
+    "cached_input_tokens": 393216,
+    "output_tokens": 1883,
+    "reasoning_output_tokens": 0
+  },
+  "uncached_input_tokens": 52913,
+  "input_overshoot": 0,
+  "no_invocation_retry": true
+}

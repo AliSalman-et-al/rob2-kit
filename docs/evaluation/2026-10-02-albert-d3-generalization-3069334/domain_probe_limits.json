@@ -1,0 +1,9 @@
+{
+  "wall_seconds": 480,
+  "idle_seconds": 120,
+  "tool_calls": 20,
+  "rejected_submissions": 2,
+  "input_tokens": 800000,
+  "uncached_input_tokens": 100000,
+  "output_tokens": 5000
+}
