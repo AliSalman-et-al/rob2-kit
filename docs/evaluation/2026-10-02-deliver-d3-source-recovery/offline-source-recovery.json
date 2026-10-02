@@ -1,0 +1,481 @@
+{
+  "no_inference": true,
+  "no_assessment_submission": true,
+  "registry_bytes_not_replaced": true,
+  "condition": {
+    "outcome": "condition",
+    "condition": {
+      "code": "captured_source_unavailable",
+      "detail": "Captured bytes are unavailable for part of this search scope; no text was searched and no absence receipt was issued. Preserve this limitation. Search available Sources separately by passing source_id to search_sources or independent source-scoped requests to search_sources_batch. Each search still verifies captured bytes and projections; do not infer dossier-wide absence from a narrower search or replace historical captured bytes.",
+      "unavailable_source_ids": [
+        "source_2e7f75bfcd50e8fb346acef354b90ade571eb5ba46dfc2fd4ad074e344b23e2c"
+      ],
+      "available_source_ids": [
+        "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+        "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+        "source_a475edbe3fac6ae2202af7ddeecbc60bd10217757168206317f6de5e253d58fe",
+        "source_e08fcefdda400f19592eaa5d8513c829312d0c864c1e0338c784c0562360ff2d",
+        "source_d52b7960a872d313ccf248ebff006cd79c50d2abca0f1164185eba2c92832df3"
+      ]
+    }
+  },
+  "source_scoped_queries": [
+    {
+      "source_logical_path": "NEJMoa2206286.pdf",
+      "result": {
+        "outcome": "success",
+        "hits": [],
+        "query": "incomplete follow-up",
+        "mode": "phrase",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 0,
+        "truncated": false,
+        "condition": "no_hits",
+        "search_receipt": {
+          "trial_id": "deliver",
+          "sources": [
+            {
+              "id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+              "projection_hash": "sha256:0b3f23804e50facea65cd1396181b135e77a9ece93e901480fc0f0110008a1fd"
+            }
+          ],
+          "query": "incomplete follow-up",
+          "normalized_query": "incomplete follow-up",
+          "mode": "phrase",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": "domain:missing",
+          "purpose_question_id": "sq:missing:data-available",
+          "hits": [],
+          "limit": 10,
+          "total_matches": 0,
+          "truncated": false,
+          "condition": "no_hits",
+          "batch_identity": "sha256:2bade79b03944b3ac4d5e6573e047e993da9b5c110e6e44f57ceacfc6c89989c",
+          "session_id": "sha256:99fa691414d64b249fdb4c3fa05dedf38dfc37e86ab30f746e32ac59630ce655",
+          "session_handle": "ss_99fa691414d64b24",
+          "candidate_count": 0,
+          "matching_page_count": 0,
+          "ranking_complete": true,
+          "returned_rank_start": null,
+          "returned_rank_end": null,
+          "next_cursor": null,
+          "exhausted": true,
+          "returned_material": 0,
+          "returned_candidates": [],
+          "identity": "sha256:8e3b22a2728ef3585dd871b86cc25351819af381eaf3f6e7d17cffedc25118e0",
+          "handle": "sr_8e3b22a2728ef358"
+        },
+        "session_id": "sha256:99fa691414d64b249fdb4c3fa05dedf38dfc37e86ab30f746e32ac59630ce655",
+        "session_handle": "ss_99fa691414d64b24",
+        "matching_page_count": 0,
+        "candidate_count": 0,
+        "distinct_passage_count": 0,
+        "distinct_page_count": 0,
+        "distinct_source_count": 0,
+        "ranking_complete": true,
+        "returned_rank_start": null,
+        "returned_rank_end": null,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "page_count": 10,
+            "query_matching_page_count": 0,
+            "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+            "term_page_counts": [
+              {
+                "matching_page_count": 0,
+                "term": "incomplete"
+              },
+              {
+                "matching_page_count": 1,
+                "term": "follow-up"
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": {
+          "code": "no_hits",
+          "mode": "phrase",
+          "profile": "porter-unicode61-v1",
+          "normalized_term_count": 2,
+          "total_matches": 0,
+          "candidate_count": 0,
+          "returned_count": 0,
+          "detail": "This scoped phrase query matched no captured text. Inspect the literal heading and leading-page navigation entries below, then read the cited Source pages or reformulate with wording found there. Zero hits establish only that the issued lexical query matched no captured text.",
+          "next_action": {
+            "kind": "navigate",
+            "operation": "list_sources",
+            "trial_id": "deliver",
+            "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+            "limit": 12,
+            "cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6MGIzZjIzODA0ZTUwZmFjZWE2NWNkMTM5NjE4MWIxMzVlNzdhOWVjZTkzZTkwMTQ4MGZjMGYwMTEwMDA4YTFmZCIsInNvdXJjZV9pZCI6InNvdXJjZV8xYzBhMWRlYmRiYjg3MWY1MjViYzNhNzlmYmJhZTg2YTNmMzBkYjhjOTg2YTUyMDRhNTkyOGMxYjNmNzliYjRjIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjIifQ"
+          },
+          "navigation": {
+            "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+            "source_label": "NEJMoa2206286.pdf",
+            "logical_path": "NEJMoa2206286.pdf",
+            "projection_hash": "sha256:0b3f23804e50facea65cd1396181b135e77a9ece93e901480fc0f0110008a1fd",
+            "navigation_version": "rob2-kit.source-navigation.v0.2",
+            "entries": [
+              {
+                "text": "The new engl and jour nal of medicine n engl j med 387;12 nejm.org september 22, 2022 1089 The authors' full names, academic de- grees, and affiliations are listed in the",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "Downloaded from nejm.org on September 22, 2026.",
+                "page": 1,
+                "start_line": 64,
+                "end_line": 64,
+                "kind": "date_lead",
+                "date_kind": "retrieval",
+                "logical_section": null
+              },
+              {
+                "text": "1090 The new engl and jour nal of medicine S odium-glucose cotransporter 2 (SGLT2) inhibitors, which were originally",
+                "page": 2,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "1091 Dapagliflozin in Heart Failure with Preserved EF and death from any cause. All potential worsen- ing heart failure events and all deaths were ad- judicated according to prespecified criteria10 by",
+                "page": 3,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "1092 The new engl and jour nal of medicine death from any cause (hazard ratio, 0.94; 95% CI, 0.83 to 1.07) (Fig. 1D). The change from baseline to month 8 in the KCCQ total symptom",
+                "page": 4,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "1093 Dapagliflozin in Heart Failure with Preserved EF Table 2. Primary and Secondary Cardiovascular Outcomes and Safety Outcomes in the Overall Population.* Variable Dapagliflozin",
+                "page": 5,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "1094 The new engl and jour nal of medicine Cumulative Incidence (%) 100 80",
+                "page": 6,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "1095 Dapagliflozin in Heart Failure with Preserved EF patient data were censored at the time of Covid-19 diagnosis showed similar results (Ta- ble S6). Overall results were similar when death",
+                "page": 7,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "1096 The new engl and jour nal of medicine was not significantly lower with dapagliflozin than with placebo, the rate of cardiovascular death among patients who received placebo was",
+                "page": 8,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "1097 Dapagliflozin in Heart Failure with Preserved EF patient-years in DAPA-HF), and DELIVER was not powered to assess the effect of dapagliflozin on cardiovascular death alone. Trials in higher-",
+                "page": 9,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              },
+              {
+                "text": "or performed before March 11, 2020, although",
+                "page": 9,
+                "start_line": 20,
+                "end_line": 20,
+                "kind": "date_lead",
+                "date_kind": "template",
+                "logical_section": null
+              },
+              {
+                "text": "1098 Dapagliflozin in Heart Failure with Preserved EF General Hospital of Northern Theater Command, Shenyang, China (Y.H.); Cl\u00ednica Vesalio, San Borja, Peru (J.W.C.H.); the Department of Cardiovascular Diseases, Cardiac Intensive Care, University Hospitals Leuven, Leuven, Belgium (S.P.J.); the Department of Noninva- sive Cardiology, National Cardiology Hospital, Sofia, Bulgaria (T.K.); Kinshukai Hanwa Daini Senboku Hospital, Osaka, Japan (M.K.);",
+                "page": 10,
+                "start_line": 2,
+                "end_line": 6,
+                "kind": "page_excerpt",
+                "logical_section": null
+              }
+            ],
+            "total_entries": 19,
+            "returned_entries": 12,
+            "remaining_entries": 7,
+            "terminal": false,
+            "page_count": 10,
+            "pages_examined": 10,
+            "pages_without_text_projection": [],
+            "unreadable_pages": [],
+            "truncated": true,
+            "next_cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6MGIzZjIzODA0ZTUwZmFjZWE2NWNkMTM5NjE4MWIxMzVlNzdhOWVjZTkzZTkwMTQ4MGZjMGYwMTEwMDA4YTFmZCIsInNvdXJjZV9pZCI6InNvdXJjZV8xYzBhMWRlYmRiYjg3MWY1MjViYzNhNzlmYmJhZTg2YTNmMzBkYjhjOTg2YTUyMDRhNTkyOGMxYjNmNzliYjRjIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjIifQ",
+            "condition": "layout_inspection_available",
+            "render_recovery": [
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 1,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 2,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 3,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 4,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 5,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 6,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 7,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 8,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 9,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "deliver",
+                "source_id": "source_1c0a1debdbb871f525bc3a79fbbae86a3f30db8c986a5204a5928c1b3f79bb4c",
+                "page": 10,
+                "inline": true
+              }
+            ],
+            "version_spans": [],
+            "date_spans": [
+              {
+                "text": "Downloaded from nejm.org on September 22, 2026.",
+                "page": 1,
+                "start_line": 64,
+                "end_line": 64,
+                "kind": "date_lead",
+                "date_kind": "retrieval",
+                "logical_section": null
+              },
+              {
+                "text": "or performed before March 11, 2020, although",
+                "page": 9,
+                "start_line": 20,
+                "end_line": 20,
+                "kind": "date_lead",
+                "date_kind": "template",
+                "logical_section": null
+              }
+            ]
+          }
+        },
+        "purpose_domain_id": "domain:missing",
+        "purpose_question_id": "sq:missing:data-available",
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false
+      }
+    },
+    {
+      "source_logical_path": "nejmoa2206286_appendix.pdf",
+      "result": {
+        "outcome": "success",
+        "hits": [
+          {
+            "source_id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+            "source_role": "supplement",
+            "source_label": "nejmoa2206286_appendix.pdf",
+            "page": 27,
+            "start_line": 6,
+            "end_line": 27,
+            "preview": "Figure S2. Patient flow.\n\n\n\n\nAssessed for eligibility (n=10418)\nExcluded (n=4155)\nNot meeting eligibility criteria (n=3955)\nDeclined to participate (n=170)\nDied (n=8)\nAdverse Event (n=8)\nOther reasons (n=14)\nDiscontinued intervention (n=444)\nIncomplete follow-up for primary endpoint (n=29)\nSurvival status unknown (n=2)\n\u2022\nLost to follow-up (n=2)\n\u2022\nWithdrawal of consent (n=0)\nAllocated to Dapagliflozin (n=3131)\n \u0308 Received allocated intervention (n=3126)\n \u0308 Did not receive allocated intervention (n=5)",
+            "passage_ref": "eh_4afcfbfe5d10fcd0",
+            "candidate_truncated": false,
+            "candidate_recovery": null,
+            "query": "incomplete follow-up",
+            "rank": 1,
+            "within_source_rank": 1,
+            "range": {
+              "start": 1,
+              "end": 2
+            }
+          },
+          {
+            "source_id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+            "source_role": "supplement",
+            "source_label": "nejmoa2206286_appendix.pdf",
+            "page": 27,
+            "start_line": 21,
+            "end_line": 38,
+            "preview": "\u2022\nLost to follow-up (n=2)\n\u2022\nWithdrawal of consent (n=0)\nAllocated to Dapagliflozin (n=3131)\n \u0308 Received allocated intervention (n=3126)\n \u0308 Did not receive allocated intervention (n=5)\nDiscontinued intervention (n=442)\nIncomplete follow-up for primary endpoint (n=23)\nSurvival status unknown (n=2)\n\u2022\nLost to follow-up (n=1)\n\u2022\nWithdrawal of consent (n=1)\nAllocated to Placebo (n=3132)\n \u0308 Received allocated intervention (n= 3127)\n \u0308 Did not receive allocated intervention (n=5)\nRandomized (n=6263)",
+            "passage_ref": "eh_6c4711e427746767",
+            "candidate_truncated": false,
+            "candidate_recovery": null,
+            "query": "incomplete follow-up",
+            "rank": 2,
+            "within_source_rank": 2,
+            "range": {
+              "start": 1,
+              "end": 2
+            }
+          }
+        ],
+        "query": "incomplete follow-up",
+        "mode": "phrase",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 1,
+        "truncated": false,
+        "condition": null,
+        "search_receipt": {
+          "trial_id": "deliver",
+          "sources": [
+            {
+              "id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+              "projection_hash": "sha256:22f0d9f0d134df7d783eb0af6f7285672eeb1aae493006922a8e777698ae73b9"
+            }
+          ],
+          "query": "incomplete follow-up",
+          "normalized_query": "incomplete follow-up",
+          "mode": "phrase",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": "domain:missing",
+          "purpose_question_id": "sq:missing:data-available",
+          "hits": [
+            {
+              "source_id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+              "page": 27
+            },
+            {
+              "source_id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+              "page": 27
+            }
+          ],
+          "limit": 10,
+          "total_matches": 1,
+          "truncated": false,
+          "condition": null,
+          "batch_identity": "sha256:2bade79b03944b3ac4d5e6573e047e993da9b5c110e6e44f57ceacfc6c89989c",
+          "session_id": "sha256:2d14e9d8359c433f87e37273e178bba14a3c16ffabbdc84fb78d7db35e04c3dd",
+          "session_handle": "ss_2d14e9d8359c433f",
+          "candidate_count": 2,
+          "matching_page_count": 1,
+          "ranking_complete": true,
+          "returned_rank_start": 1,
+          "returned_rank_end": 2,
+          "next_cursor": null,
+          "exhausted": true,
+          "returned_material": 2,
+          "returned_candidates": [
+            {
+              "rank": 1,
+              "source_id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+              "page": 27,
+              "start_line": 19,
+              "end_line": 19
+            },
+            {
+              "rank": 2,
+              "source_id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+              "page": 27,
+              "start_line": 29,
+              "end_line": 29
+            }
+          ],
+          "identity": "sha256:16cbfdde0a2ec8e7b41e36e7736abb45608ac97b15ec5bf97c0668c4fb1f6c2b",
+          "handle": "sr_16cbfdde0a2ec8e7"
+        },
+        "session_id": "sha256:2d14e9d8359c433f87e37273e178bba14a3c16ffabbdc84fb78d7db35e04c3dd",
+        "session_handle": "ss_2d14e9d8359c433f",
+        "matching_page_count": 1,
+        "candidate_count": 2,
+        "distinct_passage_count": 2,
+        "distinct_page_count": 1,
+        "distinct_source_count": 1,
+        "ranking_complete": true,
+        "returned_rank_start": 1,
+        "returned_rank_end": 2,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "page_count": 44,
+            "query_matching_page_count": 1,
+            "source_id": "source_86d70138cf26cc52010e92e481067cda9752566753ab252b5ebb115623981cbe",
+            "term_page_counts": [
+              {
+                "matching_page_count": 1,
+                "term": "incomplete"
+              },
+              {
+                "matching_page_count": 4,
+                "term": "follow-up"
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": null,
+        "purpose_domain_id": "domain:missing",
+        "purpose_question_id": "sq:missing:data-available",
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false
+      }
+    }
+  ]
+}

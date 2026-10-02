@@ -271,6 +271,11 @@ repair cycle.
 `search_sources` preserves the requested lexical mode and returns factual
 zero-hit feedback for that mode, including complete-query and bounded per-term
 page counts. Counts do not establish co-occurrence or scientific absence. A
+search scope containing unavailable captured bytes instead returns a typed
+condition naming unavailable Sources and Sources whose bytes remain present.
+It searches no text and issues no absence receipt. The host may search those
+other Sources explicitly; each scoped search still verifies bytes and projection
+integrity, and its receipt establishes only that narrower scope. A
 scoped miss can expose literal Source navigation; `list_sources` also returns
 the captured dossier inventory, intake conditions, declared omissions, and
 bounded heading/page excerpts when given a Source ID. `search_sources_batch`

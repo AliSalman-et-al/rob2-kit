@@ -242,11 +242,19 @@ class SearchUnavailableCondition(PublicModel):
     detail: str = Field(min_length=1)
 
 
+class SearchSourceUnavailableCondition(PublicModel):
+    code: Literal["captured_source_unavailable"]
+    detail: str = Field(min_length=1)
+    unavailable_source_ids: tuple[SourceHandle, ...] = Field(min_length=1)
+    available_source_ids: tuple[SourceHandle, ...]
+
+
 SearchCursorCondition = Annotated[
     SearchCursorStaleCondition
     | SearchCursorExpiredCondition
     | SearchInvalidRequestCondition
-    | SearchUnavailableCondition,
+    | SearchUnavailableCondition
+    | SearchSourceUnavailableCondition,
     Field(discriminator="code"),
 ]
 
@@ -1398,7 +1406,7 @@ class SearchBatchSuccess(PublicModel):
 
 class SearchBatchCondition(PublicModel):
     outcome: Literal["condition"]
-    condition: ConditionData
+    condition: ConditionData | SearchSourceUnavailableCondition
 
 
 SearchBatchResult = Annotated[

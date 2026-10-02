@@ -865,6 +865,30 @@ def search_sources(
         sources = [source for source in sources if source["id"] == source_id]
         if not sources:
             raise ValueError("source is outside the active Trial")
+    unavailable = [
+        source["id"]
+        for source in sources
+        if not internal_path(root, "sources", trial_id, f"{source['id']}.bin").is_file()
+    ]
+    if unavailable:
+        return {
+            "outcome": "condition",
+            "condition": {
+                "code": "captured_source_unavailable",
+                "detail": (
+                    "Captured bytes are unavailable for part of this search scope; no text "
+                    "was searched and no absence receipt was issued. Preserve this limitation. "
+                    "Search available Sources separately by passing source_id to search_sources "
+                    "or independent source-scoped requests to search_sources_batch. Each search "
+                    "still verifies captured bytes and projections; do not infer dossier-wide "
+                    "absence from a narrower search or replace historical captured bytes."
+                ),
+                "unavailable_source_ids": unavailable,
+                "available_source_ids": [
+                    source["id"] for source in sources if source["id"] not in unavailable
+                ],
+            },
+        }
     # FTS is a derivative projection, not evidence in its own right.  Verify
     # every projection this query is about to trust once before reading it.
     # This also makes a damaged FTS cache fail closed instead of returning
