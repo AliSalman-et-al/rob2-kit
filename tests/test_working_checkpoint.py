@@ -1010,15 +1010,23 @@ def test_public_domain_context_foregrounds_active_unresolved_premise(
     }
 
 
-def test_trial_review_retains_source_observations_after_domain_commits(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("premise_status", "source_scope_matches"),
+    [("bounded", True), ("support", True), ("support", False)],
+)
+def test_trial_review_retains_source_observations_after_domain_commits(
+    tmp_path: Path, premise_status: str, source_scope_matches: bool
+) -> None:
     workspace = _workspace(tmp_path)
     evidence = _proposal_waiting_for_review(workspace)
     checkpoint = _checkpoint(evidence["source_id"])
     checkpoint["premise_records"] = [
         {
             "proposition": "Allocation remained concealed until assignment.",
-            "status": "bounded",
+            "status": premise_status,
             "observations": checkpoint["observations"],
+            "inference": "The host tentatively regarded concealment as adequate.",
+            "counterevidence": checkpoint["observations"],
             "unresolved_component": "The concealment procedure is not reported.",
             "stopping_rationale": "The captured report leaves the procedure unresolved.",
             "domain_id": "domain:randomization",
@@ -1028,6 +1036,12 @@ def test_trial_review_retains_source_observations_after_domain_commits(tmp_path:
     ]
     saved = _call(workspace, "save_working_checkpoint", {"checkpoint": checkpoint})
     assert saved["outcome"] == "success", saved
+
+    database = workspace / ".rob2-kit" / "working.sqlite3"
+    with sqlite3.connect(database) as connection:
+        original_payload = connection.execute("SELECT payload FROM working_checkpoints").fetchone()[
+            0
+        ]
 
     _review(workspace)
     revision = int(
@@ -1046,13 +1060,35 @@ def test_trial_review_retains_source_observations_after_domain_commits(tmp_path:
         assert saved_domain["outcome"] == "success", saved_domain
         revision = int(saved_domain["head"]["state_revision"])
 
+    with sqlite3.connect(database) as connection:
+        assert connection.execute("SELECT payload FROM working_checkpoints").fetchone()[0] == (
+            original_payload
+        )
+        if not source_scope_matches:
+            payload = json.loads(original_payload)
+            payload["source_scope"][0]["projection_hash"] = "sha256:" + "f" * 64
+            payload["identity"] = None
+            stale = WorkingCheckpoint.model_validate(payload)
+            connection.execute(
+                "UPDATE working_checkpoints SET identity=?,payload=?",
+                (
+                    stale.identity,
+                    canonical_json_bytes(stale.model_dump(mode="json", exclude_none=True)),
+                ),
+            )
+
     review = _call(
         workspace,
         "review_trial",
         {"trial_id": "trial", "expected_revision": revision},
     )
     assert review["outcome"] == "success", review
-    assert review["data"]["review_page"]["counts"]["premise_records"] == 1
+    assert review["data"]["review_page"]["counts"]["premise_records"] == (
+        1 if source_scope_matches else 0
+    )
+    if not source_scope_matches:
+        assert "premise_records" not in review["data"]["review_page"]["deferred_fields"]
+        return
     assert "premise_records" in review["data"]["review_page"]["deferred_fields"]
     recovered = _call(
         workspace,
@@ -1068,6 +1104,12 @@ def test_trial_review_retains_source_observations_after_domain_commits(tmp_path:
     randomization = recovered["data"]["domain_findings"][0]
     assert randomization["premise_records"][0]["observations"]
     assert randomization["premise_records"][0]["observations"] == checkpoint["observations"]
+    retained = randomization["premise_records"][0]
+    assert retained["counterevidence"] == checkpoint["observations"]
+    assert retained["status"] == "unresolved"
+    assert retained.get("inference") is None
+    assert retained.get("stopping_rationale") is None
+    assert randomization["premise_checkpoint_identity"] is not None
     concealment = next(
         item
         for item in randomization["answers"]

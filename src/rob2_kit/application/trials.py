@@ -92,10 +92,9 @@ def _review_domain_findings(
         # the missing expansion is left for the ordinary recovery path.
         evidence_by_identity = {}
     records = state.get("domain_records") or {}
-    # Working premise notes are reusable only while their own checkpoint still
-    # matches the approved Result and captured Source projection.  A stale
-    # checkpoint is deliberately absent from final review rather than being
-    # treated as a prior Domain judgment.
+    # Source/Result mismatches suppress working notes. New Domain commits keep
+    # their source observations for review, while dependent inferences below
+    # become unresolved rather than outranking the committed judgment.
     from .working import (
         _stored_checkpoint,
         investigation_projection,
