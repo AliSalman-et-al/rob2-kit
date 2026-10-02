@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from support.rob2 import (
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -105,7 +106,10 @@ def _public_call(
         try:
             options = {"elicitation_handler": elicit} if approve else {}
             async with Client(mcp, **options) as client:
-                result = await client.call_tool(tool, arguments)
+                result = await client.call_tool(
+                    tool,
+                    _domain_submission(arguments) if tool == "save_domain_judgment" else arguments,
+                )
                 return dict(result.structured_content or {})
         finally:
             if previous_workspace is None:

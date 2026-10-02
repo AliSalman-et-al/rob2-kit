@@ -4234,7 +4234,14 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         material = str(evidence.get("quote") or evidence.get("transcription") or "")
                         if material != source:
                             return fail()
-                    if answer["answer"] in {"yes", "no"} and not direct_basis:
+                    if answer["answer"] in {"yes", "no"} and not (
+                        direct_basis
+                        or (
+                            answer["question_id"] == "sq:missing:evidence-unbiased"
+                            and answer["answer"] == "no"
+                            and any(use.get("kind") != "limitation" for use in answer["bases"])
+                        )
+                    ):
                         return fail()
                     if answer["answer"] in {"probably_yes", "probably_no"} and not (
                         direct_basis or uncertainty_basis
@@ -4529,7 +4536,14 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                             )
                             if material != source:
                                 return fail()
-                        if answer["answer"] in {"yes", "no"} and not direct_basis:
+                        if answer["answer"] in {"yes", "no"} and not (
+                            direct_basis
+                            or (
+                                answer["question_id"] == "sq:missing:evidence-unbiased"
+                                and answer["answer"] == "no"
+                                and any(use.get("kind") != "limitation" for use in answer["bases"])
+                            )
+                        ):
                             return fail()
                         if answer["answer"] in {"probably_yes", "probably_no"} and not (
                             direct_basis or uncertainty_basis

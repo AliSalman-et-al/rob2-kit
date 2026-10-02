@@ -23,6 +23,7 @@ from support.rob2 import (
     _assessment_workspace,
     _call,
     _domain_draft,
+    _domain_submission,
     _prepared_evidence,
     _proposal_args,
     _read_required_main_reports,
@@ -1003,23 +1004,27 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     target = draft["answers"][0]
     target["bases"] = [
         {"kind": "direct_support", "evidence": evidence["handle"]},
-        {
-            "kind": "limitation",
-            "unresolved_premise": "One allocation detail remains unresolved.",
-            "stopping_rationale": "The relevant report and protocol passages were inspected.",
-            "evidence": [second_evidence["handle"], evidence["handle"]],
-        },
+        {"kind": "context", "evidence": second_evidence["handle"]},
         {"kind": "direct_support", "evidence": second_evidence["handle"]},
     ]
+    target["limitations"] = [
+        {
+            "premise": "One allocation detail remains unresolved.",
+            "stopping_rationale": "The relevant report and protocol passages were inspected.",
+        }
+    ]
     target["counterevidence"] = [
-        {"basis_index": index, "implication": f"Original basis {index} limits this answer."}
+        {
+            "basis_index": index,
+            "implication": f"Original Evidence basis {index} limits this answer.",
+        }
         for index in range(3)
     ]
 
     malformed = deepcopy(draft)
     malformed["answers"][0]["counterevidence"][1]["basis_index"] = 3
     before = _state(workspace)
-    rejected = _public_tool_result(workspace, "save_domain_judgment", malformed)
+    rejected = _public_tool_result(workspace, "save_domain_judgment", _domain_submission(malformed))
     assert rejected.is_error
     assert _state(workspace)["revision"] == before["revision"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
@@ -1028,13 +1033,12 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     assert saved["outcome"] == "success", saved
     revision = int(saved["head"]["state_revision"])
     stored = _state(workspace)["domain_records"][f"trial:{domain_id}"]["answers"][0]
-    expected_kinds = ["direct_support", "limitation", "context", "context", "direct_support"]
-    expected_indices = [0, 1, 4]
+    expected_kinds = ["direct_support", "context", "direct_support", "limitation"]
+    expected_indices = [0, 1, 2]
     assert [basis["kind"] for basis in stored["bases"]] == expected_kinds
     assert [point["basis_index"] for point in stored["counterevidence"]] == expected_indices
+    assert stored["bases"][1]["evidence"] == second_evidence["identity"]
     assert stored["bases"][2]["evidence"] == second_evidence["identity"]
-    assert stored["bases"][3]["evidence"] == evidence["identity"]
-    assert stored["bases"][4]["evidence"] == second_evidence["identity"]
 
     for domain in SCIENTIFIC_PACK.domains[1:]:
         result = _call(
@@ -1064,7 +1068,7 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     ] == expected_indices
     assert [reviewed_answer["bases"][index]["kind"] for index in expected_indices] == [
         "direct_support",
-        "limitation",
+        "context",
         "direct_support",
     ]
 
@@ -1257,3 +1261,50 @@ def test_d2_participant_flow_rows_pass_the_full_bundle_contract(tmp_path: Path) 
         assert by_question["sq:deviations:appropriate-analysis"]["missing_data"]["rows"]
     assert verify_bundle(artifact)
     assert _standalone_verify(artifact).returncode == 0
+
+
+@pytest.mark.parametrize("basis_kind", ["context", "inference", "absence"])
+def test_d32_scoped_negative_basis_survives_both_bundle_verifiers(
+    tmp_path: Path,
+    basis_kind: str,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain in SCIENTIFIC_PACK.domains:
+        draft = _domain_draft("trial", domain.id, revision, evidence)
+        if domain.id == "domain:missing":
+            answer = draft["answers"][1]
+            if basis_kind == "absence":
+                search = _call(
+                    workspace,
+                    "search_sources",
+                    {
+                        "trial_id": "trial",
+                        "source_id": evidence["source_id"],
+                        "query": "unreported sensitivity analysis",
+                        "mode": "phrase",
+                    },
+                )
+                answer["bases"] = [
+                    {
+                        "kind": "absence",
+                        "search_receipt": search["data"]["search_receipt"],
+                    }
+                ]
+            else:
+                answer["bases"][0]["kind"] = basis_kind
+            answer["limitations"] = [
+                {
+                    "premise": "Unobserved outcomes and missingness mechanism remain unknown.",
+                    "stopping_rationale": "The bounded source review found no reassuring evidence.",
+                }
+            ]
+        saved = _call(workspace, "save_domain_judgment", draft)
+        assert saved["outcome"] == "success", saved
+        revision = saved["head"]["state_revision"]
+    revision = _close_trials(workspace, revision)
+    exported = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    assert exported["outcome"] == "success", exported
+    artifact = workspace / exported["data"]["artifact"]["path"]
+    assert verify_bundle(artifact)
+    standalone = _standalone_verify(artifact)
+    assert standalone.returncode == 0, standalone.stdout + standalone.stderr

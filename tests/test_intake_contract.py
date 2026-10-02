@@ -1062,6 +1062,8 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "question_id",
         "answer",
         "bases",
+        "absence_searches",
+        "limitations",
         "justification",
         "missing_data",
         "unknowns",
@@ -1074,18 +1076,20 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "no",
         "no_information",
     ]
-    variants = cast(dict[str, Any], answers["properties"]["bases"]["items"])["oneOf"]
-    assert len(variants) == 3
-    assert all(variant["additionalProperties"] is False for variant in variants)
-    kinds = {
-        variant["properties"]["kind"].get("const") or variant["properties"]["kind"]["enum"][0]
-        for variant in variants
-    }
-    assert kinds == {
+    citation = answers["properties"]["bases"]["items"]
+    assert citation["additionalProperties"] is False
+    assert set(citation["properties"]) == {"evidence", "role"}
+    assert citation["properties"]["role"]["enum"] == [
         "direct_support",
-        "absence",
-        "limitation",
-    }
+        "indirect_support",
+        "contradiction",
+        "context",
+        "inference",
+    ]
+    limitation = answers["properties"]["limitations"]["items"]
+    assert limitation["additionalProperties"] is False
+    assert set(limitation["properties"]) == {"premise", "stopping_rationale", "search_receipt"}
+    assert set(limitation["required"]) == {"premise", "stopping_rationale"}
 
 
 def test_selected_evidence_and_typed_proposal_survive_host_restart(tmp_path: Path) -> None:

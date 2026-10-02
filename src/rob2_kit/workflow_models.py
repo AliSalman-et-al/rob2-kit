@@ -1949,14 +1949,21 @@ class EvidenceSufficiencySummary(StrictModel):
 
 
 class DomainEvidenceCitation(StrictModel):
-    evidence: SubmittedEvidenceHandle
-    role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"]
+    evidence: SubmittedEvidenceHandle = Field(description="Current-Trial selected Evidence handle.")
+    role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
+        Field(description="Scientific relationship of the inspected Evidence to this question.")
+    )
 
 
 class DomainInformationLimit(StrictModel):
-    premise: NonBlankText
-    stopping_rationale: NonBlankText
-    search_receipt: SubmittedSearchReceiptHandle | None = None
+    premise: NonBlankText = Field(description="Unresolved premise needed to answer this question.")
+    stopping_rationale: NonBlankText = Field(
+        description="Why the bounded investigation stopped with this premise unresolved."
+    )
+    search_receipt: SubmittedSearchReceiptHandle | None = Field(
+        default=None,
+        description="Optional current-Trial search receipt documenting the investigation.",
+    )
 
 
 class DomainSaveAnswer(StrictModel):
@@ -1966,8 +1973,12 @@ class DomainSaveAnswer(StrictModel):
     answers retain their original audit representation.
     """
 
-    question_id: QuestionId
-    answer: Answer
+    question_id: QuestionId = Field(
+        description="Active signalling question from the current Domain card."
+    )
+    answer: Answer = Field(
+        description="Submitted response; must be among this question card's permitted options."
+    )
     bases: tuple[DomainEvidenceCitation, ...] = Field(
         default=(),
         description="Selected Evidence and its explicit scientific role; no nested basis objects.",
@@ -1980,9 +1991,18 @@ class DomainSaveAnswer(StrictModel):
         default=(),
         description="Unresolved premises and why investigation stopped.",
     )
-    missing_data: tuple[MissingDataRow, ...] | None = Field(default=None, min_length=1)
-    justification: str | None = None
-    unknowns: tuple[str, ...] | None = None
+    missing_data: tuple[MissingDataRow, ...] | None = Field(
+        default=None,
+        min_length=1,
+        description="Optional source-grounded participant-flow rows for this question.",
+    )
+    justification: str | None = Field(
+        default=None, description="Explain how the inspected sources support the response."
+    )
+    unknowns: tuple[str, ...] | None = Field(
+        default=None,
+        description="Remaining material unknowns; use an empty array when none remain.",
+    )
     counterevidence: tuple[DomainCounterevidence, ...] | None = Field(
         default=None,
         description="Counterpoints use indexes into this answer's Evidence bases only.",

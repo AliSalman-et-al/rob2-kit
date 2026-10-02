@@ -6,8 +6,8 @@ from pathlib import Path
 
 from rob2_kit.workflow_models import (
     DescribedTiming,
-    DomainAnswer,
-    DomainLimitationBasis,
+    DomainInformationLimit,
+    DomainSaveAnswer,
     ProposalReasoningDraft,
     TrialClosureRequest,
     TrialReviewRequest,
@@ -81,23 +81,12 @@ def test_evidence_reference_contains_closed_limitation_example() -> None:
         encoding="utf-8"
     )
     examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
-    limitations = [
-        json.loads(line)
-        for example in examples
-        for line in example.splitlines()
-        if '"kind":"limitation"' in line or '"kind": "limitation"' in line
-    ]
-    assert len(limitations) >= 2
-    assert {"search_receipt" in limitation for limitation in limitations} >= {True, False}
+    objects = [json.loads(example) for example in examples]
+    limitations = [limit for item in objects for limit in item.get("limitations", [])]
+    assert limitations
     for limitation in limitations:
-        assert set(limitation) <= {
-            "kind",
-            "unresolved_premise",
-            "stopping_rationale",
-            "search_receipt",
-        }
-        DomainLimitationBasis.model_validate(limitation)
-    assert "actual receipt returned" in reference
+        DomainInformationLimit.model_validate(limitation)
+    assert "untruncated zero-hit receipts" in reference
 
 
 def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> None:
@@ -110,20 +99,17 @@ def test_evidence_reference_contains_valid_complete_domain_answer_examples() -> 
     examples = re.findall(r"```json\s*(.*?)\s*```", section, flags=re.DOTALL)
     assert len(examples) == 2
     answer = json.loads(examples[0])
-    DomainAnswer.model_validate(answer)
-    assert {item["kind"] for item in answer["bases"]} == {"direct_support"}
+    DomainSaveAnswer.model_validate(answer)
+    assert {item["role"] for item in answer["bases"]} == {"direct_support"}
     assert answer["unknowns"] == []
     assert answer["counterevidence"] == []
-    basis_shapes = [json.loads(line) for line in examples[1].splitlines()]
-    assert {item["kind"] for item in basis_shapes} == {"context", "absence", "limitation"}
-    for item in basis_shapes:
-        DomainAnswer.model_validate(
-            {
-                **answer,
-                "bases": [item],
-                "counterevidence": [],
-            }
-        )
+    alternative = json.loads(examples[1])
+    parsed = DomainSaveAnswer.model_validate({**answer, **alternative})
+    assert {item["kind"] for item in parsed.canonical_payload()["bases"]} == {
+        "context",
+        "absence",
+        "limitation",
+    }
 
 
 def test_read_pages_reference_contains_both_callable_request_forms() -> None:

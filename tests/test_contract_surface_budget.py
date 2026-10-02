@@ -182,16 +182,15 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         in workspace_properties["unrecoverable_inline_text_bytes"]["description"]
     )
     assert "complete Domain draft once" in (domain_tool.description or "")
-    assert "counterevidence" in (domain_tool.description or "")
+    assert "counterevidence" in (domain_tool.description or "").lower()
     answer_schema = _resolve(
         domain_tool.parameters,
         domain_tool.parameters["properties"]["answers"]["items"],
     )
-    assert set(answer_schema["required"]) >= {"question_id", "answer", "bases"}
-    assert "active answer" in answer_schema["properties"]["justification"]["description"]
-    assert "inactive branch answers" in (
-        answer_schema["properties"]["unknowns"]["description"].lower()
-    )
+    assert set(answer_schema["required"]) == {"question_id", "answer"}
+    assert "support the response" in answer_schema["properties"]["justification"]["description"]
+    assert "empty array" in answer_schema["properties"]["unknowns"]["description"]
+    assert "inactive branch answers" in (domain_tool.description or "").lower()
     assert "scientific correctness" in (domain_tool.description or "")
     assert "multiple_concerns" not in domain_tool.parameters["properties"]
     proposal_tool = by_name["validate_proposal"]

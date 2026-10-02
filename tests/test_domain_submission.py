@@ -201,3 +201,57 @@ def test_d32_negative_evidence_exception_does_not_bypass_handle_validation(
     response = _call(workspace, "save_domain_judgment", draft)
     assert response["outcome"] == "repair"
     assert response["head"]["state_revision"] == revision
+
+
+@pytest.mark.parametrize(
+    "domain_id, question_id, definite",
+    [
+        ("domain:deviations", "sq:deviations:context-deviations", "no"),
+        ("domain:deviations", "sq:deviations:appropriate-analysis", "yes"),
+        ("domain:deviations", "sq:deviations:substantial-impact", "no"),
+        ("domain:missing", "sq:missing:likely-dependent", "no"),
+        ("domain:selection", "sq:selection:prespecified-analysis", "yes"),
+        ("domain:selection", "sq:selection:multiple-measurements", "no"),
+        ("domain:selection", "sq:selection:multiple-analyses", "no"),
+    ],
+)
+@pytest.mark.parametrize("probable", [False, True])
+def test_required_unknowns_are_not_negative_evidence_exemptions(
+    tmp_path: Path,
+    domain_id: str,
+    question_id: str,
+    definite: str,
+    probable: bool,
+) -> None:
+    from rob2_kit.logic import active_questions
+
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", domain_id, revision, evidence)
+    target = next(a for a in draft["answers"] if a["question_id"] == question_id)
+    target["answer"] = f"probably_{definite}" if probable else definite
+    target["limitations"] = [
+        {
+            "premise": "A premise required to establish this response remains unresolved.",
+            "stopping_rationale": "Bounded source inspection did not resolve that premise.",
+        }
+    ]
+    active = active_questions({a["question_id"]: a["answer"] for a in draft["answers"]})
+    draft["answers"] = [a for a in draft["answers"] if a["question_id"] in active]
+    response = _call(workspace, "save_domain_judgment", draft)
+    if probable:
+        assert response["outcome"] == "success", response
+    else:
+        assert any(
+            r["code"] == "complete_claim_has_unresolved_premise" for r in response["repairs"]
+        )
+
+
+def test_mcp_rejects_d32_no_information_without_changing_answer(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    draft["answers"][1]["answer"] = "no_information"
+    response = _call(workspace, "save_domain_judgment", draft)
+    assert response["outcome"] == "repair"
+    assert any(r["code"] == "invalid_answer" for r in response["repairs"])
+    assert draft["answers"][1]["answer"] == "no_information"
+    assert response["head"]["state_revision"] == revision
