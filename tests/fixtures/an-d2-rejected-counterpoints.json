@@ -1,0 +1,131 @@
+{
+  "trial_id": "an-2021",
+  "domain_id": "domain:deviations",
+  "expected_revision": 13,
+  "answers": [
+    {
+      "question_id": "sq:deviations:participants-aware",
+      "answer": "no",
+      "justification": "The report directly states that participants were blinded to group assignments (p. 3). Intervention groups differed in format and care (p. 4-5), but these differences do not override the explicit report of participant blinding.",
+      "bases": [
+        {
+          "evidence": "eh_6a3a61395c2666c3",
+          "role": "direct_support"
+        }
+      ],
+      "unknowns": [],
+      "counterevidence": [],
+      "limitations": []
+    },
+    {
+      "question_id": "sq:deviations:personnel-aware",
+      "answer": "probably_yes",
+      "justification": "The therapists delivered the telerehabilitation sessions with real-time video supervision and cues, while education participants performed unsupervised home exercise with daily therapist calls and controls received usual care. Those materially distinct delivery modes make awareness by delivery personnel probable; the report does not directly state their awareness or blinding.",
+      "bases": [
+        {
+          "evidence": "eh_1bab811d458a1ff5",
+          "role": "indirect_support"
+        },
+        {
+          "evidence": "eh_0815ad60e1dc1f4e",
+          "role": "indirect_support"
+        }
+      ],
+      "unknowns": [
+        "Whether carers and intervention-delivery personnel were explicitly blinded or knew each participant's allocation."
+      ],
+      "counterevidence": [],
+      "limitations": [
+        {
+          "premise": "Direct report of personnel awareness/blinding is absent.",
+          "stopping_rationale": "The source describes differentiated intervention delivery but does not directly document personnel knowledge; this supports a probable rather than definitive judgment."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:deviations:context-deviations",
+      "answer": "probably_no",
+      "justification": "Two telerehabilitation participants discontinued because of high intensity; other losses included cancelled surgery and a fall. This describes ordinary intervention burden or clinical/follow-up events, not evidence that trial recruitment, trial-specific engagement, or staff decisions caused protocol-inconsistent deviations. The report does not provide protocol adherence details sufficient for a definitive no.",
+      "bases": [
+        {
+          "evidence": "eh_2be359e180b64479",
+          "role": "direct_support"
+        },
+        {
+          "evidence": "eh_78e3b4fe4bcba223",
+          "role": "direct_support"
+        }
+      ],
+      "unknowns": [
+        "Whether any protocol-inconsistent changes occurred and whether trial context caused them."
+      ],
+      "counterevidence": [],
+      "limitations": [
+        {
+          "premise": "Full protocol adherence and causal reasons for all deviations are not reported.",
+          "stopping_rationale": "The available report gives attrition reasons but no indication of trial-context causation; therefore probable no rather than a definitive absence."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:deviations:appropriate-analysis",
+      "answer": "probably_no",
+      "justification": "The approved effect is assignment to intervention. Sixty participants were randomized, but the analysis included only 53 (18/17/18); the flow reports post-randomization discontinuation, surgery cancellation, and a fall event among those not analyzed. The paper does not establish that all excluded participants had missing outcome data, or that the assignment groups were retained, so the analysis cannot confidently be treated as an appropriate ITT/mITT. Some exclusions following surgery cancellation may reflect no relevant TKA outcome, which tempers certainty.",
+      "bases": [
+        {
+          "evidence": "eh_78e3b4fe4bcba223",
+          "role": "direct_support"
+        },
+        {
+          "evidence": "eh_6dcb1571e0fcd182",
+          "role": "direct_support"
+        }
+      ],
+      "unknowns": [
+        "Whether each non-analyzed participant's quadriceps outcome was missing, observed but omitted, or excluded for a justified eligibility reason."
+      ],
+      "counterevidence": [
+        {
+          "basis_indexes": [
+            0
+          ],
+          "implication": "Three participants' surgery was cancelled, which may mean they did not undergo the targeted TKA follow-up and may explain exclusion without revealing an as-treated analysis."
+        }
+      ],
+      "limitations": [
+        {
+          "premise": "The report does not state the analysis grouping rule or outcome availability/reasons for each exclusion.",
+          "stopping_rationale": "Despite group-specific randomized and analyzed counts, the disposition and analysis of all randomized participants are not fully specified."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:deviations:substantial-impact",
+      "answer": "probably_yes",
+      "justification": "Seven of 60 randomized participants were not analyzed (2/20 telerehabilitation, 3/20 education, 2/20 control), about 12%, with unequal counts and reasons including discontinuation, cancellation and a fall. This is enough attrition to plausibly substantially affect an assignment-effect estimate, although prognostic relation and actual endpoint values for excluded participants are unknown.",
+      "bases": [
+        {
+          "evidence": "eh_78e3b4fe4bcba223",
+          "role": "direct_support"
+        }
+      ],
+      "unknowns": [
+        "Prognostic relevance and quadriceps strength outcomes for the seven excluded participants."
+      ],
+      "counterevidence": [
+        {
+          "basis_indexes": [
+            0
+          ],
+          "implication": "The excluded counts are small in absolute terms and several exclusions arose from surgery cancellation; outcome rarity and prognostic relevance are not known."
+        }
+      ],
+      "limitations": [
+        {
+          "premise": "The outcome values and prognostic profiles of excluded participants are not reported.",
+          "stopping_rationale": "The unequal 7/60 attrition supports a probable concern but does not establish the magnitude of its effect."
+        }
+      ]
+    }
+  ]
+}

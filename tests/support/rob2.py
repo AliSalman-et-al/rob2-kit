@@ -68,7 +68,10 @@ def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
             answer["absence_searches"] = searches
         if isinstance(answer.get("counterevidence"), list):
             answer["counterevidence"] = [
-                {**item, "basis_index": indexes.get(item["basis_index"], item["basis_index"])}
+                {
+                    "basis_indexes": [indexes.get(item["basis_index"], item["basis_index"])],
+                    "implication": item["implication"],
+                }
                 if isinstance(item, dict) and "basis_index" in item
                 else item
                 for item in answer["counterevidence"]

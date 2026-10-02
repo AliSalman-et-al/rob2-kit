@@ -56,7 +56,7 @@ def test_explicit_information_limit_preserves_failed_run_science_and_evidence() 
         {"bases": [{"role": "context", "evidence": ""}]},
         {"bases": [{"kind": "limitation", "unresolved_premise": "unknown"}]},
         {"answer": "invented_answer"},
-        {"counterevidence": [{"basis_index": 1, "implication": "counterpoint"}]},
+        {"counterevidence": [{"basis_indexes": [1], "implication": "counterpoint"}]},
         {"counterevidence": [0]},
     ],
 )
@@ -255,3 +255,69 @@ def test_mcp_rejects_d32_no_information_without_changing_answer(tmp_path: Path) 
     assert any(r["code"] == "invalid_answer" for r in response["repairs"])
     assert draft["answers"][1]["answer"] == "no_information"
     assert response["head"]["state_revision"] == revision
+
+
+def test_captured_an_counterpoints_preserve_science_without_aliases() -> None:
+    draft = json.loads(
+        (Path(__file__).parent / "fixtures/an-d2-rejected-counterpoints.json").read_text()
+    )
+    for original in draft["answers"]:
+        public = DomainSaveAnswer.model_validate(original)
+        canonical = DomainAnswer.model_validate(public.canonical_payload())
+        assert canonical.answer.value == original["answer"]
+        assert canonical.justification == original["justification"]
+        assert canonical.unknowns == tuple(original["unknowns"])
+        assert canonical.counterevidence is not None
+        assert [point.model_dump() for point in canonical.counterevidence] == [
+            {"basis_index": index, "implication": point["implication"]}
+            for point in original["counterevidence"]
+            for index in point["basis_indexes"]
+        ]
+
+
+@pytest.mark.parametrize("indexes", [[], [0, 0], [0, 2], [-1], [0, "unresolved"]])
+def test_joint_counterpoints_validate_every_selected_support(indexes: list) -> None:
+    answer = {
+        "question_id": "sq:selection:prespecified-analysis",
+        "answer": "probably_no",
+        "bases": [
+            {"role": "context", "evidence": "eh_0123456789abcdef"},
+            {"role": "contradiction", "evidence": "eh_fedcba9876543210"},
+        ],
+        "counterevidence": [
+            {
+                "basis_indexes": indexes,
+                "implication": "The two passages jointly establish a contrary chronology.",
+            }
+        ],
+    }
+    with pytest.raises(ValidationError):
+        DomainSaveAnswer.model_validate(answer)
+
+
+def test_joint_counterpoint_keeps_all_citations_and_the_same_implication() -> None:
+    implication = "The plan date and unblinding date together challenge prespecification."
+    public = DomainSaveAnswer.model_validate(
+        {
+            "question_id": "sq:selection:prespecified-analysis",
+            "answer": "probably_no",
+            "bases": [
+                {"role": "context", "evidence": "eh_0123456789abcdef"},
+                {"role": "contradiction", "evidence": "eh_fedcba9876543210"},
+            ],
+            "counterevidence": [{"basis_indexes": [0, 1], "implication": implication}],
+        }
+    )
+    canonical = DomainAnswer.model_validate(public.canonical_payload())
+    assert canonical.counterevidence is not None
+    assert [(p.basis_index, p.implication) for p in canonical.counterevidence] == [
+        (0, implication),
+        (1, implication),
+    ]
+    with pytest.raises(ValidationError):
+        DomainSaveAnswer.model_validate(
+            {
+                **public.model_dump(),
+                "counterevidence": [{"basis_index": 0, "implication": implication}],
+            }
+        )

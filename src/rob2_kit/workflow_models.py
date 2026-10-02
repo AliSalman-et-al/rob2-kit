@@ -1966,6 +1966,24 @@ class DomainInformationLimit(StrictModel):
     )
 
 
+class DomainCounterpoint(StrictModel):
+    """One scientific counterclaim supported by one or several inspected bases."""
+
+    basis_indexes: tuple[NonNegativeInt, ...] = Field(
+        min_length=1,
+        description="Distinct zero-based indexes into this answer's selected Evidence bases.",
+    )
+    implication: NonBlankText = Field(
+        description="How the cited bases, considered together, limit or challenge the answer.",
+    )
+
+    @model_validator(mode="after")
+    def indexes_are_distinct(self) -> DomainCounterpoint:
+        if len(set(self.basis_indexes)) != len(self.basis_indexes):
+            raise ValueError("counterpoint basis indexes must be distinct")
+        return self
+
+
 class DomainSaveAnswer(StrictModel):
     """Submission separates inspected Evidence from unresolved information.
 
@@ -2003,14 +2021,18 @@ class DomainSaveAnswer(StrictModel):
         default=None,
         description="Remaining material unknowns; use an empty array when none remain.",
     )
-    counterevidence: tuple[DomainCounterevidence, ...] | None = Field(
+    counterevidence: tuple[DomainCounterpoint, ...] | None = Field(
         default=None,
         description="Counterpoints use indexes into this answer's Evidence bases only.",
     )
 
     @model_validator(mode="after")
     def counterpoints_reference_evidence(self) -> DomainSaveAnswer:
-        if any(item.basis_index >= len(self.bases) for item in self.counterevidence or ()):
+        if any(
+            index >= len(self.bases)
+            for item in self.counterevidence or ()
+            for index in item.basis_indexes
+        ):
             raise ValueError("counterevidence must reference a selected Evidence basis")
         return self
 
@@ -2031,6 +2053,14 @@ class DomainSaveAnswer(StrictModel):
             }
             for limit in self.limitations
         ]
+        if self.counterevidence is not None:
+            # Canonical audit rows remain one citation each. Repeating the
+            # unchanged joint implication preserves every selected support.
+            payload["counterevidence"] = [
+                {"basis_index": index, "implication": point.implication}
+                for point in self.counterevidence
+                for index in point.basis_indexes
+            ]
         return payload
 
 

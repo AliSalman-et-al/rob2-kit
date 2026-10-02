@@ -538,3 +538,57 @@ def test_d2_exclusion_guidance_does_not_conflate_missing_with_omitted_outcomes()
     assert "timing alone does not establish availability or the exclusion reason" in guidance
     assert "judge 2.7 only for the identified assignment-analysis failure" in guidance
     assert "eligible participant remains an analysis concern" not in guidance
+
+
+def test_d5_report_evidence_does_not_require_a_located_plan_or_erase_selection() -> None:
+    from rob2_kit.logic import evaluate_domain
+
+    for qid in ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"):
+        guidance = _question(qid).guidance.operational
+        assert any("article methods" in item.lower() for item in guidance.evidence_needed)
+        assert "does not override source-supported evidence" in guidance.no_information_rule
+    card = _comparison_cards("domain:selection", {}, {}, [], [])[0]
+    propositions = {p["name"]: p for p in card["propositions"]}
+    assert (
+        propositions["measurement_selection"]["question_id"] == "sq:selection:multiple-measurements"
+    )
+    assert (
+        propositions["results_based_selection"]["question_id"] == "sq:selection:multiple-analyses"
+    )
+    pairs = {p["pair_id"]: p for p in card["paired_examples"]}
+    positive = pairs["d5-report-documented-choice-without-plan"]
+    assert all(
+        "No protocol or SAP is captured" in p[0]
+        for p in (positive["left_facts"], positive["right_facts"])
+    )
+    assert "favorable estimate" in " ".join(positive["right_facts"])
+    # Unknown chronology never overrides supported selection at either independent question.
+    for selected in ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"):
+        answers = {
+            "sq:selection:prespecified-analysis": "no_information",
+            "sq:selection:multiple-measurements": "no_information",
+            "sq:selection:multiple-analyses": "no_information",
+            selected: "probably_yes",
+        }
+        assert evaluate_domain("domain:selection", answers).judgment.value == "high"
+    assert all(p["status"] == "unknown" for p in card["propositions"])
+
+
+def test_d5_access_recipient_and_chronology_uncertainty_remain_distinct() -> None:
+    text = _guidance_text(("sq:selection:prespecified-analysis",))
+    assert "not establishing that a plan was early is not evidence that it was late" in text
+    assert "confidential data-monitoring access" in text
+    assert "public interim results are different evidence" in text
+    assert (
+        "blinded data is generally acceptable unless variables reveal intervention identity" in text
+    )
+    card = _comparison_cards("domain:selection", {}, {}, [], [])[0]
+    pair = next(
+        p for p in card["paired_examples"] if p["pair_id"] == "d5-unknown-versus-late-access"
+    )
+    assert (
+        pair["left_facts"][0].casefold()
+        == pair["right_facts"][0].removeprefix("The same ").casefold()
+    )
+    assert "do not identify" in pair["left_facts"][1]
+    assert "dated report confirms investigators" in pair["right_facts"][1]

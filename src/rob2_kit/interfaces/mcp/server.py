@@ -3840,7 +3840,8 @@ def get_domain_context(
         "unknowns (use [] when none). Put selected Evidence with its role in bases, zero-hit "
         "search receipts in absence_searches, and unresolved premises plus stopping rationales "
         "in limitations. The server derives the absence/limitation tags; do not put them in bases. "
-        "Counterevidence objects reference Evidence basis indexes and explain their implication. "
+        "Counterevidence objects give nonempty basis_indexes lists and explain the cited "
+        "Evidence's joint implication. "
         "Inactive branch answers may omit reasoning fields. "
         "For a correction, supply the exact "
         "prior checkpoint identity and a new_evidence, self_correction, or mechanical_repair "
@@ -3867,7 +3868,7 @@ def save_domain_judgment(
             description=(
                 "Complete answers for the current Domain path. Every active answer requires a "
                 "nonblank justification, an unknowns array, and a counterevidence array whose "
-                "basis_index values refer to the answer's original bases, not the returned "
+                "basis_indexes values refer to the answer's original bases, not the returned "
                 "deduplicated Evidence list; inactive branch answers may omit those fields."
             ),
             examples=[

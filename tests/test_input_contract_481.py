@@ -11,7 +11,7 @@ from support.rob2 import _assessment_workspace, _domain_draft, _domain_submissio
 
 from rob2_kit.application._state import _state
 from rob2_kit.interfaces.mcp.server import mcp
-from rob2_kit.workflow_models import DomainAnswer
+from rob2_kit.workflow_models import DomainAnswer, DomainSaveAnswer
 
 
 def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> None:
@@ -29,25 +29,28 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
     assert public_tool.input_schema == local_tool.parameters
 
     schema = public_tool.input_schema
-    counterevidence_shape = schema["$defs"]["DomainCounterevidence"]
-    assert set(counterevidence_shape["required"]) == {"basis_index", "implication"}
-    assert counterevidence_shape["properties"]["basis_index"]["type"] == "integer"
+    counterevidence_shape = schema["$defs"]["DomainCounterpoint"]
+    assert set(counterevidence_shape["required"]) == {"basis_indexes", "implication"}
+    assert counterevidence_shape["properties"]["basis_indexes"]["items"]["type"] == "integer"
     assert counterevidence_shape["properties"]["implication"]["type"] == "string"
-    answer = DomainAnswer.model_validate(
+    answer = DomainSaveAnswer.model_validate(
         {
             "question_id": "sq:randomization:sequence",
             "answer": "probably_no",
-            "bases": [{"kind": "context", "evidence": "eh_0123456789abcdef"}],
+            "bases": [{"role": "context", "evidence": "eh_0123456789abcdef"}],
             "counterevidence": [
                 {
-                    "basis_index": 0,
+                    "basis_indexes": [0],
                     "implication": "The cited passage limits the premise under assessment.",
                 }
             ],
         }
     )
     assert answer.counterevidence is not None
-    assert answer.counterevidence[0].basis_index == 0
+    assert answer.counterevidence[0].basis_indexes == (0,)
+    canonical = DomainAnswer.model_validate(answer.canonical_payload())
+    assert canonical.counterevidence is not None
+    assert canonical.counterevidence[0].basis_index == 0
 
     answer_example = schema["properties"]["answers"]["examples"][0][0]
     assert answer_example["counterevidence"] == []
@@ -57,7 +60,7 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
     ("shape", "expected_error"),
     [
         ("obsolete_kind", "literal_error"),
-        ("scalar_counterevidence", "DomainCounterevidence"),
+        ("scalar_counterevidence", "DomainCounterpoint"),
         ("identity_as_handle", "string_pattern_mismatch"),
         ("array_evidence", "string_type"),
         ("array_revision_evidence", "revision_basis.new_evidence.evidence"),

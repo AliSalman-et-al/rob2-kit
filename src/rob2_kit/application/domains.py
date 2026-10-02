@@ -881,9 +881,17 @@ def _comparison_cards(
                 ("sq:selection:prespecified-analysis",),
             ),
             (
+                "sq:selection:multiple-measurements",
+                "measurement_selection",
+                "The reported measurement was selected because of its result; inspected report "
+                "methods/results or companion reports may establish this without a protocol.",
+                ("sq:selection:multiple-measurements",),
+            ),
+            (
                 "sq:selection:multiple-analyses",
                 "results_based_selection",
-                "The reported measurement or analysis was selected because of its result.",
+                "The reported analysis was selected because of its result; inspected report "
+                "methods/results or companion reports may establish this without an SAP.",
                 ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"),
             ),
         ),
@@ -1224,6 +1232,39 @@ def _comparison_cards(
                 "reasoning_focus": (
                     "Compare access with amendment timing; chronology alone does not establish "
                     "result-driven selection."
+                ),
+            },
+            {
+                "pair_id": "d5-unknown-versus-late-access",
+                "changed_premise": "whether the timing of unblinded access is known",
+                "left_facts": (
+                    "Applicable SAP signed June 15. Enrollment ended May 1.",
+                    "The reports do not identify when investigators accessed unblinded results.",
+                ),
+                "right_facts": (
+                    "The same applicable SAP signed June 15. Enrollment ended May 1.",
+                    "A dated report confirms investigators accessed unblinded results May 15.",
+                ),
+                "reasoning_focus": (
+                    "Unknown timing is not proof of late finalization. Establish the negative "
+                    "chronology premise separately; neither branch proves results-driven choice."
+                ),
+            },
+            {
+                "pair_id": "d5-report-documented-choice-without-plan",
+                "changed_premise": "whether the report establishes why a subset was reported",
+                "left_facts": (
+                    "No protocol or SAP is captured. Article methods identify three eligible "
+                    "analyses. Results report one; the reporting reason is unresolved.",
+                ),
+                "right_facts": (
+                    "No protocol or SAP is captured. The same article methods identify three "
+                    "eligible analyses. The authors state that only the favorable estimate was "
+                    "reported after comparing the three results.",
+                ),
+                "reasoning_focus": (
+                    "Keep plan availability and alternatives fixed. Preserve direct evidence of "
+                    "results-driven choice; missing plan chronology does not erase it."
                 ),
             },
             {

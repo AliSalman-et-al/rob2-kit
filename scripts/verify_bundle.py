@@ -155,11 +155,15 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.9",
-    "content_hash": "sha256:5051ec3c56391d241fd4a5b46e5bcddc16f9879fcfa461986973d695429ba4e4",
+    "content_hash": "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
     },
+}
+_PRE_D5_REPORT_EVIDENCE_PACK = {
+    **_SCIENTIFIC_PACK,
+    "content_hash": "sha256:5051ec3c56391d241fd4a5b46e5bcddc16f9879fcfa461986973d695429ba4e4",
 }
 _PRE_D2_EXCLUSION_GUIDANCE_PACK = {
     **_SCIENTIFIC_PACK,
@@ -4213,6 +4217,7 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _PRE_D5_REPORT_EVIDENCE_PACK,
                 _PRE_D2_EXCLUSION_GUIDANCE_PACK,
                 _PRE_D32_NEGATIVE_EVIDENCE_PACK,
                 _PREVIOUS_RESULT_PROOF,

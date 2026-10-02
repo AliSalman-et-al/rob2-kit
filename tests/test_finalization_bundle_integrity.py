@@ -1029,7 +1029,17 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     assert _state(workspace)["revision"] == before["revision"]
     assert _state(workspace).get("domain_records", {}) == before.get("domain_records", {})
 
-    saved = _call(workspace, "save_domain_judgment", draft)
+    joint = _domain_submission(draft)
+    joint_implication = (
+        "Taken together, these inspected passages leave one allocation detail unresolved."
+    )
+    joint["answers"][0]["counterevidence"] = [
+        {
+            "basis_indexes": [0, 1, 2],
+            "implication": joint_implication,
+        }
+    ]
+    saved = _call(workspace, "save_domain_judgment", joint)
     assert saved["outcome"] == "success", saved
     revision = int(saved["head"]["state_revision"])
     stored = _state(workspace)["domain_records"][f"trial:{domain_id}"]["answers"][0]
@@ -1037,6 +1047,7 @@ def test_counterevidence_targets_round_trip_through_review_and_bundle(tmp_path: 
     expected_indices = [0, 1, 2]
     assert [basis["kind"] for basis in stored["bases"]] == expected_kinds
     assert [point["basis_index"] for point in stored["counterevidence"]] == expected_indices
+    assert all(point["implication"] == joint_implication for point in stored["counterevidence"])
     assert stored["bases"][1]["evidence"] == second_evidence["identity"]
     assert stored["bases"][2]["evidence"] == second_evidence["identity"]
 

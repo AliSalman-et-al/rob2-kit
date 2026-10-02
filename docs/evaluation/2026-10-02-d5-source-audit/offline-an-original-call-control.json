@@ -1,0 +1,98 @@
+{
+  "original_arguments_unchanged": true,
+  "paid_run_remains_failed": true,
+  "server_result": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 14,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "an-2021",
+        "domain_id": "domain:missing"
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:907d4bf24f141f86825b4e715bc3c8d1560726a4f05554240e6b8e99d8cee721",
+        "trial_id": "an-2021",
+        "domain_id": "domain:deviations",
+        "judgment": "high",
+        "driver_questions": [
+          "sq:deviations:appropriate-analysis",
+          "sq:deviations:substantial-impact"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:deviations:participants-aware",
+              "status": "supported",
+              "evidence": [
+                "sha256:6a3a61395c2666c356b0a48c534e639ec8c00489c2aeee68b04769c55ac937c3"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:personnel-aware",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:1bab811d458a1ff50def98b21e3158df2866c6a7e3d7df435579b2704fa2eda8",
+                "sha256:0815ad60e1dc1f4e7378fe9e35fe1a52dff081297e524ee98b7fcb9f748eccd6"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Direct report of personnel awareness/blinding is absent."
+              ],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:context-deviations",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:2be359e180b64479a93effc4ee29695824645a13a53698f262be6812a78156e7",
+                "sha256:78e3b4fe4bcba2236c42382a2e0ce19805e1dcf43db958c8ccff11411c93ed9d"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Full protocol adherence and causal reasons for all deviations are not reported."
+              ],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:appropriate-analysis",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:78e3b4fe4bcba2236c42382a2e0ce19805e1dcf43db958c8ccff11411c93ed9d",
+                "sha256:6dcb1571e0fcd1821e68c1bd5dc99380122012c9d15887306001c225cfed0145"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "The report does not state the analysis grouping rule or outcome availability/reasons for each exclusion."
+              ],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:deviations:substantial-impact",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:78e3b4fe4bcba2236c42382a2e0ce19805e1dcf43db958c8ccff11411c93ed9d"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "The outcome values and prognostic profiles of excluded participants are not reported."
+              ],
+              "support_attribution": "not_established"
+            }
+          ],
+          "identity": "sha256:98fdd4bb67f8975caec5a5df244969111cd49357db6dabe9124b8c07920e4118"
+        }
+      },
+      "trial_ready_for_review": false,
+      "retry": false
+    }
+  }
+}

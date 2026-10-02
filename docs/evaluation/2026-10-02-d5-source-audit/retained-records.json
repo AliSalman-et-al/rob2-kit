@@ -1,0 +1,1614 @@
+[
+  {
+    "case": "stopdapt-2",
+    "canonical_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/stopdapt-2/.rob2-kit/canonical.sqlite3",
+    "canonical_sha256": "be0d538aeb4dab2891ca76c1ff5c69e4e6eeafae0f48a02602e71cfb19000c4e",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "1-month DAPT followed by clopidogrel monotherapy",
+          "id": "one_month"
+        },
+        {
+          "assignment": "12-month DAPT with aspirin and clopidogrel",
+          "id": "twelve_month"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Adjudicated clinical composite of cardiovascular death, myocardial infarction, ischemic or hemorrhagic stroke, definite stent thrombosis, or TIMI major or minor bleeding",
+        "metric": "Composite of cardiovascular death, MI, ischemic or hemorrhagic stroke, definite stent thrombosis, or TIMI major or minor bleeding"
+      },
+      "outcome_definition": "Composite of cardiovascular death, MI, ischemic or hemorrhagic stroke, definite stent thrombosis, or TIMI major or minor bleeding",
+      "time_point_or_window": {
+        "description": "12 months from randomization (335\u2013394 days); censoring on day 366",
+        "kind": "quantified",
+        "unit": "months",
+        "value": "12"
+      }
+    },
+    "judgment": "some_concerns",
+    "answers": [
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:5e8328e0af3001d47eabd92702b07b2449b3e1299c3918c0bd1e5fb4a786b52c",
+            "kind": "direct_support",
+            "source": "\n\n1. Administrative Information\nTitle of the study; ShorT and OPtimal duration of Dual AntiPlatelet Therapy-2 study\n[Study to Evaluate the Safety of Reducing Dual Antiplatelet Therapy (DAPT) Duration to\n1 Month after Implantation of Everolimus-eluting Cobalt-chromium Stent]\nTrial registration number; NCT02619760\nStudy protocol version; ver. 3.1\nVersion of current SAP; ver 1.2, 2018.12.15\nSAP revisions;\nVersion\nDate of\nrevision\nMajor changes\nNotes\nVer 1.1\nJanuary 19,\n2018\nNew document\nN/A\nVer 1.2\nDecember 15,\n2018\nTo clarify per-protocol, as-\ntreated population and\nsensitivity analysis.\nAdditional subgroup analysis\nstratified by risk scores\nProtocol version\nrevision\n\nRoles and responsibility:\nMaking draft and management of SAP\nHirotoshi Watanabe, MD\nKyoto University Graduate School of Medicine, Department of Cardiovascular Medicine\nStudy statistician with responsibility\nTakeshi Morimoto, MD, PhD, MPH\nHyogo College of Medicine, Department of Clinical Epidemiology\n\n[Extracted table 1]\n|Version|Date of<br>revision|Major changes|Notes|\n|---|---|---|---|\n|Ver 1.1|January 19,<br>2018|New document|N/A|\n|Ver 1.2|December 15,<br>2018|To clarify per-protocol, as-<br>treated population and<br>sensitivity analysis.<br>Additional subgroup analysis<br>stratified by risk scores|Protocol version<br>revision|"
+          },
+          {
+            "evidence": "sha256:b3b5736631f0c97b228a6883e9f67f3cdb0f893af80accbd1adf97d36f0f1bd5",
+            "kind": "direct_support",
+            "source": "documents by the independent clinical event committee\nblinded to randomized treatment group.\nStatistical Analysis\nThe primary hypothesis of this study was that the experi-\nmental group (1-month DAPT) was noninferior to the\ncontrol group (12-month DAPT) in terms of the primary end\npoint at 1 year. In the original protocol (June 25, 2015),\na sample size of 2730 patients was calculated assum-\ning a 4.4% estimated event rate (the 80% upper limit of the\nconfidence interval of 4.0% event rate in the RESET trial),16\nsetting a noninferiority margin of 2.2% (50% of the esti-\nmated event rate) with a power of 80% and a 1-sided\n\u03b1 = .025. In a discussion among the investigators for institu-\ntional review board review, the estimated event rate was set\nat 4.6% (the 90% upper limit of the confidence interval of\n4.0% in the RESET trial), and the noninferiority margin was\nset at 2.3% (50% of the estimated event rate). As a result,\nthe recalculated sample size was 2980 with a power of 85%\nand a 1-sided \u03b1 = .025 (October 11, 2015). On May 30, 2017,\nthe noninferiority margin was changed again, from an abso-\nlute noninferiority margin of 2.3% to a relative margin of\n50% on the hazard ratio (HR) scale, to avoid making the\nmargin too large in case of a lower-than-expected actual\nevent rate. The relative noninferiority margin of 50% was\nchosen considering the feasibility of patient enrollment and\nthe margins adopted in previous major trials.26,27\nIf noninferiority was demonstrated, superiority analysis\nfor the primary end point was to follow. Patients were ana-\nlyzed according to their randomization group after excluding\npatients who withdrew consent during follow-up (the\nintention-to-treat population). Patients with missing out-\ncome data were censored at the time of loss to follow-up. We\nalso performed analyses in the per-protocol and as-treated\npopulations, which were defined as patients continuing the\nrandomized antiplatelet regimen on day 60 excluding and\nincluding, respectively, those with protocol violations for\ninclusion criteria. In addition, we performed a sensitivity\nanalysis assuming that patients lost to follow-up in the\n1-month DAPT group had a primary end point event, while\nthose in the 12-month DAPT group did not have an event.\nResearch Original Investigation\nEffect of 1- vs 12-Month Dual Antiplatelet Therapy on Cardiovascular and Bleeding Events in PCI\n2416\nJAMA\nJune 25, 2019\nVolume 321, Number 24\n(Reprinted)\njama.com\n\u00a9 2019 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026"
+          },
+          {
+            "evidence": "sha256:899752ca5e99945faab4724dc2b719d93f5fd92753ac267752c906614379311d",
+            "kind": "direct_support",
+            "source": "study\nProtocol Version 3.1\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<Date of preparation: June 25, 2015 Ver.1.1>\n<Date of preparation: October 1, 2015 Ver.1.2>\n<Date of preparation: October 12, 2015 Ver.1.3>\n<Date of preparation: November 9, 2015 Ver.1.4>\n<Date of preparation: December 19, 2015 Ver.1.5>\n<Date of preparation: June 2, 2016 Ver.2.1>\n<Date of preparation: May 30, 2017 Ver.2.2>\n<Date of preparation: Sep 24, 2017 Ver.2.3>\n<Date of preparation: March 15, 2018 Ver.2.4>\n<Date of preparation: December 14, 2018 Ver.3.1>"
+          },
+          {
+            "evidence": "sha256:cc06d56b6770dc5a2fc5394d6a322aba2759148bdfd3a12bcdd251b9bb71b0c7",
+            "kind": "direct_support",
+            "source": "References (15)\nResponse to the\nopinion of Kyoto\nUniv. Hospital\nIRB\nVer. 2.1\nJune 2, 2016\nAddition of BVS case exclusion (3.2, 4.1)\nand Minor modification (6.1, 11.1.5.2)\nAddition of\nanother exclusion\ncriteria\nVer. 2.2\nMay 30, 2017\nNotification of collecting screening log\nand opt out procedure (4.1, 11.1.2.2),\nFreedom of information act (FOIA)\n(11.1.2.3)\nRevision of\nJapanese Ethical\nguidelines of\nMedical and\nHealth Research\nVer. 2.3\nSep 24, 2017\nAmending about non-inferiority test (8.1)"
+          },
+          {
+            "evidence": "sha256:ea28c00ab3e51dfb3c6cb0708d04736138868f7b3bc453122cc378f356788b54",
+            "kind": "direct_support",
+            "source": "\n\nTiming of final analysis\nWe plan the timing of final analysis at one-year.\nWe also analyzed the follow-up at 2-year, 3-year and 5-year, because the long-term efficacy\nand safety beyond one-year was clinically relevant.\nTiming of outcome assessments\nWe set timing of outcome assessments as follows (protocol article 6.1)\n1)\nAt enrollment\n2)\nFollow-up at 1 month after procedure (At the outpatient visit in principle after at 30\ndays before at 60 days)\n3)\nFollow-up at 12 months after procedure (At the outpatient visit in principle after at\n335 days at before 395 days)\n4)\nFollow-up at 24 months after procedure (At the outpatient visit in principle after at\n700 days at before 760 days)\n5)\nFollow-up at 36 months after procedure (At the outpatient visit in principle after at\n1065 days at before 1125 days)\n6)\nFollow-up at 48 months after procedure (At the outpatient visit in principle after at\n1430 days at before 1490 days)\n7)\nFollow-up at 60 months after procedure (At the outpatient visit in principle after at\n1795 days at before 1855 days)\n\n4. Statistical Principles\nConcealment of treatment allocation\nTreatment allocation (experimental arm and control arm) will be concealed to study\nstatistician and other analyzed in charge. We describe the anonymous treatment\nallocation (X arm and Y arm) in this section. For non-inferiority analyses, we conduct\nboth analyses of X arm and Y arm as experimental arm."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "A detailed protocol specified the 12-month primary composite and a noninferiority analysis, with superiority conditional on noninferiority. However, the relative 50% HR margin was introduced by a protocol amendment dated May 30, 2017, during recruitment (the main report says enrollment ran through December 2017). The captured SAP was first prepared January 19, 2018 and revised December 15, 2018, after enrollment ended. The protocol says treatment allocation would be concealed from the statistician and analysis personnel, but the sources do not establish when investigators first had access to unblinded outcome data. I therefore judge it probably not established that the finalized plan preceded such access; the primary endpoint itself was specified earlier, but the exact reported margin/analysis plan chronology is uncertain.",
+        "question_id": "sq:selection:prespecified-analysis",
+        "unknowns": [
+          "Date unblinded outcome data first became available to investigators or analysis personnel."
+        ]
+      },
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "evidence": "sha256:562c02714051e4c1320f09664bff5819af1212993b6787e418230516f2beb1ac",
+            "kind": "direct_support",
+            "source": "\n\ncardiovascular diseases compared to aspirin monotherapy 9.\nTo perform clopidogrel monotherapy after DAPT discontinuation in Japanese patients, it is\nnecessary to verify its effectiveness and safety, data of which, however, have been still\ninsufficient. In this study, the superiority of clopidogrel monotherapy after 1-month DAPT\nover aspirin monotherapy after 12-month DAPT will be verified by comparing results of\nclopidogrel monotherapy continued up to 5 years after DAPT discontinuation in the 1-month\nDAPT group and aspirin monotherapy continued up to 5 years after DAPT discontinuation\nin the 12-month DAPT group.\nStudy Objectives\nThe purpose of this study is to evaluate the safety of reducing DAPT duration to 1 month\nafter implantation of the everolimus-eluting cobalt-chromium stent (CoCr-EES).\n\n3. Study Methods\nTrial design\nSTOPDAPT-2 is a multicenter, randomized, open-label but blind for event assessor,\ncontrolled study, with parallel group.\nPatients with successful CoCr-EES implantation without any complication are enrolled and\nmade randomization into two groups, 1-month DAPT followed by clopidogrel monotherapy\n(experimental arm) or 12-month DAPT comprising of aspirin and clopidogrel (control arm).\nAt 1-year after index PCI, we will assess the non-inferiority of the experimental arm against\nthe control arm about net clinical outcome, composite of death from cardiovascular death,\nmyocardial infarction, definite stent thrombosis, stroke, and bleeding defined as TIMI major\nand minor criteria (primary outcome) 10.\nAfter 1-year, we will follow the patient population to assess the long-term efficacy and safety.\nPatients in experimental arm will continue clopidogrel monotherapy and patients in control\narm will discontinued DAPT and change into aspirin monotherapy. At 5-year after index PCI,\nwe will assess the superiority of the experimental arm. Allocation rate was made as 1:1\nfashion."
+          },
+          {
+            "evidence": "sha256:59b2ed55c0950822c3b712c4f624bdec441845ea87ff7022ab0d19d5a32b2a74",
+            "kind": "direct_support",
+            "source": "derivedSection.conditionBrowseModule.ancestors[0].id: \"D003327\"\nderivedSection.conditionBrowseModule.ancestors[0].term: \"Coronary Disease\"\nderivedSection.conditionBrowseModule.ancestors[1].id: \"D017202\"\nderivedSection.conditionBrowseModule.ancestors[1].term: \"Myocardial Ischemia\"\nderivedSection.conditionBrowseModule.ancestors[2].id: \"D006331\"\nderivedSection.conditionBrowseModule.ancestors[2].term: \"Heart Diseases\"\nderivedSection.conditionBrowseModule.ancestors[3].id: \"D002318\"\nderivedSection.conditionBrowseModule.ancestors[3].term: \"Cardiovascular Diseases\"\nderivedSection.conditionBrowseModule.ancestors[4].id: \"D001161\"\nderivedSection.conditionBrowseModule.ancestors[4].term: \"Arteriosclerosis\"\nderivedSection.conditionBrowseModule.ancestors[5].id: \"D001157\"\nderivedSection.conditionBrowseModule.ancestors[5].term: \"Arterial Occlusive Diseases\"\nderivedSection.conditionBrowseModule.ancestors[6].id: \"D014652\"\nderivedSection.conditionBrowseModule.ancestors[6].term: \"Vascular Diseases\"\nderivedSection.conditionBrowseModule.meshes[0].id: \"D003324\"\nderivedSection.conditionBrowseModule.meshes[0].term: \"Coronary Artery Disease\"\nderivedSection.interventionBrowseModule.meshes[0].id: \"C028145\"\nderivedSection.interventionBrowseModule.meshes[0].term: \"2'-deoxythymidylyl-(3'-5')-2'-deoxyadenosine\"\nderivedSection.miscInfoModule.versionHolder: \"2026-09-30\"\nhasResults: false\nprotocolSection.armsInterventionsModule.armGroups[0].description: \"1-month dual antiplatelet therapy (DAPT) composed of aspirin and P2Y12 receptor antagonists , followed by 59-month clopidogrel monotherapy\"\nprotocolSection.armsInterventionsModule.armGroups[0].interventionNames[0]: \"Drug: 1-month DAPT\"\nprotocolSection.armsInterventionsModule.armGroups[0].label: \"1-month DAPT\"\nprotocolSection.armsInterventionsModule.armGroups[0].type: \"ACTIVE_COMPARATOR\"\nprotocolSection.armsInterventionsModule.armGroups[1].description: \"1-month dual antiplatelet therapy (DAPT) composed of aspirin and P2Y12 receptor antagonists with 11-month DAPT composed of aspirin and clopidogrel, followed by 48-month aspirin monotherapy\"\nprotocolSection.armsInterventionsModule.armGroups[1].interventionNames[0]: \"Drug: 12-month DAPT\"\nprotocolSection.armsInterventionsModule.armGroups[1].label: \"12-month DAPT\"\nprotocolSection.armsInterventionsModule.armGroups[1].type: \"ACTIVE_COMPARATOR\"\nprotocolSection.armsInterventionsModule.interventions[0].armGroupLabels[0]: \"1-month DAPT\"\nprotocolSection.armsInterventionsModule.interventions[0].description: \"1-month dual antiplatelet therapy (DAPT) composed of aspirin and P2Y12 receptor antagonists\"\nprotocolSection.armsInterventionsModule.interventions[0].name: \"1-month DAPT\"\nprotocolSection.armsInterventionsModule.interventions[0].type: \"DRUG\"\nprotocolSection.armsInterventionsModule.interventions[1].armGroupLabels[0]: \"12-month DAPT\"\nprotocolSection.armsInterventionsModule.interventions[1].description: \"12-month dual antiplatelet therapy (DAPT) composed of aspirin and P2Y12 receptor antagonists\"\nprotocolSection.armsInterventionsModule.interventions[1].name: \"12-month DAPT\"\nprotocolSection.armsInterventionsModule.interventions[1].type: \"DRUG\"\nprotocolSection.conditionsModule.conditions[0]: \"Coronary Artery Disease\"\nprotocolSection.conditionsModule.keywords[0]: \"Percutaneous Coronary Intervention\"\nprotocolSection.conditionsModule.keywords[1]: \"Platelet Aggregation Inhibitors\"\nprotocolSection.contactsLocationsModule.locations[0].city: \"Kyoto\"\nprotocolSection.contactsLocationsModule.locations[0].country: \"Japan\"\nprotocolSection.contactsLocationsModule.locations[0].facility: \"Division of Cardiology, Kyoto University Hospital\"\nprotocolSection.contactsLocationsModule.locations[0].geoPoint.lat: 35.02107\nprotocolSection.contactsLocationsModule.locations[0].geoPoint.lon: 135.75385\nprotocolSection.contactsLocationsModule.locations[0].zip: \"606-8507\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].affiliation: \"Professor of Medicine, Department of Cardiovascular Medicine, Kyoto University Graduate School of Medicine\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].name: \"Takeshi Kimura, MD, PhD\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].role: \"STUDY_CHAIR\"\nprotocolSection.descriptionModule.briefSummary: \"The purpose of this study is to evaluate the safety of reducing dual antiplatelet therapy (DAPT) duration to 1 month after implantation of the everolimus-eluting cobalt-chromium stent (CoCr-EES).\"\nprotocolSection.descriptionModule.detailedDescription: \"The drug-eluting stents (DESs) are currently used in the majority of percutaneous coronary intervention (PCI) procedures. On the other hand, the problems of the first-generation DES (late adverse events, such as very late stent thrombosis) have been pointed out. Dual antiplatelet therapy (DAPT) has become a standard regimen after DES implantation and for fear of very late stent thrombosis, DAPT is frequently performed for 1 year or longer in clinical practice. However, serious hemorrhagic complications associated with a prolonged DAPT duration can bring disadvantages to patients, and it is extremely important to clarify an optimal DAPT duration after DES procedure. Currently, 1-month DAPT regimen after bare metal stent (BMS) implantation is commonly used in clinical practice, producing no major problems. Based on a meta-analysis of recent clinical studies, it has also been reported that the use of Cobalt-Chromium Everolimus-Eluting Stent (CoCr-EES) reduces the risk of early stent thrombosis by half compared to the use of BMS. There is no necessity to extend antiplatelet therapy after CoCr-EES implantation longer than after BMS implantation, and it is considered possible to use the same 1-month DAPT duration as after BMS implantation. The investigators therefore planned a multicenter, randomized, open-label, controlled study, in which the subjects who have undergone CoCr-EES procedure will be divided into the 1-month DAPT and clopidogrel monotherapy group and the 12-month DAPT and aspirin monotherapy group. Primary endpoint is the incidence of composite events including cardiovascular death, myocardial infarction, stent thrombosis, stroke, and bleeding defined by TIMI major or minor bleeding. At first, the non-inferiority about primary endpoint of 1-month DAPT group will be evaluated at 12 months after index procedure and secondarily, the superiority about primary endpoint of 1-month DAPT group will be evaluated\n at 5 years after index procedure.\"\nprotocolSection.designModule.designInfo.allocation: \"RANDOMIZED\"\nprotocolSection.designModule.designInfo.interventionModel: \"PARALLEL\"\nprotocolSection.designModule.designInfo.maskingInfo.masking: \"NONE\"\nprotocolSection.designModule.designInfo.primaryPurpose: \"TREATMENT\"\nprotocolSection.designModule.enrollmentInfo.count: 3045\nprotocolSection.designModule.enrollmentInfo.type: \"ACTUAL\"\nprotocolSection.designModule.phases[0]: \"PHASE4\"\nprotocolSection.designModule.studyType: \"INTERVENTIONAL\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Inclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients received percutaneous coronary intervention with cobalt-chromium everolimus-eluting stent\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients who are capable of oral dual antiplatelet therapy consisting of asprin and P2Y12 receptor antagonist\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Exclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients requiring oral anticoagulants\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients with medical history of intracranial hemorrhage\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients who have experienced serious complications (myocardial infarction, stroke, and major bleeding) during hospital stay after percutaneous coronary intervention\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients with drug eluting stents other than Cobalt chromium everolimus eluting stents (Xience) implanted at the time of enrollment\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients comfirmed to have no tolerability to clopidgorel before enrollment\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients requiring continuous administration of antiplaelet drugs other than aspirin and P2Y12 receptor antagonists at the time of enrollment\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Patients with coronary bioabsorbable vascular scaffolds (BVS) implanted prior to or at the time of enrollment\"\nprotocolSection.eligibilityModule.healthyVolunteers: false\nprotocolSection.eligibilityModule.sex: \"ALL\"\nprotocolSection.eligibilityModule.stdAges[0]: \"CHILD\"\nprotocolSection.eligibilityModule.stdAges[1]: \"ADULT\"\nprotocolSection.eligibilityModule.stdAges[2]: \"OLDER_ADULT\"\nprotocolSection.identificationModule.acronym: \"STOPDAPT-2\"\nprotocolSection.identificationModule.briefTitle: \"ShorT and OPtimal Duration of Dual AntiPlatelet Therapy-2 Study\"\nprotocolSection.identificationModule.nctId: \"NCT02619760\"\nprotocolSection.identificationModule.officialTitle: \"ShorT and OPtimal Duration of Dual AntiPlatelet Therapy-2 Study\"\nprotocolSection.identificationModule.orgStudyIdInfo.id: \"C1114\"\nprotocolSection.identificationModule.organization.class: \"OTHER\"\nprotocolSection.identificationModule.organization.fullName: \"Kyoto University, Graduate School of Medicine\"\nprotocolSection.identificationModule.secondaryIdInfos[0].domain: \"UMIN\"\nprotocolSection.identificationModule.secondaryIdInfos[0].id: \"UMIN000019948\"\nprotocolSection.identificationModule.secondaryIdInfos[0].type: \"OTHER\"\nprotocolSection.outcomesModule.primaryOutcomes[0].description: \"Composite event of cardiovascular death/myocardial infarction/definite stent thrombosis/stroke/bleeding defined as major or minor under the definition of Thrombolysis in Myocardial Infarction (TIMI) Study group\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Composite event of cardiovascular death/myocardial infarction/definite stent thrombosis/stroke/bleeding\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"12-month\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].measure: \"Composite event of cardiovascular death/myocardial infarction/definite stent thrombosis/stroke\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].timeFrame: \"12-month\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].measure: \"Composite event of cardiovascular death/myocardial infarction/definite stent thrombosis/stroke\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].timeFrame: \"60-month\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].measure: \"Bleeding defined as major or minor under the definition of Thrombolysis in Myocardial Infarction (TIMI) Study group\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].timeFrame: \"12-month\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].measure: \"Bleeding defined as major or minor under the definition of Thrombolysis in Myocardial Infarction (TIMI) Study group\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].timeFrame: \"60-month\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].measure: \"Upper gastrointestinal endoscopic examination or treatment\""
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The protocol and registry identify the primary 12-month composite and list component or related secondary outcomes, while the report presents the composite and several components. However, the captured sources do not fully establish the eligible set of measurements, windows, and definitions across plan versions or whether any unreported eligible primary-domain measurement was selectively omitted. The present evidence is insufficient to rule out multiple eligible measurements or result-driven selection.",
+        "question_id": "sq:selection:multiple-measurements",
+        "unknowns": [
+          "Complete eligible measurement set and reporting completeness across protocol/SAP versions."
+        ]
+      },
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "evidence": "sha256:1fbdc4c6cedf7e2a9247091ce0c15d5f4718b84682be975670064feae3a31daa",
+            "kind": "direct_support",
+            "source": "\n\nConfidence intervals and P values\nWe set level of statistical significance (alpha) as 5%. We conduct all analyses in two-tailed\nexcept for non-inferiority analysis. We have no plan to conduct any adjustment about hazard\nratio calculation. 95% confidence intervals will be reported.\nAdherence and protocol deviations\nWhether participants receive assigned antiplatelet therapy or not were made at one-month\nand 12-month visit, and on web database, investigators input whether treatment is being\nperformed according to the protocol or not, apart from the clinical events being tracked.\nMoreover, to grasp temporary discontinuation or change of antithrombotic drug,\ninvestigators shall input the information about all discontinuation and restart of aspirin,\nP2Y12 inhibitors, and anticoagulation drug. From the data, we will depict the rate of\npersistent discontinuation rate of dual antiplatelet therapy. This rate was defined as\ndiscontinuation over 60 days of either aspirin or P2Y12 inhibitors from J-Cypher registry.12\nAnalysis populations\nThe main analyses were performed for the full analysis set which included patients who\nreceived an allocated treatment and provided assessable endpoint data in the intention-to-\ntreat population. Moreover, per-protocol and as-treated analysis will be conducted to avoid\nbias of open-label assigned group and confirm the consistency of non-inferiority.13,14\nFollowing are the definitions of population in per-protocol and as-treated analysis.\nPer-protocol analysis include the patients in 1-month DAPT group receiving clopidogrel\nmonotherapy without aspirin and the patients in 12-month DAPT group receiving both\naspirin and clopidogrel at the time of 60-days after index PCI. Patients with oral\nanticoagulants at the time of 60-days, other antiplatelet therapy, history of hemorrhagic\nstroke, and history of implantation of bioabsorbable vascular scaffolds are excluded as\nprotocol defined exclusion criteria.\nIn the as-treated analysis, regardless of randomly assigned group, 1) the patients receiving\nclopidogrel monotherapy without oral anticoagulants at the time of 60-days will be set as\nclopidogrel monotherapy group, and 2) the patients receiving both aspirin and clopidogrel\nwithout anticoagulants at the time of 60-days will be set as aspirin plus clopidogrel group.\nPatients with other exclusion criteria (history of hemorrhagic stroke, other antiplatelet"
+          },
+          {
+            "evidence": "sha256:4ff6fbedfb1664954f6fcb18d20f665972866308a7f940a7d53ff7b94547b691",
+            "kind": "direct_support",
+            "source": "\n\nthe 90% confidence interval was 4.6%. As against the 4.0% incidence of events in RESET\nstudy, the rate of primary endpoint at 1 year in this study was assumed to be 4.6%, taking\ninstability involved into consideration.\nThe sample size was calculated using the following hypothesis:\nTrue value:\n\n4.6% for both groups\nNon-inferior margin:\n2.3%\nPower:\n\n85%\nOne-sided alpha:\n0.025\nRandomization ratio:\n1:1\nHere, the non-inferiority margin is assumed to be 50% of the true value. On the above\nhypothesis, in order to demonstrate non-inferiority of 1-month DAPT to 12 months DAPT\non primary endpoint, a sample size of 1490 patients in each arm, total 2980 eligible subjects\nare required. Taking into consideration of dropout cases, total of approximately 3000 patients\nis needed.\nConsidering the enrollment of higher risk population compared with RESET trial, if the 1-\nyear event rate of 12 months DAPT group will be so different from the assumed rate (4.6%),\n1.5 in hazard ratio scale should be applied into inferiority margin corresponding with 50%\nnon-inferiority margin of event rate.\nFramework\nSTOPDAPT-2 was planned to prove the hypothesis of the non-inferiority about the incidence\nof the primary outcome of the experimental arm (1-month DAPT regimen) compared with\nthe control arm (12-month DAPT) at one year after index PCI and the superiority of the\nexperimental arm compared with the control arm, if the non-inferiority was attested.\nStatistical interim analyses and stopping guidance\nThere was no plan to conduct statistical interim analysis. However, when any adverse events\nthat are clearly related to this study occur, the independent safety evaluation committee shall\ndiscuss whether the study should be continued. Observation period of this study is as long\nas 60 months, and when primary analysis at the time of 12-month follow-up will be\nconducted, composite endpoints and also individual endpoints shall be evaluated, and the\nsafety evaluation committee will be held at the time and judge whether the continuation of\nstudy is appropriate or not."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The protocol and SAP describe the primary noninferiority analysis, conditional superiority analysis, full analysis set, and planned per-protocol, as-treated, and worst-case sensitivity analyses. Yet the available text does not resolve all eligible analysis choices for this result or establish whether all were reported or why a particular result was selected. The protocol amendment to the noninferiority margin raises a chronology question but alone does not show result-driven selection.",
+        "question_id": "sq:selection:multiple-analyses",
+        "unknowns": [
+          "Complete analysis alternatives and reporting rationale; timing of unblinded access relative to SAP finalization."
+        ]
+      }
+    ],
+    "accepted_save_events": [
+      {
+        "log_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/stopdapt-2/turn-2.jsonl",
+        "log_sha256": "164940780eeafdbf10dd3e92115fdde6d622c7817fc36c23162f66de98d42ea4",
+        "event_ordinal": 138,
+        "arguments": {
+          "trial_id": "stopdapt-2",
+          "domain_id": "domain:selection",
+          "expected_revision": 8,
+          "answers": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_5e8328e0af3001d4"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_b3b5736631f0c97b"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_899752ca5e99945f"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_cc06d56b6770dc5a"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_ea28c00ab3e51dfb"
+                }
+              ],
+              "justification": "A detailed protocol specified the 12-month primary composite and a noninferiority analysis, with superiority conditional on noninferiority. However, the relative 50% HR margin was introduced by a protocol amendment dated May 30, 2017, during recruitment (the main report says enrollment ran through December 2017). The captured SAP was first prepared January 19, 2018 and revised December 15, 2018, after enrollment ended. The protocol says treatment allocation would be concealed from the statistician and analysis personnel, but the sources do not establish when investigators first had access to unblinded outcome data. I therefore judge it probably not established that the finalized plan preceded such access; the primary endpoint itself was specified earlier, but the exact reported margin/analysis plan chronology is uncertain.",
+              "unknowns": [
+                "Date unblinded outcome data first became available to investigators or analysis personnel."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_562c02714051e4c1"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_59b2ed55c0950822"
+                }
+              ],
+              "justification": "The protocol and registry identify the primary 12-month composite and list component or related secondary outcomes, while the report presents the composite and several components. However, the captured sources do not fully establish the eligible set of measurements, windows, and definitions across plan versions or whether any unreported eligible primary-domain measurement was selectively omitted. The present evidence is insufficient to rule out multiple eligible measurements or result-driven selection.",
+              "unknowns": [
+                "Complete eligible measurement set and reporting completeness across protocol/SAP versions."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_1fbdc4c6cedf7e2a"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_4ff6fbedfb166495"
+                }
+              ],
+              "justification": "The protocol and SAP describe the primary noninferiority analysis, conditional superiority analysis, full analysis set, and planned per-protocol, as-treated, and worst-case sensitivity analyses. Yet the available text does not resolve all eligible analysis choices for this result or establish whether all were reported or why a particular result was selected. The protocol amendment to the noninferiority margin raises a chronology question but alone does not show result-driven selection.",
+              "unknowns": [
+                "Complete analysis alternatives and reporting rationale; timing of unblinded access relative to SAP finalization."
+              ],
+              "counterevidence": []
+            }
+          ]
+        },
+        "judgment": "some_concerns"
+      }
+    ],
+    "source_byte_checks": [
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/jama_watanabe_2019_oi_190060.pdf",
+        "sha256": "sha256:7452558074db4d8f0b4f3630ece6deaf8131e0e2c1797cb5188d68766f9503a3",
+        "page_count": 14,
+        "candidate_pages": [
+          3
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/joi190060supp1.pdf",
+        "sha256": "sha256:aab34c61eadf195b2acbca1613208506c4e72d48ec8ca4424eca1af4752034de",
+        "page_count": 37,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/joi190060supp2.pdf",
+        "sha256": "sha256:271b8139ed159c08c4eeedfeca502d703bcb6bcb746220b4ea15aaea40ddd17a",
+        "page_count": 129,
+        "candidate_pages": [
+          43,
+          44,
+          99,
+          114
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/joi190060supp3.pdf",
+        "sha256": "sha256:000db698f4b9ebdbfa750f1e6de365eadd8943840a91cc125d7d7d35e3b09127",
+        "page_count": 1,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      }
+    ]
+  },
+  {
+    "case": "testing",
+    "canonical_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/testing/.rob2-kit/canonical.sqlite3",
+    "canonical_sha256": "bc3cdf8a2112f81f940492ea66ba2731eda846342c8b95f4611a06c25322df36",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "Oral methylprednisolone (full-dose or reduced-dose regimen, according to cohort)",
+          "id": "methylprednisolone"
+        },
+        {
+          "assignment": "Matching placebo",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "First occurrence of sustained 40% decrease in eGFR, kidney failure requiring maintenance dialysis or kidney transplant, or death due to kidney disease.",
+        "metric": "Composite of 40% decline in eGFR, kidney failure (dialysis or transplant), or death due to kidney disease"
+      },
+      "outcome_definition": "Composite of 40% decline in eGFR, kidney failure (dialysis or transplant), or death due to kidney disease",
+      "time_point_or_window": {
+        "description": "Time from randomization through trial end; mean follow-up 4.2 years",
+        "kind": "described"
+      }
+    },
+    "judgment": "some_concerns",
+    "answers": [
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:db115608f40baa0ad3d9d3a4c688a4d8ae5db9a16a8c9ac9e98f99d70716e129",
+            "kind": "inference",
+            "source": "0.1 (draft)\n22FEB2020\nFirst draft adapted from the transitional\nanalysis SAP\n0.2 (draft)\n02JUN2021\nFurther edits to SAP and mock tables\n0.3 (final draft)\n08JUL2021\nRevised after receiving first round of\ncomments from management committee\nmembers\n1.0 (final version)\n21JUL2021\nFinal version created after receiving further\ncomments from the management committee"
+          },
+          {
+            "evidence": "sha256:2a6955d340101f25f28bb76081a6858c9e3f3c1885b3c4e581324134ff2cdbb4",
+            "kind": "direct_support",
+            "source": "2.6.2 Changes in Planned Analysis\nNot applicable.\n3 Statistical analysis\n3.1 Software\nAnalyses will be conducted primarily using SAS Enterprise Guide (version 7.1 or above) and R\n(version 4.0.0 or above).\n3.2 Interim analyses\nThe trial DSMC met regularly (approximately twice a year) to monitor safety data. No formal interim\nanalysis for efficacy was performed; however, interim results for the high-dose cohort were\nunblinded and published in 2017 (See Section 2.6.1)\n3.3 Multiplicity adjustment\nAll tests are to be two-sided with a nominal level of \uf061 set at 5%. Analyses of the primary outcome\nwill be unadjusted for multiplicity; however, the outcomes are clearly categorised by degree of\nimportance (primary, secondary and exploratory) and a limited number of subgroup analyses are\npre-specified (see Section 3.10.1.4)."
+          },
+          {
+            "evidence": "sha256:4773ce0480c4ff99883f9eabf8a0f21624420c4c2025b40f29fdf66a58c28330",
+            "kind": "context",
+            "source": "* Sustained 50% eGFR reduction is replaced with 40% eGFR reduction based on\n**SAP, statistical analysis plan was finalised by a SAP subcommittee of the Steering Committee, who were blinded to the interim analysis results\nDSMC, data safety monitoring committee\n\u00a9 2022 American Medical Association. All rights reserved."
+          }
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 1,
+            "implication": "The SAP explicitly says the subcommittee finalizing it was blinded to interim results, which reduces concern that its analysis choices were informed by those results."
+          }
+        ],
+        "justification": "The final SAP was finalized on 21 July 2021, whereas it documents that interim results for the high-dose cohort had been unblinded and published in 2017. This raises concern that an analysis plan for the combined final result was not finalized before unblinded outcome data were available. Countervailing evidence says the SAP subcommittee was blinded to interim results, so the chronology does not establish that the analysis choices were result-driven; it supports probably no rather than a definite no.",
+        "question_id": "sq:selection:prespecified-analysis",
+        "unknowns": [
+          "Whether all investigators responsible for the final analysis remained unaware of the published interim results when the final SAP was finalized."
+        ]
+      },
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "kind": "limitation",
+            "stopping_rationale": "I inspected the article, the final SAP, protocol/SAP contents and the figure note that describes the endpoint change; the captured text does not explain the basis or timing of the 50% to 40% replacement.",
+            "unresolved_premise": "The supplement notes that a sustained 50% eGFR reduction was replaced with a 40% reduction, but the available text does not establish the complete set of eligible definitions or whether the change was selected in light of outcome results."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The outcome-domain measurement set is not fully established. The footnote confirms a change from 50% to 40% eGFR reduction, but does not show whether multiple eligible measurements were fully reported without justification or that the reported definition was selected based on results.",
+        "question_id": "sq:selection:multiple-measurements",
+        "unknowns": [
+          "The rationale and timing for replacing the 50% eGFR threshold with 40%, and whether other eligible endpoint definitions were analyzed or reported."
+        ]
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:4a10c4ba5bc312290fffa6bb7b39c4e396fc1a640a775b40b0606d9e0f944a7b",
+            "kind": "direct_support",
+            "source": "3.10.1.2 Main analysis\nThe primary outcome is time from randomisation to the first instance of a confirmed 40% decline in eGFR,\nkidney failure or death due to kidney disease. Survival curves and estimated median survival times will be\ngenerated according to the Kaplan-Meier method, and compared using the log-rank test. Cox proportional\nhazards analysis will be performed to generate a hazard ratio between the two groups. Analyses will be\ncensored at the date when patients died (for causes other than kidney disease), were lost to follow up,\nwithdrew from study, or at the end of study visit, whichever occurred first. The model will include the\nstratification variables (region, proteinuria, eGFR and kidney biopsy findings) as fixed covariates.\n3.10.1.3 Adjusted analyses\nNo further adjustments are planned.\n3.10.1.4 Subgroup analyses\nThe following protocol-specified subgroups will be applied for the primary endpoint:\n1) Randomised steroid dose (full-dose versus lower-dose)\n2) Baseline proteinuria (<3.0g/day, \u22653.0g/day),\n3) Baseline kidney function (eGFR<50 versus \u226550mL/min per 1.73m2),\n4) Baseline histological lesion scoring (E1 vs E0)"
+          },
+          {
+            "evidence": "sha256:73a3e424311d66fbc1514e3ce9abcf5646e610ba56ee90ff34aa98cf30f95d60",
+            "kind": "direct_support",
+            "source": "Statistical Analysis\nAll analyses were conducted by analyzing all patients\naccording to the group they were randomized to, regardless\nof treatment adherence or protocol violations. The effect of\ntreatment on the primary composite end point was esti-\nmated using an adjusted Cox model, with site as a random\neffect and the 3 other stratification variables (baseline pro-\nteinuria, baseline eGFR, and kidney biopsy findings) as\nfixed effects. Data for patients were censored at the date\nthey died (for causes other than kidney disease), were lost\nto follow-up, or withdrew from the study or at the end of\nthe trial assessment, whichever occurred first. Survival\ncurves were generated with the Kaplan-Meier method. The\nproportional hazards assumption was assessed graphically\nand checked using the Kolmogorov-type supremum test,\nand a post hoc sensitivity analysis using flexible parametric\nsurvival models with either constant or time-varying hazard\nratios (HRs) was performed."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The SAP specifies a Cox proportional hazards analysis for the primary endpoint, corresponding to the reported hazard ratio. The article transparently describes flexible parametric constant and time-varying hazard-ratio models as post hoc sensitivity analyses. This supports that the primary result followed the stated main analysis, with no evidence the reported model was chosen because it was favorable.",
+        "question_id": "sq:selection:multiple-analyses",
+        "unknowns": []
+      }
+    ],
+    "accepted_save_events": [
+      {
+        "log_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/testing/turn-2.jsonl",
+        "log_sha256": "d125e69b4f751ff229051790b41bf138dca167ee0ed3da9d4c514ca683583adc",
+        "event_ordinal": 175,
+        "arguments": {
+          "trial_id": "testing",
+          "domain_id": "domain:selection",
+          "expected_revision": 8,
+          "answers": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "inference",
+                  "evidence": "eh_db115608f40baa0a"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_2a6955d340101f25"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_4773ce0480c4ff99"
+                }
+              ],
+              "justification": "The final SAP was finalized on 21 July 2021, whereas it documents that interim results for the high-dose cohort had been unblinded and published in 2017. This raises concern that an analysis plan for the combined final result was not finalized before unblinded outcome data were available. Countervailing evidence says the SAP subcommittee was blinded to interim results, so the chronology does not establish that the analysis choices were result-driven; it supports probably no rather than a definite no.",
+              "unknowns": [
+                "Whether all investigators responsible for the final analysis remained unaware of the published interim results when the final SAP was finalized."
+              ],
+              "counterevidence": [
+                {
+                  "basis_index": 1,
+                  "implication": "The SAP explicitly says the subcommittee finalizing it was blinded to interim results, which reduces concern that its analysis choices were informed by those results."
+                }
+              ]
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "limitation",
+                  "unresolved_premise": "The supplement notes that a sustained 50% eGFR reduction was replaced with a 40% reduction, but the available text does not establish the complete set of eligible definitions or whether the change was selected in light of outcome results.",
+                  "stopping_rationale": "I inspected the article, the final SAP, protocol/SAP contents and the figure note that describes the endpoint change; the captured text does not explain the basis or timing of the 50% to 40% replacement."
+                }
+              ],
+              "justification": "The outcome-domain measurement set is not fully established. The footnote confirms a change from 50% to 40% eGFR reduction, but does not show whether multiple eligible measurements were fully reported without justification or that the reported definition was selected based on results.",
+              "unknowns": [
+                "The rationale and timing for replacing the 50% eGFR threshold with 40%, and whether other eligible endpoint definitions were analyzed or reported."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_4a10c4ba5bc31229"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_73a3e424311d66fb"
+                }
+              ],
+              "justification": "The SAP specifies a Cox proportional hazards analysis for the primary endpoint, corresponding to the reported hazard ratio. The article transparently describes flexible parametric constant and time-varying hazard-ratio models as post hoc sensitivity analyses. This supports that the primary result followed the stated main analysis, with no evidence the reported model was chosen because it was favorable.",
+              "unknowns": [],
+              "counterevidence": []
+            }
+          ]
+        },
+        "judgment": "some_concerns"
+      }
+    ],
+    "source_byte_checks": [
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/testing/jama_lv_2022_oi_220041.pdf",
+        "sha256": "sha256:c538b35da8618888311a5f6944d40439e9e7da71bf59d8991c460172a3538c21",
+        "page_count": 11,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/testing/joi220041supp1_prod.pdf",
+        "sha256": "sha256:6ae3c04b9c92493bf6739cc4f57eb6c07997c1c49dcf978111e44822b7985f7f",
+        "page_count": 334,
+        "candidate_pages": [
+          283,
+          284,
+          285,
+          286,
+          287,
+          288,
+          289,
+          290,
+          291,
+          292,
+          293,
+          294,
+          295,
+          296,
+          297,
+          298,
+          299,
+          300,
+          301,
+          302,
+          303,
+          304,
+          305,
+          306,
+          307,
+          308,
+          309,
+          310,
+          311,
+          312,
+          313,
+          314,
+          315,
+          316,
+          317,
+          318,
+          319,
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          327,
+          328,
+          329,
+          330,
+          331,
+          332,
+          333,
+          334
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/testing/joi220041supp2_prod.pdf",
+        "sha256": "sha256:c24822f974edae1e5ed08dd0f9c6f5f515afa16f002343654ee16def2bc126f2",
+        "page_count": 14,
+        "candidate_pages": [
+          11
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/testing/joi220041supp3_prod.pdf",
+        "sha256": "sha256:9fbdcb7118d9321d118050b9176334d9255929a26bac4a1d18987c72de7ab7c3",
+        "page_count": 25,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/testing/joi220041supp4_prod.pdf",
+        "sha256": "sha256:6792ccad981f36d816f787967bff8ba107a49279dcaf1b1587d3786690b198d6",
+        "page_count": 1,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      }
+    ]
+  },
+  {
+    "case": "kang25-recovery-2020",
+    "canonical_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/kang25-recovery-2020/.rob2-kit/canonical.sqlite3",
+    "canonical_sha256": "e532b2e83d30d79633a98aa59ad0f08e1f0f767c1d485611235ff9de78e8487b",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "Early surgery",
+          "id": "early_surgery"
+        },
+        {
+          "assignment": "Conservative care",
+          "id": "conservative_care"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Operative mortality (death during or within 30 days after surgery) or death from cardiovascular causes during follow-up, adjudicated by an independent clinical-events committee.",
+        "metric": "Composite of operative mortality or cardiovascular death during follow-up"
+      },
+      "outcome_definition": "Composite of operative mortality or cardiovascular death during follow-up",
+      "time_point_or_window": {
+        "description": "From randomization through follow-up until four years after the last patient was enrolled; median follow-up was 6.2 years in early surgery and 6.1 years in conservative care.",
+        "kind": "described"
+      }
+    },
+    "judgment": "some_concerns",
+    "answers": [
+      {
+        "answer": "no",
+        "bases": [
+          {
+            "evidence": "sha256:4a4db61b21438e7b397c81c94401b980c29fb6ff915653a2152b000aefe3ac51",
+            "kind": "direct_support",
+            "source": " Statistical Analysis Plan\n\nSample Size Calculation\nWe tried to determine the rate of primary endpoint based on the randomized trials, but no randomized\ntrial has been conducted to evaluate outcomes of early surgery. Using a prospective registry data, we\nrecently reported that the estimated actuarial 6-year survival and cardiac mortality-free survival rates\nwere 98\u00b11% and 100% in the early surgery group, 68\u00b16% and 76\u00b15% in the conventional treatment\ngroup, respectively (p < 0.001) (9). Based on our prospective observational study, we estimated that a\nsample size of 144 patients would provide 80% power to detect a significant difference with respect to\nthe primary end point at the 2-sided significance level of 0.05, assuming that the 4-year rate of a\ncomposite end point (cardiac mortality or operative mortality) would be 16% in the conventional\ntreatment group and 2% in the early surgery group.\n\nAnalysis of primary and secondary end point\nAll primary and secondary endpoints will be analyzed on an intent-to-treat basis (all patients analyzed\nas part of their assigned treatment group). For intent-to-treat analysis, all patients who sign the written\ninformed consent form and are randomized in the study will be included in the analysis, regardless of\nwhether or not the correct treatment is administered, or whether crossover occurs.\nTo analyze outcomes, estimates of cumulative event rates will be calculated by the Kaplan-Meier\nmethod and compared employing the log-rank test. For Kaplan-Meier analysis, we will analyze all\nclinical events by time to first event. Hazard ratios with 95% confidence intervals will be derived with\nthe use of the Cox proportional hazards model.\nSubgroup analyses will be performed to determine whether the reduction in the primary end point after\nearly surgery is consistent in 2 prespecified subgroups of peak aortic velocity (<5 m/s vs. \u22655 m/s) and\netiology of AS (degenerative vs. non-degenerative), using Cox regression models with tests for\ninteraction."
+          },
+          {
+            "evidence": "sha256:8d0f62222f045fa16437657515267b2a1a2514d602f36a7e9e60f491e4a1bf8b",
+            "kind": "direct_support",
+            "source": "Analyses were performed on an intention-to-\ntreat basis. Differences between the treatment\ngroups were evaluated with the use of Student's\nt-test for continuous variables and Fisher's exact\ntest for categorical variables. Because random-\nization was stratified according to the partici-\npating center, we analyzed the end points with\nthe use of stratified Cox proportional-hazards re-\ngression with Firth correction. Estimates of cu-\nmulative incidences were calculated by the Kaplan-\nMeier method and were compared with the use\nof the log-rank test. For the Kaplan-Meier analy-\nsis, we analyzed all clinical events according to\nthe time to the first event. Hazard ratios with\n95% confidence intervals were derived with the\nuse of the stratified Cox proportional-hazards\nmodel with Firth correction. The 95% confidence\nintervals have not been adjusted for multiple com-\nparisons, and therefore inferences drawn from\nthese intervals may not be reproducible.\nFor the primary end-point analysis, we also\nperformed a competing-risk analysis in which\ndeath due to a cause other than a cardiovascular\ncause was considered as a competing risk, and\nhazard ratios with 95% confidence intervals were\ncalculated with the use of the method of Fine and\nGray. The cumulative incidences of the primary\nend point were also compared between the treat-\nment groups with the use of Gray's test. Subgroup"
+          },
+          {
+            "evidence": "sha256:24073ec1c815a7cd23783e4ac2b2856140f5de6b31338c820134ef1f9025ae52",
+            "kind": "context",
+            "source": "Protocol ID: 2010-0065\n\nRandomized Comparison of Early Surgery Versus\nCOnventional Treatment in VERY Severe Aortic Stenosis\n\nThe RECOVERY trial\n\n\nPrincipal Investigator:\nDuk-Hyun Kang, MD, PhD.\nAsan Medical Center,\nUniversity of Ulsan College of Medicine\n\nVersion Date: 01/February/2010"
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The dated SAP specifies Kaplan\u2013Meier/log-rank estimates and Cox hazard ratios. The selected Table 2 hazard ratio is explicitly attributed to a Fine\u2013Gray competing-risks analysis, which is not specified in the SAP. The SAP is identified as the original and only version, while the protocol has a 2010 version date, but the precise SAP finalization date and investigators\u2019 access to unblinded outcomes are not reported. The selected analysis therefore does not correspond to the stated prespecified analysis method.",
+        "question_id": "sq:selection:prespecified-analysis",
+        "unknowns": [
+          "The precise finalization date of the SAP and when investigators obtained access to unblinded outcome data are not stated."
+        ]
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:5951c45ab92ecf911a11c834f04055d2313936ce3541c0f9cdf53fd3007d4120",
+            "kind": "direct_support",
+            "source": "Trial End Points\nThe primary end point was a composite of op-\nerative mortality or death from cardiovascular\ncauses during the follow-up period (continuing\nuntil 4 years after the last patient was enrolled).\nPrespecified secondary end points included death\nfrom any cause, repeat aortic-valve surgery, clini-\ncal thromboembolic events, and hospitalization\nfor heart failure during follow-up. Specific defi-\nnitions of trial end points are provided in the\nSupplementary Appendix."
+          },
+          {
+            "evidence": "sha256:4a4db61b21438e7b397c81c94401b980c29fb6ff915653a2152b000aefe3ac51",
+            "kind": "direct_support",
+            "source": " Statistical Analysis Plan\n\nSample Size Calculation\nWe tried to determine the rate of primary endpoint based on the randomized trials, but no randomized\ntrial has been conducted to evaluate outcomes of early surgery. Using a prospective registry data, we\nrecently reported that the estimated actuarial 6-year survival and cardiac mortality-free survival rates\nwere 98\u00b11% and 100% in the early surgery group, 68\u00b16% and 76\u00b15% in the conventional treatment\ngroup, respectively (p < 0.001) (9). Based on our prospective observational study, we estimated that a\nsample size of 144 patients would provide 80% power to detect a significant difference with respect to\nthe primary end point at the 2-sided significance level of 0.05, assuming that the 4-year rate of a\ncomposite end point (cardiac mortality or operative mortality) would be 16% in the conventional\ntreatment group and 2% in the early surgery group.\n\nAnalysis of primary and secondary end point\nAll primary and secondary endpoints will be analyzed on an intent-to-treat basis (all patients analyzed\nas part of their assigned treatment group). For intent-to-treat analysis, all patients who sign the written\ninformed consent form and are randomized in the study will be included in the analysis, regardless of\nwhether or not the correct treatment is administered, or whether crossover occurs.\nTo analyze outcomes, estimates of cumulative event rates will be calculated by the Kaplan-Meier\nmethod and compared employing the log-rank test. For Kaplan-Meier analysis, we will analyze all\nclinical events by time to first event. Hazard ratios with 95% confidence intervals will be derived with\nthe use of the Cox proportional hazards model.\nSubgroup analyses will be performed to determine whether the reduction in the primary end point after\nearly surgery is consistent in 2 prespecified subgroups of peak aortic velocity (<5 m/s vs. \u22655 m/s) and\netiology of AS (degenerative vs. non-degenerative), using Cox regression models with tests for\ninteraction."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The protocol and SAP identify one primary composite endpoint of operative or cardiovascular death, and the report presents that endpoint as the primary result. The cited materials do not indicate selection among alternative eligible measurements or time points for this outcome.",
+        "question_id": "sq:selection:multiple-measurements",
+        "unknowns": [
+          "The complete set of possible ascertainment variants is not itemized, though the death endpoint and composite definition are prespecified."
+        ]
+      },
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The original SAP specifies Cox and Kaplan\u2013Meier/log-rank methods, while the report also presents Fine\u2013Gray/Gray competing-risk analyses and a per-protocol analysis. These materials do not establish the full eligible analysis set or whether any analysis was chosen because of its result.",
+            "unresolved_premise": "Whether the Fine\u2013Gray estimate was selected from multiple eligible analyses on the basis of the results is not established."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The report discloses the competing-risk analysis and reports the per-protocol analysis, but the plan does not describe the Fine\u2013Gray method. Multiple analyses were possible, and there is no evidence that the reported Fine\u2013Gray result was selected on the basis of its result; the captured sources do not resolve the selection premise.",
+        "question_id": "sq:selection:multiple-analyses",
+        "unknowns": [
+          "Whether other eligible analyses were conducted and whether reporting of the Fine\u2013Gray estimate was result-driven."
+        ]
+      }
+    ],
+    "accepted_save_events": [
+      {
+        "log_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/kang25-recovery-2020/turn-2.jsonl",
+        "log_sha256": "ddc16b9424418fac7f3d1c676ab6f9f5686b8234b1689978bf4d045882d0ba00",
+        "event_ordinal": 98,
+        "arguments": {
+          "trial_id": "kang25-recovery-2020",
+          "domain_id": "domain:selection",
+          "expected_revision": 8,
+          "answers": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "answer": "no",
+              "bases": [
+                {
+                  "kind": "contradiction",
+                  "evidence": "eh_4a4db61b21438e7b"
+                },
+                {
+                  "kind": "contradiction",
+                  "evidence": "eh_8d0f62222f045fa1"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_24073ec1c815a7cd"
+                }
+              ],
+              "justification": "The dated SAP specifies Kaplan\u2013Meier/log-rank estimates and Cox hazard ratios. The selected Table 2 hazard ratio is explicitly attributed to a Fine\u2013Gray competing-risks analysis, which is not specified in the SAP. The SAP is identified as the original and only version, while the protocol has a 2010 version date, but the precise SAP finalization date and investigators\u2019 access to unblinded outcomes are not reported. The selected analysis therefore does not correspond to the stated prespecified analysis method.",
+              "unknowns": [
+                "The precise finalization date of the SAP and when investigators obtained access to unblinded outcome data are not stated."
+              ],
+              "counterevidence": [
+                {
+                  "basis_index": 0,
+                  "implication": "The SAP passage specifies the planned Cox and Kaplan\u2013Meier/log-rank methods, which conflict with using a Fine\u2013Gray estimate as the selected result."
+                },
+                {
+                  "basis_index": 1,
+                  "implication": "The main report identifies the selected Table 2 estimate as Fine\u2013Gray, differing from the SAP's stated Cox hazard ratio method."
+                }
+              ]
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_5951c45ab92ecf91"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_4a4db61b21438e7b"
+                }
+              ],
+              "justification": "The protocol and SAP identify one primary composite endpoint of operative or cardiovascular death, and the report presents that endpoint as the primary result. The cited materials do not indicate selection among alternative eligible measurements or time points for this outcome.",
+              "unknowns": [
+                "The complete set of possible ascertainment variants is not itemized, though the death endpoint and composite definition are prespecified."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "limitation",
+                  "unresolved_premise": "Whether the Fine\u2013Gray estimate was selected from multiple eligible analyses on the basis of the results is not established.",
+                  "stopping_rationale": "The original SAP specifies Cox and Kaplan\u2013Meier/log-rank methods, while the report also presents Fine\u2013Gray/Gray competing-risk analyses and a per-protocol analysis. These materials do not establish the full eligible analysis set or whether any analysis was chosen because of its result."
+                }
+              ],
+              "justification": "The report discloses the competing-risk analysis and reports the per-protocol analysis, but the plan does not describe the Fine\u2013Gray method. Multiple analyses were possible, and there is no evidence that the reported Fine\u2013Gray result was selected on the basis of its result; the captured sources do not resolve the selection premise.",
+              "unknowns": [
+                "Whether other eligible analyses were conducted and whether reporting of the Fine\u2013Gray estimate was result-driven."
+              ],
+              "counterevidence": []
+            }
+          ]
+        },
+        "judgment": "some_concerns"
+      },
+      {
+        "log_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/kang25-recovery-2020/turn-2.jsonl",
+        "log_sha256": "ddc16b9424418fac7f3d1c676ab6f9f5686b8234b1689978bf4d045882d0ba00",
+        "event_ordinal": 121,
+        "arguments": {
+          "trial_id": "kang25-recovery-2020",
+          "domain_id": "domain:selection",
+          "expected_revision": 10,
+          "supersedes": "sha256:bf4fa8ea46cc7c880765ca7bf538a0cb716478d0475b04c0c1af5c1eb63a97a3",
+          "revision_basis": {
+            "kind": "self_correction",
+            "rationale": "The SAP and article passages support the answer that the selected Fine\u2013Gray estimate differs from the planned Cox hazard ratio; labeling them as contradiction misrepresented their relationship to the answer. Correct their basis kind to direct_support."
+          },
+          "answers": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "answer": "no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_4a4db61b21438e7b"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_8d0f62222f045fa1"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_24073ec1c815a7cd"
+                }
+              ],
+              "justification": "The dated SAP specifies Kaplan\u2013Meier/log-rank estimates and Cox hazard ratios. The selected Table 2 hazard ratio is explicitly attributed to a Fine\u2013Gray competing-risks analysis, which is not specified in the SAP. The SAP is identified as the original and only version, while the protocol has a 2010 version date, but the precise SAP finalization date and investigators\u2019 access to unblinded outcomes are not reported. The selected analysis therefore does not correspond to the stated prespecified analysis method.",
+              "unknowns": [
+                "The precise finalization date of the SAP and when investigators obtained access to unblinded outcome data are not stated."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_5951c45ab92ecf91"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_4a4db61b21438e7b"
+                }
+              ],
+              "justification": "The protocol and SAP identify one primary composite endpoint of operative or cardiovascular death, and the report presents that endpoint as the primary result. The cited materials do not indicate selection among alternative eligible measurements or time points for this outcome.",
+              "unknowns": [
+                "The complete set of possible ascertainment variants is not itemized, though the death endpoint and composite definition are prespecified."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "limitation",
+                  "unresolved_premise": "Whether the Fine\u2013Gray estimate was selected from multiple eligible analyses on the basis of the results is not established.",
+                  "stopping_rationale": "The original SAP specifies Cox and Kaplan\u2013Meier/log-rank methods, while the report also presents Fine\u2013Gray/Gray competing-risk analyses and a per-protocol analysis. These materials do not establish the full eligible analysis set or whether any analysis was chosen because of its result."
+                }
+              ],
+              "justification": "The report discloses the competing-risk analysis and reports the per-protocol analysis, but the plan does not describe the Fine\u2013Gray method. Multiple analyses were possible, and there is no evidence that the reported Fine\u2013Gray result was selected on the basis of its result; the captured sources do not resolve the selection premise.",
+              "unknowns": [
+                "Whether other eligible analyses were conducted and whether reporting of the Fine\u2013Gray estimate was result-driven."
+              ],
+              "counterevidence": []
+            }
+          ]
+        },
+        "judgment": "some_concerns"
+      }
+    ],
+    "source_byte_checks": [
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/kang25-recovery-2020/NEJMoa1912846.pdf",
+        "sha256": "sha256:202bd5616525f53b27832f61edeb0edbf93b32295234c12b96c021c5ea32bb68",
+        "page_count": 9,
+        "candidate_pages": [
+          3,
+          6,
+          7
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/kang25-recovery-2020/nejmoa1912846_appendix.pdf",
+        "sha256": "sha256:1a8fed775b531c684227cf11842071fa3b619bf03f94cf7ea71c7ec8608386a5",
+        "page_count": 18,
+        "candidate_pages": [
+          8,
+          9,
+          16
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/kang25-recovery-2020/nejmoa1912846_protocol.pdf",
+        "sha256": "sha256:265780f7dd6e1558eaf9e21f7230661e5d4cacdee082f8806f3418f1cc67b09b",
+        "page_count": 47,
+        "candidate_pages": [
+          3,
+          13,
+          34,
+          46
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      }
+    ]
+  },
+  {
+    "case": "guitton-2019",
+    "canonical_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/guitton-2019/.rob2-kit/canonical.sqlite3",
+    "canonical_sha256": "39f53e0c41b1a3d48c258de3ada7aa7baef75a10c3344f5bdc489eb4d57c2ded",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "High-flow nasal cannulae (HFNC)",
+          "id": "hfnc"
+        },
+        {
+          "assignment": "Standard bag-valve mask oxygenation (SMO)",
+          "id": "smo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Difference in median lowest SpO2",
+      "measurement": {
+        "method": "Lowest pulse oximetry (SpO2), from beginning of laryngoscopy until connection to mechanical ventilation",
+        "metric": "Lowest SpO2 during the intubation procedure"
+      },
+      "outcome_definition": "Lowest SpO2 during the intubation procedure",
+      "time_point_or_window": {
+        "description": "During intubation, from beginning of laryngoscopy until connection to mechanical ventilation",
+        "kind": "described"
+      }
+    },
+    "judgment": "some_concerns",
+    "answers": [
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:ad3710e9c7d5d235a2df8a2c6b3a3453213540742dccf9ed37bec40c33628b09",
+            "kind": "direct_support",
+            "source": "Principal evaluation criterion\nThe principal evaluation criterion is: The lowest oxygen saturation determined by capillary\noximetry during the entire intubation sequence.\nThe intubation period begins on induction and ends with confirmation of orotracheal intubation."
+          },
+          {
+            "evidence": "sha256:620d031705353687301cfecad32353992a01e0b169eb3d20d5fb71e7f6b45d6c",
+            "kind": "direct_support",
+            "source": "For the principal evaluation parameter of the study, the efficacy of the device will be evaluated\nfor its ability to maintain saturation during the intubation procedure. The principal judgement criterion\nwill be the lowest level of pulse oximetry (SpO2) recorded during the entire intubation procedure.\nSaturation will be determined by capillary oximetry during the entire sequence (preoxygenation,\nendotracheal intubation with apnea linked to general anesthesia, possible reoxygenation, until\nconfirmation of orotracheal intubation)."
+          },
+          {
+            "evidence": "sha256:9a92d4052ad58c7fb30a46a4d1c87c6448b1e5ca2bfa85f6caf4eef0ef944a3d",
+            "kind": "direct_support",
+            "source": "Primary outcome: lowest SpO2 during the intubation\nprocedure\nIn the intent-to-treat (ITT) analysis (Table 3, Fig. 2),\nthere was no significant difference between the median\n[IQR] lowest SpO2 during intubation in the HFNC group\ncompared with the SMO group, 100% [97; 100] versus\n99% [95; 100] respectively, (P = 0.30). In the per-protocol\n(PP) analysis (attrition rate 1%), the lack of difference per-\nsisted (P = 0.26). Although only non-severely hypoxemic\npatients were included, the lowest SpO2 during intuba-\ntion ranged from 69% to 100% in HFNC and from 43% to\n100% in SMO."
+          },
+          {
+            "evidence": "sha256:76d2ba1b7b5f71efed8392f643ea399424f54de19e57648619ecb204c74a5e06",
+            "kind": "context",
+            "source": "Description of planned statistical methods, including a schedule of\nplanned intermediary analyses\n- Description of inclusion characteristics\nQuantitative variables will be described using mean, median, standard deviation, interquartile\nranges and ranges. Category variables will be described from the frequencies and numbers of the\ndifferent modalities.\n- Analyses of judgement criteria\nThe principal criterion: the lowest saturation, will be compared between the 2 groups via a linear\nmixed model which will take stratification of the randomization in the center into account (a non-\nparametric model will be used in case of unnormal data).\nThe secondary criteria will be described and compared between the 2 groups via linear mixed\nregression models, generalized linear mixed models or survival models (Cox or Fine and Gray)\ndepending on the nature of the variables. These models will take into account the center (random effect)\nand repeated measurements for the variables in question."
+          },
+          {
+            "evidence": "sha256:773bd9b184c4df85a49032fac122b34ac6be255a46058bf8e5d69722f077ef60",
+            "kind": "context",
+            "source": "Statistical analysis\nBaseline characteristics were described as count and per-\ncentage for categorical variables and mean and standard\ndeviation or median and interquartiles for quantitative\nvariables when assumption of normality was not met. An\nintent-to-treat statistical analysis was conducted. Com-\nparisons of primary and secondary outcomes were per-\nformed using the Mantel-Haenszel Chi-square tests (or\ntwo-tailed Fisher exact tests when appropriate) for quali-\ntative data and the Van Elteren tests for quantitative data\nto account for stratification factor (center). For qualitative\ndata, relative risk (with adjustment for center effects) and\n95% confidence interval were estimated with the Mantel-\nHaenszel method. Multivariable analysis of SpO2 < 90%,\nSpO2 < 80%, and the occurrence of adverse events were\nperformed using logistic regression. The most clinically"
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The dated protocol prespecified lowest capillary-oximetry saturation over the entire sequence, from induction through confirmation of intubation. The report's primary result instead uses the interval from laryngoscopy until connection to the ventilator. The protocol allowed a non-parametric analysis when data were non-normal, so the reported Van Elteren test is not itself a clear departure; however, the measurement window differs. This supports probable non-correspondence with the protocol. The protocol version predates recruitment, but the captured Sources do not establish whether the window change was amended before unblinded data access or why it was made.",
+        "question_id": "sq:selection:prespecified-analysis",
+        "unknowns": [
+          "No dated amendment or SAP was captured that reconciles the protocol and reported measurement windows.",
+          "The Sources do not establish when investigators first accessed unblinded outcome data."
+        ]
+      },
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "evidence": "sha256:ad3710e9c7d5d235a2df8a2c6b3a3453213540742dccf9ed37bec40c33628b09",
+            "kind": "direct_support",
+            "source": "Principal evaluation criterion\nThe principal evaluation criterion is: The lowest oxygen saturation determined by capillary\noximetry during the entire intubation sequence.\nThe intubation period begins on induction and ends with confirmation of orotracheal intubation."
+          },
+          {
+            "evidence": "sha256:9a92d4052ad58c7fb30a46a4d1c87c6448b1e5ca2bfa85f6caf4eef0ef944a3d",
+            "kind": "direct_support",
+            "source": "Primary outcome: lowest SpO2 during the intubation\nprocedure\nIn the intent-to-treat (ITT) analysis (Table 3, Fig. 2),\nthere was no significant difference between the median\n[IQR] lowest SpO2 during intubation in the HFNC group\ncompared with the SMO group, 100% [97; 100] versus\n99% [95; 100] respectively, (P = 0.30). In the per-protocol\n(PP) analysis (attrition rate 1%), the lack of difference per-\nsisted (P = 0.26). Although only non-severely hypoxemic\npatients were included, the lowest SpO2 during intuba-\ntion ranged from 69% to 100% in HFNC and from 43% to\n100% in SMO."
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The protocol and report were inspected, and bounded searches for amendments found no captured amendment passage. The result-window discrepancy remains unexplained.",
+            "unresolved_premise": "It is unclear whether the published laryngoscopy-to-ventilator window was a pre-unblinding amendment or was selected from multiple eligible SpO2 windows after outcome data were available."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The protocol specified the whole intubation sequence, while the paper reports a narrower window. This creates a possible alternative measurement, but the Sources do not establish that results for another eligible window were withheld or that this window was chosen because of the results. The reason and timing of the discrepancy remain unresolved.",
+        "question_id": "sq:selection:multiple-measurements",
+        "unknowns": [
+          "Whether results for the protocol-defined whole-sequence measure were generated or reported elsewhere.",
+          "Whether the narrower window was selected based on outcome results."
+        ]
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:76d2ba1b7b5f71efed8392f643ea399424f54de19e57648619ecb204c74a5e06",
+            "kind": "direct_support",
+            "source": "Description of planned statistical methods, including a schedule of\nplanned intermediary analyses\n- Description of inclusion characteristics\nQuantitative variables will be described using mean, median, standard deviation, interquartile\nranges and ranges. Category variables will be described from the frequencies and numbers of the\ndifferent modalities.\n- Analyses of judgement criteria\nThe principal criterion: the lowest saturation, will be compared between the 2 groups via a linear\nmixed model which will take stratification of the randomization in the center into account (a non-\nparametric model will be used in case of unnormal data).\nThe secondary criteria will be described and compared between the 2 groups via linear mixed\nregression models, generalized linear mixed models or survival models (Cox or Fine and Gray)\ndepending on the nature of the variables. These models will take into account the center (random effect)\nand repeated measurements for the variables in question."
+          },
+          {
+            "evidence": "sha256:34be7f7012c8b802252c7cdf26a022c27a04268e3d4912e96cd8ff8d56d81996",
+            "kind": "direct_support",
+            "source": "Choice of patients to include in the analyses\nAll of the analyses will be performed in intention-to-treat. A secondary analysis per protocol\nwill be performed to confirm the results of the principal criterion. No intermediary analysis is scheduled."
+          },
+          {
+            "evidence": "sha256:773bd9b184c4df85a49032fac122b34ac6be255a46058bf8e5d69722f077ef60",
+            "kind": "direct_support",
+            "source": "Statistical analysis\nBaseline characteristics were described as count and per-\ncentage for categorical variables and mean and standard\ndeviation or median and interquartiles for quantitative\nvariables when assumption of normality was not met. An\nintent-to-treat statistical analysis was conducted. Com-\nparisons of primary and secondary outcomes were per-\nformed using the Mantel-Haenszel Chi-square tests (or\ntwo-tailed Fisher exact tests when appropriate) for quali-\ntative data and the Van Elteren tests for quantitative data\nto account for stratification factor (center). For qualitative\ndata, relative risk (with adjustment for center effects) and\n95% confidence interval were estimated with the Mantel-\nHaenszel method. Multivariable analysis of SpO2 < 90%,\nSpO2 < 80%, and the occurrence of adverse events were\nperformed using logistic regression. The most clinically"
+          },
+          {
+            "evidence": "sha256:9a92d4052ad58c7fb30a46a4d1c87c6448b1e5ca2bfa85f6caf4eef0ef944a3d",
+            "kind": "direct_support",
+            "source": "Primary outcome: lowest SpO2 during the intubation\nprocedure\nIn the intent-to-treat (ITT) analysis (Table 3, Fig. 2),\nthere was no significant difference between the median\n[IQR] lowest SpO2 during intubation in the HFNC group\ncompared with the SMO group, 100% [97; 100] versus\n99% [95; 100] respectively, (P = 0.30). In the per-protocol\n(PP) analysis (attrition rate 1%), the lack of difference per-\nsisted (P = 0.26). Although only non-severely hypoxemic\npatients were included, the lowest SpO2 during intuba-\ntion ranged from 69% to 100% in HFNC and from 43% to\n100% in SMO."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The protocol specified ITT analyses and a per-protocol analysis to confirm the principal criterion, and both ITT and PP results are reported. It allowed a non-parametric model when data were non-normal; the article used Van Elteren tests for quantitative outcomes. The report also displays median [IQR], mean (SD), and min-max summaries. The Sources provide no indication that an eligible analysis was withheld because its result was less favorable.",
+        "question_id": "sq:selection:multiple-analyses",
+        "unknowns": [
+          "No separate SAP specifying additional candidate adjustment sets or transformations was captured; the protocol section describes the planned primary analysis and sensitivity analysis."
+        ]
+      }
+    ],
+    "accepted_save_events": [
+      {
+        "log_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/guitton-2019/turn-2.jsonl",
+        "log_sha256": "3bb74ee622c1a87649753f46c1c6d2e32dab1aa0d11d3e7a0e58146b3b9fbd22",
+        "event_ordinal": 116,
+        "arguments": {
+          "trial_id": "guitton-2019",
+          "domain_id": "domain:selection",
+          "expected_revision": 8,
+          "answers": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_ad3710e9c7d5d235"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_620d031705353687"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_9a92d4052ad58c7f"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_76d2ba1b7b5f71ef"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_773bd9b184c4df85"
+                }
+              ],
+              "justification": "The dated protocol prespecified lowest capillary-oximetry saturation over the entire sequence, from induction through confirmation of intubation. The report's primary result instead uses the interval from laryngoscopy until connection to the ventilator. The protocol allowed a non-parametric analysis when data were non-normal, so the reported Van Elteren test is not itself a clear departure; however, the measurement window differs. This supports probable non-correspondence with the protocol. The protocol version predates recruitment, but the captured Sources do not establish whether the window change was amended before unblinded data access or why it was made.",
+              "unknowns": [
+                "No dated amendment or SAP was captured that reconciles the protocol and reported measurement windows.",
+                "The Sources do not establish when investigators first accessed unblinded outcome data."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_ad3710e9c7d5d235"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_9a92d4052ad58c7f"
+                },
+                {
+                  "kind": "limitation",
+                  "unresolved_premise": "It is unclear whether the published laryngoscopy-to-ventilator window was a pre-unblinding amendment or was selected from multiple eligible SpO2 windows after outcome data were available.",
+                  "stopping_rationale": "The protocol and report were inspected, and bounded searches for amendments found no captured amendment passage. The result-window discrepancy remains unexplained."
+                }
+              ],
+              "justification": "The protocol specified the whole intubation sequence, while the paper reports a narrower window. This creates a possible alternative measurement, but the Sources do not establish that results for another eligible window were withheld or that this window was chosen because of the results. The reason and timing of the discrepancy remain unresolved.",
+              "unknowns": [
+                "Whether results for the protocol-defined whole-sequence measure were generated or reported elsewhere.",
+                "Whether the narrower window was selected based on outcome results."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_76d2ba1b7b5f71ef"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_34be7f7012c8b802"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_773bd9b184c4df85"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_9a92d4052ad58c7f"
+                }
+              ],
+              "justification": "The protocol specified ITT analyses and a per-protocol analysis to confirm the principal criterion, and both ITT and PP results are reported. It allowed a non-parametric model when data were non-normal; the article used Van Elteren tests for quantitative outcomes. The report also displays median [IQR], mean (SD), and min-max summaries. The Sources provide no indication that an eligible analysis was withheld because its result was less favorable.",
+              "unknowns": [
+                "No separate SAP specifying additional candidate adjustment sets or transformations was captured; the protocol section describes the planned primary analysis and sensitivity analysis."
+              ],
+              "counterevidence": []
+            }
+          ]
+        },
+        "judgment": "some_concerns"
+      }
+    ],
+    "source_byte_checks": [
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/guitton-2019/134_2019_5529_MOESM1_ESM.pdf",
+        "sha256": "sha256:d2a0e892f4d3e25dcf9af26bdecd4434241296c082f641cdaa33c093ab322101",
+        "page_count": 1,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/guitton-2019/134_2019_5529_MOESM2_ESM.pdf",
+        "sha256": "sha256:4bbe98bfadfdea94e0a8baedc0b98579bb751c9c6d4f4d3d495499b4a3c04cd2",
+        "page_count": 50,
+        "candidate_pages": [
+          15,
+          50
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/guitton-2019/134_2019_5529_MOESM3_ESM.pdf",
+        "sha256": "sha256:4e29acb09f96de631f6cf07e44fb02f0dd0e75bbb35247e05143cdbf1a6d3595",
+        "page_count": 7,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/guitton-2019/s00134-019-05529-w.pdf",
+        "sha256": "sha256:dc4b844b91e653af55643dee251315b077b39328e680c1d41f31fa6a18dd1ac9",
+        "page_count": 12,
+        "candidate_pages": [
+          1,
+          2,
+          3,
+          7,
+          11
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      }
+    ]
+  },
+  {
+    "case": "canvas-program",
+    "canonical_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/canvas-program/.rob2-kit/canonical.sqlite3",
+    "canonical_sha256": "676bff774cfeb095481bcca6411c8f9f3aa7a5177de01fad91ebf8fa7683dd1a",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "Canagliflozin (CANVAS dose groups pooled; CANVAS-R canagliflozin)",
+          "id": "canagliflozin"
+        },
+        {
+          "assignment": "Placebo",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Adjudicated composite of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke",
+        "metric": "Composite of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke"
+      },
+      "outcome_definition": "Composite of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke",
+      "time_point_or_window": {
+        "description": "All available follow-up after randomization in the integrated CANVAS Program; mean follow-up 188.2 weeks",
+        "kind": "described"
+      }
+    },
+    "judgment": "low",
+    "answers": [
+      {
+        "answer": "probably_yes",
+        "bases": [
+          {
+            "evidence": "sha256:e306e74d81806cda2ba6c938375dde4d80843a1936306440dd1c6ccb959abc21",
+            "kind": "direct_support",
+            "source": "control (with reductions in hemoglobin A1c [HbA1c] and fasting plasma glucose [FPG]), reduction in body\nweight, and trends towards improvements in other cardiovascular (CV) disease risk factors (including\nincreases in high-density lipoprotein cholesterol [HDL-C], decreases in triglyceride levels, and decreases in\nblood pressure, especially at the 300-mg dose), with generally good tolerance and appropriate safety to\nsupport continued clinical development of this medication. With improved glycemic control, which itself\nmay provide a benefit in CV risk, and the trends towards benefit on other CV risk factors including body\nweight, the potential for a benefit of long-term treatment with canagliflozin on CV disease is raised.\nThe present study was intended to assess if treatment of subjects with T2DM with canagliflozin reduces\nCV risk for MACE (including CV death, nonfatal myocardial infarction [MI], and nonfatal stroke) and to\nachieve a number of other important goals. These include the assessment of overall safety and tolerability,\nglycemic efficacy (in the overall study population and in subjects on specific AHAs), long-term effects on\nbeta-cell function, and long-term effects on renal function with canagliflozin treatment. This study also\nprovides key support for a cross-canagliflozin program assessment of CV safety, examining a composite\nendpoint of MACE plus hospitalized unstable angina (pre-approval CV safety assessment) and MACE\n(post-approval CV safety assessment). Subsequent to the initial plan it has been necessary to modify the\ndesign of the study.\nThe data from this study will be combined with the data from another large-scale study of the effects of\ncanagliflozin compared to placebo (CANVAS-R; A Randomized, Multicenter, Double-Blind, Parallel,\nPlacebo-Controlled Study of the Effects of Canagliflozin on Renal Endpoints in Adult Subjects With\nType 2 Diabetes Mellitus; 28431754DIA4003) in a pre-specified meta-analysis of CV safety outcomes, to\nsatisfy post-approval United States (US) Food and Drug Administration (FDA) post-marketing\nrequirements for canagliflozin.\nOBJECTIVES AND HYPOTHESES\nPrimary Objectives"
+          },
+          {
+            "evidence": "sha256:28edb73b5e60c3905bf828ff3771d516d53c6da4ac59768db0aa51d2ebfd8924",
+            "kind": "direct_support",
+            "source": "canagliflozin program using data from 9,632 subjects, which included interim data harvested on\n31 January 2012 from the ongoing CANVAS CV Outcomes study of 4,330 subjects at high risk\nfor CV disease. The primary CV endpoint for the pre-approval safety analysis was the composite\nof CV death, non-fatal myocardial infarction (MI), non-fatal stroke or hospitalization for\nunstable angina. In response to a request arising during review of the canagliflozin Marketing\nAuthorization Application by the Committee for Medicinal Products for Human Use (CHMP),\nthe sponsor conducted a second integrated CV analysis of the Phase 2 and Phase 3 studies, which\nincluded interim data from CANVAS harvested on 19 November 2012. Data on major adverse\ncardiovascular events (MACE; CV death, non-fatal MI, or non-fatal stroke) and mortality\noutcomes beyond 19 November 2012 have remained blinded to the sponsor and investigators.\nAs per the FDA guidance and following market authorization, the sponsor is required to\ndemonstrate that the upper bound of the 2-sided 95% confidence interval (CI) of the CV risk\nratio of test drug to comparator be less than 1.3. In the 19 February 2013 and 05 March 2013\nteleconferences between the Agency and the sponsor, the Agency indicated that the sponsor\nneeded to rule out 1.3 upper bound using MACE. The Agency indicated these data could be\nderived from a new dedicated study or from a pooled analysis including the CANVAS study\nalong with a new CANVAS-like study (so as to accumulate sufficient events within an\nappropriate time period post-approval).\nAs a result of these discussions, the sponsor proposed to conduct a second CANVAS-like study\n(identified at that time as CANVAS2, now referenced as CANVAS-R) with approximately\n5,700 randomized subjects. As such, the CANVAS and CANVAS-R trials are purposefully\nsimilar in design and in subject characteristics (see next section). Data from these studies are to\nbe harvested for an integrated analysis no later than June 2017 with study reports submitted to\nFDA by September 2017. The integrated analysis for CV safety will use all subjects enrolled in\nCANVAS and\nCANVAS-R in an intent-to-treat (ITT)\nanalysis to show that a\ncanagliflozin-associated increase in the CV risk ratio, if any, was significantly less than 1.3 using\nthe 2-sided 95% CI of the risk ratio. A previous CANVAS/CANVAS-R integrated SAP for the\nCV risk assessment Post Marketing Requirement (PMR) was submitted to FDA in October 2013."
+          },
+          {
+            "evidence": "sha256:1dd1031455660f3f103b20d3b427da31bd4c126e429965df4e96aeafe59b8b94",
+            "kind": "direct_support",
+            "source": "for MACE of 1.3 in accord with FDA Guidance. There were plans for independent SAPs for\nCANVAS and CANVAS-R, with separate strong control of the Type I error rate within each\nstudy. The primary endpoint of CANVAS was to evaluate whether there was a risk reduction in\nMACE associated with canagliflozin treatment. Due to unblinding of the interim summary\nresults of CANVAS at the time of marketing approval, the planned expansion of enrollment in\nCANVAS was eliminated, and CANVAS-R was initiated to provide sufficient CV outcome data\nto support the CV safety PMR. The primary endpoint of CANVAS, MACE, was not changed\nalthough it was recognized that with the smaller sample size the study was substantially\nunder-powered for the objective.\nIn the March 2016 submission to FDA, the sponsor proposed to modify the analysis plans for\nCANVAS and CANVAS-R. The new CANVAS/CANVAS-R integrated SAP would maintain,\nas originally planned, the use of the integrated dataset for purposes of the MACE CV safety\nPMR. As originally planned, this dataset would contain information from all subjects enrolled\nunder either the CANVAS or CANVAS-R protocols, including all subject study-time before and\nsince the 20 November 2012 CANVAS interim analysis related to the reviews for marketing\napproval. After the CV safety PMR is addressed, the sponsor proposed to add the endpoints to\nevaluate mortality benefit in this SAP revision. Key adjustments in the integrated dataset will be\nmade for the main analysis of these additional endpoints of mortality and will be described in\nthis document.\nThe CANVAS/CANVAS-R integrated SAP in this submission, which replaces the October 2013\ndocument, specifies updated definitions of analysis sets, key derived variables and statistical\nmethods for analysis of efficacy and safety of the canagliflozin program to evaluate CV risk for\nPMR and the benefit in mortality reduction."
+          },
+          {
+            "evidence": "sha256:293902eeac2a1d89892f3a81c594279e1fd8a7e20d81210dcd7fa09169503328",
+            "kind": "direct_support",
+            "source": "4.1.\nPrimary Endpoint\nThe primary CV endpoint is MACE which is the composite of CV outcomes including CV death,\nnon-fatal MIa, or non-fatal stroke. Adjudication of these outcomes by the Endpoint Adjudication\nCommittee (EAC) has been done in a blinded fashion.\n4.1.1.\nPrimary Analysis Methods\nThe objective of this analysis is to demonstrate that canagliflozin is not associated with an\nunacceptable increase in cardiovascular risk by showing that the upper bound of the 2-sided 95%\nCI of the HR of canagliflozin to placebo is less than 1.3.\nThe following statistical hypotheses on the HR (all canagliflozin versus placebo) will be tested:\nH0: The HR \u2265 1.3, versus H1: The HR <1.3.\nIf the null hypothesis H0 is rejected and if the upper bound of the 2-sided 95% CI of the HR is\nless than 1.0, then it will be concluded that canagliflozin is superior to placebo.\nThe primary analysis will be based on the time to first occurrence of MACE based on the ITT\nanalysis set. The HR of all canagliflozin compared to placebo and its 95% CI will be estimated\nusing a stratified Cox proportional hazards regression model with treatment (all canagliflozin and\nplacebo) as the explanatory variable, and study (CANVAS and CANVAS-R) and prior CV\ndisease subgroup (secondary prevention and primary prevention) as the stratification factors.\nP-value of stratified log rank test for treatment effect will also be reported for the primary\nanalysis.\n\na Silent MIs are excluded from the analysis."
+          },
+          {
+            "evidence": "sha256:54ce24e7a129239341939b65048d685d5b580c00219a020e997bb21c4779ea87",
+            "kind": "context",
+            "source": "SUMMARY OF AMENDMENT\n\nRelative to the integrated statistical analysis plan (SAP) dated 20 September, 2016, the major\namendments made in this version are summarized as follows.\n\nApplicable\nSection(s)\nDescription of Change(s)\n2.2\nThe On-Study analysis set was added for MACE and replaced the ITT analysis\nset for several adverse events of interest. The upper bound of the data period for\nthe On-Treatment analysis set was clarified as last dose plus 2 days for\nlaboratory parameters except ACR.\n\n4.1.1\nConsistent with the analytic approach described in the Cardiovascular Endpoint\nadjudication charter, it is clarified that undetermined death is considered as CV\ndeath.\n\n4.1.2.2\n\nUpdated the multiple imputation analysis section\n4.1.2.5\n\nAdded an analysis of MACE in the first 30, 60 and 90 days.\n4.1.2.7\n4.2.2.4\n\nAdditional subgroups were added for the analysis of MACE and the mortality\nendpoints.\n5.1\nClarified that any adjudicated non-CV death event where the adjudication\ncommittee assigned a renal proximate cause is considered a renal death."
+          }
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 1,
+            "implication": "The 2016 integrated SAP followed unblinding of interim CANVAS results, so exact chronology for the full integrated Result is not certain; however, it states that subsequent MACE data remained blinded and the primary MACE objective was unchanged."
+          }
+        ],
+        "justification": "The CANVAS protocol identified the exact MACE composite as the primary CV risk-reduction endpoint and described a prespecified integrated safety analysis. The integrated plan specifies the pooled canagliflozin versus placebo ITT comparison, time to first MACE and a stratified Cox hazard ratio; the selected Result follows those features. The 2016 approved SAP preceded completion and says post-November 2012 MACE data remained blinded. An interim CANVAS summary had been unblinded before the integrated plan, and the captured 2013 SAP itself is not available to inspect; therefore timing/correspondence is probable rather than certain. The 2017 revision's stated changes do not indicate a result-driven change to the primary analysis.",
+        "question_id": "sq:selection:prespecified-analysis",
+        "unknowns": [
+          "The exact contents of the October 2013 integrated SAP are not captured, and the 2016 version was prepared after the 2012 CANVAS interim results had been unblinded."
+        ]
+      },
+      {
+        "answer": "no",
+        "bases": [
+          {
+            "evidence": "sha256:e306e74d81806cda2ba6c938375dde4d80843a1936306440dd1c6ccb959abc21",
+            "kind": "direct_support",
+            "source": "control (with reductions in hemoglobin A1c [HbA1c] and fasting plasma glucose [FPG]), reduction in body\nweight, and trends towards improvements in other cardiovascular (CV) disease risk factors (including\nincreases in high-density lipoprotein cholesterol [HDL-C], decreases in triglyceride levels, and decreases in\nblood pressure, especially at the 300-mg dose), with generally good tolerance and appropriate safety to\nsupport continued clinical development of this medication. With improved glycemic control, which itself\nmay provide a benefit in CV risk, and the trends towards benefit on other CV risk factors including body\nweight, the potential for a benefit of long-term treatment with canagliflozin on CV disease is raised.\nThe present study was intended to assess if treatment of subjects with T2DM with canagliflozin reduces\nCV risk for MACE (including CV death, nonfatal myocardial infarction [MI], and nonfatal stroke) and to\nachieve a number of other important goals. These include the assessment of overall safety and tolerability,\nglycemic efficacy (in the overall study population and in subjects on specific AHAs), long-term effects on\nbeta-cell function, and long-term effects on renal function with canagliflozin treatment. This study also\nprovides key support for a cross-canagliflozin program assessment of CV safety, examining a composite\nendpoint of MACE plus hospitalized unstable angina (pre-approval CV safety assessment) and MACE\n(post-approval CV safety assessment). Subsequent to the initial plan it has been necessary to modify the\ndesign of the study.\nThe data from this study will be combined with the data from another large-scale study of the effects of\ncanagliflozin compared to placebo (CANVAS-R; A Randomized, Multicenter, Double-Blind, Parallel,\nPlacebo-Controlled Study of the Effects of Canagliflozin on Renal Endpoints in Adult Subjects With\nType 2 Diabetes Mellitus; 28431754DIA4003) in a pre-specified meta-analysis of CV safety outcomes, to\nsatisfy post-approval United States (US) Food and Drug Administration (FDA) post-marketing\nrequirements for canagliflozin.\nOBJECTIVES AND HYPOTHESES\nPrimary Objectives"
+          },
+          {
+            "evidence": "sha256:293902eeac2a1d89892f3a81c594279e1fd8a7e20d81210dcd7fa09169503328",
+            "kind": "direct_support",
+            "source": "4.1.\nPrimary Endpoint\nThe primary CV endpoint is MACE which is the composite of CV outcomes including CV death,\nnon-fatal MIa, or non-fatal stroke. Adjudication of these outcomes by the Endpoint Adjudication\nCommittee (EAC) has been done in a blinded fashion.\n4.1.1.\nPrimary Analysis Methods\nThe objective of this analysis is to demonstrate that canagliflozin is not associated with an\nunacceptable increase in cardiovascular risk by showing that the upper bound of the 2-sided 95%\nCI of the HR of canagliflozin to placebo is less than 1.3.\nThe following statistical hypotheses on the HR (all canagliflozin versus placebo) will be tested:\nH0: The HR \u2265 1.3, versus H1: The HR <1.3.\nIf the null hypothesis H0 is rejected and if the upper bound of the 2-sided 95% CI of the HR is\nless than 1.0, then it will be concluded that canagliflozin is superior to placebo.\nThe primary analysis will be based on the time to first occurrence of MACE based on the ITT\nanalysis set. The HR of all canagliflozin compared to placebo and its 95% CI will be estimated\nusing a stratified Cox proportional hazards regression model with treatment (all canagliflozin and\nplacebo) as the explanatory variable, and study (CANVAS and CANVAS-R) and prior CV\ndisease subgroup (secondary prevention and primary prevention) as the stratification factors.\nP-value of stratified log rank test for treatment effect will also be reported for the primary\nanalysis.\n\na Silent MIs are excluded from the analysis."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The protocol names the MACE composite of cardiovascular death, nonfatal MI, and nonfatal stroke as the primary endpoint. The integrated SAP specifies the same composite for the primary analysis; the selected report presents this primary outcome. No alternative eligible definition or time point for this outcome domain is identified.",
+        "question_id": "sq:selection:multiple-measurements",
+        "unknowns": []
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:293902eeac2a1d89892f3a81c594279e1fd8a7e20d81210dcd7fa09169503328",
+            "kind": "direct_support",
+            "source": "4.1.\nPrimary Endpoint\nThe primary CV endpoint is MACE which is the composite of CV outcomes including CV death,\nnon-fatal MIa, or non-fatal stroke. Adjudication of these outcomes by the Endpoint Adjudication\nCommittee (EAC) has been done in a blinded fashion.\n4.1.1.\nPrimary Analysis Methods\nThe objective of this analysis is to demonstrate that canagliflozin is not associated with an\nunacceptable increase in cardiovascular risk by showing that the upper bound of the 2-sided 95%\nCI of the HR of canagliflozin to placebo is less than 1.3.\nThe following statistical hypotheses on the HR (all canagliflozin versus placebo) will be tested:\nH0: The HR \u2265 1.3, versus H1: The HR <1.3.\nIf the null hypothesis H0 is rejected and if the upper bound of the 2-sided 95% CI of the HR is\nless than 1.0, then it will be concluded that canagliflozin is superior to placebo.\nThe primary analysis will be based on the time to first occurrence of MACE based on the ITT\nanalysis set. The HR of all canagliflozin compared to placebo and its 95% CI will be estimated\nusing a stratified Cox proportional hazards regression model with treatment (all canagliflozin and\nplacebo) as the explanatory variable, and study (CANVAS and CANVAS-R) and prior CV\ndisease subgroup (secondary prevention and primary prevention) as the stratification factors.\nP-value of stratified log rank test for treatment effect will also be reported for the primary\nanalysis.\n\na Silent MIs are excluded from the analysis."
+          },
+          {
+            "evidence": "sha256:3c52076e5ac1e65673b89dd8051e6c33f6660bf07a848e121960ad57960de9ab",
+            "kind": "direct_support",
+            "source": "n engl j med 377;7 nejm.org August 17, 2017\n651\nCanagliflozin and Cardiovascular Events in Type 2 Diabetes\nPatients with an Event (%)\n100\n80\n90\n70\n60\n40\n30\n10\n50\n20\n0\n0\n26\n52\n78\n234\n312\n338\nWeeks since Randomization\nA Death from Cardiovascular Causes, Nonfatal Myocardial Infarction, or Nonfatal Stroke\nNo. at Risk\nPlacebo\nCanagliflozin\n4347\n5795\n4239\n5672\n789\n1661\n1095\n2311\n1120\n2363\n1156\n2419\n1187\n2460\n1217\n2513\n1240\n2555\n1626\n2984\n2942\n4343\n4061\n5447\n4153\n5566\n104\n130\n156\n182\n208\n260\n286\n20\n16\n18\n14\n12\n8\n6\n2\n10\n4\n0\n0\n26\n52\n78\n234\n312 338\nHazard ratio, 0.86 (95% CI, 0.75-0.97)\nP<0.001 for noninferiority\nP=0.02 for superiority\n104 130 156 182 208\n260 286\n216\n448\nPlacebo\nCanagliflozin\nPatients with an Event (%)\n100\n80\n90\n70\n60\n40\n30\n10\n50\n20\n0\n0\n26\n52\n78\n234\n312\n338\nWeeks since Randomization\nB Death from Cardiovascular Causes\nNo. at Risk\nPlacebo\nCanagliflozin\n4347\n5795\n4316\n5768\n924\n1904\n1280\n2615\n1292\n2651\n1310\n2687\n1328\n2710\n1344\n2736\n1356\n2761\n1759\n3182\n3119\n4576\n4236\n5679\n4279\n5723\n104\n130\n156\n182\n208\n260\n286\n12\n8\n10\n6\n2\n4\n0\n0\n26\n52\n78\n234\n312 338\nHazard ratio, 0.87 (95% CI, 0.72-1.06)\n104 130 156 182 208\n260 286\n258\n532\nPlacebo\nCanagliflozin\nPatients with an Event (%)\n100\n80\n90\n70\n60\n40\n30\n10\n50\n20\n0\n0\n26\n52\n78\n234\n312\n338\nWeeks since Randomization\nC Nonfatal Stroke\nNo. at Risk\nPlacebo\nCanagliflozin\n4347\n5795\n4270\n5702\n829\n1751\n1155\n2415\n1177\n2464\n1208\n2511\n1232\n2543\n1255\n2588\n1274\n2621\n1667\n3043\n3004\n4414\n4123\n5530\n4197\n5615\n104\n130\n156\n182\n208\n260\n286\n232\n481\nPatients with an Event (%)\n100\n80\n90\n70\n60\n40\n30\n10\n50\n20\n0\n0\n26\n52\n78\n234\n312\n338\nWeeks since Randomization\nD Nonfatal Myocardial Infarction\nNo. at Risk\nPlacebo\nCanagliflozin\n4347\n5795\n4256\n5711\n812\n1728\n1126\n2382\n1146\n2425\n1179\n2476\n1207\n2516\n1233\n2565\n1255\n2602\n1647\n3029\n2986\n4405\n4109\n5513\n4187\n5625\n104\n130\n156\n182\n208\n260\n286\n223\n468\n8\n6\n5\n2\n1\n3\n7\n4\n0\n0\n26\n52\n78\n234\n312 338\nHazard ratio, 0.90 (95% CI, 0.71-1.15)\n104 130 156 182 208\n260 286\nPlacebo\nCanagliflozin\n8\n6\n7\n5\n4\n2\n1\n3\n0\n0\n26\n52\n78\n234\n312 338\nHazard ratio, 0.85 (95% CI, 0.69-1.05)\n104 130 156 182 208\n260 286\nPlacebo\nCanagliflozin\nFigure 2. Cardiovascular Outcomes in the Integrated CANVAS Program.\nThe primary outcome was a composite of death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke. The hazard ratios and 95% confidence intervals for\nthe primary outcome and the components of the outcome were estimated with the use of Cox regression models with stratification according to trial and history of cardiovascular\ndisease for all canagliflozin groups combined versus placebo. Analyses are based upon the full, integrated data set comprising all participants who underwent randomization. The\ninset in each panel shows the same data on an enlarged y axis.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026."
+          },
+          {
+            "evidence": "sha256:54ce24e7a129239341939b65048d685d5b580c00219a020e997bb21c4779ea87",
+            "kind": "context",
+            "source": "SUMMARY OF AMENDMENT\n\nRelative to the integrated statistical analysis plan (SAP) dated 20 September, 2016, the major\namendments made in this version are summarized as follows.\n\nApplicable\nSection(s)\nDescription of Change(s)\n2.2\nThe On-Study analysis set was added for MACE and replaced the ITT analysis\nset for several adverse events of interest. The upper bound of the data period for\nthe On-Treatment analysis set was clarified as last dose plus 2 days for\nlaboratory parameters except ACR.\n\n4.1.1\nConsistent with the analytic approach described in the Cardiovascular Endpoint\nadjudication charter, it is clarified that undetermined death is considered as CV\ndeath.\n\n4.1.2.2\n\nUpdated the multiple imputation analysis section\n4.1.2.5\n\nAdded an analysis of MACE in the first 30, 60 and 90 days.\n4.1.2.7\n4.2.2.4\n\nAdditional subgroups were added for the analysis of MACE and the mortality\nendpoints.\n5.1\nClarified that any adjudicated non-CV death event where the adjudication\ncommittee assigned a renal proximate cause is considered a renal death."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The plan specifies one primary ITT time-to-first-MACE model (stratified Cox) and identifies other analyses as supportive or as separate component/subgroup assessments. Figure 2 reports the primary HR and the protocol-described endpoint, and the paper also reports a missing-data imputation sensitivity analysis. Although multiple analyses were planned, there is no evidence the reported primary model was chosen because its result was favorable or that relevant primary analyses were selectively withheld.",
+        "question_id": "sq:selection:multiple-analyses",
+        "unknowns": [
+          "The captured Sources do not provide a complete inventory of every analysis conducted and reported."
+        ]
+      }
+    ],
+    "accepted_save_events": [
+      {
+        "log_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/canvas-program/turn-2.jsonl",
+        "log_sha256": "7617180192cee6724538964149cf595af60e0a41063da9c0255b168f93747233",
+        "event_ordinal": 213,
+        "arguments": {
+          "trial_id": "canvas-program",
+          "domain_id": "domain:selection",
+          "expected_revision": 8,
+          "answers": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "answer": "probably_yes",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_e306e74d81806cda"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_28edb73b5e60c390"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_1dd1031455660f3f"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_293902eeac2a1d89"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_54ce24e7a1292393"
+                }
+              ],
+              "justification": "The CANVAS protocol identified the exact MACE composite as the primary CV risk-reduction endpoint and described a prespecified integrated safety analysis. The integrated plan specifies the pooled canagliflozin versus placebo ITT comparison, time to first MACE and a stratified Cox hazard ratio; the selected Result follows those features. The 2016 approved SAP preceded completion and says post-November 2012 MACE data remained blinded. An interim CANVAS summary had been unblinded before the integrated plan, and the captured 2013 SAP itself is not available to inspect; therefore timing/correspondence is probable rather than certain. The 2017 revision's stated changes do not indicate a result-driven change to the primary analysis.",
+              "unknowns": [
+                "The exact contents of the October 2013 integrated SAP are not captured, and the 2016 version was prepared after the 2012 CANVAS interim results had been unblinded."
+              ],
+              "counterevidence": [
+                {
+                  "basis_index": 1,
+                  "implication": "The 2016 integrated SAP followed unblinding of interim CANVAS results, so exact chronology for the full integrated Result is not certain; however, it states that subsequent MACE data remained blinded and the primary MACE objective was unchanged."
+                }
+              ]
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "answer": "no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_e306e74d81806cda"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_293902eeac2a1d89"
+                }
+              ],
+              "justification": "The protocol names the MACE composite of cardiovascular death, nonfatal MI, and nonfatal stroke as the primary endpoint. The integrated SAP specifies the same composite for the primary analysis; the selected report presents this primary outcome. No alternative eligible definition or time point for this outcome domain is identified.",
+              "unknowns": [],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_293902eeac2a1d89"
+                },
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_3c52076e5ac1e656"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_54ce24e7a1292393"
+                }
+              ],
+              "justification": "The plan specifies one primary ITT time-to-first-MACE model (stratified Cox) and identifies other analyses as supportive or as separate component/subgroup assessments. Figure 2 reports the primary HR and the protocol-described endpoint, and the paper also reports a missing-data imputation sensitivity analysis. Although multiple analyses were planned, there is no evidence the reported primary model was chosen because its result was favorable or that relevant primary analyses were selectively withheld.",
+              "unknowns": [
+                "The captured Sources do not provide a complete inventory of every analysis conducted and reported."
+              ],
+              "counterevidence": []
+            }
+          ]
+        },
+        "judgment": "low"
+      }
+    ],
+    "source_byte_checks": [
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/canvas-program/NEJMoa1611925.pdf",
+        "sha256": "sha256:3dcc7f78fe3d3953ceccb584654a155af957fcebd704631a5f47dfe14240b6fe",
+        "page_count": 14,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/canvas-program/nejmoa1611925_appendix.pdf",
+        "sha256": "sha256:2771f2f8d25f9e1711dcd86e3d3ee09a1a9de764dcbd0c1e966e608ab89cae0b",
+        "page_count": 38,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/canvas-program/nejmoa1611925_disclosures.pdf",
+        "sha256": "sha256:d41ec7afddb737a329e46686c32941736116f8acf3fe23807bfc536d760885a0",
+        "page_count": 35,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/canvas-program/nejmoa1611925_protocol.pdf",
+        "sha256": "sha256:d75265b9097778eb31dd5dc72999098d12b9db2847cdf7fcf3107c8e39c85b57",
+        "page_count": 688,
+        "candidate_pages": [
+          57,
+          67,
+          68,
+          69,
+          75,
+          83,
+          94,
+          139,
+          141,
+          142,
+          152,
+          169,
+          170,
+          171,
+          177,
+          192,
+          193,
+          203,
+          206,
+          218,
+          227,
+          291,
+          299,
+          307,
+          308,
+          315,
+          356,
+          373,
+          381,
+          391,
+          392,
+          400,
+          416,
+          417,
+          418,
+          419,
+          420,
+          421,
+          422,
+          423,
+          424,
+          425,
+          426,
+          427,
+          428,
+          429,
+          430,
+          431,
+          432,
+          433,
+          434,
+          435,
+          436,
+          437,
+          438,
+          439,
+          440,
+          441,
+          442,
+          443,
+          444,
+          445,
+          446,
+          447,
+          448,
+          452,
+          499,
+          500,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511,
+          512,
+          513,
+          514,
+          515,
+          516,
+          517,
+          518,
+          519,
+          520,
+          521,
+          522,
+          523,
+          524,
+          525,
+          526,
+          527,
+          531,
+          574,
+          582,
+          634,
+          640
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      }
+    ]
+  },
+  {
+    "case": "allsop-2014",
+    "canonical_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/allsop-2014/.rob2-kit/canonical.sqlite3",
+    "canonical_sha256": "ccd9e701d5abcb55584b5fd4b0c2ae828b23c74d8bf3ee62755113417209669f",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "Nabiximols treatment",
+          "id": "nabiximols"
+        },
+        {
+          "assignment": "Placebo",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Between-group difference in change in overall Cannabis Withdrawal Scale severity over time",
+      "measurement": {
+        "method": "Overall severity of cannabis withdrawal measured by the 19-item Cannabis Withdrawal Scale, with each item rated 0\u201310 for the previous 24 hours.",
+        "metric": "Cannabis withdrawal severity"
+      },
+      "outcome_definition": "Cannabis withdrawal severity",
+      "time_point_or_window": {
+        "description": "During the 6-day medication treatment (study days 1\u20136).",
+        "kind": "described"
+      }
+    },
+    "judgment": "some_concerns",
+    "answers": [
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "evidence": "sha256:8a77fee95ddf1b4c04ef6ddbeac0a4d6540973043f12e9a0a5e72844004486d2",
+            "kind": "direct_support",
+            "source": "follow-up completed by November 15, 2012. The trial proto-\ncol is available from the authors on request."
+          },
+          {
+            "kind": "limitation",
+            "search_receipt": "sha256:3765a3bc9bc800b0b36870684333da7b4a9a87279dc7587b24be1d28568cee98",
+            "stopping_rationale": "The report directs readers to request the protocol from the authors. I searched the complete captured main report and supplement for 'statistical analysis plan' (zero hits), and scoped the main report for 'prespecified' (zero hits); reviewed its navigation to terminal and read the methods and supplement contents. No captured plan or chronology resolves this premise.",
+            "unresolved_premise": "Whether the plan covering the approved CWS comparison and model was finalized before investigators could access unblinded outcome data is unresolved; the protocol is not among captured Sources."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The report explicitly says the trial protocol is available from authors on request. No captured protocol/SAP specifies the relevant plan or when it was finalized relative to unblinded data access. The report's described analysis cannot establish prespecification or chronology.",
+        "question_id": "sq:selection:prespecified-analysis",
+        "unknowns": [
+          "Applicable plan content and its finalization date",
+          "When investigators could access unblinded outcome data"
+        ]
+      },
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "evidence": "sha256:73e96ee9d5aeb12dd8fd11b34d4ae414011e6358ebf748315db8ff01dfc39af6",
+            "kind": "indirect_support",
+            "source": "Copyright 2014 American Medical Association. All rights reserved.\n(Table 4). The time between hospital discharge and relapse to\ncannabis use was also not significantly different between the\ngroups (median [95% CI] days: nabiximols, 15 [3.55-26.45]; pla-\ncebo, 6 [0-27.12]; \u03c72\n1 = 0.06; P = .81) (Supplement [eFigure 3]).\nThe number of cannabis-related problems and the severity of\ncannabis dependence decreased by 65% from baseline levels\nacross all participants, with no significant between-group dif-\nferences (Table 4).\nDiscussion\nTo our knowledge, the present study is the first clinical trial\nto examine the effects of a whole cannabis extract (nabixi-\nmols) in the treatment of cannabis withdrawal and only the\nsecond controlled clinical trial of agonist substitution medi-\ncation for cannabis dependence in treatment seekers.73 Our\nfindings provide support for the efficacy of nabiximols in treat-\ning cannabis withdrawal, consistent with earlier laboratory\nstudies with synthetic oral THC.24,28,29,73 Nabiximols re-\nduced the severity and time course of cannabis withdrawal\ncomparedwithplacebo(Figure2)andimprovedretentionrates\nduring inpatient treatment. In addition, nabiximols signifi-\ncantly reduced cravings, irritability, and depression. Anxiety\nand cravings fell below pretreatment baseline levels in both\ngroups during treatment, possibly resulting from high base-\nline anxiety associated with imminent inpatient detoxifica-\ntion and a lack of cannabis-related cues in the inpatient envi-\nronment. There was no increase in withdrawal severity on\ntermination of nabiximols, suggesting minimal discontinua-\ntion or rebound effects with 6-day use of this medication. Both\ngroups had markedly reduced cannabis use at follow-up, as\nverifiedbyurinalysis(Table4andSupplement[eFigure1]).This\nis consistent with an outpatient dronabinol randomized clini-\nTable 2. Outcome Measures: Unadjusted Modela\nOutcome Variable\nMean Scores\nTime\nTreatment\nTime \u00d7\nTreatment\nR2\nLR\nc\nAICd\nBaseline\nAbstinenceb\nOverall withdrawal score\nNabiximols\n2.51 (1.57)\n1.88 (1.64)\nF8,377.97 = 3.94e\nF1,77.97 = 11.01f\nF8,377.97 = 2.39f\n0.50\n1444.12\nPlacebo\n1.68 (0.96)\n2.22 (1.62)\nIrritability\nNabiximols\n1.80 (2.40)\n1.44 (1.84)\nF8,367.97 = 1.48\nF1,75.06 = 3.09\nF8,367.97 = 2.49f\n0.42\n1775.13\nPlacebo\n1.31 (1.81)\n2.19 (2.34)\nDepression\nNabiximols\n2.78 (2.59)\n2.04 (2.43)\nF8,377.62 = 1.39\nF1,71.95 = 2.74\nF8,377.62 = 1.85\n0.45\n1928.86\nPlacebo\n1.71 (2.26)\n2.32 (2.62)\nAnxiety\nNabiximols\n4.07 (3.29)\n1.26 (2.11)\nF8,389.19 = 8.96e\nF1,69.15 = 0.96\nF8,389.19 = 1.08\n0.81\n1964.28\nPlacebo\n3.42 (3.02)\n1.64 (2.21)\nCannabis cravings\nNabiximols\n3.89 (2.81)\n1.87 (2.28)\nF8,384.05 = 4.38e\nF1,73.2 = 10.28f\nF8,384.05 = 2.03g\n0.66\n1812.78\nPlacebo\n2.04 (1.88)\n1.81 (2.26)\nPhysical symptoms\nNabiximols\n1.27 (1.42)\n1.07 (1.21)\nF8,374.81 = 2.89f\nF1,75.46 = 3.66\nF8,374.81 = 1.43\n0.18\n1261.96\nPlacebo\n0.84 (0.83)\n1.42 (1.50)\nSleep difficulty\nNabiximols\n2.95 (2.41)\n2.79 (2.58)\nF8,343.86 = 3.93e\nF1,80.65 = 2.79\nF8,343.86 = 0.98\n0.60\n1984.70\nPlacebo\n2.29 (1.92)\n3.29 (2.23)\nRestlessness\nNabiximols\n3.44 (3.36)\n2.8 (2.69)\nF8,359.46 = 1.51\nF1,81.38 = 0.64\nF8,359.47 = 0.66\n0.45\n2237.29\nPlacebo\n3.21 (2.39)\n3.52 (2.99)\nDecreased appetite\nNabiximols\n3.56 (3.31)\n2.12 (2.88)\nF8,357.5 = 2.52f\nF1,76.81 = 5.09g\nF8,357.5 = 1.13\n0.61\n2248.24\nPlacebo\n1.95 (2.96)\n2.34 (2.62)\nAbbreviation: AIC, Akaike information criterion.\na Mixed models for repeated measures output using all days (1-9) as predictors\nin the model.\nbAbstinence means were calculated during days 2 to 6 (drug administration\nphase excluding baseline). Detailed description of values on all days of\ninpatient stay are reported in Author Table 2.\nc Variance in outcome variable explained by model (approximated using -2\nlog-likelihoods).\ndMeasure of model fit; a smaller value indicates a better model fit.\ne P .001.\nf P .01.\ng P .05.\nNabiximols in Cannabis Withdrawal\nOriginal Investigation Research\njamapsychiatry.com\nJAMA Psychiatry\nMarch 2014\nVolume 71, Number 3\n287\nCopyright 2014 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Table 2. Outcome Measures: Unadjusted Modela|||\n|Outcome Variable|Mean Scores|Time \u00d7<br>Time Treatment Treatment R2 LRc AICd|\n||Baseline Abstinenceb||\n|Overall withdrawal score|||\n|Nabiximols 2.51 (1.57) 1.88 (1.64)||77.97 = 3.94e F 1,77.97 = 11.01f F 8,377.97 = 2.39f 0.50 1444.12|\n|F<br>Placebo 1.68 (0.96) 2.22 (1.62) 8,3|||\n|Irritability|||\n|Nabiximols 1.80 (2.40) 1.44 (1.84)||367.97 = 1.48 F 1,75.06 = 3.09 F 8,367.97 = 2.49f 0.42 1775.13|\n|F<br>Placebo 1.31 (1.81) 2.19 (2.34) 8,|||\n|Depression|||\n|Nabiximols 2.78 (2.59) 2.04 (2.43)||377.62 = 1.39 F 1,71.95 = 2.74 F 8,377.62 = 1.85 0.45 1928.86|\n|F<br>Placebo 1.71 (2.26) 2.32 (2.62) 8,|||\n|Anxiety|||\n|Nabiximols 4.07 (3.29) 1.26 (2.11)||89.19 = 8.96e F 1,69.15 = 0.96 F 8,389.19 = 1.08 0.81 1964.28|\n|F<br>Placebo 3.42 (3.02) 1.64 (2.21) 8,3|||\n|Cannabis cravings|||\n|Nabiximols 3.89 (2.81) 1.87 (2.28)||84.05 = 4.38e F 1,73.2 = 10.28f F 8,384.05 = 2.03g 0.66 1812.78|\n|F<br>Placebo 2.04 (1.88) 1.81 (2.26) 8,3|||\n|Physical symptoms|||\n|Nabiximols 1.27 (1.42) 1.07 (1.21)||74.81 = 2.89f F 1,75.46 = 3.66 F 8,374.81 = 1.43 0.18 1261.96|\n|F<br>Placebo 0.84 (0.83) 1.42 (1.50) 8,3|||\n|Sleep difficulty|||\n|Nabiximols 2.95 (2.41) 2.79 (2.58)||43.86 = 3.93e F 1,80.65 = 2.79 F 8,343.86 = 0.98 0.60 1984.70|\n|F<br>Placebo 2.29 (1.92) 3.29 (2.23) 8,3|||\n|Restlessness|||\n|Nabiximols 3.44 (3.36) 2.8 (2.69)||359.46 = 1.51 F 1,81.38 = 0.64 F 8,359.47 = 0.66 0.45 2237.29|\n|F<br>Placebo 3.21 (2.39) 3.52 (2.99) 8,|||\n|Decreased appetite|||\n|Nabiximols 3.56 (3.31) 2.12 (2.88)||357.5 = 2.52f F 1,76.81 = 5.09g F 8,357.5 = 1.13 0.61 2248.24|\n|F<br>Placebo 1.95 (2.96) 2.34 (2.62) 8,|||"
+          },
+          {
+            "evidence": "sha256:06cabedb5713c30613505947906a7466d09ace1c57e8a36a39fc2032fdc5c45d",
+            "kind": "context",
+            "source": "\nAllsop DJ, Copeland J, Lintzeris N, et al. Nabiximols as an agonist replacement therapy during\ncannabis withdrawal: a randomized clinical trial. JAMA Psychiatry.\nPublished online January 15, 2014. doi:10.1001/jamapsychiatry.2013.3947.\n\neMethods. Urine and blood cannabinoid toxicology analysis\n\neTable 1. Mapping of Cannabis Withdrawal Scale items to proposed DSM-5 cannabis withdrawal\nsymptom groupings\n\neFigure 1. Mean creatinine-normalized urine THC-COOH levels measured at baseline (pre-"
+          },
+          {
+            "kind": "limitation",
+            "search_receipt": "sha256:3765a3bc9bc800b0b36870684333da7b4a9a87279dc7587b24be1d28568cee98",
+            "stopping_rationale": "The report and supplement identify overall CWS and symptom-level measures, with daily measurements, but the protocol/analysis intentions are unavailable; therefore the eligible measurement set and justification for reporting cannot be compared.",
+            "unresolved_premise": "Whether other eligible CWS measurements or time points were prespecified and selectively omitted is unresolved."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The report presents an overall withdrawal score and separate symptom measures across daily time points; the supplement maps CWS items to DSM-5 symptom groups. Without the plan, it is unclear which eligible measures/time points were intended and whether any were selectively reported. There is no evidence that selection depended on results.",
+        "question_id": "sq:selection:multiple-measurements",
+        "unknowns": [
+          "Eligible measurement set and planned reporting",
+          "Whether unreported alternatives were omitted and why"
+        ]
+      },
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "evidence": "sha256:7b38ef3bd3b82ae0c2f688eaa8c7ed797ad0d638584ba902af60d1d64f854a99",
+            "kind": "direct_support",
+            "source": "measures analysis).28 Intention-to-treat analysis included all\n51 randomized participants. For descriptive statistics, group\ndifferencesincontinuousvariablesused2-wayanalysesofvari-\nance, and categorical variables used Pearson \u03c72 or Fisher ex-\nact test when cells had a count of less than 5. Statistical analy-\nses were performed with SPSS, version 21 (SPSS Corp).\nThe primary analysis compared main effects and the in-\nteraction of treatment and time on mean difference from base-\nline CWS scores in a mixed models for repeated measures re-\ngression with first-order autoregressive covariance\nstructure.64-66 The model was adjusted with covariates known\nor suspected to influence the experience of cannabis with-\ndrawal (SDS scores),10,18 baseline variables that were signifi-\ncantly different between groups (CWS scores and Sheehan Dis-\nability Scale scores), and other possible moderators of\nwithdrawal (use of NRT/cigarettes,67 temazepam, and caf-\nfeine during abstinence).\nPost hoc pairwise comparisons compared withdrawal be-\ntween groups on each day of treatment adjusted for multiple\ncomparisonsusingtheBonferronimethod.Hierarchicalmodel\nbuilding (step 1: time, treatment, time \u00d7 treatment; step 2: ad-\ndition of covariates) explored changes in variance explained\nusing pseudo-R2 calculated from log-likelihood ratios (R2\nLR).68\nAkaike information criteria69 calculated model fit (smaller val-\nues indicate better fit). Separate analyses tested the effect of\nnabiximols on attenuating DSM-5 cannabis withdrawal symp-\ntoms (Supplement [eTable 1]).7 Effect sizes are reported using\nthe bias-corrected Hedges g (raw difference between 2 means\ndivided by SD adjusted for population size).70 Parametric sta-\ntistics were used on Likert data because interval structure can\nbe assumed if scales are presented as symmetrical.71 Residu-\nals from the primary withdrawal efficacy analysis were nor-\nmally distributed.\nThe effect of nabiximols on retention in withdrawal treat-\nment was assessed with a stepwise Cox proportional hazards\nregression model, first looking at treatment alone, then con-\ntrolling for SDS, Sheehan Disability Scale, and CWS scores and\nthe use of NRT/cigarettes, temazepam, and caffeine. The pro-\nportions of people in each treatment group reporting each AE\nwere analyzed using \u03c72 or the Fisher exact test. Time to re-\nlapse between the end of the inpatient stay and the 28-day fol-\nlow-up were assessed using a Kaplan-Meier survival analysis.\nFinally, changes in cannabis-related problems, the severity of\ncannabis dependence, and cannabis use levels were assessed\nusing the mixed models for repeated measures approach. All"
+          },
+          {
+            "evidence": "sha256:73e96ee9d5aeb12dd8fd11b34d4ae414011e6358ebf748315db8ff01dfc39af6",
+            "kind": "indirect_support",
+            "source": "Copyright 2014 American Medical Association. All rights reserved.\n(Table 4). The time between hospital discharge and relapse to\ncannabis use was also not significantly different between the\ngroups (median [95% CI] days: nabiximols, 15 [3.55-26.45]; pla-\ncebo, 6 [0-27.12]; \u03c72\n1 = 0.06; P = .81) (Supplement [eFigure 3]).\nThe number of cannabis-related problems and the severity of\ncannabis dependence decreased by 65% from baseline levels\nacross all participants, with no significant between-group dif-\nferences (Table 4).\nDiscussion\nTo our knowledge, the present study is the first clinical trial\nto examine the effects of a whole cannabis extract (nabixi-\nmols) in the treatment of cannabis withdrawal and only the\nsecond controlled clinical trial of agonist substitution medi-\ncation for cannabis dependence in treatment seekers.73 Our\nfindings provide support for the efficacy of nabiximols in treat-\ning cannabis withdrawal, consistent with earlier laboratory\nstudies with synthetic oral THC.24,28,29,73 Nabiximols re-\nduced the severity and time course of cannabis withdrawal\ncomparedwithplacebo(Figure2)andimprovedretentionrates\nduring inpatient treatment. In addition, nabiximols signifi-\ncantly reduced cravings, irritability, and depression. Anxiety\nand cravings fell below pretreatment baseline levels in both\ngroups during treatment, possibly resulting from high base-\nline anxiety associated with imminent inpatient detoxifica-\ntion and a lack of cannabis-related cues in the inpatient envi-\nronment. There was no increase in withdrawal severity on\ntermination of nabiximols, suggesting minimal discontinua-\ntion or rebound effects with 6-day use of this medication. Both\ngroups had markedly reduced cannabis use at follow-up, as\nverifiedbyurinalysis(Table4andSupplement[eFigure1]).This\nis consistent with an outpatient dronabinol randomized clini-\nTable 2. Outcome Measures: Unadjusted Modela\nOutcome Variable\nMean Scores\nTime\nTreatment\nTime \u00d7\nTreatment\nR2\nLR\nc\nAICd\nBaseline\nAbstinenceb\nOverall withdrawal score\nNabiximols\n2.51 (1.57)\n1.88 (1.64)\nF8,377.97 = 3.94e\nF1,77.97 = 11.01f\nF8,377.97 = 2.39f\n0.50\n1444.12\nPlacebo\n1.68 (0.96)\n2.22 (1.62)\nIrritability\nNabiximols\n1.80 (2.40)\n1.44 (1.84)\nF8,367.97 = 1.48\nF1,75.06 = 3.09\nF8,367.97 = 2.49f\n0.42\n1775.13\nPlacebo\n1.31 (1.81)\n2.19 (2.34)\nDepression\nNabiximols\n2.78 (2.59)\n2.04 (2.43)\nF8,377.62 = 1.39\nF1,71.95 = 2.74\nF8,377.62 = 1.85\n0.45\n1928.86\nPlacebo\n1.71 (2.26)\n2.32 (2.62)\nAnxiety\nNabiximols\n4.07 (3.29)\n1.26 (2.11)\nF8,389.19 = 8.96e\nF1,69.15 = 0.96\nF8,389.19 = 1.08\n0.81\n1964.28\nPlacebo\n3.42 (3.02)\n1.64 (2.21)\nCannabis cravings\nNabiximols\n3.89 (2.81)\n1.87 (2.28)\nF8,384.05 = 4.38e\nF1,73.2 = 10.28f\nF8,384.05 = 2.03g\n0.66\n1812.78\nPlacebo\n2.04 (1.88)\n1.81 (2.26)\nPhysical symptoms\nNabiximols\n1.27 (1.42)\n1.07 (1.21)\nF8,374.81 = 2.89f\nF1,75.46 = 3.66\nF8,374.81 = 1.43\n0.18\n1261.96\nPlacebo\n0.84 (0.83)\n1.42 (1.50)\nSleep difficulty\nNabiximols\n2.95 (2.41)\n2.79 (2.58)\nF8,343.86 = 3.93e\nF1,80.65 = 2.79\nF8,343.86 = 0.98\n0.60\n1984.70\nPlacebo\n2.29 (1.92)\n3.29 (2.23)\nRestlessness\nNabiximols\n3.44 (3.36)\n2.8 (2.69)\nF8,359.46 = 1.51\nF1,81.38 = 0.64\nF8,359.47 = 0.66\n0.45\n2237.29\nPlacebo\n3.21 (2.39)\n3.52 (2.99)\nDecreased appetite\nNabiximols\n3.56 (3.31)\n2.12 (2.88)\nF8,357.5 = 2.52f\nF1,76.81 = 5.09g\nF8,357.5 = 1.13\n0.61\n2248.24\nPlacebo\n1.95 (2.96)\n2.34 (2.62)\nAbbreviation: AIC, Akaike information criterion.\na Mixed models for repeated measures output using all days (1-9) as predictors\nin the model.\nbAbstinence means were calculated during days 2 to 6 (drug administration\nphase excluding baseline). Detailed description of values on all days of\ninpatient stay are reported in Author Table 2.\nc Variance in outcome variable explained by model (approximated using -2\nlog-likelihoods).\ndMeasure of model fit; a smaller value indicates a better model fit.\ne P .001.\nf P .01.\ng P .05.\nNabiximols in Cannabis Withdrawal\nOriginal Investigation Research\njamapsychiatry.com\nJAMA Psychiatry\nMarch 2014\nVolume 71, Number 3\n287\nCopyright 2014 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Table 2. Outcome Measures: Unadjusted Modela|||\n|Outcome Variable|Mean Scores|Time \u00d7<br>Time Treatment Treatment R2 LRc AICd|\n||Baseline Abstinenceb||\n|Overall withdrawal score|||\n|Nabiximols 2.51 (1.57) 1.88 (1.64)||77.97 = 3.94e F 1,77.97 = 11.01f F 8,377.97 = 2.39f 0.50 1444.12|\n|F<br>Placebo 1.68 (0.96) 2.22 (1.62) 8,3|||\n|Irritability|||\n|Nabiximols 1.80 (2.40) 1.44 (1.84)||367.97 = 1.48 F 1,75.06 = 3.09 F 8,367.97 = 2.49f 0.42 1775.13|\n|F<br>Placebo 1.31 (1.81) 2.19 (2.34) 8,|||\n|Depression|||\n|Nabiximols 2.78 (2.59) 2.04 (2.43)||377.62 = 1.39 F 1,71.95 = 2.74 F 8,377.62 = 1.85 0.45 1928.86|\n|F<br>Placebo 1.71 (2.26) 2.32 (2.62) 8,|||\n|Anxiety|||\n|Nabiximols 4.07 (3.29) 1.26 (2.11)||89.19 = 8.96e F 1,69.15 = 0.96 F 8,389.19 = 1.08 0.81 1964.28|\n|F<br>Placebo 3.42 (3.02) 1.64 (2.21) 8,3|||\n|Cannabis cravings|||\n|Nabiximols 3.89 (2.81) 1.87 (2.28)||84.05 = 4.38e F 1,73.2 = 10.28f F 8,384.05 = 2.03g 0.66 1812.78|\n|F<br>Placebo 2.04 (1.88) 1.81 (2.26) 8,3|||\n|Physical symptoms|||\n|Nabiximols 1.27 (1.42) 1.07 (1.21)||74.81 = 2.89f F 1,75.46 = 3.66 F 8,374.81 = 1.43 0.18 1261.96|\n|F<br>Placebo 0.84 (0.83) 1.42 (1.50) 8,3|||\n|Sleep difficulty|||\n|Nabiximols 2.95 (2.41) 2.79 (2.58)||43.86 = 3.93e F 1,80.65 = 2.79 F 8,343.86 = 0.98 0.60 1984.70|\n|F<br>Placebo 2.29 (1.92) 3.29 (2.23) 8,3|||\n|Restlessness|||\n|Nabiximols 3.44 (3.36) 2.8 (2.69)||359.46 = 1.51 F 1,81.38 = 0.64 F 8,359.47 = 0.66 0.45 2237.29|\n|F<br>Placebo 3.21 (2.39) 3.52 (2.99) 8,|||\n|Decreased appetite|||\n|Nabiximols 3.56 (3.31) 2.12 (2.88)||357.5 = 2.52f F 1,76.81 = 5.09g F 8,357.5 = 1.13 0.61 2248.24|\n|F<br>Placebo 1.95 (2.96) 2.34 (2.62) 8,|||"
+          },
+          {
+            "kind": "limitation",
+            "search_receipt": "sha256:3765a3bc9bc800b0b36870684333da7b4a9a87279dc7587b24be1d28568cee98",
+            "stopping_rationale": "The article reports unadjusted and covariate-adjusted repeated-measures models, post hoc daily comparisons, and multiple imputation, but the unavailable plan prevents identifying all eligible analyses or the reporting rationale. No captured evidence links selection to favorable results.",
+            "unresolved_premise": "Whether the reported unadjusted CWS model was selected from eligible analyses because of its result is unresolved."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "Several analysis choices are reported, including adjusted and unadjusted models, daily pairwise comparisons, and imputation. Multiplicity alone does not show result-driven selection; the eligible analysis set and reporting rationale are unknown because the plan was unavailable.",
+        "question_id": "sq:selection:multiple-analyses",
+        "unknowns": [
+          "Complete eligible analysis set and planned primary analysis",
+          "Whether any analysis was withheld because of its result"
+        ]
+      }
+    ],
+    "accepted_save_events": [
+      {
+        "log_path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/allsop-2014/turn-2.jsonl",
+        "log_sha256": "bfc2664044195f32eaa9a4c2c7a79ab88c31fcaa6a084e6aa103679a6130a290",
+        "event_ordinal": 158,
+        "arguments": {
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:selection",
+          "expected_revision": 8,
+          "answers": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_8a77fee95ddf1b4c"
+                },
+                {
+                  "kind": "limitation",
+                  "unresolved_premise": "Whether the plan covering the approved CWS comparison and model was finalized before investigators could access unblinded outcome data is unresolved; the protocol is not among captured Sources.",
+                  "stopping_rationale": "The report directs readers to request the protocol from the authors. I searched the complete captured main report and supplement for 'statistical analysis plan' (zero hits), and scoped the main report for 'prespecified' (zero hits); reviewed its navigation to terminal and read the methods and supplement contents. No captured plan or chronology resolves this premise.",
+                  "search_receipt": "sr_3765a3bc9bc800b0"
+                }
+              ],
+              "justification": "The report explicitly says the trial protocol is available from authors on request. No captured protocol/SAP specifies the relevant plan or when it was finalized relative to unblinded data access. The report's described analysis cannot establish prespecification or chronology.",
+              "unknowns": [
+                "Applicable plan content and its finalization date",
+                "When investigators could access unblinded outcome data"
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "indirect_support",
+                  "evidence": "eh_73e96ee9d5aeb12d"
+                },
+                {
+                  "kind": "context",
+                  "evidence": "eh_06cabedb5713c306"
+                },
+                {
+                  "kind": "limitation",
+                  "unresolved_premise": "Whether other eligible CWS measurements or time points were prespecified and selectively omitted is unresolved.",
+                  "stopping_rationale": "The report and supplement identify overall CWS and symptom-level measures, with daily measurements, but the protocol/analysis intentions are unavailable; therefore the eligible measurement set and justification for reporting cannot be compared.",
+                  "search_receipt": "sr_3765a3bc9bc800b0"
+                }
+              ],
+              "justification": "The report presents an overall withdrawal score and separate symptom measures across daily time points; the supplement maps CWS items to DSM-5 symptom groups. Without the plan, it is unclear which eligible measures/time points were intended and whether any were selectively reported. There is no evidence that selection depended on results.",
+              "unknowns": [
+                "Eligible measurement set and planned reporting",
+                "Whether unreported alternatives were omitted and why"
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "answer": "no_information",
+              "bases": [
+                {
+                  "kind": "direct_support",
+                  "evidence": "eh_7b38ef3bd3b82ae0"
+                },
+                {
+                  "kind": "indirect_support",
+                  "evidence": "eh_73e96ee9d5aeb12d"
+                },
+                {
+                  "kind": "limitation",
+                  "unresolved_premise": "Whether the reported unadjusted CWS model was selected from eligible analyses because of its result is unresolved.",
+                  "stopping_rationale": "The article reports unadjusted and covariate-adjusted repeated-measures models, post hoc daily comparisons, and multiple imputation, but the unavailable plan prevents identifying all eligible analyses or the reporting rationale. No captured evidence links selection to favorable results.",
+                  "search_receipt": "sr_3765a3bc9bc800b0"
+                }
+              ],
+              "justification": "Several analysis choices are reported, including adjusted and unadjusted models, daily pairwise comparisons, and imputation. Multiplicity alone does not show result-driven selection; the eligible analysis set and reporting rationale are unknown because the plan was unavailable.",
+              "unknowns": [
+                "Complete eligible analysis set and planned primary analysis",
+                "Whether any analysis was withheld because of its result"
+              ],
+              "counterevidence": []
+            }
+          ]
+        },
+        "judgment": "some_concerns"
+      }
+    ],
+    "source_byte_checks": [
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/allsop-2014/yoi130099.pdf",
+        "sha256": "sha256:7203667c63e823aa4f5f10a13d636066e876b4859f3727aa64b1ae1bddc18d28",
+        "page_count": 11,
+        "candidate_pages": [
+          2,
+          4
+        ],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      },
+      {
+        "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/allsop-2014/yoi130099supp1_prod.pdf",
+        "sha256": "sha256:1d33f0dae22aa3c25cf17ff5242dacf7af43e6c5e23ea8a67a45475eebca8dc5",
+        "page_count": 6,
+        "candidate_pages": [],
+        "qualification": "Lexical navigation only, not a semantic entailment or plan-applicability judgment."
+      }
+    ]
+  }
+]
