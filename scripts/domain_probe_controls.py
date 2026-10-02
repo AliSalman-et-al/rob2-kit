@@ -37,13 +37,9 @@ class ProbeLimits(BaseModel):
             + ". Stop after an accepted save, the rejection limit or first observed guard. "
             "At most one model-owned construction correction is allowed within these same "
             "guards; no new invocation or automatic retry. Use returned source recovery and "
-            "preserve unresolved scientific premises. If you need a tool signature, inspect "
-            "only that tool's input declaration, omitting the Promise/output portion. Do not "
-            "print the full tool catalog. The hosted nested answer schema has already been "
-            "verified; no repeated schema demonstration is required. For large tool responses, "
-            "set the code-mode output budget to retain all returned content, or request a "
-            "smaller server page and follow its continuation. Do not treat clipped output as "
-            "complete reading."
+            "preserve unresolved scientific premises. The launcher exposes rob2 tools directly "
+            "with their complete typed inputs. Follow every returned Domain context and source "
+            "reading continuation; an unavailable capture is not evidence of absence."
         )
 
 

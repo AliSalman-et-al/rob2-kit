@@ -126,3 +126,25 @@ def test_monitor_uses_each_validated_limit(controls, guard: str) -> None:
     else:
         counters["idle_seconds"] = limits.idle_seconds
     assert controls.guard_stop(limits, usage, **counters) == expected[guard]
+
+
+def test_probe_uses_direct_mcp_without_changing_model_or_access(controls, tmp_path: Path) -> None:
+    launcher = importlib.import_module("run_domain_probe")
+    command = launcher.probe_command(tmp_path)
+    assert command[command.index("-m") + 1] == "gpt-6-luna"
+    assert command[command.index("-s") + 1] == "read-only"
+    assert 'model_reasoning_effort="medium"' in command
+    assert 'features.code_mode={enabled=true,direct_only_tool_namespaces=["mcp__rob2"]}' in command
+
+
+def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> None:
+    from replay_domain_probe_delivery import replay
+
+    path = (
+        Path(__file__).parents[1]
+        / "docs/evaluation/2026-10-02-deliver-d3-completion-17bad3d/events.jsonl"
+    )
+    result = replay(path)
+    assert result["scientific_data_recovered_exactly"]
+    assert len(result["default_pages"]) > 1
+    assert result["all_recovery_cursors_preserved"]

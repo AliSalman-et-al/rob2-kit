@@ -37,10 +37,9 @@ def preflight(root: Path) -> tuple[dict[str, Any], ProbeLimits, str]:
     return manifest, limits, prompt
 
 
-def run(root: Path) -> None:
-    manifest, limits, prompt = preflight(root)
-    env = {**os.environ, "CODEX_HOME": str(root / "home")}
-    command = [
+def probe_command(root: Path) -> list[str]:
+    """Keep rob2 tools direct: no generated ALL_TOOLS catalog or exec output clipping."""
+    return [
         "codex",
         "exec",
         "--strict-config",
@@ -49,14 +48,22 @@ def run(root: Path) -> None:
         "-s",
         "read-only",
         "-m",
-        manifest["model"],
+        "gpt-6-luna",
         "-c",
         'model_reasoning_effort="medium"',
+        "-c",
+        'features.code_mode={enabled=true,direct_only_tool_namespaces=["mcp__rob2"]}',
         "--json",
         "-o",
         str(root / "response.txt"),
         "-",
     ]
+
+
+def run(root: Path) -> None:
+    manifest, limits, prompt = preflight(root)
+    env = {**os.environ, "CODEX_HOME": str(root / "home")}
+    command = probe_command(root)
     records: dict[str, dict[str, Any]] = {}
     code_calls = code_completed = mcp_calls = mcp_completed = rejections = saves = 0
     accepted = None
