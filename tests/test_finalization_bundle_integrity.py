@@ -698,6 +698,20 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
     assert _standalone_verify(artifact).returncode == 0
 
 
+def test_pre_d27_clarification_pack_remains_verifiable(tmp_path: Path) -> None:
+    source = _artifact(tmp_path / "source")
+
+    def use_previous_guidance(canonical: dict[str, Any]) -> None:
+        canonical["scientific_pack"]["content_hash"] = (
+            "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
+        )
+
+    previous = tmp_path / "pre-d27-clarification.rob2.zip"
+    _rewrite_rehashed(source, previous, use_previous_guidance)
+    assert verify_bundle(previous)
+    assert _standalone_verify(previous).returncode == 0
+
+
 def test_prior_v08_scientific_pack_remains_verifiable(tmp_path: Path) -> None:
     source = _artifact(tmp_path / "source")
 

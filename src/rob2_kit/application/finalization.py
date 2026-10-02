@@ -2993,6 +2993,10 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value == expected:
         return True
+    prior_conditional_impact_guidance = {
+        **expected,
+        "content_hash": "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c",
+    }
     historical = {
         "id": "rob2.parallel.assignment",
         "version": "2019.1",
@@ -3067,6 +3071,7 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         "result_semantics_version": _GROUP_VALUES_RESULT_SEMANTICS_VERSION,
     }
     return value in (
+        prior_conditional_impact_guidance,
         previous_result_proof,
         current_pack_legacy_proof,
         current_pack_prior_guidance,

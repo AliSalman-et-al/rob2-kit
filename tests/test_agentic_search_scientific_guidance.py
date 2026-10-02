@@ -536,7 +536,9 @@ def test_d2_exclusion_guidance_does_not_conflate_missing_with_omitted_outcomes()
         in guidance
     )
     assert "timing alone does not establish availability or the exclusion reason" in guidance
-    assert "judge 2.7 only for the identified assignment-analysis failure" in guidance
+    assert "when 2.6 is no, probably_no, or no_information" in guidance
+    assert "could the wrong-group analysis or exclusions substantially affect" in guidance
+    assert "demonstrated actual bias or a sensitivity analysis is not required" in guidance
     assert "eligible participant remains an analysis concern" not in guidance
 
 

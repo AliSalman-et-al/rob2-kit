@@ -23,7 +23,7 @@ def test_pack_ids_wording_provenance_and_hashes():
     ) == ("sha256:96ff2d1a649d6b40f40fe7fa73c3127c5eb1725e8392b8728f9d25f951338425")
     assert SCIENTIFIC_PACK.questions[16].wording.startswith("If N/PN/NI to 4.1 and 4.2")
     assert SCIENTIFIC_PACK.content_hash == (
-        "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
+        "sha256:c2650a6e71e28a007872e95fabeafad99688367d8433d4b9f3d3da280ab8a431"
     )
     assert "not attributed to Cochrane" in MAINTAINER_POLICY_PACK.attribution
     assert MAINTAINER_POLICY_PACK.id != SCIENTIFIC_PACK.id
@@ -337,6 +337,23 @@ def test_assignment_analysis_quality_is_separate_from_potential_impact():
     assert evaluate_domain("domain:deviations", excluded).judgment is Judgment.SOME_CONCERNS
     excluded["sq:deviations:substantial-impact"] = "yes"
     assert evaluate_domain("domain:deviations", excluded).judgment is Judgment.HIGH
+
+
+@pytest.mark.parametrize("impact", ["yes", "probably_yes", "no", "probably_no", "no_information"])
+def test_uncertain_assignment_analysis_keeps_potential_impact_active(impact: str) -> None:
+    answers = {
+        "sq:deviations:participants-aware": "no",
+        "sq:deviations:personnel-aware": "no",
+        "sq:deviations:appropriate-analysis": "no_information",
+    }
+    assert "sq:deviations:substantial-impact" in active_questions(answers)
+    answers["sq:deviations:substantial-impact"] = impact
+    expected = (
+        Judgment.HIGH
+        if impact in {"yes", "probably_yes", "no_information"}
+        else Judgment.SOME_CONCERNS
+    )
+    assert evaluate_domain("domain:deviations", answers).judgment is expected
 
 
 def test_measurement_evaluation_keeps_awareness_possible_and_likely_influence_distinct():
