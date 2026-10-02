@@ -125,3 +125,79 @@ def test_direct_citation_does_not_erase_an_explicit_information_limit(tmp_path: 
     assert any(
         item["code"] == "complete_claim_has_unresolved_premise" for item in response["repairs"]
     )
+
+
+@pytest.mark.parametrize("role", ["direct_support", "context"])
+def test_d32_no_can_retain_unknown_bias_with_inspected_evidence(tmp_path: Path, role: str) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    answer = draft["answers"][1]
+    assert answer["question_id"] == "sq:missing:evidence-unbiased"
+    answer["bases"][0]["kind"] = role
+    answer["justification"] = (
+        "Inspected reporting does not establish protection from missing-data bias."
+    )
+    answer["unknowns"] = ["Whether missing outcomes biased the result."]
+    answer["limitations"] = [
+        {
+            "premise": "Whether an informative sensitivity analysis exists elsewhere.",
+            "stopping_rationale": "The bounded source review remains incomplete.",
+        }
+    ]
+    response = _call(workspace, "save_domain_judgment", draft)
+    assert response["outcome"] == "success", response
+
+
+@pytest.mark.parametrize("index, value", [(1, "yes"), (0, "no"), (2, "no")])
+def test_unresolved_positive_reassurance_and_missingness_claims_remain_rejected(
+    tmp_path: Path,
+    index: int,
+    value: str,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    draft["answers"][index]["answer"] = value
+    draft["answers"][index]["limitations"] = [
+        {
+            "premise": "The premise necessary for this claim remains unresolved.",
+            "stopping_rationale": "The bounded review did not resolve it.",
+        }
+    ]
+    # A Yes at D3.2 or No at D3.3 deactivates the later questions.
+    if index in {1, 2}:
+        draft["answers"] = draft["answers"][: index + 1]
+    response = _call(workspace, "save_domain_judgment", draft)
+    assert response["outcome"] == "repair"
+    assert any(r["code"] == "complete_claim_has_unresolved_premise" for r in response["repairs"])
+
+
+def test_d32_no_still_requires_inspected_evidence_or_valid_search(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    draft["answers"][1]["bases"] = []
+    draft["answers"][1]["limitations"] = [
+        {
+            "premise": "No reassuring analysis is known.",
+            "stopping_rationale": "No source was inspected for this premise.",
+        }
+    ]
+    response = _call(workspace, "save_domain_judgment", draft)
+    assert any(r["code"] == "answer_requires_direct_basis" for r in response["repairs"])
+
+
+@pytest.mark.parametrize("invalid", ["evidence", "search_receipt"])
+def test_d32_negative_evidence_exception_does_not_bypass_handle_validation(
+    tmp_path: Path,
+    invalid: str,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    if invalid == "evidence":
+        draft["answers"][1]["bases"] = [{"kind": "context", "evidence": "eh_ffffffffffffffff"}]
+    else:
+        draft["answers"][1]["bases"] = [
+            {"kind": "absence", "search_receipt": "sr_ffffffffffffffff"}
+        ]
+    response = _call(workspace, "save_domain_judgment", draft)
+    assert response["outcome"] == "repair"
+    assert response["head"]["state_revision"] == revision

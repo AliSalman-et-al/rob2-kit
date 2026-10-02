@@ -55,3 +55,37 @@ scientific meaning. The unchanged first call passes transport in an offline
 control but still receives complete_claim_has_unresolved_premise for definitive
 D3.2 No with a declared information limit. No further paid check ran. See the
 separated-submission diagnostic for exact usage and retained failures.
+
+## D3.2 scientific correction after the offline control
+
+The initial interpretation of `complete_claim_has_unresolved_premise` as a correct
+remaining rejection was too broad. Cochrane Box 8 (full guidance p. 45) asks
+whether there is evidence that the result was not biased. Its response set omits
+No information; a No identifies lack of reassuring evidence, not proven bias.
+The retained MONARCH-plus draft explicitly said that bias was not demonstrated,
+and preserved unknown mechanism and incomplete source coverage. Those limits do
+not contradict its No at D3.2.
+
+The gate now treats only D3.2 No as a scoped negative evidence claim. It can retain
+information limits and cite inspected context or a valid scoped no-hit receipt.
+A limitation alone still cannot support the answer. D3.2 Yes and other definitive
+missing-data claims still require supporting Evidence and resolved premises.
+Receipt validation, source/Trial identity, counterpoint requirements and the
+risk algorithm remain active; submitted answers are never changed automatically.
+
+An offline copy of the retained case, after refreshing context for the changed
+pack, accepted the exact first separated submission without changing any answer,
+justification, unknown, citation role or limitation. The resulting algorithmic
+judgment is High (D3.1 NI, D3.2 No, D3.3 NI, D3.4 NI). This is a gate correction,
+not evidence of benchmark accuracy or a successful model run. The missing raw
+registry source remains unavailable. The earlier failed receipt is preserved;
+the new receipt is `2026-10-02-monarch-plus-separated-submission/offline-d32-negative-control.json`.
+No paid inference was performed for this correction.
+
+Primary guidance: https://www.cochrane.de/sites/cochrane.de/files/uploads/RoB_2.0_guidance_2019.pdf
+
+Validation: 23 submission tests and 18 input-contract/reasoning tests passed;
+`ty check`, Ruff lint/format and `git diff --check` passed. Positive controls
+cover inspected context/direct citations; negative controls cover D3.2 Yes,
+D3.1/D3.3 No with unresolved premises, unsupported D3.2 No, and invalid Evidence
+and SearchReceipt handles. The public wire schema is unchanged.

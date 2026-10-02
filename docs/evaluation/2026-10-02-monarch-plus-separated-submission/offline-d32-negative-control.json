@@ -1,0 +1,82 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "assessment",
+    "state_revision": 14,
+    "next_action": {
+      "operation": "get_domain_context",
+      "authority": "host",
+      "trial_id": "monarch-plus",
+      "domain_id": "domain:measurement"
+    },
+    "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+  },
+  "data": {
+    "checkpoint": {
+      "identity": "sha256:6a976ec1977701cc1eda0f2798b499c26bef173ffc9b25ba97304f86028b446a",
+      "trial_id": "monarch-plus",
+      "domain_id": "domain:missing",
+      "judgment": "high",
+      "driver_questions": [
+        "sq:missing:likely-dependent"
+      ],
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "question_id": "sq:missing:data-available",
+            "status": "unresolved",
+            "evidence": [
+              "sha256:97a4618cbe20d1542e3470ae708c5b5eb15cf53d6aac295e1f543e75299486da",
+              "sha256:40041818a00a52ba5a39e83af9b9356e5d6697e8e68358c1b1bc0461317dcada"
+            ],
+            "search_receipts": [],
+            "unresolved_premises": [
+              "The extent of observed PFS outcome data for all randomized participants remains unknown."
+            ],
+            "support_attribution": "not_established"
+          },
+          {
+            "question_id": "sq:missing:evidence-unbiased",
+            "status": "unresolved",
+            "evidence": [
+              "sha256:40041818a00a52ba5a39e83af9b9356e5d6697e8e68358c1b1bc0461317dcada",
+              "sha256:97a4618cbe20d1542e3470ae708c5b5eb15cf53d6aac295e1f543e75299486da"
+            ],
+            "search_receipts": [],
+            "unresolved_premises": [
+              "No retrieved evidence demonstrates that the approved estimate was unbiased by missing outcome data."
+            ],
+            "support_attribution": "not_established"
+          },
+          {
+            "question_id": "sq:missing:true-value-dependent",
+            "status": "unresolved",
+            "evidence": [
+              "sha256:97a4618cbe20d1542e3470ae708c5b5eb15cf53d6aac295e1f543e75299486da"
+            ],
+            "search_receipts": [],
+            "unresolved_premises": [
+              "Whether missingness could depend on true PFS remains unresolved."
+            ],
+            "support_attribution": "not_established"
+          },
+          {
+            "question_id": "sq:missing:likely-dependent",
+            "status": "unresolved",
+            "evidence": [
+              "sha256:97a4618cbe20d1542e3470ae708c5b5eb15cf53d6aac295e1f543e75299486da"
+            ],
+            "search_receipts": [],
+            "unresolved_premises": [
+              "Likelihood that missingness depended on true PFS cannot be assessed."
+            ],
+            "support_attribution": "not_established"
+          }
+        ],
+        "identity": "sha256:7dd10eb3afc00dd6aa61298e2e92707652c2beb38351af129e6b8e1932389431"
+      }
+    },
+    "trial_ready_for_review": false,
+    "retry": false
+  }
+}

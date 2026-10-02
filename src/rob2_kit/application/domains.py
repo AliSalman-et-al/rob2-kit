@@ -2674,15 +2674,24 @@ def save_domain_judgment(
                 )
             seen_basis.add(key)
             bases.append(basis)
-        if answer["answer"] in {"yes", "no"} and not direct_basis:
+        # D3.2 No denies the presence of reassuring evidence, not the absence
+        # of bias. An unresolved mechanism does not contradict that answer.
+        denies_reassuring_evidence = (
+            answer_item.question_id == "sq:missing:evidence-unbiased" and answer["answer"] == "no"
+        )
+        scoped_negative_basis = denies_reassuring_evidence and any(
+            item.get("kind") != "limitation" for item in bases
+        )
+        if answer["answer"] in {"yes", "no"} and not (direct_basis or scoped_negative_basis):
             repairs.append(
                 _repair(
                     f"/answers/{answer_index}/bases",
                     "answer_requires_direct_basis",
                     f"question '{answer_item.question_id}' has definitive answer "
                     f"'{answer['answer']}', which needs a direct, indirect, or contradictory "
-                    "Evidence basis. The submitted answer is unchanged; add the required "
-                    "support or reconsider the answer from the evidence.",
+                    "Evidence basis (D3.2 No may instead cite inspected context/inference "
+                    "or a valid scoped no-hit receipt). The submitted answer is unchanged; "
+                    "add the required support or reconsider the answer from the evidence.",
                 )
             )
         elif answer["answer"] in {"probably_yes", "probably_no"} and not (
@@ -2697,8 +2706,10 @@ def save_domain_judgment(
                     "premise. The submitted answer is unchanged.",
                 )
             )
-        if answer["answer"] in {"yes", "no"} and any(
-            item.get("kind") == "limitation" for item in bases
+        if (
+            answer["answer"] in {"yes", "no"}
+            and not denies_reassuring_evidence
+            and any(item.get("kind") == "limitation" for item in bases)
         ):
             repairs.append(
                 _repair(

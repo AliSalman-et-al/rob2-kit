@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.3"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.4"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -415,7 +415,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result, including the missingness mechanism it addresses.",
             "If the source only changes intervention-group attribution or analysis membership, record that distinction; do not describe it as a test of unobserved outcome values without source support.",
         ),
-        "No_information is not an allowed response to this question in the parallel-assignment pack; provide direct evidence or answer no/probably no.",
+        "No_information is not an allowed response to this question in the parallel-assignment pack. Answer no/probably no when inspected evidence does not establish protection from missing-data bias. No does not assert that bias occurred: retain source coverage limits and unknown missingness mechanisms. Ground the scoped negative answer in inspected Evidence or a valid scoped no-hit receipt; an unsupported limitation alone is insufficient.",
         (
             _anchor(
                 Answer.YES,
