@@ -1,0 +1,27 @@
+{
+  "code_sha": "687fb2456a77a7e92a309e54e427292d6b114850",
+  "case": "emperor-reduced",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "cli_invocations": 1,
+  "recorded_inference_requests": 0,
+  "usage": {
+    "input_tokens": 0,
+    "cached_input_tokens": 0,
+    "output_tokens": 0,
+    "reasoning_output_tokens": 0
+  },
+  "elapsed_seconds": 21.695238218999293,
+  "tool_calls": 0,
+  "proposal_attempts": 0,
+  "exact_failure": "workspace routing discovery failed",
+  "hosted_tool_schema_verified": false,
+  "scientific_result_correctness": "not assessed; no model output",
+  "schema_acceptance": "not assessed; no proposal call",
+  "benchmark_original_database_hashes_unchanged": true,
+  "probe_state_unchanged": true,
+  "retry_invocations": 0,
+  "operator_payload_repairs": 0,
+  "implementation_changes": 0,
+  "limitation": "Capture instrument changes chatgpt_base_url to a local HTTP pass-through and disables WebSocket transport/compression. Failure occurred at routing discovery before a Responses request was captured. This does not establish a production rob2 MCP bug or omission of nested tool schemas. CLI performed its default routing retries within the single invocation; none reached recorded inference."
+}
