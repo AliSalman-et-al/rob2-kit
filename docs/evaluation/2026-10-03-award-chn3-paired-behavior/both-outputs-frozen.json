@@ -1,0 +1,87 @@
+{
+  "scientific_adjudication_started": false,
+  "hashes": {
+    "baseline/events.jsonl": "4bd509fb751aa6c2832572d6bea611941e0df768253cb8cb13855833e7f0587f",
+    "baseline/model-settings.json": "c29fc8e8e20150e502f70e527506cd2ae827fa322879c710bd8cea2d770dfe62",
+    "baseline/provider-response-usage.json": "00f68a394aba51de20eeefda5a5c558633ae633063a84bd3a399d71a0674d3a5",
+    "baseline/run.json": "8d35ff28a993b83e5213e23cc820c61209d5667fba8984852d73a6160367684a",
+    "baseline/response.txt": "31b998bfa200bd0c6f8fb90c66d4534a6589d9fe298e257f041489fa9434dded",
+    "baseline/launch-preflight.json": "54a67283174639b5f787eccbd618f6f1583e574a9e249ecd456f95744b5acbeb",
+    "baseline/command.json": "9fc4478dad8c9b571afb8207d87b600e5ccde3f882820c414252f9f7b2c28e15",
+    "baseline/stderr.log": "643ae7b539123d82001dbb7e1e89dc08d8744fceeefb9dd13102aa1ab01fdd77",
+    "baseline/input.txt": "891bdb97ee551ba86655855a1c946d56dabcba2412b849956b50a5d9fc5174bf",
+    "baseline/invocation-intent.json": "80b311b55ef19fdaa5046e6737248f17f06232ebf74b3d77240c81a00ebd014e",
+    "baseline/evidence-manifest.json": "69f551fa23ddce88ff01a92cbea68a483d4577891ec5b382ae414986ac72ab7f",
+    "current/events.jsonl": "4300ba66baa9b6c2ca9be4b5aa26194480d5ac44986c5f63fa103e2f7f5b7e27",
+    "current/model-settings.json": "f9035c6ff54dbf88419607dadaa849170cc3c02f4127a7b3b7b2a27d87d15d2f",
+    "current/provider-response-usage.json": "2a769f00159553dcc6d3ee40edf048815368c78bbbb2304677fd0c6c03bf2904",
+    "current/run.json": "83d33e9f5fc6fd3f0172a32fb8b3fb333ebf5e5c51b4d869af6c24122125b758",
+    "current/response.txt": "0d9254547f493311d0a7ab65a74e6c6ceb26905aefc74c4f402c8220adc5740a",
+    "current/launch-preflight.json": "932994165e584e539544ed069ebb58a21c4715a7eb46c358b853edf22772cd47",
+    "current/command.json": "51320e536f0b8a18e67606fc4d988788bc040968e3230086f3b4af9eaa442c0d",
+    "current/stderr.log": "3aa81e0def0b3bc5d8ff2fddcce8a313e8da0554182057ee36202acc599430b2",
+    "current/input.txt": "c9afde36f78bdd891ec26ce320220b3b0694b8264e69e7b5fc791adb4e839e67",
+    "current/invocation-intent.json": "486d760a00027ed01ecd0567a8f33ed510c33b9f787380005b7ba37329131f6a",
+    "current/evidence-manifest.json": "c25e40909e8a51d6b22d730ee1c4cfddf57cfdd1c7a0d8d9d7e73daed531380e"
+  },
+  "results": [
+    {
+      "arm": "baseline",
+      "one_invocation": true,
+      "no_retry": true,
+      "exit_code": 0,
+      "stop_reason": null,
+      "elapsed_seconds": 23.72147915000096,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 36860,
+        "cached_input_tokens": 2816,
+        "output_tokens": 436,
+        "reasoning_output_tokens": 0
+      },
+      "uncached_input_tokens": 34044,
+      "output_overshoot": 0,
+      "response_file_exists": true,
+      "model_verified": true,
+      "model_settings": [
+        {
+          "model": "gpt-6-luna",
+          "effort": "medium",
+          "turn_id": "01a102bc-0d18-76a3-9b04-5169da7a0d7a"
+        }
+      ],
+      "usage_response_ids": [
+        "resp_01306c322b04c5e5016ac1364b921887d0a1440ed774897577"
+      ]
+    },
+    {
+      "arm": "current",
+      "one_invocation": true,
+      "no_retry": true,
+      "exit_code": 0,
+      "stop_reason": null,
+      "elapsed_seconds": 19.260838663001778,
+      "tool_calls": 0,
+      "usage": {
+        "input_tokens": 36996,
+        "cached_input_tokens": 3840,
+        "output_tokens": 552,
+        "reasoning_output_tokens": 0
+      },
+      "uncached_input_tokens": 33156,
+      "output_overshoot": 0,
+      "response_file_exists": true,
+      "model_verified": true,
+      "model_settings": [
+        {
+          "model": "gpt-6-luna",
+          "effort": "medium",
+          "turn_id": "01a102bc-66a7-7fc1-82bd-75c87fa5ac0c"
+        }
+      ],
+      "usage_response_ids": [
+        "resp_058524051580ce99016ac13663e38487d0bb838d8f1a6ab7a6"
+      ]
+    }
+  ]
+}
