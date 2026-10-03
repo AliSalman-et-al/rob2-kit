@@ -1,0 +1,45 @@
+{
+  "code_sha": "bd92ec84fb1b24a05ac742db8ea01f3c9b7bcf6a",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "case": "exscel",
+  "files": [
+    {
+      "name": "NEJMoa1612917.pdf",
+      "sha256": "b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121"
+    },
+    {
+      "name": "nejmoa1612917_appendix.pdf",
+      "sha256": "df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16"
+    },
+    {
+      "name": "nejmoa1612917_disclosures.pdf",
+      "sha256": "8fbf51ed48eb5997b43ffcb719474279d0af6725fae0040441d8cd3647885699"
+    },
+    {
+      "name": "nejmoa1612917_protocol.pdf",
+      "sha256": "d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2"
+    },
+    {
+      "name": "sources.toml",
+      "sha256": "8fe6b7773df4f76b31f9837f6fa50b93b19c873fd8130aa4bdcc52aac185d030"
+    }
+  ],
+  "no_invocation_retry": true,
+  "guards": {
+    "wall_seconds": 600,
+    "idle_seconds": 180,
+    "tool_calls": 30,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": null,
+    "uncached_input_tokens": null,
+    "output_tokens": 6000
+  },
+  "guard_identity": "sha256:201da5b6ce5a1955c864b45f296bb57c93e8230f1d65b14df8659a89ea733211",
+  "prompt_sha256": "e97f341caf347fd671dac490aab8df274e7a3e7d682a933aeeee904268f72894",
+  "registry_transport": "Blocked outbound httpx registry call at normal intake boundary; original metadata unchanged; no record fabricated or retrieved. Normal unavailable condition retained.",
+  "auth": "Existing auth/model cache symlinked unchanged; no login/token/config modification to originals.",
+  "prior_approval_retained": false,
+  "prior_answers_or_labels_given": false
+}

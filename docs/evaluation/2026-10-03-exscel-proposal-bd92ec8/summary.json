@@ -1,0 +1,31 @@
+{
+  "saved": true,
+  "approved": false,
+  "domains_assessed": 0,
+  "workflow_phase": "proposal",
+  "revision": 3,
+  "review_identity": "sha256:c8091d311b549d5d26848195814279c93f2ce1e8ef2b9709bcf692c91c7a4a66",
+  "proposal_identity": "sha256:28982d105319fc9fddb2b437f6ffbac041a811e0b2fc209ea1213202ee4aba5d",
+  "next_action": "researcher_review",
+  "validation_attempts": 2,
+  "MCP_calls": 17,
+  "custom_calls": 0,
+  "elapsed_seconds": 138.7704981470015,
+  "usage": {
+    "input_tokens": 934335,
+    "cached_input_tokens": 844544,
+    "output_tokens": 4967,
+    "reasoning_output_tokens": 787
+  },
+  "total_input_plus_output_tokens": 939302,
+  "uncached_input_tokens": 89791,
+  "runner_stop_reason": null,
+  "actual_terminal": "Model exited normally with approval pending. Runner incorrectly recognized only success, whereas save_proposal returned review_required; four post-save status/checkpoint calls occurred within same invocation. No approval or domain tools enabled.",
+  "guard_overshoot": false,
+  "paid_invocations": 1,
+  "operator_repair": false,
+  "intake_setup_recovery": "Before inference, relative-path state inspection failed after successful intake; resolved path recovered existing intake without rerunning or changing canonical state.",
+  "scientific_scope": "Primary target, assignment, population, first-event window and quantitative effect supported by primary report. Complete clinical event definition was not inspected; specified clarity exceeds demonstrated supplement closure. Registry conflict explicitly retained.",
+  "accuracy_gain_claimed": false,
+  "cost_dollars": null
+}

@@ -1,0 +1,12 @@
+**Proposal saved; Proposal Review is pending researcher review.** No Domain assessment was started.
+
+The immutable review concerns Trial `exscel`, with target: *composite of cardiovascular death, nonfatal MI, or nonfatal stroke; time to first event; all randomized participants; exenatide 2 mg weekly versus matching placebo; primary time-to-event hazard ratio.*
+
+**Selected Result:** exact match to the primary composite outcome. The report defines it as the first occurrence of cardiovascular death, nonfatal MI, or nonfatal stroke and reports the primary ITT hazard ratio as **0.91 (95% CI, 0.83 to 1.00)**. It states the coprimary hypotheses were noninferiority for safety and superiority for efficacy; the result met the former but not the latter.
+
+**Identity uncertainty preserved:** the primary article identifies EXSCEL as **NCT01144338**, while intake metadata declares **NCT01455896**. Registry retrieval was unavailable, and the captured sources do not resolve whether the dossier applies to the conflicting metadata identifier. This was not silently reconciled.
+
+Review identity: `sha256:c8091d311b549d5d26848195814279c93f2ce1e8ef2b9709bcf692c91c7a4a66`  
+Saved proposal identity: `sha256:28982d105319fc9fddb2b437f6ffbac041a811e0b2fc209ea1213202ee4aba5d`
+
+Awaiting the researcher’s actual approval or correction.
