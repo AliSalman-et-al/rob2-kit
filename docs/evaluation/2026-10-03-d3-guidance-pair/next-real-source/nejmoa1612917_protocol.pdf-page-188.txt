@@ -1,0 +1,43 @@
+1: Statistical Analysis Plan 
+2: Study Code D5551C00003(BCB109)
+3: Edition Number 4 
+4: February 23rd  2017
+5: 21
+6: assessed, and 2) the date of last dose of study medication, and 3) the right censoring date. 
+7: Patients who never start the study drug will be censored at randomization.
+8: On-treatment + n days Censoring Scheme (where n=7, 30, and 70): patients will be censored 
+9: at the earliest of: 1) date of last contact where all elements of the endpoint could be assessed, 
+10: 2) the date of last dose of study medication + n days, and 3) the right censoring date. Patients 
+11: who never start the study drug will be censored at randomization.
+12: Cut-off Date Censoring Scheme: patients will be censored at the earliest of: 1) date of last 
+13: contact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut 
+14: off date.  The primary endpoint cut off date will be determined by the Executive Committee as 
+15: the date when the sites will start bringing patients back for the Trial Termination visit. Patients 
+16: without any assessment of the endpoint will be censored at randomization.
+17: Right censoring date is defined as the last known alive date as collected at the trial termination 
+18: visit (TTV form) except for deceased patients where it is the adjudicated date of the death.
+19: 4.1.2.2
+20: Assumption on Non-informative Censoring
+21: The time to event analysis (Cox regression) relies on the assumption of non-informative 
+22: censoring. To examine this assumption, variables that may be related to censoring, for 
+23: example, the most frequent major protocol deviation, certain SAEs, will be explored. Rates 
+24: per 100 patient-years will be calculated per treatment group and compared between patients 
+25: censored early without complete follow-up, and those with complete follow-up.
+26: To assess possible effects of informative censoring on the primary efficacy endpoint, 
+27: sensitivity analyses will be done as follows. First, the tipping point analysis will be performed 
+28: where in patients who prematurely discontinued the study without having a primary endpoint 
+29: event prior to discontinuation, events will be imputed during their missing follow up time (i.e. 
+30: time from censoring to trial termination visit) under various scenarios for the hazard rates for 
+31: non-completers in each arm. For each scenario, 2000 imputations will be performed and the 
+32: results will be combined across 2000 combined datasets (actual events in completers + 
+33: imputed events in non-completers) using SAS PROC MIANALYZE. Specifically, log-hazard 
+34: ratio estimate of treatment effect will be calculated as an average and its associated variance 
+35: will be obtained using Rubin's8 (1987) formula, which combines within-imputation and 
+36: between-imputation variances. Hazard ratios, Wald's 95% CIs and Wald's test p-values will 
+37: also be calculated. The goal of this analysis is to find scenarios where the primary analysis 
+38: results will be “tipped”, i.e. the conclusion will change.
+39: 4.2
+40: Study Conduct
+41: Major protocol deviations will be identified for all patients who are randomized (see Section 
+42: 2.2). 
+43: 187

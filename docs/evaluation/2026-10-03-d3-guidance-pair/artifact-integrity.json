@@ -1,0 +1,11 @@
+{
+  "frozen_inputs_manifests_cards_verified": true,
+  "both_output_freeze_hashes_verified": true,
+  "identical_case_and_task_bytes_verified": true,
+  "both_launch_preflights_passed": true,
+  "two_provider_responses_exact_model_effort_no_tools_verified": true,
+  "next_real_source_pages": 11,
+  "next_real_source_figures": 2,
+  "next_real_source_image_hashes_verified": true,
+  "paid_calls_after_pair": 0
+}

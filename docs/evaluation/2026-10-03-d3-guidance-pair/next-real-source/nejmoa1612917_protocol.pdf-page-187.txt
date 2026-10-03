@@ -1,0 +1,45 @@
+1: Statistical Analysis Plan 
+2: Study Code D5551C00003(BCB109)
+3: Edition Number 4 
+4: February 23rd  2017
+5: 20
+6: 1. Non-inferiority test for the primary composite CV endpoint (alpha= 0.02495 1-sided)
+7: 2. Superiority test for the primary composite CV endpoint (alpha= 0.02495 1-sided)
+8: 3. Superiority test for secondary efficacy endpoint of all-cause death (alpha= 0.02495 1-
+9: sided)
+10: 4. Superiority test for secondary efficacy endpoints: CV-related death, MI, and stroke 
+11: (alpha= 0.02495 1-side): The hypothesis for these three secondary efficacy endpoints 
+12: (null hypothesis is denoted as H0[41], H0[42], H0[43],) will be tested at one-sided 0.02495 
+13: level by using the Hochberg procedure2, which proceeds as  follows: 
+14: 
+15: Ordering the raw p-values (one-sided) such that p(1)≤ p(2) ≤ p(3)
+16: 
+17: Step 1. If p(3) < 0.02495, reject H0[4i], i = 1,2,3 and stop; otherwise go to Step 2.
+18: 
+19: Step 2. If p(2) < 0.02495/2, reject H0[4i],  i = 1,2 and stop; otherwise go to Step 3.
+20: 
+21: Step 3. If p(1) < 0.02495/3 reject H0[4i],  i = 1.
+22: 5. If superiority tests for all three secondary efficacy endpoints in number 4 are met, 
+23: proceed with superiority test for secondary endpoints: hospitalization for acute    
+24: coronary syndrome and hospitalization for heart failure. The hypothesis for these two 
+25: secondary efficacy endpoints (null hypothesis is denoted as H0[51], H0[52],) will be tested 
+26: at one-sided 0.02495 level by using the same Hochberg procedure as described above. 
+27: Non-inferiority will be tested only at the completion of the study. Secondary endpoints will 
+28: only be tested once, at the completion of the trial or if the decision is made to terminate the 
+29: trial early. If the study terminates early for superiority, the key secondary endpoints of CV 
+30: death, MI, stroke and all-cause mortality will be tested at the same significance level as the 
+31: primary endpoint in the interim analysis using the hierarchical test strategy.  Additional 
+32: efficacy endpoints will be tested at the 2-sided 0.05 level.
+33: 4.1.2
+34: Censoring
+35: 4.1.2.1
+36: Censoring Scheme
+37: Primary Censoring Scheme: in time-to-event analyses in the ITT population, patients will be 
+38: censored at the earliest of: 1) date of last contact where all elements of the endpoint could be 
+39: assessed, and 2) the right censoring date. The conclusions regarding non-inferiority or 
+40: superiority will be based on the analyses using this censoring scheme. Patients without any 
+41: assessment of the endpoint will be censored at randomization. 
+42: On-treatment Censoring Scheme: in the on-treatment time-to-event analyses, patients will be 
+43: censored at the earliest of: 1) date of last contact where all elements of the endpoint could be 
+44:                                                 
+45: 186

@@ -1,0 +1,53 @@
+1:  
+2: 30 
+3:  
+4: Figure S2: Enrollment, Follow-up, and Vital Status 
+5:  
+6: 1 Subjects were counted as completers if they had vital status assessed as alive or deceased at the trial termination visit and had not withdrawn consent. 
+7: 2 Subjects were counted as lost to follow-up if they were lost and their vital status could not be determined at the trial termination visit. 
+8: 3 Time from randomization to the time of first MACE event or the time when censored for MACE according to the primary censoring scheme for event-free 
+9: subjects, divided by the time from randomization to the time of first MACE event or the expected follow-up time for event-free subjects as follows: vital status 
+10: date at the trial termination visit for subjects counted as completers assessed as alive, the date of death for subjects counted as completers assessed as 
+11: deceased, and December 5, 2016 (the cut-off date) for subjects who were counted as lost to follow-up or withdrew consent.  
+12: 7,356 Randomly assigned to receive Exenatide
+13: 18 Did not receive any dose of study drug
+14: 7,396 Randomly assigned to receive Placebo
+15: 18 Did not receive any dose of study drug
+16: 7,093 Completed study1
+17: 17 Non-completers who had primary endpoint
+18: 4 Lost to follow-up2
+19: 13 Withdrew consent
+20: 286 Non-completers without primary endpoint
+21: 29 Lost to follow-up2
+22: 257 Withdrew consent
+23: 7,094 Completed study1
+24: 7 Non-completers who had primary endpoint
+25: 1 Lost to follow-up2
+26: 6 Withdrew consent
+27: 255 Non-completers without primary endpoint
+28: 38 Lost to follow-up2
+29: 217 Withdrew consent
+30: Vital status unknown
+31: LTFU
+32: 39
+33: Withdrew consent
+34: 44
+35: Not searched             31
+36: Not determined        13
+37: Total (%)                  83 (1.1%) 
+38: Vital status unknown
+39: LTFU
+40: 33
+41: Withdrew consent
+42: 55
+43: Not searched             39
+44: Not determined        16
+45: Total (%)                  88 (1.2%) 
+46: 15,185 Enrolled
+47: 433 Screen-failed
+48: 14,752 Included in the 
+49: ITT Population
+50: Percentage of observed vs. expected pt-years of 
+51: follow-up for MACE3    95.1%
+52: Percentage of observed vs. expected pt-years of 
+53: follow-up for MACE3       94.5%

@@ -1,0 +1,106 @@
+1: n engl j med 377;13  nejm.org  September 28, 2017
+2: 1231
+3: Exenatide and Cardiovascular Outcomes in Diabetes
+4: superiority margin of less than 1.0 for the upper 
+5: limit of the two-sided 95% confidence interval. 
+6: The statistical analysis plan prespecified the use 
+7: of hierarchical testing in the following order: 
+8: noninferiority for the primary composite out-
+9: come, superiority for the primary composite 
+10: outcome, superiority for all-cause mortality, supe-
+11: riority for each component of the cardiovascular 
+12: composite (tested with the use of the Hochberg 
+13: procedure), and finally, if all three components 
+14: were superior, superiority for hospitalization for 
+15: acute coronary syndrome and for hospitalization 
+16: for heart failure (tested with the use of the Hoch­
+17: berg procedure). In accordance with the hierarchi-
+18: cal testing plan, if a significant difference was 
+19: not found for an outcome, formal hypothesis 
+20: testing was not to be conducted for the remain-
+21: ing ordered outcomes.
+22: Sensitivity analyses of the primary efficacy 
+23: outcome were performed in the per-protocol 
+24: population, which included all randomized pa-
+25: tients who received at least one dose of the trial 
+26: regimen and had no major protocol violations 
+27: (see the protocol for further details). The safety 
+28: analyses were performed in patients who under-
+29: went randomization and received at least one 
+30: dose of exenatide or placebo.
+31: Baseline characteristics were summarized as 
+32: means and standard deviations, medians and 
+33: interquartile ranges, or percentages. The primary 
+34: composite outcome was analyzed in prespecified 
+35: subgroups that were defined according to base-
+36: line characteristics, including age at randomiza-
+37: tion, sex, race, geographic region, type of glucose-
+38: lowering therapy, duration of diabetes, history 
+39: or no history of a cardiovascular event or heart 
+40: failure, body-mass index, glycated hemoglobin 
+41: level, and kidney function. Repeated measures, 
+42: such as glycated hemoglobin level and body 
+43: weight, were analyzed with the use of longitudi-
+44: nal models with mixed effects, with differences 
+45: between the trial groups estimated by least-
+46: squares mean differences with 95% confidence 
+47: intervals. Analyses were conducted with the use 
+48: of SAS software, version 9.4 (SAS Institute).
+49: Results
+50: Trial Patients
+51: In all, 14,752 patients (of whom 10,782 [73.1%] 
+52: had previous cardiovascular disease) underwent 
+53: randomization from June 18, 2010, through Sep-
+54: tember 16, 2015, and were included in the inten-
+55: tion-to-treat population; 7356 patients were as-
+56: signed to receive exenatide and 7396 to receive 
+57: placebo once weekly (Fig. S2 in the Supplemen-
+58: tary Appendix).22 The planned closeout of follow-
+59: up of the patients was from December 5, 2016, 
+60: to May 11, 2017, after the prespecified required 
+61: minimum of 1360 patients were confirmed to 
+62: have had a primary composite outcome event.
+63: The demographic, disease, and clinical char-
+64: acteristics of the patients did not differ signifi-
+65: cantly between the groups, nor did the use of 
+66: glucose-lowering agents or medications to reduce 
+67: the risk of cardiovascular disease, with the excep-
+68: tion of lipid-lowering medications and SGLT-2 
+69: inhibitors (Table S1 in the Supplementary Ap-
+70: pendix).22 At baseline, the median length of time 
+71: that patients had had diabetes was 12.0 years 
+72: (interquartile range, 7.0 to 18.0), the median 
+73: glycated hemoglobin level was 8.0% (interquar-
+74: tile range, 7.3 to 8.9) (63.9 mmol per mole [inter-
+75: quartile range, 56.3 to 73.8]), and 2389 patients 
+76: (16.2%) had a history of heart failure.
+77: A total of 14,187 patients (96.2%) completed 
+78: the trial, and vital status was obtained for 98.8% 
+79: of the patients. The median duration of follow-
+80: up was 3.2 years (interquartile range, 2.2 to 4.4; 
+81: maximum, 6.8) and was similar in the two 
+82: groups. The median duration of exposure to the 
+83: trial regimen was 2.4 years (interquartile range, 
+84: 1.4 to 3.8) in the exenatide group and 2.3 years 
+85: (interquartile range, 1.2 to 3.6) in the placebo 
+86: group. The mean percentage of time that partici-
+87: pants received the trial regimen (i.e., the dura-
+88: tion of time that participants received the trial 
+89: regimen relative to the duration of time that they 
+90: were expected to receive the regimen during the 
+91: trial) was 76.0% and 75.0%, respectively. Prema-
+92: ture discontinuation of the trial regimen was 
+93: primarily the result of decision by the patient 
+94: (Table S2 in the Supplementary Appendix).
+95: Changes in Risk Factors
+96: At 6 months, the mean glycated hemoglobin 
+97: level was 0.7 percentage points lower in the ex-
+98: enatide group than in the placebo group (95% 
+99: confidence interval [CI], −0.7 to −0.6). This dif-
+100: ference narrowed during the course of the trial 
+101: (overall least-squares mean difference, −0.53%; 
+102: 95% CI, −0.57 to −0.50; P<0.001) (Fig. 1). Overall 
+103: least-squares mean values were also lower with 
+104: exenatide than with placebo with respect to body 
+105: The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+106: Downloaded from nejm.org on September 23, 2026. 

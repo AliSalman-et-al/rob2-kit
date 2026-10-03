@@ -1,0 +1,132 @@
+1: n engl j med 377;13  nejm.org  September 28, 2017
+2: 1233
+3: Exenatide and Cardiovascular Outcomes in Diabetes
+4: weight (difference of −1.27 kg), systolic blood 
+5: pressure (−1.57 mm Hg), low-density lipoprotein 
+6: cholesterol (−1.5 mg per deciliter [−0.04 mmol 
+7: per liter]), and triglycerides (−1.8 mg per deciliter 
+8: [−0.02 mmol per liter]); values were higher in the 
+9: exenatide group than in the placebo group with 
+10: respect to diastolic blood pressure (difference of 
+11: 0.25 mm Hg) and heart rate (difference of 2.51 
+12: beats per minute) (Fig. 1, and Figs. S3 through 
+13: S5 in the Supplementary Appendix).
+14: Primary and Secondary Cardiovascular 
+15: Outcomes
+16: A primary composite outcome event occurred in 
+17: 839 of 7356 patients (11.4%; 3.7 events per 100 
+18: person-years) in the exenatide group and in 905 of 
+19: 7396 patients (12.2%; 4.0 events per 100 person-
+20: years) in the placebo group (hazard ratio, 0.91; 
+21: 95% CI, 0.83 to 1.00), with the intention-to-treat 
+22: analysis indicating that exenatide, administered 
+23: once weekly, was noninferior to placebo with 
+24: respect to safety (P<0.001 for noninferiority) and 
+25: was not superior to placebo with respect to effi-
+26: cacy (P = 0.06 for superiority) (Table 1 and Fig. 2, 
+27: and Fig. S6 in the Supplementary Appendix). 
+28: There was no evidence of heterogeneity among 
+29: the three components of the composite outcome 
+30: (Table S3 in the Supplementary Appendix). The 
+31: per-protocol primary analysis resulted in a hazard 
+32: ratio that was similar to that of the intention-to-
+33: treat analysis (hazard ratio, 0.95; 95% CI, 0.85 to 
+34: 1.07; P<0.001 for noninferiority, P = 0.39 for supe-
+35: riority), also without evidence of heterogeneity 
+36: among the composite components.
+37: The risk of death from any cause was 6.9% in 
+38: the exenatide group and 7.9% in the placebo 
+39: group (hazard ratio, 0.86; 95% CI, 0.77 to 0.97); 
+40: this difference was not considered to be statisti-
+41: cally significant on the basis of the hierarchical 
+42: Figure 1 (facing page). Effects of Once-Weekly Exenatide.
+43: Shown are the effects of once-weekly administration of 
+44: exenatide on glycated hemoglobin levels, body weight, 
+45: systolic blood pressure, and heart rate. Overall least-
+46: squares mean differences were estimated from the model 
+47: that included only the patients in whom a baseline value 
+48: and at least one postbaseline value were obtained.
+49: Outcome
+50: Exenatide (N = 7356)
+51: Placebo (N = 7396)
+52: Hazard Ratio (95% CI)†
+53: Patients  
+54: with Event
+55: Incidence Rate  
+56: of First Event
+57: Patients  
+58: with Event
+59: Incidence Rate  
+60: of First Event
+61: no. (%)
+62: no. of events/ 
+63: 100 patient-yr
+64: no. (%)
+65: no. of events/ 
+66: 100 patient-yr
+67: Primary composite outcome
+68: 839 (11.4)
+69: 3.7
+70: 905 (12.2)
+71: 4.0
+72: 0.91 (0.83−1.00)
+73: Secondary outcomes
+74: Death from any cause
+75: 507 (6.9)
+76: 2.0
+77: 584 (7.9)
+78: 2.3
+79: 0.86 (0.77−0.97)
+80: Death from cardiovascular causes‡
+81: 340 (4.6)
+82: 1.4
+83: 383 (5.2)
+84: 1.5
+85: 0.88 (0.76−1.02)
+86: Fatal or nonfatal myocardial infarction
+87: 483 (6.6)
+88: 2.1
+89: 493 (6.7)
+90: 2.1
+91: 0.97 (0.85−1.10)
+92: Fatal myocardial infarction§
+93: 17 (0.2)
+94: —
+95: 13 (0.2)
+96: —
+97: 1.29 (0.63−2.66)
+98: Fatal or nonfatal stroke
+99: 187 (2.5)
+100: 0.8
+101: 218 (2.9)
+102: 0.9
+103: 0.85 (0.70−1.03)
+104: Fatal stroke§
+105: 18 (0.2)
+106: —
+107: 25 (0.3)
+108: —
+109: 0.71 (0.39−1.30)
+110: Hospitalization for heart failure
+111: 219 (3.0)
+112: 0.9
+113: 231 (3.1)
+114: 1.0
+115: 0.94 (0.78−1.13)
+116: Hospitalization for acute coronary 
+117: ­syndrome
+118: 602 (8.2)
+119: 2.6
+120: 570 (7.7)
+121: 2.5
+122: 1.05 (0.94−1.18)
+123: *	The primary outcome was the first occurrence of any component of the composite outcome of death from cardiovascular causes, nonfatal 
+124: myocardial infarction, or nonfatal stroke, in a time-to-event analysis. This analysis was conducted in the intention-to-treat population, which 
+125: consisted of all patients who underwent randomization.
+126: †	Hazard ratios (exenatide vs. placebo) and confidence intervals were estimated with the use of a Cox proportional-hazards regression model, 
+127: stratified according to history of cardiovascular disease, with trial regimen as the sole explanatory variable.
+128: ‡	Death from cardiovascular causes includes death from unknown cause.
+129: §	The incidence rate was not calculated because this outcome was not prespecified in the statistical analysis plan as a trial outcome.
+130: Table 1. Rates of the Primary Composite Outcome and Key Secondary Outcomes.*
+131: The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+132: Downloaded from nejm.org on September 23, 2026. 

@@ -1,0 +1,24 @@
+{
+  "exit_code": 0,
+  "stop": null,
+  "elapsed_seconds": 10.994762062007794,
+  "tool_calls": 0,
+  "final_messages": 1,
+  "provider_response_count": 1,
+  "usage": {
+    "input_tokens": 7513,
+    "cached_input_tokens": 3840,
+    "output_tokens": 193,
+    "reasoning_output_tokens": 0
+  },
+  "uncached_input_tokens": 3673,
+  "model_context": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "output_overshoot": 0,
+  "guards": "reactive; not provider-enforced token cap",
+  "retry_or_continuation": false
+}

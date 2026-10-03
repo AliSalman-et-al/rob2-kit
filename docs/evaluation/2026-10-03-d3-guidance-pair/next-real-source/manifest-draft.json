@@ -1,0 +1,148 @@
+{
+  "status": "offline_preparation_only_not_launch_ready_not_authorized",
+  "question": "Can the host ground a D3.1 availability and material-impact warrant in the actual endpoint-specific evidence, while distinguishing informative accounting from exact observed participant counts?",
+  "task_scope": "D3.1 only; no domain label, preferred clinical answer or frozen assessment update",
+  "source_directory": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel",
+  "sources": [
+    {
+      "source_identity": "sha256:b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121",
+      "file": "NEJMoa1612917.pdf",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 107,
+      "projection_sha256": "a7953f74db35d11e3682c9842ef8527381f28033dd33013e0c2377252683fc64",
+      "text_file": "NEJMoa1612917.pdf-page-3.txt",
+      "numbered_text_sha256": "6a0f1489c06cb896fc505dd313d30bee53ebd3d0c698af9129910c7df8a48995"
+    },
+    {
+      "source_identity": "sha256:b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121",
+      "file": "NEJMoa1612917.pdf",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 106,
+      "projection_sha256": "63328a72a7ea1db66a117d13c0fc955ecddc6f12b59f585aed8c14763a0f8ea9",
+      "text_file": "NEJMoa1612917.pdf-page-4.txt",
+      "numbered_text_sha256": "b5af9b4faab818166e7a215a67051757cb248a4372f66157aaf9fb6a008e9fdd"
+    },
+    {
+      "source_identity": "sha256:b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121",
+      "file": "NEJMoa1612917.pdf",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 132,
+      "projection_sha256": "c0b2532d8ebb8ee2626d279b3af463d1dc3b0dd4c0952cd5f3e6fb51e9a816ca",
+      "text_file": "NEJMoa1612917.pdf-page-6.txt",
+      "numbered_text_sha256": "b5032067bb538f37955a900a9f74aa2c28d5428486da128b92af945863867ba1"
+    },
+    {
+      "source_identity": "sha256:b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121",
+      "file": "NEJMoa1612917.pdf",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 103,
+      "projection_sha256": "7701054c3ea10fe3baeb422fca196e2af704606566811bd58aeb75b0263d2ee0",
+      "text_file": "NEJMoa1612917.pdf-page-8.txt",
+      "numbered_text_sha256": "4296fc5b4f52f143f87ec3b66def88ce2db99ad7ba9a3acc5b0b4d21e5aeb4ce"
+    },
+    {
+      "source_identity": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "file": "nejmoa1612917_appendix.pdf",
+      "page": 31,
+      "start_line": 1,
+      "end_line": 53,
+      "projection_sha256": "4d245dd1d74e58684854a5efacc4197c9808c793f3d22ed0936ae9f35be72f7f",
+      "text_file": "nejmoa1612917_appendix.pdf-page-31.txt",
+      "numbered_text_sha256": "278f89fb7cbb3039694753b6aa3f6addabfc2fbc8dbecc5c4ff197f322d4a958"
+    },
+    {
+      "source_identity": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "file": "nejmoa1612917_appendix.pdf",
+      "page": 36,
+      "start_line": 1,
+      "end_line": 64,
+      "projection_sha256": "9c919f2c3068f983d7f7d0ad939f70978b050effa4867bb3f59586a57f72e743",
+      "text_file": "nejmoa1612917_appendix.pdf-page-36.txt",
+      "numbered_text_sha256": "b9d2caedf7d8695630ad5d25819e7150f56cd91af7cae553743ccad2a996c1c3"
+    },
+    {
+      "source_identity": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "file": "nejmoa1612917_appendix.pdf",
+      "page": 45,
+      "start_line": 1,
+      "end_line": 12,
+      "projection_sha256": "fa813099c5d54f5b713c326ba51c73f48209454b8eb18682afc9c2a18d8602f8",
+      "text_file": "nejmoa1612917_appendix.pdf-page-45.txt",
+      "numbered_text_sha256": "d9eff35be3e564db7ca13ba0ec62c5f6a0cdde73493da0c3deafcf41c172442c"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 77,
+      "start_line": 1,
+      "end_line": 52,
+      "projection_sha256": "be2ac20204ad0bba20faff759f78337b9ea8091581270b5539e8fc0c2fadd292",
+      "text_file": "nejmoa1612917_protocol.pdf-page-77.txt",
+      "numbered_text_sha256": "2edef1f93109ce758c2960c719bb60224fde411802ef401c050fb50941a3c8c3"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 78,
+      "start_line": 1,
+      "end_line": 46,
+      "projection_sha256": "0f12859214df9115df384019cc5822ba57448ca95351527321b3a35429f3757b",
+      "text_file": "nejmoa1612917_protocol.pdf-page-78.txt",
+      "numbered_text_sha256": "99f31334b0827b6d89ead5ad787270e1d84c9f4fc099e829bbf15e5111b5c401"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 187,
+      "start_line": 1,
+      "end_line": 45,
+      "projection_sha256": "e37a91065a345a82708fcab62377daae96249c119d3937235a5cffb4e5dff48c",
+      "text_file": "nejmoa1612917_protocol.pdf-page-187.txt",
+      "numbered_text_sha256": "26b950fd7c02929547b37bcb82e5f8c6291ed8713cd55b477e5cf3a4f553e954"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 188,
+      "start_line": 1,
+      "end_line": 43,
+      "projection_sha256": "1eac464875de0a9194f50f2dc1dffea4cfe2e03a7819a8d25edbdb399aae8e4b",
+      "text_file": "nejmoa1612917_protocol.pdf-page-188.txt",
+      "numbered_text_sha256": "ccb929fccf200d8edf113d42d971c668ebd15047efdbd6d1b356f4dfa6be18a6"
+    }
+  ],
+  "required_images": [
+    {
+      "source_identity": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "page": 31,
+      "file": "appendix-page-31.png",
+      "png_sha256": "60dfe67d5b304e1727ff820656d4dbf0a1dc6216f42bf1737b09530765eefe4c",
+      "width": 1188,
+      "height": 918
+    },
+    {
+      "source_identity": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "page": 45,
+      "file": "appendix-page-45.png",
+      "png_sha256": "c0124f1c3183a16290f6e2656620e1cda2c94bcd42c2d387075fb6ea284f82e4",
+      "width": 1188,
+      "height": 918
+    }
+  ],
+  "projection": "Fresh PyMuPDF text lines; physical PDF pages. These are not original assessment receipt line coordinates.",
+  "future_requirements": [
+    "A new bounded decision is required before inference.",
+    "Choose exact runtime/launcher and source delivery before freezing actual model input.",
+    "Use source-completeness preflight covering all eleven full-page texts and both required figure images.",
+    "Do not supply private evaluation questions to model.",
+    "Verify selected target and numerical result; preserve registry intake conflict separately.",
+    "Record actual model receipt of figure images; if transport fails, stop without silently replacing evidence."
+  ],
+  "selected_result_sha256": "a9889ed04a24f0bdea69354d3cd5b86e21d3b7b91045e3023f6fd33b8de6fb58",
+  "result_identity": "sha256:4851824b2a81d36da8ab1d25d97b912ff0e1dd72b871c0b1144d9a9b379eb8e7",
+  "reference_scope_conflict": "Intake NCT01455896 versus article NCT01144338; no silent reconciliation or human gold assumption."
+}

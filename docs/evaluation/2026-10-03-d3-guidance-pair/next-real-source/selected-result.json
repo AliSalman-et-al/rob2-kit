@@ -1,0 +1,113 @@
+{
+  "applicability": {
+    "design": "individual_parallel",
+    "evidence": [
+      "eh_77958a24e9cff740",
+      "eh_47e2b5a1169b082c"
+    ],
+    "rationale": "Patients were randomly assigned 1:1 to exenatide or placebo; the report describes computer-generated block randomization within each site."
+  },
+  "bindings": [
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/effect_measure"
+      },
+      "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+    },
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/estimate"
+      },
+      "value_digest": "sha256:0f0320ea614c29d03c308e16c253f97cc536a1b1e35c9b6f28455281a72141eb"
+    },
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/precision"
+      },
+      "value_digest": "sha256:fc5eb3159ed1ba56284b400e901e240bedd8344f865ba6391dfec8d7b96e175e"
+    },
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/endpoint/name"
+      },
+      "value_digest": "sha256:e1da8eb931747e6087c5d03d97d2b341e3e4cdd0dadd8d1d360e9561b60abca0"
+    }
+  ],
+  "clarity": {
+    "analysis_population": "specified",
+    "comparison_groups": "specified",
+    "effect_measure": "specified",
+    "eligible_result_choice": "specified",
+    "measurement": "specified",
+    "outcome_definition": "specified",
+    "source_table_meaning": "specified",
+    "time_point": "specified"
+  },
+  "evidence": [
+    {
+      "handle": "eh_47e2b5a1169b082c",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_62c0318d013b0813",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_77958a24e9cff740",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_78d128f92376ef23",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_803930cddb034dd2",
+      "kind": "narrative"
+    }
+  ],
+  "kind": "assessable",
+  "relation": "exact",
+  "relation_rationale": "The selected primary report explicitly defines its primary composite as the first occurrence of cardiovascular death, nonfatal MI, or nonfatal stroke, analyzed time-to-event. This matches the requested component set and first-event estimand during trial follow-up. Its primary ITT comparison is extended-release exenatide 2 mg weekly versus matching placebo, reported as HR 0.91 (95% CI 0.83 to 1.00); the coprimary hypotheses were noninferiority for safety and superiority for efficacy. The article identifies EXSCEL as NCT01144338, while captured intake metadata declares NCT01455896. Registry retrieval was unavailable, so applicability to the conflicting intake identifier remains unresolved; I do not silently reconcile these identifiers.",
+  "reported": {
+    "analysis_population": "Intention-to-treat population: all patients who underwent randomization (14,752 total; 7,356 assigned exenatide and 7,396 placebo).",
+    "effect_measure": "Hazard ratio",
+    "endpoint": {
+      "definition": null,
+      "name": "Primary composite outcome"
+    },
+    "estimate": "0.91",
+    "form": "comparative_effect",
+    "group_values": [],
+    "precision": "95% CI, 0.83 to 1.00"
+  },
+  "requested_outcome": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event; noninferiority for safety and superiority for efficacy)",
+  "target": {
+    "comparison_groups": [
+      {
+        "assignment": "Assignment to extended-release exenatide 2 mg subcutaneously once weekly",
+        "id": "exenatide"
+      },
+      {
+        "assignment": "Assignment to matching placebo once weekly",
+        "id": "placebo"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Hazard ratio (exenatide vs placebo)",
+    "measurement": {
+      "method": "Time to first occurrence of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke.",
+      "metric": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event; noninferiority for safety and superiority for efficacy)"
+    },
+    "outcome_definition": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event; noninferiority for safety and superiority for efficacy)",
+    "time_point_or_window": {
+      "description": "During trial follow-up, from randomization until trial closeout/censoring.",
+      "kind": "described"
+    }
+  },
+  "trial_id": "exscel"
+}

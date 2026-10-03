@@ -1,0 +1,40 @@
+{
+  "verdict": "inconclusive_about_incremental_benefit; no correction or regression demonstrated in this pair",
+  "answer_paths": {
+    "old": {
+      "A": "probably_yes",
+      "B": "no_information"
+    },
+    "new": {
+      "A": "probably_yes",
+      "B": "no_information"
+    }
+  },
+  "criteria": {
+    "temporal_evidence_weighed": "Both use approximately 95% endpoint person-time as relevant evidence instead of dismissing it solely for absent participant counts.",
+    "no_person_time_conversion": "Both explicitly distinguish person-time from participant observation counts.",
+    "vital_status_limit": "Both state that 99% known vital status does not ascertain nonfatal/full composite outcomes.",
+    "absent_case": "Both reject Cox/ITT membership and generic censoring as availability proof, retaining unknown actual composite follow-up.",
+    "threshold_and_bound": "Neither invokes a universal threshold or requires a formal HR bound to choose a probable answer.",
+    "impact_warrant": "Incomplete in both: neither relates plausible future unobserved first events to selected HR 0.85/CI or explains negligible potential effect; both rely on favorable temporal coverage while saying impact cannot be determined precisely.",
+    "other_source_use": "Neither substantively evaluates consent withdrawals or continued endpoint ascertainment after treatment stopping; no invented follow-up facts found."
+  },
+  "scientific_limit": "Same selected answers do not establish scientifically adequate impact warrants or clinical accuracy. No domain label can be inferred from D3.1 alone.",
+  "future_action": "Offline prepare a real-source D3.1 availability/impact packet; do not launch it without a new bounded decision.",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "provider_responses": 2,
+  "cli_invocations": 2,
+  "tool_calls": 0,
+  "retries": 0,
+  "guards_fired": false,
+  "usage": {
+    "input_tokens": 15121,
+    "cached_input_tokens": 5632,
+    "output_tokens": 433,
+    "reasoning_output_tokens": 0
+  },
+  "uncached_input_tokens": 9489,
+  "elapsed_seconds_sum": 21.226279010006692,
+  "output_hashes_frozen_before_adjudication": true
+}

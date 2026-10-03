@@ -1,0 +1,46 @@
+1: EXSCEL Protocol Amendment 06
+2: When a patient withdraws consent from future follow-up prior to trial completion, all applicable 
+3: activities scheduled for the final trial visit should be performed at that time (Section 6.13).
+4: 6.16
+5: Lost to Follow-Up
+6: All reasonable efforts must be made to locate patients to determine and report their ongoing 
+7: status. This includes follow-up with persons authorized by the patient as noted above as well as 
+8: the usual care provider. Lost to follow-up is defined by the inability to reach the patient after a 
+9: minimum of three documented phone calls, as well as lack of response by patient to one 
+10: registered mail letter. All attempts should be documented in the patient’s medical records. If it is 
+11: determined that the patient has died, the site will use permissible local methods to obtain the date 
+12: and cause of death.
+13: If an investigator’s use of a third-party representative to assist in the follow-up portion of the 
+14: study has been included in the patient’s informed consent, then the investigator may use a 
+15: Sponsor-retained third-party representative to assist site staff with obtaining patient’s contact 
+16: information or other public vital status data necessary to complete the follow-up portion of the 
+17: study. Where specific consent has been obtained from the participant, the site staff and 
+18: representative will consult publicly available sources, such as public health registries and 
+19: databases, in order to obtain updated contact information. If after all attempts, the patient
+20: remains lost to follow-up, then the last known alive date as determined by the investigator should 
+21: be reported and documented in the patient’s medical records.
+22: 6.17
+23: Breaking the Blind
+24: The IVRS will be used to unblind patients to the randomized treatment assignment only if 
+25: absolutely necessary. Disclosure envelopes will not be supplied with the clinical supplies. Drug 
+26: identification information is to be unmasked ONLY if necessary for the welfare of the patient. 
+27: Prior to unblinding, the investigator is required to speak with a trial hotline physician (Section 
+28: 6.18).  Patients whose treatment has been unblinded can continue to receive trial medication and 
+29: can continue to be followed in the trial as described in this protocol.
+30: 6.18
+31: Trial Hotline
+32: Clinicians at DCRI and DTU operate the trial hotline. It is available at all times to answer urgent 
+33: clinical questions from sites concerning enrolled patients as well as questions to determine 
+34: whether a particular patient qualifies for enrollment or performance of study procedures.
+35: 7
+36: TRIAL MEDICATIONS
+37: 7.1
+38: Trial Medication Supply 
+39: Investigational Materials will be provided by the Sponsor as EQW 2 mg and matching placebo.
+40: 7.2
+41: Formulation, Packaging, and Storage
+42: EQW (formulation AC2993 F17) is an extended release formulation of exenatide and consists of 
+43: 5% exenatide, sucrose, and 50:50 poly D,L lactic-co-glycolic acid (PLG).  The vial containing 
+44: the white to off white dry powder (2.8 mg of exenatide in EQW microspheres to deliver 2 mg of 
+45: exenatide) must be stored in a refrigerator between 2ºC and 8ºC (36°F and 46°F) and protected
+46: 77
