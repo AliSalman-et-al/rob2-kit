@@ -6,7 +6,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from diagnostic_evidence_preflight import check_manifest, launch_checked
+
+from scripts.diagnostic_evidence_preflight import check_manifest, launch_checked
 
 
 def fixture(tmp_path: Path, supplied_page: int = 188):
@@ -35,7 +36,7 @@ def fixture(tmp_path: Path, supplied_page: int = 188):
 
 def test_required_uncited_source_omission_prevents_any_launch(tmp_path):
     manifest, prompt, _ = fixture(tmp_path, supplied_page=192)
-    with patch("diagnostic_evidence_preflight.subprocess.Popen") as child:
+    with patch("scripts.diagnostic_evidence_preflight.subprocess.Popen") as child:
         with pytest.raises(ValueError, match="evidence omitted"):
             launch_checked(
                 ["paid-launch"],
@@ -51,7 +52,7 @@ def test_required_uncited_source_omission_prevents_any_launch(tmp_path):
 def test_frozen_manifest_passes_without_entering_model_input(tmp_path):
     manifest, prompt, _ = fixture(tmp_path)
     before = prompt.read_bytes()
-    with patch("diagnostic_evidence_preflight.subprocess.Popen") as child:
+    with patch("scripts.diagnostic_evidence_preflight.subprocess.Popen") as child:
         launch_checked(
             ["paid-launch"],
             manifest_path=manifest,
@@ -104,7 +105,7 @@ def test_changed_preregistered_manifest_prevents_launch(tmp_path):
     frozen_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()
     data["research_question"] = "Changed research question"
     manifest.write_text(json.dumps(data))
-    with patch("diagnostic_evidence_preflight.subprocess.Popen") as child:
+    with patch("scripts.diagnostic_evidence_preflight.subprocess.Popen") as child:
         with pytest.raises(ValueError, match="manifest hash mismatch"):
             launch_checked(
                 ["paid-launch"],

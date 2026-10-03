@@ -188,11 +188,17 @@ def run(root: Path) -> None:
                     break
         finally:
             if proc.poll() is None:
-                os.killpg(proc.pid, signal.SIGTERM)
+                if os.name == "posix":
+                    os.killpg(proc.pid, signal.SIGTERM)
+                else:
+                    proc.terminate()
                 try:
                     proc.wait(timeout=5)
                 except subprocess.TimeoutExpired:
-                    os.killpg(proc.pid, signal.SIGKILL)
+                    if os.name == "posix":
+                        os.killpg(proc.pid, signal.SIGKILL)
+                    else:
+                        proc.kill()
                     proc.wait()
             for raw in proc.stdout:
                 consume(raw)

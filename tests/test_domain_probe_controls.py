@@ -235,12 +235,17 @@ def test_changed_rejection_allows_bounded_correction_but_identical_stops(control
 
 
 @pytest.mark.parametrize("mode", ["changed_then_accepted", "identical", "four_distinct"])
+@pytest.mark.parametrize("process_platform", ["native", "windows"])
 def test_monitor_enforces_completed_save_and_repeat_limits_without_inference(
-    controls, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mode: str
+    controls, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, mode: str, process_platform: str
 ) -> None:
     import sys
 
     launcher = importlib.import_module("run_domain_probe")
+    if process_platform == "windows":
+        from types import SimpleNamespace
+
+        monkeypatch.setattr(launcher, "os", SimpleNamespace(name="nt", environ=launcher.os.environ))
     limits = controls.approved_limits()
     (tmp_path / "workspace").mkdir()
     (tmp_path / "home/sessions").mkdir(parents=True)

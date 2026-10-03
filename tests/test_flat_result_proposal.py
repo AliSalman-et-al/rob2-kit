@@ -46,7 +46,7 @@ def test_actual_invalid_attempts_still_require_explicit_scientific_choices() -> 
     attempts = json.loads(
         (
             root / "docs/evaluation/2026-10-03-allsop-proposal-b12fe45/proposal-attempts.json"
-        ).read_text()
+        ).read_text(encoding="utf-8")
     )
     for attempt in attempts:
         with pytest.raises(ValidationError):
@@ -97,7 +97,9 @@ def test_public_documented_examples_match_live_flat_input() -> None:
     root = Path(__file__).resolve().parents[1]
     reference = root / "src/rob2_kit/skills/rob2-assess/references/result.md"
     count = 0
-    for block in re.findall(r"```json\n(.*?)\n```", reference.read_text(), flags=re.S):
+    for block in re.findall(
+        r"```json\n(.*?)\n```", reference.read_text(encoding="utf-8"), flags=re.S
+    ):
         request = json.loads(block)
         for selection in request.get("selections", []):
             parsed = ProposalSelection.model_validate(selection)

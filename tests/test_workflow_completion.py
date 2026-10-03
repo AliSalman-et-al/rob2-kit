@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parents[1] / "scripts"))
-from workflow_completion import Turn, boundary, drive, trace_facts
+from scripts.workflow_completion import Turn, boundary, drive, trace_facts
 
 
 def pending(operation: str = "get_domain_context", cursor: str = "next") -> dict:
@@ -207,7 +205,7 @@ def test_novel_queries_and_timestamps_are_not_durable_progress(tmp_path: Path) -
 
 
 def test_finalization_receipt_lookup_matches_authoritative_revision() -> None:
-    from workflow_completion import finalized_artifact
+    from scripts.workflow_completion import finalized_artifact
 
     trace_path = (
         Path(__file__).parents[1]
