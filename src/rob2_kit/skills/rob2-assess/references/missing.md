@@ -25,9 +25,12 @@ evidence. Accept one or more of:
 - an explicit statement that ascertainment was complete or nearly complete.
 
 Support No or Probably No with evidence that availability was materially
-incomplete for this Result. If the extent remains unknown after bounded
-retrieval, use No information. Failure to demonstrate complete availability is
-not evidence that availability was incomplete.
+incomplete for this Result. If exact extent cannot be determined directly,
+weigh outcome-specific follow-up accounting and other source-supported
+information for a Probably Yes or Probably No judgment. Use No information
+when neither direct nor indirect evidence supports a reasonable availability
+inference after bounded retrieval. Failure to demonstrate complete availability
+is not evidence that availability was incomplete.
 
 The following do not establish affirmative availability on their own:
 
@@ -48,11 +51,14 @@ card's full Source inventory to inspect unopened supplements or combined
 protocol documents. Search for concrete study wording such as the outcome
 status, withdrawal or loss-to-follow-up labels, and the reported time point;
 `missing outcome data` alone may not occur in the report. Widen the Source
-scope or continue a cached cursor only as needed, and stop when comparable
-observed counts or complete follow-up accounting are inspected. If the
-captured Sources and bounded page windows do not establish availability,
-document that limit instead of treating an empty Source group or a no-hit
-search as evidence of missing outcomes.
+scope or continue a cached cursor only as needed, and stop when inspected
+evidence supports a reasonable availability judgment or the remaining
+uncertainty is bounded. Outcome-specific observed/expected follow-up time can
+inform a probable judgment without becoming a participant-observation fraction;
+vital status alone does not ascertain nonfatal components. If the captured
+Sources and bounded page windows support no reasonable inference, document
+that limit instead of treating an empty Source group or a no-hit search as
+evidence of missing outcomes.
 
 ## Reconcile availability
 
@@ -164,9 +170,13 @@ missing outcome is not required; available rates, reasons, and circumstances
 may support the inference when their relation to the true outcome is explained.
 A sensitivity analysis that assumes particular unobserved outcomes shows their
 potential effect under that assumption, but does not by itself establish that
-missingness likely depended on the true outcome. Absent contrary evidence alone
-does not establish likely dependence. Preserve `no_information` when the card's
-uncertainty rule applies, even when that answer leads to High risk of bias.
+missingness likely depended on the true outcome. Weigh contextual counterevidence,
+including comparable outcome follow-up and continued ascertainment after
+treatment stopping, without treating it as proof of non-informative censoring.
+Absence of precise reasons or timing alone does not require `no_information`;
+absent contrary evidence alone does not establish likely dependence. Preserve
+`no_information` when the card's uncertainty rule applies, even when that answer
+leads to High risk of bias.
 
 D3.2 does not allow `no_information`. When no bias-correcting evidence is found,
 use the question card to choose a permitted negative or probably-negative answer

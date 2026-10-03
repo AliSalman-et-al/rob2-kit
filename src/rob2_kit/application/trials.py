@@ -271,7 +271,9 @@ def _review_domain_findings(
                     "The cited participant-flow rows report randomized, analyzed, or event "
                     "quantities without an outcome-observed count or explicit outcome-status "
                     "fact. Those quantities alone do not establish outcome availability for "
-                    "this Result; check the cited inference against the source passage."
+                    "this Result. Exact observed counts are not required for a probable "
+                    "judgment supported by other outcome-specific follow-up evidence; "
+                    "check the cited inference against the source passage."
                 ),
                 "assertion": "server_derived",
                 "evidence": references,

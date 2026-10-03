@@ -2996,6 +2996,7 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
     # These exact historical descriptors are also retained by the dependency-free
     # verifier. Guidance edits change the computed pack hash, not result semantics.
     prior_guidance = (
+        ("v0.9", "2a11301824d7fa0a2f773d0fd75985ad03a2dca2a2cd7107e7376f46cdb8905a"),
         ("v0.9", "d66cd4805702afc472ec980fe1c64446bcc97e6da0eb8730a8edc243c70a532a"),
         ("v0.9", "d6ff8a6af60f92a9f810f24f1264303a8fa90d0ac1d600ed66a37be9eefa6623"),
         ("v0.9", "c2650a6e71e28a007872e95fabeafad99688367d8433d4b9f3d3da280ab8a431"),

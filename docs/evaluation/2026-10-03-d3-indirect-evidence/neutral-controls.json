@@ -1,0 +1,66 @@
+{
+  "purpose": "prepared_only_no_inference",
+  "reference_status": "reasoning_controls_not_clinical_gold_labels",
+  "cases": [
+    {
+      "case_id": "continuous-partial",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: mean symptom score at week 12\nReport: Of 200 randomized in each arm, approximately nine in each arm lacked a week-12 score. Exact counts await reconciliation; most missed visits followed clinic closures. The mean difference was 0.2 points on a 0\u2013100 scale; observed SD was 18.",
+      "private_review_question": "Use partial actual accounting without inventing exact counts. Small balanced loss is relevant but cannot alone establish negligible impact on this small estimate."
+    },
+    {
+      "case_id": "continuous-absent",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: mean symptom score at week 12\nReport: The ITT mixed model estimated a difference of 0.2 points. Two hundred patients were randomized per arm. Visits were scheduled at week 12; actual score collection and losses are not reported.",
+      "private_review_question": "Analysis membership and scheduled visits do not establish availability; extent genuinely lacks direct or indirect accounting."
+    },
+    {
+      "case_id": "continuous-reassurance",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: mean symptom score at week 12\nReport: Nine of 200 participants per arm lacked a score. Recorded clinic closures caused all missing visits. A sensitivity analysis assigned missing scores across the clinically plausible 20\u201380 range separately in each arm; the large estimated treatment difference changed by less than one point.",
+      "private_review_question": "Consider outcome-unrelated documented loss and actually reported plausible sensitivity results; do not equate imputation with observed scores."
+    },
+    {
+      "case_id": "continuous-concern",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: mean symptom score at week 12\nReport: Approximate missing-score rates were 20% versus 5%. Patients commonly declined assessment because symptoms worsened. Last observation carried forward was used; no assumptions about subsequent worsening were examined.",
+      "private_review_question": "Evaluate informative imperfect rates, prognosis-linked reasons and differential loss; method name alone does not reassure."
+    },
+    {
+      "case_id": "binary-partial",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: death by day 90\nReport: Vital status was known for approximately 98% of 500 participants per arm. Exact day-90 counts were not reconciled; follow-up calls and registry searches identified deaths. About ten deaths were recorded per arm.",
+      "private_review_question": "Availability evidence is informative despite approximate extent; rare events make even few unresolved statuses potentially material. No universal cutoff."
+    },
+    {
+      "case_id": "binary-absent",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: death by day 90\nReport: Five hundred patients were randomized per arm; ITT mortality risk ratios are reported. A registry search was planned. The number with known day-90 vital status and actual searches are not reported.",
+      "private_review_question": "Analysis denominator and planned search cannot replace actual mortality status."
+    },
+    {
+      "case_id": "binary-reassurance",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: infection by day 30\nReport: Only two of 400 participants per arm lacked day-30 infection assessment because laboratory samples were accidentally destroyed. Both best- and worst-case assignments for these outcomes left the estimated clinically substantial risk difference essentially unchanged.",
+      "private_review_question": "Documented non-outcome-related missingness and relevant performed bounds can reassure without counting missing outcomes as observed."
+    },
+    {
+      "case_id": "binary-concern",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: infection by day 30\nReport: Approximately 8% versus 1% lacked outcome ascertainment; many unassessed participants were hospitalized elsewhere for suspected infection. Recorded infection rates were 3% versus 2%. ITT analysis was claimed without a missing-outcome sensitivity result.",
+      "private_review_question": "Approximate outcome-specific extent, event scale and reasons are informative; ITT does not demonstrate protection from bias."
+    },
+    {
+      "case_id": "time-event-partial",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: time to first cardiovascular death, nonfatal MI or nonfatal stroke through trial closeout\nReport: Observed/expected endpoint follow-up was approximately 95% in both arms. Vital status was known for 99%; some non-completers without a recorded first event withdrew consent. Outcome follow-up generally continued after treatment stopped; individual loss timing is unavailable.",
+      "private_review_question": "Weigh endpoint-specific temporal coverage and actual pathway; never convert person-time to participant fraction or vital status to nonfatal ascertainment. Future first events remain relevant; possible and likely dependence can differ."
+    },
+    {
+      "case_id": "time-event-absent",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: time to first cardiovascular death, nonfatal MI or nonfatal stroke through trial closeout\nReport: All randomized patients were included in the Cox analysis. The censoring rule used last endpoint contact. Vital status was known for 99%, but actual composite-outcome follow-up, nonfatal ascertainment and losses were not reported.",
+      "private_review_question": "A generic censoring rule, analysis membership and vital status alone do not account for composite endpoint availability."
+    },
+    {
+      "case_id": "time-event-reassurance",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: time to first cardiovascular death, nonfatal MI or nonfatal stroke through trial closeout\nReport: Complete endpoint follow-up continued after treatment cessation for nearly all participants. Small actual follow-up losses were similar by arm and followed documented site closures. Performed missing-follow-up event imputations across clinically plausible arm-specific hazards did not materially change the estimate.",
+      "private_review_question": "Use actual endpoint accounting and performed mechanism-relevant sensitivity results, not a plan alone; documented contextual evidence bears on likelihood."
+    },
+    {
+      "case_id": "time-event-concern",
+      "model_input": "Individually randomized trial, assignment effect, experimental versus control. Assess only the stated outcome and follow-up window. Distinguish availability, possible outcome dependence, likely outcome dependence, and evidence that missing outcomes did not bias the result. Explain supported inferences and limits.\nOutcome: time to first cardiovascular death, nonfatal MI or nonfatal stroke through trial closeout\nReport: Endpoint follow-up stopped on treatment withdrawal for about 20% versus 5%. Withdrawal frequently followed worsening cardiovascular status. Vital status was later recovered for most participants. The SAP planned a tipping-point analysis; only ITT and on-treatment estimates are reported.",
+      "private_review_question": "Link actual missing composite follow-up to prognosis and differential loss; vital-status recovery cannot recover nonfatal components, and an unreported plan is not a reassuring result."
+    }
+  ]
+}
