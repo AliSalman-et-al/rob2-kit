@@ -1,0 +1,29 @@
+{
+  "arm": "baseline",
+  "one_invocation": true,
+  "no_retry": true,
+  "exit_code": 0,
+  "stop_reason": null,
+  "elapsed_seconds": 18.478510960005224,
+  "tool_calls": 0,
+  "usage": {
+    "input_tokens": 11006,
+    "cached_input_tokens": 1792,
+    "output_tokens": 497,
+    "reasoning_output_tokens": 0
+  },
+  "uncached_input_tokens": 9214,
+  "output_overshoot": 0,
+  "response_file_exists": true,
+  "model_verified": true,
+  "model_settings": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "turn_id": "01a10300-6e66-7ce0-9add-c8ebb3a1323e"
+    }
+  ],
+  "usage_response_ids": [
+    "resp_01b7ed79a5614167016ac147cc9fc487d08d7ec8613a6248fa"
+  ]
+}

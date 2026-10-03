@@ -1,0 +1,19 @@
+### Trial A
+
+- **2.6: no.** The analysis excluded measured Week 12 values from 20 active participants who stopped because symptoms worsened, and excluded one active participant who used rescue treatment. Excluding eligible participants with observed outcomes is not an appropriate assignment-effect analysis, despite retaining randomized groupings. The source does not specify the rescue participant’s outcome or exclusion reason beyond rescue use.
+- **2.7: yes.** The omissions could substantially affect the favorable active estimate: many more active than placebo values were omitted, and the omitted active values were markedly worse. No adjustment addressed this selection.
+
+### Trial B
+
+- **2.6: probably_yes.** The analysis excluded four measured values for administrative stops, balanced across groups, with prognosis and values resembling those retained. The all-randomized analysis was practically unchanged. These facts support a likely negligible effect on the assignment estimate, though the restricted analysis did omit observed eligible outcomes.
+- **2.7: not activated.**
+
+### Trial C
+
+- **2.6: no_information.** “ITT” is only a label here: efficacy observations were censored after stopping, but the source does not establish whether those outcomes were measured and excluded or unavailable. Stopping counts alone do not resolve whether the analysis appropriately handled missing outcomes or excluded observed values.
+- **2.7: no_information.** The numbers who stopped are reported, but the source gives no information about post-stop outcome availability, symptoms, or prognosis. The potential impact of the censoring cannot be assessed.
+  
+### Trial D
+
+- **2.6: yes.** All measured Week 12 values were retained by randomized assignment, with no adherence restriction, wrong-group analysis, or other exclusion.
+- **2.7: not activated.**

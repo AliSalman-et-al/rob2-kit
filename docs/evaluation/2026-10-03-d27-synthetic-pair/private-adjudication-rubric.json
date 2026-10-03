@@ -1,0 +1,69 @@
+{
+  "mapping": {
+    "important-restriction": "A",
+    "negligible-restriction": "B",
+    "unknown-impact": "C",
+    "stopping-with-retained-outcomes": "D"
+  },
+  "cases": [
+    {
+      "id": "important-restriction",
+      "lines": [
+        "A blinded randomized trial compares assignment to active treatment versus placebo on mean symptom change atWeek12,100participants per group.",
+        "AllWeek12values were measured. The unadjusted analysis discards measured values after treatment stopping:20active participants stopped because symptoms worsened;2placebo stopped for administrative reasons. Remaining values retain randomized grouping.",
+        "One active participant used rescue treatment; its data were also excluded. The reported favorable active mean is computed from retained observations. Omitted active values show markedly worse symptom changes than retained active values; no prognostic or censoring adjustment is used."
+      ],
+      "review": "Restriction on measured outcomes selects unfavorable active outcomes; single rescue does not settle other restriction. Supported probable substantial impact, without needing a formal numerical bound.",
+      "analysis": "probably_no",
+      "impact": "probably_yes"
+    },
+    {
+      "id": "negligible-restriction",
+      "lines": [
+        "A blinded randomized trial compares assignment to active treatment versus placebo on mean symptom change atWeek12,100participants per group.",
+        "AllWeek12values were measured. The unadjusted analysis discards measured values for two administrative treatment stops in each group; these values and baseline prognosis resemble the retained values. Remaining values retain randomized grouping.",
+        "The report also gives the all-randomized analysis retaining those measurements: its effect estimate and confidence interval are practically unchanged, with no other restrictions."
+      ],
+      "review": "Measured-value restriction is inappropriate for assignment; positive source-supported robustness and prognosis permit probable negligible impact, not NI merely because stopping occurred.",
+      "analysis": "probably_no",
+      "impact": "probably_no"
+    },
+    {
+      "id": "unknown-impact",
+      "lines": [
+        "A blinded randomized trial compares assignment to active treatment versus placebo on mean symptom change atWeek12,100participants per group.",
+        "The report calls the analysis ITT but states efficacy observations were censored after treatment stopping;18active and9placebo participants stopped. It does not say whether subsequent values were measured or unavailable.",
+        "Stopping reasons, post-stop symptoms and the analysis assumptions for those observations are not available. No outcome or prognostic comparison of affected participants is reported."
+      ],
+      "review": "Known rule and stopping counts do not establish recorded-value omission or outcome-dependent loss. Unresolved mechanism/outcomes allow honest NI; no small-count shortcut or fabricated bias certainty.",
+      "analysis": "no_information",
+      "impact": "no_information"
+    },
+    {
+      "id": "stopping-with-retained-outcomes",
+      "lines": [
+        "A blinded randomized trial compares assignment to active treatment versus placebo on mean symptom change atWeek12,100participants per group.",
+        "Twentyactive andtenplacebo participants stopped treatment, but allWeek12values were measured and retained in the all-randomized analysis by assigned group.",
+        "No adherence restriction, wrong-group analysis or other exclusion occurred."
+      ],
+      "review": "Stopping alone is not analysis bias;2.6appropriate and2.7inactive.",
+      "analysis": "yes",
+      "impact": null
+    }
+  ],
+  "frozen_before_outputs": true,
+  "criteria": [
+    "Use analysis-selection mechanism rather than treatment stopping alone",
+    "ForA address concentrated unfavorable observed-outcome omission, not only one rescue; no precise bound required",
+    "ForB permit reassurance from similar outcomes/prognosis and practically unchanged full assignment estimate, not counts alone",
+    "ForC preserve unknown measured-value availability, reasons/outcomes and model assumptions; no invented observed-value omission",
+    "ForD appropriate assignment analysis keeps2.7inactive; no treatment-stopping bias by default"
+  ],
+  "comparison": "Scientific inferential bridges and uncertainty, not risk-label movement; allowed probability variation not automatically regression",
+  "possible_decisions": [
+    "keep if coherent with reassurance/uncertainty",
+    "revise if new unsupported certainty or blanket conservatism",
+    "reject if methodological interpretation is distorted"
+  ],
+  "accuracy_claims_forbidden": true
+}

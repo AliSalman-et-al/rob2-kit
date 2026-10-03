@@ -1,0 +1,23 @@
+**Fictional trial A**
+
+- **2.6: no.** The analysis excluded measured Week 12 values from 20 active participants who stopped because symptoms worsened, plus one active participant who used rescue treatment. Although the remaining values stayed grouped by random assignment, omitting observed outcomes based on stopping or rescue use does not estimate the effect of assignment appropriately. The markedly worse omitted active outcomes support concern that the exclusions could distort the favorable estimate.
+- **2.7: yes.** The exclusions affected 21 of 100 active participants, and the omitted outcomes were markedly worse than those retained. Those facts support potential for substantial impact.
+- **Uncertainty:** The size of the effect on the estimate is not quantified.
+
+**Fictional trial B**
+
+- **2.6: probably_yes.** The primary analysis omitted four measured outcomes, but the exclusions were administrative, balanced between groups, and the affected participants resembled those retained in outcomes and baseline prognosis. The reported all-randomized analysis also retained those measurements and gave a practically unchanged estimate and confidence interval. Taken together, this supports an appropriate assignment-effect estimate.
+- **2.7:** Not activated by 2.6.
+- **Uncertainty:** The supplied facts do not establish whether the primary analysis alone would have materially changed the result.
+
+**Fictional trial C**
+
+- **2.6: no_information.** The “ITT” label does not establish that the analysis retained participants’ outcomes by randomized assignment. Efficacy observations were censored after treatment stopping, but the report does not say whether Week 12 values were measured and excluded or unavailable. Without that information, the actual analysis population and the reason for omitting observations are unclear.
+- **2.7: no_information.** The analysis mechanism, stopping reasons, post-stop symptoms, and affected participants’ prognoses are not reported, so potential impact cannot be assessed.
+- **Uncertainty:** It is unknown whether post-stop outcomes were unavailable or observed but omitted, and how they related to the result.
+
+**Fictional trial D**
+
+- **2.6: yes.** All Week 12 values were retained in the all-randomized analysis by assigned group, with no adherence restriction, wrong-group analysis, or other exclusion.
+- **2.7:** Not activated by 2.6.
+- **Uncertainty:** No material uncertainty about the analysis approach is identified in the supplied facts.

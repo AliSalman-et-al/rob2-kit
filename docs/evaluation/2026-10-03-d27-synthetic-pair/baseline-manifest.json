@@ -1,0 +1,68 @@
+{
+  "research_question": "Synthetic mechanism-to-estimate warrant comparison, old versus replaced2.7considerations; not benchmark or clinical accuracy.",
+  "input_sha256": "f371eb209b983267c451fb59056be8116002ce550429ba953a6e50a8bb51513b",
+  "required_windows": [
+    {
+      "source_identity": "synthetic:vignette-A",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "synthetic:vignette-B",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "synthetic:vignette-C",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "synthetic:vignette-D",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "synthetic:vignette-A",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 7863,
+      "input_end_byte": 8590,
+      "text_sha256": "9abb295c69fcc7fc72eab5cb15a805c4f9711a74b99e48ee999632b853306970"
+    },
+    {
+      "source_identity": "synthetic:vignette-B",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 8591,
+      "input_end_byte": 9207,
+      "text_sha256": "823b31ea6b0994ce48a94edf62479add522ce7b3f95bce6e2cba113b5b94a740"
+    },
+    {
+      "source_identity": "synthetic:vignette-C",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 9208,
+      "input_end_byte": 9803,
+      "text_sha256": "dd5602b4ca32bdd93e2965c36a4668a69088904ae7e5ad094c74fc1389837ba9"
+    },
+    {
+      "source_identity": "synthetic:vignette-D",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 9804,
+      "input_end_byte": 10228,
+      "text_sha256": "ba7646c2d6e0c70cd2a639cde33f0105c91140ffd60d42807e2d6eb2b88f99b4"
+    }
+  ]
+}

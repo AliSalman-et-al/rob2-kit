@@ -1,0 +1,19 @@
+{
+  "responses": 2,
+  "unique_response_ids": [
+    "resp_01b7ed79a5614167016ac147cc9fc487d08d7ec8613a6248fa",
+    "resp_0370798ce05ee63d016ac147df6b3c87d0bc9ef6fad7dabc11"
+  ],
+  "usage": {
+    "input_tokens": 22083,
+    "cached_input_tokens": 3584,
+    "output_tokens": 863,
+    "reasoning_output_tokens": 0,
+    "uncached_input_tokens": 18499
+  },
+  "dollar_cost_unavailable": true,
+  "model_effort_verified": true,
+  "tools": 0,
+  "overshoots": 0,
+  "stops": 0
+}

@@ -1,0 +1,33 @@
+{
+  "resp_0370798ce05ee63d016ac147df6b3c87d0bc9ef6fad7dabc11": {
+    "thread_id": "01a10300-b1ea-7180-b531-0e29f7c2437c",
+    "turn_id": "01a10300-b6cd-76d2-8089-bdc5ff1294db",
+    "session_id": "01a10300-b1ea-7180-b531-0e29f7c2437c",
+    "root_turn_id": "01a10300-b6cd-76d2-8089-bdc5ff1294db",
+    "response_id": "resp_0370798ce05ee63d016ac147df6b3c87d0bc9ef6fad7dabc11",
+    "usage": {
+      "input_tokens": 11077,
+      "cached_input_tokens": 1792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 366,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 11443
+    },
+    "turn_token_usage": {
+      "input_tokens": 11077,
+      "cached_input_tokens": 1792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 366,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 11443
+    },
+    "thread_token_usage": {
+      "input_tokens": 11077,
+      "cached_input_tokens": 1792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 366,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 11443
+    }
+  }
+}
