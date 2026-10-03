@@ -1,0 +1,12 @@
+[
+  {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "turn_id": "01a10079-42f4-7933-89ab-1658c2bf0927",
+    "root_turn_id": "01a10079-42f4-7933-89ab-1658c2bf0927",
+    "approval_policy": "never",
+    "sandbox_policy": {
+      "type": "read-only"
+    }
+  }
+]

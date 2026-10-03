@@ -1,0 +1,181 @@
+{
+  "proposed_scopes": [
+    {
+      "attempt": 1,
+      "claimed_relation": "supports",
+      "relation_rationale": null,
+      "target_window": null,
+      "reported_result": {
+        "outcome": "Cannabis withdrawal severity, measured by overall Cannabis Withdrawal Scale score",
+        "time_point_or_window": "During the 6-day medication treatment (study days 1\u20136); model included days 1\u20139 and reported abstinence means for days 2\u20136",
+        "comparison_groups": [
+          {
+            "id": "nabiximols",
+            "assignment": "Nabiximols treatment"
+          },
+          {
+            "id": "placebo",
+            "assignment": "Placebo"
+          }
+        ],
+        "estimand": "Between-group treatment-by-time difference in change from baseline in mean overall CWS scores",
+        "population": "All 51 randomized participants; intention-to-treat analysis",
+        "effect_measure": "Mixed-model treatment \u00d7 time interaction",
+        "estimate": "Unadjusted F(8,377.97)=2.39, P=.01; adjusted F(8,325.1)=2.83, P=.003. Mean change: nabiximols 66% decrease vs placebo 52% increase from baseline.",
+        "evidence_basis": [
+          {
+            "evidence_handle": "eh_a14a27e6d7fd5f1e"
+          },
+          {
+            "evidence_handle": "eh_d3d67c4099cd8a19"
+          },
+          {
+            "evidence_handle": "eh_e24b079ecfa26f22"
+          }
+        ]
+      },
+      "reported_outcome": null,
+      "reported_definition": null,
+      "analysis_population": null,
+      "effect_measure": null,
+      "estimate": null,
+      "design_evidence": null,
+      "passage_refs": null,
+      "scope_justification": "The primary CWS outcome and treatment-by-time interaction support the requested overall cannabis withdrawal severity outcome. Treatment was 6 days; primary model included all study days 1\u20139, while published abstinence means exclude baseline and cover days 2\u20136. Thus this is a close but not exact match to the target's medication-period contrast.",
+      "population_justification": "Methods state intention-to-treat analysis included all 51 randomized participants. Actual outcome observations varied due to early discharge/dropout and missing CWS questionnaires imputed across five datasets; the reported model is not simply complete-case all-randomized observed data.",
+      "unknowns": [
+        "No numerical between-group difference on the CWS scale or confidence interval is reported in the captured passage; interaction F statistic is omnibus across time.",
+        "The model window includes days 1\u20139, extending beyond target days 1\u20136, although abstinence summary values cover days 2\u20136.",
+        "Per-day analyzed sample counts vary and most missingness reflects whole questionnaires due to early dropout."
+      ]
+    },
+    {
+      "attempt": 2,
+      "claimed_relation": "broader",
+      "relation_rationale": "The reported overall CWS treatment-by-time trajectory is broader than the requested days 1\u20136 window: the repeated-measures model uses days 1\u20139, although abstinence means summarize days 2\u20136. Outcome and randomized comparison align, but the reported analysis window extends through washout.",
+      "target_window": "During six-day medication treatment, study days 1\u20136.",
+      "reported_result": null,
+      "reported_outcome": "Overall withdrawal score, Cannabis Withdrawal Scale",
+      "reported_definition": null,
+      "analysis_population": "Intention-to-treat: all 51 randomized participants (27 nabiximols, 24 placebo); mixed models used multiple imputation for missing CWS questionnaires.",
+      "effect_measure": null,
+      "estimate": null,
+      "design_evidence": null,
+      "passage_refs": null,
+      "scope_justification": "Reported CWS outcome and treatment-by-time contrast align with requested outcome/assignment estimand. However model uses days 1\u20139; abstinence means represent days 2\u20136, not the exact requested days 1\u20136 window.",
+      "population_justification": "Methods specify ITT included all 51 randomized. Missing whole questionnaires largely due to early dropout were multiply imputed; realized daily observations vary, so this is not complete observed-case evidence for every randomized person.",
+      "unknowns": [
+        "No direct numeric between-group mean difference or confidence interval is reported; the F statistic tests an omnibus interaction across time.",
+        "Exact days 1\u20136-only model estimate is not given.",
+        "Missingness by outcome occasion and imputation-based individual estimates are not fully specified in the selected reported result."
+      ]
+    },
+    {
+      "attempt": 3,
+      "claimed_relation": "broader",
+      "relation_rationale": "Outcome and treatment-by-time comparison align, but reported model includes days 1\u20139, extending beyond requested medication days 1\u20136; reported abstinence means cover days 2\u20136.",
+      "target_window": "Six-day medication treatment, study days 1\u20136",
+      "reported_result": null,
+      "reported_outcome": "Overall withdrawal score (CWS)",
+      "reported_definition": null,
+      "analysis_population": "ITT, all 51 randomized (27 nabiximols, 24 placebo); missing questionnaires imputed.",
+      "effect_measure": null,
+      "estimate": "Unadjusted F(8,377.97)=2.39, P=.01; adjusted F(8,325.1)=2.83, P=.003. Mean change: 66% decrease vs 52% increase from baseline.",
+      "design_evidence": null,
+      "passage_refs": null,
+      "scope_justification": "Reported overall CWS treatment-by-time contrast matches requested outcome and assignment, but model covers study days 1\u20139; abstinence means summarize days 2\u20136, so not exact days 1\u20136-only effect.",
+      "population_justification": "Analysis states ITT included all 51 randomized. CWS questionnaires missing mainly because of early dropout were multiply imputed; daily observed sample counts differ.",
+      "unknowns": [
+        "No numeric between-group mean difference or CI is reported; omnibus F interaction is across time.",
+        "No separate exact days 1\u20136 model estimate reported.",
+        "Actual per-occasion outcome completeness varies."
+      ]
+    },
+    {
+      "attempt": 4,
+      "claimed_relation": "broader",
+      "relation_rationale": "Outcome and treatment-by-time comparison align, but reported model includes days 1\u20139, extending beyond requested medication days 1\u20136; abstinence means cover days 2\u20136.",
+      "target_window": "Six-day medication treatment, study days 1\u20136",
+      "reported_result": null,
+      "reported_outcome": "Overall withdrawal score (CWS)",
+      "reported_definition": null,
+      "analysis_population": "ITT, all 51 randomized (27 nabiximols, 24 placebo); missing questionnaires imputed.",
+      "effect_measure": null,
+      "estimate": "Unadjusted treatment \u00d7 time F(8,377.97)=2.39, P=.01; adjusted F(8,325.1)=2.83, P=.003. Mean change: 66% decrease vs 52% increase from baseline.",
+      "design_evidence": null,
+      "passage_refs": null,
+      "scope_justification": "Reported overall CWS treatment-by-time contrast matches requested outcome and assignment, but model covers study days 1\u20139; abstinence means summarize days 2\u20136, so not exact days 1\u20136-only effect.",
+      "population_justification": "Analysis states ITT included all 51 randomized. CWS questionnaires missing mainly because of early dropout were multiply imputed; daily observed sample counts differ.",
+      "unknowns": [
+        "No numeric between-group mean difference or CI reported; omnibus F interaction is across time.",
+        "No separate exact days 1\u20136 model estimate reported.",
+        "Actual per-occasion outcome completeness varies."
+      ]
+    }
+  ],
+  "original_target": {
+    "comparison_groups": [
+      {
+        "assignment": "Nabiximols treatment",
+        "id": "nabiximols"
+      },
+      {
+        "assignment": "Placebo",
+        "id": "placebo"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Between-group difference in change in overall Cannabis Withdrawal Scale severity over time",
+    "measurement": {
+      "method": "Overall severity of cannabis withdrawal measured by the 19-item Cannabis Withdrawal Scale, with each item rated 0\u201310 for the previous 24 hours.",
+      "metric": "Cannabis withdrawal severity"
+    },
+    "outcome_definition": "Cannabis withdrawal severity",
+    "time_point_or_window": {
+      "description": "During the 6-day medication treatment (study days 1\u20136).",
+      "kind": "described"
+    }
+  },
+  "source_window_found_and_delivered": true,
+  "temporal_relation_review": "Broader is supported for the model time-window axis (days1\u20139 versus target1\u20136). It is not an accepted full-scope judgment: cards combine omnibus test statistics, adjusted/unadjusted analyses and within-group percentage changes rather than one comparative estimate, and do not establish equivalent estimand scope. A related candidate or a supported group-bound candidate requires further source-grounded interpretation; no forced label or retargeting was applied.",
+  "first_attempt_recognized_nonexact_scope_in_prose": true,
+  "relations": [
+    "supports",
+    "broader",
+    "broader",
+    "broader"
+  ],
+  "flat_model_proposal_validated": false,
+  "saved": false,
+  "canonical_result_bindings": [],
+  "binding_status": "Unavailable: all four calls failed schema validation before application source-binding/canonicalization. Assessment references are source premises, not validated Result field bindings.",
+  "explicitly_selected_evidence_locations": [
+    [
+      3,
+      37,
+      41
+    ],
+    [
+      4,
+      75,
+      81
+    ],
+    [
+      7,
+      47,
+      58
+    ]
+  ],
+  "explicit_assessment_basis_includes_window_footnote": false,
+  "basis_qualification": "The footnote is in a native read response and its read-page passage handle is available. The three explicitly selected handles referenced in assessments cover endpoint definition, result paragraph and Table2 row, not the footnote. No canonical binding was constructed.",
+  "scope_review_deliveries": [
+    {
+      "event_ordinal": 4,
+      "tool": "get_status",
+      "scope_review": []
+    }
+  ],
+  "decision_benefit_observed": false,
+  "qualification": "Known-case test, not unseen agreement or accuracy. Recognition in prose preceded any populated scope review. Invalid supports was replaced by explicit broader, but no valid retained proposal or durable decision was produced."
+}

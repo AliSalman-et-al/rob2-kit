@@ -1,0 +1,287 @@
+[
+  {
+    "event_ordinal": 22,
+    "id": "item_10",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "validate_proposal",
+    "arguments": {
+      "expected_revision": 13,
+      "results": [
+        {
+          "trial_id": "allsop-2014",
+          "relation": "supports",
+          "reported_result": {
+            "outcome": "Cannabis withdrawal severity, measured by overall Cannabis Withdrawal Scale score",
+            "time_point_or_window": "During the 6-day medication treatment (study days 1\u20136); model included days 1\u20139 and reported abstinence means for days 2\u20136",
+            "comparison_groups": [
+              {
+                "id": "nabiximols",
+                "assignment": "Nabiximols treatment"
+              },
+              {
+                "id": "placebo",
+                "assignment": "Placebo"
+              }
+            ],
+            "estimand": "Between-group treatment-by-time difference in change from baseline in mean overall CWS scores",
+            "population": "All 51 randomized participants; intention-to-treat analysis",
+            "effect_measure": "Mixed-model treatment \u00d7 time interaction",
+            "estimate": "Unadjusted F(8,377.97)=2.39, P=.01; adjusted F(8,325.1)=2.83, P=.003. Mean change: nabiximols 66% decrease vs placebo 52% increase from baseline.",
+            "evidence_basis": [
+              {
+                "evidence_handle": "eh_a14a27e6d7fd5f1e"
+              },
+              {
+                "evidence_handle": "eh_d3d67c4099cd8a19"
+              },
+              {
+                "evidence_handle": "eh_e24b079ecfa26f22"
+              }
+            ]
+          }
+        }
+      ],
+      "assessments": [
+        {
+          "trial_id": "allsop-2014",
+          "evidence_basis": [
+            {
+              "evidence_handle": "eh_d3d67c4099cd8a19"
+            },
+            {
+              "evidence_handle": "eh_e24b079ecfa26f22"
+            },
+            {
+              "evidence_handle": "eh_a14a27e6d7fd5f1e"
+            }
+          ],
+          "scope_justification": "The primary CWS outcome and treatment-by-time interaction support the requested overall cannabis withdrawal severity outcome. Treatment was 6 days; primary model included all study days 1\u20139, while published abstinence means exclude baseline and cover days 2\u20136. Thus this is a close but not exact match to the target's medication-period contrast.",
+          "population_justification": "Methods state intention-to-treat analysis included all 51 randomized participants. Actual outcome observations varied due to early discharge/dropout and missing CWS questionnaires imputed across five datasets; the reported model is not simply complete-case all-randomized observed data.",
+          "unknowns": [
+            "No numerical between-group difference on the CWS scale or confidence interval is reported in the captured passage; interaction F statistic is omnibus across time.",
+            "The model window includes days 1\u20139, extending beyond target days 1\u20136, although abstinence summary values cover days 2\u20136.",
+            "Per-day analyzed sample counts vary and most missingness reflects whole questionnaires due to early dropout."
+          ]
+        }
+      ]
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "18 validation errors for call[validate_proposal]\nresults.0.function-after[complete_result(), ResultProposal].relation\n  Input should be 'exact', 'broader', 'narrower', 'component' or 'related' [type=enum, input_value='supports', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/enum\nresults.0.function-after[complete_result(), ResultProposal].relation_rationale\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].design\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].design_rationale\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].target_measurement\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].target_window\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].comparison_groups\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].baseline_subgroup\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].intended_effect_measure\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].reported_outcome\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].analysis_population\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.function-after[complete_result(), ResultProposal].reported_result\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'outcome': 'Cannabis wit...'eh_e24b079ecfa26f22'}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.relation\n  Input should be <TargetRelation.AMBIGUOUS: 'ambiguous'> or <TargetRelation.UNAVAILABLE: 'unavailable'> [type=literal_error, input_value='supports', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\nresults.0.MissingResultProposal.missing_facts\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...eh_e24b079ecfa26f22'}]}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.MissingResultProposal.reported_result\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'outcome': 'Cannabis wit...'eh_e24b079ecfa26f22'}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nassessments.0.evidence_basis.0\n  Input should be a valid string [type=string_type, input_value={'evidence_handle': 'eh_d3d67c4099cd8a19'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type\nassessments.0.evidence_basis.1\n  Input should be a valid string [type=string_type, input_value={'evidence_handle': 'eh_e24b079ecfa26f22'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type\nassessments.0.evidence_basis.2\n  Input should be a valid string [type=string_type, input_value={'evidence_handle': 'eh_a14a27e6d7fd5f1e'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_type"
+        }
+      ],
+      "structured_content": null
+    },
+    "error": null,
+    "status": "failed"
+  },
+  {
+    "event_ordinal": 24,
+    "id": "item_11",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "validate_proposal",
+    "arguments": {
+      "expected_revision": 13,
+      "results": [
+        {
+          "trial_id": "allsop-2014",
+          "relation": "broader",
+          "relation_rationale": "The reported overall CWS treatment-by-time trajectory is broader than the requested days 1\u20136 window: the repeated-measures model uses days 1\u20139, although abstinence means summarize days 2\u20136. Outcome and randomized comparison align, but the reported analysis window extends through washout.",
+          "design": "randomized_parallel_group",
+          "design_rationale": "The article describes a randomized, double-blind inpatient trial assigning participants to nabiximols or placebo.",
+          "target_measurement": "Overall severity on the 19-item Cannabis Withdrawal Scale, items rated 0\u201310 for previous 24 hours.",
+          "target_window": "During six-day medication treatment, study days 1\u20136.",
+          "comparison_groups": [
+            {
+              "id": "nabiximols",
+              "assignment": "Nabiximols treatment"
+            },
+            {
+              "id": "placebo",
+              "assignment": "Placebo"
+            }
+          ],
+          "baseline_subgroup": null,
+          "intended_effect_measure": "Between-group difference in change in overall Cannabis Withdrawal Scale severity over time",
+          "reported_outcome": "Overall withdrawal score, Cannabis Withdrawal Scale",
+          "analysis_population": "Intention-to-treat: all 51 randomized participants (27 nabiximols, 24 placebo); mixed models used multiple imputation for missing CWS questionnaires.",
+          "result": {
+            "measure": "Treatment-by-time interaction in mean change from baseline overall CWS score",
+            "value": "Unadjusted F(8,377.97)=2.39, P=.01; adjusted F(8,325.1)=2.83, P=.003. Reported mean change: 66% decrease from baseline with nabiximols vs 52% increase with placebo.",
+            "evidence_basis": [
+              "eh_a14a27e6d7fd5f1e",
+              "eh_d3d67c4099cd8a19",
+              "eh_e24b079ecfa26f22"
+            ]
+          }
+        }
+      ],
+      "assessments": [
+        {
+          "trial_id": "allsop-2014",
+          "evidence_basis": [
+            "eh_d3d67c4099cd8a19",
+            "eh_e24b079ecfa26f22",
+            "eh_a14a27e6d7fd5f1e"
+          ],
+          "scope_justification": "Reported CWS outcome and treatment-by-time contrast align with requested outcome/assignment estimand. However model uses days 1\u20139; abstinence means represent days 2\u20136, not the exact requested days 1\u20136 window.",
+          "population_justification": "Methods specify ITT included all 51 randomized. Missing whole questionnaires largely due to early dropout were multiply imputed; realized daily observations vary, so this is not complete observed-case evidence for every randomized person.",
+          "unknowns": [
+            "No direct numeric between-group mean difference or confidence interval is reported; the F statistic tests an omnibus interaction across time.",
+            "Exact days 1\u20136-only model estimate is not given.",
+            "Missingness by outcome occasion and imputation-based individual estimates are not fully specified in the selected reported result."
+          ]
+        }
+      ]
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "15 validation errors for call[validate_proposal]\nresults.0.function-after[complete_result(), ResultProposal].design\n  Input should be 'individual_parallel', 'cluster_randomized', 'crossover' or 'unclear' [type=literal_error, input_value='randomized_parallel_group', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\nresults.0.function-after[complete_result(), ResultProposal].result\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'measure': 'Treatment-by... 'eh_e24b079ecfa26f22']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.relation\n  Input should be <TargetRelation.AMBIGUOUS: 'ambiguous'> or <TargetRelation.UNAVAILABLE: 'unavailable'> [type=literal_error, input_value='broader', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\nresults.0.MissingResultProposal.missing_facts\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...'eh_e24b079ecfa26f22']}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.MissingResultProposal.relation_rationale\n  Extra inputs are not permitted [type=extra_forbidden, input_value='The reported overall CWS...xtends through washout.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.design\n  Extra inputs are not permitted [type=extra_forbidden, input_value='randomized_parallel_group', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.design_rationale\n  Extra inputs are not permitted [type=extra_forbidden, input_value='The article describes a ... nabiximols or placebo.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.target_measurement\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Overall severity on the ... for previous 24 hours.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.target_window\n  Extra inputs are not permitted [type=extra_forbidden, input_value='During six-day medicatio...ment, study days 1\u20136.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.comparison_groups\n  Extra inputs are not permitted [type=extra_forbidden, input_value=[{'id': 'nabiximols', 'as...assignment': 'Placebo'}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.baseline_subgroup\n  Extra inputs are not permitted [type=extra_forbidden, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.intended_effect_measure\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Between-group difference...cale severity over time', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.reported_outcome\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Overall withdrawal score...nnabis Withdrawal Scale', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.analysis_population\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Intention-to-treat: all ...ing CWS questionnaires.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.result\n  Extra inputs are not permitted [type=extra_forbidden, input_value={'measure': 'Treatment-by... 'eh_e24b079ecfa26f22']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+        }
+      ],
+      "structured_content": null
+    },
+    "error": null,
+    "status": "failed"
+  },
+  {
+    "event_ordinal": 26,
+    "id": "item_12",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "validate_proposal",
+    "arguments": {
+      "expected_revision": 13,
+      "results": [
+        {
+          "trial_id": "allsop-2014",
+          "relation": "broader",
+          "relation_rationale": "Outcome and treatment-by-time comparison align, but reported model includes days 1\u20139, extending beyond requested medication days 1\u20136; reported abstinence means cover days 2\u20136.",
+          "design": "individual_parallel",
+          "design_rationale": "Randomized double-blind trial assigned individuals to nabiximols or placebo.",
+          "target_measurement": "Overall severity on 19-item CWS, items 0\u201310 for prior 24 hours",
+          "target_window": "Six-day medication treatment, study days 1\u20136",
+          "comparison_groups": [
+            {
+              "id": "nabiximols",
+              "assignment": "Nabiximols treatment"
+            },
+            {
+              "id": "placebo",
+              "assignment": "Placebo"
+            }
+          ],
+          "baseline_subgroup": null,
+          "intended_effect_measure": "Between-group difference in change in overall CWS severity over time",
+          "reported_outcome": "Overall withdrawal score (CWS)",
+          "analysis_population": "ITT, all 51 randomized (27 nabiximols, 24 placebo); missing questionnaires imputed.",
+          "statistic": "Treatment \u00d7 time interaction",
+          "estimate": "Unadjusted F(8,377.97)=2.39, P=.01; adjusted F(8,325.1)=2.83, P=.003. Mean change: 66% decrease vs 52% increase from baseline.",
+          "evidence_basis": [
+            "eh_a14a27e6d7fd5f1e",
+            "eh_d3d67c4099cd8a19",
+            "eh_e24b079ecfa26f22"
+          ]
+        }
+      ],
+      "assessments": [
+        {
+          "trial_id": "allsop-2014",
+          "evidence_basis": [
+            "eh_d3d67c4099cd8a19",
+            "eh_e24b079ecfa26f22",
+            "eh_a14a27e6d7fd5f1e"
+          ],
+          "scope_justification": "Reported overall CWS treatment-by-time contrast matches requested outcome and assignment, but model covers study days 1\u20139; abstinence means summarize days 2\u20136, so not exact days 1\u20136-only effect.",
+          "population_justification": "Analysis states ITT included all 51 randomized. CWS questionnaires missing mainly because of early dropout were multiply imputed; daily observed sample counts differ.",
+          "unknowns": [
+            "No numeric between-group mean difference or CI is reported; omnibus F interaction is across time.",
+            "No separate exact days 1\u20136 model estimate reported.",
+            "Actual per-occasion outcome completeness varies."
+          ]
+        }
+      ]
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "17 validation errors for call[validate_proposal]\nresults.0.function-after[complete_result(), ResultProposal].statistic\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Treatment \u00d7 time interaction', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.function-after[complete_result(), ResultProposal].evidence_basis\n  Extra inputs are not permitted [type=extra_forbidden, input_value=['eh_a14a27e6d7fd5f1e', '..., 'eh_e24b079ecfa26f22'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.relation\n  Input should be <TargetRelation.AMBIGUOUS: 'ambiguous'> or <TargetRelation.UNAVAILABLE: 'unavailable'> [type=literal_error, input_value='broader', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\nresults.0.MissingResultProposal.missing_facts\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014... 'eh_e24b079ecfa26f22']}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.MissingResultProposal.relation_rationale\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Outcome and treatment-by...means cover days 2\u20136.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.design\n  Extra inputs are not permitted [type=extra_forbidden, input_value='individual_parallel', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.design_rationale\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Randomized double-blind ... nabiximols or placebo.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.target_measurement\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Overall severity on 19-i...10 for prior 24 hours', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.target_window\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Six-day medication treatment, study days 1\u20136', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.comparison_groups\n  Extra inputs are not permitted [type=extra_forbidden, input_value=[{'id': 'nabiximols', 'as...assignment': 'Placebo'}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.baseline_subgroup\n  Extra inputs are not permitted [type=extra_forbidden, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.intended_effect_measure\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Between-group difference... CWS severity over time', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.reported_outcome\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Overall withdrawal score (CWS)', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.analysis_population\n  Extra inputs are not permitted [type=extra_forbidden, input_value='ITT, all 51 randomized (...questionnaires imputed.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.statistic\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Treatment \u00d7 time interaction', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.estimate\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Unadjusted F(8,377.97)=2...increase from baseline.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.evidence_basis\n  Extra inputs are not permitted [type=extra_forbidden, input_value=['eh_a14a27e6d7fd5f1e', '..., 'eh_e24b079ecfa26f22'], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+        }
+      ],
+      "structured_content": null
+    },
+    "error": null,
+    "status": "failed"
+  },
+  {
+    "event_ordinal": 28,
+    "id": "item_13",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "validate_proposal",
+    "arguments": {
+      "expected_revision": 13,
+      "results": [
+        {
+          "trial_id": "allsop-2014",
+          "relation": "broader",
+          "relation_rationale": "Outcome and treatment-by-time comparison align, but reported model includes days 1\u20139, extending beyond requested medication days 1\u20136; abstinence means cover days 2\u20136.",
+          "design": "individual_parallel",
+          "design_rationale": "Randomized double-blind trial assigned individuals to nabiximols or placebo.",
+          "target_measurement": "Overall severity on 19-item CWS, items 0\u201310 for prior 24 hours",
+          "target_window": "Six-day medication treatment, study days 1\u20136",
+          "comparison_groups": [
+            {
+              "id": "nabiximols",
+              "assignment": "Nabiximols treatment"
+            },
+            {
+              "id": "placebo",
+              "assignment": "Placebo"
+            }
+          ],
+          "baseline_subgroup": null,
+          "intended_effect_measure": "Between-group difference in change in overall CWS severity over time",
+          "reported_outcome": "Overall withdrawal score (CWS)",
+          "analysis_population": "ITT, all 51 randomized (27 nabiximols, 24 placebo); missing questionnaires imputed.",
+          "estimate": "Unadjusted treatment \u00d7 time F(8,377.97)=2.39, P=.01; adjusted F(8,325.1)=2.83, P=.003. Mean change: 66% decrease vs 52% increase from baseline."
+        }
+      ],
+      "assessments": [
+        {
+          "trial_id": "allsop-2014",
+          "evidence_basis": [
+            "eh_d3d67c4099cd8a19",
+            "eh_e24b079ecfa26f22",
+            "eh_a14a27e6d7fd5f1e"
+          ],
+          "scope_justification": "Reported overall CWS treatment-by-time contrast matches requested outcome and assignment, but model covers study days 1\u20139; abstinence means summarize days 2\u20136, so not exact days 1\u20136-only effect.",
+          "population_justification": "Analysis states ITT included all 51 randomized. CWS questionnaires missing mainly because of early dropout were multiply imputed; daily observed sample counts differ.",
+          "unknowns": [
+            "No numeric between-group mean difference or CI reported; omnibus F interaction is across time.",
+            "No separate exact days 1\u20136 model estimate reported.",
+            "Actual per-occasion outcome completeness varies."
+          ]
+        }
+      ]
+    },
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "14 validation errors for call[validate_proposal]\nresults.0.function-after[complete_result(), ResultProposal]\n  Value error, effect_measure and estimate must be supplied together [type=value_error, input_value={'trial_id': 'allsop-2014...ncrease from baseline.'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\nresults.0.MissingResultProposal.relation\n  Input should be <TargetRelation.AMBIGUOUS: 'ambiguous'> or <TargetRelation.UNAVAILABLE: 'unavailable'> [type=literal_error, input_value='broader', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error\nresults.0.MissingResultProposal.missing_facts\n  Field required [type=missing, input_value={'trial_id': 'allsop-2014...ncrease from baseline.'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nresults.0.MissingResultProposal.relation_rationale\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Outcome and treatment-by...means cover days 2\u20136.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.design\n  Extra inputs are not permitted [type=extra_forbidden, input_value='individual_parallel', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.design_rationale\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Randomized double-blind ... nabiximols or placebo.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.target_measurement\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Overall severity on 19-i...10 for prior 24 hours', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.target_window\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Six-day medication treatment, study days 1\u20136', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.comparison_groups\n  Extra inputs are not permitted [type=extra_forbidden, input_value=[{'id': 'nabiximols', 'as...assignment': 'Placebo'}], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.baseline_subgroup\n  Extra inputs are not permitted [type=extra_forbidden, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.intended_effect_measure\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Between-group difference... CWS severity over time', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.reported_outcome\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Overall withdrawal score (CWS)', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.analysis_population\n  Extra inputs are not permitted [type=extra_forbidden, input_value='ITT, all 51 randomized (...questionnaires imputed.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\nresults.0.MissingResultProposal.estimate\n  Extra inputs are not permitted [type=extra_forbidden, input_value='Unadjusted treatment \u00d7 ...increase from baseline.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+        }
+      ],
+      "structured_content": null
+    },
+    "error": null,
+    "status": "failed"
+  }
+]
