@@ -1,0 +1,174 @@
+{
+  "selection_basis": "Retain mainpages1-8 (all study methods/results/discussion includingdiscontinuations,rescue) and all supplemental PDF/DOCX projections; registryfullstudyidentity/arms,design/enrollment,protocolprimaryoutcome,entirepostedprimaryoutcome,andentireparticipantflow module. Exclude articlepages9-10 acknowledgments/dataaccess/references and registryotheroutcomes/adverseeventtables/baselinecharacteristics/publicationadmin not driving2.6/2.7. Fullpacket retained for checking selection. No current citation subset used.",
+  "qualification": "Single-agent source review; no independentsecondhuman adjudication or groundtruth label. Relevant factual discrepancies preserved.",
+  "required_windows": [
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 81
+    },
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 107
+    },
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 123
+    },
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 94
+    },
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 11
+    },
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 97
+    },
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 207
+    },
+    {
+      "source_identity": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 119
+    },
+    {
+      "source_identity": "source_96631986f0f0c8d1fb7e1e78e6983b282e1f863e889acf35b7c028c1b6928d0d",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 41
+    },
+    {
+      "source_identity": "source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 31
+    },
+    {
+      "source_identity": "source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 47
+    },
+    {
+      "source_identity": "source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 12
+    },
+    {
+      "source_identity": "source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 5
+    },
+    {
+      "source_identity": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 76
+    },
+    {
+      "source_identity": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+      "page": 1,
+      "start_line": 270,
+      "end_line": 279
+    },
+    {
+      "source_identity": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+      "page": 1,
+      "start_line": 328,
+      "end_line": 330
+    },
+    {
+      "source_identity": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+      "page": 1,
+      "start_line": 1887,
+      "end_line": 1923
+    },
+    {
+      "source_identity": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+      "page": 1,
+      "start_line": 2211,
+      "end_line": 2262
+    },
+    {
+      "source_identity": "visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 6
+    },
+    {
+      "source_identity": "visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 2
+    },
+    {
+      "source_identity": "visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 2
+    },
+    {
+      "source_identity": "visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "source_identity": "visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "source_identity": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+      "page": 1,
+      "start_line": 310,
+      "end_line": 319
+    }
+  ],
+  "registry_material_facts": [
+    "primarydenominator133/142",
+    "populationbaselineand>=1postbaselineHbA1c",
+    "primaryestimate-0.95 CI-1.14to-0.77",
+    "studyflow144/147\u2192134/142 withallreasons"
+  ]
+}

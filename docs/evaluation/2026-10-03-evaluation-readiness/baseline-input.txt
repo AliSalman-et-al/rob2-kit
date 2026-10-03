@@ -1,0 +1,1241 @@
+{"common":{"task":"Evaluate the signalling questions for the approved assignment-effect target and selected reported result using the supplied sources. Explain source-supported reasoning, meaningful unknowns and counterevidence, and cite exact source/page/line coordinates. Consider permitted probable responses. Provide no overall or domain label. This is an isolated scientific diagnostic, not a saved complete assessment.","approved_result":{"applicability":{"design":"individual_parallel","evidence":["eh_32933a9327390e27"],"rationale":"Participants were individually randomized 1:1 to parallel treatment groups in a double-blind placebo-controlled trial."},"bindings":[{"evidence_index":0,"field":{"path":"/reported/effect_measure"},"value_digest":"sha256:635a7e7711468714229f91e9be5711c935070fc5c1daae76677cccca4ba8ef83"},{"evidence_index":0,"field":{"path":"/reported/estimate"},"value_digest":"sha256:1c52469fed2f3391fc7194b26be25a6fbdefc62e9fd4fcfe6e92a7be241e0e68"},{"evidence_index":0,"field":{"path":"/reported/precision"},"value_digest":"sha256:876b3c183602f75dddd54b3810669909ea0ba3d1290a1e1a829fb6e122244f19"},{"evidence_index":0,"field":{"path":"/reported/endpoint/name"},"value_digest":"sha256:677415bfe71192b602f413a21133ccc1d4969b9e478b71a2e35aa97deb39f1a5"}],"clarity":{"analysis_population":"specified","comparison_groups":"specified","effect_measure":"specified","eligible_result_choice":"specified","measurement":"specified","outcome_definition":"specified","source_table_meaning":"specified","time_point":"specified"},"evidence":[{"delivery_receipt":"sha256:719fde626b931b939cd4fa35e2125180ac50c1b22ae7436c3cb3d33e59c5570f","handle":"eh_c8652acebbd8dbc6","kind":"figure","provenance":"host_visual","region":[0.1,0.06,0.47,0.31],"render_identity":"sha256:e305728b460a714ad51235ed16d51cee24d8a1844b3c9bea9fff4091fa668056","transcription":"Figure 2A: Change in glycated haemoglobin (HbA1c) from baseline to Week 28 (%), mixed-model repeated measures. Vertical axis: HbA1c change (%; LS mean ± SE). Series: Dulaglutide 1.5 mg once weekly and Placebo once weekly. Values: Dulaglutide −2.0; Placebo −1.1. Estimated treatment difference (ETD): −1.0***; 95% CI (−1.1, −0.8)."}],"kind":"assessable","relation":"exact","relation_rationale":"The requested outcome is change in HbA1c from baseline to Week 28 in the randomized dulaglutide/glargine versus placebo/glargine comparison. Figure 2A reports that measure at that time point and the treatment difference. The analysis used the intention-to-treat population while censoring data after rescue therapy or study-drug discontinuation; this handling is considered in the bias domains.","reported":{"analysis_population":"All randomized participants were included in the intention-to-treat population; data after initiation of rescue therapy or premature study-drug discontinuation were excluded from the efficacy analysis.","effect_measure":"Estimated treatment difference (ETD)","endpoint":{"definition":null,"name":"Change in glycated haemoglobin (HbA1c) from baseline to Week 28"},"estimate":"-1.0","form":"comparative_effect","group_values":[],"precision":"95% CI (-1.1, -0.8)"},"requested_outcome":"Change from baseline in HbA1c at week 28","target":{"comparison_groups":[{"assignment":"Dulaglutide 1.5 mg once weekly added to titrated insulin glargine with metformin and/or acarbose","id":"dulaglutide"},{"assignment":"Placebo once weekly added to titrated insulin glargine with metformin and/or acarbose","id":"placebo"}],"effect_of_interest":"assignment","intended_analysis_population":"All randomized participants in the comparison groups","intended_effect_measure":"Mean difference","measurement":{"method":"Change in HbA1c from baseline, measured at a central laboratory.","metric":"Change from baseline in HbA1c at week 28"},"outcome_definition":"Change from baseline in HbA1c at week 28","time_point_or_window":{"description":"Week 28 after randomization","kind":"quantified","unit":"weeks","value":"28"}},"trial_id":"award-chn3-2023"},"questions":[{"id":"sq:deviations:appropriate-analysis","domain_id":"domain:deviations","wording":"Was an appropriate analysis used to estimate the effect of assignment to intervention?","allowed_answers":["yes","probably_yes","probably_no","no","no_information"],"activation":{"kind":"always"},"guidance":{"official":{"version":"22 August 2019","source_locator":"Full guidance p. 29, Box 6, signalling question 2.6","source_sha256":"A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670","source_excerpt":"Both intention-to-treat (ITT) analyses and modified intention-to-treat (mITT) analyses excluding participants with missing outcome data should be considered appropriate. Both naïve ‘per-protocol’ analyses and ‘as treated’ analyses should be considered inappropriate. Analyses excluding eligible trial participants post-randomization should also be considered inappropriate."},"operational":{"id":"rob2-kit.parallel-assignment.question-guidance","version":"1.0.9","attribution":"rob2-kit maintainers","bias_construct":"Whether an appropriate analysis estimated the effect of assignment to intervention. Compare randomized assignment with the actual analysis population, grouping, reassignment, and exclusions, including their reasons; an ITT, modified ITT, or as-treated label alone does not establish this.","decision_rule":"Consider ITT and modified ITT excluding participants with missing outcome data appropriate. Consider naive per-protocol, as-treated, and post-randomization exclusion of eligible participants inappropriate; post-randomization exclusion of ineligible participants may be appropriate when eligibility could not have been influenced by assignment.","evidence_needed":["The actual analysis population and grouping rule: who was assigned, who was analysed in each group, who was excluded or reassigned after randomization, and why."],"no_information_rule":"Use no_information only after considering direct facts, indirect evidence, and trial circumstances; an incomplete analysis description alone is insufficient when those facts support a probable judgment about appropriateness.","answer_anchors":[{"answer":"yes","text":"An ITT or appropriate modified ITT analysis estimated assignment effect."},{"answer":"no","text":"A naive per-protocol, as-treated, or inappropriate post-randomization exclusion analysis was used."}],"considerations":["The question is about effect of assignment, so grouping must follow randomized assignment.","Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.","Never-treated participants are not automatically participants with no adverse event or unavailable outcome. Recover the documented eligibility, outcome availability, and exclusion reason before judging the approved assignment-effect estimand.","Excluding participants solely because their outcome data are missing can be an appropriate modified ITT analysis for D2; assess the missing outcomes in D3. An eligible participant with an observed outcome omitted from the assignment analysis, or analysed in the wrong randomized group, is a distinct D2 concern. Record whether exclusions occurred before the endpoint was measured or after an outcome value was recorded, but timing alone does not establish availability or the exclusion reason. An observed value omitted from analysis is not thereby missing outcome data. An analyzed count below the randomized count alone does not establish inappropriate analysis; if the exclusion mechanism cannot support a reasonable probable judgment, retain no_information. When 2.6 is no, probably_no, or no_information, assess 2.7 conditionally: could the wrong-group analysis or exclusions substantially affect this Result if the assignment-analysis failure occurred? Keep uncertainty about the analysis mechanism explicit. Assess potential impact using the participants affected, reasons, outcome rarity, and prognostic relevance; demonstrated actual bias or a sensitivity analysis is not required, and no precise percentage rule applies."],"invalid_shortcuts":["an endpoint definition","an ITT label without its population","a per-protocol label without the analysis population"],"query_suggestions":[{"query":"intention-to-treat","mode":"phrase","source_role":null,"purpose":"analysis by assignment"},{"query":"intent-to-treat","mode":"phrase","source_role":null,"purpose":"alternative analysis-by-assignment wording"},{"query":"all randomized patients","mode":"all","source_role":null,"purpose":"reported analysis population"},{"query":"per protocol","mode":"phrase","source_role":null,"purpose":"analysis restrictions"}]}}},{"id":"sq:deviations:substantial-impact","domain_id":"domain:deviations","wording":"If N/PN/NI to 2.6: Was there potential for a substantial impact (on the result) of the failure to analyse participants in the group to which they were randomized?","allowed_answers":["yes","probably_yes","probably_no","no","no_information"],"activation":{"kind":"rule","mode":"any","predicates":[{"question_id":"sq:deviations:appropriate-analysis","accepted_answers":["probably_no","no","no_information"]}]},"guidance":{"official":{"version":"22 August 2019","source_locator":"Full guidance p. 29, Box 6, signalling question 2.7","source_sha256":"A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670","source_excerpt":"This question addresses whether the number of participants who were analysed in the wrong intervention group, or excluded from the analysis, was sufficient that there could have been a substantial impact on the result. It is not possible to specify a precise rule: there may be potential for substantial impact even if fewer than 5% of participants were analysed in the wrong group or excluded, if the outcome is rare or if exclusions are strongly related to prognostic factors."},"operational":{"id":"rob2-kit.parallel-assignment.question-guidance","version":"1.0.9","attribution":"rob2-kit maintainers","bias_construct":"Whether failure to analyse participants in their randomized group could substantially affect the result.","decision_rule":"Assess whether the number analysed in the wrong group or excluded was sufficient for substantial impact. There is no precise percentage rule: fewer than 5% may still matter for rare outcomes or exclusions strongly related to prognostic factors.","evidence_needed":["Counts and reasons for participants analysed in the wrong group or excluded, outcome rarity, and prognostic relevance of exclusions."],"no_information_rule":"Use no_information when the potential magnitude of impact cannot be assessed.","answer_anchors":[{"answer":"yes","text":"The wrong-group analysis or exclusions could substantially affect the result."},{"answer":"no","text":"The wrong-group analysis or exclusions could not substantially affect the result."}],"considerations":["This is conditional on an inappropriate or uncertain analysis in 2.6.","Assess potential impact only after deciding whether 2.6 was appropriate; a small or balanced exclusion can have low impact without making an inappropriate analysis appropriate.","Use facts about this endpoint and the excluded participants. Exclusion before outcome ascertainment may also leave outcome data missing; exclusion after ascertainment may omit observed values from the analysis. Neither timing alone settles the possible effect on the estimate."],"invalid_shortcuts":["a small percentage alone","an ITT analysis","a group label without exclusion counts"],"query_suggestions":[{"query":"excluded participants","mode":"all","source_role":null,"purpose":"post-randomization exclusions"},{"query":"wrong intervention group","mode":"phrase","source_role":null,"purpose":"analysis group mismatch"}]}}}],"source_catalog":[{"declared_role":"main_article","id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","label":"dom.15263.pdf","logical_path":"dom.15263.pdf","media_type":"application/pdf","origin":"local_dossier","page_count":10,"projection_hash":"sha256:a37eed36cd55dde0d653ca30268c6b4d007ce350e3ad21c74536beeff4653d74","role":"main_article","sha256":"sha256:55c93b89b9cd1a6103e848d04d5a6eeb6ddc427642fe6ecf4582a7b273774804","trial_id":"award-chn3-2023"},{"declared_role":null,"id":"source_96631986f0f0c8d1fb7e1e78e6983b282e1f863e889acf35b7c028c1b6928d0d","label":"orig/supp-dom15263-sup-0001-Supinfo.docx","logical_path":"orig/supp-dom15263-sup-0001-Supinfo.docx","media_type":"application/vnd.openxmlformats-officedocument.wordprocessingml.document","origin":"local_dossier","page_count":1,"projection_hash":"sha256:2585b3861d112aae6aab1cda8026e01e07fdbb5d875dfa4aa7900f2e1fbf3719","role":"supplement","sha256":"sha256:c8b3321a81a93ba097819b08b161ac792a0ac51228874c5b70e4335a495d836c","trial_id":"award-chn3-2023"},{"declared_role":"supplement","id":"source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f","label":"supp-dom15263-sup-0001-Supinfo.pdf","logical_path":"supp-dom15263-sup-0001-Supinfo.pdf","media_type":"application/pdf","origin":"local_dossier","page_count":4,"projection_hash":"sha256:a2b1d0635bcd6591b8adcd00ec6786ee55a444a036c243e96da129ae0bf699a4","role":"supplement","sha256":"sha256:fa05627bc4c4a6a0e83e6f074f6c152d0af3fbcc16701ef02170d518b98332ec","trial_id":"award-chn3-2023"},{"declared_role":null,"id":"source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018","label":"ClinicalTrials.gov NCT04591626","logical_path":"registry/NCT04591626.json","media_type":"application/json","origin":"registry","page_count":1,"projection_hash":"sha256:3eaab0c1decf437fcbe3e71e3408d6b9404c55dac80c7b73efd7dfab3d407455","role":"registry","sha256":"sha256:a054ecf672f36e3bc5feb407acd48198355d1ec71351a2f2b96b9ddaf65c868c","trial_id":"award-chn3-2023"}]},"comparison_card":{"question_id":"sq:deviations:context-deviations","result_identity":"sha256:97dbc725876633efb359a98e94460f2d2bb6df1330543c836bd735f33de6c1f1","result_scope":{"result_identity":"sha256:97dbc725876633efb359a98e94460f2d2bb6df1330543c836bd735f33de6c1f1","endpoint":"Change from baseline in HbA1c at week 28","measurement":"Change in HbA1c from baseline, measured at a central laboratory.","time_window":"Week 28 after randomization","population":"All randomized participants in the comparison groups","comparison_groups":["dulaglutide: Dulaglutide 1.5 mg once weekly added to titrated insulin glargine with metformin and/or acarbose","placebo: Placebo once weekly added to titrated insulin glargine with metformin and/or acarbose"],"effect_measure":"Mean difference"},"passage_groups":[{"source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","source_role":"main_article","source_label":"dom.15263.pdf","logical_path":"dom.15263.pdf","page_count":10,"sha256":"sha256:55c93b89b9cd1a6103e848d04d5a6eeb6ddc427642fe6ecf4582a7b273774804","source_origin":"local_dossier","registry_url":null,"registry_retrieved_at":null,"registry_field_paths":[],"registry_recovery":null,"registry_window_count":0,"passages":[{"handle":"eh_32933a9327390e27","source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","page":2,"start_line":1,"end_line":107},{"handle":"eh_08e801240e244996","source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","page":3,"start_line":1,"end_line":123},{"handle":"eh_453ea5aa62ee389a","source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","page":3,"start_line":78,"end_line":79},{"handle":"eh_41ba21e197279b7a","source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","page":4,"start_line":1,"end_line":94},{"handle":"eh_173d8762318f5212","source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","page":5,"start_line":1,"end_line":11},{"handle":"eh_356d1426d53a4a59","source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","page":7,"start_line":15,"end_line":28},{"handle":"eh_66057725df7f7c3d","source_id":"source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6","page":7,"start_line":29,"end_line":44}]},{"source_id":"source_96631986f0f0c8d1fb7e1e78e6983b282e1f863e889acf35b7c028c1b6928d0d","source_role":"supplement","source_label":"orig/supp-dom15263-sup-0001-Supinfo.docx","logical_path":"orig/supp-dom15263-sup-0001-Supinfo.docx","page_count":1,"sha256":"sha256:c8b3321a81a93ba097819b08b161ac792a0ac51228874c5b70e4335a495d836c","source_origin":"local_dossier","registry_url":null,"registry_retrieved_at":null,"registry_field_paths":[],"registry_recovery":null,"registry_window_count":0,"passages":[]},{"source_id":"source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f","source_role":"supplement","source_label":"supp-dom15263-sup-0001-Supinfo.pdf","logical_path":"supp-dom15263-sup-0001-Supinfo.pdf","page_count":4,"sha256":"sha256:fa05627bc4c4a6a0e83e6f074f6c152d0af3fbcc16701ef02170d518b98332ec","source_origin":"local_dossier","registry_url":null,"registry_retrieved_at":null,"registry_field_paths":[],"registry_recovery":null,"registry_window_count":0,"passages":[]},{"source_id":"source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018","source_role":"registry","source_label":"ClinicalTrials.gov NCT04591626","logical_path":"registry/NCT04591626.json","page_count":1,"sha256":"sha256:a054ecf672f36e3bc5feb407acd48198355d1ec71351a2f2b96b9ddaf65c868c","source_origin":"registry","registry_url":null,"registry_retrieved_at":null,"registry_field_paths":[],"registry_recovery":null,"registry_window_count":0,"passages":[{"handle":"eh_1d186b19d70e8539","source_id":"source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018","page":1,"start_line":34,"end_line":51},{"handle":"eh_69ebc4dcd929d6a1","source_id":"source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018","page":1,"start_line":1935,"end_line":1953},{"handle":"eh_3d300e782d733a17","source_id":"source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018","page":1,"start_line":1954,"end_line":1957}]}],"slots":[{"name":"intended_intervention","status":"supported","value":"dulaglutide: Dulaglutide 1.5 mg once weekly added to titrated insulin glargine with metformin and/or acarbose; placebo: Placebo once weekly added to titrated insulin glargine with metformin and/or acarbose","passages":[]},{"name":"observed_conduct","status":"unknown","value":null,"passages":[]},{"name":"trial_context_cause","status":"unknown","value":null,"passages":[]},{"name":"protocol_consistency","status":"unknown","value":null,"passages":[]},{"name":"outcome_effect","status":"unknown","value":null,"passages":[]},{"name":"group_balance","status":"unknown","value":null,"passages":[]}],"propositions":[{"question_id":"sq:deviations:context-deviations","name":"protocol_inconsistency","proposition":"The observed change was inconsistent with the trial protocol.","status":"unknown","depends_on":[],"passages":[]},{"question_id":"sq:deviations:context-deviations","name":"trial_context_cause","proposition":"Recruitment, research-only engagement, or trial-specific personnel decisions caused the protocol-inconsistent change beyond what could occur during ordinary delivery of the same intervention. Intervention burden or being treated by trial staff does not establish that causal link.","status":"unknown","depends_on":["sq:deviations:context-deviations"],"passages":[]},{"question_id":"sq:deviations:affected-outcome","name":"outcome_pathway","proposition":"The identified trial-context deviation could affect the approved outcome.","status":"unknown","depends_on":["sq:deviations:context-deviations"],"passages":[]},{"question_id":"sq:deviations:balanced","name":"group_balance","proposition":"The identified deviation was balanced between randomized groups.","status":"unknown","depends_on":["sq:deviations:context-deviations","sq:deviations:affected-outcome"],"passages":[]},{"question_id":"sq:deviations:appropriate-analysis","name":"assignment_analysis_rule","proposition":"The actual grouping and exclusion rule estimated the assignment effect. Separate observed participant flow, a source-stated rule, and a host-inferred rule: noncompletion and missing outcomes can overlap without establishing which rule selected the analysis population.","status":"unknown","depends_on":[],"passages":[]},{"question_id":"sq:deviations:substantial-impact","name":"conditional_analysis_impact","proposition":"If the assignment analysis was inappropriate, the affected participants could substantially change this Result. Keep an inferred exclusion population conditional on its mechanism; not all noncompleters or unavailable outcomes are established inappropriate exclusions.","status":"unknown","depends_on":["sq:deviations:appropriate-analysis"],"passages":[]}],"paired_examples":[{"pair_id":"d2-protocol-status-same-trial-context","changed_premise":"whether the same allocation-driven conduct was protocol-consistent","left_facts":["The treating clinician reported that knowledge of experimental allocation prompted rescue treatment. The protocol permitted that rescue."],"right_facts":["The same treating clinician reported that knowledge of experimental allocation prompted the same rescue treatment. The protocol prohibited that rescue."],"reasoning_focus":"Hold the documented allocation-driven cause fixed while changing protocol consistency."},{"pair_id":"d2-cause-same-protocol-inconsistency","changed_premise":"the documented reason for the same clinician's prohibited conduct","left_facts":["The protocol prohibited rescue treatment. The treating clinician provided rescue because of the patient's symptoms, as the clinician would in ordinary care."],"right_facts":["The protocol prohibited rescue treatment. The same treating clinician provided the same rescue because knowledge of experimental allocation changed the decision."],"reasoning_focus":"Hold protocol inconsistency, personnel and conduct fixed; distinguish ordinary care from an allocation-driven decision. Personnel identity alone supplies no cause."},{"pair_id":"d2-regimen-burden-versus-research-engagement","changed_premise":"the documented reason for stopping the same assigned program","left_facts":["The protocol required twelve exercise sessions. A participant stopped because the assigned exercises were physically difficult, as could occur in ordinary treatment."],"right_facts":["The same protocol required twelve exercise sessions. A participant stopped the same program because additional research-only appointments prevented attendance."],"reasoning_focus":"Keep non-adherence fixed. Treatment burden and trial-specific engagement are different causes; insufficient cause information remains unresolved."},{"pair_id":"d2-exclusion-rule-and-outcome-availability","changed_premise":"the source-stated exclusion rule and outcome availability","left_facts":["Of 100 eligible randomized participants, 90 were analyzed in assigned groups. The report states that only the ten with unmeasured endpoint outcomes were excluded; adherence did not restrict the analysis."],"right_facts":["Of the same 100 eligible randomized participants, 90 were analyzed in assigned groups. The report states that only treatment completers were analyzed even though endpoint outcomes were measured for all 100."],"reasoning_focus":"The same analysis count can reflect missing-only availability or an adherence-conditioned rule. Source-stated observed outcomes omitted from analysis are affirmative evidence, not merely an uncertain denominator."},{"pair_id":"d2-exclusion-flow-versus-stated-rule","changed_premise":"whether the source establishes an exclusion rule","left_facts":["Of 100 eligible randomized participants, 90 completed treatment and 90 were analyzed. Some noncompleters were contactable, but their endpoint measurement and the analysis restriction are not reported."],"right_facts":["The same flow, contactability and unknown endpoint measurements are reported. The source additionally states that the analysis excluded all noncompleters regardless of whether their endpoint outcomes were available."],"reasoning_focus":"Compatible counts do not identify a rule; contact is not measurement. A documented restriction can establish a mechanism without complete measurement counts. Carry uncertainty about an inferred mechanism into the participants considered for conditional impact, while allowing source-supported probable judgments."}],"participant_flow":[],"missing_data":null,"prompt":"Use the exact Result scope, passages, and quantities above. Classify only the remaining propositions; do not infer causation, availability, censoring, measurement influence, plan correspondence, or risk from metadata, arithmetic, or wording alone. An empty passage group is unopened; inspect relevant Sources before recording an information limitation."}}
+
+SUPPLIED SOURCE EVIDENCE
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 1 LINES 1-81
+1|O R I G I N A L A R T I C L E
+2|Efficacy and safety of adding once-weekly dulaglutide to basal
+3|insulin for inadequately controlled type 2 diabetes in Chinese
+4|patients (AWARD-CHN3): A randomized, double-blind,
+5|placebo-controlled, phase III trial
+6|Weimin Wang MD1
+7||
+8|Xin Yan MMSc2
+9||
+10|Zhifeng Cheng MD3
+11||
+12|Qiqi Zhang PhD4
+13||
+14|Rui Wang MD4
+15||
+16|Yuying Deng MD4
+17||
+18|Jianhua Ma MD5
+19||
+20|Dalong Zhu MD1
+21|1Department of Endocrinology, Drum Tower
+22|Hospital Affiliated to Nanjing University
+23|School of Medicine, Nanjing, China
+24|2Department of Endocrinology, Jinan Central
+25|Hospital, Jinan, China
+26|3Department of Endocrinology, The Fourth
+27|Affiliated Hospital of Harbin Medical
+28|University, Harbin, China
+29|4Lilly China Drug Development and Medical
+30|Affairs Centre, Eli Lilly (Suzhou)
+31|Pharmaceutical Co., Ltd, Shanghai, China
+32|5Department of Endocrinology, Nanjing First
+33|Hospital, Nanjing, China
+34|Correspondence
+35|Dalong Zhu, MD, Department of
+36|Endocrinology, Drum Tower Hospital Affiliated
+37|to Nanjing University School of Medicine,
+38|Nanjing, Jiangsu Province 210008, China.
+39|Email: zhudalong@nju.edu.cn
+40|Jianhua Ma, MD, Department of
+41|Endocrinology, Nanjing First Hospital, Nanjing,
+42|Jiangsu Province 210029, China.
+43|Email: majianhua@china.com
+44|Funding information
+45|Eli Lilly and Company
+46|Abstract
+47|Aim: To determine the efficacy and safety of once-weekly dulaglutide added to basal
+48|insulin in Chinese patients with type 2 diabetes mellitus (T2DM) with inadequate
+49|glycaemic control.
+50|Materials and Methods: In the phase III, double-blind AWARD-CHN3 study, Chinese
+51|patients with T2DM (N = 291) and glycated haemoglobin (HbA1c) ≥7.0% and
+52|≤11.0% receiving stable doses of basal insulin glargine with metformin and/or acar-
+53|bose were randomized (1:1) to receive add-on dulaglutide 1.5 mg once weekly or pla-
+54|cebo once weekly. The primary endpoint was the superiority of dulaglutide/glargine
+55|to placebo/glargine for change from baseline in HbA1c at Week 28.
+56|Results: The least squares (LS) mean ± standard error change in HbA1c from baseline
+57|to Week 28 was 2.0 ± 0.08% with dulaglutide/glargine and 1.1 ± 0.07% with pla-
+58|cebo/glargine (LS mean difference: 1.0%, 95% confidence interval [CI] -1.1 to
+59| 0.8; P < 0.001), and more patients receiving dulaglutide/glargine achieved HbA1c
+60|levels <7.0% (75.9% vs. 33.8%; P < 0.001 vs. placebo/glargine). Body weight
+61|decreased with dulaglutide/glargine and increased with placebo/glargine (LS mean
+62|difference: 1.2 kg, 95% CI -1.8 to - 0.6; P < 0.001). Reductions in fasting serum
+63|glucose were greater with dulaglutide/glargine than with placebo/glargine (LS mean
+64|difference: 0.8 mmol/L, 95% CI -1.1 to - 0.5; P < 0.001). The incidence of hypogly-
+65|caemia was similar with dulaglutide/glargine and placebo/glargine (29.2% vs. 31.3%;
+66|P = 0.704); no patient in either group had severe hypoglycaemia. The most common
+67|treatment-emergent adverse events with dulaglutide/glargine were decreased appe-
+68|tite (22.2%), diarrhoea (13.2%) and nausea (10.4%).
+69|Conclusions: Dulaglutide added to basal insulin was efficacious and well tolerated in
+70|Chinese patients with T2DM.
+71|Weimin Wang, Xin Yan, and Zhifeng Cheng are co-lead authors (or equal contributions).
+72|Received: 4 July 2023
+73|Revised: 15 August 2023
+74|Accepted: 17 August 2023
+75|DOI: 10.1111/dom.15263
+76|This is an open access article under the terms of the Creative Commons Attribution-NonCommercial-NoDerivs License, which permits use and distribution in any
+77|medium, provided the original work is properly cited, the use is non-commercial and no modifications or adaptations are made.
+78|© 2023 Eli Lilly and Company. Diabetes, Obesity and Metabolism published by John Wiley & Sons Ltd.
+79|3690
+80|Diabetes Obes Metab. 2023;25:3690-3699.
+81|wileyonlinelibrary.com/journal/dom
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 2 LINES 1-107
+1|K E Y W O R D S
+2|basal insulin, Chinese, dulaglutide, GLP-1 receptor agonists, type 2 diabetes
+3|1
+4||
+5|INTRODUCTION
+6|China has the largest number of individuals living with diabetes of
+7|any country in the world, accounting for one in four ( 141 million)
+8|of the approximately 537 million adults (20-79 years old) with diabe-
+9|tes globally in 2021.1 Furthermore, the number of Chinese people
+10|with diabetes is currently increasing, and is predicted to reach
+11|174 million by 2045.2 Among all people with diabetes, approxi-
+12|mately 90% have type 2 diabetes mellitus (T2DM), both worldwide1
+13|and in China.3 Exogenous basal insulin is used by a large proportion
+14|of Chinese patients with T2DM to manage their hyperglycaemia,4
+15|and often provides initial improvements in glycaemic control. How-
+16|ever, T2DM is a progressive disease and most patients require upti-
+17|tration of their insulin dose to continue achieving glycaemic
+18|control.5,6 Insulin dose titration is often inadequate, with key bar-
+19|riers to uptitration in Asia and China including fear of hypoglycaemia
+20|and weight gain.7 In clinical trials of exogenous insulin therapy, only
+21|25% to 70% of patients achieve glycaemic control.8-12 In real-world
+22|settings in Asia, including China, the proportion of patients with
+23|T2DM achieving glycaemic control with basal insulin is as low as
+24|40%.13-15 Therefore, there is a need to continually establish more
+25|effective treatment strategies for T2DM.
+26|Combining a glucagon-like peptide-1 receptor agonist 1 (GLP-
+27|1RA) with basal insulin is a guideline-recommended treatment strat-
+28|egy, and this approach exerts complementary effects on glycaemic
+29|control and body weight.16 In particular, the combination of a once-
+30|weekly GLP-1RA with basal insulin permits a lower number of injec-
+31|tions compared with a once-daily GLP-1RA. Furthermore, the flexible
+32|dosing afforded by this approach, with each component administered
+33|separately, allows the requirements of individual patients to be more
+34|closely matched than with fixed-ratio combinations of basal insulin/
+35|GLP-1RA.
+36|In the phase III AWARD-9 study, dulaglutide 1.5 mg once
+37|weekly added to basal insulin glargine significantly improved gly-
+38|caemic control, reduced body weight and reduced insulin dose
+39|without increasing the risk of hypoglycaemia compared with pla-
+40|cebo.17 This indicates that the combination of a GLP-1RA with
+41|basal insulin is an effective and well-tolerated therapeutic option
+42|in a predominantly White population with T2DM.17 However,
+43|there is still a lack of data regarding the use of a long-acting GLP-
+44|1RA once weekly added to basal insulin in Chinese patients with
+45|T2DM. This is a particularly relevant knowledge gap for Chinese
+46|patients given the large number of individuals living with T2DM in
+47|China. Therefore, in the AWARD-CHN3 study, we aimed to inves-
+48|tigate the effect of once-weekly dulaglutide added to basal insulin
+49|on glycaemic control, body weight and relevant safety outcomes in
+50|Chinese patients with T2DM.
+51|2
+52||
+53|MATERIALS AND METHODS
+54|2.1
+55||
+56|Study design and participants
+57|The
+58|phase
+59|III,
+60|multicentre,
+61|randomized,
+62|double-blind,
+63|placebo-
+64|controlled AWARD-CHN3 study included adults (≥18 years of age)
+65|with T2DM (according to the World Health Organization diagnostic
+66|criteria) with HbA1c levels ≥7.0% and ≤11.0% who had been receiving
+67|a stable dose of basal insulin glargine once daily with unchanged
+68|doses of metformin and/or acarbose for at least 3 months prior to ini-
+69|tial screening. The insulin glargine dose was considered stable when
+70|all doses during this period were within the range defined by ±20% of
+71|the most commonly used insulin dose during the same period.
+72|Patients were also required to have had a stable body weight (±5%)
+73|for at least 3 months prior to screening, to have a body mass index
+74|(BMI) 19.0 to 35.0 kg/m2 and to be able and willing to take the study
+75|drug, including self-injection, and to self-monitor blood glucose. Key
+76|exclusion criteria included type 1 diabetes mellitus, pancreatitis, and
+77|serum calcitonin level ≥20 pg/mL.
+78|2.2
+79||
+80|Procedures
+81|The study comprised three periods: a screening/lead-in period
+82|(3 weeks); a treatment period (28 weeks); and a safety follow-up
+83|period (4 weeks; Figure S1). During the screening/lead-in period, eligi-
+84|ble patients were identified and continued their stable dose of insulin
+85|and oral antidiabetic drugs (OADs). During the lead-in period, gluc-
+86|ometers were provided and patients were trained to perform self-
+87|monitoring of blood glucose (SMBG) and weekly insulin assessments
+88|according to the treat-to-target (TTT) algorithm (Table S1). However,
+89|insulin dose adjustments based on the TTT algorithm were permitted
+90|only for safety reasons.
+91|At the end of the lead-in period, patients who required uptitration
+92|of their insulin glargine dose based on the TTT algorithm (fasting
+93|blood glucose ≥5.6 mmol/L in the previous week) were randomized
+94|(1:1) to receive dulaglutide 1.5 mg once weekly or placebo once
+95|weekly, added to insulin glargine with metformin and/or acarbose, for
+96|28 weeks (herein referred to as dulaglutide/glargine and placebo/glar-
+97|gine). Randomization was implemented using a computer-generated
+98|random sequence and an interactive web response system and was
+99|stratified by HbA1c (<8.5%, ≥8.5%) and OAD use (metformin alone,
+100|acarbose alone, metformin, and acarbose). Treatment allocation was
+101|masked from the patients, investigators, and sponsor staff who were
+102|involved in the treatment or clinical evaluation of patients. To pre-
+103|serve blinding, the study drug was provided in identical cartons con-
+104|taining unmarked injection devices.
+105|WANG ET AL.
+106|3691
+107| 14631326, 2023, 12, Downloaded from https://dom-pubs.onlinelibrary.wiley.com/doi/10.1111/dom.15263, Wiley Online Library on [23/09/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 3 LINES 1-123
+1|Patients were trained to use a single-use pen injector for dulaglu-
+2|tide/placebo and a SoloSTAR pen injector for insulin and injected their
+3|first dose of dulaglutide or placebo under supervision. During a 4-week
+4|stabilization period following randomization (Weeks 1-4), insulin dose
+5|was assessed twice weekly. If HbA1c at randomization (baseline) was
+6|>8.0% the insulin dose remained unchanged, otherwise, it was reduced
+7|by 20% immediately following randomization and remained unchanged
+8|during the stabilization period. Any further insulin dose adjustments dur-
+9|ing this period were for safety reasons only. Weeks 4 to 28 comprised
+10|an insulin titration period, during which the insulin dose was assessed
+11|once weekly and adjusted according to the TTT algorithm without limita-
+12|tion. The insulin dose was expected to be intensively titrated during the
+13|first 8 weeks of this period, followed by a 16-week maintenance period
+14|during which the insulin dose was expected to be stable.
+15|The study was conducted in accordance with the Declaration of
+16|Helsinki and Council for International Organizations of Medical Sci-
+17|ences International Ethical Guidelines, as well as the International
+18|Conference on Harmonization Good Clinical Practice Guideline. The
+19|protocol was approved by local institutional review boards. All
+20|patients provided written, informed consent prior to participation.
+21|The study was registered with ClinicalTrials.gov (NCT04591626).
+22|2.3
+23||
+24|Outcomes
+25|The primary study objective was to demonstrate the superiority of dula-
+26|glutide 1.5 mg once weekly versus placebo when added to titrated insulin
+27|glargine with metformin and/or acarbose, as assessed by change in HbA1c
+28|from baseline to Week 28. Key secondary endpoints were the proportion
+29|of patients achieving HbA1c <7.0% at Week 28 and change in body
+30|weight and fasting serum glucose (FSG) from baseline to Week 28. Addi-
+31|tional secondary endpoints were HbA1c ≤6.5% at Week 28, change in
+32|blood glucose profile (based on SMBG) from baseline to Week 28, change
+33|in daily mean insulin glargine dose from baseline, and the following com-
+34|posite endpoints: the proportion of patients achieving HbA1c <7.0% with
+35|no weight gain (<0.1 kg) at Week 28; the proportion of patients achieving
+36|HbA1c <7.0% with no weight gain (<0.1 kg) at Week 28 and without
+37|documented symptomatic hypoglycaemia (blood glucose <3.0 mmol/L)
+38|during the maintenance period (Weeks 12-28); and the proportion of
+39|patients achieving HbA1c <7.0% at Week 28 without documented symp-
+40|tomatic hypoglycaemia (blood glucose <3.0 mmol/L) during the mainte-
+41|nance period (Weeks 12-28). Other composite endpoints included the
+42|proportion of patients achieving HbA1c <7.0% at Week 28 without docu-
+43|mented symptomatic hypoglycaemia (blood glucose <3.9 mmol/L) during
+44|the maintenance period (Weeks 12-28), and the same composite endpoint
+45|including no weight gain (<0.1 kg) at Week 28.
+46|All adverse events (AEs) were coded using the Medical Dictionary
+47|for Regulatory Activities version 24.1. The relationship between AEs
+48|and study treatment was based on the investigator's opinion. AEs of
+49|special interest included hypoglycaemia, initiation of rescue therapy
+50|due to severe, persistent hyperglycaemia, pancreatitis (adjudicated by
+51|an independent committee of experts), thyroid neoplasms, deaths and
+52|nonfatal cardiovascular events and allergic/hypersensitivity reactions.
+53|Patients who developed severe, persistent hyperglycaemia based on
+54|prespecified thresholds during the treatment period received a new
+55|glucose-lowering intervention ("rescue therapy") while continuing
+56|with study drug. Rescue therapy could be any locally approved
+57|glucose-lowering
+58|agent
+59|except
+60|other
+61|GLP-1RAs
+62|or
+63|dipeptidyl
+64|peptidase-4 (DPP-4) inhibitors, another basal insulin, fixed-dose
+65|combination
+66|containing
+67|a
+68|GLP-1RA
+69|or
+70|a
+71|DPP-4
+72|inhibitor,
+73|or
+74|pramlintide. All hypoglycaemia events were recorded and categorized
+75|as level 1 (blood glucose ≥3.0 and <3.9 mmol/L), level 2 (blood
+76|glucose <3.0 mmol/L), level 3 (severe hypoglycaemia: altered mental
+77|and/or physical status requiring assistance), and nocturnal events.
+78|All laboratory tests were performed at a central laboratory
+79|(Labcorp Central Laboratory Services Inc., Shanghai, China).
+80|2.4
+81||
+82|Statistical analysis
+83|Approximately, 246 patients were required to demonstrate a treat-
+84|ment difference of 0.5% for reduction in HbA1c from baseline to
+85|Week 28 for dulaglutide versus placebo with 90% power, assuming a
+86|standard deviation (SD) of 1.2% and at a two-sided alpha of 0.05.
+87|Assuming a drop-out rate of 15%, target enrolment was approxi-
+88|mately 290 randomized patients.
+89|Efficacy and safety were analysed in all randomized patients who
+90|received ≥1 dose of study drug for the assigned treatment arm (inten-
+91|tion-to-treat population). For the efficacy analyses, data were cen-
+92|sored from the point of initiating rescue therapy or on premature
+93|discontinuation of study drug. The primary and key secondary contin-
+94|uous efficacy measures were analysed using a mixed-model repeated
+95|measures approach with a restricted maximum likelihood, with treat-
+96|ment, OAD (metformin alone, acarbose alone, metformin and acar-
+97|bose), visit and treatment-by-visit as fixed effects, baseline as a
+98|covariate, and patient as a random effect. For the primary and key
+99|secondary efficacy endpoints, a graphical testing scheme was used to
+100|compare treatments, to control against a type I error.
+101|Composite outcomes for the additional secondary endpoints
+102|were analysed using a logistic regression model including treatment,
+103|OAD and baseline HbA1c as factors, and using the last observation
+104|carried forward to impute missing post-baseline data. For the safety
+105|analysis, the number of hypoglycaemia event episodes was analysed
+106|using a generalized mixed-effects model assuming a negative binomial
+107|distribution, and including treatment, OAD, and baseline HbA1c stra-
+108|tum (<8.5% vs. ≥8.5%). The logarithm of days between visits was
+109|included to offset possible unequal duration between visits and
+110|among patients. All other safety data were summarized descriptively.
+111|All statistical analyses were conducted using SAS version 9.4 or
+112|higher.
+113|3
+114||
+115|RESULTS
+116|3.1
+117||
+118|Patients
+119|In total, 291 patients were randomized and received the study drug;
+120|144 received dulaglutide/glargine and 147 received placebo/glargine
+121|3692
+122|WANG ET AL.
+123| 14631326, 2023, 12, Downloaded from https://dom-pubs.onlinelibrary.wiley.com/doi/10.1111/dom.15263, Wiley Online Library on [23/09/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 4 LINES 1-94
+1|(Figure 1). All 291 randomized patients were included in the intention-
+2|to-treat population. The study was completed by 276 patients (94.8%;
+3|Figure 1). The study was conducted between December 7, 2020 and
+4|April 28, 2022.
+5|Baseline demographics were well balanced between the treat-
+6|ment groups (Table 1). All participants were Chinese, 37.5% were
+7|female, the mean age was 58.1 years and 29.2% were aged ≥65 years.
+8|The mean duration of T2DM was 11.8 years. Baseline HbA1c level
+9|was ≥8.5% in 53.6% of patients, and 52.2% of patients were receiving
+10|metformin alone, 38.5% were receiving metformin plus acarbose, and
+11|9.3% acarbose alone.
+12|3.2
+13||
+14|Efficacy
+15|Dulaglutide/glargine was associated with a significantly greater reduc-
+16|tion in HbA1c from baseline to Week 28 versus placebo/glargine: LS
+17|mean ± SE change: 2.0 ± 0.08% versus 1.1 ± 0.07%, respectively;
+18|FIGURE 1
+19|Patient disposition. AE, adverse event.
+20|TABLE 1
+21|Baseline demographics and clinical characteristics
+22|Baseline demographics/
+23|Clinical parameters
+24|Once-weekly dulaglutide
+25|1.5 mg (N = 144)
+26|Once-weekly
+27|placebo (N = 147)
+28|Total (N = 291)
+29|Age, years
+30|57.8 ± 9.3
+31|58.3 ± 9.5
+32|58.1 ± 9.4
+33|Age ≥65 years, n (%)
+34|38 (26.4)
+35|47 (32.0)
+36|85 (29.2)
+37|Female, n (%)
+38|52 (36.1)
+39|57 (38.8)
+40|109 (37.5)
+41|Body weight, kg
+42|71.7 ± 11.4
+43|72.0 ± 11.9
+44|71.9 ± 11.6
+45|BMI, kg/m2
+46|25.8 ± 3.0
+47|26.1 ± 3.0
+48|25.9 ± 3.0
+49|HbA1c, %
+50|8.6 ± 1.0
+51|8.6 ± 1.0
+52|8.6 ± 1.0
+53|HbA1c <8.5%, n (%)
+54|66 (45.8)
+55|69 (46.9)
+56|135 (46.4)
+57|HbA1c ≥8.5%, n (%)
+58|78 (54.2)
+59|78 (53.1)
+60|156 (53.6)
+61|Duration of diabetes, years
+62|11.2 ± 6.0
+63|12.4 ± 6.9
+64|11.8 ± 6.5
+65|Use of oral antihyperglycemic medication, n (%)
+66|Metformin only
+67|75 (52.1)
+68|77 (52.4)
+69|152 (52.2)
+70|Acarbose only
+71|13 (9.0)
+72|14 (9.5)
+73|27 (9.3)
+74|Metformin and acarbose
+75|56 (38.9)
+76|56 (38.1)
+77|112 (38.5)
+78|Insulin glargine dose, U/d
+79|18.1 ± 6.1
+80|18.9 ± 6.7
+81|18.5 ± 6.4
+82|Insulin glargine dose, U/kg/d
+83|0.26 ± 0.10
+84|0.27 ± 0.09
+85|0.26 ± 0.09
+86|FSG, mmol/L
+87|9.0 ± 2.7
+88|8.7 ± 2.3
+89|8.9 ± 2.5
+90|Note: Data are mean ± SD, unless otherwise stated.
+91|Abbreviations: BMI, body mass index; FSG, fasting serum glucose; HbA1c, glycated haemoglobin; SD, standard deviation; U units.
+92|WANG ET AL.
+93|3693
+94| 14631326, 2023, 12, Downloaded from https://dom-pubs.onlinelibrary.wiley.com/doi/10.1111/dom.15263, Wiley Online Library on [23/09/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 5 LINES 1-11
+1|FIGURE 2
+2|Efficacy of dulaglutide and placebo as add-on to basal insulin glargine with metformin and/or acarbose. (A) Change in glycated
+3|haemoglobin (HbA1c) from baseline to Week 28 (%), mixed-model repeated measures (MRMM). (B) Percentage of patients achieving HbA1c
+4|<7.0% and HbA1c ≤6.5%. (C) Change in body weight from baseline to Week 28 (kg), MRMM. (D) Change in fasting serum glucose (FSG)
+5|concentration from baseline to Week 28 (measured at a central laboratory, mmol/L), MRMM. (E) Seven-point self-monitored blood glucose
+6|(SMBG; mmol/L), MMRM. ***P < 0.001 versus placebo. All analyses were undertaken in the intention-to-treat population (excluding data after
+7|the initiation of rescue therapy or the discontinuation of study drug). ETD, estimated treatment difference; LS, least squares; OR, odds ratio; SE,
+8|standard error.
+9|3694
+10|WANG ET AL.
+11| 14631326, 2023, 12, Downloaded from https://dom-pubs.onlinelibrary.wiley.com/doi/10.1111/dom.15263, Wiley Online Library on [23/09/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 6 LINES 1-97
+1|LS mean difference: 1.0% (95% confidence interval [CI] -1.1 to
+2| 0.8; P < 0.001 [Figure 2A]). At Week 28, significantly more patients
+3|who received dulaglutide/glargine versus placebo/glargine achieved
+4|HbA1c <7.0% (75.9% vs. 33.8%; odds ratio [OR] 10.91 [95% CI 5.35
+5|to 22.28]; P < 0.001) and HbA1c ≤6.5% (56.7% vs. 12.7%; OR 14.05
+6|[95% CI 6.97 to 28.34]; P < 0.001 [Figure 2B]).
+7|Patients who received dulaglutide/glargine had a significant
+8|decrease in body weight from baseline to Week 28 (LS mean ± SE
+9|change from baseline: 0.8 ± 0.2 kg; P < 0.001), whereas those who
+10|received placebo/glargine had an increase in body weight (0.4
+11|± 0.2 kg; P = 0.052; LS mean difference: 1.2 kg [95% CI -1.8 to
+12| 0.6]; P < 0.001 [Figure 2C]).
+13|Significant reductions in FSG from baseline to Week 28 were
+14|observed in the dulaglutide/glargine and placebo/glargine groups
+15|( 3.3 ± 0.1 and 2.4 ± 0.1 mmol/L; P < 0.001 for both [Figure 2D]).
+16|However, the reduction in FSG was significantly greater with dulaglu-
+17|tide/glargine
+18|than
+19|with
+20|placebo/glargine
+21|(LS
+22|mean
+23|difference:
+24| 0.8 mmol/L [95% CI -1.1 to 0.5]; P < 0.001). In addition, reduc-
+25|tions in blood glucose at each timepoint on the seven-point
+26|SMBG profile from baseline to Week 28 were significantly greater
+27|with
+28|dulaglutide/glargine
+29|than
+30|with
+31|placebo/glargine
+32|(P < 0.001)
+33|(Figure 2E). Significantly higher proportions of patients who received
+34|dulaglutide/glargine versus placebo/glargine achieved the composite
+35|endpoints of HbA1c <7.0% without weight gain at Week 28 and/or
+36|without documented symptomatic hypoglycaemia during the mainte-
+37|nance period (P < 0.001 for each composite endpoint; Table S2).
+38|Increases in daily insulin glargine dose from baseline to Week
+39|28 were significantly smaller among patients receiving dulaglutide
+40|than those receiving placebo, from Week 4 (P ≤0.01; Figure 2F). At
+41|Week 28, the LS mean difference in insulin glargine dose between the
+42|dulaglutide/glargine and placebo/glargine treatment groups was
+43| 4.0 U/d (95% CI -6.9 to 1.1; P = 0.006 [Figure S2]).
+44|3.3
+45||
+46|Safety
+47|Treatment-emergent AEs (TEAEs) were reported in 122 patients
+48|(84.7%) who received dulaglutide/glargine and 109 patients (74.1%)
+49|who received placebo/glargine. Patients in the dulaglutide/glargine
+50|group had a higher incidence of decreased appetite and gastrointes-
+51|tinal TEAEs than those in the placebo/glargine group (Table 2),
+52|although all events were mild or moderate in intensity. Serious AEs
+53|were reported in eight patients (5.6%) in the dulaglutide/glargine
+54|group and 12 (8.2%) in the placebo/glargine group (Table 2). Four
+55|patients in the dulaglutide/glargine group discontinued study drug
+56|due to an AE (asthenia, decreased appetite, gastritis and gastrointes-
+57|tinal disorders in one patient each). Four patients in the dulaglutide/
+58|glargine group discontinued the study due to AEs; one patient had
+59|acute kidney injury (discontinued study drug for unknown reason
+60|[s] and discontinued the study 131 days later; judged not related to
+61|study drug) in addition to the aforementioned patients who experi-
+62|enced decreased appetite, gastritis and gastrointestinal disorders
+63|and discontinued study drug. One death was reported in the pla-
+64|cebo/glargine group during the safety follow-up period; the death
+65|was
+66|considered
+67|unexplained
+68|and
+69|judged
+70|not
+71|related
+72|to
+73|the
+74|study drug.
+75|The incidence and aggregated rate/year of the AE of special
+76|interest
+77|hypoglycaemia
+78|are
+79|shown
+80|in
+81|Table
+82|3.
+83|The
+84|incidence
+85|rates of total hypoglycaemia and level 1 hypoglycaemia were
+86|similar in the dulaglutide/glargine and placebo/glargine groups.
+87|There was no level 2 hypoglycaemia in the dulaglutide/glargine
+88|group, while five patients had seven episodes in the placebo/glargine
+89|group, resulting in a significantly lower aggregated rate/year in the
+90|dulaglutide/glargine group (P = 0.026). No patient in either group
+91|experienced severe hypoglycaemia. The incidence and aggregated
+92|rate/year of nocturnal hypoglycaemia was numerically lower in the
+93|FIGURE 2
+94|(Continued)
+95|WANG ET AL.
+96|3695
+97| 14631326, 2023, 12, Downloaded from https://dom-pubs.onlinelibrary.wiley.com/doi/10.1111/dom.15263, Wiley Online Library on [23/09/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 7 LINES 1-207
+1|dulaglutide/glargine
+2|group
+3|versus
+4|the
+5|placebo/glargine
+6|group
+7|(Table 3). Rescue therapy for severe, persistent hyperglycaemia
+8|was only required by a single patient in the study, who received
+9|dulaglutide/glargine.
+10|There were no reports of pancreatitis during the study. At Week
+11|28, serum amylase levels had increased from baseline in both groups,
+12|with a greater increase in the dulaglutide/glargine group (median 9.0
+13|vs. 3.0 U/L; P < 0.001); however, the median change from baseline in
+14|serum amylase levels was similar in both groups at the safety follow-
+15|TABLE 2
+16|Treatment-emergent adverse events
+17|Once-weekly
+18|dulaglutide
+19|1.5 mg (n = 144)
+20|Once-weekly
+21|placebo
+22|(n = 147)
+23|TEAEs
+24|122 (84.7)
+25|109 (74.1)
+26|Treatment-related TEAEs
+27|73 (50.7)
+28|38 (25.9)
+29|TEAEs reported in ≥5% patients in either treatment group
+30|Decreased appetite
+31|32 (22.2)
+32|6 (4.1)
+33|Diabetic nephropathya
+34|20 (13.9)
+35|23 (15.6)
+36|Diarrhoea
+37|19 (13.2)
+38|12 (8.2)
+39|Nausea
+40|15 (10.4)
+41|8 (5.4)
+42|Vomiting
+43|13 (9.0)
+44|2 (1.4)
+45|Abdominal distension
+46|11 (7.6)
+47|2 (1.4)
+48|Upper respiratory tract
+49|infection
+50|11 (7.6)
+51|10 (6.8)
+52|Hyperlipidaemia
+53|9 (6.3)
+54|7 (4.8)
+55|Dyspepsia
+56|8 (5.6)
+57|1 (0.7)
+58|Toothache
+59|5 (3.5)
+60|8 (5.4)
+61|Hyperglycaemia
+62|4 (2.8)
+63|11 (7.5)
+64|Cervical cyst
+65|0
+66|5 (5.3)
+67|SAEs
+68|8 (5.6)
+69|12 (8.2)
+70|Treatment-related SAEs
+71|1 (0.7)
+72|2 (1.4)
+73|Death
+74|0
+75|1 (0.7)
+76|Discontinuation due to AE
+77|From study
+78|4 (2.8)
+79|1 (0.7)
+80|Death
+81|0
+82|1 (0.7)
+83|Acute kidney injury
+84|1 (0.7)
+85|0
+86|Decreased appetite
+87|1 (0.7)
+88|0
+89|Gastritis
+90|1 (0.7)
+91|0
+92|Gastrointestinal disorder
+93|1 (0.7)
+94|0
+95|From study drug
+96|4 (2.8)
+97|0
+98|Asthenia
+99|1 (0.7)
+100|0
+101|Decreased appetite
+102|1 (0.7)
+103|0
+104|Gastritis
+105|1 (0.7)
+106|0
+107|Gastrointestinal disorder
+108|1 (0.7)
+109|0
+110|Note: Data are n (%).
+111|Abbreviations: TEAE, treatment emergent adverse event; SAE, serious
+112|adverse event.
+113|aUrinary albumin creatinine ratio was initially tested at baseline at which
+114|point, 32 AEs of diabetic nephropathy were reported (17 in the
+115|dulaglutide/glargine group and 15 in the placebo/glargine group).
+116|TABLE 3
+117|Hypoglycaemia events
+118|Incidence, n (%)
+119|Episodes, n
+120|Aggregated rate/year, mean
+121|Hypoglycaemia
+122|Dulaglutide 1.5 mg
+123|once
+124|weekly (N = 144)
+125|Placebo once
+126|weekly
+127|(N = 147)
+128|P value
+129|Dulaglutide 1.5 mg
+130|once weekly (N = 144)
+131|Placebo once
+132|weekly
+133|(N = 147)
+134|Dulaglutide 1.5 mg
+135|once weekly (N = 144)
+136|Placebo once
+137|weekly
+138|(N = 147)
+139|Relative rate/year
+140|(dulaglutide/placebo)
+141|(95% CI)
+142|P value
+143|Total
+144|42 (29.2)
+145|46 (31.3)
+146|0.704
+147|119
+148|141
+149|1.42
+150|1.58
+151|0.98 (0.60-1.59)
+152|0.645
+153|Level 1 (<3.9
+154|and ≥3.0 mmol/L)
+155|42 (29.2)
+156|44 (29.9)
+157|0.898
+158|119
+159|134
+160|1.42
+161|1.51
+162|1.04 (0.64-1.69)
+163|0.818
+164|Level 2 (<3.0 mmol/L)
+165|0
+166|5 (3.4)
+167|0.060
+168|0
+169|7
+170|0
+171|0.079
+172|0
+173|0.026
+174|Level 3 (severea)
+175|0
+176|0
+177|-
+178|0
+179|0
+180|0
+181|0
+182|-
+183|-
+184|Nocturnal
+185|11 (7.6)
+186|19 (12.9)
+187|0.177
+188|19
+189|40
+190|0.23
+191|0.45
+192|0.51 (0.22-1.17)
+193|0.141
+194|Abbreviations: CI, confidence interval; SE, standard error.
+195|aHypoglycaemia event was characterized by altered mental and/or physical state requiring assistance (no specific blood glucose threshold).
+196|3696
+197|WANG ET AL.
+198| 14631326, 2023, 12, Downloaded from https://dom-pubs.onlinelibrary.wiley.com/doi/10.1111/dom.15263, Wiley Online Library on [23/09/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+199|
+200|[Extracted table 1]
+201||Column 1|Column 2|
+202||---|---|
+203|||value P|
+204|||Relative rate/year (dulaglutide/placebo) (95% CI)|
+205||Incidence, n (%) Episodes, n Aggregated rate/year, mean|Placebo once weekly Dulaglutide 1.5 mg (N 147) once weekly (N 144) = =|
+206|||Placebo once weekly (N 147) =|
+207|||Placebo once Dulaglutide 1.5 mg weekly Dulaglutide 1.5 mg once (N 147) P value once weekly (N 144) weekly (N 144) Hypoglycaemia = = =|
+
+SOURCE source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 8 LINES 1-119
+1|up (5.0 vs. 4.0 U/L; P = 0.870). At Week 28, median serum lipase
+2|levels had increased from baseline in the dulaglutide/glargine group
+3|(4.0 U/L),
+4|compared
+5|with
+6|a
+7|decrease
+8|in
+9|the
+10|placebo/glargine
+11|group ( 1.0 U/L; P < 0.001). At the end of the safety follow-up,
+12|serum lipase levels were slightly increased from baseline in both treat-
+13|ment groups (6.0 vs. 2.0 U/L; P = 0.039).
+14|There were no reports of thyroid neoplasm during the study. At
+15|Week 28, median serum calcitonin levels had not changed from base-
+16|line in either treatment group (median change 0.00 pmol/L in both
+17|groups; P = 0.296). Death and/or at least one nonfatal cardiovascular
+18|event occurred in 18 patients; seven in the dulaglutide/glargine group
+19|and
+20|11
+21|in
+22|the
+23|placebo/glargine
+24|group
+25|(P = 0.467).
+26|Allergic/
+27|hypersensitivity reactions were experienced by six patients, three in
+28|each treatment group, and included rash (n = 2 in the dulaglutide/
+29|glargine group; n = 1 in the placebo/glargine group), swelling of the
+30|eyelid (n = 1 in the dulaglutide/glargine group), and dermatitis and
+31|eczema (n = 1 each, both in the placebo/glargine group).
+32|4
+33||
+34|DISCUSSION
+35|The results of AWARD-CHN3 provide the first evidence supporting
+36|the combination of a weekly GLP-1RA administered with basal insulin
+37|in Chinese patients with T2DM. Consistent with previous findings in a
+38|predominantly White population,17 our results show that adding
+39|once-weekly dulaglutide to basal insulin improved glycaemic control,
+40|reduced body weight and reduced basal insulin dose requirements,
+41|without increasing the risk of hypoglycaemia, compared with placebo.
+42|The safety of dulaglutide was consistent with its known safety profile
+43|and with that of the GLP-1RA class in general.18,19 Accordingly, mild-
+44|to-moderate gastrointestinal TEAEs were reported more frequently
+45|with dulaglutide than with placebo. No cases of acute pancreatitis or
+46|thyroid neoplasms were reported, and the incidence of hypersensitiv-
+47|ity was low. Together with the AWARD-CHN1 and AWARD-CHN2
+48|studies, these data indicate that once-weekly dulaglutide is an effica-
+49|cious and safe therapeutic option for Chinese patients with diverse
+50|treatment backgrounds, ranging from monotherapy to combined
+51|treatment with OADs and basal insulin.20,21
+52|In this study, dulaglutide added to basal insulin led to a signifi-
+53|cantly greater reduction in HbA1c from baseline to Week 28 ( 1.0%;
+54|95% CI -1.1 to 0.8) compared with placebo and basal insulin, as well
+55|as significantly greater reductions in both FSG and postprandial blood
+56|glucose. HbA1c targets were met by a higher proportion of patients
+57|receiving dulaglutide versus placebo, 75.9% of whom achieved HbA1c
+58|levels <7.0%, which is particularly high considering that the mean
+59|duration of diabetes was 11.2 years. In contrast, in the predominantly
+60|Asian population with T2DM in the GetGoal-L-C study, once-daily
+61|administration of the GLP-1RA lixisenatide with basal insulin resulted
+62|in a smaller difference in HbA1c reduction compared with placebo
+63|plus basal insulin ( 0.5%; 95% CI -0.7 to 0.3).22 In addition, 37.3%
+64|of patients who received lixisenatide/basal insulin in GetGoal-L-C
+65|achieved HbA1c levels <7.0%.22 It should be noted that no direct
+66|comparison of these trials can be made due to their different designs
+67|and populations.
+68|In addition to improving glycaemic control, dulaglutide may offer
+69|advantages over other approved once-daily GLP-1RAs when added to
+70|basal insulin in terms of dosing frequency and method of administra-
+71|tion. In a preference study, adults with T2DM reported the ease of
+72|use of the prefilled, single-use pen with which dulaglutide is adminis-
+73|tered, favouring its needle characteristics (pre-attached, not visible,
+74|and no needle handling required).23 This user-friendly injection experi-
+75|ence is invaluable from a clinical perspective.
+76|In the present study, dulaglutide added to insulin glargine signifi-
+77|cantly reduced mean body weight, with a significant difference versus
+78|placebo (treatment difference: 1.2 kg; P < 0.001), and without
+79|increasing the incidence of hypoglycaemia. Furthermore, a higher pro-
+80|portion of patients receiving dulaglutide achieved the composite out-
+81|comes of HbA1c <7.0% without body weight gain and/or without
+82|hypoglycaemia versus the placebo group. These data will aid clinical
+83|decision making, as the avoidance of weight gain and hypoglycaemia
+84|often deter patients and healthcare providers from adequate titration
+85|of basal insulin.16 In the present study, after the 4-week insulin dose
+86|stabilization period, the doses of insulin required in the placebo group
+87|were significantly higher than those required in the dulaglutide
+88|group at each timepoint until the end of the treatment period.
+89|This trial has several strengths and limitations. A key strength is
+90|the randomized, double-blind, placebo-controlled design. In addition,
+91|the titration of basal insulin using the TTT algorithm allowed the
+92|individualization of treatment to be standardized and better reflects
+93|contemporary clinical practice. Although the titration of basal insulin
+94|could be a potential confounding factor compared with a fixed
+95|insulin dosing strategy, compliance with the TTT insulin dose assess-
+96|ment outcome was similar in both treatment groups. Another poten-
+97|tial weakness was the choice of comparator, as intensive basal
+98|insulin with metformin and/or acarbose is only one of the recom-
+99|mended therapeutic options for the study population and the results
+100|cannot be extrapolated or compared to other treatment regimens.
+101|Finally, the study had a relatively short treatment period of
+102|28 weeks; however, this is the same duration as that of the global
+103|AWARD-9 study.17
+104|Collectively, the results of AWARD-CHN3 are relevant for
+105|Chinese patients with T2DM who are receiving basal insulin and one or
+106|two OADs and are unable to achieve their glycaemic targets. Adding
+107|once-weekly dulaglutide 1.5 mg to titrated basal insulin is an effective
+108|and well-tolerated therapeutic option, with an improved risk-benefit
+109|profile of greater glycaemic control and body weight reduction without
+110|hypoglycaemia and a smaller increase in daily insulin dose.
+111|AUTHOR CONTRIBUTIONS
+112|Weimin Wang, Xin Yan, Zhifeng Cheng, Jianhua Ma and Dalong Zhu
+113|contributed to the conception, design, acquisition of data and inter-
+114|pretation of data, and revised the manuscript. Dalong Zhu, Jianhua
+115|Ma, Weimin Wang and Qiqi Zhang contributed to the design of work.
+116|Qiqi Zhang, Yuying Deng and Rui Wang contributed to the analysis of
+117|WANG ET AL.
+118|3697
+119| 14631326, 2023, 12, Downloaded from https://dom-pubs.onlinelibrary.wiley.com/doi/10.1111/dom.15263, Wiley Online Library on [23/09/2026]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+SOURCE source_96631986f0f0c8d1fb7e1e78e6983b282e1f863e889acf35b7c028c1b6928d0d PAGE 1 LINES 1-41
+1|Supplementary Appendix
+2|Table S1 Insulin glargine treat-to-target (TTT) algorithm
+3|[TABLE 1 START]
+4|ROW 1: | FBG† | Insulin glargine dose adjustment |
+5|ROW 2: | | <3.9 mmol/L | <70 mg/dL | Decrease to previous lower dose‡ |
+6|ROW 3: | | 3.9 - <5.6 mmol/L | 70 - <100 mg/dL | No adjustment |
+7|ROW 4: | | 5.6 - <6.7 mmol/L | 100 - <120 mg/dL | +1 to +2 U§ |
+8|ROW 5: | | 6.7 - <7.8 mmol/L | 120 - <140 mg/dL | +2 U |
+9|ROW 6: | | 7.8 - <10.0 mmol/L | 140 - <180 mg/dL | +4 U |
+10|ROW 7: | | ≥10.0 mmol/L | ≥180 mg/dL | +6 to +8 U§ |
+11|[TABLE 1 END]
+12|Abbreviations: FBG, fasting blood glucose; SMBG, self-monitoring blood glucose; U, unit(s)
+13| †The decision to adjust insulin glargine doses was based upon the median of the last 3 daily FBG (SMBG) values (preferably most recent readings) collected after the previous dose assessment. If fewer than 3 values were available for assessment, then the average value was calculated and used to adjust the dose.
+14| ‡The patient should receive the previous, lower dose if they had documented hypoglycaemia or probable symptomatic hypoglycaemia.
+15| §Insulin glargine dose adjustment should be discussed with the patient and determined by the investigator before Week 8, as preparation and training for implementation of the patient self-titration according to the treatment-to-target algorithm after Week 8.
+16|Table S2 Additional efficacy analyses: Patents achieving composite endpoints (ITT population)
+17|[TABLE 2 START]
+18|ROW 1: | Endpoint | % | OR (95% CI)† | P value† |
+19|ROW 2: | | Dulaglutide 1.5 mg QW(n=139) | PlaceboQW(n=147) | | |
+20|ROW 3: | Other secondary endpoints | | | | |
+21|ROW 4: | HbA1c <7.0%‡ with no weight gain§ at Week 28 | 51.8 | 21.1 | 4.58 (2.64-7.95) | <0.001 |
+22|ROW 5: | HbA1c <7.0%‡ with no weight gain§ at Week 28 and without documented symptomatic hypoglycaemia (BG <3.0 mmol/L) during Week 12-28 | 51.8 | 21.1 | 4.58 (2.64-7.95) | <0.001 |
+23|ROW 6: | HbA1c <7.0%‡ at Week 28 without documented symptomatic hypoglycaemia (BG <3.0 mmol/L) during Week 12-28 | 74.8 | 33.3 | 7.59 (4.27-13.48) | <0.001 |
+24|ROW 7: | Exploratory endpoints | | | | |
+25|ROW 8: | HbA1c <7.0%‡ with no weight gain§ at Week 28 and without documented symptomatic hypoglycaemia (BG <3.9 mmol/L) during Week 12-28 | 46.0 | 16.3 | 4.95 (2.77-8.84) | <0.001 |
+26|ROW 9: | HbA1c <7.0%‡ at Week 28 without documented symptomatic hypoglycaemia (BG <3.9 mmol/L) during Week 12-28 | 66.9 | 27.9 | 6.39 (3.67-11.12) | <0.001 |
+27|[TABLE 2 END]
+28|Abbreviations: BG, blood glucose; CI, confidence interval; QW, once weekly; n, number of patients in the population with a baseline and post-baseline value at the specified time point; OR, odds ratio; ITT, intention to treat.
+29|†Logistic regression model with baseline HbA1c, oral antihyperglycaemic medication use and treatment as variables.
+30|‡Last observation carried forward, excluding data after the administration of rescue therapy or study drug discontinuation.
+31|§No weight gain was defined as <0.1 kg.
+32|Figure S1 Study design
+33| †Patients should continue their prestudy regimen and should not change the type of anti-diabetes medications used or their doses, except when allowed per protocol.
+34| ‡At Weeks 5, 7, 10, 15 and 21 patients were contacted by telephone.
+35| Stabilisation period: first 4 weeks following randomization during which insulin dose adjustments were restricted.
+36| Glargine titration period: Weeks 4-28 (end of treatment), with unrestricted insulin dose adjustments.
+37| Intensive titration period: Weeks 4-12, during which insulin was titrated to the optimal dose.
+38| Maintenance period: Weeks 12-28, the period when basal insulin dose was expected to be stable.
+39|Abbreviations: QW, once weekly
+40|Figure S2 Insulin glargine dose. MMRM analysis in the ITT population (excluding data after rescue therapy or study drug discontinuation). ** p < 0.01 vs placebo
+41|Abbreviations: ETD, estimated treatment difference; ITT, intention-to treat; LS, least squares; QW, once weekly; MMRM, mixed-model repeated measures; SE, standard error
+
+SOURCE source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 1 LINES 1-31
+1|Supplementary Appendix
+2|Table S1 Insulin glargine treat-to-target (TTT) algorithm
+3|FBG†
+4|Insulin glargine dose adjustment
+5|<3.9 mmol/L
+6|<70 mg/dL
+7|Decrease to previous lower dose‡
+8|3.9 - <5.6 mmol/L
+9|70 - <100 mg/dL
+10|No adjustment
+11|5.6 - <6.7 mmol/L
+12|100 - <120 mg/dL
+13|+1 to +2 U§
+14|6.7 - <7.8 mmol/L
+15|120 - <140 mg/dL
+16|+2 U
+17|7.8 - <10.0 mmol/L
+18|140 - <180 mg/dL
+19|+4 U
+20|≥10.0 mmol/L
+21|≥180 mg/dL
+22|+6 to +8 U§
+23|Abbreviations: FBG, fasting blood glucose; SMBG, self-monitoring blood glucose; U, unit(s)
+24|†The decision to adjust insulin glargine doses was based upon the median of the last 3 daily FBG (SMBG)
+25|values (preferably most recent readings) collected after the previous dose assessment. If fewer than 3 values
+26|were available for assessment, then the average value was calculated and used to adjust the dose.
+27|‡The patient should receive the previous, lower dose if they had documented hypoglycaemia or probable
+28|symptomatic hypoglycaemia.
+29|§Insulin glargine dose adjustment should be discussed with the patient and determined by the investigator before
+30|Week 8, as preparation and training for implementation of the patient self-titration according to the treatment-to-
+31|target algorithm after Week 8.
+
+SOURCE source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 2 LINES 1-47
+1|Table S2 Additional efficacy analyses: Patents achieving composite endpoints (ITT population)
+2|Endpoint
+3|%
+4|OR (95% CI)†
+5|P value†
+6|Dulaglutide
+7|1.5 mg QW
+8|(n=139)
+9|Placebo
+10|QW
+11|(n=147)
+12|Other secondary endpoints
+13|HbA1c <7.0%‡ with no weight gain§ at Week 28
+14|51.8
+15|21.1
+16|4.58 (2.64-7.95)
+17|<0.001
+18|HbA1c <7.0%‡ with no weight gain§ at Week 28 and without documented
+19|symptomatic hypoglycaemia (BG <3.0 mmol/L) during Week 12-28
+20|51.8
+21|21.1
+22|4.58 (2.64-7.95)
+23|<0.001
+24|HbA1c <7.0%‡ at Week 28 without documented symptomatic hypoglycaemia
+25|(BG <3.0 mmol/L) during Week 12-28
+26|74.8
+27|33.3
+28|7.59 (4.27-13.48)
+29|<0.001
+30|Exploratory endpoints
+31|HbA1c <7.0%‡ with no weight gain§ at Week 28 and without documented
+32|symptomatic hypoglycaemia (BG <3.9 mmol/L) during Week 12-28
+33|46.0
+34|16.3
+35|4.95 (2.77-8.84)
+36|<0.001
+37|HbA1c <7.0%‡ at Week 28 without documented symptomatic hypoglycaemia
+38|(BG <3.9 mmol/L) during Week 12-28
+39|66.9
+40|27.9
+41|6.39 (3.67-11.12)
+42|<0.001
+43|Abbreviations: BG, blood glucose; CI, confidence interval; QW, once weekly; n, number of patients in the population with a baseline and post-baseline value at the specified
+44|time point; OR, odds ratio; ITT, intention to treat.
+45|†Logistic regression model with baseline HbA1c, oral antihyperglycaemic medication use and treatment as variables.
+46|‡Last observation carried forward, excluding data after the administration of rescue therapy or study drug discontinuation.
+47|§No weight gain was defined as <0.1 kg.
+
+SOURCE source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 3 LINES 1-12
+1|Figure S1 Study design
+2|†Patients should continue their prestudy regimen and should not change the type of anti-diabetes medications
+3|used or their doses, except when allowed per protocol.
+4|‡At Weeks 5, 7, 10, 15 and 21 patients were contacted by telephone.
+5|Stabilisation period: first 4 weeks following randomization during which insulin dose adjustments were
+6|restricted.
+7|Glargine titration period: Weeks 4-28 (end of treatment), with unrestricted insulin dose adjustments.
+8|
+9|Intensive titration period: Weeks 4-12, during which insulin was titrated to the optimal dose.
+10|
+11|Maintenance period: Weeks 12-28, the period when basal insulin dose was expected to be stable.
+12|Abbreviations: QW, once weekly
+
+SOURCE source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 4 LINES 1-5
+1|Figure S2 Insulin glargine dose. MMRM analysis in the ITT population (excluding data after rescue therapy
+2|or study drug discontinuation). ** p < 0.01 vs placebo
+3|Abbreviations: ETD, estimated treatment difference; ITT, intention-to treat; LS, least squares; QW, once
+4|weekly; MMRM, mixed-model repeated measures; SE, standard error
+5|
+
+SOURCE source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018 PAGE 1 LINES 1-76
+1|derivedSection.conditionBrowseModule.ancestors[0].id: "D003920"
+2|derivedSection.conditionBrowseModule.ancestors[0].term: "Diabetes Mellitus"
+3|derivedSection.conditionBrowseModule.ancestors[1].id: "D044882"
+4|derivedSection.conditionBrowseModule.ancestors[1].term: "Glucose Metabolism Disorders"
+5|derivedSection.conditionBrowseModule.ancestors[2].id: "D008659"
+6|derivedSection.conditionBrowseModule.ancestors[2].term: "Metabolic Diseases"
+7|derivedSection.conditionBrowseModule.ancestors[3].id: "D009750"
+8|derivedSection.conditionBrowseModule.ancestors[3].term: "Nutritional and Metabolic Diseases"
+9|derivedSection.conditionBrowseModule.ancestors[4].id: "D004700"
+10|derivedSection.conditionBrowseModule.ancestors[4].term: "Endocrine System Diseases"
+11|derivedSection.conditionBrowseModule.meshes[0].id: "D003924"
+12|derivedSection.conditionBrowseModule.meshes[0].term: "Diabetes Mellitus, Type 2"
+13|derivedSection.interventionBrowseModule.ancestors[0].id: "D049528"
+14|derivedSection.interventionBrowseModule.ancestors[0].term: "Insulin, Long-Acting"
+15|derivedSection.interventionBrowseModule.ancestors[1].id: "D061385"
+16|derivedSection.interventionBrowseModule.ancestors[1].term: "Insulins"
+17|derivedSection.interventionBrowseModule.ancestors[2].id: "D010187"
+18|derivedSection.interventionBrowseModule.ancestors[2].term: "Pancreatic Hormones"
+19|derivedSection.interventionBrowseModule.ancestors[3].id: "D036361"
+20|derivedSection.interventionBrowseModule.ancestors[3].term: "Peptide Hormones"
+21|derivedSection.interventionBrowseModule.ancestors[4].id: "D006728"
+22|derivedSection.interventionBrowseModule.ancestors[4].term: "Hormones"
+23|derivedSection.interventionBrowseModule.ancestors[5].id: "D006730"
+24|derivedSection.interventionBrowseModule.ancestors[5].term: "Hormones, Hormone Substitutes, and Hormone Antagonists"
+25|derivedSection.interventionBrowseModule.ancestors[6].id: "D010455"
+26|derivedSection.interventionBrowseModule.ancestors[6].term: "Peptides"
+27|derivedSection.interventionBrowseModule.ancestors[7].id: "D000602"
+28|derivedSection.interventionBrowseModule.ancestors[7].term: "Amino Acids, Peptides, and Proteins"
+29|derivedSection.interventionBrowseModule.meshes[0].id: "C555680"
+30|derivedSection.interventionBrowseModule.meshes[0].term: "dulaglutide"
+31|derivedSection.interventionBrowseModule.meshes[1].id: "D000069036"
+32|derivedSection.interventionBrowseModule.meshes[1].term: "Insulin Glargine"
+33|derivedSection.miscInfoModule.versionHolder: "2026-09-30"
+34|documentSection.largeDocumentModule.largeDocs[0].date: "2020-07-30"
+35|documentSection.largeDocumentModule.largeDocs[0].filename: "Prot_000.pdf"
+36|documentSection.largeDocumentModule.largeDocs[0].hasIcf: false
+37|documentSection.largeDocumentModule.largeDocs[0].hasProtocol: true
+38|documentSection.largeDocumentModule.largeDocs[0].hasSap: false
+39|documentSection.largeDocumentModule.largeDocs[0].label: "Study Protocol"
+40|documentSection.largeDocumentModule.largeDocs[0].size: 24028452
+41|documentSection.largeDocumentModule.largeDocs[0].typeAbbrev: "Prot"
+42|documentSection.largeDocumentModule.largeDocs[0].uploadDate: "2023-04-21T02:37"
+43|documentSection.largeDocumentModule.largeDocs[1].date: "2022-06-29"
+44|documentSection.largeDocumentModule.largeDocs[1].filename: "SAP_001.pdf"
+45|documentSection.largeDocumentModule.largeDocs[1].hasIcf: false
+46|documentSection.largeDocumentModule.largeDocs[1].hasProtocol: false
+47|documentSection.largeDocumentModule.largeDocs[1].hasSap: true
+48|documentSection.largeDocumentModule.largeDocs[1].label: "Statistical Analysis Plan"
+49|documentSection.largeDocumentModule.largeDocs[1].size: 775524
+50|documentSection.largeDocumentModule.largeDocs[1].typeAbbrev: "SAP"
+51|documentSection.largeDocumentModule.largeDocs[1].uploadDate: "2023-04-21T02:41"
+52|hasResults: true
+53|protocolSection.armsInterventionsModule.armGroups[0].description: "Participants received 1.5 mg Dulaglutide administered once weekly (QW) subcutaneously (SC) as add-on to titrated treat-to-target (TTT) dose of Insulin Glargine given SC, along with metformin and/or acarbose."
+54|protocolSection.armsInterventionsModule.armGroups[0].interventionNames[0]: "Drug: Dulaglutide"
+55|protocolSection.armsInterventionsModule.armGroups[0].interventionNames[1]: "Drug: Insulin Glargine"
+56|protocolSection.armsInterventionsModule.armGroups[0].label: "1.5 Milligrams (mg) Dulaglutide"
+57|protocolSection.armsInterventionsModule.armGroups[0].type: "EXPERIMENTAL"
+58|protocolSection.armsInterventionsModule.armGroups[1].description: "Participants received placebo administered QW SC as add-on to titrated TTT dose of insulin glargine given SC, along with metformin and/or acarbose."
+59|protocolSection.armsInterventionsModule.armGroups[1].interventionNames[0]: "Drug: Placebo"
+60|protocolSection.armsInterventionsModule.armGroups[1].interventionNames[1]: "Drug: Insulin Glargine"
+61|protocolSection.armsInterventionsModule.armGroups[1].label: "Placebo"
+62|protocolSection.armsInterventionsModule.armGroups[1].type: "PLACEBO_COMPARATOR"
+63|protocolSection.armsInterventionsModule.interventions[0].armGroupLabels[0]: "1.5 Milligrams (mg) Dulaglutide"
+64|protocolSection.armsInterventionsModule.interventions[0].description: "Administered SC"
+65|protocolSection.armsInterventionsModule.interventions[0].name: "Dulaglutide"
+66|protocolSection.armsInterventionsModule.interventions[0].otherNames[0]: "LY2189265"
+67|protocolSection.armsInterventionsModule.interventions[0].type: "DRUG"
+68|protocolSection.armsInterventionsModule.interventions[1].armGroupLabels[0]: "Placebo"
+69|protocolSection.armsInterventionsModule.interventions[1].description: "Administered SC"
+70|protocolSection.armsInterventionsModule.interventions[1].name: "Placebo"
+71|protocolSection.armsInterventionsModule.interventions[1].type: "DRUG"
+72|protocolSection.armsInterventionsModule.interventions[2].armGroupLabels[0]: "1.5 Milligrams (mg) Dulaglutide"
+73|protocolSection.armsInterventionsModule.interventions[2].armGroupLabels[1]: "Placebo"
+74|protocolSection.armsInterventionsModule.interventions[2].description: "Administered SC"
+75|protocolSection.armsInterventionsModule.interventions[2].name: "Insulin Glargine"
+76|protocolSection.armsInterventionsModule.interventions[2].type: "DRUG"
+
+SOURCE source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018 PAGE 1 LINES 270-279
+270|protocolSection.designModule.designInfo.allocation: "RANDOMIZED"
+271|protocolSection.designModule.designInfo.interventionModel: "PARALLEL"
+272|protocolSection.designModule.designInfo.maskingInfo.masking: "DOUBLE"
+273|protocolSection.designModule.designInfo.maskingInfo.whoMasked[0]: "PARTICIPANT"
+274|protocolSection.designModule.designInfo.maskingInfo.whoMasked[1]: "INVESTIGATOR"
+275|protocolSection.designModule.designInfo.primaryPurpose: "TREATMENT"
+276|protocolSection.designModule.enrollmentInfo.count: 291
+277|protocolSection.designModule.enrollmentInfo.type: "ACTUAL"
+278|protocolSection.designModule.phases[0]: "PHASE3"
+279|protocolSection.designModule.studyType: "INTERVENTIONAL"
+
+SOURCE source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018 PAGE 1 LINES 328-330
+328|protocolSection.outcomesModule.primaryOutcomes[0].description: "HbA1c is the glycosylated fraction of hemoglobin A. HbA1c is measured to identify average plasma glucose concentration over prolonged periods of time. Least Squares (LS) mean was determined by mixed model repeated measures (MMRM) model with Baseline + Oral Antihyperglycemic Medications (OAM) use + Treatment + Visit + Treatment\\*Visit (Type III sum of squares) as variables."
+329|protocolSection.outcomesModule.primaryOutcomes[0].measure: "Change From Baseline in Hemoglobin A1c (HbA1c)"
+330|protocolSection.outcomesModule.primaryOutcomes[0].timeFrame: "Baseline, Week 28"
+
+SOURCE source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018 PAGE 1 LINES 1887-1923
+1887|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciLowerLimit: "-1.14"
+1888|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciNumSides: "TWO_SIDED"
+1889|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciPctValue: "95"
+1890|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciUpperLimit: "-0.77"
+1891|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].groupIds[0]: "OG000"
+1892|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].groupIds[1]: "OG001"
+1893|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].nonInferiorityType: "SUPERIORITY"
+1894|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].pValue: "<0.001"
+1895|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].paramType: "LS Mean Difference"
+1896|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].paramValue: "-0.95"
+1897|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].statisticalMethod: "Mixed Models Analysis"
+1898|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].groupId: "OG000"
+1899|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].spread: "0.076"
+1900|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].value: "-2.03"
+1901|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].groupId: "OG001"
+1902|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].spread: "0.073"
+1903|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].value: "-1.08"
+1904|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].groupId: "OG000"
+1905|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].value: "133"
+1906|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].groupId: "OG001"
+1907|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].value: "142"
+1908|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].units: "Participants"
+1909|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].description: "HbA1c is the glycosylated fraction of hemoglobin A. HbA1c is measured to identify average plasma glucose concentration over prolonged periods of time. Least Squares (LS) mean was determined by mixed model repeated measures (MMRM) model with Baseline + Oral Antihyperglycemic Medications (OAM) use + Treatment + Visit + Treatment\\*Visit (Type III sum of squares) as variables."
+1910|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].dispersionType: "Standard Error"
+1911|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: "Participants received 1.5 mg Dulaglutide administered QW SC as add-on to titrated TTT dose of insulin glargine given SC, along with metformin and/or acarbose."
+1912|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].id: "OG000"
+1913|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].title: "1.5 mg Dulaglutide"
+1914|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: "Participants received placebo administered QW SC as add-on to titrated TTT dose of insulin glargine given SC, along with metformin and/or acarbose."
+1915|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].id: "OG001"
+1916|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].title: "Placebo"
+1917|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].paramType: "LEAST_SQUARES_MEAN"
+1918|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].populationDescription: "All randomized participants with baseline and at least one post-baseline HbA1c data."
+1919|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].reportingStatus: "POSTED"
+1920|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].timeFrame: "Baseline, Week 28"
+1921|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].title: "Change From Baseline in Hemoglobin A1c (HbA1c)"
+1922|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].type: "PRIMARY"
+1923|resultsSection.outcomeMeasuresModule.outcomeMeasures[0].unitOfMeasure: "Percentage of HbA1c"
+
+SOURCE source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018 PAGE 1 LINES 2211-2262
+2211|resultsSection.participantFlowModule.groups[0].description: "Participants received 1.5 mg Dulaglutide administered once weekly (QW) subcutaneously (SC) as add-on to titrated treat-to-target (TTT) dose of Insulin Glargine given SC, along with metformin and/or acarbose."
+2212|resultsSection.participantFlowModule.groups[0].id: "FG000"
+2213|resultsSection.participantFlowModule.groups[0].title: "1.5 Milligrams (mg) Dulaglutide"
+2214|resultsSection.participantFlowModule.groups[1].description: "Participants received placebo administered QW SC as add-on to titrated TTT dose of insulin glargine given SC, along with metformin and/or acarbose."
+2215|resultsSection.participantFlowModule.groups[1].id: "FG001"
+2216|resultsSection.participantFlowModule.groups[1].title: "Placebo"
+2217|resultsSection.participantFlowModule.periods[0].dropWithdraws[0].reasons[0].groupId: "FG000"
+2218|resultsSection.participantFlowModule.periods[0].dropWithdraws[0].reasons[0].numSubjects: "4"
+2219|resultsSection.participantFlowModule.periods[0].dropWithdraws[0].reasons[1].groupId: "FG001"
+2220|resultsSection.participantFlowModule.periods[0].dropWithdraws[0].reasons[1].numSubjects: "0"
+2221|resultsSection.participantFlowModule.periods[0].dropWithdraws[0].type: "Adverse Event"
+2222|resultsSection.participantFlowModule.periods[0].dropWithdraws[1].reasons[0].groupId: "FG000"
+2223|resultsSection.participantFlowModule.periods[0].dropWithdraws[1].reasons[0].numSubjects: "5"
+2224|resultsSection.participantFlowModule.periods[0].dropWithdraws[1].reasons[1].groupId: "FG001"
+2225|resultsSection.participantFlowModule.periods[0].dropWithdraws[1].reasons[1].numSubjects: "3"
+2226|resultsSection.participantFlowModule.periods[0].dropWithdraws[1].type: "Withdrawal by Subject"
+2227|resultsSection.participantFlowModule.periods[0].dropWithdraws[2].reasons[0].groupId: "FG000"
+2228|resultsSection.participantFlowModule.periods[0].dropWithdraws[2].reasons[0].numSubjects: "0"
+2229|resultsSection.participantFlowModule.periods[0].dropWithdraws[2].reasons[1].groupId: "FG001"
+2230|resultsSection.participantFlowModule.periods[0].dropWithdraws[2].reasons[1].numSubjects: "1"
+2231|resultsSection.participantFlowModule.periods[0].dropWithdraws[2].type: "Physician Decision"
+2232|resultsSection.participantFlowModule.periods[0].dropWithdraws[3].reasons[0].groupId: "FG000"
+2233|resultsSection.participantFlowModule.periods[0].dropWithdraws[3].reasons[0].numSubjects: "0"
+2234|resultsSection.participantFlowModule.periods[0].dropWithdraws[3].reasons[1].groupId: "FG001"
+2235|resultsSection.participantFlowModule.periods[0].dropWithdraws[3].reasons[1].numSubjects: "1"
+2236|resultsSection.participantFlowModule.periods[0].dropWithdraws[3].type: "Death"
+2237|resultsSection.participantFlowModule.periods[0].dropWithdraws[4].reasons[0].groupId: "FG000"
+2238|resultsSection.participantFlowModule.periods[0].dropWithdraws[4].reasons[0].numSubjects: "1"
+2239|resultsSection.participantFlowModule.periods[0].dropWithdraws[4].reasons[1].groupId: "FG001"
+2240|resultsSection.participantFlowModule.periods[0].dropWithdraws[4].reasons[1].numSubjects: "0"
+2241|resultsSection.participantFlowModule.periods[0].dropWithdraws[4].type: "Non-Compliance with Study Drug"
+2242|resultsSection.participantFlowModule.periods[0].milestones[0].achievements[0].groupId: "FG000"
+2243|resultsSection.participantFlowModule.periods[0].milestones[0].achievements[0].numSubjects: "144"
+2244|resultsSection.participantFlowModule.periods[0].milestones[0].achievements[1].groupId: "FG001"
+2245|resultsSection.participantFlowModule.periods[0].milestones[0].achievements[1].numSubjects: "147"
+2246|resultsSection.participantFlowModule.periods[0].milestones[0].type: "STARTED"
+2247|resultsSection.participantFlowModule.periods[0].milestones[1].achievements[0].groupId: "FG000"
+2248|resultsSection.participantFlowModule.periods[0].milestones[1].achievements[0].numSubjects: "144"
+2249|resultsSection.participantFlowModule.periods[0].milestones[1].achievements[1].groupId: "FG001"
+2250|resultsSection.participantFlowModule.periods[0].milestones[1].achievements[1].numSubjects: "147"
+2251|resultsSection.participantFlowModule.periods[0].milestones[1].type: "Received At Least One Dose of Study Drug"
+2252|resultsSection.participantFlowModule.periods[0].milestones[2].achievements[0].groupId: "FG000"
+2253|resultsSection.participantFlowModule.periods[0].milestones[2].achievements[0].numSubjects: "134"
+2254|resultsSection.participantFlowModule.periods[0].milestones[2].achievements[1].groupId: "FG001"
+2255|resultsSection.participantFlowModule.periods[0].milestones[2].achievements[1].numSubjects: "142"
+2256|resultsSection.participantFlowModule.periods[0].milestones[2].type: "COMPLETED"
+2257|resultsSection.participantFlowModule.periods[0].milestones[3].achievements[0].groupId: "FG000"
+2258|resultsSection.participantFlowModule.periods[0].milestones[3].achievements[0].numSubjects: "10"
+2259|resultsSection.participantFlowModule.periods[0].milestones[3].achievements[1].groupId: "FG001"
+2260|resultsSection.participantFlowModule.periods[0].milestones[3].achievements[1].numSubjects: "5"
+2261|resultsSection.participantFlowModule.periods[0].milestones[3].type: "NOT COMPLETED"
+2262|resultsSection.participantFlowModule.periods[0].title: "Overall Study"
+
+SOURCE visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 4 LINES 1-6
+1|Figure 1 Patient disposition: assessed eligibility 332; excluded 41 (screen failure 31, withdrawal by subject 10); randomized 291.
+2|Dulaglutide 1.5 mg n=144. Discontinued study drug n=10 (6.9%): AE4, withdrawal by subject4, non-compliance with study drug1, unknown1. Discontinued study n=10 (6.9%): AE4, withdrawal by subject5, non-compliance with study drug1.
+3|Dulaglutide completed study treatment n=134 (93.1%); completed study n=134 (93.1%). Figure does not establish whether these are identical individuals.
+4|Placebo n=147. Discontinued study drug n=4 (2.7%): withdrawal by subject3, investigator decision1. Discontinued study n=5 (3.4%): withdrawal by subject3, investigator decision1, death1.
+5|Placebo completed study treatment n=143 (97.3%); completed study n=142 (96.6%). These are completion counts, not HbA1c measurement counts.
+6|Table 1 baseline: randomized arm denominators144/147; HbA1c mean±SD8.6±1.0/8.6±1.0%; HbA1c>=8.5%78/78; duration diabetes11.2±6.0/12.4±6.9 years. These are baseline summaries, not summaries of excluded participants.
+
+SOURCE visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 5 LINES 1-3
+1|Figure 2A primary HbA1c change at Week28: dulaglutide -2.0%, placebo -1.1%, LS mean±SE; ETD -1.0;95%CI(-1.1,-0.8);***P<0.001.
+2|Figure 2B HbA1c targets<7.0%75.9/33.8 and<=6.5%56.7/12.7 are secondary binary outcomes, not the primary continuous result.
+3|Figure 2 caption: all analyses undertaken in ITT population excluding data after initiation of rescue therapy or discontinuation of study drug. Continuous efficacy panels use MMRM.
+
+SOURCE visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 6 LINES 1-3
+1|Safety text: dulaglutide four discontinued study drug due to AE (asthenia, decreased appetite, gastritis, gastrointestinal disorders one each). Four discontinued study due to AEs, including acute kidney injury in a participant who stopped drug for unknown reason(s) and discontinued study131days later, plus decreased appetite, gastritis and gastrointestinal disorders.
+2|One placebo death was reported during safety follow-up, unexplained and judged unrelated to drug. It is not established as a pre-week28 HbA1c missingness event.
+3|Figure2F insulin dose at Week28: dulaglutide28.5U/day, placebo32.5U/day, each0.4U/kg/day; this is a different outcome.
+
+SOURCE visual:source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6 PAGE 7 LINES 1-3
+1|Text: rescue therapy for severe persistent hyperglycaemia required by only one patient, in dulaglutide/glargine group.
+2|Table2 discontinuation due to AE from study:4dulagutide/1placebo; placebo entry is death1. From study drug:4dulaglutide/0placebo. These rows are AE-specific, not total discontinuation counts.
+3|Table3 hypoglycaemia has denominators144/147 and concerns safety endpoints, not primary HbA1c analysis or week28 measured-value denominators.
+
+SOURCE visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 1 LINES 1-2
+1|TableS1 titration algorithm uses median last3 daily fasting SMBG readings; if fewer than3 available, average available value used. This rule concerns insulin-dose adjustment, not HbA1c endpoint imputation.
+2|Dose algorithm: <3.9mmol/L decrease previous dose;3.9-<5.6no adjustment;5.6-<6.7+1to2U;6.7-<7.8+2U;7.8-<10+4U;>=10+6to8U. BeforeWeek8 investigator determines adjustment with patient; training supports self-titration afterWeek8.
+
+SOURCE visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 2 LINES 1-2
+1|TableS2 additional secondary composite endpoints ITT: dulaglutide n=139, placebo n=147. Footnote n=patients with baseline and post-baseline value at specified timepoint.
+2|Footnotes: logistic regression; last observation carried forward excluding data after rescue therapy or study drug discontinuation. These are secondary composite analyses; neither139/147 nor LOCF transfers to primary continuous HbA1c.
+
+SOURCE visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 3 LINES 1-1
+1|FigureS1:3week screening/lead-in; randomization atWeek0;28week treatment,4week safetyfollow-up throughWeek32. Weeks1-4stabilisation,4-12intensive titration,12-28maintenance. Telephone contacts atWeeks5,7,10,15,21.
+
+SOURCE visual:source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f PAGE 4 LINES 1-1
+1|FigureS2 insulin glargine change atWeek28: dulaglutide10.0U,placebo14.0U,ETD-4.0;95%CI(-6.9,-1.1);**P<0.01. Caption MMRM ITT excluding data after rescue/discontinuation. Different outcome from primary HbA1c.
+
+SOURCE source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018 PAGE 1 LINES 310-319
+310|protocolSection.identificationModule.acronym: "AWARD-CHN3"
+311|protocolSection.identificationModule.briefTitle: "A Study of Dulaglutide (LY2189265) in Chinese Participants With Type 2 Diabetes"
+312|protocolSection.identificationModule.nctId: "NCT04591626"
+313|protocolSection.identificationModule.officialTitle: "A Randomized, Double-Blind Trial Comparing the Effect of the Addition of Dulaglutide 1.5 mg Versus the Addition of Placebo to Titrated Basal Insulin on Glycemic Control in Chinese Patients With Type 2 Diabetes"
+314|protocolSection.identificationModule.orgStudyIdInfo.id: "17731"
+315|protocolSection.identificationModule.organization.class: "INDUSTRY"
+316|protocolSection.identificationModule.organization.fullName: "Eli Lilly and Company"
+317|protocolSection.identificationModule.secondaryIdInfos[0].domain: "Eli Lilly and Company"
+318|protocolSection.identificationModule.secondaryIdInfos[0].id: "H9X-MC-GBGO"
+319|protocolSection.identificationModule.secondaryIdInfos[0].type: "OTHER"

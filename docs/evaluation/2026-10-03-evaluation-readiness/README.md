@@ -1,3 +1,5 @@
+**Final update:** [completed offline readiness](FINAL-OFFLINE-READINESS.md) supersedes the initial source/input blockers below. Figures are verified and both inputs/config/manifests are frozen; inference remains no-go under the15k budget (qualified23.7–31.9k estimates; exact tokenizer unavailable).
+
 # Next scientific evaluation: frozen design, no-go for inference
 
 **Stopping decision: no launch.** A credible distinct actual case exists, AWARD-CHN3, but the evidence/input/cost prerequisites are not complete. This package preserves the specific comparison, primary evidence, preregistered private rubric and blockers. It does not manufacture a new implementation, fictional benchmark control or ready-to-run claim. No outputs have been generated.
