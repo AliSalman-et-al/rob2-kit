@@ -1,0 +1,39 @@
+{
+  "code_sha": "3fec2286eeb9b65a4058b727d643ddf90073eb34",
+  "exact_model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "invocations": 1,
+  "elapsed_seconds": 94.31040503099211,
+  "tool_calls": 11,
+  "proposal_attempts": 1,
+  "schema_accepted": true,
+  "scientific_validation_accepted": false,
+  "proposal_saved": false,
+  "researcher_approval": false,
+  "scope_review_produced": false,
+  "canonical_numerical_bindings": 0,
+  "scientific_repairs": [
+    "incoherent_reported_result",
+    "result_value_not_supported"
+  ],
+  "claimed_relation": "narrower",
+  "reading_status": "complete",
+  "usage": {
+    "input_tokens": 533092,
+    "cached_input_tokens": 461056,
+    "output_tokens": 2963,
+    "reasoning_output_tokens": 974
+  },
+  "uncached_input_tokens": 72036,
+  "stop": "Model ended voluntarily after one application repair. No guard fired. Response explicitly construed no retry/manual repair as stopping after one attempt.",
+  "prompt_limitation": "Prompt also explicitly allowed four validation attempts, but no retry phrasing ambiguously suggested no in-invocation correction. This is an operator prompt confound; no second invocation or repaired draft.",
+  "schema_behavior": "One actual selections object with candidate, source_passages, typed clarity and reasoning reached application validators without schema construction defects. Current contract was used, not merely delivered.",
+  "scientific_audit": "Correct primary HR and numerical CI limits recognized. Endpoint exact wording and precision literal binding failed. Eligibility-based narrower scope not defensible for this stated all-randomized trial target without additional target-population justification. All-randomized ITT correctly separated from incomplete follow-up.",
+  "comparison_limits": "Prior recovery had 7/25 schema defects; this one reaches scientific repair. Same case but changed tool allowance20\u219225 and installed skill/prompt delivery; cannot attribute causality, lower usage, validated scope or RoB accuracy gain.",
+  "operator_repairs": 0,
+  "original_code_databases_unchanged": true,
+  "full_benchmark": false,
+  "accuracy_gain_claimed": false,
+  "known_CI": "Prior inspected job44failures; relevant current release/fixture fixes and focused checks passed, unrelated broad failures remain. Current checkpoint CI was only observed in_progress; no wait.",
+  "billed_dollar_cost": null
+}

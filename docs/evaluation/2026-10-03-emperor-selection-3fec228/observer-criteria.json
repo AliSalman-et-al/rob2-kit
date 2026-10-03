@@ -1,0 +1,14 @@
+{
+  "outside_model_context": true,
+  "audit": [
+    "endpoint event set and definition",
+    "time origin and follow-up window",
+    "analysis population and exclusions versus missing observations",
+    "randomized contrast",
+    "quantity and interval faithful to source",
+    "bound numerical fields and passage provenance",
+    "source reading coverage and unreviewed supplements",
+    "relation justified independently of validation success"
+  ],
+  "no_reference_label_or_desired_relation": true
+}

@@ -1,0 +1,398 @@
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	﻿2026-10-03T10:30:50.4162166Z Current runner version: '2.337.0'
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4188388Z ##[group]Runner Image Provisioner
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4189344Z Hosted Compute Agent
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4190035Z Version: 20260901.588
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4190713Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4191451Z Build Date: 2026-09-01T19:56:44Z
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4192179Z Worker ID: {48cc1b00-8b1e-4df7-bc6b-4225b86eaf86}
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4192928Z Azure Region: westus
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4193492Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4195641Z ##[group]Operating System
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4196438Z Ubuntu
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4196992Z 24.04.5
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4197542Z LTS
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4198070Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4198655Z ##[group]Runner Image
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4199333Z Image: ubuntu-24.04
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4199897Z Version: 20260927.320.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4201190Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4202704Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4204189Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4205642Z ##[group]GITHUB_TOKEN Permissions
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4207992Z Contents: read
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4208601Z Metadata: read
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4209222Z Packages: read
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4209825Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4211882Z Secret source: Actions
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4212922Z Cache mode: write
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.4213631Z Prepare workflow directory
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.5854236Z Prepare all required actions
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.5904232Z Getting action download info
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:50.9590090Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:51.0560249Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:51.1314323Z Download action repository 'astral-sh/setup-uv@v6' (SHA:d0cc045d04ccac9d8b7881df0226f9e82c39688e)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:51.8037984Z Complete job name: Package (3.11 / ubuntu-latest)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0300840Z ##[group]Run actions/checkout@v4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0301735Z with:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0302146Z   fetch-depth: 0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0302624Z   repository: AliSalman-et-al/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0306818Z   token: ***
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0307248Z   ssh-strict: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0307678Z   ssh-user: git
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0308117Z   persist-credentials: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0308598Z   clean: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0309036Z   sparse-checkout-cone-mode: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0309550Z   fetch-tags: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0309989Z   show-progress: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0310432Z   lfs: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0310837Z   submodules: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0311277Z   set-safe-directory: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0311782Z   allow-unsafe-pr-checkout: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0312538Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0312947Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.0313393Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1404798Z Syncing repository: AliSalman-et-al/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1407922Z ##[group]Getting Git version info
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1409146Z Working directory is '/home/runner/work/rob2-kit/rob2-kit'
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1410768Z [command]/usr/bin/git version
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1531526Z git version 2.55.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1554267Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1569920Z Temporarily overriding HOME='/home/runner/work/_temp/c2744936-0198-4b2e-a88f-e811afce084f' before making global git config changes
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1572283Z Adding repository directory to the temporary git global config as a safe directory
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1575544Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/rob2-kit/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1632808Z Deleting the contents of '/home/runner/work/rob2-kit/rob2-kit'
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1635484Z ##[group]Initializing the repository
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1639954Z [command]/usr/bin/git init /home/runner/work/rob2-kit/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1762946Z hint: Using 'master' as the name for the initial branch. This default branch name
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1764821Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1768070Z hint: to use in all of your new repositories, which will suppress this warning,
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1769293Z hint: call:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1770006Z hint:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1770875Z hint: 	git config --global init.defaultBranch <name>
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1771890Z hint:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1772804Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1774340Z hint: 'development'. The just-created branch can be renamed via this command:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1775853Z hint:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1776542Z hint: 	git branch -m <name>
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1777283Z hint:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1778298Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1779995Z Initialized empty Git repository in /home/runner/work/rob2-kit/rob2-kit/.git/
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1782969Z [command]/usr/bin/git remote add origin https://github.com/AliSalman-et-al/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1860141Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1861465Z ##[group]Disabling automatic garbage collection
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1863728Z [command]/usr/bin/git config --local gc.auto 0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1907937Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1909290Z ##[group]Setting up auth
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1915917Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.1953743Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2344458Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2383019Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2616147Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2653347Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2884618Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2926943Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2928549Z ##[group]Fetching the repository
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:52.2937232Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3911268Z From https://github.com/AliSalman-et-al/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3912352Z  * [new branch]      improve/scientific-premise-20261002 -> origin/improve/scientific-premise-20261002
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3913154Z  * [new branch]      main                  -> origin/main
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3913682Z  * [new tag]         greenfield-v0.1.0-rc1 -> greenfield-v0.1.0-rc1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3914610Z  * [new tag]         greenfield-v0.1.0-rc2 -> greenfield-v0.1.0-rc2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3915779Z  * [new tag]         greenfield-v0.1.0-rc3 -> greenfield-v0.1.0-rc3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3916717Z  * [new tag]         greenfield-v0.1.0-rc4 -> greenfield-v0.1.0-rc4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3917673Z  * [new tag]         greenfield-v0.1.0-rc5 -> greenfield-v0.1.0-rc5
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3918535Z  * [new tag]         greenfield-v0.1.0-rc6 -> greenfield-v0.1.0-rc6
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3919140Z  * [new tag]         legacy-v0.1.0         -> legacy-v0.1.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3919635Z  * [new tag]         v0.2.0-rc1            -> v0.2.0-rc1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3920136Z  * [new tag]         v0.2.0-rc2            -> v0.2.0-rc2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3920605Z  * [new tag]         v0.8.0                -> v0.8.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3924303Z [command]/usr/bin/git branch --list --remote origin/improve/scientific-premise-20261002
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3954694Z   origin/improve/scientific-premise-20261002
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3964603Z [command]/usr/bin/git rev-parse refs/remotes/origin/improve/scientific-premise-20261002
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3991520Z c28b9a22a7b882980bafbd128ad6b1c553bcf6e1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3996933Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3998062Z ##[group]Determining the checkout info
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.3999372Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.4004211Z [command]/usr/bin/git sparse-checkout disable
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.4068374Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.4099313Z ##[group]Checking out the ref
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:58.4104604Z [command]/usr/bin/git checkout --progress --force -B improve/scientific-premise-20261002 refs/remotes/origin/improve/scientific-premise-20261002
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.0349621Z Switched to a new branch 'improve/scientific-premise-20261002'
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.0354395Z branch 'improve/scientific-premise-20261002' set up to track 'origin/improve/scientific-premise-20261002'.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.0397794Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.0453208Z [command]/usr/bin/git log -1 --format=%H
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.0481829Z c28b9a22a7b882980bafbd128ad6b1c553bcf6e1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1546662Z ##[group]Run actions/setup-python@v5
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1547100Z with:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1547365Z   python-version: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1547646Z   check-latest: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1550487Z   token: ***
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1550762Z   update-environment: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1551081Z   allow-prereleases: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1551380Z   freethreaded: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1551637Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1551884Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.1552160Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.2903109Z ##[group]Installed versions
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.2990637Z (node:2316) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.2991737Z (Use `node --trace-deprecation ...` to show where the warning was created)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.2992686Z Successfully set up CPython (3.11.16)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.2993640Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4701291Z ##[group]Run astral-sh/setup-uv@v6
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4701647Z with:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4701901Z   activate-environment: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4702264Z   working-directory: /home/runner/work/rob2-kit/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4702675Z   server-url: https://github.com
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4705772Z   github-token: ***
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4706043Z   enable-cache: auto
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4706665Z   cache-dependency-glob: **/*requirements*.txt
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	**/*requirements*.in
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	**/*constraints*.txt
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	**/*constraints*.in
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	**/pyproject.toml
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	**/uv.lock
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	**/*.py.lock
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4707341Z   restore-cache: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4707610Z   save-cache: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4707865Z   prune-cache: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4708141Z   ignore-nothing-to-cache: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4708482Z   ignore-empty-workdir: false
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4708779Z   add-problem-matchers: true
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4709051Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4709283Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4709657Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4710176Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4710658Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4711084Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4711511Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4711941Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.4712365Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.6700406Z (node:2325) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.6701787Z (Use `node --trace-deprecation ...` to show where the warning was created)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.6906882Z Trying to find version for uv in: /home/runner/work/rob2-kit/rob2-kit/uv.toml
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.6908519Z Could not find file: /home/runner/work/rob2-kit/rob2-kit/uv.toml
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.6910382Z Trying to find version for uv in: /home/runner/work/rob2-kit/rob2-kit/pyproject.toml
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.6938649Z Could not determine uv version from uv.toml or pyproject.toml. Falling back to latest.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.6947263Z Getting latest version from GitHub API...
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.9715244Z manifest-file not provided, reading from local file.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.9757639Z manifest-file does not contain version 0.12.22, arch x86_64, platform unknown-linux-gnu. Falling back to GitHub releases.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:30:59.9759655Z Downloading uv from "https://github.com/astral-sh/uv/releases/download/0.12.22/uv-x86_64-unknown-linux-gnu.tar.gz" ...
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.2934572Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/d05dcb0c-07dd-4466-807d-13920cf71668 -f /home/runner/work/_temp/03df63f2-b705-4857-8a2c-7d42e219be3f
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.6779550Z Added /home/runner/.local/bin to the path
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.6782262Z Added /opt/hostedtoolcache/uv/0.12.22/x86_64 to the path
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.6793609Z Set UV_CACHE_DIR to /home/runner/work/_temp/setup-uv-cache
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.6794303Z Successfully installed uv version 0.12.22
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.6796770Z Searching files using cache dependency glob: /home/runner/work/rob2-kit/rob2-kit/**/*requirements*.txt,/home/runner/work/rob2-kit/rob2-kit/**/*requirements*.in,/home/runner/work/rob2-kit/rob2-kit/**/*constraints*.txt,/home/runner/work/rob2-kit/rob2-kit/**/*constraints*.in,/home/runner/work/rob2-kit/rob2-kit/**/pyproject.toml,/home/runner/work/rob2-kit/rob2-kit/**/uv.lock,/home/runner/work/rob2-kit/rob2-kit/**/*.py.lock
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.9391788Z /home/runner/work/rob2-kit/rob2-kit/pyproject.toml
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.9677009Z /home/runner/work/rob2-kit/rob2-kit/uv.lock
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:00.9691673Z Found 2 files to hash.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.0329085Z Trying to restore uv cache from GitHub Actions cache with key: setup-uv-1-x86_64-unknown-linux-gnu-unknown-pruned-2dc1f556711c5e1173a0c1dd4c510854167bf8674b1bcae675b229808976b636
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.2756647Z Cache hit for: setup-uv-1-x86_64-unknown-linux-gnu-unknown-pruned-2dc1f556711c5e1173a0c1dd4c510854167bf8674b1bcae675b229808976b636
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.2873228Z (node:2325) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.7261341Z Received 100534 of 100534 (100.0%), 0.5 MBs/sec
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.7262252Z Cache Size: ~0 MB (100534 B)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.7294290Z [command]/usr/bin/tar -xf /home/runner/work/_temp/3814a988-43f8-4732-befe-b94d89405aec/cache.tzst -P -C /home/runner/work/rob2-kit/rob2-kit --use-compress-program unzstd
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.7391809Z Cache restored successfully
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.7397387Z uv cache restored from GitHub Actions cache with key: setup-uv-1-x86_64-unknown-linux-gnu-unknown-pruned-2dc1f556711c5e1173a0c1dd4c510854167bf8674b1bcae675b229808976b636
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.7939260Z ##[group]Run uv sync --locked --all-groups --python "3.11"
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.7939821Z ^[[36;1muv sync --locked --all-groups --python "3.11"^[[0m
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8211863Z shell: /usr/bin/bash -e {0}
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8212299Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8212617Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8213083Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8213824Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8214540Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8215633Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8216292Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8217120Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8217658Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8218081Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8819526Z Using CPython 3.11.16 interpreter at: /opt/hostedtoolcache/Python/3.11.16/x64/bin/python3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8820208Z Creating virtual environment at: .venv
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8856576Z Resolved 88 packages in 0.87ms
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.8977995Z    Building rob2-kit @ file:///home/runner/work/rob2-kit/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9688642Z Downloading pygments (1.2MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9691843Z Downloading rapidfuzz (3.0MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9866270Z Downloading ty (12.4MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9870940Z Downloading pymupdf (24.6MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9885115Z Downloading cryptography (4.5MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9891022Z Downloading beartype (1.3MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9896842Z Downloading pydantic-core (2.0MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:02.9899265Z Downloading ruff (9.8MiB)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.2456221Z  Downloaded beartype
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.2505919Z  Downloaded pygments
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.2506749Z  Downloaded pydantic-core
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.2907662Z  Downloaded rapidfuzz
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.3147367Z  Downloaded cryptography
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.3786201Z  Downloaded ruff
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.3928480Z  Downloaded ty
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:03.4713096Z  Downloaded pymupdf
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.1961150Z       Built rob2-kit @ file:///home/runner/work/rob2-kit/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.1972460Z Prepared 84 packages in 1.30s
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2715168Z Installed 84 packages in 73ms
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2716267Z  + aiofile==3.12.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2717092Z  + annotated-types==0.8.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2717639Z  + anyio==4.14.2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2718184Z  + attrs==26.1.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2718696Z  + authlib==1.7.2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2719243Z  + backports-tarfile==1.2.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2719830Z  + beartype==0.22.9
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2720374Z  + cachetools==7.1.7
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2720920Z  + caio==0.12.2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2721430Z  + certifi==2026.7.22
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2721961Z  + cffi==2.1.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2722467Z  + click==8.5.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2722987Z  + cryptography==50.0.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2723556Z  + cyclopts==4.23.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2724087Z  + dnspython==2.8.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2724628Z  + docstring-parser==0.18.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2725506Z  + email-validator==2.3.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2726150Z  + exceptiongroup==1.3.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2726941Z  + execnet==2.1.2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2727470Z  + fastmcp==4.0.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2727995Z  + fastmcp-slim==4.0.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2728533Z  + griffelib==2.2.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2729053Z  + h11==0.16.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2729563Z  + httpcore==1.0.9
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2730085Z  + httpcore2==2.12.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2730610Z  + httpx==0.28.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2731128Z  + httpx2==2.12.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2731630Z  + idna==3.19
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2732153Z  + importlib-metadata==9.0.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2732845Z  + iniconfig==2.3.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2733699Z  + jaraco-classes==3.4.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2734283Z  + jaraco-context==6.1.2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2735051Z  + jaraco-functools==4.6.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2735914Z  + jeepney==0.9.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2736459Z  + joserfc==1.7.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2736978Z  + jsonref==1.1.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2737496Z  + jsonschema==4.26.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2738056Z  + jsonschema-path==0.5.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2738670Z  + jsonschema-specifications==2025.9.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2739318Z  + keyring==25.7.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2739848Z  + markdown-it-py==4.2.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2740401Z  + mcp==2.1.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2740901Z  + mcp-types==2.1.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2741421Z  + mdurl==0.1.2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2741946Z  + more-itertools==11.1.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2742547Z  + openapi-pydantic==0.5.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2743136Z  + opentelemetry-api==1.44.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2743717Z  + packaging==26.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2744457Z  + pathable==0.6.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2745192Z  + platformdirs==4.11.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2745757Z  + pluggy==1.6.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2746293Z  + py-key-value-aio==0.4.5
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2746867Z  + pycparser==3.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2747390Z  + pydantic==2.13.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2747921Z  + pydantic-core==2.46.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2748498Z  + pydantic-settings==2.15.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2749084Z  + pygments==2.21.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2749649Z  + pyjwt==2.13.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2750162Z  + pymupdf==1.28.2
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2750685Z  + pyperclip==1.11.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2751210Z  + pytest==9.1.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2751720Z  + pytest-xdist==3.8.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2752281Z  + python-dotenv==1.2.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2752846Z  + python-multipart==0.0.32
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2753450Z  + pyyaml==6.0.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2754149Z  + rapidfuzz==3.14.6
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2754833Z  + referencing==0.37.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2755634Z  + rich==15.0.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2756076Z  + rich-rst==2.1.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2756655Z  + rob2-kit==0.10.0 (from file:///home/runner/work/rob2-kit/rob2-kit)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2757324Z  + rpds-py==2026.6.3
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2757701Z  + ruff==0.16.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2758073Z  + secretstorage==3.5.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2758521Z  + sse-starlette==3.4.8
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2758922Z  + starlette==1.6.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2759301Z  + truststore==0.10.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2759674Z  + ty==0.0.74
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2760051Z  + typing-extensions==4.16.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2760505Z  + typing-inspection==0.4.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2761034Z  + uncalled-for==0.4.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2761412Z  + uvicorn==0.52.4
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2761781Z  + watchfiles==1.2.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2762158Z  + websockets==17.1
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.2762525Z  + zipp==4.1.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3017339Z ##[group]Run uv run --no-sync python --version
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3017785Z ^[[36;1muv run --no-sync python --version^[[0m
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3083217Z shell: /usr/bin/bash -e {0}
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3083493Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3083691Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3083988Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3084454Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3085073Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3085483Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3085889Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3086299Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3086700Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3087017Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3679467Z Python 3.11.16
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3798109Z ##[group]Run uv run --no-sync python -c "import os, sys; expected=tuple(map(int, os.environ['EXPECTED_PYTHON'].split('.'))); assert sys.version_info[:2] == expected, (sys.version, expected)"
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3799426Z ^[[36;1muv run --no-sync python -c "import os, sys; expected=tuple(map(int, os.environ['EXPECTED_PYTHON'].split('.'))); assert sys.version_info[:2] == expected, (sys.version, expected)"^[[0m
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3866304Z shell: /usr/bin/bash -e {0}
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3866582Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3866784Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3867086Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3867552Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3868034Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3868447Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3868921Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3869331Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3869738Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3870066Z   EXPECTED_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.3870464Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4286983Z ##[group]Run uv build --wheel --out-dir .release-dist
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4287429Z ^[[36;1muv build --wheel --out-dir .release-dist^[[0m
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4354771Z shell: /usr/bin/bash -e {0}
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4355297Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4355503Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4355803Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4356284Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4356740Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4357144Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4357549Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4357961Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4358351Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4358678Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.4508517Z Building wheel...
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8142984Z Successfully built .release-dist/rob2_kit-0.10.0-py3-none-any.whl
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8304728Z ##[group]Run uv run --no-sync python docs/release/verify.py --wheel .release-dist/rob2_kit-0.10.0-py3-none-any.whl
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8306385Z ^[[36;1muv run --no-sync python docs/release/verify.py --wheel .release-dist/rob2_kit-0.10.0-py3-none-any.whl^[[0m
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8391925Z shell: /usr/bin/bash -e {0}
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8392334Z env:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8392649Z   UV_PYTHON: 3.11
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8393129Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8393882Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8394640Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8395514Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8396197Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8396901Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8397608Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:04.8398136Z ##[endgroup]
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1924142Z Traceback (most recent call last):
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1934170Z   File "/home/runner/work/rob2-kit/rob2-kit/docs/release/verify.py", line 1055, in <module>
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1935178Z     verify(arguments.wheel, arguments.bundle)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1935933Z   File "/home/runner/work/rob2-kit/rob2-kit/docs/release/verify.py", line 764, in verify
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1936598Z     _assert_generated(contract)
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1937289Z   File "/home/runner/work/rob2-kit/rob2-kit/docs/release/verify.py", line 98, in _assert_generated
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1938287Z     raise ValueError("checked public contract differs from generated runtime contract")
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.1939117Z ValueError: checked public contract differs from generated runtime contract
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.5306573Z ##[error]Process completed with exit code 1.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.5874597Z Post job cleanup.
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.6775680Z [command]/usr/bin/git version
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.6805433Z git version 2.55.0
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.6849027Z Temporarily overriding HOME='/home/runner/work/_temp/5741ef9f-f637-4308-b450-60f822de7c7b' before making global git config changes
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.6850531Z Adding repository directory to the temporary git global config as a safe directory
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.6856649Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/rob2-kit/rob2-kit
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.6900350Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.6938068Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.7210906Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.7249169Z http.https://github.com/.extraheader
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.7261831Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.7298655Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.7589301Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.7630914Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.8031112Z Cleaning up orphan processes
+Package (3.11 / ubuntu-latest)	UNKNOWN STEP	2026-10-03T10:31:10.8342366Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, astral-sh/setup-uv@v6. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

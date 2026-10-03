@@ -1,0 +1,15 @@
+error[unresolved-import]: Cannot resolve imported module `replay_domain_probe_delivery`
+   --> tests/test_domain_probe_controls.py:152:10
+    |
+152 |     from replay_domain_probe_delivery import replay
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+info: Searched in the following paths during module resolution:
+info:   1. /home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/src (first-party code)
+info:   2. /home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit (first-party code)
+info:   3. vendored://stdlib (stdlib typeshed stubs vendored by ty)
+info:   4. /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/lib/python3.13/site-packages (site-packages)
+info:   5. /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/src (editable install)
+info:   ... and 3 more paths. Run with `-v` to see all paths.
+info: make sure your Python environment is properly configured: https://docs.astral.sh/ty/modules/#python-environment
+
+Found 1 diagnostic
