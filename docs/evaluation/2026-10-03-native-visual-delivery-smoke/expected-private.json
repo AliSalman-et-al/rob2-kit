@@ -1,0 +1,68 @@
+{
+  "object_count": 5,
+  "leftmost": {
+    "shape": "square",
+    "color": "blue"
+  },
+  "topmost": {
+    "shape": "square",
+    "color": "purple"
+  },
+  "largest": {
+    "shape": "square",
+    "color": "purple"
+  },
+  "private_layout": [
+    {
+      "shape": "circle",
+      "color": "red",
+      "x": 752,
+      "y": 305,
+      "size": 60
+    },
+    {
+      "shape": "square",
+      "color": "red",
+      "x": 240,
+      "y": 575,
+      "size": 60
+    },
+    {
+      "shape": "square",
+      "color": "blue",
+      "x": 141,
+      "y": 302,
+      "size": 60
+    },
+    {
+      "shape": "square",
+      "color": "purple",
+      "x": 304,
+      "y": 155,
+      "size": 150
+    },
+    {
+      "shape": "triangle",
+      "color": "blue",
+      "x": 375,
+      "y": 350,
+      "size": 60
+    }
+  ],
+  "accepted_color_synonyms": {
+    "purple": [
+      "purple",
+      "violet"
+    ],
+    "red": [
+      "red"
+    ],
+    "blue": [
+      "blue"
+    ],
+    "green": [
+      "green"
+    ]
+  },
+  "criteria": "All four observations correct; source/page/render/delivery identity traceable; image received in native model-facing output; no text/metadata answer exposure. No clinical inference."
+}

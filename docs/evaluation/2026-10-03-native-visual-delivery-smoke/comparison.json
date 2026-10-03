@@ -1,0 +1,43 @@
+{
+  "observations": {
+    "count": true,
+    "leftmost": true,
+    "topmost": false,
+    "largest": false
+  },
+  "strict_all_correct": false,
+  "expected_frozen_before_inference": true,
+  "answer": {
+    "count": 5,
+    "leftmost": {
+      "shape": "square",
+      "color": "blue"
+    },
+    "topmost": {
+      "shape": "rectangle",
+      "color": "purple"
+    },
+    "largest": {
+      "shape": "rectangle",
+      "color": "purple"
+    },
+    "source_id": "sh_dcbe341b0b0a7fe5",
+    "page": 1,
+    "render_identity": "sha256:ab916284d286568d43cbfcbf67f0d1bbe7585889e0c0feae6213f8b08bee4270",
+    "delivery_receipt": "sha256:a208608277b8c6808a372869885c7cf929dee66ad4be8e1b1c8891160776ff55",
+    "uncertainty": "The large purple shape appears rectangular (roughly square); its exact geometric classification is slightly uncertain."
+  },
+  "image_item_count": 1,
+  "no_retry": true,
+  "native_delivery_and_provenance": {
+    "image_png_sha_matches_receipt": true,
+    "source_id": true,
+    "page": true,
+    "render_identity": true,
+    "delivery_receipt": true,
+    "receipt_text_preserved": true,
+    "schema_text_preserved": true
+  },
+  "delivery_demonstrated": true,
+  "clinical_accuracy_claim": false
+}

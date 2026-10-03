@@ -1,0 +1,33 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "proposal",
+    "state_revision": 1,
+    "next_action": {
+      "operation": "validate_proposal",
+      "authority": "host",
+      "expected_revision": 1,
+      "caller_inputs": [
+        "selections"
+      ]
+    },
+    "authoritative_wording": "Proposal is being prepared or submitted; no Trial is assessable yet."
+  },
+  "data": {
+    "pages": [
+      {
+        "source_id": "sh_dcbe341b0b0a7fe5",
+        "page": 1,
+        "numbered_text": "",
+        "line_count": 0,
+        "returned_start_line": 1,
+        "returned_end_line": 0,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": null
+      }
+    ],
+    "remaining_windows": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "source_pdf_sha256": "a4768fc4df45ab870ceb0b91356b69722c6f0de918530685c0a64bda75a5ca01",
+  "embedded_raster_sha256": "b2264444be0e6307f80501dbef15578226a6b33fd565eb938adc21b89978e588",
+  "page_text": "",
+  "ocr_layers": false,
+  "vector_shape_drawings_in_model_pdf": false,
+  "embedded_files": 0,
+  "metadata_answer_strings": false,
+  "expected_sha256": "39a2f365adfd2f68389b50cad06fcef6c74abbf874920bbe6b3d7821b59eb8c1",
+  "expected_path_outside_model_workspace": true,
+  "bootstrap_text_contains_no_visual_facts": true
+}

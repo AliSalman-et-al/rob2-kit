@@ -1,0 +1,24 @@
+{
+  "research_question": "Does the native compatible MCP image path support unhinted synthetic visual comprehension with exact provenance?",
+  "input_sha256": "aff2fabbfa4d2fa47d5a18673075e9f41921c2ae6898a7604e14187448269362",
+  "required_images": [
+    {
+      "source_identity": "sh_dcbe341b0b0a7fe5",
+      "page": 1,
+      "png_sha256": "aff2fabbfa4d2fa47d5a18673075e9f41921c2ae6898a7604e14187448269362",
+      "width": 1440,
+      "height": 1080
+    }
+  ],
+  "supplied_images": [
+    {
+      "source_identity": "sh_dcbe341b0b0a7fe5",
+      "page": 1,
+      "png_sha256": "aff2fabbfa4d2fa47d5a18673075e9f41921c2ae6898a7604e14187448269362",
+      "width": 1440,
+      "height": 1080,
+      "input_start_byte": 0,
+      "input_end_byte": 17705
+    }
+  ]
+}
