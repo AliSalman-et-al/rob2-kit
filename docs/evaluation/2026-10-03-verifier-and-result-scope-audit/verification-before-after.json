@@ -1,0 +1,82 @@
+[
+  {
+    "version": "before-992bf68",
+    "artifact": "completion",
+    "verifier": "installed",
+    "exit_code": 0,
+    "stdout": "verified: /home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-allsop-completion-544a523/ae8d89700e5915ce9d93e4be472bc78f8165d4f3dfaeee3e92c8e3e47a6565e8.rob2.zip\n",
+    "stderr": "",
+    "artifact_sha256": "845b43ae089382cfd53c3f32dd492c5222752ce60e4cd1ddf880cb4427a0c6d6",
+    "verifier_source_sha256": "8b3b07a8ff9d38c0f80f1b361fbbf4da0f14ad947e6d64b9509597d74655f4ac"
+  },
+  {
+    "version": "before-992bf68",
+    "artifact": "completion",
+    "verifier": "standalone",
+    "exit_code": 1,
+    "stdout": "scientific pack descriptor differs\n",
+    "stderr": "",
+    "artifact_sha256": "845b43ae089382cfd53c3f32dd492c5222752ce60e4cd1ddf880cb4427a0c6d6",
+    "verifier_source_sha256": "ca12510f856752f7169d1ec00cdeaedecd7810eabc0fa2b5315bcffd5b1b4c17"
+  },
+  {
+    "version": "before-992bf68",
+    "artifact": "historical-v0.8",
+    "verifier": "installed",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "verification failed: /home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/tests/fixtures/bundles/allsop-2014-result-semantics-v0.8.rob2.zip\n",
+    "artifact_sha256": "5f8d6b4043f717751ed64a0b4ace11471f3846f2ec4e509873217ef805bf33ae",
+    "verifier_source_sha256": "8b3b07a8ff9d38c0f80f1b361fbbf4da0f14ad947e6d64b9509597d74655f4ac"
+  },
+  {
+    "version": "before-992bf68",
+    "artifact": "historical-v0.8",
+    "verifier": "standalone",
+    "exit_code": 0,
+    "stdout": "bundle verified\n",
+    "stderr": "",
+    "artifact_sha256": "5f8d6b4043f717751ed64a0b4ace11471f3846f2ec4e509873217ef805bf33ae",
+    "verifier_source_sha256": "ca12510f856752f7169d1ec00cdeaedecd7810eabc0fa2b5315bcffd5b1b4c17"
+  },
+  {
+    "version": "after-working-fix",
+    "artifact": "completion",
+    "verifier": "installed",
+    "exit_code": 0,
+    "stdout": "verified: /home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-allsop-completion-544a523/ae8d89700e5915ce9d93e4be472bc78f8165d4f3dfaeee3e92c8e3e47a6565e8.rob2.zip\n",
+    "stderr": "",
+    "artifact_sha256": "845b43ae089382cfd53c3f32dd492c5222752ce60e4cd1ddf880cb4427a0c6d6",
+    "verifier_source_sha256": "c5ac50035011373cb8e30a5bee18cb5bd9b27f26f74511af4dbe649ec3171cd7"
+  },
+  {
+    "version": "after-working-fix",
+    "artifact": "completion",
+    "verifier": "standalone",
+    "exit_code": 0,
+    "stdout": "bundle verified\n",
+    "stderr": "",
+    "artifact_sha256": "845b43ae089382cfd53c3f32dd492c5222752ce60e4cd1ddf880cb4427a0c6d6",
+    "verifier_source_sha256": "2265a6f4ec9229f804131093f3315c6c81dceb67f9b746b88fe6ea1bf2e416b4"
+  },
+  {
+    "version": "after-working-fix",
+    "artifact": "historical-v0.8",
+    "verifier": "installed",
+    "exit_code": 0,
+    "stdout": "verified: /home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/tests/fixtures/bundles/allsop-2014-result-semantics-v0.8.rob2.zip\n",
+    "stderr": "",
+    "artifact_sha256": "5f8d6b4043f717751ed64a0b4ace11471f3846f2ec4e509873217ef805bf33ae",
+    "verifier_source_sha256": "c5ac50035011373cb8e30a5bee18cb5bd9b27f26f74511af4dbe649ec3171cd7"
+  },
+  {
+    "version": "after-working-fix",
+    "artifact": "historical-v0.8",
+    "verifier": "standalone",
+    "exit_code": 0,
+    "stdout": "bundle verified\n",
+    "stderr": "",
+    "artifact_sha256": "5f8d6b4043f717751ed64a0b4ace11471f3846f2ec4e509873217ef805bf33ae",
+    "verifier_source_sha256": "2265a6f4ec9229f804131093f3315c6c81dceb67f9b746b88fe6ea1bf2e416b4"
+  }
+]

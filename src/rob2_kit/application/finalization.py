@@ -2993,6 +2993,26 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value == expected:
         return True
+    # These exact historical descriptors are also retained by the dependency-free
+    # verifier. Guidance edits change the computed pack hash, not result semantics.
+    prior_guidance = (
+        ("v0.9", "c2650a6e71e28a007872e95fabeafad99688367d8433d4b9f3d3da280ab8a431"),
+        ("v0.9", "5051ec3c56391d241fd4a5b46e5bcddc16f9879fcfa461986973d695429ba4e4"),
+        ("v0.9", "d4ae0ee8f50c99b09154d789ccf8d4498c8162e721af999a8d37a21a11b4ad82"),
+        ("v0.9", "ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a"),
+        ("v0.8", "ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a"),
+        ("v0.8", "aeeb5c8aa3fa8f9fd46f4429ae93a4b8ea3f6d89cc292640305f1aa702a449ea"),
+        ("v0.8", "7cd97694107582be8fe6cd1091b8a851b631fed0e90aa5b453ffa8d4d9f50d17"),
+    )
+    if value in tuple(
+        {
+            **expected,
+            "result_semantics_version": f"rob2-kit.result-semantics.{version}",
+            "content_hash": f"sha256:{content_hash}",
+        }
+        for version, content_hash in prior_guidance
+    ):
+        return True
     prior_conditional_impact_guidance = {
         **expected,
         "content_hash": "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c",

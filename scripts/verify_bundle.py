@@ -151,15 +151,21 @@ _ANSWER_VALUES = frozenset({"yes", "probably_yes", "probably_no", "no", "no_info
 _QUESTION_ALLOWED_ANSWERS = {
     "sq:missing:evidence-unbiased": frozenset({"yes", "probably_yes", "probably_no", "no"})
 }
+# This independent pin must match the packaged current descriptor. The parity
+# test requires guidance changes to update it and retain the previous exact pin.
 _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.9",
-    "content_hash": "sha256:c2650a6e71e28a007872e95fabeafad99688367d8433d4b9f3d3da280ab8a431",
+    "content_hash": "sha256:d6ff8a6af60f92a9f810f24f1264303a8fa90d0ac1d600ed66a37be9eefa6623",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
     },
+}
+_PRE_D3_OBSERVATION_GUIDANCE_PACK = {
+    **_SCIENTIFIC_PACK,
+    "content_hash": "sha256:c2650a6e71e28a007872e95fabeafad99688367d8433d4b9f3d3da280ab8a431",
 }
 _PRE_D27_CONDITIONAL_IMPACT_PACK = {
     **_SCIENTIFIC_PACK,
@@ -4221,6 +4227,7 @@ def verify(path: Path) -> tuple[bool, str]:
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _PRE_D3_OBSERVATION_GUIDANCE_PACK,
                 _PRE_D27_CONDITIONAL_IMPACT_PACK,
                 _PRE_D5_REPORT_EVIDENCE_PACK,
                 _PRE_D2_EXCLUSION_GUIDANCE_PACK,
