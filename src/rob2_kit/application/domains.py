@@ -2,7 +2,7 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import ValidationError
 
@@ -37,7 +37,7 @@ from .evidence import (
     _unassigned_search_evidence,
     _verified_source_projections,
     main_report_reading_status,
-    primary_report_context,
+    source_reading_status,
 )
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
 from .status import _active_trial_and_domain, _continuation
@@ -1866,6 +1866,7 @@ def _source_coverage(
     catalog: dict[str, dict[str, Any]],
     search_accounts: dict[str, dict[str, Any]],
     structural_windows: dict[str, list[dict[str, Any]]] | None = None,
+    read_states: dict[str, Literal["partially_read", "read_complete"]] | None = None,
 ) -> list[dict[str, Any]]:
     """Project bounded retrieval state without making a scientific claim.
 
@@ -1942,10 +1943,9 @@ def _source_coverage(
         elif searched_any:
             search_state = "searched_match"
 
-        # Selecting one passage proves that a passage was inspected, not that
-        # the entire Source was read.  Keep this conservative until an
-        # explicit source-wide read receipt exists.
-        read_state = "partially_read" if selected else "unread"
+        # Source-wide delivery requires verified read receipts, not a quote
+        # selected for this Domain or text merely present in the cache.
+        read_state = (read_states or {}).get(source_id, "partially_read" if selected else "unread")
         render_state = (
             "render_delivered"
             if any(item.get("kind") == "figure" for item in selected)
@@ -1980,8 +1980,8 @@ def _source_coverage(
             )
         if render_state == "render_delivered":
             status = "render_delivered"
-        elif read_state == "partially_read":
-            status = "partially_read"
+        elif read_state in {"partially_read", "read_complete"}:
+            status = read_state
         elif search_incomplete:
             status = "retrieval_incomplete"
         elif candidates:
@@ -3980,14 +3980,12 @@ def get_domain_context(
             if item.domain_id == domain_id
         ],
         "completion_rule": (
-            "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
-            "discovery for unresolved premises. Supply every question activated by the submitted "
-            "answer path with an Evidence use, scoped absence receipt, or limitation. "
-            "Inspect primary_report and every context continuation before deciding. "
-            "Document-structure "
-            "flow/disposition recovery in coverage is navigation, not selected Evidence; inspect "
-            "relevant unopened windows before claiming information is unreported, or retain an "
-            "explicit bounded stopping rationale. Inactive extras are ignored."
+            "Ground each active proposition and uncertainty in inspected Evidence, scoped "
+            "search receipts, or an explicit scientific limitation. Complete reading_recovery "
+            "with read_pages and all context continuations. Document-structure recovery in "
+            "coverage is navigation, not selected Evidence; inspect relevant unopened windows "
+            "before claiming information is unreported, or retain a bounded stopping rationale. "
+            "Inactive extras are ignored."
         ),
         "evidence_workspace": {
             "selection_policy_version": "rob2-kit.domain-projection.v0.7",
@@ -4042,17 +4040,12 @@ def get_domain_context(
             _flow_navigation(root, trial_id, trial_sources)
             if domain_id in {"domain:deviations", "domain:missing"}
             else None,
+            source_reading_status(root, trial_id),
         ),
-        "primary_report": (
-            []
-            if premise_status.get("status") == "current"
-            else primary_report_context(root, trial_id)
-        ),
-        "reading_recovery": (
-            None
-            if working_checkpoint_status(root, state, trial_id).get("status") == "current"
-            else _main_report_recovery(root, state, trial_id, include_budget=True)
-        ),
+        # Keep source reading out of immutable scientific context snapshots.
+        # Otherwise a read_pages call cannot retire their frozen report text.
+        "primary_report": [],
+        "reading_recovery": _main_report_recovery(root, state, trial_id, include_budget=True),
         "continuation": continuation,
     }
     projected = _compact_domain_evidence(context)

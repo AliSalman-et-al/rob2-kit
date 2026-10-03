@@ -1986,9 +1986,10 @@ class DomainContextData(PublicModel):
     primary_report: tuple[PageData, ...] = Field(
         default=(),
         description=(
-            "Unread bounded primary-report text, delivered before question/evidence deltas. "
-            "Read every context page; coverage proves delivery, not comprehension. Long-line or "
-            "beyond-budget text retains reading_recovery through read_pages."
+            "Legacy context source deliveries. New contexts keep this empty and recover unread "
+            "primary-report ranges through reading_recovery/read_pages, without embedding "
+            "source text in immutable context snapshots. Coverage proves delivery, "
+            "not comprehension."
         ),
     )
     evidence: tuple[DomainEvidence, ...] = ()

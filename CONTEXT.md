@@ -81,15 +81,18 @@ discovery. Appended material remains part of the captured Source; the host does
 not select a report boundary. Coverage records prove delivery, not comprehension
 or retention in a later host context.
 
-`get_domain_context` delivers unread bounded primary-report text as source-located
-`primary_report` pages before Domain question-card deltas when a current working
-checkpoint does not already support resumption. Only returned ranges enter read
-coverage; constructing a frozen context does not mark its future pages delivered.
-A manageable report is therefore complete in the context chain. Longer reports
-retain the same bounded prefix and explicit `reading_recovery` for the omitted
-tail or oversized physical lines. An existing Domain does not substitute for
-that delivered prefix when a new Domain is submitted. Identical accepted saves
-and current source-bound working checkpoints retain their existing semantics.
+`get_domain_context` keeps scientific guidance and selected Evidence separate from
+primary-report reading. Its `reading_recovery` points to exact unread `read_pages`
+windows; report text is not embedded in an immutable context snapshot. Only
+successfully returned source ranges enter delivery coverage. Verified receipts
+are reused across Domains; an existing Domain or cached text does not substitute
+for source delivery. A manageable report is read completely once. Longer reports
+retain the bounded prefix and exact unread-tail recovery. Source-wide coverage
+can report `read_complete` only when all projected lines have delivery receipts;
+selected quotes alone establish only partial coverage. A changed Result requires
+reassessing source relevance, not automatically rereading identical source text.
+Lost delivery receipts restore unread-window recovery. Identical accepted saves
+and source-bound working checkpoint semantics remain unchanged.
 
 D2/D3 context coverage exposes bounded, unread document-structure recovery for
 flow/disposition captions and outcome/follow-up headings in captured supplements.

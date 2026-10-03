@@ -14,7 +14,7 @@ from contextlib import contextmanager
 from functools import lru_cache
 from pathlib import Path
 from threading import RLock
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import pymupdf
 from rapidfuzz.distance import OSA
@@ -3218,55 +3218,45 @@ def main_report_read_gaps(
     return gaps
 
 
-def primary_report_context(workspace: str | Path, trial_id: str) -> list[dict[str, Any]]:
-    """Inline unread report-prefix lines without marking undelivered context as read."""
+def source_reading_status(
+    workspace: str | Path, trial_id: str
+) -> dict[str, Literal["partially_read", "read_complete"]]:
+    """Reuse verified, source-bound delivery receipts across Domain contexts.
+
+    Cached text and a context snapshot are not receipts. These statuses say
+    which lines were returned, never that the model understood or retained them.
+    """
     root = _root(workspace)
     state = _state(root)
-    trials = [t for t in (state.get("batch") or {}).get("trials", []) if t.get("id") == trial_id]
-    gaps = main_report_read_gaps(root, trials, phase="assessment")
-    verified = _verified_source_projections(root, {(trial_id, gap["source_id"]) for gap in gaps})
-    result: list[dict[str, Any]] = []
-    for gap in gaps:
-        lines = verified[(trial_id, gap["source_id"])][1][gap["page"] - 1].splitlines()
-        if gap.get("no_readable_text"):
-            continue  # Empty/image pages retain their explicit read/render recovery.
-        start = gap["start_line"]
-        while start <= gap["end_line"]:
-            end, size = start, 0
-            while end <= gap["end_line"]:
-                line_size = len(f"{end}|{lines[end - 1]}\n".encode())
-                if size + line_size > 8192:
-                    break
-                size += line_size
-                end += 1
-            if end == start:
-                # A long physical line needs read_pages' existing fragment protocol.
-                start += 1
+    batch = state.get("batch") or {}
+    with _db(root, "derivative.sqlite3") as connection:
+        rows = connection.execute(
+            "SELECT source_id,page,start_line,end_line FROM page_reads "
+            "WHERE batch_id=? AND phase=? AND trial_id=? ORDER BY start_line,end_line",
+            (batch.get("identity"), state.get("phase"), trial_id),
+        ).fetchall()
+    requested = {
+        (trial_id, row[0])
+        for row in rows
+        if internal_path(root, "sources", trial_id, f"{row[0]}.bin").is_file()
+    }
+    verified = _verified_source_projections(root, requested)
+    result: dict[str, Literal["partially_read", "read_complete"]] = {}
+    for (_, source_id), (_, pages) in verified.items():
+        complete = True
+        for page, text in enumerate(pages, 1):
+            covered = [(row[2], row[3]) for row in rows if row[0] == source_id and row[1] == page]
+            line_count = len(text.splitlines())
+            if not line_count:
+                complete = complete and (0, 0) in covered
                 continue
-            last = end - 1
-            result.append(
-                {
-                    "source_id": gap["source_id"],
-                    "page": gap["page"],
-                    "numbered_text": "\n".join(f"{n}|{lines[n - 1]}" for n in range(start, end)),
-                    "line_count": len(lines),
-                    "returned_start_line": start,
-                    "returned_end_line": last,
-                    "truncated": last < len(lines),
-                    "next_start_line": last + 1 if last < len(lines) else None,
-                    "page_remainder": (
-                        {
-                            "source_id": gap["source_id"],
-                            "page": gap["page"],
-                            "start_line": last + 1,
-                            "end_line": len(lines),
-                        }
-                        if last < len(lines)
-                        else None
-                    ),
-                }
-            )
-            start = end
+            next_line = 1
+            for start, end in covered:
+                if start > next_line:
+                    break
+                next_line = max(next_line, end + 1)
+            complete = complete and next_line > line_count
+        result[source_id] = "read_complete" if complete else "partially_read"
     return result
 
 

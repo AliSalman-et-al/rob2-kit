@@ -259,6 +259,11 @@ complete answer and basis shapes.
 - [Outcome measurement](references/measurement.md)
 - [Selection of the reported result](references/selection.md)
 
+Read primary-report text through `reading_recovery`/`read_pages`; the scientific
+context does not embed it. Reuse verified delivery coverage across Domains,
+while reassessing each passage's relevance to the current Result and question.
+`read_complete` establishes delivery, not comprehension or scientific sufficiency.
+
 If `data.context_page` is present, fetch ordered pages until `next_cursor` is
 null. Verify the same Trial, Domain, frozen page revision, page count, and
 contiguous page indexes across the sequence. The current `head.state_revision`

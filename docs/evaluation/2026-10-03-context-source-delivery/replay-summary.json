@@ -1,0 +1,77 @@
+{
+  "case": "allsop-2014",
+  "before_context_calls": 18,
+  "before_successful_context_calls": 17,
+  "after_successful_context_calls": 11,
+  "equivalent_exposure_total_calls_before": 31,
+  "equivalent_exposure_total_calls_after": 27,
+  "full_primary_tail_control_additional_calls": 1,
+  "unchanged_oversized_header_condition_calls": 1,
+  "additional_native_read_pages_calls": 2,
+  "additional_uncovered_source_windows": [
+    {
+      "source_id": "sh_8e86ff5709473924",
+      "page": 8,
+      "start_line": 27,
+      "end_line": 213
+    },
+    {
+      "source_id": "sh_8e86ff5709473924",
+      "page": 9,
+      "start_line": 1,
+      "end_line": 191
+    },
+    {
+      "source_id": "sh_8e86ff5709473924",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 215
+    },
+    {
+      "source_id": "sh_8e86ff5709473924",
+      "page": 11,
+      "start_line": 1,
+      "end_line": 184
+    }
+  ],
+  "duplicated_inline_lines": 1118,
+  "domains": [
+    {
+      "domain": "domain:randomization",
+      "page_budget": 18000,
+      "before_calls": 9,
+      "after_calls": 3,
+      "before_native_structured_bytes": 126790,
+      "after_structured_bytes": 42474,
+      "removed_inline_source_bytes": 71913,
+      "scientific_content_exact": true,
+      "removed_inline_lines_exactly_recovered_by_original_plus_additional_read_pages": 1895,
+      "after_pages_path": "randomization-after-pages.json"
+    },
+    {
+      "domain": "domain:deviations",
+      "page_budget": 24000,
+      "before_calls": 4,
+      "after_calls": 4,
+      "before_native_structured_bytes": 69790,
+      "after_structured_bytes": 69790,
+      "removed_inline_source_bytes": 0,
+      "scientific_content_exact": true,
+      "removed_inline_lines_exactly_recovered_by_original_plus_additional_read_pages": 0,
+      "after_pages_path": "deviations-after-pages.json"
+    },
+    {
+      "domain": "domain:missing",
+      "page_budget": 24000,
+      "before_calls": 4,
+      "after_calls": 4,
+      "before_native_structured_bytes": 59990,
+      "after_structured_bytes": 59990,
+      "removed_inline_source_bytes": 0,
+      "scientific_content_exact": true,
+      "removed_inline_lines_exactly_recovered_by_original_plus_additional_read_pages": 0,
+      "after_pages_path": "missing-after-pages.json"
+    }
+  ],
+  "qualification": "Exact retained immutable snapshot transport replay, keeping every scientific field and source locator. Uses real cursor shape, exact original budgets and byte-for-byte source/target content, not a model prediction or changed clinical assessment. Original read_pages actions are held fixed; extra bounded native source calls supply inline passages not returned by those original calls. The existing header-size recovery is not assumed eliminated."
+}

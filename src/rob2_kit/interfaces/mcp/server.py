@@ -3817,9 +3817,10 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     name="get_domain_context",
     title="Get Domain context",
     description=(
-        "Read unread bounded primary-report text, the approved Result, current Domain checkpoint, "
+        "Read the approved Result, current Domain checkpoint, "
         "Evidence, comparison cards, and "
-        "question cards. Primary-report pages precede question deltas; complete the context chain. "
+        "question cards and exact unread source windows. Source text is read once through "
+        "read_pages, independently of the immutable context chain. "
         "The investigation projection separates host-asserted sufficiency from "
         "workflow permission and keeps recovery choices visible. Complete required reading before "
         "answering. Use the returned revision "
