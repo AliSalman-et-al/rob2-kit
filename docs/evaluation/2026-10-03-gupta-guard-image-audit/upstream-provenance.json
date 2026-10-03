@@ -1,0 +1,14 @@
+{
+  "installed_version": "codex-cli0.159.0",
+  "primary_source_files": [
+    {
+      "url": "https://github.com/openai/codex/blob/rust-v0.159.0/codex-rs/protocol/src/models.rs",
+      "sha256": "916a595e136f4d7e32ce259f50678ffe818af2ea6a92f54d8628f57bfd4d43e7"
+    },
+    {
+      "url": "https://github.com/openai/codex/blob/rust-v0.159.0/codex-rs/core/src/tools/context.rs",
+      "sha256": "9a9acc6daab2112bd9ca1a07a1e1f2105b20a7f565878157c726ee0d7a3e00cc"
+    }
+  ],
+  "reading_method": "Read-only exact-version source fetch; no CLI replacement, dependency installation, model or provider probe"
+}

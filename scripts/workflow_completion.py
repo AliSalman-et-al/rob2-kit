@@ -18,6 +18,97 @@ class Turn:
     trace: Path
 
 
+FeedbackKind = Literal[
+    "success",
+    "researcher_gate",
+    "input_rejection",
+    "assessment_rejection",
+    "transport_error",
+    "tool_error",
+    "condition",
+]
+
+
+@dataclass(frozen=True)
+class ToolFeedback:
+    kind: FeedbackKind
+    fingerprint: str | None
+    retryable: bool
+    original: Mapping[str, Any]
+
+
+def _validation_defects(tool: str, text: str) -> list[tuple[str, str]] | None:
+    """Recognize the native call-validation envelope, never words in source prose."""
+    lines = text.splitlines()
+    if not lines:
+        return None
+    count, separator, suffix = lines[0].partition(" validation error")
+    if (
+        not separator
+        or not count.isdecimal()
+        or int(count) < 1
+        or suffix != ("" if int(count) == 1 else "s") + f" for call[{tool}]"
+    ):
+        return None
+    defects: list[tuple[str, str]] = []
+    path = ""
+    for line in lines[1:]:
+        if line and not line[0].isspace():
+            path = line
+        elif path and " [type=" in line:
+            code = line.partition(" [type=")[2].partition(",")[0].partition("]")[0]
+            if code and all(char.isalnum() or char == "_" for char in code):
+                defects.append((path, code))
+    return sorted(defects) if len(defects) == int(count) else None
+
+
+def tool_feedback(item: Mapping[str, Any]) -> ToolFeedback:
+    """Classify host envelopes; retain originals separately from equivalence keys."""
+    result = item.get("result") or {}
+    payload = result.get("structured_content")
+    payload = payload if isinstance(payload, Mapping) else {}
+    tool = str(item.get("tool", ""))
+    text = "\n".join(
+        block.get("text", "") for block in result.get("content", []) if block.get("type") == "text"
+    )
+    defects = _validation_defects(tool, text) if not payload else None
+    error = item.get("error")
+    retryable = isinstance(error, Mapping) and error.get("retryable") is True
+    kind: FeedbackKind = "success"
+    normalized: Any = None
+    if defects is not None:
+        kind, normalized = "input_rejection", defects
+    elif error:
+        kind, normalized = "transport_error", error
+    elif item.get("status") == "failed" or result.get("isError") or result.get("is_error"):
+        kind, normalized = "tool_error", {"payload": payload, "text": text}
+    else:
+        head = payload.get("head") or {}
+        action = head.get("next_action") or payload.get("continuation") or {}
+        outcome = payload.get("outcome")
+        if outcome == "review_required" or action.get("authority") == "researcher":
+            kind = "researcher_gate"
+        elif outcome in {"repair", "error", "condition"}:
+            condition = payload.get("condition") or {}
+            code = condition.get("code") if isinstance(condition, Mapping) else None
+            kind = (
+                "input_rejection"
+                if code == "invalid_request"
+                else "assessment_rejection"
+                if outcome == "repair"
+                else "condition"
+                if outcome == "condition"
+                else "tool_error"
+            )
+            normalized = {
+                key: value for key, value in payload.items() if key not in {"head", "counters"}
+            }
+    fingerprint = (
+        json.dumps([tool, kind, normalized], sort_keys=True) if normalized is not None else None
+    )
+    return ToolFeedback(kind, fingerprint, retryable, item)
+
+
 def boundary(status: Mapping[str, Any], *, verified: bool) -> Boundary:
     """Only authoritative state and verification determine a completion boundary."""
     head = status.get("head") or status
@@ -39,6 +130,7 @@ def trace_facts(path: Path) -> dict[str, Any]:
     sessions: set[str] = set()
     work: set[str] = set()
     failures: list[str] = []
+    feedback: list[dict[str, Any]] = []
     calls = 0
     usage: dict[str, int] = {}
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -53,25 +145,28 @@ def trace_facts(path: Path) -> dict[str, Any]:
         if row.get("type") != "item.completed" or item.get("type") != "mcp_tool_call":
             continue
         calls += 1
-        result = item.get("result") or {}
-        payload = result.get("structured_content") or {}
-        failed = (
-            item.get("status") == "failed"
-            or bool(item.get("error"))
-            or payload.get("outcome") in {"repair", "error", "condition"}
+        classified = tool_feedback(item)
+        feedback.append(
+            {
+                "kind": classified.kind,
+                "retryable": classified.retryable,
+                "fingerprint": classified.fingerprint,
+                "original": item,
+            }
         )
-        if failed:
-            failures.append(
-                json.dumps([item.get("tool"), result, item.get("error")], sort_keys=True)
-            )
+        if classified.fingerprint:
+            failures.append(classified.fingerprint)
         else:
-            failures.append("")  # A successful intervening call breaks consecutive failure.
+            # A status-only boundary read must not erase an error from the prior turn.
+            if item.get("tool") != "get_status":
+                failures.append("")
             if item.get("tool") != "get_status":
                 work.add(json.dumps([item.get("tool"), item.get("arguments")], sort_keys=True))
     return {
         "sessions": sorted(sessions),
         "work": work,
         "failures": failures,
+        "feedback": feedback,
         "calls": calls,
         "usage": usage,
     }
