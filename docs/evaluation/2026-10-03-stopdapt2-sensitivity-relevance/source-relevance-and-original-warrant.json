@@ -1,0 +1,447 @@
+{
+  "approved_result": {
+    "applicability": {
+      "design": "individual_parallel",
+      "evidence": [
+        "eh_1d7a3fd09d187d71"
+      ],
+      "rationale": "Patients were centrally randomly assigned in a 1:1 ratio to two parallel antiplatelet regimens."
+    },
+    "bindings": [
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/effect_measure"
+        },
+        "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/estimate"
+        },
+        "value_digest": "sha256:c3f927f43995b9c1325875e6cc93de2c72dc6edc769ca1e62c5e8182ea1136c0"
+      },
+      {
+        "evidence_index": 2,
+        "field": {
+          "path": "/reported/precision"
+        },
+        "value_digest": "sha256:18d656750837c6eb75412195c79429541d6a6236148c2a0a6961280bab2d8677"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/endpoint/name"
+        },
+        "value_digest": "sha256:5f9625a9b0f269f646ada34d643d8fd0497c2219d87d86ff608e8f3b9e60ca53"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/endpoint/definition"
+        },
+        "value_digest": "sha256:92df0766762e133aa5c57d8cf938bc17d235011e09c65854bd2f0fb7d8f26e4a"
+      }
+    ],
+    "clarity": {
+      "analysis_population": "specified",
+      "comparison_groups": "specified",
+      "effect_measure": "specified",
+      "eligible_result_choice": "specified",
+      "measurement": "specified",
+      "outcome_definition": "specified",
+      "source_table_meaning": "specified",
+      "time_point": "specified"
+    },
+    "evidence": [
+      {
+        "handle": "eh_0e58ca25255243b3",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_1d7a3fd09d187d71",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_6833ad8ef00ab54f",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_6fcb769fa7df5b11",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_77743880231f944a",
+        "kind": "narrative"
+      }
+    ],
+    "kind": "assessable",
+    "relation": "exact",
+    "relation_rationale": "The main report defines the primary composite as cardiovascular death, MI, definite stent thrombosis, ischemic or hemorrhagic stroke, or TIMI major or minor bleeding; it reports this comparison at 12 months (335\u2013394 days, censored at day 366) from randomization in the 1-month versus 12-month DAPT groups. The randomized assignment population is analyzed after excluding consent withdrawals, as specified by the authors.",
+    "reported": {
+      "analysis_population": "Intention-to-treat population after excluding patients who withdrew consent during follow-up: 1500 in the 1-month DAPT group and 1509 in the 12-month DAPT group; missing outcome data were censored at loss to follow-up.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "definition": "Composite of cardiovascular death, myocardial infarction, definite stent thrombosis, ischemic or hemorrhagic stroke, or TIMI major or minor bleeding",
+        "name": "Primary end point"
+      },
+      "estimate": "0.64",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.42-0.98"
+    },
+    "requested_outcome": "Composite of cardiovascular death, MI, ischemic or hemorrhagic stroke, definite stent thrombosis, or TIMI major or minor bleeding",
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "1-month DAPT followed by clopidogrel monotherapy",
+          "id": "one_month"
+        },
+        {
+          "assignment": "12-month DAPT with aspirin and clopidogrel",
+          "id": "twelve_month"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Adjudicated clinical composite of cardiovascular death, myocardial infarction, ischemic or hemorrhagic stroke, definite stent thrombosis, or TIMI major or minor bleeding",
+        "metric": "Composite of cardiovascular death, MI, ischemic or hemorrhagic stroke, definite stent thrombosis, or TIMI major or minor bleeding"
+      },
+      "outcome_definition": "Composite of cardiovascular death, MI, ischemic or hemorrhagic stroke, definite stent thrombosis, or TIMI major or minor bleeding",
+      "time_point_or_window": {
+        "description": "12 months from randomization (335\u2013394 days); censoring on day 366",
+        "kind": "quantified",
+        "unit": "months",
+        "value": "12"
+      }
+    },
+    "trial_id": "stopdapt-2"
+  },
+  "original_d3": {
+    "active_questions": [
+      "sq:missing:data-available",
+      "sq:missing:evidence-unbiased",
+      "sq:missing:true-value-dependent",
+      "sq:missing:likely-dependent"
+    ],
+    "answers": [
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894",
+            "kind": "direct_support",
+            "source": "3045 Randomized\n1500 Included in intention-to-\ntreat analysis\n23 Excluded (withdrew consent)\n1523 Randomized to 1-month dual\nantiplatelet therapy\n1521 Received 1-month dual\nantiplatelet therapy as\nrandomized\n2 Did not receive intervention\n(had received oral\nanticoagulation)\n1522 Randomized to 12-month\ndual antiplatelet therapy\n1522 Received 12-month dual\nantiplatelet therapy as\nrandomized\n1509 Included in intention-to-\ntreat analysis\n13 Excluded (withdrew consent)\n1478 Completed 1-year follow-up\n22 Lost to follow-up\n23 Withdrew consent\n1496 Completed 1-year follow-up\n13 Lost to follow-up\n13 Withdrew consent"
+          },
+          {
+            "evidence": "sha256:20567eb98b90d6e3310cd7768da5be87d0dea14d88cb5cc4c6eb98f586aec1e3",
+            "kind": "direct_support",
+            "source": "If noninferiority was demonstrated, superiority analysis\nfor the primary end point was to follow. Patients were ana-\nlyzed according to their randomization group after excluding\npatients who withdrew consent during follow-up (the\nintention-to-treat population). Patients with missing out-\ncome data were censored at the time of loss to follow-up. We\nalso performed analyses in the per-protocol and as-treated\npopulations, which were defined as patients continuing the\nrandomized antiplatelet regimen on day 60 excluding and\nincluding, respectively, those with protocol violations for\ninclusion criteria. In addition, we performed a sensitivity\nanalysis assuming that patients lost to follow-up in the\n1-month DAPT group had a primary end point event, while\nthose in the 12-month DAPT group did not have an event."
+          },
+          {
+            "evidence": "sha256:87e13b43a62346595283dc8b140cc2c7332a462a609bbfc9d830e3265bb28d1c",
+            "kind": "direct_support",
+            "source": "(eTable 4 in Supplement 1). Noninferiority of 1 month of\nDAPT compared with 12 months of DAPT was also confirmed\nfor the primary end point in the per-protocol population\n(absolute difference, -0.62% [95% CI, -1.77% to 0.53%]; HR,\n0.77 [95% CI, 0.47-1.26]; P = .004 for noninferiority) and in\nthe as-treated population (absolute difference -0.30% [95%\nCI, -1.45% to .85%]; HR, 0.89 [95% CI, 0.56-1.42]; P = .015 for\nnoninferiority) as well as in the sensitivity analysis (absolute\ndifference, -0.02% [95% CI, -1.38% to 1.34%]; HR, 1.00 [95%\nCI, 0.69-1.46]; P = .02 for noninferiority) (eTable 5 and eFig-\nures 2-4 in Supplement 1)."
+          },
+          {
+            "evidence": "sha256:0b9875fe2c8e3a901613844e89bf2f320ce5f8e3826c0d8c564838b6c572ab9d",
+            "kind": "direct_support",
+            "source": "eFigure 4. Sensitivity Analysis\n1\n\n2\nA sensitivity analysis assuming that patients lost to follow-up in the experimental arm had the primary endpoint event, while\n3\nthose in the control arm did not have the event.\n4\nDAPT denoted dual antiplatelet therapy, PCI percutaneous coronary intervention, CV cardiovascular, MI myocardial infarction,\n5\nand TIMI Thrombolysis in Myocardial Infarction.\n6\nCumulative Incidence\nDays after index PCI\nHR 1.00 (0.69-1.46)\nP for non-inferiority=.02\nP for superiority=.98"
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The flow shows 3045 randomized and 2974 with completed 1-year follow-up: 71 participants (2.3%) had no completed follow-up, including 45/1523 in the 1-month arm and 26/1522 in the 12-month arm (consent withdrawals plus loss to follow-up). Because the outcome is rare, 71 unavailable outcomes are not automatically negligible. In the sensitivity analysis for the 35 lost to follow-up, assigning events to all missing 1-month participants and none to 12-month participants changed the HR from 0.64 to 1.00; this could materially change the estimate. The sensitivity analysis does not clearly address the 36 consent withdrawals.",
+        "question_id": "sq:missing:data-available",
+        "unknowns": [
+          "The report does not establish whether outcome events were nevertheless ascertained for any participants who withdrew consent.",
+          "The sensitivity analysis addresses loss to follow-up but not clearly consent withdrawals."
+        ]
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:87e13b43a62346595283dc8b140cc2c7332a462a609bbfc9d830e3265bb28d1c",
+            "kind": "direct_support",
+            "source": "(eTable 4 in Supplement 1). Noninferiority of 1 month of\nDAPT compared with 12 months of DAPT was also confirmed\nfor the primary end point in the per-protocol population\n(absolute difference, -0.62% [95% CI, -1.77% to 0.53%]; HR,\n0.77 [95% CI, 0.47-1.26]; P = .004 for noninferiority) and in\nthe as-treated population (absolute difference -0.30% [95%\nCI, -1.45% to .85%]; HR, 0.89 [95% CI, 0.56-1.42]; P = .015 for\nnoninferiority) as well as in the sensitivity analysis (absolute\ndifference, -0.02% [95% CI, -1.38% to 1.34%]; HR, 1.00 [95%\nCI, 0.69-1.46]; P = .02 for noninferiority) (eTable 5 and eFig-\nures 2-4 in Supplement 1)."
+          },
+          {
+            "evidence": "sha256:0b9875fe2c8e3a901613844e89bf2f320ce5f8e3826c0d8c564838b6c572ab9d",
+            "kind": "direct_support",
+            "source": "eFigure 4. Sensitivity Analysis\n1\n\n2\nA sensitivity analysis assuming that patients lost to follow-up in the experimental arm had the primary endpoint event, while\n3\nthose in the control arm did not have the event.\n4\nDAPT denoted dual antiplatelet therapy, PCI percutaneous coronary intervention, CV cardiovascular, MI myocardial infarction,\n5\nand TIMI Thrombolysis in Myocardial Infarction.\n6\nCumulative Incidence\nDays after index PCI\nHR 1.00 (0.69-1.46)\nP for non-inferiority=.02\nP for superiority=.98"
+          },
+          {
+            "evidence": "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894",
+            "kind": "direct_support",
+            "source": "3045 Randomized\n1500 Included in intention-to-\ntreat analysis\n23 Excluded (withdrew consent)\n1523 Randomized to 1-month dual\nantiplatelet therapy\n1521 Received 1-month dual\nantiplatelet therapy as\nrandomized\n2 Did not receive intervention\n(had received oral\nanticoagulation)\n1522 Randomized to 12-month\ndual antiplatelet therapy\n1522 Received 12-month dual\nantiplatelet therapy as\nrandomized\n1509 Included in intention-to-\ntreat analysis\n13 Excluded (withdrew consent)\n1478 Completed 1-year follow-up\n22 Lost to follow-up\n23 Withdrew consent\n1496 Completed 1-year follow-up\n13 Lost to follow-up\n13 Withdrew consent"
+          }
+        ],
+        "counterevidence": [],
+        "justification": "A sensitivity analysis assigned every lost-to-follow-up participant in the experimental arm the event and none in control. Although noninferiority remained, the HR moved to 1.00 (95% CI 0.69\u20131.46) from 0.64, so the effect estimate was not little changed. This extreme scenario covers lost follow-up but not the consent withdrawals, and therefore does not establish that the reported result was free from missing-data bias.",
+        "question_id": "sq:missing:evidence-unbiased",
+        "unknowns": [
+          "Whether the extreme sensitivity assumption spans plausible outcomes for the consent withdrawals."
+        ]
+      },
+      {
+        "answer": "probably_yes",
+        "bases": [
+          {
+            "evidence": "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894",
+            "kind": "inference",
+            "source": "3045 Randomized\n1500 Included in intention-to-\ntreat analysis\n23 Excluded (withdrew consent)\n1523 Randomized to 1-month dual\nantiplatelet therapy\n1521 Received 1-month dual\nantiplatelet therapy as\nrandomized\n2 Did not receive intervention\n(had received oral\nanticoagulation)\n1522 Randomized to 12-month\ndual antiplatelet therapy\n1522 Received 12-month dual\nantiplatelet therapy as\nrandomized\n1509 Included in intention-to-\ntreat analysis\n13 Excluded (withdrew consent)\n1478 Completed 1-year follow-up\n22 Lost to follow-up\n23 Withdrew consent\n1496 Completed 1-year follow-up\n13 Lost to follow-up\n13 Withdrew consent"
+          },
+          {
+            "evidence": "sha256:20567eb98b90d6e3310cd7768da5be87d0dea14d88cb5cc4c6eb98f586aec1e3",
+            "kind": "context",
+            "source": "If noninferiority was demonstrated, superiority analysis\nfor the primary end point was to follow. Patients were ana-\nlyzed according to their randomization group after excluding\npatients who withdrew consent during follow-up (the\nintention-to-treat population). Patients with missing out-\ncome data were censored at the time of loss to follow-up. We\nalso performed analyses in the per-protocol and as-treated\npopulations, which were defined as patients continuing the\nrandomized antiplatelet regimen on day 60 excluding and\nincluding, respectively, those with protocol violations for\ninclusion criteria. In addition, we performed a sensitivity\nanalysis assuming that patients lost to follow-up in the\n1-month DAPT group had a primary end point event, while\nthose in the 12-month DAPT group did not have an event."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The missingness reasons were not reported, so there is no direct evidence linking a particular participant's loss to an event. However, the missing participants withdrew or were lost during follow-up for a composite of serious cardiovascular and bleeding outcomes; their health status could plausibly be related to whether those outcomes occurred. The 1-month arm also had more missing follow-up than control. This supports possible outcome-dependent missingness, while the exact mechanism remains unknown.",
+        "question_id": "sq:missing:true-value-dependent",
+        "unknowns": [
+          "Reasons for loss to follow-up and consent withdrawal, and whether outcome data were available after withdrawal."
+        ]
+      },
+      {
+        "answer": "probably_yes",
+        "bases": [
+          {
+            "evidence": "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894",
+            "kind": "inference",
+            "source": "3045 Randomized\n1500 Included in intention-to-\ntreat analysis\n23 Excluded (withdrew consent)\n1523 Randomized to 1-month dual\nantiplatelet therapy\n1521 Received 1-month dual\nantiplatelet therapy as\nrandomized\n2 Did not receive intervention\n(had received oral\nanticoagulation)\n1522 Randomized to 12-month\ndual antiplatelet therapy\n1522 Received 12-month dual\nantiplatelet therapy as\nrandomized\n1509 Included in intention-to-\ntreat analysis\n13 Excluded (withdrew consent)\n1478 Completed 1-year follow-up\n22 Lost to follow-up\n23 Withdrew consent\n1496 Completed 1-year follow-up\n13 Lost to follow-up\n13 Withdrew consent"
+          },
+          {
+            "evidence": "sha256:87e13b43a62346595283dc8b140cc2c7332a462a609bbfc9d830e3265bb28d1c",
+            "kind": "direct_support",
+            "source": "(eTable 4 in Supplement 1). Noninferiority of 1 month of\nDAPT compared with 12 months of DAPT was also confirmed\nfor the primary end point in the per-protocol population\n(absolute difference, -0.62% [95% CI, -1.77% to 0.53%]; HR,\n0.77 [95% CI, 0.47-1.26]; P = .004 for noninferiority) and in\nthe as-treated population (absolute difference -0.30% [95%\nCI, -1.45% to .85%]; HR, 0.89 [95% CI, 0.56-1.42]; P = .015 for\nnoninferiority) as well as in the sensitivity analysis (absolute\ndifference, -0.02% [95% CI, -1.38% to 1.34%]; HR, 1.00 [95%\nCI, 0.69-1.46]; P = .02 for noninferiority) (eTable 5 and eFig-\nures 2-4 in Supplement 1)."
+          },
+          {
+            "evidence": "sha256:0b9875fe2c8e3a901613844e89bf2f320ce5f8e3826c0d8c564838b6c572ab9d",
+            "kind": "direct_support",
+            "source": "eFigure 4. Sensitivity Analysis\n1\n\n2\nA sensitivity analysis assuming that patients lost to follow-up in the experimental arm had the primary endpoint event, while\n3\nthose in the control arm did not have the event.\n4\nDAPT denoted dual antiplatelet therapy, PCI percutaneous coronary intervention, CV cardiovascular, MI myocardial infarction,\n5\nand TIMI Thrombolysis in Myocardial Infarction.\n6\nCumulative Incidence\nDays after index PCI\nHR 1.00 (0.69-1.46)\nP for non-inferiority=.02\nP for superiority=.98"
+          }
+        ],
+        "counterevidence": [],
+        "justification": "Missing follow-up was more frequent in the 1-month arm (45/1523, 2.95%) than the 12-month arm (26/1522, 1.71%), and the source's missing-outcome sensitivity analysis shows that plausible extreme outcomes could move the HR to 1.00. These facts make dependence on the true composite outcome likely enough for a probable judgment, although the missingness reasons themselves were not documented.",
+        "question_id": "sq:missing:likely-dependent",
+        "unknowns": [
+          "Whether the between-group difference in missingness reflects outcome-related health status or unrelated reasons."
+        ]
+      }
+    ],
+    "domain_id": "domain:missing",
+    "driver_questions": [
+      "sq:missing:likely-dependent"
+    ],
+    "evidence_sufficiency": {
+      "claims": [
+        {
+          "evidence": [
+            "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894",
+            "sha256:20567eb98b90d6e3310cd7768da5be87d0dea14d88cb5cc4c6eb98f586aec1e3",
+            "sha256:87e13b43a62346595283dc8b140cc2c7332a462a609bbfc9d830e3265bb28d1c",
+            "sha256:0b9875fe2c8e3a901613844e89bf2f320ce5f8e3826c0d8c564838b6c572ab9d"
+          ],
+          "question_id": "sq:missing:data-available",
+          "search_receipts": [],
+          "status": "supported",
+          "unresolved_premises": []
+        },
+        {
+          "evidence": [
+            "sha256:87e13b43a62346595283dc8b140cc2c7332a462a609bbfc9d830e3265bb28d1c",
+            "sha256:0b9875fe2c8e3a901613844e89bf2f320ce5f8e3826c0d8c564838b6c572ab9d",
+            "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894"
+          ],
+          "question_id": "sq:missing:evidence-unbiased",
+          "search_receipts": [],
+          "status": "supported",
+          "unresolved_premises": []
+        },
+        {
+          "evidence": [
+            "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894",
+            "sha256:20567eb98b90d6e3310cd7768da5be87d0dea14d88cb5cc4c6eb98f586aec1e3"
+          ],
+          "question_id": "sq:missing:true-value-dependent",
+          "search_receipts": [],
+          "status": "unresolved",
+          "unresolved_premises": []
+        },
+        {
+          "evidence": [
+            "sha256:8cadfc7945924e1f1a53ad4e2468cc963b3878c1bbb23c5ea2ae18809341b894",
+            "sha256:87e13b43a62346595283dc8b140cc2c7332a462a609bbfc9d830e3265bb28d1c",
+            "sha256:0b9875fe2c8e3a901613844e89bf2f320ce5f8e3826c0d8c564838b6c572ab9d"
+          ],
+          "question_id": "sq:missing:likely-dependent",
+          "search_receipts": [],
+          "status": "supported",
+          "unresolved_premises": []
+        }
+      ],
+      "identity": "sha256:5eb677b01b68f88419150f9078a5d8de855f295718593d2ce7266f11238a1717"
+    },
+    "identity": "sha256:fe2ba9ed088bde89f94c8f0b37257fa8fd3750ee4a8a9294915c54a2585ba6b0",
+    "inactive_questions": [],
+    "judgment": "high",
+    "observed_at": "2026-10-01T11:22:41.556365+00:00",
+    "result_identity": "sha256:8680f97c9f3b4c633edd8cbf627283b0ecfe466627ddddeedb41ebf7186eb433",
+    "revision_basis": null,
+    "search_accounts": [],
+    "supersedes": null,
+    "trace": [
+      "missing.likely_dependent"
+    ],
+    "trial_id": "stopdapt-2"
+  },
+  "source_inventory": [
+    {
+      "declared_role": "main_article",
+      "id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "label": "jama_watanabe_2019_oi_190060.pdf",
+      "logical_path": "jama_watanabe_2019_oi_190060.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 14,
+      "projection_hash": "sha256:fd95dd0945e0677e7057d8853af663d9a56aa5025d5cd284a2aa061a19343669",
+      "role": "main_article",
+      "sha256": "sha256:7452558074db4d8f0b4f3630ece6deaf8131e0e2c1797cb5188d68766f9503a3",
+      "trial_id": "stopdapt-2",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/jama_watanabe_2019_oi_190060.pdf",
+      "verified_raw_identity": "sha256:7452558074db4d8f0b4f3630ece6deaf8131e0e2c1797cb5188d68766f9503a3"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_ca1a3894a19c1ed5927ab37402b74f61c84f688ed07d3629b6edaf11b10e8ec8",
+      "label": "joi190060supp1.pdf",
+      "logical_path": "joi190060supp1.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 37,
+      "projection_hash": "sha256:2d49402699db59d8af6225938b434c3ab0a98ae7e38b5c0b455a4dad57d0f703",
+      "role": "supplement",
+      "sha256": "sha256:aab34c61eadf195b2acbca1613208506c4e72d48ec8ca4424eca1af4752034de",
+      "trial_id": "stopdapt-2",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/joi190060supp1.pdf",
+      "verified_raw_identity": "sha256:aab34c61eadf195b2acbca1613208506c4e72d48ec8ca4424eca1af4752034de"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_c4f54ffb4998e071604f22b53396273dd6f764404b36519e71fd42b209208e8e",
+      "label": "joi190060supp2.pdf",
+      "logical_path": "joi190060supp2.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 129,
+      "projection_hash": "sha256:dda7c9a3e01923d308fd575a35259bf3dc4b1863fa4f8683393508afa99f8a4a",
+      "role": "supplement",
+      "sha256": "sha256:271b8139ed159c08c4eeedfeca502d703bcb6bcb746220b4ea15aaea40ddd17a",
+      "trial_id": "stopdapt-2",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/joi190060supp2.pdf",
+      "verified_raw_identity": "sha256:271b8139ed159c08c4eeedfeca502d703bcb6bcb746220b4ea15aaea40ddd17a"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_fc2d7ed6cbc9275ae6fc61b951e2d5719bca80caf36118fdfc3c299874473a95",
+      "label": "joi190060supp3.pdf",
+      "logical_path": "joi190060supp3.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:d13ae133a6eb175a1fcdecd691a0b7bd956dfce08a372ba10036e4b4a65c318c",
+      "role": "supplement",
+      "sha256": "sha256:000db698f4b9ebdbfa750f1e6de365eadd8943840a91cc125d7d7d35e3b09127",
+      "trial_id": "stopdapt-2",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/joi190060supp3.pdf",
+      "verified_raw_identity": "sha256:000db698f4b9ebdbfa750f1e6de365eadd8943840a91cc125d7d7d35e3b09127"
+    },
+    {
+      "declared_role": null,
+      "id": "source_3cef2480110caf77a266c0bfdc675e0f2b7342b29c9726ecb2514cd3cc4ccf78",
+      "label": "ClinicalTrials.gov NCT02619760",
+      "logical_path": "registry/NCT02619760.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:69e0625f08b707145b191ab239aa507af059ad1f64c921bc7ae8c5dfe0203d75",
+      "role": "registry",
+      "sha256": "sha256:a35baedea0dc991ddf5e28d851da22d8063208e6bdc93deb4d24e5bdcc6b364d",
+      "trial_id": "stopdapt-2",
+      "raw_available": false,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/stopdapt-2/registry/NCT02619760.json"
+    }
+  ],
+  "numbered_primary_passages": [
+    {
+      "source_id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "page": 3,
+      "start_line": 70,
+      "end_line": 114,
+      "numbered_text": "70|ment 1. Follow-up was commenced at randomization, with\n71|time interval indicated by date of index PCI. All end points\n72|were assessed at 12 months (between 335 and 394 days),\n73|with censoring on day 366. All clinical events comprising\n74|the primary end points were adjudicated based on source\n75|documents by the independent clinical event committee\n76|blinded to randomized treatment group.\n77|Statistical Analysis\n78|The primary hypothesis of this study was that the experi-\n79|mental group (1-month DAPT) was noninferior to the\n80|control group (12-month DAPT) in terms of the primary end\n81|point at 1 year. In the original protocol (June 25, 2015),\n82|a sample size of 2730 patients was calculated assum-\n83|ing a 4.4% estimated event rate (the 80% upper limit of the\n84|confidence interval of 4.0% event rate in the RESET trial),16\n85|setting a noninferiority margin of 2.2% (50% of the esti-\n86|mated event rate) with a power of 80% and a 1-sided\n87|\u03b1 = .025. In a discussion among the investigators for institu-\n88|tional review board review, the estimated event rate was set\n89|at 4.6% (the 90% upper limit of the confidence interval of\n90|4.0% in the RESET trial), and the noninferiority margin was\n91|set at 2.3% (50% of the estimated event rate). As a result,\n92|the recalculated sample size was 2980 with a power of 85%\n93|and a 1-sided \u03b1 = .025 (October 11, 2015). On May 30, 2017,\n94|the noninferiority margin was changed again, from an abso-\n95|lute noninferiority margin of 2.3% to a relative margin of\n96|50% on the hazard ratio (HR) scale, to avoid making the\n97|margin too large in case of a lower-than-expected actual\n98|event rate. The relative noninferiority margin of 50% was\n99|chosen considering the feasibility of patient enrollment and\n100|the margins adopted in previous major trials.26,27\n101|If noninferiority was demonstrated, superiority analysis\n102|for the primary end point was to follow. Patients were ana-\n103|lyzed according to their randomization group after excluding\n104|patients who withdrew consent during follow-up (the\n105|intention-to-treat population). Patients with missing out-\n106|come data were censored at the time of loss to follow-up. We\n107|also performed analyses in the per-protocol and as-treated\n108|populations, which were defined as patients continuing the\n109|randomized antiplatelet regimen on day 60 excluding and\n110|including, respectively, those with protocol violations for\n111|inclusion criteria. In addition, we performed a sensitivity\n112|analysis assuming that patients lost to follow-up in the\n113|1-month DAPT group had a primary end point event, while\n114|those in the 12-month DAPT group did not have an event."
+    },
+    {
+      "source_id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "page": 4,
+      "start_line": 72,
+      "end_line": 80,
+      "numbered_text": "72|patients eligible for the study, 3045 patients were random-\n73|ized at 90 centers in Japan; 3459 eligible patients were not en-\n74|rolled in the study, mainly because of judgment of attending\n75|physician or patient refusal. Excluding 36 patients who with-\n76|drew consent, 3009 patients were included in the main analy-\n77|sis: 1500 patients in the 1-month DAPT group and 1509 pa-\n78|tients in the 12-month DAPT group (Figure 1). Randomization\n79|wasperformedamedianof1day(interquartilerange,0-4days)\n80|after the index PCI."
+    },
+    {
+      "source_id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "page": 5,
+      "start_line": 57,
+      "end_line": 82,
+      "numbered_text": "57|3045 Randomized\n58|1500 Included in intention-to-\n59|treat analysis\n60|23 Excluded (withdrew consent)\n61|1523 Randomized to 1-month dual\n62|antiplatelet therapy\n63|1521 Received 1-month dual\n64|antiplatelet therapy as\n65|randomized\n66|2 Did not receive intervention\n67|(had received oral\n68|anticoagulation)\n69|1522 Randomized to 12-month\n70|dual antiplatelet therapy\n71|1522 Received 12-month dual\n72|antiplatelet therapy as\n73|randomized\n74|1509 Included in intention-to-\n75|treat analysis\n76|13 Excluded (withdrew consent)\n77|1478 Completed 1-year follow-up\n78|22 Lost to follow-up\n79|23 Withdrew consent\n80|1496 Completed 1-year follow-up\n81|13 Lost to follow-up\n82|13 Withdrew consent"
+    },
+    {
+      "source_id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 5,
+      "numbered_text": "1|and also met criteria for superiority to 12 months of DAPT\n2|for the primary end point (absolute difference, -1.34% [95%\n3|CI, -2.57% to -0.11%]; HR, 0.64 [95% CI, 0.42-0.98]; P < .001\n4|for noninferiority; P = .04 for superiority) (Figure 2A and\n5|Table 2). From the post hoc analysis model with site as a ran-"
+    },
+    {
+      "source_id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "page": 8,
+      "start_line": 157,
+      "end_line": 166,
+      "numbered_text": "157|Infarction. The median observation\n158|periods in the last data set were 400\n159|(interquartile range, 368-732) days in\n160|the 1-month dual antiplatelet therapy\n161|(DAPT) group and 414 (interquartile\n162|range, 369-733) days in the 12-month\n163|DAPT group. The last day of data\n164|collection was day 365; patients with\n165|follow-up beyond 1 year were\n166|censored on day 366."
+    },
+    {
+      "source_id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "page": 9,
+      "start_line": 1,
+      "end_line": 19,
+      "numbered_text": "1|Table 2. Clinical Outcomes at 1 Year\n2|Outcomes\n3|No. of Patients With Event (Cumulative Incidence, %)a\n4|Hazard Ratio (95% CI)\n5|P Valueb\n6|1-Month DAPT (n = 1500)\n7|12-Month DAPT (n = 1509)\n8|Noninferiority\n9|Superiority\n10|Primary End Point\n11|Composite of cardiovascular death, myocardial\n12|infarction, definite stent thrombosis,\n13|ischemic or hemorrhagic stroke,\n14|or TIMI major or minor bleeding\n15|35 (2.36)\n16|55 (3.70)\n17|0.64 (0.42-0.98)\n18|<.001\n19|.04"
+    },
+    {
+      "source_id": "source_2cb2428dd6f1a7f2cb3beab438ff93fb030b600535a0d813f8fc353462a32a2f",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 11,
+      "numbered_text": "1|(eTable 4 in Supplement 1). Noninferiority of 1 month of\n2|DAPT compared with 12 months of DAPT was also confirmed\n3|for the primary end point in the per-protocol population\n4|(absolute difference, -0.62% [95% CI, -1.77% to 0.53%]; HR,\n5|0.77 [95% CI, 0.47-1.26]; P = .004 for noninferiority) and in\n6|the as-treated population (absolute difference -0.30% [95%\n7|CI, -1.45% to .85%]; HR, 0.89 [95% CI, 0.56-1.42]; P = .015 for\n8|noninferiority) as well as in the sensitivity analysis (absolute\n9|difference, -0.02% [95% CI, -1.38% to 1.34%]; HR, 1.00 [95%\n10|CI, 0.69-1.46]; P = .02 for noninferiority) (eTable 5 and eFig-\n11|ures 2-4 in Supplement 1)."
+    },
+    {
+      "source_id": "source_ca1a3894a19c1ed5927ab37402b74f61c84f688ed07d3629b6edaf11b10e8ec8",
+      "page": 37,
+      "start_line": 1,
+      "end_line": 103,
+      "numbered_text": "1|\u00a9 2019 American Medical Association. All rights reserved.\n2|eFigure 4. Sensitivity Analysis\n3|1\n4|\n5|2\n6|A sensitivity analysis assuming that patients lost to follow-up in the experimental arm had the primary endpoint event, while\n7|3\n8|those in the control arm did not have the event.\n9|4\n10|DAPT denoted dual antiplatelet therapy, PCI percutaneous coronary intervention, CV cardiovascular, MI myocardial infarction,\n11|5\n12|and TIMI Thrombolysis in Myocardial Infarction.\n13|6\n14|Cumulative Incidence\n15|Days after index PCI\n16|HR 1.00 (0.69-1.46)\n17|P for non-inferiority=.02\n18|P for superiority=.98\n19|Log-rank P=.98\n20|12-month DAPT\n21|0\n22|30\n23|60\n24|120\n25|180\n26|240\n27|300\n28|365\n29|Number of patients with event\n30|7\n31|11\n32|16\n33|27\n34|37\n35|49\n36|55\n37|Number of patients at risk\n38|1509\n39|1501\n40|1486\n41|1481\n42|1469\n43|1458\n44|1442\n45|1159\n46|Cumulative incidence (%)\n47|0.5\n48|0.7\n49|1.1\n50|1.8\n51|2.5\n52|3.3\n53|3.7\n54|1-month DAPT\n55|0\n56|30\n57|60\n58|120\n59|180\n60|240\n61|300\n62|365\n63|Number of patients with event\n64|6\n65|21\n66|23\n67|29\n68|43\n69|49\n70|55\n71|Number of patients at risk\n72|1500\n73|1494\n74|1479\n75|1475\n76|1468\n77|1453\n78|1441\n79|1151\n80|Cumulative incidence (%)\n81|0.4\n82|1.4\n83|1.5\n84|1.9\n85|2.9\n86|3.3\n87|3.7\n88|12-month DAPT group\n89|1-month DAPT group\n90|Primary endpoint\n91|(a composite of CV death, MI, definite stent thrombosis,\n92|ischemic and hemorrhagic stroke, or TIMI major/minor bleeding)\n93|\n94|[Extracted table 1]\n95||12-month DAPT|0|30|60|120|180|240|300|365|\n96||---|---|---|---|---|---|---|---|---|\n97||Number of patients with event||7|11|16|27|37|49|55|\n98||Number of patients at risk|1509|1501|1486|1481|1469|1458|1442|1159|\n99||Cumulative incidence (%)||0.5|0.7|1.1|1.8|2.5|3.3|3.7|\n100||1-month DAPT|0|30|60|120|180|240|300|365|\n101||Number of patients with event||6|21|23|29|43|49|55|\n102||Number of patients at risk|1500|1494|1479|1475|1468|1453|1441|1151|\n103||Cumulative incidence (%)||0.4|1.4|1.5|1.9|2.9|3.3|3.7|"
+    }
+  ],
+  "original_database_sha256": {
+    "canonical.sqlite3": "be0d538aeb4dab2891ca76c1ff5c69e4e6eeafae0f48a02602e71cfb19000c4e",
+    "derivative.sqlite3": "c8b678f2a772b76b26f62bb49d610d7aa674f90a108f68becc22a0657fd4413d"
+  },
+  "classification": "Offline source relevance audit; no inference or assessment mutation"
+}
