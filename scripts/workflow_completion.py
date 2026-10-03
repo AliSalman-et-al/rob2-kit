@@ -94,7 +94,6 @@ def drive(
         raise ValueError("invalid completion budget")
     started = clock()
     status = read_status()
-    seen_work: set[str] = set()
     no_progress = 0
     last_failure = ""
     identical_failures = 0
@@ -126,13 +125,16 @@ def drive(
             session = sessions[0]
         status = read_status()
         # Exclude volatile timestamps/notes: workflow identity and returned action,
-        # delivered reading ranges, plus distinct successful tool work count progress.
-        progress_keys = ("phase", "state_revision", "continuation", "main_report_reading")
-        prior = json.loads(before)
-        progress = any(prior.get(k) != status.get(k) for k in progress_keys) or bool(
-            facts["work"] - seen_work
+        # delivered reading ranges and adapter-supplied durable delivery progress.
+        progress_keys = (
+            "phase",
+            "state_revision",
+            "continuation",
+            "main_report_reading",
+            "host_progress",
         )
-        seen_work.update(facts["work"])
+        prior = json.loads(before)
+        progress = any(prior.get(k) != status.get(k) for k in progress_keys)
         no_progress = 0 if progress else no_progress + 1
         for failure in facts["failures"]:
             identical_failures = (

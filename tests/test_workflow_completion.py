@@ -182,3 +182,25 @@ def test_actual_exscel_failed_item_status_is_counted_without_error_field() -> No
     assert facts["calls"] == 6
     assert len([x for x in facts["failures"] if x]) == 1
     assert facts["usage"]["input_tokens"] == 334932
+
+
+def test_novel_queries_and_timestamps_are_not_durable_progress(tmp_path: Path) -> None:
+    count = 0
+
+    def status():
+        nonlocal count
+        count += 1
+        return {**pending(), "observed_at": count}
+
+    result = drive(
+        lambda *args: Turn(0, trace(tmp_path / f"query-{count}.jsonl", tool="search_sources")),
+        status,
+        lambda s: False,
+        prompt="Assess",
+        session="same",
+        max_resumes=3,
+        no_progress_limit=2,
+        wall_seconds=60,
+    )
+    assert result["boundary"] == "unfinished"
+    assert len(result["turns"]) == 2 and not any(t["progress"] for t in result["turns"])
