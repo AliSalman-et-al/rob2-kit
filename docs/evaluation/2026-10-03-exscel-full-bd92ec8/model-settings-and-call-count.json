@@ -1,0 +1,36 @@
+{
+  "model": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "turn_id": "01a101e4-64eb-71f0-b110-be2acc6c9c99"
+    }
+  ],
+  "direct": [
+    {
+      "name": "get_status",
+      "call_id": "call_82v1NBgzuuekrvOc9e4sE4El"
+    },
+    {
+      "name": "get_domain_context",
+      "call_id": "call_IHkwv0jOEejXy7RwpUKm5hri"
+    },
+    {
+      "name": "read_pages",
+      "call_id": "call_EMeWx09zFitjOICXyr02qYOf"
+    },
+    {
+      "name": "read_pages",
+      "call_id": "call_QlIwGQKTj4XDCTS1e7Lbw0r5"
+    },
+    {
+      "name": "read_pages",
+      "call_id": "call_O5viq0p3zvZm2Wj6ztzsrWUQ"
+    },
+    {
+      "name": "get_domain_context",
+      "call_id": "call_fgMu652W4ott7oOluP9odLqP"
+    }
+  ],
+  "custom": []
+}

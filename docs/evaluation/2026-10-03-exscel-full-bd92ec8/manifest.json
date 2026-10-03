@@ -1,0 +1,76 @@
+{
+  "code_sha": "bd92ec84fb1b24a05ac742db8ea01f3c9b7bcf6a",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "case": "exscel",
+  "workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-bd92ec8/workspace",
+  "starting_phase": "assessment",
+  "starting_revision": 4,
+  "review_identity": "sha256:c8091d311b549d5d26848195814279c93f2ce1e8ef2b9709bcf692c91c7a4a66",
+  "proposal_identity": "sha256:28982d105319fc9fddb2b437f6ffbac041a811e0b2fc209ea1213202ee4aba5d",
+  "acknowledgment": {
+    "caller": "cli",
+    "identity": "sha256:77106748490f20591e5eb09f1d521000d181c0c28abaf14a4a519c66f478f975",
+    "method": "cli",
+    "observed_at": "2026-10-03T13:10:16.960353Z",
+    "purpose": "proposal",
+    "review_identity": "sha256:c8091d311b549d5d26848195814279c93f2ce1e8ef2b9709bcf692c91c7a4a66",
+    "workflow_basis": 2
+  },
+  "no_invocation_retry": true,
+  "guards": {
+    "wall_seconds": 1200,
+    "idle_seconds": 180,
+    "tool_calls": 70,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": null,
+    "uncached_input_tokens": null,
+    "output_tokens": 15000
+  },
+  "guard_identity": "sha256:ca9b7ad4ea5115f4ff403505034b2fc68d63c6ff8892b956755514dbf1c4405c",
+  "prompt_sha256": "0d7026af150c2e0903f58f97cc2efafcfe75a9ad25a74d6d79b18a83d8c02314",
+  "enabled_tools": [
+    "get_status",
+    "list_sources",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "select_visual_evidence",
+    "save_working_checkpoint",
+    "get_domain_context",
+    "save_domain_judgment",
+    "review_trial",
+    "close_trial",
+    "finalize_batch"
+  ],
+  "frozen_source_manifest": [
+    {
+      "name": "NEJMoa1612917.pdf",
+      "sha256": "b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121"
+    },
+    {
+      "name": "nejmoa1612917_appendix.pdf",
+      "sha256": "df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16"
+    },
+    {
+      "name": "nejmoa1612917_disclosures.pdf",
+      "sha256": "8fbf51ed48eb5997b43ffcb719474279d0af6725fae0040441d8cd3647885699"
+    },
+    {
+      "name": "nejmoa1612917_protocol.pdf",
+      "sha256": "d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2"
+    },
+    {
+      "name": "sources.toml",
+      "sha256": "8fe6b7773df4f76b31f9837f6fa50b93b19c873fd8130aa4bdcc52aac185d030"
+    }
+  ],
+  "prior_answers_or_labels_supplied": false,
+  "written_approval_authorization": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-bd92ec8/written-approval-authorization.json",
+  "domain_saves_per_domain": 4,
+  "terminal": "finalize_batch success with phase finalized; observer verifies bundle offline",
+  "authorization": "Ali explicit scope approval and parent instruction for one gpt-6-luna medium full production continuation: input telemetry;15k output/70tools/20minwall/3minidle/4savesperdomain/twoidenticalfailures."
+}

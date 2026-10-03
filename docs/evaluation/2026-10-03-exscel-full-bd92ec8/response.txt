@@ -1,0 +1,3 @@
+I started with `get_status` and confirmed the approved EXSCEL Result and current Result-bound checkpoint. I began the required main-report reading and recovered the randomization context, but the coverage remains incomplete and the Domain context pagination has not finished. I therefore did not save any Domain judgments, review or close the Trial, or finalize the Batch.
+
+No artifact was produced. I stopped before the requested workflow was complete.
