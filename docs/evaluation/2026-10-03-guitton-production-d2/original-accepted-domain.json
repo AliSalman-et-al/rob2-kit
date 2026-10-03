@@ -1,0 +1,199 @@
+{
+  "active_questions": [
+    "sq:deviations:participants-aware",
+    "sq:deviations:personnel-aware",
+    "sq:deviations:context-deviations",
+    "sq:deviations:affected-outcome",
+    "sq:deviations:balanced",
+    "sq:deviations:appropriate-analysis"
+  ],
+  "answers": [
+    {
+      "answer": "yes",
+      "bases": [
+        {
+          "evidence": "sha256:7788811918af3b7d6214e94340e0d9ca6b1084527121a7ad2644436674593484",
+          "kind": "direct_support",
+          "source": "3/ Information and reception of patient's or relative's consent form or emergency procedure (then\nin the two latter cases, patient follow-up consent or an application to authorize use of patient data for\nresearch)\n4/ Inclusion and randomization via computer.\n5/ Management of each randomized group: randomization concerns the preoxygenation\ntechnique for 4 minutes prior to intubation.\nThe choice will be between:\n\u00d8 Group A \"HFNC\" using high-flow oxygen therapy with nasal cannulae (Optiflow\u00ae or\nAirvo 2\u00ae),\nand\n\u00d8 Group B \"HFFM\" using a face mask with an inflatable seal with self-inflating reservoir\nbag.\nThe investigators and the patient will be \"open-label\" in that blinding is not possible with the\npreoxygenation device.\n6/ The patient is intubated according to guidelines and usual practices (orotracheal intubation in\nrapid sequence induction). If the patient is in Group A, the oxygenation system is maintained.\n7/ Data collection is performed for:\n-\nthe intubation phase and the following hour,\n-\ndaily data, in particular for detection and monitoring of organ failure during the first 5\ndays in the ICU,"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The protocol explicitly states that investigators and patients would be open-label because blinding was not possible with the preoxygenation device. The two devices were visibly different (nasal cannulae versus face mask), so patients could know their assignment during preoxygenation.",
+      "question_id": "sq:deviations:participants-aware",
+      "unknowns": []
+    },
+    {
+      "answer": "yes",
+      "bases": [
+        {
+          "evidence": "sha256:7788811918af3b7d6214e94340e0d9ca6b1084527121a7ad2644436674593484",
+          "kind": "direct_support",
+          "source": "3/ Information and reception of patient's or relative's consent form or emergency procedure (then\nin the two latter cases, patient follow-up consent or an application to authorize use of patient data for\nresearch)\n4/ Inclusion and randomization via computer.\n5/ Management of each randomized group: randomization concerns the preoxygenation\ntechnique for 4 minutes prior to intubation.\nThe choice will be between:\n\u00d8 Group A \"HFNC\" using high-flow oxygen therapy with nasal cannulae (Optiflow\u00ae or\nAirvo 2\u00ae),\nand\n\u00d8 Group B \"HFFM\" using a face mask with an inflatable seal with self-inflating reservoir\nbag.\nThe investigators and the patient will be \"open-label\" in that blinding is not possible with the\npreoxygenation device.\n6/ The patient is intubated according to guidelines and usual practices (orotracheal intubation in\nrapid sequence induction). If the patient is in Group A, the oxygenation system is maintained.\n7/ Data collection is performed for:\n-\nthe intubation phase and the following hour,\n-\ndaily data, in particular for detection and monitoring of organ failure during the first 5\ndays in the ICU,"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The protocol explicitly states investigators were open-label and that device blinding was not possible; personnel delivering HFNC or face-mask oxygenation necessarily knew the assigned method.",
+      "question_id": "sq:deviations:personnel-aware",
+      "unknowns": []
+    },
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:3608a7fc1d9958e1e87b17a717e5afbf8ed716bf4b1acc565ac358a9bb7ff1e0",
+          "kind": "direct_support",
+          "source": "v A study of the medical device,\nv A multicenter study,\nv A controlled study,\nv A randomized study with 2 parallel groups.\n\u00d8\nGroup A (HFNC): preoxygenation for 4 minutes with HFNC (high-flow oxygen\ntherapy system by nasal cannulae [Optiflow\u00ae or Airvo 2\u00ae]) and continuation of\nthis oxygen therapy during intubation,\n\u00d8\nGroup B (HFFM): preoxygenation for 4 minutes via face mask with a seal and\nmanual self-inflating reservoir bag in spontaneous ventilation with occasional\ninsufflations (as recommended).\nv Open-label study,\nv Prospective study."
+        },
+        {
+          "evidence": "sha256:73288126d1ff9b8a8b06ee99efb9f62f2ce28c2021c1d7cc3260008d2baca679",
+          "kind": "direct_support",
+          "source": "Secondary outcomes\nAll of the patients were successfully intubated and only\none operator removed HFNC for laryngoscopic vision\nobstruction. At the end of the preoxygenation period,\nmedian [IQR] SpO2 was 100% [100; 100], (P = 0.66) in"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The protocol required HFNC to continue during intubation, but the report says one operator removed it because it obstructed laryngoscopic vision. This is a protocol-inconsistent change plausibly caused by the trial intervention in the procedure context. The report also records a separate device unavailability deviation, but does not establish whether trial context caused that event.",
+      "question_id": "sq:deviations:context-deviations",
+      "unknowns": [
+        "The report does not explain whether removal for laryngoscopic vision obstruction was a routine clinical decision or specifically caused by trial participation."
+      ]
+    },
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:73288126d1ff9b8a8b06ee99efb9f62f2ce28c2021c1d7cc3260008d2baca679",
+          "kind": "direct_support",
+          "source": "Secondary outcomes\nAll of the patients were successfully intubated and only\none operator removed HFNC for laryngoscopic vision\nobstruction. At the end of the preoxygenation period,\nmedian [IQR] SpO2 was 100% [100; 100], (P = 0.66) in"
+        },
+        {
+          "evidence": "sha256:161be2e54d31f295b4564e60ab3f20c86cf6126c1f4eccbbb7cfe74826ebd2fd",
+          "kind": "direct_support",
+          "source": "intubation, any nasopharyngeal anatomical obstacle,\ngrade 4 glottis exposure on the Cormack-Lehane scale\ndocumented in the medical history, adults subject to legal\nprotection, pregnancy, lack of consent, patients who had\nalready undergone intubation in the ICU (i.e., extubation\nfailure) or who were already participating in an interven-\ntional study on preoxygenation.\nRandomization\nRandomization used fixed blocks of six patients (ratio\n1:1) and was stratified by center. The study statistician\ngenerated the allocation list. Patients were allocated to\none of the two preoxygenation strategies using a secure\ncomputer-generated online remote system controlled\nby the independent research promotion unit at the Uni-\nversity Hospital of Nantes which had no role in patient\nrecruitment.\nIntervention: preoxygenation and intubation procedure\nThe study design is described in Supplement 1. Preoxy-\ngenation and intubation were performed according to\ninternational recommendations in all centers [9]. The\nintubation team was composed of one junior and one\nsenior.\n1. Preoxygenation was started according to the rand-\nomization group for a 4-min period [17] in a head-up\nposition. In the intervention group, preoxygenation\nwas performed with HFNC (AIRVO 2TM; Fisher &\nPaykel Healthcare, Auckland, NZ), nasal prongs set at\n60 L/min flow of heated and humidified pure oxygen\n(100% fraction of inspired oxygen, 37 \u00b0C). Large or\nmedium nasal cannulae were chosen according to the\npatient's nostril size to limit air contamination. In the\ncontrol group, preoxygenation was performed with\nSMO set at 15 L/min oxygen flow with a disposable\nself-inflating resuscitator with a reservoir bag manu-\nally held in place ensuring air tightness.\n2. At the end of preoxygenation, RSI including imme-\ndiate intubation after administration of the hypnotic\ndrugs was performed in all patients. Drugs and the\nuse of a neuromuscular blocking agent were left to\nthe discretion of the physician.\n3. During laryngoscopy and intubation, HFNC was\nmaintained in place throughout the procedure in an\nattempt to achieve apneic oxygenation. In the control\ngroup, SMO was removed in order to perform laryn-\ngoscopy.\n4. In case of difficult intubation, the stylet was the first\nalternative device which was proposed [18] if exter-\nnal laryngeal manipulation did not improve glottis\nvision.\n5. At the end of intubation, the correct position of the\ntracheal tube was confirmed by using capnography\n[19].\nEndpoints\nThe primary endpoint was the median lowest SpO2 dur-\ning intubation, from the beginning of the laryngoscopy\nuntil the patient was connected to the mechanical ven-\ntilator. To ensure exhaustive data collection, a research\nnurse and an external observer concurrently collected\nSpO2 fluctuations during the intubation.\nSecondary endpoints were SpO2 from the beginning\nof preoxygenation to the end of intubation focusing on\ndesaturation (below 95%, 90%, 80%); the rate of difficult\nintubation [20] and the intubation difficulty scale (IDS)\nscore [21]; the need to proceed to face mask ventilation\nto correct desaturation; adverse events a priori classified\nas severe (death, cardiac arrest, SpO2 < 80%, severe hypo-\ntension defined by systolic blood pressure < 80 mmHg or\nvasopressor initiation or 30% dose increment) or moder-\nate (ventricular or supraventricular arrhythmia requir-\ning intervention, esophageal intubation, vomiting with\naspiration of gastric content, dental injury); organ failure\nduring the first 5 days (SOFA score); time on the ventila-\ntor; length of stay in ICU; occurrence of ventilator-asso-\nciated pneumonia and mortality rate on day 28 (full study\nprotocol appears in Supplement 2).\nSample size\nOn the basis of previous studies we hypothesized that\nHFNC would improve the mean lowest SpO2 value by\n5% (from 88% in the control group to 93% in the HFNC\ngroup) with a standard deviation of SpO2 of 12% [15,\n22]. With 80% power, a 5% type I error (two-sided tests),\nand 5% attrition rate, the required sample size was 192\npatients.\nStatistical analysis\nBaseline characteristics were described as count and per-\ncentage for categorical variables and mean and standard\ndeviation or median and interquartiles for quantitative\nvariables when assumption of normality was not met. An\nintent-to-treat statistical analysis was conducted. Com-\nparisons of primary and secondary outcomes were per-\nformed using the Mantel-Haenszel Chi-square tests (or\ntwo-tailed Fisher exact tests when appropriate) for quali-\ntative data and the Van Elteren tests for quantitative data\nto account for stratification factor (center). For qualitative\ndata, relative risk (with adjustment for center effects) and\n95% confidence interval were estimated with the Mantel-\nHaenszel method. Multivariable analysis of SpO2 < 90%,\nSpO2 < 80%, and the occurrence of adverse events were\nperformed using logistic regression. The most clinically"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The identified change involved removing the assigned oxygen device during the outcome window. Because lowest SpO2 is measured throughout laryngoscopy and intubation, removal could affect the measured lowest saturation.",
+      "question_id": "sq:deviations:affected-outcome",
+      "unknowns": [
+        "Only one such removal was reported, and the report does not provide that patient's outcome separately."
+      ]
+    },
+    {
+      "answer": "no",
+      "bases": [
+        {
+          "evidence": "sha256:73288126d1ff9b8a8b06ee99efb9f62f2ce28c2021c1d7cc3260008d2baca679",
+          "kind": "direct_support",
+          "source": "Secondary outcomes\nAll of the patients were successfully intubated and only\none operator removed HFNC for laryngoscopic vision\nobstruction. At the end of the preoxygenation period,\nmedian [IQR] SpO2 was 100% [100; 100], (P = 0.66) in"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The reported removal occurred in one HFNC participant; the comparator group did not have an analogous assigned-device removal reported. The deviation was therefore not balanced between groups.",
+      "question_id": "sq:deviations:balanced",
+      "unknowns": []
+    },
+    {
+      "answer": "yes",
+      "bases": [
+        {
+          "evidence": "sha256:3597bd6229d73011ee2e4c7bff72496c5ca92ac45b4f8d995782c9df94f742c6",
+          "kind": "direct_support",
+          "source": "In the seven participating ICUs, 192 patients were rand-\nomized in the study between April 2016 and June 2017.\nThree patients withdrew their consent, two patients were\ndiscovered to be under guardianship protection, and\nthree patients improved before the start of the study and\nwere therefore not intubated. We considered 184 patients\n(95 in HFNC and 89 in SMO) in the intent-to-treat\n(ITT) and 183 patients in the per-protocol (PP) analyses\n(Fig. 1). Per-protocol analysis excluded the only patient\nwith protocol deviation in the HFNC group who did not\nreceive preoxygenation with HFNC because no device\nwas available. This patient did not present any complica-\ntion during intubation."
+        },
+        {
+          "evidence": "sha256:161be2e54d31f295b4564e60ab3f20c86cf6126c1f4eccbbb7cfe74826ebd2fd",
+          "kind": "direct_support",
+          "source": "intubation, any nasopharyngeal anatomical obstacle,\ngrade 4 glottis exposure on the Cormack-Lehane scale\ndocumented in the medical history, adults subject to legal\nprotection, pregnancy, lack of consent, patients who had\nalready undergone intubation in the ICU (i.e., extubation\nfailure) or who were already participating in an interven-\ntional study on preoxygenation.\nRandomization\nRandomization used fixed blocks of six patients (ratio\n1:1) and was stratified by center. The study statistician\ngenerated the allocation list. Patients were allocated to\none of the two preoxygenation strategies using a secure\ncomputer-generated online remote system controlled\nby the independent research promotion unit at the Uni-\nversity Hospital of Nantes which had no role in patient\nrecruitment.\nIntervention: preoxygenation and intubation procedure\nThe study design is described in Supplement 1. Preoxy-\ngenation and intubation were performed according to\ninternational recommendations in all centers [9]. The\nintubation team was composed of one junior and one\nsenior.\n1. Preoxygenation was started according to the rand-\nomization group for a 4-min period [17] in a head-up\nposition. In the intervention group, preoxygenation\nwas performed with HFNC (AIRVO 2TM; Fisher &\nPaykel Healthcare, Auckland, NZ), nasal prongs set at\n60 L/min flow of heated and humidified pure oxygen\n(100% fraction of inspired oxygen, 37 \u00b0C). Large or\nmedium nasal cannulae were chosen according to the\npatient's nostril size to limit air contamination. In the\ncontrol group, preoxygenation was performed with\nSMO set at 15 L/min oxygen flow with a disposable\nself-inflating resuscitator with a reservoir bag manu-\nally held in place ensuring air tightness.\n2. At the end of preoxygenation, RSI including imme-\ndiate intubation after administration of the hypnotic\ndrugs was performed in all patients. Drugs and the\nuse of a neuromuscular blocking agent were left to\nthe discretion of the physician.\n3. During laryngoscopy and intubation, HFNC was\nmaintained in place throughout the procedure in an\nattempt to achieve apneic oxygenation. In the control\ngroup, SMO was removed in order to perform laryn-\ngoscopy.\n4. In case of difficult intubation, the stylet was the first\nalternative device which was proposed [18] if exter-\nnal laryngeal manipulation did not improve glottis\nvision.\n5. At the end of intubation, the correct position of the\ntracheal tube was confirmed by using capnography\n[19].\nEndpoints\nThe primary endpoint was the median lowest SpO2 dur-\ning intubation, from the beginning of the laryngoscopy\nuntil the patient was connected to the mechanical ven-\ntilator. To ensure exhaustive data collection, a research\nnurse and an external observer concurrently collected\nSpO2 fluctuations during the intubation.\nSecondary endpoints were SpO2 from the beginning\nof preoxygenation to the end of intubation focusing on\ndesaturation (below 95%, 90%, 80%); the rate of difficult\nintubation [20] and the intubation difficulty scale (IDS)\nscore [21]; the need to proceed to face mask ventilation\nto correct desaturation; adverse events a priori classified\nas severe (death, cardiac arrest, SpO2 < 80%, severe hypo-\ntension defined by systolic blood pressure < 80 mmHg or\nvasopressor initiation or 30% dose increment) or moder-\nate (ventricular or supraventricular arrhythmia requir-\ning intervention, esophageal intubation, vomiting with\naspiration of gastric content, dental injury); organ failure\nduring the first 5 days (SOFA score); time on the ventila-\ntor; length of stay in ICU; occurrence of ventilator-asso-\nciated pneumonia and mortality rate on day 28 (full study\nprotocol appears in Supplement 2).\nSample size\nOn the basis of previous studies we hypothesized that\nHFNC would improve the mean lowest SpO2 value by\n5% (from 88% in the control group to 93% in the HFNC\ngroup) with a standard deviation of SpO2 of 12% [15,\n22]. With 80% power, a 5% type I error (two-sided tests),\nand 5% attrition rate, the required sample size was 192\npatients.\nStatistical analysis\nBaseline characteristics were described as count and per-\ncentage for categorical variables and mean and standard\ndeviation or median and interquartiles for quantitative\nvariables when assumption of normality was not met. An\nintent-to-treat statistical analysis was conducted. Com-\nparisons of primary and secondary outcomes were per-\nformed using the Mantel-Haenszel Chi-square tests (or\ntwo-tailed Fisher exact tests when appropriate) for quali-\ntative data and the Van Elteren tests for quantitative data\nto account for stratification factor (center). For qualitative\ndata, relative risk (with adjustment for center effects) and\n95% confidence interval were estimated with the Mantel-\nHaenszel method. Multivariable analysis of SpO2 < 90%,\nSpO2 < 80%, and the occurrence of adverse events were\nperformed using logistic regression. The most clinically"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The primary outcome used an ITT analysis retaining participants in their randomized groups (95 HFNC, 89 SMO), and the report states no primary-outcome data were missing among those included. The exclusions from the ITT population were consent withdrawals, participants found under guardianship protection, and patients who improved before intubation and therefore had no intubation outcome. The protocol deviation involving unavailable HFNC equipment was excluded only from the per-protocol analysis, not the ITT analysis.",
+      "question_id": "sq:deviations:appropriate-analysis",
+      "unknowns": [
+        "The report does not provide arm-specific counts for each reason among the eight excluded from ITT."
+      ]
+    }
+  ],
+  "domain_id": "domain:deviations",
+  "driver_questions": [
+    "sq:deviations:context-deviations",
+    "sq:deviations:affected-outcome",
+    "sq:deviations:balanced"
+  ],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:7788811918af3b7d6214e94340e0d9ca6b1084527121a7ad2644436674593484"
+        ],
+        "question_id": "sq:deviations:participants-aware",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:7788811918af3b7d6214e94340e0d9ca6b1084527121a7ad2644436674593484"
+        ],
+        "question_id": "sq:deviations:personnel-aware",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:3608a7fc1d9958e1e87b17a717e5afbf8ed716bf4b1acc565ac358a9bb7ff1e0",
+          "sha256:73288126d1ff9b8a8b06ee99efb9f62f2ce28c2021c1d7cc3260008d2baca679"
+        ],
+        "question_id": "sq:deviations:context-deviations",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:73288126d1ff9b8a8b06ee99efb9f62f2ce28c2021c1d7cc3260008d2baca679",
+          "sha256:161be2e54d31f295b4564e60ab3f20c86cf6126c1f4eccbbb7cfe74826ebd2fd"
+        ],
+        "question_id": "sq:deviations:affected-outcome",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:73288126d1ff9b8a8b06ee99efb9f62f2ce28c2021c1d7cc3260008d2baca679"
+        ],
+        "question_id": "sq:deviations:balanced",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:3597bd6229d73011ee2e4c7bff72496c5ca92ac45b4f8d995782c9df94f742c6",
+          "sha256:161be2e54d31f295b4564e60ab3f20c86cf6126c1f4eccbbb7cfe74826ebd2fd"
+        ],
+        "question_id": "sq:deviations:appropriate-analysis",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      }
+    ],
+    "identity": "sha256:f289f53a5de0849e2a1d82c8022bb7cc7ab2071d310e1f6994e2d159dd10cf49"
+  },
+  "identity": "sha256:580884cf6bf926c2c42c0deb5b29e53b810702e6e0f98c4c4eeb190eaac820b0",
+  "inactive_questions": [
+    "sq:deviations:substantial-impact"
+  ],
+  "judgment": "high",
+  "observed_at": "2026-10-01T12:57:20.654454+00:00",
+  "result_identity": "sha256:d667b58e4781ecaed72f9e6c2d0bfd246553546deedaa05e8055a679a45c3238",
+  "revision_basis": null,
+  "search_accounts": [],
+  "supersedes": null,
+  "trace": [
+    "deviations.unbalanced_impact"
+  ],
+  "trial_id": "guitton-2019"
+}

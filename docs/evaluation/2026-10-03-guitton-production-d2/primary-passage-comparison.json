@@ -1,0 +1,30 @@
+[
+  {
+    "end": 1370,
+    "end_line": 27,
+    "handle": "eh_3597bd6229d73011",
+    "identity": "sha256:3597bd6229d73011ee2e4c7bff72496c5ca92ac45b4f8d995782c9df94f742c6",
+    "kind": "narrative",
+    "page": 4,
+    "quote": "In the seven participating ICUs, 192 patients were rand-\nomized in the study between April 2016 and June 2017.\nThree patients withdrew their consent, two patients were\ndiscovered to be under guardianship protection, and\nthree patients improved before the start of the study and\nwere therefore not intubated. We considered 184 patients\n(95 in HFNC and 89 in SMO) in the intent-to-treat\n(ITT) and 183 patients in the per-protocol (PP) analyses\n(Fig. 1). Per-protocol analysis excluded the only patient\nwith protocol deviation in the HFNC group who did not\nreceive preoxygenation with HFNC because no device\nwas available. This patient did not present any complica-\ntion during intubation.",
+    "source_id": "source_30e3363b83f48a0c3bc25cb0cb0d915ec9dfc88b08f9164db3c7ce1b9b7d29f0",
+    "source_version": "sha256:d51b042370820e3762208c0195e24b3fa53592c741ed07ba2f91f7b68f8db51d",
+    "start": 684,
+    "start_line": 15,
+    "trial_id": "guitton-2019"
+  },
+  {
+    "end": 3056,
+    "end_line": 60,
+    "handle": "eh_9a92d4052ad58c7f",
+    "identity": "sha256:9a92d4052ad58c7fb30a46a4d1c87c6448b1e5ca2bfa85f6caf4eef0ef944a3d",
+    "kind": "narrative",
+    "page": 4,
+    "quote": "Primary outcome: lowest SpO2 during the intubation\nprocedure\nIn the intent-to-treat (ITT) analysis (Table 3, Fig. 2),\nthere was no significant difference between the median\n[IQR] lowest SpO2 during intubation in the HFNC group\ncompared with the SMO group, 100% [97; 100] versus\n99% [95; 100] respectively, (P = 0.30). In the per-protocol\n(PP) analysis (attrition rate 1%), the lack of difference per-\nsisted (P = 0.26). Although only non-severely hypoxemic\npatients were included, the lowest SpO2 during intuba-\ntion ranged from 69% to 100% in HFNC and from 43% to\n100% in SMO.",
+    "source_id": "source_30e3363b83f48a0c3bc25cb0cb0d915ec9dfc88b08f9164db3c7ce1b9b7d29f0",
+    "source_version": "sha256:d51b042370820e3762208c0195e24b3fa53592c741ed07ba2f91f7b68f8db51d",
+    "start": 2479,
+    "start_line": 49,
+    "trial_id": "guitton-2019"
+  }
+]
