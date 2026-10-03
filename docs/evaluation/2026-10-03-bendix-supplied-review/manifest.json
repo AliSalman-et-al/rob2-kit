@@ -1,0 +1,21 @@
+{
+  "code_sha": "9d286517f2ea9a48c1306579469c4af9924ed5f3",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "prompt_sha256": "62959639ce65a102ebed9218853cfd3361775fadb733d0693d5d8981950fee3a",
+  "materials_sha256": "431d92f480c03ea6cd91cc03a6d45943b0a2e0122817626ae71fb0d1707d1356",
+  "instruction_sha256": "bc72249c3f3442eb760d7a98b1c31b41873da3b6b4fefe69949cd1c1b7c45025",
+  "source_page_scope": "Original captured main pages2\u20136, exact full pages rather than reviewer-selected critical sentences.",
+  "guidance_scope": "All seven current D2 questions, complete unchanged fields.",
+  "guards": {
+    "wall_seconds": 300,
+    "idle_seconds": 120,
+    "output_tokens": 5000,
+    "input_tokens": null,
+    "tools": 0
+  },
+  "classification": "One supplied-evidence review of known frozen draft; not autonomous full workflow, product intervention or independent human adjudication",
+  "one_response_only": true,
+  "no_retry": true,
+  "preflight_prompt_bytes": 146380
+}

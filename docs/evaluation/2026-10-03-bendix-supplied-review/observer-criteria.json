@@ -1,0 +1,11 @@
+{
+  "criteria": [
+    "Support an exclusion mechanism over source-supported alternatives; contactability is not observed workability and noncompletion/missingness overlap.",
+    "Calibrate definitive versus probable certainty without forcing an answer.",
+    "Propagate unresolved mechanism to conditional D2.7 participant population; noncompleters/allnotanalyzed are not automatic D2 numerators."
+  ],
+  "retaining_draft_can_pass": true,
+  "no_label_agreement_scoring": true,
+  "no_retry_or_repair": true,
+  "not_in_model_prompt": true
+}
