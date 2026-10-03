@@ -1,5 +1,7 @@
 # Frozen synthetic2.7mechanism pair
 
+**Subsequent correction:** [Offline scope audit](../2026-10-03-d27-synthetic-scope-correction/README.md) classifiesB as an ambiguous test rather than a demonstrated appropriateness/impact failure. Stronger wording below is retained as historicalreview; originalinputs/outputsunchanged.
+
 Parent explicitly authorizes exactly one old-versus-new pair, at mosttwo shortgpt-6-luna/medium responses, no tools/retry/third call. No AWARD/Bendix/nativecase. Output2000tokens, wall300s,idle120s each; input telemetry. Four complete fictional source passages, anonymousvignetteA–D, identical task/facts/model; only operational2.7considerations differ. Original312b478 controls/prompts remain untouched; this launch copy replaces evaluative source labels with neutral IDs. Private interpretation/mapping is outside inputs. No preferred answers or risk labels are supplied. Conditional2.7 applies only when2.6activates it.
 
 All4declared fictional windows pass preflight. Same exactofficial guidance/options/activation and2.6; operationalversion-only metadata removed identically in earlier frozen projection. Approximately3.6k inputtokens each at3chars/token, not a tokenizer measurement. Two outputs must be frozen before scientific review. UnblindedAI methodological review after freezes; single fixed-order sample cannot establish causalaccuracygain or generalization. Synthetic outcomes never count as benchmark/clinicalaccuracy.

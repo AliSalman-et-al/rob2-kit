@@ -1,0 +1,68 @@
+{
+  "research_question": "Offline scope-corrected synthetic2.7mechanism comparison; not yet authorized for inference",
+  "input_sha256": "f25759e758673d3c14255db1dfcffbe1545402b6ef9ff7d87e8e4440c0757225",
+  "required_windows": [
+    {
+      "source_identity": "synthetic:vignette-A",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5
+    },
+    {
+      "source_identity": "synthetic:vignette-B",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5
+    },
+    {
+      "source_identity": "synthetic:vignette-C",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 4
+    },
+    {
+      "source_identity": "synthetic:vignette-D",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 4
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "synthetic:vignette-A",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5,
+      "input_start_byte": 17901,
+      "input_end_byte": 18897,
+      "text_sha256": "48ef7775a03a860e71d0810ce0a39e8c0a3094ad28c7e7ea5a236ced4b1b4f7d"
+    },
+    {
+      "source_identity": "synthetic:vignette-B",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5,
+      "input_start_byte": 18898,
+      "input_end_byte": 19882,
+      "text_sha256": "7c62d8b920f061b54432101eed77cf4edf00260cfb1aacff57426d070f86a82d"
+    },
+    {
+      "source_identity": "synthetic:vignette-C",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 4,
+      "input_start_byte": 19883,
+      "input_end_byte": 20750,
+      "text_sha256": "61fd326d4cc8344c5d311d5cd57e425513830f25bc3115fb99170e2c95402ac7"
+    },
+    {
+      "source_identity": "synthetic:vignette-D",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 4,
+      "input_start_byte": 20751,
+      "input_end_byte": 21445,
+      "text_sha256": "ed64f43530185d0a411378ffe4c5e2146cd1691a8e1c84aa80b029ddb29ef38b"
+    }
+  ]
+}

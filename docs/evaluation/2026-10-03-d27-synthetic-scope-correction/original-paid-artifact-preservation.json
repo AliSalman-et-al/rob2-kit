@@ -1,0 +1,14 @@
+{
+  "files": {
+    "both-outputs-frozen.json": "1931ad2a758980fff82ba29eeb2be55995df548409ebc14b24bb5cd84fc11152",
+    "baseline-input.txt": "f371eb209b983267c451fb59056be8116002ce550429ba953a6e50a8bb51513b",
+    "current-input.txt": "01a8b774a05067a091a39e1968bf2acb6c11ce4710030f8092665e1b2359f519",
+    "baseline/events.jsonl": "9ef45002253e2c7add0ef3eeed830c18beb2e360563c85fe1fbc83e7114bef10",
+    "baseline/response.txt": "8271520e3f958d52b3fa1c82804b45b2774445087b4e4bd0ad36a8d11aa407b4",
+    "current/events.jsonl": "2972b6cfc3728cf42542a1bbe46400b0213d50e02c1c021f511323e2434b7037",
+    "current/response.txt": "4db20c383b2d4f4574eff0cec5a8eaa225323249277bd8e7320009b22abfc962"
+  },
+  "original_paid_inputs_outputs_unchanged": true,
+  "review_interpretation_superseded_not_deleted": true,
+  "new_model_calls": 0
+}
