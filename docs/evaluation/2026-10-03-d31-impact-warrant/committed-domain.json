@@ -1,0 +1,76 @@
+{
+  "active_questions": [
+    "sq:missing:data-available"
+  ],
+  "answers": [
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+          "kind": "direct_support",
+          "source": "Figure 1. Enrollment and Follow-up.\nAll the patients who underwent randomization were included in the primary analysis. Patients who did not receive a\ndose of either dapagliflozin or placebo were excluded from the safety analysis.\n4744 Underwent randomization\n8134 Patients underwent screening\n3390 Were excluded\n12 Died\n15 Had an adverse event\n84 Declined to participate\n3279 Did not meet eligibility criteria\n5 Did not receive dapagliflozin\n3 Did not receive placebo\n2373 Were assigned to receive\ndapagliflozin\n2371 Were assigned to receive\nplacebo\n249 Discontinued dapagliflozin\n14 Had incomplete follow-up for the\nprimary outcome\n258 Discontinued placebo\n20 Had incomplete follow-up for the\nprimary outcome\n2 Had unknown vital status"
+        },
+        {
+          "evidence": "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+          "kind": "direct_support",
+          "source": "Dapagliflozin was stopped for reasons other\nthan death in 249 patients and placebo was\nstopped in 258 patients (10.5% vs. 10.9%, P = 0.71).\nAt the last assessment, 2039 of the patients who\nwere still taking dapagliflozin (98.1%) continued\nto receive the 10-mg daily dose; 1993 patients\n(98.2%) were receiving the equivalent dose of\nplacebo. No patients in the dapagliflozin group\nand 2 patients in the placebo group had un-\nknown vital status at the end of the trial (Fig. 1).\nThe median duration of follow-up was 18.2 months\n(range, 0 to 27.8).\nOutcomes\nThe primary composite outcome of worsening\nheart failure (hospitalization or an urgent visit\nresulting in intravenous therapy for heart failure)\nor death from cardiovascular causes occurred in\n386 patients (16.3%) in the dapagliflozin group\nand in 502 patients (21.2%) in the placebo group\n(hazard ratio, 0.74; 95% confidence interval [CI],\n0.65 to 0.85; P<0.001) (Table 2 and Fig. 2A)."
+        },
+        {
+          "evidence": "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047",
+          "kind": "context",
+          "source": "n engl j med 381;21 nejm.org November 21, 2019\n1999\nDapagliflozin in Heart Failure and Reduced Ejection Fraction\nof the patients in each group received a new di-\nagnosis of diabetes.\nDapagliflozin was stopped for reasons other\nthan death in 249 patients and placebo was\nstopped in 258 patients (10.5% vs. 10.9%, P = 0.71).\nAt the last assessment, 2039 of the patients who\nwere still taking dapagliflozin (98.1%) continued\nto receive the 10-mg daily dose; 1993 patients\n(98.2%) were receiving the equivalent dose of\nplacebo. No patients in the dapagliflozin group\nand 2 patients in the placebo group had un-\nknown vital status at the end of the trial (Fig. 1).\nThe median duration of follow-up was 18.2 months\n(range, 0 to 27.8).\nOutcomes\nThe primary composite outcome of worsening\nheart failure (hospitalization or an urgent visit\nresulting in intravenous therapy for heart failure)\nor death from cardiovascular causes occurred in\n386 patients (16.3%) in the dapagliflozin group\nand in 502 patients (21.2%) in the placebo group\n(hazard ratio, 0.74; 95% confidence interval [CI],\n0.65 to 0.85; P<0.001) (Table 2 and Fig. 2A).\nEvent rates for all three components of the\ncomposite outcome favored dapagliflozin; the larg-\nest number of events of worsening heart failure\nwere hospitalizations. Of the patients receiving\ndapagliflozin, 231 (9.7%) were hospitalized for\nheart failure, as compared with 318 patients\n(13.4%) receiving placebo (hazard ratio, 0.70; 95%\nCI, 0.59 to 0.83) (Fig. 2B). Death from cardiovas-\ncular causes occurred in 227 patients (9.6%) who\nreceived dapagliflozin and in 273 (11.5%) who\nreceived placebo (hazard ratio, 0.82; 95% CI,\n0.69 to 0.98) (Fig. 2C). During the trial period,\nthe number of patients who would need to have\nbeen treated with dapagliflozin to prevent one\nprimary event was 21 (95% CI, 15 to 38).\nThe incidence of the secondary composite\noutcome of hospitalization for heart failure or\ndeath from cardiovascular causes was lower in\nthe dapagliflozin group than in the placebo\ngroup (hazard ratio, 0.75; 95% CI, 0.65 to 0.85;\nP<0.001) (Table 2). There were 567 total first and\nrecurrent events (340 hospitalizations for heart\nfailure and 227 deaths from cardiovascular causes\nin 382 patients) in the dapagliflozin group and\n742 total events (469 hospitalizations for heart\nfailure and 273 deaths from cardiovascular causes\nin 495 patients) in the placebo group, which re-\nsulted in a rate ratio of 0.75 (95% CI, 0.65 to 0.88;\nP<0.001).\nThe increase in the total symptom score on\nthe Kansas City Cardiomyopathy Questionnaire\n(indicating fewer symptoms) was greater in the\ndapagliflozin group than in the placebo group\nbetween baseline and month 8 (Table 2). More\npatients in the dapagliflozin group than in the\nplacebo group had an increase of at least 5 points\n(the minimally important difference) in the total\nscore (58.3% vs. 50.9%; odds ratio, 1.15; 95% CI,\n1.08 to 1.23) and fewer had significant deterio-\nration (25.3% vs. 32.9%; odds ratio, 0.84; 95%"
+        },
+        {
+          "kind": "limitation",
+          "stopping_rationale": "The main article, including its participant-flow and result passages, was read and searched, and relevant protocol/SAP material was inspected. It describes missing follow-up as expected to be small and planned evaluation/sensitivity analyses, but no executed missing-outcome sensitivity result resolving this impact was located. The arm-specific incomplete-follow-up counts permit a calibrated probable judgment, while their timing, reasons and counterfactual event status remain unavailable.",
+          "unresolved_premise": "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "For the approved assignment comparison (randomized dapagliflozin 10 mg plus recommended therapy versus placebo plus recommended therapy), primary composite over follow-up (median 18.2 months), the flow diagram reports 14/2373 and 20/2371 with incomplete primary-outcome follow-up, plus 2 placebo participants of unknown vital status. The very small listed fractions and nearly balanced arm counts support that nearly all were followed; however these counts do not state timing, observed ascertainment for every composite component, or whether unobserved outcomes could materially alter HR 0.74 (95% CI 0.65\u20130.85), so retain uncertainty. ITT membership is not itself proof of observation. Treatment discontinuation (249 vs 258) is not equivalent to missing outcome data.",
+      "question_id": "sq:missing:data-available",
+      "unknowns": [
+        "Timing and reasons for incomplete primary-composite follow-up and unknown vital status are not reported here.",
+        "Whether any participants' composite outcome was imputed is not established.",
+        "The missing-outcome pattern and its possible effect on the estimated hazard ratio are not quantified."
+      ]
+    }
+  ],
+  "domain_id": "domain:missing",
+  "driver_questions": [],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+          "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+          "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047"
+        ],
+        "question_id": "sq:missing:data-available",
+        "search_receipts": [],
+        "status": "unresolved",
+        "unresolved_premises": [
+          "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+        ]
+      }
+    ],
+    "identity": "sha256:51e270cabe7cb48ad51f9ff35164512d11b6009aac1453789ade86e41a43a821"
+  },
+  "identity": "sha256:82fd8bee2f86437039805dee3ed8ca0e7ba655fb44305b4308e245c0e80034c7",
+  "inactive_questions": [
+    "sq:missing:evidence-unbiased",
+    "sq:missing:true-value-dependent",
+    "sq:missing:likely-dependent"
+  ],
+  "judgment": "low",
+  "observed_at": "2026-10-03T08:39:20.567699+00:00",
+  "result_identity": "sha256:e30288e31718ec666e545d34cc0e1d747ab4c3afcc68f97790c348189fc2e218",
+  "revision_basis": null,
+  "search_accounts": [],
+  "supersedes": null,
+  "trace": [
+    "missing.low"
+  ],
+  "trial_id": "dapa-hf"
+}

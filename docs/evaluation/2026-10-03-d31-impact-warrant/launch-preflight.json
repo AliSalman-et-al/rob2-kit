@@ -1,0 +1,25 @@
+{
+  "no_model_calls": true,
+  "save_answer_schema_fields": [
+    "question_id",
+    "answer",
+    "bases",
+    "absence_searches",
+    "limitations",
+    "missing_data",
+    "justification",
+    "unknowns",
+    "counterevidence"
+  ],
+  "required": [
+    "question_id",
+    "answer",
+    "justification",
+    "unknowns",
+    "counterevidence"
+  ],
+  "no_request_proxy": true,
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "provider_declaration_visibility": "Unobservable; native MCP declaration verified."
+}
