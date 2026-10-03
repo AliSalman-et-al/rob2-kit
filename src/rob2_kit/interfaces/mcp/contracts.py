@@ -22,6 +22,7 @@ from pydantic import (
 from pydantic.types import PositiveInt
 
 from rob2_kit.application.contracts import TOOL_NAMES
+from rob2_kit.application.domains import _host_asserted_sufficiency
 from rob2_kit.application.source_handles import public_source_references
 from rob2_kit.models import Answer, Judgment, QuerySuggestion, ResponseFramework
 from rob2_kit.workflow_models import (
@@ -3162,6 +3163,9 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                 "evidence_sufficiency",
             )
         }
+        data["checkpoint"]["evidence_sufficiency"] = _host_asserted_sufficiency(
+            checkpoint.get("evidence_sufficiency")
+        )
     if tool == "prepare_batch" and "batch" in data:
         batch = data.pop("batch")
         data.update(

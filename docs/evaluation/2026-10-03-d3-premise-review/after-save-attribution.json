@@ -1,0 +1,24 @@
+{
+  "save_projection": {
+    "claims": [
+      {
+        "question_id": "sq:missing:data-available",
+        "status": "unresolved",
+        "evidence": [
+          "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+          "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+          "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047"
+        ],
+        "search_receipts": [],
+        "unresolved_premises": [
+          "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+        ],
+        "support_attribution": "host_asserted"
+      }
+    ],
+    "identity": "sha256:51e270cabe7cb48ad51f9ff35164512d11b6009aac1453789ade86e41a43a821"
+  },
+  "matches_existing_context_projection": true,
+  "canonical_record_unchanged": true,
+  "method": "Normalize archived record offline; no inference or assessment write."
+}

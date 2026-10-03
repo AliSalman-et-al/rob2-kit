@@ -1,0 +1,1945 @@
+{
+  "dapa-hf": {
+    "original_workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-dapa-d31-warrant-65daa48/workspace",
+    "database_sha256": "1f1ed38478fd08fe07960f9d6406a0d9daf53c24bb660a3244e172732f7c40c2",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "Dapagliflozin 10 mg once daily plus recommended therapy",
+          "id": "dapagliflozin"
+        },
+        {
+          "assignment": "Matching placebo plus recommended therapy",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Occurrence of worsening heart failure (hospitalization or urgent visit resulting in intravenous therapy for heart failure) or cardiovascular death",
+        "metric": "Composite of worsening heart failure (hospitalization or urgent visit with IV therapy) or cardiovascular death"
+      },
+      "outcome_definition": "Composite of worsening heart failure (hospitalization or urgent visit with IV therapy) or cardiovascular death",
+      "time_point_or_window": {
+        "description": "From randomization through trial follow-up; median follow-up 18.2 months",
+        "kind": "described"
+      }
+    },
+    "reported_result": {
+      "analysis_population": "All 4744 randomized patients were included in the primary and secondary outcome analyses according to the intention-to-treat principle; incomplete primary-outcome follow-up was reported for 14 dapagliflozin and 20 placebo participants, and 2 placebo participants had unknown vital status.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "definition": "Worsening heart failure (hospitalization or an urgent visit resulting in intravenous therapy for heart failure) or death from cardiovascular causes",
+        "name": "Primary composite outcome"
+      },
+      "estimate": "0.74",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.65 to 0.85"
+    },
+    "committed_d3": {
+      "active_questions": [
+        "sq:missing:data-available"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "bases": [
+            {
+              "evidence": "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+              "kind": "direct_support",
+              "source": "Figure 1. Enrollment and Follow-up.\nAll the patients who underwent randomization were included in the primary analysis. Patients who did not receive a\ndose of either dapagliflozin or placebo were excluded from the safety analysis.\n4744 Underwent randomization\n8134 Patients underwent screening\n3390 Were excluded\n12 Died\n15 Had an adverse event\n84 Declined to participate\n3279 Did not meet eligibility criteria\n5 Did not receive dapagliflozin\n3 Did not receive placebo\n2373 Were assigned to receive\ndapagliflozin\n2371 Were assigned to receive\nplacebo\n249 Discontinued dapagliflozin\n14 Had incomplete follow-up for the\nprimary outcome\n258 Discontinued placebo\n20 Had incomplete follow-up for the\nprimary outcome\n2 Had unknown vital status"
+            },
+            {
+              "evidence": "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+              "kind": "direct_support",
+              "source": "Dapagliflozin was stopped for reasons other\nthan death in 249 patients and placebo was\nstopped in 258 patients (10.5% vs. 10.9%, P = 0.71).\nAt the last assessment, 2039 of the patients who\nwere still taking dapagliflozin (98.1%) continued\nto receive the 10-mg daily dose; 1993 patients\n(98.2%) were receiving the equivalent dose of\nplacebo. No patients in the dapagliflozin group\nand 2 patients in the placebo group had un-\nknown vital status at the end of the trial (Fig. 1).\nThe median duration of follow-up was 18.2 months\n(range, 0 to 27.8).\nOutcomes\nThe primary composite outcome of worsening\nheart failure (hospitalization or an urgent visit\nresulting in intravenous therapy for heart failure)\nor death from cardiovascular causes occurred in\n386 patients (16.3%) in the dapagliflozin group\nand in 502 patients (21.2%) in the placebo group\n(hazard ratio, 0.74; 95% confidence interval [CI],\n0.65 to 0.85; P<0.001) (Table 2 and Fig. 2A)."
+            },
+            {
+              "evidence": "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047",
+              "kind": "context",
+              "source": "n engl j med 381;21 nejm.org November 21, 2019\n1999\nDapagliflozin in Heart Failure and Reduced Ejection Fraction\nof the patients in each group received a new di-\nagnosis of diabetes.\nDapagliflozin was stopped for reasons other\nthan death in 249 patients and placebo was\nstopped in 258 patients (10.5% vs. 10.9%, P = 0.71).\nAt the last assessment, 2039 of the patients who\nwere still taking dapagliflozin (98.1%) continued\nto receive the 10-mg daily dose; 1993 patients\n(98.2%) were receiving the equivalent dose of\nplacebo. No patients in the dapagliflozin group\nand 2 patients in the placebo group had un-\nknown vital status at the end of the trial (Fig. 1).\nThe median duration of follow-up was 18.2 months\n(range, 0 to 27.8).\nOutcomes\nThe primary composite outcome of worsening\nheart failure (hospitalization or an urgent visit\nresulting in intravenous therapy for heart failure)\nor death from cardiovascular causes occurred in\n386 patients (16.3%) in the dapagliflozin group\nand in 502 patients (21.2%) in the placebo group\n(hazard ratio, 0.74; 95% confidence interval [CI],\n0.65 to 0.85; P<0.001) (Table 2 and Fig. 2A).\nEvent rates for all three components of the\ncomposite outcome favored dapagliflozin; the larg-\nest number of events of worsening heart failure\nwere hospitalizations. Of the patients receiving\ndapagliflozin, 231 (9.7%) were hospitalized for\nheart failure, as compared with 318 patients\n(13.4%) receiving placebo (hazard ratio, 0.70; 95%\nCI, 0.59 to 0.83) (Fig. 2B). Death from cardiovas-\ncular causes occurred in 227 patients (9.6%) who\nreceived dapagliflozin and in 273 (11.5%) who\nreceived placebo (hazard ratio, 0.82; 95% CI,\n0.69 to 0.98) (Fig. 2C). During the trial period,\nthe number of patients who would need to have\nbeen treated with dapagliflozin to prevent one\nprimary event was 21 (95% CI, 15 to 38).\nThe incidence of the secondary composite\noutcome of hospitalization for heart failure or\ndeath from cardiovascular causes was lower in\nthe dapagliflozin group than in the placebo\ngroup (hazard ratio, 0.75; 95% CI, 0.65 to 0.85;\nP<0.001) (Table 2). There were 567 total first and\nrecurrent events (340 hospitalizations for heart\nfailure and 227 deaths from cardiovascular causes\nin 382 patients) in the dapagliflozin group and\n742 total events (469 hospitalizations for heart\nfailure and 273 deaths from cardiovascular causes\nin 495 patients) in the placebo group, which re-\nsulted in a rate ratio of 0.75 (95% CI, 0.65 to 0.88;\nP<0.001).\nThe increase in the total symptom score on\nthe Kansas City Cardiomyopathy Questionnaire\n(indicating fewer symptoms) was greater in the\ndapagliflozin group than in the placebo group\nbetween baseline and month 8 (Table 2). More\npatients in the dapagliflozin group than in the\nplacebo group had an increase of at least 5 points\n(the minimally important difference) in the total\nscore (58.3% vs. 50.9%; odds ratio, 1.15; 95% CI,\n1.08 to 1.23) and fewer had significant deterio-\nration (25.3% vs. 32.9%; odds ratio, 0.84; 95%"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The main article, including its participant-flow and result passages, was read and searched, and relevant protocol/SAP material was inspected. It describes missing follow-up as expected to be small and planned evaluation/sensitivity analyses, but no executed missing-outcome sensitivity result resolving this impact was located. The arm-specific incomplete-follow-up counts permit a calibrated probable judgment, while their timing, reasons and counterfactual event status remain unavailable.",
+              "unresolved_premise": "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+            }
+          ],
+          "counterevidence": [],
+          "justification": "For the approved assignment comparison (randomized dapagliflozin 10 mg plus recommended therapy versus placebo plus recommended therapy), primary composite over follow-up (median 18.2 months), the flow diagram reports 14/2373 and 20/2371 with incomplete primary-outcome follow-up, plus 2 placebo participants of unknown vital status. The very small listed fractions and nearly balanced arm counts support that nearly all were followed; however these counts do not state timing, observed ascertainment for every composite component, or whether unobserved outcomes could materially alter HR 0.74 (95% CI 0.65\u20130.85), so retain uncertainty. ITT membership is not itself proof of observation. Treatment discontinuation (249 vs 258) is not equivalent to missing outcome data.",
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Timing and reasons for incomplete primary-composite follow-up and unknown vital status are not reported here.",
+            "Whether any participants' composite outcome was imputed is not established.",
+            "The missing-outcome pattern and its possible effect on the estimated hazard ratio are not quantified."
+          ]
+        }
+      ],
+      "domain_id": "domain:missing",
+      "driver_questions": [],
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+              "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+              "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047"
+            ],
+            "question_id": "sq:missing:data-available",
+            "search_receipts": [],
+            "status": "unresolved",
+            "unresolved_premises": [
+              "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+            ]
+          }
+        ],
+        "identity": "sha256:51e270cabe7cb48ad51f9ff35164512d11b6009aac1453789ade86e41a43a821"
+      },
+      "identity": "sha256:82fd8bee2f86437039805dee3ed8ca0e7ba655fb44305b4308e245c0e80034c7",
+      "inactive_questions": [
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "judgment": "low",
+      "observed_at": "2026-10-03T08:39:20.567699+00:00",
+      "result_identity": "sha256:e30288e31718ec666e545d34cc0e1d747ab4c3afcc68f97790c348189fc2e218",
+      "revision_basis": null,
+      "search_accounts": [],
+      "supersedes": null,
+      "trace": [
+        "missing.low"
+      ],
+      "trial_id": "dapa-hf"
+    },
+    "offline_review_projection": {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:82fd8bee2f86437039805dee3ed8ca0e7ba655fb44305b4308e245c0e80034c7",
+      "judgment": "low",
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "question": "Were data for this outcome available for all, or nearly all, participants randomized?",
+          "driver": false,
+          "answer": "probably_yes",
+          "facts": [
+            {
+              "text": "Figure 1. Enrollment and Follow-up.\nAll the patients who underwent randomization were included in the primary analysis. Patients who did not receive a\ndose of either dapagliflozin or placebo were excluded from the safety analysis.\n4744 Underwent randomization\n8134 Patients underwent screening\n3390 Were excluded\n12 Died\n15 Had an adverse event\n84 Declined to participate\n3279 Did not meet eligibility criteria\n5 Did not receive dapagliflozin\n3 Did not receive placebo\n2373 Were assigned to receive\ndapagliflozin\n2371 Were assigned to receive\nplacebo\n249 Discontinued dapagliflozin\n14 Had incomplete follow-up for the\nprimary outcome\n258 Discontinued placebo\n20 Had incomplete follow-up for the\nprimary outcome\n2 Had unknown vital status",
+              "evidence": {
+                "handle": "eh_cdcbbffe5060cf1a",
+                "identity": "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a"
+              },
+              "role": "support"
+            },
+            {
+              "text": "Dapagliflozin was stopped for reasons other\nthan death in 249 patients and placebo was\nstopped in 258 patients (10.5% vs. 10.9%, P = 0.71).\nAt the last assessment, 2039 of the patients who\nwere still taking dapagliflozin (98.1%) continued\nto receive the 10-mg daily dose; 1993 patients\n(98.2%) were receiving the equivalent dose of\nplacebo. No patients in the dapagliflozin group\nand 2 patients in the placebo group had un-\nknown vital status at the end of the trial (Fig. 1).\nThe median duration of follow-up was 18.2 months\n(range, 0 to 27.8).\nOutcomes\nThe primary composite outcome of worsening\nheart failure (hospitalization or an urgent visit\nresulting in intravenous therapy for heart failure)\nor death from cardiovascular causes occurred in\n386 patients (16.3%) in the dapagliflozin group\nand in 502 patients (21.2%) in the placebo group\n(hazard ratio, 0.74; 95% confidence interval [CI],\n0.65 to 0.85; P<0.001) (Table 2 and Fig. 2A).",
+              "evidence": {
+                "handle": "eh_bfdb4789ee6db914",
+                "identity": "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f"
+              },
+              "role": "support"
+            },
+            {
+              "text": "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio.",
+              "role": "context"
+            }
+          ],
+          "warrant": "For the approved assignment comparison (randomized dapagliflozin 10 mg plus recommended therapy versus placebo plus recommended therapy), primary composite over follow-up (median 18.2 months), the flow diagram reports 14/2373 and 20/2371 with incomplete primary-outcome follow-up, plus 2 placebo participants of unknown vital status. The very small listed fractions and nearly balanced arm counts support that nearly all were followed; however these counts do not state timing, observed ascertainment for every composite component, or whether unobserved outcomes could materially alter HR 0.74 (95% CI 0.65\u20130.85), so retain uncertainty. ITT membership is not itself proof of observation. Treatment discontinuation (249 vs 258) is not equivalent to missing outcome data.",
+          "justification": "For the approved assignment comparison (randomized dapagliflozin 10 mg plus recommended therapy versus placebo plus recommended therapy), primary composite over follow-up (median 18.2 months), the flow diagram reports 14/2373 and 20/2371 with incomplete primary-outcome follow-up, plus 2 placebo participants of unknown vital status. The very small listed fractions and nearly balanced arm counts support that nearly all were followed; however these counts do not state timing, observed ascertainment for every composite component, or whether unobserved outcomes could materially alter HR 0.74 (95% CI 0.65\u20130.85), so retain uncertainty. ITT membership is not itself proof of observation. Treatment discontinuation (249 vs 258) is not equivalent to missing outcome data.",
+          "unknowns": [
+            "Timing and reasons for incomplete primary-composite follow-up and unknown vital status are not reported here.",
+            "Whether any participants' composite outcome was imputed is not established.",
+            "The missing-outcome pattern and its possible effect on the estimated hazard ratio are not quantified."
+          ],
+          "counterevidence": [],
+          "limitations": [
+            {
+              "unresolved_premise": "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio.",
+              "stopping_rationale": "The main article, including its participant-flow and result passages, was read and searched, and relevant protocol/SAP material was inspected. It describes missing follow-up as expected to be small and planned evaluation/sensitivity analyses, but no executed missing-outcome sensitivity result resolving this impact was located. The arm-specific incomplete-follow-up counts permit a calibrated probable judgment, while their timing, reasons and counterfactual event status remain unavailable.",
+              "search_receipt": null
+            }
+          ],
+          "conflicts": [],
+          "uninvestigated_routes": [],
+          "evidence": [
+            {
+              "handle": "eh_cdcbbffe5060cf1a",
+              "identity": "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a"
+            },
+            {
+              "handle": "eh_bfdb4789ee6db914",
+              "identity": "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f"
+            }
+          ],
+          "bases": [
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": {
+                "handle": "eh_cdcbbffe5060cf1a",
+                "identity": "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a"
+              }
+            },
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": {
+                "handle": "eh_bfdb4789ee6db914",
+                "identity": "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f"
+              }
+            },
+            {
+              "kind": "context",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "limitation",
+              "assertion": "host_asserted",
+              "unresolved_premise": "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio.",
+              "stopping_rationale": "The main article, including its participant-flow and result passages, was read and searched, and relevant protocol/SAP material was inspected. It describes missing follow-up as expected to be small and planned evaluation/sensitivity analyses, but no executed missing-outcome sensitivity result resolving this impact was located. The arm-specific incomplete-follow-up counts permit a calibrated probable judgment, while their timing, reasons and counterfactual event status remain unavailable."
+            }
+          ],
+          "evidence_expansions": [
+            {
+              "operation": "read_pages",
+              "evidence": "eh_cdcbbffe5060cf1a",
+              "trial_id": "dapa-hf",
+              "windows": [
+                {
+                  "source_id": "source_10d0513bfdb11138b28357d50537100b884d70373b95c0e6ca39c130f4807ad5",
+                  "page": 3,
+                  "start_line": 47,
+                  "end_line": 69
+                }
+              ]
+            },
+            {
+              "operation": "read_pages",
+              "evidence": "eh_bfdb4789ee6db914",
+              "trial_id": "dapa-hf",
+              "windows": [
+                {
+                  "source_id": "source_10d0513bfdb11138b28357d50537100b884d70373b95c0e6ca39c130f4807ad5",
+                  "page": 5,
+                  "start_line": 6,
+                  "end_line": 26
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "premise_checkpoint_identity": null,
+      "premise_records": [],
+      "investigation": {
+        "proposition": "Were data for this outcome available for all, or nearly all, participants randomized?",
+        "status": "not_established",
+        "sufficiency": {
+          "status": "not_established",
+          "attribution": "not_established"
+        },
+        "workflow_permission": {
+          "permitted": true,
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "detail": "Submit a changed Domain draft before refreshing Trial review; review itself is not semantic approval."
+        },
+        "coverage": {
+          "source_scope": [
+            "sh_0a3174aa72c44866",
+            "sh_10d0513bfdb11138",
+            "sh_2c84818952796a98",
+            "sh_62c074c3ab8e1f2f",
+            "sh_72c6116042a05440",
+            "sh_8a6b55223ca88f68"
+          ],
+          "state": "partial",
+          "ranges": [
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 67,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 2,
+              "start_line": 1,
+              "end_line": 107,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 71,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 104,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 63,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 5,
+              "start_line": 64,
+              "end_line": 105,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 154,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 123,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 8,
+              "start_line": 1,
+              "end_line": 161,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 9,
+              "start_line": 1,
+              "end_line": 79,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 10,
+              "start_line": 1,
+              "end_line": 258,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 11,
+              "start_line": 1,
+              "end_line": 222,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 12,
+              "start_line": 1,
+              "end_line": 127,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 13,
+              "start_line": 1,
+              "end_line": 12,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 13,
+              "start_line": 13,
+              "end_line": 125,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_10d0513bfdb11138",
+              "page": 14,
+              "start_line": 1,
+              "end_line": 125,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_62c074c3ab8e1f2f",
+              "page": 203,
+              "start_line": 6,
+              "end_line": 32,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_62c074c3ab8e1f2f",
+              "page": 213,
+              "start_line": 33,
+              "end_line": 50,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_62c074c3ab8e1f2f",
+              "page": 238,
+              "start_line": 14,
+              "end_line": 28,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_62c074c3ab8e1f2f",
+              "page": 250,
+              "start_line": 1,
+              "end_line": 27,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_72c6116042a05440",
+              "page": 2,
+              "start_line": 1,
+              "end_line": 30,
+              "phase": "assessment"
+            }
+          ],
+          "range_count": 21,
+          "delivered_sources": [
+            "sh_10d0513bfdb11138",
+            "sh_62c074c3ab8e1f2f",
+            "sh_72c6116042a05440"
+          ],
+          "sources_without_delivery": [
+            "sh_0a3174aa72c44866",
+            "sh_2c84818952796a98",
+            "sh_8a6b55223ca88f68"
+          ],
+          "ranges_truncated": false
+        },
+        "host_notes": {
+          "referenced_sources": [],
+          "unread_ranges": [],
+          "observation_count": 0
+        },
+        "observations": [],
+        "support": [],
+        "counterevidence": [],
+        "unresolved": "Were data for this outcome available for all, or nearly all, participants randomized?",
+        "recovery_choices": [
+          {
+            "operation": "save_working_checkpoint",
+            "available": true,
+            "rationale": "Save source-linked observations without committing an answer."
+          },
+          {
+            "operation": "search_sources",
+            "available": true,
+            "rationale": "Search captured Sources for Evidence that discriminates the premise."
+          },
+          {
+            "operation": "read_pages",
+            "available": true,
+            "rationale": "Read exact Source pages before relying on a passage as Evidence."
+          },
+          {
+            "operation": "accept_limitation",
+            "available": true,
+            "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+          },
+          {
+            "operation": "save_domain_judgment",
+            "available": true,
+            "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+          }
+        ],
+        "stopping_rationale": null,
+        "stale": [],
+        "checkpoint_identity": null,
+        "legacy": "supported",
+        "premises": []
+      }
+    },
+    "qualification": "Read-only original; projection computed in a disposable copy, not a new assessment or complete trial review approval.",
+    "before_attribution": {
+      "save_projection": {
+        "claims": [
+          {
+            "question_id": "sq:missing:data-available",
+            "status": "unresolved",
+            "evidence": [
+              "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+              "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+              "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047"
+            ],
+            "search_receipts": [],
+            "unresolved_premises": [
+              "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+            ],
+            "support_attribution": "not_established"
+          }
+        ],
+        "identity": "sha256:51e270cabe7cb48ad51f9ff35164512d11b6009aac1453789ade86e41a43a821"
+      },
+      "context_projection": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+              "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+              "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047"
+            ],
+            "question_id": "sq:missing:data-available",
+            "search_receipts": [],
+            "status": "unresolved",
+            "unresolved_premises": [
+              "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+            ],
+            "support_attribution": "host_asserted"
+          }
+        ],
+        "identity": "sha256:51e270cabe7cb48ad51f9ff35164512d11b6009aac1453789ade86e41a43a821"
+      },
+      "canonical_unchanged": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:cdcbbffe5060cf1a833dbbd47286fcfced503987e3356eec808e24d4d068658a",
+              "sha256:bfdb4789ee6db9141d993a4ab8b90a514d708c669bd372db11ad884754797c8f",
+              "sha256:3a7f8e8e717e000a9d968a166d5acb6b8237054f32c04326916b37545664c047"
+            ],
+            "question_id": "sq:missing:data-available",
+            "search_receipts": [],
+            "status": "unresolved",
+            "unresolved_premises": [
+              "Whether missing outcomes, whatever their values, could make an important difference to the approved hazard ratio."
+            ]
+          }
+        ],
+        "identity": "sha256:51e270cabe7cb48ad51f9ff35164512d11b6009aac1453789ade86e41a43a821"
+      },
+      "note": "Attribution differs solely because save omits context annotation and typed default inserts not_established; unresolved status is unchanged and is not a semantic contradiction verdict."
+    }
+  },
+  "deliver": {
+    "original_workspace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/deliver",
+    "database_sha256": "a688e2e32b9f8c05f08c1e587da4f395bbf85189c309552758869f239d22f1ad",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "Dapagliflozin 10 mg once daily plus usual therapy",
+          "id": "dapagliflozin"
+        },
+        {
+          "assignment": "Matching placebo plus usual therapy",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Time to first occurrence of worsening heart failure (unplanned hospitalization or urgent visit for heart failure) or cardiovascular death; events were adjudicated by an independent committee blinded to assignment.",
+        "metric": "Composite of worsening heart failure (unplanned hospitalization or urgent visit) or cardiovascular death"
+      },
+      "outcome_definition": "Composite of worsening heart failure (unplanned hospitalization or urgent visit) or cardiovascular death",
+      "time_point_or_window": {
+        "description": "From randomization through trial follow-up (median 2.3 years; interquartile range 1.7 to 2.8 years).",
+        "kind": "described"
+      }
+    },
+    "reported_result": {
+      "analysis_population": "All 6263 randomized patients analyzed according to the intention-to-treat principle; 3131 assigned dapagliflozin and 3132 placebo.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "definition": null,
+        "name": "Primary outcome"
+      },
+      "estimate": "0.82",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% confidence interval [CI], 0.73 to 0.92; P<0.001"
+    },
+    "committed_d3": {
+      "active_questions": [
+        "sq:missing:data-available"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "bases": [
+            {
+              "evidence": "sha256:90807907cc1f63c2e85e9be0b5fda1490b49f8fdb55817183aa20354ca1306f1",
+              "kind": "indirect_support",
+              "source": "Figure S2. Patient flow. Of 6,263 randomized participants, 3,131 were allocated to dapagliflozin and 3,132 to placebo. Dapagliflozin: 3,126 received allocated intervention and 5 did not; 444 discontinued intervention; incomplete follow-up for the primary endpoint was reported for 29; survival status was unknown for 2, including 2 lost to follow-up and 0 withdrawals of consent. Placebo: 3,127 received allocated intervention and 5 did not; 442 discontinued intervention; incomplete follow-up for the primary endpoint was reported for 23; survival status was unknown for 2, including 1 lost to follow-up and 1 withdrawal of consent."
+            },
+            {
+              "evidence": "sha256:ed953e4d1e8a087bc17efa1932318664cea9247067eaecfe5907ee7da37cdaf9",
+              "kind": "direct_support",
+              "source": "Dapagliflozin was discontinued for reasons other\nthan death in 444 patients (14.2%), and placebo\nwas discontinued for reasons other than death\nin 442 patients (14.1%). The vital status was\nknown at the end of the trial in all but 2 patients\nin the dapagliflozin group and 2 patients in the\nplacebo group. The median duration of follow-\nup was 2.3 years (interquartile range, 1.7 to 2.8)."
+            }
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "The flow chart does report some incomplete primary-endpoint follow-up (29 and 23), so the evidence supports near-complete rather than complete ascertainment."
+            }
+          ],
+          "justification": "The outcome-specific flow chart reports incomplete primary-endpoint follow-up for 29/3131 dapagliflozin participants and 23/3132 placebo participants, under 1% in either arm. It separately reports unknown survival status for two patients in each arm, and the main report confirms vital status was known at trial end for all but two per group. This supports outcome information for nearly all randomized participants, although follow-up was not complete for every participant.",
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Reasons and timing for the 29 and 23 incomplete primary-endpoint follow-ups are not given here; the source also does not clarify whether unknown survival status counts overlap with those totals."
+          ]
+        }
+      ],
+      "domain_id": "domain:missing",
+      "driver_questions": [],
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:90807907cc1f63c2e85e9be0b5fda1490b49f8fdb55817183aa20354ca1306f1",
+              "sha256:ed953e4d1e8a087bc17efa1932318664cea9247067eaecfe5907ee7da37cdaf9"
+            ],
+            "question_id": "sq:missing:data-available",
+            "search_receipts": [],
+            "status": "indirect",
+            "unresolved_premises": []
+          }
+        ],
+        "identity": "sha256:7d8fe043589448495e3c3e2cdb0dcd6b569b430abee325815b9d8939a3070a40"
+      },
+      "identity": "sha256:59a54a2d0e844f0ec7d4ef49d2aa0776665a14975d4b3d7e487a85b5c81181e3",
+      "inactive_questions": [
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "judgment": "low",
+      "observed_at": "2026-10-01T11:42:30.615301+00:00",
+      "result_identity": "sha256:26035c71e017e473485f75a020141d26d58b535886f1c7590c47d43cb3a85a68",
+      "revision_basis": null,
+      "search_accounts": [],
+      "supersedes": null,
+      "trace": [
+        "missing.low"
+      ],
+      "trial_id": "deliver"
+    },
+    "offline_review_projection": {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:59a54a2d0e844f0ec7d4ef49d2aa0776665a14975d4b3d7e487a85b5c81181e3",
+      "judgment": "low",
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "question": "Were data for this outcome available for all, or nearly all, participants randomized?",
+          "driver": false,
+          "answer": "probably_yes",
+          "facts": [],
+          "warrant": "The outcome-specific flow chart reports incomplete primary-endpoint follow-up for 29/3131 dapagliflozin participants and 23/3132 placebo participants, under 1% in either arm. It separately reports unknown survival status for two patients in each arm, and the main report confirms vital status was known at trial end for all but two per group. This supports outcome information for nearly all randomized participants, although follow-up was not complete for every participant.",
+          "justification": "The outcome-specific flow chart reports incomplete primary-endpoint follow-up for 29/3131 dapagliflozin participants and 23/3132 placebo participants, under 1% in either arm. It separately reports unknown survival status for two patients in each arm, and the main report confirms vital status was known at trial end for all but two per group. This supports outcome information for nearly all randomized participants, although follow-up was not complete for every participant.",
+          "unknowns": [
+            "Reasons and timing for the 29 and 23 incomplete primary-endpoint follow-ups are not given here; the source also does not clarify whether unknown survival status counts overlap with those totals."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "The flow chart does report some incomplete primary-endpoint follow-up (29 and 23), so the evidence supports near-complete rather than complete ascertainment."
+            }
+          ],
+          "limitations": [],
+          "conflicts": [],
+          "uninvestigated_routes": [],
+          "evidence": [],
+          "bases": [
+            {
+              "kind": "indirect_support",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": null
+            }
+          ],
+          "evidence_expansions": []
+        }
+      ],
+      "premise_checkpoint_identity": "sha256:82e8fbdb56ad7e4be04e69cd9f1011fac073a626dbc4caf4279706438db8d7ab",
+      "premise_records": [],
+      "investigation": {
+        "proposition": "No Domain-specific premise has been recorded yet.",
+        "status": "unresolved",
+        "sufficiency": {
+          "status": "unresolved",
+          "attribution": "not_established"
+        },
+        "workflow_permission": {
+          "permitted": true,
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "detail": "Submit a changed Domain draft before refreshing Trial review; review itself is not semantic approval."
+        },
+        "coverage": {
+          "source_scope": [
+            "sh_1c0a1debdbb871f5",
+            "sh_2e7f75bfcd50e8fb",
+            "sh_86d70138cf26cc52",
+            "sh_a475edbe3fac6ae2",
+            "sh_d52b7960a872d313",
+            "sh_e08fcefdda400f19"
+          ],
+          "state": "partial",
+          "ranges": [
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 64,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 64,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 2,
+              "start_line": 1,
+              "end_line": 111,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 2,
+              "start_line": 1,
+              "end_line": 111,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 107,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 107,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 140,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 4,
+              "start_line": 26,
+              "end_line": 105,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 140,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 150,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 5,
+              "start_line": 151,
+              "end_line": 182,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 135,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 5,
+              "start_line": 136,
+              "end_line": 182,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 318,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 318,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 105,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 105,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 8,
+              "start_line": 1,
+              "end_line": 226,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 8,
+              "start_line": 1,
+              "end_line": 226,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 9,
+              "start_line": 1,
+              "end_line": 53,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 9,
+              "start_line": 54,
+              "end_line": 93,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 9,
+              "start_line": 1,
+              "end_line": 93,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 10,
+              "start_line": 1,
+              "end_line": 86,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_1c0a1debdbb871f5",
+              "page": 10,
+              "start_line": 1,
+              "end_line": 86,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_86d70138cf26cc52",
+              "page": 21,
+              "start_line": 1,
+              "end_line": 45,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_86d70138cf26cc52",
+              "page": 22,
+              "start_line": 1,
+              "end_line": 45,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_86d70138cf26cc52",
+              "page": 27,
+              "start_line": 1,
+              "end_line": 38,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_86d70138cf26cc52",
+              "page": 28,
+              "start_line": 1,
+              "end_line": 37,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 32,
+              "start_line": 1,
+              "end_line": 45,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 153,
+              "start_line": 34,
+              "end_line": 57,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 221,
+              "start_line": 1,
+              "end_line": 30,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 248,
+              "start_line": 1,
+              "end_line": 20,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 249,
+              "start_line": 1,
+              "end_line": 35,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 250,
+              "start_line": 1,
+              "end_line": 43,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 251,
+              "start_line": 1,
+              "end_line": 42,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 252,
+              "start_line": 1,
+              "end_line": 42,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 253,
+              "start_line": 1,
+              "end_line": 45,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 254,
+              "start_line": 1,
+              "end_line": 45,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 255,
+              "start_line": 1,
+              "end_line": 26,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 256,
+              "start_line": 1,
+              "end_line": 40,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 257,
+              "start_line": 1,
+              "end_line": 43,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 258,
+              "start_line": 1,
+              "end_line": 45,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 259,
+              "start_line": 1,
+              "end_line": 35,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_d52b7960a872d313",
+              "page": 294,
+              "start_line": 1,
+              "end_line": 30,
+              "phase": "assessment"
+            }
+          ],
+          "range_count": 44,
+          "delivered_sources": [
+            "sh_1c0a1debdbb871f5",
+            "sh_86d70138cf26cc52",
+            "sh_d52b7960a872d313"
+          ],
+          "sources_without_delivery": [
+            "sh_2e7f75bfcd50e8fb",
+            "sh_a475edbe3fac6ae2",
+            "sh_e08fcefdda400f19"
+          ],
+          "ranges_truncated": false
+        },
+        "host_notes": {
+          "referenced_sources": [
+            "sh_1c0a1debdbb871f5",
+            "sh_86d70138cf26cc52"
+          ],
+          "unread_ranges": [],
+          "observation_count": 8
+        },
+        "observations": [
+          {
+            "text": "DELIVER is a phase 3, international, multicenter, parallel-group randomized controlled trial; patients were assigned to dapagliflozin or matching placebo.",
+            "sources": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 2,
+                "start_line": 54,
+                "end_line": 60
+              }
+            ]
+          },
+          {
+            "text": "Primary outcome definition: worsening HF (unplanned hospitalization or urgent visit) or cardiovascular death.",
+            "sources": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 2,
+                "start_line": 90,
+                "end_line": 99
+              }
+            ]
+          },
+          {
+            "text": "All potential worsening HF events and deaths adjudicated by independent committee blinded to group assignment.",
+            "sources": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 3,
+                "start_line": 4,
+                "end_line": 9
+              }
+            ]
+          },
+          {
+            "text": "Primary composite assessed in time-to-event analysis using Cox model stratified by diabetes status.",
+            "sources": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 3,
+                "start_line": 15,
+                "end_line": 20
+              }
+            ]
+          },
+          {
+            "text": "Analyses performed according to intention-to-treat.",
+            "sources": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 3,
+                "start_line": 35,
+                "end_line": 36
+              }
+            ]
+          },
+          {
+            "text": "Treatment stopped other than death in 444 (14.2%) and 442 (14.1%); vital status known at trial end for all but 2 in each arm; median follow-up 2.3 years.",
+            "sources": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 3,
+                "start_line": 70,
+                "end_line": 77
+              }
+            ]
+          },
+          {
+            "text": "Full-population primary outcome: 512/3131 (16.4%) vs 610/3132 (19.5%); HR 0.82 (95% CI 0.73-0.92), P<0.001.",
+            "sources": [
+              {
+                "source_id": "sh_1c0a1debdbb871f5",
+                "page": 3,
+                "start_line": 79,
+                "end_line": 84
+              }
+            ]
+          },
+          {
+            "text": "Supplement clarifies urgent HF visit required IV therapy, analyzes time to first CV death or worsening HF, and states independent blinded adjudication.",
+            "sources": [
+              {
+                "source_id": "sh_86d70138cf26cc52",
+                "page": 22,
+                "start_line": 7,
+                "end_line": 20
+              }
+            ]
+          }
+        ],
+        "support": [],
+        "counterevidence": [],
+        "unresolved": null,
+        "recovery_choices": [
+          {
+            "operation": "save_working_checkpoint",
+            "available": true,
+            "rationale": "Replace source-linked working notes without changing canonical assessment state."
+          },
+          {
+            "operation": "search_sources",
+            "available": true,
+            "rationale": "Search captured Sources for a discriminating passage when the premise remains open."
+          },
+          {
+            "operation": "read_pages",
+            "available": true,
+            "rationale": "Read the exact cited or unread Source range before relying on it as Evidence."
+          },
+          {
+            "operation": "accept_limitation",
+            "available": true,
+            "rationale": "Record the unresolved premise and stopping rationale through Domain submission when further accessible investigation is not discriminating."
+          },
+          {
+            "operation": "save_domain_judgment",
+            "available": true,
+            "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+          }
+        ],
+        "stopping_rationale": null,
+        "stale": [
+          {
+            "material": "interpretations",
+            "reason": "domain_revision"
+          },
+          {
+            "material": "premise_inference",
+            "reason": "domain_revision"
+          },
+          {
+            "material": "drafts",
+            "reason": "domain_revision"
+          },
+          {
+            "material": "stopping_rationale",
+            "reason": "domain_revision"
+          }
+        ],
+        "checkpoint_identity": "sha256:82e8fbdb56ad7e4be04e69cd9f1011fac073a626dbc4caf4279706438db8d7ab",
+        "legacy": "supported",
+        "premises": []
+      }
+    },
+    "qualification": "Read-only original; projection computed in a disposable copy, not a new assessment or complete trial review approval."
+  },
+  "getgoal-duo1-2013": {
+    "original_workspace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/getgoal-duo1-2013",
+    "database_sha256": "30ba70ebc1bbdc6a2866299ddea4c7238e945416d2173ddb394e4a2918ff6a71",
+    "approved_target": {
+      "comparison_groups": [
+        {
+          "assignment": "Lixisenatide added to insulin glargine and metformin, with or without TZD",
+          "id": "lixisenatide"
+        },
+        {
+          "assignment": "Placebo added to insulin glargine and metformin, with or without TZD",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Least squares mean difference",
+      "measurement": {
+        "method": "Absolute change in HbA1c from post run-in baseline to week 24",
+        "metric": "Change in HbA1c"
+      },
+      "outcome_definition": "Change in HbA1c",
+      "time_point_or_window": {
+        "description": "24 weeks after randomization",
+        "kind": "quantified",
+        "unit": "weeks",
+        "value": "24"
+      }
+    },
+    "reported_result": {
+      "analysis_population": "Modified intention-to-treat: randomized participants who received at least one dose of double-blind study drug and had baseline and at least one postbaseline assessment of any primary or secondary efficacy variable; missing values were handled using last observation carried forward.",
+      "effect_measure": "Least squares mean difference",
+      "endpoint": {
+        "definition": null,
+        "name": "HbA1c change after randomization"
+      },
+      "estimate": "-0.32%",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, -0.46 to -0.17; P , 0.0001"
+    },
+    "committed_d3": {
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "answer": "no_information",
+          "bases": [
+            {
+              "kind": "limitation",
+              "stopping_rationale": "I inspected the primary article's HbA1c analysis and participant flow, the supplementary participant-flow figure, and the registry's HbA1c-specific outcome description and denominators. These Sources do not separate observed week-24 HbA1c from carried-forward values or state outcome-specific missing counts at that time point; therefore neither all/nearly-all availability nor materially incomplete availability can be established.",
+              "unresolved_premise": "Actual observed HbA1c measurements at week 24 and arm-specific imputed counts are not reported. The registry reports 221 placebo and 215 lixisenatide participants with baseline and at least one postbaseline HbA1c assessment during the on-treatment period, and says LOCF was used; these are analysis-eligibility counts, not counts with observed week-24 HbA1c. Completion of treatment (211 and 194) is also not outcome availability."
+            }
+          ],
+          "counterevidence": [],
+          "justification": "The outcome-specific registry passage gives 221/223 and 215/223 with at least one postbaseline HbA1c assessment, but explicitly applies LOCF and does not say how many had an observed week-24 value. Participants who stopped treatment and those whose measurements followed rescue were censored under the reported rules. Analysis denominators and treatment completion cannot substitute for actual outcome availability.",
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Arm-specific number with an observed HbA1c at week 24.",
+            "Arm-specific number whose week-24 HbA1c was imputed using LOCF."
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "bases": [
+            {
+              "evidence": "sha256:b38a153c3d751261b1f5a3e380df9522ccb0ac086a7e88bcea1a1f46a75179ea",
+              "kind": "direct_support",
+              "source": "resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].groupId: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].value: \"221\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].groupId: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].value: \"215\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].units: \"Participants\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].description: \"Absolute change = HbA1c value at Week 24 minus HbA1c value at baseline. The on-treatment period for this efficacy variable is the time from the first dose of study drug up to 14 days after the last dose of study drug or up to the introduction of rescue therapy, whichever is the earliest. For a patient to be included in mITT population, both baseline and at least 1 post baseline assessment for at least 1 efficacy variable, were required.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].dispersionType: \"Standard Error\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"2-step initiation regimen of volume matching placebo.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].id: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].title: \"Placebo\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"2-step initiation regimen of lixisenatide.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].id: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].title: \"Lixisenatide\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].paramType: \"LEAST_SQUARES_MEAN\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].populationDescription: \"mITT population:all randomized patients who received at least 1 dose;had baseline,at least 1 post-baseline efficacy assessment, irrespective of compliance with study protocol/procedures. Number of patients analyzed=patients with baseline and at least 1 post-baseline HbA1c assessment during on-treatment period. Last observation carried forward used.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].reportingStatus: \"POSTED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].timeFrame: \"Baseline, Week 24\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].title: \"Absolute Change From Baseline in Glycosylated Hemoglobin (HbA1c) at Week 24\""
+            },
+            {
+              "evidence": "sha256:e3a0fd3e585574151974321d85d2b3549492558cd31cc2dc37f17a84c906216e",
+              "kind": "direct_support",
+              "source": "Figure 1dClinical responses to therapy from baseline to week 24 and end point with last ob-\nservation carried forward (LOCF). A: Mean HbA1c (%) by visit. B: Mean fasting plasma glucose\n(mmol/L) by visit. C: Mean change in body weight (kg) from baseline by visit. D: Mean daily basal\ninsulin dose (units/day) by visit. Values are mean 6 SE. The end point with LOCF calculation\nused the modified intention-to-treat population. All analyses excluded measurements after the\nintroduction of rescue medication or after treatment cessation plus 14 days, or both."
+            },
+            {
+              "kind": "absence",
+              "search_receipt": "sha256:a1692a3ca0757b75ce226dcc97084fb57995228918e7de3ffaf1fb13063cc3a8"
+            }
+          ],
+          "counterevidence": [],
+          "justification": "The registered primary outcome and article state that LOCF was used, and the article excludes post-rescue and post-treatment-cessation measurements after the stated window. No sensitivity analysis was found in the captured Sources. LOCF alone does not establish that bias from missing HbA1c values was corrected, and no missingness-mechanism-matched analysis is reported.",
+          "question_id": "sq:missing:evidence-unbiased",
+          "unknowns": [
+            "No analysis testing plausible missing week-24 HbA1c values under the reported missingness mechanisms was located."
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "bases": [
+            {
+              "evidence": "sha256:79d2dc414794808ee5874ff489066588b888cf1a0f58441a7832d884c592c6ec",
+              "kind": "direct_support",
+              "source": "Rescue therapy with short-acting insulin\nwas permitted through week 8 if FPG was\nrepeatedly .11.1 mmol/L (200 mg/dL)\nor if HbA1c was .9.0% (75 mmol/mol),\nand after week 8 if FPG was .10.0 mmol/L\n(180 mg/dL) or if HbA1c was .8.5% (69\nmmol/mol)."
+            },
+            {
+              "evidence": "sha256:e3a0fd3e585574151974321d85d2b3549492558cd31cc2dc37f17a84c906216e",
+              "kind": "direct_support",
+              "source": "Figure 1dClinical responses to therapy from baseline to week 24 and end point with last ob-\nservation carried forward (LOCF). A: Mean HbA1c (%) by visit. B: Mean fasting plasma glucose\n(mmol/L) by visit. C: Mean change in body weight (kg) from baseline by visit. D: Mean daily basal\ninsulin dose (units/day) by visit. Values are mean 6 SE. The end point with LOCF calculation\nused the modified intention-to-treat population. All analyses excluded measurements after the\nintroduction of rescue medication or after treatment cessation plus 14 days, or both."
+            },
+            {
+              "evidence": "sha256:13842c3887c3ed83b1f7a3a9f5d9865a52b19d58cc8f0714fde8d3acf10baae4",
+              "kind": "context",
+              "source": "Twenty-nine (13%) lixisenatide-treated\nparticipants and 12 (5%) placebo-treated\nparticipants discontinued randomized\ntreatment, with the main reason being an\nadverse event (8.5% for lixisenatide and\n4.0% for placebo; Supplementary Fig. 2).\nGastrointestinal-related adverse effects\nwere the major TEAEs leading to discon-\ntinuation for lixisenatide (10 participants\n[4.5%] and none with placebo), which\nwere mainly related to nausea and vomit-\ning (9 participants [4%]). One person in\neach group received rescue therapy."
+            }
+          ],
+          "counterevidence": [],
+          "justification": "The protocol allowed rescue when glycemic thresholds were exceeded, including HbA1c above 9.0% through week 8 or above 8.5% thereafter, and measurements after rescue were excluded. Thus missing later HbA1c could depend on poor glycemic control. One participant in each group received rescue, but the report does not state which threshold triggered it, so this is a plausible rather than confirmed pathway.",
+          "question_id": "sq:missing:true-value-dependent",
+          "unknowns": [
+            "Whether either rescue event was triggered by HbA1c rather than fasting glucose.",
+            "How many additional week-24 HbA1c values were missing after treatment discontinuation and imputed."
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "bases": [
+            {
+              "evidence": "sha256:c3f9921a357b5c400c6caf0800067b48014109ef6d5f7f373b6e4a86442963dd",
+              "kind": "inference",
+              "source": "Supplementary Figure 2, Participant flow diagram. Of 1470 screened, 898 entered the 12-week run-in; 446 were randomized, 223 per group. Placebo group: 12 premature treatment discontinuations (5%): adverse events 9 (4%), other 3 (1%); 223 analyzed and 211 completed (95%). Lixisenatide group: 29 premature treatment discontinuations (13%): adverse events 19 (9%), protocol violation 2 (1%), other 8 (2%); 223 analyzed and 194 completed (87%). Figure footnote: numbers in parentheses are proportions versus the number randomized per group."
+            },
+            {
+              "evidence": "sha256:13842c3887c3ed83b1f7a3a9f5d9865a52b19d58cc8f0714fde8d3acf10baae4",
+              "kind": "direct_support",
+              "source": "Twenty-nine (13%) lixisenatide-treated\nparticipants and 12 (5%) placebo-treated\nparticipants discontinued randomized\ntreatment, with the main reason being an\nadverse event (8.5% for lixisenatide and\n4.0% for placebo; Supplementary Fig. 2).\nGastrointestinal-related adverse effects\nwere the major TEAEs leading to discon-\ntinuation for lixisenatide (10 participants\n[4.5%] and none with placebo), which\nwere mainly related to nausea and vomit-\ning (9 participants [4%]). One person in\neach group received rescue therapy."
+            },
+            {
+              "evidence": "sha256:e3a0fd3e585574151974321d85d2b3549492558cd31cc2dc37f17a84c906216e",
+              "kind": "context",
+              "source": "Figure 1dClinical responses to therapy from baseline to week 24 and end point with last ob-\nservation carried forward (LOCF). A: Mean HbA1c (%) by visit. B: Mean fasting plasma glucose\n(mmol/L) by visit. C: Mean change in body weight (kg) from baseline by visit. D: Mean daily basal\ninsulin dose (units/day) by visit. Values are mean 6 SE. The end point with LOCF calculation\nused the modified intention-to-treat population. All analyses excluded measurements after the\nintroduction of rescue medication or after treatment cessation plus 14 days, or both."
+            }
+          ],
+          "counterevidence": [],
+          "justification": "The flow figure reports premature treatment discontinuation in 29/223 (13%) with lixisenatide versus 12/223 (5%) with placebo; the article attributes most stops to adverse events and states that measurements after treatment cessation plus 14 days were excluded. The outcome used LOCF. Although the report does not tie most discontinuations directly to HbA1c, the differential stopping and censoring create a credible likelihood that missing week-24 values could differ from carried-forward values; the rescue rule also ties some censoring to glycemic thresholds.",
+          "question_id": "sq:missing:likely-dependent",
+          "unknowns": [
+            "Observed week-24 HbA1c and LOCF counts by arm are not reported.",
+            "The HbA1c or fasting-glucose trigger for the two rescue cases is not specified."
+          ]
+        }
+      ],
+      "domain_id": "domain:missing",
+      "driver_questions": [
+        "sq:missing:likely-dependent"
+      ],
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [],
+            "question_id": "sq:missing:data-available",
+            "search_receipts": [],
+            "status": "unresolved",
+            "unresolved_premises": [
+              "Actual observed HbA1c measurements at week 24 and arm-specific imputed counts are not reported. The registry reports 221 placebo and 215 lixisenatide participants with baseline and at least one postbaseline HbA1c assessment during the on-treatment period, and says LOCF was used; these are analysis-eligibility counts, not counts with observed week-24 HbA1c. Completion of treatment (211 and 194) is also not outcome availability."
+            ]
+          },
+          {
+            "evidence": [
+              "sha256:b38a153c3d751261b1f5a3e380df9522ccb0ac086a7e88bcea1a1f46a75179ea",
+              "sha256:e3a0fd3e585574151974321d85d2b3549492558cd31cc2dc37f17a84c906216e"
+            ],
+            "question_id": "sq:missing:evidence-unbiased",
+            "search_receipts": [
+              "sha256:a1692a3ca0757b75ce226dcc97084fb57995228918e7de3ffaf1fb13063cc3a8"
+            ],
+            "status": "unresolved",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:79d2dc414794808ee5874ff489066588b888cf1a0f58441a7832d884c592c6ec",
+              "sha256:e3a0fd3e585574151974321d85d2b3549492558cd31cc2dc37f17a84c906216e",
+              "sha256:13842c3887c3ed83b1f7a3a9f5d9865a52b19d58cc8f0714fde8d3acf10baae4"
+            ],
+            "question_id": "sq:missing:true-value-dependent",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:c3f9921a357b5c400c6caf0800067b48014109ef6d5f7f373b6e4a86442963dd",
+              "sha256:13842c3887c3ed83b1f7a3a9f5d9865a52b19d58cc8f0714fde8d3acf10baae4",
+              "sha256:e3a0fd3e585574151974321d85d2b3549492558cd31cc2dc37f17a84c906216e"
+            ],
+            "question_id": "sq:missing:likely-dependent",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          }
+        ],
+        "identity": "sha256:fdb703801c8e3a2a7864203f8d58e5e3e0dd8fc14a66893d816ef5f235fa342a"
+      },
+      "identity": "sha256:5247f037c0348f8c104a14ac77caaa54ef3b6843b99a837e1bc04e55dc25c42d",
+      "inactive_questions": [],
+      "judgment": "high",
+      "observed_at": "2026-10-01T12:58:43.917200+00:00",
+      "result_identity": "sha256:d8bb183709f895b3e33be7889a27619493dd7d33a50fb3b3674cb79ea9c36419",
+      "revision_basis": null,
+      "search_accounts": [
+        {
+          "batch_identity": "sha256:d11db4e131324ba0c3f773dd11f239429b0ed90e76e56446cd327ebac746faa2",
+          "candidate_count": 0,
+          "condition": "no_hits",
+          "exhausted": true,
+          "handle": "sr_a1692a3ca0757b75",
+          "hits": [],
+          "identity": "sha256:a1692a3ca0757b75ce226dcc97084fb57995228918e7de3ffaf1fb13063cc3a8",
+          "limit": 10,
+          "matching_page_count": 0,
+          "mode": "phrase",
+          "next_cursor": null,
+          "normalized_query": "sensitivity analysis",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": null,
+          "purpose_question_id": null,
+          "query": "sensitivity analysis",
+          "ranking_complete": true,
+          "returned_candidates": [],
+          "returned_material": 0,
+          "returned_rank_end": null,
+          "returned_rank_start": null,
+          "session_handle": "ss_730ecf9791562264",
+          "session_id": "sha256:730ecf97915622644327537aab63506bcb3e38a6b06dda0103626e3ab6bd6e8e",
+          "sources": [
+            {
+              "id": "source_8516bc531b0ae45c8d75a3efded72c98547305d06c7c114730983ceb6e412be7",
+              "projection_hash": "sha256:d9c4c43d7966aa17972c2a7e14ee37087c845e89d624aa32654fd303fbbf696e"
+            },
+            {
+              "id": "source_2ef5a0adeb49efec24b348312378d20652acf728d23ff3dca0a0bed6a4f346f6",
+              "projection_hash": "sha256:f01f7e5c782fa1d3823f2bc6328ad693834fdf01461d5ea9b5dc3ae09cc16c0f"
+            },
+            {
+              "id": "source_9e3616aae5c42b60835b585dd410f8c3ab24d4c52dcd7fa6f78440fc6975a93b",
+              "projection_hash": "sha256:254f60f1706ec2d2220a7b0cdb08c869b85d2d8fb29c3dfaecf2afdbb72db3c1"
+            }
+          ],
+          "total_matches": 0,
+          "trial_id": "getgoal-duo1-2013",
+          "truncated": false
+        }
+      ],
+      "supersedes": null,
+      "trace": [
+        "missing.likely_dependent"
+      ],
+      "trial_id": "getgoal-duo1-2013"
+    },
+    "offline_review_projection": {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:5247f037c0348f8c104a14ac77caaa54ef3b6843b99a837e1bc04e55dc25c42d",
+      "judgment": "high",
+      "answers": [
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "question": "If Y/PY/NI to 3.3: Is it likely that missingness in the outcome depended on its true value?",
+          "driver": true,
+          "answer": "probably_yes",
+          "facts": [],
+          "warrant": "The flow figure reports premature treatment discontinuation in 29/223 (13%) with lixisenatide versus 12/223 (5%) with placebo; the article attributes most stops to adverse events and states that measurements after treatment cessation plus 14 days were excluded. The outcome used LOCF. Although the report does not tie most discontinuations directly to HbA1c, the differential stopping and censoring create a credible likelihood that missing week-24 values could differ from carried-forward values; the rescue rule also ties some censoring to glycemic thresholds.",
+          "justification": "The flow figure reports premature treatment discontinuation in 29/223 (13%) with lixisenatide versus 12/223 (5%) with placebo; the article attributes most stops to adverse events and states that measurements after treatment cessation plus 14 days were excluded. The outcome used LOCF. Although the report does not tie most discontinuations directly to HbA1c, the differential stopping and censoring create a credible likelihood that missing week-24 values could differ from carried-forward values; the rescue rule also ties some censoring to glycemic thresholds.",
+          "unknowns": [
+            "Observed week-24 HbA1c and LOCF counts by arm are not reported.",
+            "The HbA1c or fasting-glucose trigger for the two rescue cases is not specified."
+          ],
+          "counterevidence": [],
+          "limitations": [],
+          "conflicts": [],
+          "uninvestigated_routes": [],
+          "evidence": [],
+          "bases": [
+            {
+              "kind": "inference",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "context",
+              "assertion": "host_asserted",
+              "evidence": null
+            }
+          ],
+          "evidence_expansions": []
+        },
+        {
+          "question_id": "sq:missing:data-available",
+          "question": "Were data for this outcome available for all, or nearly all, participants randomized?",
+          "driver": false,
+          "answer": "no_information",
+          "facts": [
+            {
+              "text": "Actual observed HbA1c measurements at week 24 and arm-specific imputed counts are not reported. The registry reports 221 placebo and 215 lixisenatide participants with baseline and at least one postbaseline HbA1c assessment during the on-treatment period, and says LOCF was used; these are analysis-eligibility counts, not counts with observed week-24 HbA1c. Completion of treatment (211 and 194) is also not outcome availability.",
+              "role": "context"
+            }
+          ],
+          "warrant": "The outcome-specific registry passage gives 221/223 and 215/223 with at least one postbaseline HbA1c assessment, but explicitly applies LOCF and does not say how many had an observed week-24 value. Participants who stopped treatment and those whose measurements followed rescue were censored under the reported rules. Analysis denominators and treatment completion cannot substitute for actual outcome availability.",
+          "justification": "The outcome-specific registry passage gives 221/223 and 215/223 with at least one postbaseline HbA1c assessment, but explicitly applies LOCF and does not say how many had an observed week-24 value. Participants who stopped treatment and those whose measurements followed rescue were censored under the reported rules. Analysis denominators and treatment completion cannot substitute for actual outcome availability.",
+          "unknowns": [
+            "Arm-specific number with an observed HbA1c at week 24.",
+            "Arm-specific number whose week-24 HbA1c was imputed using LOCF."
+          ],
+          "counterevidence": [],
+          "limitations": [
+            {
+              "unresolved_premise": "Actual observed HbA1c measurements at week 24 and arm-specific imputed counts are not reported. The registry reports 221 placebo and 215 lixisenatide participants with baseline and at least one postbaseline HbA1c assessment during the on-treatment period, and says LOCF was used; these are analysis-eligibility counts, not counts with observed week-24 HbA1c. Completion of treatment (211 and 194) is also not outcome availability.",
+              "stopping_rationale": "I inspected the primary article's HbA1c analysis and participant flow, the supplementary participant-flow figure, and the registry's HbA1c-specific outcome description and denominators. These Sources do not separate observed week-24 HbA1c from carried-forward values or state outcome-specific missing counts at that time point; therefore neither all/nearly-all availability nor materially incomplete availability can be established.",
+              "search_receipt": null
+            }
+          ],
+          "conflicts": [],
+          "uninvestigated_routes": [],
+          "evidence": [],
+          "bases": [
+            {
+              "kind": "limitation",
+              "assertion": "host_asserted",
+              "unresolved_premise": "Actual observed HbA1c measurements at week 24 and arm-specific imputed counts are not reported. The registry reports 221 placebo and 215 lixisenatide participants with baseline and at least one postbaseline HbA1c assessment during the on-treatment period, and says LOCF was used; these are analysis-eligibility counts, not counts with observed week-24 HbA1c. Completion of treatment (211 and 194) is also not outcome availability.",
+              "stopping_rationale": "I inspected the primary article's HbA1c analysis and participant flow, the supplementary participant-flow figure, and the registry's HbA1c-specific outcome description and denominators. These Sources do not separate observed week-24 HbA1c from carried-forward values or state outcome-specific missing counts at that time point; therefore neither all/nearly-all availability nor materially incomplete availability can be established."
+            }
+          ],
+          "evidence_expansions": []
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "question": "If N/PN/NI to 3.1: Is there evidence that the result was not biased by missing outcome data?",
+          "driver": false,
+          "answer": "probably_no",
+          "facts": [],
+          "warrant": "The registered primary outcome and article state that LOCF was used, and the article excludes post-rescue and post-treatment-cessation measurements after the stated window. No sensitivity analysis was found in the captured Sources. LOCF alone does not establish that bias from missing HbA1c values was corrected, and no missingness-mechanism-matched analysis is reported.",
+          "justification": "The registered primary outcome and article state that LOCF was used, and the article excludes post-rescue and post-treatment-cessation measurements after the stated window. No sensitivity analysis was found in the captured Sources. LOCF alone does not establish that bias from missing HbA1c values was corrected, and no missingness-mechanism-matched analysis is reported.",
+          "unknowns": [
+            "No analysis testing plausible missing week-24 HbA1c values under the reported missingness mechanisms was located."
+          ],
+          "counterevidence": [],
+          "limitations": [],
+          "conflicts": [],
+          "uninvestigated_routes": [],
+          "evidence": [],
+          "bases": [
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "absence",
+              "assertion": "host_asserted",
+              "search_receipt": "sha256:a1692a3ca0757b75ce226dcc97084fb57995228918e7de3ffaf1fb13063cc3a8"
+            }
+          ],
+          "evidence_expansions": []
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "question": "If N/PN to 3.2: Could missingness in the outcome depend on its true value?",
+          "driver": false,
+          "answer": "probably_yes",
+          "facts": [],
+          "warrant": "The protocol allowed rescue when glycemic thresholds were exceeded, including HbA1c above 9.0% through week 8 or above 8.5% thereafter, and measurements after rescue were excluded. Thus missing later HbA1c could depend on poor glycemic control. One participant in each group received rescue, but the report does not state which threshold triggered it, so this is a plausible rather than confirmed pathway.",
+          "justification": "The protocol allowed rescue when glycemic thresholds were exceeded, including HbA1c above 9.0% through week 8 or above 8.5% thereafter, and measurements after rescue were excluded. Thus missing later HbA1c could depend on poor glycemic control. One participant in each group received rescue, but the report does not state which threshold triggered it, so this is a plausible rather than confirmed pathway.",
+          "unknowns": [
+            "Whether either rescue event was triggered by HbA1c rather than fasting glucose.",
+            "How many additional week-24 HbA1c values were missing after treatment discontinuation and imputed."
+          ],
+          "counterevidence": [],
+          "limitations": [],
+          "conflicts": [],
+          "uninvestigated_routes": [],
+          "evidence": [],
+          "bases": [
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "direct_support",
+              "assertion": "host_asserted",
+              "evidence": null
+            },
+            {
+              "kind": "context",
+              "assertion": "host_asserted",
+              "evidence": null
+            }
+          ],
+          "evidence_expansions": []
+        }
+      ],
+      "premise_checkpoint_identity": "sha256:cbbc05a6467fbda39ad4a82cc9f515c38c71b0ac9d49763641df4a1976bc541a",
+      "premise_records": [],
+      "investigation": {
+        "proposition": "No Domain-specific premise has been recorded yet.",
+        "status": "unresolved",
+        "sufficiency": {
+          "status": "unresolved",
+          "attribution": "not_established"
+        },
+        "workflow_permission": {
+          "permitted": true,
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "detail": "Submit a changed Domain draft before refreshing Trial review; review itself is not semantic approval."
+        },
+        "coverage": {
+          "source_scope": [
+            "sh_2ef5a0adeb49efec",
+            "sh_8516bc531b0ae45c",
+            "sh_9e3616aae5c42b60"
+          ],
+          "state": "partial",
+          "ranges": [
+            {
+              "source_id": "sh_2ef5a0adeb49efec",
+              "page": 1,
+              "start_line": 47,
+              "end_line": 91,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_2ef5a0adeb49efec",
+              "page": 1,
+              "start_line": 939,
+              "end_line": 961,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_2ef5a0adeb49efec",
+              "page": 1,
+              "start_line": 1066,
+              "end_line": 1067,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_2ef5a0adeb49efec",
+              "page": 1,
+              "start_line": 1076,
+              "end_line": 1079,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_2ef5a0adeb49efec",
+              "page": 1,
+              "start_line": 1816,
+              "end_line": 1835,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_2ef5a0adeb49efec",
+              "page": 1,
+              "start_line": 1830,
+              "end_line": 1857,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_2ef5a0adeb49efec",
+              "page": 1,
+              "start_line": 2148,
+              "end_line": 2205,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 126,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 126,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 2,
+              "start_line": 1,
+              "end_line": 187,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 2,
+              "start_line": 64,
+              "end_line": 109,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 2,
+              "start_line": 1,
+              "end_line": 187,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 200,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 200,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 27,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 4,
+              "start_line": 28,
+              "end_line": 71,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 30,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 4,
+              "start_line": 31,
+              "end_line": 71,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 171,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 171,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 110,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 110,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 238,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_8516bc531b0ae45c",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 238,
+              "phase": "proposal"
+            },
+            {
+              "source_id": "sh_9e3616aae5c42b60",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 115,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_9e3616aae5c42b60",
+              "page": 2,
+              "start_line": 1,
+              "end_line": 13,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_9e3616aae5c42b60",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 10,
+              "phase": "assessment"
+            },
+            {
+              "source_id": "sh_9e3616aae5c42b60",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 8,
+              "phase": "assessment"
+            }
+          ],
+          "range_count": 28,
+          "delivered_sources": [
+            "sh_2ef5a0adeb49efec",
+            "sh_8516bc531b0ae45c",
+            "sh_9e3616aae5c42b60"
+          ],
+          "sources_without_delivery": [],
+          "ranges_truncated": false
+        },
+        "host_notes": {
+          "referenced_sources": [
+            "sh_8516bc531b0ae45c"
+          ],
+          "unread_ranges": [],
+          "observation_count": 5
+        },
+        "observations": [
+          {
+            "text": "Centrally randomized 1:1 using treatment kit numbers and a centralized interactive voice response system; stratified by post run-in HbA1c and TZD use. Investigators lacked access to the randomization code.",
+            "sources": [
+              {
+                "source_id": "sh_8516bc531b0ae45c",
+                "page": 2,
+                "start_line": 58,
+                "end_line": 79
+              }
+            ],
+            "domain_id": "domain:randomization"
+          },
+          {
+            "text": "Both groups used stepwise dose increase. Basal insulin adjustment was permitted in both arms; rescue short-acting insulin was permitted under stated glycemic thresholds.",
+            "sources": [
+              {
+                "source_id": "sh_8516bc531b0ae45c",
+                "page": 2,
+                "start_line": 80,
+                "end_line": 95
+              }
+            ],
+            "domain_id": "domain:deviations"
+          },
+          {
+            "text": "Efficacy mITT required randomized participants to receive at least one dose and have baseline plus at least one postbaseline efficacy assessment; LOCF used. Twenty-nine lixisenatide and 12 placebo participants discontinued randomized treatment, mainly adverse events; one per group received rescue therapy.",
+            "sources": [
+              {
+                "source_id": "sh_8516bc531b0ae45c",
+                "page": 2,
+                "start_line": 145,
+                "end_line": 160
+              },
+              {
+                "source_id": "sh_8516bc531b0ae45c",
+                "page": 3,
+                "start_line": 14,
+                "end_line": 26
+              }
+            ],
+            "domain_id": "domain:missing"
+          },
+          {
+            "text": "Primary efficacy measure was absolute change in HbA1c from baseline to week 24. HbA1c decreased 0.7% versus 0.4%; LS mean difference about -0.3%, statistically significant. User-specified abstract estimate is -0.32%.",
+            "sources": [
+              {
+                "source_id": "sh_8516bc531b0ae45c",
+                "page": 2,
+                "start_line": 96,
+                "end_line": 109
+              },
+              {
+                "source_id": "sh_8516bc531b0ae45c",
+                "page": 3,
+                "start_line": 27,
+                "end_line": 49
+              }
+            ],
+            "domain_id": "domain:measurement"
+          },
+          {
+            "text": "Sample size and ANCOVA specified; model included treatment, randomization strata, country, and baseline HbA1c. Article states sponsor representatives were responsible for design, protocol, SAP and analysis (page 6 lines 83-91); protocol/register/SAP comparison may be needed for selective reporting.",
+            "sources": [
+              {
+                "source_id": "sh_8516bc531b0ae45c",
+                "page": 2,
+                "start_line": 137,
+                "end_line": 178
+              }
+            ],
+            "domain_id": "domain:selection"
+          }
+        ],
+        "support": [],
+        "counterevidence": [],
+        "unresolved": null,
+        "recovery_choices": [
+          {
+            "operation": "save_working_checkpoint",
+            "available": true,
+            "rationale": "Replace source-linked working notes without changing canonical assessment state."
+          },
+          {
+            "operation": "search_sources",
+            "available": true,
+            "rationale": "Search captured Sources for a discriminating passage when the premise remains open."
+          },
+          {
+            "operation": "read_pages",
+            "available": true,
+            "rationale": "Read the exact cited or unread Source range before relying on it as Evidence."
+          },
+          {
+            "operation": "accept_limitation",
+            "available": true,
+            "rationale": "Record the unresolved premise and stopping rationale through Domain submission when further accessible investigation is not discriminating."
+          },
+          {
+            "operation": "save_domain_judgment",
+            "available": true,
+            "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+          }
+        ],
+        "stopping_rationale": null,
+        "stale": [
+          {
+            "material": "interpretations",
+            "reason": "domain_revision"
+          },
+          {
+            "material": "premise_inference",
+            "reason": "domain_revision"
+          },
+          {
+            "material": "drafts",
+            "reason": "domain_revision"
+          },
+          {
+            "material": "stopping_rationale",
+            "reason": "domain_revision"
+          }
+        ],
+        "checkpoint_identity": "sha256:cbbc05a6467fbda39ad4a82cc9f515c38c71b0ac9d49763641df4a1976bc541a",
+        "legacy": "supported",
+        "premises": []
+      }
+    },
+    "qualification": "Read-only original; projection computed in a disposable copy, not a new assessment or complete trial review approval."
+  }
+}
