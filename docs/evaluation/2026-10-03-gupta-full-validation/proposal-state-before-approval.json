@@ -1,0 +1,606 @@
+{
+  "batch": {
+    "conditions": [],
+    "identity": "sha256:71ebfb2779ccab6b3d70b2f19f9a4666d0d5cba49c4b36ae70181ff20dded328",
+    "trials": [
+      {
+        "id": "gupta-2024",
+        "identity": "sha256:60fb4dac3638d3b7a9c01c8e9ac5a63c298631e2f6afac63130a44926abb636a",
+        "label": "gupta-2024",
+        "omissions": [],
+        "registry": {
+          "kind": "not_found",
+          "query": "undeclared",
+          "retrieved_at": "2026-10-03T20:09:48.930525Z"
+        },
+        "requested_outcome": "death or moderate or severe bronchopulmonary dysplasia",
+        "sources": [
+          {
+            "declared_role": "main_article",
+            "id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+            "label": "NEJMoa2305582.pdf",
+            "logical_path": "NEJMoa2305582.pdf",
+            "media_type": "application/pdf",
+            "origin": "local_dossier",
+            "page_count": 12,
+            "projection_hash": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+            "role": "main_article",
+            "sha256": "sha256:9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4",
+            "trial_id": "gupta-2024"
+          },
+          {
+            "declared_role": "supplement",
+            "id": "source_f5de7e58b7a415fc5cc82d9469fe4bbc371ac4f10f270b8d8e8156fbe328994a",
+            "label": "nejmoa2305582_appendix.pdf",
+            "logical_path": "nejmoa2305582_appendix.pdf",
+            "media_type": "application/pdf",
+            "origin": "local_dossier",
+            "page_count": 30,
+            "projection_hash": "sha256:deba28941be66d40a9a2b5c686b31424eb751d41796e1fd47b619cc02c81def2",
+            "role": "supplement",
+            "sha256": "sha256:97e8259cc7e1e617ae2dd1c69f37f5908c94034d70966a0b7a2955ce32802771",
+            "trial_id": "gupta-2024"
+          },
+          {
+            "declared_role": "supplement",
+            "id": "source_4665b37b8242dc7521d264a9107e1c68cd0c989bd96472168970010fc0ff2f56",
+            "label": "nejmoa2305582_data-sharing.pdf",
+            "logical_path": "nejmoa2305582_data-sharing.pdf",
+            "media_type": "application/pdf",
+            "origin": "local_dossier",
+            "page_count": 1,
+            "projection_hash": "sha256:08ea3a424cb382d656ab6cdc223d633d5b036a2875fa7d38da08b24a2c2af123",
+            "role": "supplement",
+            "sha256": "sha256:18555d1ae2e199f89a68ebbcf03e5a55856726e9a93980947ad34e34a0e1cb38",
+            "trial_id": "gupta-2024"
+          },
+          {
+            "declared_role": "supplement",
+            "id": "source_af0386b8458837c5a709e9768be4f6cdaece3efaa36cc82b0ee1c6dc1250ab23",
+            "label": "nejmoa2305582_disclosures.pdf",
+            "logical_path": "nejmoa2305582_disclosures.pdf",
+            "media_type": "application/pdf",
+            "origin": "local_dossier",
+            "page_count": 15,
+            "projection_hash": "sha256:aca5b01560f51e26333a29168b9532bd740612ed1f715fe16024ec68268d6df5",
+            "role": "supplement",
+            "sha256": "sha256:a420e41c0133ef3b78e5d2309d3d4bbb5ea3335bb935dc14f4c5cdb6e919b91e",
+            "trial_id": "gupta-2024"
+          },
+          {
+            "declared_role": "supplement",
+            "id": "source_cb7067006a91d4e53d09d8476b0d76a0ac6292b03d6db7ce32a4df4f5c2fbef8",
+            "label": "nejmoa2305582_protocol.pdf",
+            "logical_path": "nejmoa2305582_protocol.pdf",
+            "media_type": "application/pdf",
+            "origin": "local_dossier",
+            "page_count": 134,
+            "projection_hash": "sha256:5054b0a70b155f8b278081f3afb37ce906ce450e4309444954b00c55aaeee122",
+            "role": "supplement",
+            "sha256": "sha256:d2e5c181534c620be01520f334ccee80b685217233f3b0a5c99cc85b33ee76f7",
+            "trial_id": "gupta-2024"
+          }
+        ]
+      }
+    ]
+  },
+  "declaration_identity": "sha256:834e6e5aa03932a5e8e2a73a23923b8b75ff8c856026dfdbe5e027ce52ce3fb8",
+  "discard_identity": null,
+  "phase": "proposal",
+  "proposal": {
+    "evidence": {
+      "sha256:49ac77da50b0bd19c43adc74202d1f068e9f3735229e69b8fc010288cca9c97b": {
+        "end": 3882,
+        "end_line": 125,
+        "handle": "eh_49ac77da50b0bd19",
+        "identity": "sha256:49ac77da50b0bd19c43adc74202d1f068e9f3735229e69b8fc010288cca9c97b",
+        "kind": "narrative",
+        "page": 7,
+        "quote": "n engl j med 390;4 nejm.org January 25, 2024\n320\nThe new engl and jour nal of medicine\n(Fig. 1). Parental consent to use the data from\n7 infants was withdrawn, which left data from\n324 infants in the ibuprofen group and 322 in\nthe placebo group available for outcome analy-\nses (Fig. 1). Data that were required to assess the\nprimary outcome were missing for an additional\n10 infants, and therefore assessment of the pri-\nmary outcome was possible for 318 infants (97.5%)\nin the ibuprofen group and 318 (97.2%) in the\nplacebo group.\nOutcomes\nA primary-outcome event (death or moderate or\nsevere bronchopulmonary dysplasia assessed at\nTable 3. Process Outcomes.\nOutcome\nIbuprofen\n(N = 324)\nPlacebo\n(N = 322)\nDid not receive assigned intervention - no. (%)\n7 (2.2)\n11 (3.4)\nDid not receive all doses of ibuprofen or placebo - no. (%)\n41 (12.7)\n34 (10.6)\nDoses received - no. (%)\n0\n7 (2.2)\n9 (2.8)\n1\n17 (5.2)\n11 (3.4)\n2\n17 (5.2)\n14 (4.3)\n3\n283 (87.3)\n288 (89.4)\nReason for early discontinuation - no./total no. (%)*\nClinical decision\n38/41 (92.7)\n26/34 (76.5)\nParental request\n0\n1/34 (2.9)\nInfant death\n2/41 (4.9)\n2/34 (5.9)\nMissed dose or doses in error\n1/41 (2.4)\n2/34 (5.9)\nIntervention window outside of trial period\n0\n2/34 (5.9)\nTransfer out of recruiting site\n0\n1/34 (2.9)\nMedian age at first dose (IQR) - hr\u2020\n61 (47-68)\n61 (48-69)\nDistribution of median age at first dose - no. (%)\n0 to <24 hr\n14/316 (4.4)\n14/313 (4.5)\n24 to <48 hr\n68/316 (21.5)\n65/313 (20.8)\n48 to <72 hr\n220/316 (69.6)\n225/313 (71.9)\n\u226572 hr\n14/316 (4.4)\n9/313 (2.9)\nReceived second or third dose outside of dosing window -\nno./total no. (%)\n5/297 (1.7)\n4/301 (1.3)\nEchocardiography not performed at 3 wk of age - no./total no.\n(%)\u2021\n65/291 (22.3)\n60/301 (19.9)\nOxygen reduction test not performed when infant was eligible\n- no./total no. (%)\u00a7\n13/86 (15.1)\n13/94 (13.8)\n* Early discontinuation was defined as discontinuation when fewer than three doses had been received.\n\u2020 The median was assessed among infants who had received at least one dose.\n\u2021 Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA;\ninfants who died before the 3-week echocardiogram could be obtained were excluded (33 infants in the ibuprofen group\nand 21 in the placebo group).\n\u00a7 Denominators are the numbers of infants who were eligible for the test.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Table 3. Process Outcomes.|||\n|Ibuprofen Placebo<br>Outcome (N = 324) (N = 322)|||\n|Did not receive assigned intervention - no. (%)|7 (2.2)|11 (3.4)|\n|Did not receive all doses of ibuprofen or placebo - no. (%) 41 (12.7) 34 (10.6)|||\n|Doses received - no. (%)|||\n|0 7 (2.2) 9 (2.8)|||\n|1|17 (5.2)|11 (3.4)|\n|2 17 (5.2) 14 (4.3)|||\n|3|283 (87.3)|288 (89.4)|\n|Reason for early discontinuation - no./total no. (%)*|||\n|Clinical decision|38/41 (92.7)|26/34 (76.5)|\n|Parental request 0 1/34 (2.9)|||\n|Infant death|2/41 (4.9)|2/34 (5.9)|\n|Missed dose or doses in error 1/41 (2.4) 2/34 (5.9)|||\n|Intervention window outside of trial period|0|2/34 (5.9)|\n|Transfer out of recruiting site 0 1/34 (2.9)|||\n|Median age at first dose (IQR) - hr\u2020|61 (47-68)|61 (48-69)|\n|Distribution of median age at first dose - no. (%)|||\n|0 to <24 hr|14/316 (4.4)|14/313 (4.5)|\n|24 to <48 hr 68/316 (21.5) 65/313 (20.8)|||\n|48 to <72 hr|220/316 (69.6)|225/313 (71.9)|\n|\u226572 hr 14/316 (4.4) 9/313 (2.9)|||\n|Received second or third dose outside of dosing window -<br>no./total no. (%)|5/297 (1.7)|4/301 (1.3)|\n|Echocardiography not performed at 3 wk of age - no./total no. 65/291 (22.3) 60/301 (19.9)<br>(%)\u2021|||\n|Oxygen reduction test not performed when infant was eligible<br>- no./total no. (%)\u00a7|13/86 (15.1)|13/94 (13.8)|",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "gupta-2024"
+      },
+      "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a": {
+        "end": 4625,
+        "end_line": 102,
+        "handle": "eh_664cb2e87a63db02",
+        "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 390;4 nejm.org January 25, 2024\n316\nThe new engl and jour nal of medicine\nRandomization\nDynamic randomization was performed with a\nsecure Web-based system that was created and\nhosted by the NPEU Clinical Trials Unit with\n24/7 telephone backup, ensuring concealment of\nthe group assignments. The randomization pro-\ngram used a probabilistic minimization algorithm\nand assigned patients in a 1:1 ratio to one of the\ntwo groups to ensure balance with respect to the\nsize of the PDA, gestational age at birth, age, sex,\ntrial site, whether the infant was from a multiple\nbirth, mode of respiratory support, and whether\ninotropes were received. Infants in multiple births\nunderwent randomization individually. Partici-\npants were enrolled by the delegated clinician at\nthe trial site.14\nIntervention and Trial Procedures\nThe trial intervention was ibuprofen sodium,\nand the matched placebo was a clear sterile solu-\ntion of 0.9% sodium chloride. Each carton con-\ntaining ibuprofen or placebo was labeled with a\nunique code in compliance with the guidance\nprovided in annex 13 of the European Commis-\nsion guidelines for Good Manufacturing Prac-\ntice. Ibuprofen was administered parenterally as\na loading dose of 10 mg per kilogram of body\nweight, followed by two doses of 5 mg per kilo-\ngram at least 24 hours apart. Placebo was ad-\nministered as an equal volume of 0.9% sodium\nchloride (Table S2). Only one course of ibuprofen\nor placebo was given. Prespecified criteria for\nopen-label medical or surgical treatment after\nenrollment are shown in Table S3.\nTransthoracic echocardiography was performed\nto assess eligibility within 72 hours after birth\nand at 3 weeks (18 to 24 days) of age to assess the\npatency of the PDA while minimizing open-label\ntreatment. For quality control, a sample of echo-\ncardiograms from 65 infants was reviewed inde-\npendently by a pediatric echocardiographer who\nwas unaware of the treatment assignments.\nOutcomes\nThe primary outcome was a composite of death\nor moderate or severe bronchopulmonary dyspla-\nsia assessed at 36 weeks of postmenstrual age15\n(Tables S4 and S5). A physiological challenge of\nsupplemental oxygen reduction was used to test\nfor oxygen need at 36 weeks of postmenstrual\nage16 to differentiate mild from moderate bron-\nchopulmonary dysplasia (Fig. S1). Secondary\nshort-term outcomes up to the time of discharge\nincluded individual components of the primary\noutcome, the severity of bronchopulmonary dys-\nplasia, severe intraventricular hemorrhage, cystic\nperiventricular leukomalacia, retinopathy of pre-\nmaturity requiring treatment, clinically signifi-\ncant pulmonary hemorrhage, acute pulmonary\nhypertension, definitive necrotizing enterocoli-\ntis, closed or clinically nonsignificant PDA less\nthan 1.5 mm in diameter with restricted flow at\n3 weeks age, open-label treatment of a PDA caus-\ning symptoms, weight gain, and discharge home\nwhile receiving supplemental oxygen (Table\nS5).14 Other secondary short-term outcomes are\nlisted in the Supplementary Appendix and in the\nstatistical analysis plan (available with the pro-\ntocol).17 All outcome data were recorded rou-\ntinely, including demographic data and compli-\ncations of prematurity; these data were obtained\nfrom clinical notes or trial-related assessments\n(Table S6).\nA list of foreseeable serious adverse events\nthat are common in this patient population was\nprespecified (see section 9.1.4 in the protocol);\nunforeseeable serious adverse events were de-\nfined as those that were not included on this\nlist. A serious adverse reaction was defined as a\nserious adverse event that was considered to\nhave been caused by the administration of the\ntrial agent; if such an event was not consistent\nwith the safety profile of the trial agent, it was\nclassed as a suspected unexpected serious ad-\nverse reaction.14\nStatistical Analysis\nThe incidence of the primary outcome was pre-\ndicted to be 60% in the placebo group (see Sup-\nplementary Methods). A sample of 730 infants was\ncalculated to be required in order to detect a\nclinically important absolute risk reduction of 12\npercentage points (i.e., an incidence of 60% in\nthe placebo group and an incidence of 48% in the\nibuprofen group) with 90% power and a type I\nerror of 5% under the assumption that 1% of in-\nfants would be lost to follow-up.14\nAnalyses were performed according to the\nintention-to-treat principle, with infants exclud-\ned from the analysis only if their data were miss-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "gupta-2024"
+      },
+      "sha256:68123b0bf4654eccb66513e5afc1ba783b75dbdf46f4e91e31f8a85f0b393f8f": {
+        "end": 4108,
+        "end_line": 81,
+        "handle": "eh_68123b0bf4654ecc",
+        "identity": "sha256:68123b0bf4654eccb66513e5afc1ba783b75dbdf46f4e91e31f8a85f0b393f8f",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "The new engl and jour nal of medicine\nn engl j med 390;4 nejm.org January 25, 2024\n314\nFrom the Division of Neonatology, Sidra\nMedicine, Doha, Qatar (S.G.); and the De-\npartment of Engineering, Durham Univer-\nsity, Durham (S.G.), Liverpool Women's\nNHS Foundation Trust, Liverpool (N.V.S.),\nthe National Perinatal Epidemiology Unit\nClinical Trials Unit, Nuffield Department\nof Population Health, University of Oxford,\nOxford (J.L.B., U.B., E.H., J.P., K.S., P.H.),\nthe Department of Health Science Uni-\nversity of Leicester, George Davies Centre,\nLeicester (D.F., S.J.), NICU, Rosie Hospital,\nCambridge University Hospital Founda-\ntion Trust, Cambridge (W.K.), the Institute\nof Applied Health Research, University of\nBirmingham, Birmingham (T.R.), South\nTees Hospitals NHS Foundation Trust,\nJames Cook University Hospital, Middles-\nbrough (S.S., J.W.), and the School of Medi-\ncine, University of Nottingham, Notting-\nham (E.J.) - all in the United Kingdom.\nProf. Gupta can be contacted at samir\n.gupta@durham.ac.uk or at the Division\nof Neonatology, Department of Pediatrics,\nSidra Medicine, Al Luqta St., Education\nCity North Campus, Qatar Foundation,\nP.O. Box 26999, Doha, Qatar.\n*A list of the investigators in the Baby-\nOSCAR Collaborative Group is provided\nin the Supplementary Appendix, avail-\nable at NEJM.org.\nMs. Hardy and Prof. Juszczak contributed\nequally to this article.\nN Engl J Med 2024;390:314-25.\nDOI: 10.1056/NEJMoa2305582\nCopyright \u00a9 2024 Massachusetts Medical Society.\nBACKGROUND\nThe cyclooxygenase inhibitor ibuprofen may be used to treat patent ductus arteriosus\n(PDA) in preterm infants. Whether selective early treatment of large PDAs with\nibuprofen would improve short-term outcomes is not known.\nMETHODS\nWe conducted a multicenter, randomized, double-blind, placebo-controlled trial\nevaluating early treatment (\u226472 hours after birth) with ibuprofen for a large PDA\n(diameter of \u22651.5 mm with pulsatile flow) in extremely preterm infants (born be-\ntween 23 weeks 0 days' and 28 weeks 6 days' gestation). The primary outcome was a\ncomposite of death or moderate or severe bronchopulmonary dysplasia evaluated at\n36 weeks of postmenstrual age.\nRESULTS\nA total of 326 infants were assigned to receive ibuprofen and 327 to receive placebo;\n324 and 322, respectively, had data available for outcome analyses. A primary-out-\ncome event occurred in 220 of 318 infants (69.2%) in the ibuprofen group and 202\nof 318 infants (63.5%) in the placebo group (adjusted risk ratio, 1.09; 95% confi-\ndence interval [CI], 0.98 to 1.20; P = 0.10). A total of 44 of 323 infants (13.6%) in\nthe ibuprofen group and 33 of 321 infants (10.3%) in the placebo group died\n(adjusted risk ratio, 1.32; 95% CI, 0.92 to 1.90). Among the infants who survived\nto 36 weeks of postmenstrual age, moderate or severe bronchopulmonary dysplasia\noccurred in 176 of 274 (64.2%) in the ibuprofen group and 169 of 285 (59.3%) in\nthe placebo group (adjusted risk ratio, 1.09; 95% CI, 0.96 to 1.23). Two unforeseeable\nserious adverse events occurred that were possibly related to ibuprofen.\nCONCLUSIONS\nThe risk of death or moderate or severe bronchopulmonary dysplasia at 36 weeks\nof postmenstrual age was not significantly lower among infants who received early\ntreatment with ibuprofen than among those who received placebo. (Funded by the\nNational Institute for Health Research Health Technology Assessment Pro-\ngramme; Baby-OSCAR ISRCTN Registry number, ISRCTN84264977.)\nABSTR ACT\nTrial of Selective Early Treatment of Patent\nDuctus Arteriosus with Ibuprofen\nSamir Gupta, M.D., Nimish V. Subhedar, M.D., Jennifer L. Bell, M.Sc.,\nDavid Field, M.D., Ursula Bowler, Elizabeth Hutchison, M.A., Sam Johnson, Ph.D.,\nWilf Kelsall, M.D., Justine Pepperell, Tracy Roberts, Ph.D., Sunil Sinha, M.D.,\nKayleigh Stanbury, B.Sc., Jonathan Wyllie, M.D., Pollyanna Hardy, M.Sc.,\nand Edmund Juszczak, M.Sc., for the Baby-OSCAR Collaborative Group*\nOriginal Article\nCME\nat NEJM.org\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "gupta-2024"
+      },
+      "sha256:7266c0cb8d0368a83b12b7c593f627c46785a52c62ab211b4118e807d685f12f": {
+        "end": 3954,
+        "end_line": 105,
+        "handle": "eh_7266c0cb8d0368a8",
+        "identity": "sha256:7266c0cb8d0368a83b12b7c593f627c46785a52c62ab211b4118e807d685f12f",
+        "kind": "narrative",
+        "page": 4,
+        "quote": "n engl j med 390;4 nejm.org January 25, 2024\n317\nEarly Treatment of PDA with Ibuprofen\ning. Missing data were not imputed. Analyses were\nadjusted for minimization factors, such as the\nsize of the PDA at randomization, gestational age\nat birth, age at randomization, sex, whether the\ninfant was from a multiple birth, mode of respi-\nratory support at randomization, whether ino\ntropes were received at the time of randomization,\nand trial site, as well as for the correlation be-\ntween siblings from multiple births, when tech-\nnically possible (Table S7). Trial site was treated\nas a random effect in the models, and all other\nfactors were treated as fixed effects. Binary out-\ncomes were analyzed by means of mixed-effects\nPoisson regression with a robust variance esti-\nmator; risk ratios and 95% confidence intervals\nare reported. The assumptions used in the mod-\nels were assessed and found to be valid (Fig. S2).\nContinuous outcomes were analyzed with the\nuse of linear regression models; mean differences\nand 95% confidence intervals (after checking\nmodel assumptions) are reported. Because of the\nlarge number of short-term outcomes, reporting\nof differences between the groups and associat-\ned 95% confidence intervals was restricted to a\nprespecified short list (Table S5). No formal\nmethod to adjust for multiplicity was used; the\nwidths of the confidence intervals have not been\nadjusted for multiplicity, and inferences drawn\nmay not be reproducible and should not be used\nto infer definitive treatment effects for secondary\noutcomes. Full details of the statistical analysis\nare provided in the statistical analysis plan.17 Ad-\nditional details are provided in the Supplementary\nAppendix. Stata/SE, version 15 (StataCorp), was\nused for all analyses.\nResults\nPatients\nFrom July 2015 through December 2020, a total\nof 653 infants underwent randomization: 326 were\nassigned to receive ibuprofen and 327 to receive\nplacebo. A total of 22 infants underwent ran-\ndomization during the internal pilot phase and\n631 during the main recruitment phase (Fig. 1).\nMaternal and infant baseline characteristics ap-\npeared to be well balanced between the groups\n(Table 1 and Table S8). The median PDA diam-\neter was 2.2 mm (interquartile range, 1.9 to 2.6).\nAn independent audit of the echocardiograms\nindicated that 93.8% of infants who underwent\nrandomization in the trial met the prespecified\nechocardiographic eligibility criteria. The remain-\nder of the echocardiographic images could not\nbe assessed accurately to confirm the eligibility\ncriteria.\nA total 318 of 326 infants (97.5%) in the ibu-\nprofen group and 315 of 327 (96.3%) in the pla-\ncebo group received their assigned intervention\nFigure 1. Screening, Randomization, and Inclusion in the Analyses.\n653 Underwent randomization\n3861 Infants were assessed for eligibility\nwith echocardiography\n2590 Were found to be ineligible\n1271 Were eligible\n618 Did not undergo randomi-\nzation\n351 Had parent who declined\nparticipation\n95 Were withdrawn for\nclinical reason\n8 Were in facility with no staff\navailable\n153 Had other reason\n11 Had unknown reason\n326 Were assigned to receive ibuprofen\n318 Received ibuprofen\n7 Did not receive ibuprofen or\nplacebo\n6 Had clinical reason\n1 Died\n1 Had unknown status regarding\nreceipt of ibuprofen or placebo\n327 Were assigned to receive placebo\n315 Received placebo\n2 Received ibuprofen\n9 Did not receive ibuprofen or\nplacebo\n8 Had clinical reason\n1 Was outside trial period\n1 Had unknown status regarding\nreceipt of ibuprofen or placebo\n2 Were withdrawn by parent\n6 Were withdrawn\n1 Was withdrawn for clinical reason\n5 Were withdrawn by parent\n324 Were included in outcome analyses\n2 Had withdrawal of consent to\nuse data\n322 Were included in outcome analyses\n5 Had withdrawal of consent to\nuse data\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "gupta-2024"
+      },
+      "sha256:802cea64f3f2c544562bcbebc29d6432b3f2a857cf9ab28ebe851d45511709c7": {
+        "end": 4417,
+        "end_line": 102,
+        "handle": "eh_802cea64f3f2c544",
+        "identity": "sha256:802cea64f3f2c544562bcbebc29d6432b3f2a857cf9ab28ebe851d45511709c7",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "n engl j med 390;4 nejm.org January 25, 2024\n315\nEarly Treatment of PDA with Ibuprofen\nO\nver the past two decades, surviv-\nal among extremely preterm infants has\nincreased alongside modest reductions\nin neonatal morbidity, although the incidence of\nbronchopulmonary dysplasia has increased.1 In\nthis gestation group, a large (\u22651.5 mm in diam-\neter) patent ductus arteriosus (PDA) that is pres-\nent beyond 3 days of age is associated with higher\nmortality and morbidity and a higher risk of\nbronchopulmonary dysplasia than have been re-\nported among infants without a PDA.2 The inci-\ndence of PDA is inversely proportional to gesta-\ntional age at birth: more than 40% of infants born\nat less than 28 weeks' gestation have persistent\nPDA by 4 months of age.3,4 The risk of broncho-\npulmonary dysplasia or death in extremely pre-\nterm infants also increases with the persistence of\nPDA beyond 1 to 2 weeks of age.5\nVarious treatment strategies have been inves-\ntigated for the management of PDA.6 Prophylaxis\nwith indomethacin or ibuprofen in the first 12 to\n24 hours of life has been reported to reduce the\nrisk of severe intraventricular hemorrhage and\npulmonary hemorrhage but has not been found\nto increase survival without neurosensory impair-\nment at 18 months.7 However, if a prophylactic\napproach is used, many infants will receive\ntreatment unnecessarily, since PDAs can close\nspontaneously.8 Data on the treatment of infants\nwith a symptomatic PDA are limited, and reports\nof improvements in clinical outcomes are lack-\ning.9 Consequently, the number of extremely pre-\nterm infants with a PDA who are treated pharma-\ncologically has decreased.10\nWith the use of bedside functional echocar-\ndiography,11 infants can now be screened to iden-\ntify large PDAs with unrestricted flow that are\nunlikely to close spontaneously. Selective early\ntargeted treatment of patients with these PDAs\nmay make it possible to avoid unnecessary treat-\nment of all patients with PDAs.12 Parenteral indo-\nmethacin and ibuprofen have been used for early\ntargeted treatment of PDA, with no evidence of\na difference in their efficacy,13 although the side-\neffect profile of ibuprofen has been reported to\nbe superior.6\nWe hypothesized that among patients with a\nPDA of 1.5 mm or larger in diameter with unre-\nstricted flow identified with the use of bedside\nechocardiography, early selective treatment (\u226472\nhours after birth) with ibuprofen would reduce\nmortality and improve short-term outcomes such\nas bronchopulmonary dysplasia to a greater ex-\ntent than placebo.\nMethods\nTrial Design\nWe conducted a multicenter, double-blind, ran-\ndomized, placebo-controlled trial in 32 neonatal\nintensive care units in the United Kingdom in\naccordance with a published protocol (available\nwith the full text of this article at NEJM.org).14\nThe main trial was preceded by an internal pilot\nphase to assess the suitability of trial procedures\nand recruitment. The clinicians, the infants' fami-\nlies, and the persons who assessed outcomes\nwere unaware of the randomization assignments.14\nThe trial was coordinated by the National Perina-\ntal Epidemiology Unit (NPEU) Clinical Trials Unit\nat the University of Oxford, United Kingdom\n(which was responsible for the conduct of the\ntrial), and was overseen by the trial steering com-\nmittee, acting on the recommendations of an in-\ndependent data and safety monitoring commit-\ntee. The authors vouch for the accuracy and\ncompleteness of the data and for the fidelity of\nthe trial to the protocol. Additional details are\nprovided in the Supplementary Appendix, avail-\nable at NEJM.org.\nPatients\nAfter written informed consent was obtained\nfrom the parents, infants born between 23 weeks\n0 days' and 28 weeks 6 days' gestation who\nwere less than 72 hours old, were confirmed by\nechocardiography to have a large PDA, and for\nwhom there were no associated clinical con-\ncerns for acute pulmonary hypertension were\nconsidered to be eligible for participation. A\nlarge PDA was defined as a PDA with a diam-\neter of at least 1.5 mm and unrestricted trans-\nductal pulsatile (left-to-right shunting) flow. A\nfull list of the inclusion and exclusion criteria\nis provided in Table S1 in the Supplementary\nAppendix.\nA Quick Take\nis available at\nNEJM.org\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "gupta-2024"
+      },
+      "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b": {
+        "end": 6296,
+        "end_line": 125,
+        "handle": "eh_d6d5b2bf301983ce",
+        "identity": "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b",
+        "kind": "narrative",
+        "page": 6,
+        "quote": "n engl j med 390;4 nejm.org January 25, 2024\n319\nEarly Treatment of PDA with Ibuprofen\nTable 2. Primary and Secondary Outcomes.\nOutcome\nIbuprofen\n(N = 324)\nPlacebo\n(N = 322)\nUnadjusted Risk Ratio\n(95% CI)\nAdjusted Risk Ratio\n (95% CI)*\nPrimary outcome: death or moderate or severe bronchopulmonary dysplasia assessed\nat 36 wk of postmenstrual age - no./total no. (%)\u2020\n220/318 (69.2)\n202/318 (63.5)\n1.09 (0.97-1.22)\n1.09 (0.98-1.20)\u2021\nSecondary outcomes\nDeath by 36 wk of postmenstrual age - no./total no. (%)\n44/323 (13.6)\n33/321 (10.3)\n1.33 (0.87-2.02)\n1.32 (0.92-1.90)\nSurvival to 36 wk of postmenstrual age - no. of infants\n280\n289\nModerate or severe bronchopulmonary dysplasia at 36 wk of postmenstrual age -\nno./total no. (%)\n176/274 (64.2)\n169/285 (59.3)\n1.08 (0.95-1.23)\n1.09 (0.96-1.23)\nAny intraventricular hemorrhage - no. (%)\n137 (42.3)\n132 (41.0)\nGrade I or II without ventricular dilatation\n92 (28.4)\n98 (30.4)\nGrade III or IV with ventricular dilatation or intraparenchymal abnormality\u00a7\n45 (13.9)\n34 (10.6)\n1.32 (0.87-2.00)\n1.30 (0.93-1.82)\nCystic periventricular leukomalacia - no. (%)\n15 (4.6)\n9 (2.8)\n1.66 (0.74-3.73)\n1.62 (0.69-3.83)\nTreatment for retinopathy of prematurity in at least one eye - no. (%)\n45 (13.9)\n45 (14.0)\n0.99 (0.68-1.46)\n0.98 (0.68-1.42)\nClinically significant pulmonary hemorrhage - no./total no. (%)\u00b6\n24/322 (7.5)\n18/322 (5.6)\n1.33 (0.74-2.41)\n1.39 (0.70-2.77)\nTreatment for acute pulmonary hypertension with pulmonary vasodilator - no. (%)\n17 (5.2)\n16 (5.0)\n1.05 (0.54-2.05)\n1.04 (0.51-2.13)\nSevere necrotizing enterocolitis - no./total no. (%)\u2016\n41/323 (12.7)\n41/322 (12.7)\n1.00 (0.67-1.49)\n1.01 (0.67-1.51)\nPDA closed or <1.5 mm at 3 wk of age, confirmed by echocardiography -\nno./total no. (%)**\n176/317 (55.5)\n117/316 (37.0)\n1.50 (1.26-1.79)\n1.50 (1.30-1.74)\nPDA \u22651.5 mm at 3 wk of age, not treated medically or by surgical closure -\nno./total no. (%)**\n74/321 (23.1)\n109/317 (34.4)\n0.67 (0.52-0.86)\n0.67 (0.53-0.85)\nOpen-label surgical treatment of a symptomatic PDA - no. (%)\n9 (2.8)\n31 (9.6)\n0.29 (0.14-0.60)\n0.29 (0.18-0.47)\nDischarged home with supplemental oxygen - no. (%)\n130 (41.3)\n123 (39.2)\n1.05 (0.87-1.27)\n1.06 (0.92-1.22)\nWeight gain\nNo. of infants with data\n257\n265\nMean change in z score between birth and discharge\n-1.0\u00b11.0\n-1.1\u00b11.0\n0.1 (-0.1 to 0.2)\u2020\u2020\n0.1 (-0.1 to 0.2)\u2020\u2020\n* Adjusted for minimization factors (size of the PDA, gestational age at birth, age at randomization, sex, trial site, whether the infant was from a multiple birth, mode of respiratory sup-\nport at randomization, and whether inotropes were received at the time of randomization) and the correlation between siblings from multiple births, where technically possible. Trial\nsite was treated as a random effect in the models, and all other factors as fixed effects.\n\u2020 In the placebo group, 1 infant was withdrawn before 36 weeks and 3 did not have information on oxygen requirement available at 36 weeks. In the ibuprofen group, 1 infant was lost\nto follow-up before 36 weeks and 5 did not have information on oxygen requirement available at approximately 36 weeks.\n\u2021 P = 0.10.\n\u00a7\n Severe intraventricular hemorrhage was defined as grade III or IV.\n\u00b6 Fresh blood in endotracheal tube with increase in respiratory support.\n\u2016\n Severe necrotizing enterocolitis was defined as Bell's stage II or higher as confirmed by radiography, histopathological analysis, or both. Stages in the Bell classification system for\nnecrotizing enterocolitis range from I to III, with higher stages indicating more severe illness.\n** Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA.\n\u2020\u2020 Value is the mean difference (95% confidence interval).\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.\n\n[Extracted table 1]\n|Table 2. Primary and Secondary Outcomes.|Ibuprofen Placebo Unadjusted Risk Ratio Adjusted Risk Ratio Outcome (N = 324) (N = 322) (95% CI) (95% CI)*|1.09 (0.98-1.20)\u2021|Secondary outcomes|1.32 (0.92-1.90)|Survival to 36 wk of postmenstrual age - no. of infants 280 289|1.09 (0.96-1.23)|Any intraventricular hemorrhage - no. (%) 137 (42.3) 132 (41.0)||Grade III or IV with ventricular dilatation or intraparenchymal abnormality\u00a7 45 (13.9) 34 (10.6) 1.32 (0.87-2.00) 1.30 (0.93-1.82)|1.62 (0.69-3.83)|Treatment for retinopathy of prematurity in at least one eye - no. (%) 45 (13.9) 45 (14.0) 0.99 (0.68-1.46) 0.98 (0.68-1.42)|1.39 (0.70-2.77)|Treatment for acute pulmonary hypertension with pulmonary vasodilator - no. (%) 17 (5.2) 16 (5.0) 1.05 (0.54-2.05) 1.04 (0.51-2.13)|1.01 (0.67-1.51)|PDA closed or <1.5 mm at 3 wk of age, confirmed by echocardiography - 176/317 (55.5) 117/316 (37.0) 1.50 (1.26-1.79) 1.50 (1.30-1.74) no./total no. (%)**|0.67 (0.53-0.85)|Open-label surgical treatment of a symptomatic PDA - no. (%) 9 (2.8) 31 (9.6) 0.29 (0.14-0.60) 0.29 (0.18-0.47)|1.06 (0.92-1.22)|Weight gain||Mean change in z score between birth and discharge -1.0\u00b11.0 -1.1\u00b11.0 0.1 (-0.1 to 0.2)\u2020\u2020 0.1 (-0.1 to 0.2)\u2020\u2020|\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n|||1.09 (0.97-1.22)||1.33 (0.87-2.02)||1.08 (0.95-1.23)||||1.66 (0.74-3.73)||1.33 (0.74-2.41)||1.00 (0.67-1.49)||0.67 (0.52-0.86)||1.05 (0.87-1.27)||||\n|||202/318 (63.5)||33/321 (10.3)||169/285 (59.3)||98 (30.4)||9 (2.8)||18/322 (5.6)||41/322 (12.7)||109/317 (34.4)||123 (39.2)||265||\n|||220/318 (69.2)||44/323 (13.6)||176/274 (64.2)||92 (28.4)||15 (4.6)||24/322 (7.5)||41/323 (12.7)||74/321 (23.1)||130 (41.3)||257||\n|||Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age - no./total no. (%)\u2020||Death by 36 wk of postmenstrual age - no./total no. (%)||Moderate or severe bronchopulmonary dysplasia at 36 wk of postmenstrual age - no./total no. (%)||Grade I or II without ventricular dilatation||Cystic periventricular leukomalacia - no. (%)||Clinically significant pulmonary hemorrhage - no./total no. (%)\u00b6||Severe necrotizing enterocolitis - no./total no. (%)\u2016||PDA \u22651.5 mm at 3 wk of age, not treated medically or by surgical closure - no./total no. (%)**||Discharged home with supplemental oxygen - no. (%)||No. of infants with data||",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "gupta-2024"
+      }
+    },
+    "identity": "sha256:f7e6c315bb1597b2779076c2b30917095c0b4f638f7e3be957b221755aab8303",
+    "payload": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_802cea64f3f2c544",
+              "eh_664cb2e87a63db02"
+            ],
+            "rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually."
+          },
+          "bindings": [
+            {
+              "evidence_index": 4,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:8c66f695300c5661a1c9ae1bc42b25f8d7e9a1104ce6214e1c48dec624f64eaf"
+            },
+            {
+              "evidence_index": 4,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:edb8215ecd5ee75f596058857e9479196822a9c51d25503731ca18ce9dc0340a"
+            },
+            {
+              "evidence_index": 2,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:096b26fbfd6445310210040893c894bb5dfab04fec17447c41dd674e3003de6e"
+            },
+            {
+              "evidence_index": 4,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:e2a5ee3ed1a73ed1202831d19c9603273d6dac0f3f6adc2b090d45557acebdcd"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "unclear",
+            "comparison_groups": "unclear",
+            "effect_measure": "unclear",
+            "eligible_result_choice": "unclear",
+            "measurement": "unclear",
+            "outcome_definition": "unclear",
+            "source_table_meaning": "unclear",
+            "time_point": "unclear"
+          },
+          "evidence": [
+            {
+              "handle": "eh_49ac77da50b0bd19",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_664cb2e87a63db02",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_68123b0bf4654ecc",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_7266c0cb8d0368a8",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_d6d5b2bf301983ce",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "narrower",
+          "relation_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+          "reported": {
+            "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+            "effect_measure": "Adjusted risk ratio",
+            "endpoint": {
+              "definition": null,
+              "name": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age"
+            },
+            "estimate": "1.09",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "0.98 to 1.20"
+          },
+          "requested_outcome": "death or moderate or severe bronchopulmonary dysplasia",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Ibuprofen",
+                "id": "ibuprofen"
+              },
+              {
+                "assignment": "Placebo",
+                "id": "placebo"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Risk ratio",
+            "measurement": {
+              "method": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age",
+              "metric": "death or moderate or severe bronchopulmonary dysplasia"
+            },
+            "outcome_definition": "death or moderate or severe bronchopulmonary dysplasia",
+            "time_point_or_window": {
+              "description": "At 36 weeks of postmenstrual age",
+              "kind": "quantified",
+              "unit": "weeks",
+              "value": "36"
+            }
+          },
+          "trial_id": "gupta-2024"
+        }
+      ]
+    }
+  },
+  "reasoning_records": {
+    "sha256:79c3b801ae5690a02b17f3989c15c075a12e9f310a2f2a2f50832f9be69c7f95": {
+      "draft": {
+        "assessments": [
+          {
+            "counterevidence": [],
+            "evidence_basis": [
+              "eh_68123b0bf4654ecc",
+              "eh_664cb2e87a63db02",
+              "eh_7266c0cb8d0368a8",
+              "eh_d6d5b2bf301983ce",
+              "eh_49ac77da50b0bd19"
+            ],
+            "missing_fact_justification": null,
+            "population_justification": "Target is all 326 ibuprofen and 327 placebo randomized infants. Seven withdrew consent to data use (2 vs 5), and primary-outcome information was unavailable for additional participants; primary-outcome denominators are 318 per arm. These analysis omissions are distinguished from eligibility criteria.",
+            "scope_justification": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+            "trial_id": "gupta-2024",
+            "unknowns": [
+              "The primary outcome is a composite; the specific definitions and adjudication details of moderate/severe bronchopulmonary dysplasia are further described in protocol/supplement material and will be examined during Domain assessment."
+            ]
+          }
+        ],
+        "expected_revision": 1,
+        "results": [
+          {
+            "applicability": {
+              "design": "individual_parallel",
+              "evidence": [
+                "eh_802cea64f3f2c544",
+                "eh_664cb2e87a63db02"
+              ],
+              "rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually."
+            },
+            "clarity": null,
+            "evidence": [],
+            "kind": "assessable",
+            "passage_refs": [
+              "eh_68123b0bf4654ecc",
+              "eh_664cb2e87a63db02",
+              "eh_7266c0cb8d0368a8",
+              "eh_d6d5b2bf301983ce",
+              "eh_49ac77da50b0bd19"
+            ],
+            "relation": "narrower",
+            "relation_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+            "reported": {
+              "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+              "effect_measure": "Adjusted risk ratio",
+              "endpoint": {
+                "definition": null,
+                "name": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age"
+              },
+              "estimate": "1.09",
+              "form": "comparative_effect",
+              "group_values": [],
+              "precision": "0.98 to 1.20"
+            },
+            "target": {
+              "baseline_subgroup": null,
+              "comparison_groups": [
+                {
+                  "assignment": "Ibuprofen",
+                  "id": "ibuprofen"
+                },
+                {
+                  "assignment": "Placebo",
+                  "id": "placebo"
+                }
+              ],
+              "intended_effect_measure": "Risk ratio",
+              "measurement": {
+                "method": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age"
+              },
+              "time_point_or_window": {
+                "description": "At 36 weeks of postmenstrual age",
+                "kind": "quantified",
+                "unit": "weeks",
+                "value": "36"
+              }
+            },
+            "trial_id": "gupta-2024"
+          }
+        ]
+      },
+      "identity": "sha256:79c3b801ae5690a02b17f3989c15c075a12e9f310a2f2a2f50832f9be69c7f95",
+      "kind": "proposal_reasoning",
+      "proposal_identity": "sha256:f7e6c315bb1597b2779076c2b30917095c0b4f638f7e3be957b221755aab8303",
+      "save_revision": 2
+    }
+  },
+  "review": {
+    "candidate": {
+      "evidence": {
+        "sha256:49ac77da50b0bd19c43adc74202d1f068e9f3735229e69b8fc010288cca9c97b": {
+          "end": 3882,
+          "end_line": 125,
+          "handle": "eh_49ac77da50b0bd19",
+          "identity": "sha256:49ac77da50b0bd19c43adc74202d1f068e9f3735229e69b8fc010288cca9c97b",
+          "kind": "narrative",
+          "page": 7,
+          "quote": "n engl j med 390;4 nejm.org January 25, 2024\n320\nThe new engl and jour nal of medicine\n(Fig. 1). Parental consent to use the data from\n7 infants was withdrawn, which left data from\n324 infants in the ibuprofen group and 322 in\nthe placebo group available for outcome analy-\nses (Fig. 1). Data that were required to assess the\nprimary outcome were missing for an additional\n10 infants, and therefore assessment of the pri-\nmary outcome was possible for 318 infants (97.5%)\nin the ibuprofen group and 318 (97.2%) in the\nplacebo group.\nOutcomes\nA primary-outcome event (death or moderate or\nsevere bronchopulmonary dysplasia assessed at\nTable 3. Process Outcomes.\nOutcome\nIbuprofen\n(N = 324)\nPlacebo\n(N = 322)\nDid not receive assigned intervention - no. (%)\n7 (2.2)\n11 (3.4)\nDid not receive all doses of ibuprofen or placebo - no. (%)\n41 (12.7)\n34 (10.6)\nDoses received - no. (%)\n0\n7 (2.2)\n9 (2.8)\n1\n17 (5.2)\n11 (3.4)\n2\n17 (5.2)\n14 (4.3)\n3\n283 (87.3)\n288 (89.4)\nReason for early discontinuation - no./total no. (%)*\nClinical decision\n38/41 (92.7)\n26/34 (76.5)\nParental request\n0\n1/34 (2.9)\nInfant death\n2/41 (4.9)\n2/34 (5.9)\nMissed dose or doses in error\n1/41 (2.4)\n2/34 (5.9)\nIntervention window outside of trial period\n0\n2/34 (5.9)\nTransfer out of recruiting site\n0\n1/34 (2.9)\nMedian age at first dose (IQR) - hr\u2020\n61 (47-68)\n61 (48-69)\nDistribution of median age at first dose - no. (%)\n0 to <24 hr\n14/316 (4.4)\n14/313 (4.5)\n24 to <48 hr\n68/316 (21.5)\n65/313 (20.8)\n48 to <72 hr\n220/316 (69.6)\n225/313 (71.9)\n\u226572 hr\n14/316 (4.4)\n9/313 (2.9)\nReceived second or third dose outside of dosing window -\nno./total no. (%)\n5/297 (1.7)\n4/301 (1.3)\nEchocardiography not performed at 3 wk of age - no./total no.\n(%)\u2021\n65/291 (22.3)\n60/301 (19.9)\nOxygen reduction test not performed when infant was eligible\n- no./total no. (%)\u00a7\n13/86 (15.1)\n13/94 (13.8)\n* Early discontinuation was defined as discontinuation when fewer than three doses had been received.\n\u2020 The median was assessed among infants who had received at least one dose.\n\u2021 Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA;\ninfants who died before the 3-week echocardiogram could be obtained were excluded (33 infants in the ibuprofen group\nand 21 in the placebo group).\n\u00a7 Denominators are the numbers of infants who were eligible for the test.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Table 3. Process Outcomes.|||\n|Ibuprofen Placebo<br>Outcome (N = 324) (N = 322)|||\n|Did not receive assigned intervention - no. (%)|7 (2.2)|11 (3.4)|\n|Did not receive all doses of ibuprofen or placebo - no. (%) 41 (12.7) 34 (10.6)|||\n|Doses received - no. (%)|||\n|0 7 (2.2) 9 (2.8)|||\n|1|17 (5.2)|11 (3.4)|\n|2 17 (5.2) 14 (4.3)|||\n|3|283 (87.3)|288 (89.4)|\n|Reason for early discontinuation - no./total no. (%)*|||\n|Clinical decision|38/41 (92.7)|26/34 (76.5)|\n|Parental request 0 1/34 (2.9)|||\n|Infant death|2/41 (4.9)|2/34 (5.9)|\n|Missed dose or doses in error 1/41 (2.4) 2/34 (5.9)|||\n|Intervention window outside of trial period|0|2/34 (5.9)|\n|Transfer out of recruiting site 0 1/34 (2.9)|||\n|Median age at first dose (IQR) - hr\u2020|61 (47-68)|61 (48-69)|\n|Distribution of median age at first dose - no. (%)|||\n|0 to <24 hr|14/316 (4.4)|14/313 (4.5)|\n|24 to <48 hr 68/316 (21.5) 65/313 (20.8)|||\n|48 to <72 hr|220/316 (69.6)|225/313 (71.9)|\n|\u226572 hr 14/316 (4.4) 9/313 (2.9)|||\n|Received second or third dose outside of dosing window -<br>no./total no. (%)|5/297 (1.7)|4/301 (1.3)|\n|Echocardiography not performed at 3 wk of age - no./total no. 65/291 (22.3) 60/301 (19.9)<br>(%)\u2021|||\n|Oxygen reduction test not performed when infant was eligible<br>- no./total no. (%)\u00a7|13/86 (15.1)|13/94 (13.8)|",
+          "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+          "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+          "start": 0,
+          "start_line": 1,
+          "trial_id": "gupta-2024"
+        },
+        "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a": {
+          "end": 4625,
+          "end_line": 102,
+          "handle": "eh_664cb2e87a63db02",
+          "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a",
+          "kind": "narrative",
+          "page": 3,
+          "quote": "n engl j med 390;4 nejm.org January 25, 2024\n316\nThe new engl and jour nal of medicine\nRandomization\nDynamic randomization was performed with a\nsecure Web-based system that was created and\nhosted by the NPEU Clinical Trials Unit with\n24/7 telephone backup, ensuring concealment of\nthe group assignments. The randomization pro-\ngram used a probabilistic minimization algorithm\nand assigned patients in a 1:1 ratio to one of the\ntwo groups to ensure balance with respect to the\nsize of the PDA, gestational age at birth, age, sex,\ntrial site, whether the infant was from a multiple\nbirth, mode of respiratory support, and whether\ninotropes were received. Infants in multiple births\nunderwent randomization individually. Partici-\npants were enrolled by the delegated clinician at\nthe trial site.14\nIntervention and Trial Procedures\nThe trial intervention was ibuprofen sodium,\nand the matched placebo was a clear sterile solu-\ntion of 0.9% sodium chloride. Each carton con-\ntaining ibuprofen or placebo was labeled with a\nunique code in compliance with the guidance\nprovided in annex 13 of the European Commis-\nsion guidelines for Good Manufacturing Prac-\ntice. Ibuprofen was administered parenterally as\na loading dose of 10 mg per kilogram of body\nweight, followed by two doses of 5 mg per kilo-\ngram at least 24 hours apart. Placebo was ad-\nministered as an equal volume of 0.9% sodium\nchloride (Table S2). Only one course of ibuprofen\nor placebo was given. Prespecified criteria for\nopen-label medical or surgical treatment after\nenrollment are shown in Table S3.\nTransthoracic echocardiography was performed\nto assess eligibility within 72 hours after birth\nand at 3 weeks (18 to 24 days) of age to assess the\npatency of the PDA while minimizing open-label\ntreatment. For quality control, a sample of echo-\ncardiograms from 65 infants was reviewed inde-\npendently by a pediatric echocardiographer who\nwas unaware of the treatment assignments.\nOutcomes\nThe primary outcome was a composite of death\nor moderate or severe bronchopulmonary dyspla-\nsia assessed at 36 weeks of postmenstrual age15\n(Tables S4 and S5). A physiological challenge of\nsupplemental oxygen reduction was used to test\nfor oxygen need at 36 weeks of postmenstrual\nage16 to differentiate mild from moderate bron-\nchopulmonary dysplasia (Fig. S1). Secondary\nshort-term outcomes up to the time of discharge\nincluded individual components of the primary\noutcome, the severity of bronchopulmonary dys-\nplasia, severe intraventricular hemorrhage, cystic\nperiventricular leukomalacia, retinopathy of pre-\nmaturity requiring treatment, clinically signifi-\ncant pulmonary hemorrhage, acute pulmonary\nhypertension, definitive necrotizing enterocoli-\ntis, closed or clinically nonsignificant PDA less\nthan 1.5 mm in diameter with restricted flow at\n3 weeks age, open-label treatment of a PDA caus-\ning symptoms, weight gain, and discharge home\nwhile receiving supplemental oxygen (Table\nS5).14 Other secondary short-term outcomes are\nlisted in the Supplementary Appendix and in the\nstatistical analysis plan (available with the pro-\ntocol).17 All outcome data were recorded rou-\ntinely, including demographic data and compli-\ncations of prematurity; these data were obtained\nfrom clinical notes or trial-related assessments\n(Table S6).\nA list of foreseeable serious adverse events\nthat are common in this patient population was\nprespecified (see section 9.1.4 in the protocol);\nunforeseeable serious adverse events were de-\nfined as those that were not included on this\nlist. A serious adverse reaction was defined as a\nserious adverse event that was considered to\nhave been caused by the administration of the\ntrial agent; if such an event was not consistent\nwith the safety profile of the trial agent, it was\nclassed as a suspected unexpected serious ad-\nverse reaction.14\nStatistical Analysis\nThe incidence of the primary outcome was pre-\ndicted to be 60% in the placebo group (see Sup-\nplementary Methods). A sample of 730 infants was\ncalculated to be required in order to detect a\nclinically important absolute risk reduction of 12\npercentage points (i.e., an incidence of 60% in\nthe placebo group and an incidence of 48% in the\nibuprofen group) with 90% power and a type I\nerror of 5% under the assumption that 1% of in-\nfants would be lost to follow-up.14\nAnalyses were performed according to the\nintention-to-treat principle, with infants exclud-\ned from the analysis only if their data were miss-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+          "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+          "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+          "start": 0,
+          "start_line": 1,
+          "trial_id": "gupta-2024"
+        },
+        "sha256:68123b0bf4654eccb66513e5afc1ba783b75dbdf46f4e91e31f8a85f0b393f8f": {
+          "end": 4108,
+          "end_line": 81,
+          "handle": "eh_68123b0bf4654ecc",
+          "identity": "sha256:68123b0bf4654eccb66513e5afc1ba783b75dbdf46f4e91e31f8a85f0b393f8f",
+          "kind": "narrative",
+          "page": 1,
+          "quote": "The new engl and jour nal of medicine\nn engl j med 390;4 nejm.org January 25, 2024\n314\nFrom the Division of Neonatology, Sidra\nMedicine, Doha, Qatar (S.G.); and the De-\npartment of Engineering, Durham Univer-\nsity, Durham (S.G.), Liverpool Women's\nNHS Foundation Trust, Liverpool (N.V.S.),\nthe National Perinatal Epidemiology Unit\nClinical Trials Unit, Nuffield Department\nof Population Health, University of Oxford,\nOxford (J.L.B., U.B., E.H., J.P., K.S., P.H.),\nthe Department of Health Science Uni-\nversity of Leicester, George Davies Centre,\nLeicester (D.F., S.J.), NICU, Rosie Hospital,\nCambridge University Hospital Founda-\ntion Trust, Cambridge (W.K.), the Institute\nof Applied Health Research, University of\nBirmingham, Birmingham (T.R.), South\nTees Hospitals NHS Foundation Trust,\nJames Cook University Hospital, Middles-\nbrough (S.S., J.W.), and the School of Medi-\ncine, University of Nottingham, Notting-\nham (E.J.) - all in the United Kingdom.\nProf. Gupta can be contacted at samir\n.gupta@durham.ac.uk or at the Division\nof Neonatology, Department of Pediatrics,\nSidra Medicine, Al Luqta St., Education\nCity North Campus, Qatar Foundation,\nP.O. Box 26999, Doha, Qatar.\n*A list of the investigators in the Baby-\nOSCAR Collaborative Group is provided\nin the Supplementary Appendix, avail-\nable at NEJM.org.\nMs. Hardy and Prof. Juszczak contributed\nequally to this article.\nN Engl J Med 2024;390:314-25.\nDOI: 10.1056/NEJMoa2305582\nCopyright \u00a9 2024 Massachusetts Medical Society.\nBACKGROUND\nThe cyclooxygenase inhibitor ibuprofen may be used to treat patent ductus arteriosus\n(PDA) in preterm infants. Whether selective early treatment of large PDAs with\nibuprofen would improve short-term outcomes is not known.\nMETHODS\nWe conducted a multicenter, randomized, double-blind, placebo-controlled trial\nevaluating early treatment (\u226472 hours after birth) with ibuprofen for a large PDA\n(diameter of \u22651.5 mm with pulsatile flow) in extremely preterm infants (born be-\ntween 23 weeks 0 days' and 28 weeks 6 days' gestation). The primary outcome was a\ncomposite of death or moderate or severe bronchopulmonary dysplasia evaluated at\n36 weeks of postmenstrual age.\nRESULTS\nA total of 326 infants were assigned to receive ibuprofen and 327 to receive placebo;\n324 and 322, respectively, had data available for outcome analyses. A primary-out-\ncome event occurred in 220 of 318 infants (69.2%) in the ibuprofen group and 202\nof 318 infants (63.5%) in the placebo group (adjusted risk ratio, 1.09; 95% confi-\ndence interval [CI], 0.98 to 1.20; P = 0.10). A total of 44 of 323 infants (13.6%) in\nthe ibuprofen group and 33 of 321 infants (10.3%) in the placebo group died\n(adjusted risk ratio, 1.32; 95% CI, 0.92 to 1.90). Among the infants who survived\nto 36 weeks of postmenstrual age, moderate or severe bronchopulmonary dysplasia\noccurred in 176 of 274 (64.2%) in the ibuprofen group and 169 of 285 (59.3%) in\nthe placebo group (adjusted risk ratio, 1.09; 95% CI, 0.96 to 1.23). Two unforeseeable\nserious adverse events occurred that were possibly related to ibuprofen.\nCONCLUSIONS\nThe risk of death or moderate or severe bronchopulmonary dysplasia at 36 weeks\nof postmenstrual age was not significantly lower among infants who received early\ntreatment with ibuprofen than among those who received placebo. (Funded by the\nNational Institute for Health Research Health Technology Assessment Pro-\ngramme; Baby-OSCAR ISRCTN Registry number, ISRCTN84264977.)\nABSTR ACT\nTrial of Selective Early Treatment of Patent\nDuctus Arteriosus with Ibuprofen\nSamir Gupta, M.D., Nimish V. Subhedar, M.D., Jennifer L. Bell, M.Sc.,\nDavid Field, M.D., Ursula Bowler, Elizabeth Hutchison, M.A., Sam Johnson, Ph.D.,\nWilf Kelsall, M.D., Justine Pepperell, Tracy Roberts, Ph.D., Sunil Sinha, M.D.,\nKayleigh Stanbury, B.Sc., Jonathan Wyllie, M.D., Pollyanna Hardy, M.Sc.,\nand Edmund Juszczak, M.Sc., for the Baby-OSCAR Collaborative Group*\nOriginal Article\nCME\nat NEJM.org\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+          "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+          "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+          "start": 0,
+          "start_line": 1,
+          "trial_id": "gupta-2024"
+        },
+        "sha256:7266c0cb8d0368a83b12b7c593f627c46785a52c62ab211b4118e807d685f12f": {
+          "end": 3954,
+          "end_line": 105,
+          "handle": "eh_7266c0cb8d0368a8",
+          "identity": "sha256:7266c0cb8d0368a83b12b7c593f627c46785a52c62ab211b4118e807d685f12f",
+          "kind": "narrative",
+          "page": 4,
+          "quote": "n engl j med 390;4 nejm.org January 25, 2024\n317\nEarly Treatment of PDA with Ibuprofen\ning. Missing data were not imputed. Analyses were\nadjusted for minimization factors, such as the\nsize of the PDA at randomization, gestational age\nat birth, age at randomization, sex, whether the\ninfant was from a multiple birth, mode of respi-\nratory support at randomization, whether ino\ntropes were received at the time of randomization,\nand trial site, as well as for the correlation be-\ntween siblings from multiple births, when tech-\nnically possible (Table S7). Trial site was treated\nas a random effect in the models, and all other\nfactors were treated as fixed effects. Binary out-\ncomes were analyzed by means of mixed-effects\nPoisson regression with a robust variance esti-\nmator; risk ratios and 95% confidence intervals\nare reported. The assumptions used in the mod-\nels were assessed and found to be valid (Fig. S2).\nContinuous outcomes were analyzed with the\nuse of linear regression models; mean differences\nand 95% confidence intervals (after checking\nmodel assumptions) are reported. Because of the\nlarge number of short-term outcomes, reporting\nof differences between the groups and associat-\ned 95% confidence intervals was restricted to a\nprespecified short list (Table S5). No formal\nmethod to adjust for multiplicity was used; the\nwidths of the confidence intervals have not been\nadjusted for multiplicity, and inferences drawn\nmay not be reproducible and should not be used\nto infer definitive treatment effects for secondary\noutcomes. Full details of the statistical analysis\nare provided in the statistical analysis plan.17 Ad-\nditional details are provided in the Supplementary\nAppendix. Stata/SE, version 15 (StataCorp), was\nused for all analyses.\nResults\nPatients\nFrom July 2015 through December 2020, a total\nof 653 infants underwent randomization: 326 were\nassigned to receive ibuprofen and 327 to receive\nplacebo. A total of 22 infants underwent ran-\ndomization during the internal pilot phase and\n631 during the main recruitment phase (Fig. 1).\nMaternal and infant baseline characteristics ap-\npeared to be well balanced between the groups\n(Table 1 and Table S8). The median PDA diam-\neter was 2.2 mm (interquartile range, 1.9 to 2.6).\nAn independent audit of the echocardiograms\nindicated that 93.8% of infants who underwent\nrandomization in the trial met the prespecified\nechocardiographic eligibility criteria. The remain-\nder of the echocardiographic images could not\nbe assessed accurately to confirm the eligibility\ncriteria.\nA total 318 of 326 infants (97.5%) in the ibu-\nprofen group and 315 of 327 (96.3%) in the pla-\ncebo group received their assigned intervention\nFigure 1. Screening, Randomization, and Inclusion in the Analyses.\n653 Underwent randomization\n3861 Infants were assessed for eligibility\nwith echocardiography\n2590 Were found to be ineligible\n1271 Were eligible\n618 Did not undergo randomi-\nzation\n351 Had parent who declined\nparticipation\n95 Were withdrawn for\nclinical reason\n8 Were in facility with no staff\navailable\n153 Had other reason\n11 Had unknown reason\n326 Were assigned to receive ibuprofen\n318 Received ibuprofen\n7 Did not receive ibuprofen or\nplacebo\n6 Had clinical reason\n1 Died\n1 Had unknown status regarding\nreceipt of ibuprofen or placebo\n327 Were assigned to receive placebo\n315 Received placebo\n2 Received ibuprofen\n9 Did not receive ibuprofen or\nplacebo\n8 Had clinical reason\n1 Was outside trial period\n1 Had unknown status regarding\nreceipt of ibuprofen or placebo\n2 Were withdrawn by parent\n6 Were withdrawn\n1 Was withdrawn for clinical reason\n5 Were withdrawn by parent\n324 Were included in outcome analyses\n2 Had withdrawal of consent to\nuse data\n322 Were included in outcome analyses\n5 Had withdrawal of consent to\nuse data\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+          "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+          "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+          "start": 0,
+          "start_line": 1,
+          "trial_id": "gupta-2024"
+        },
+        "sha256:802cea64f3f2c544562bcbebc29d6432b3f2a857cf9ab28ebe851d45511709c7": {
+          "end": 4417,
+          "end_line": 102,
+          "handle": "eh_802cea64f3f2c544",
+          "identity": "sha256:802cea64f3f2c544562bcbebc29d6432b3f2a857cf9ab28ebe851d45511709c7",
+          "kind": "narrative",
+          "page": 2,
+          "quote": "n engl j med 390;4 nejm.org January 25, 2024\n315\nEarly Treatment of PDA with Ibuprofen\nO\nver the past two decades, surviv-\nal among extremely preterm infants has\nincreased alongside modest reductions\nin neonatal morbidity, although the incidence of\nbronchopulmonary dysplasia has increased.1 In\nthis gestation group, a large (\u22651.5 mm in diam-\neter) patent ductus arteriosus (PDA) that is pres-\nent beyond 3 days of age is associated with higher\nmortality and morbidity and a higher risk of\nbronchopulmonary dysplasia than have been re-\nported among infants without a PDA.2 The inci-\ndence of PDA is inversely proportional to gesta-\ntional age at birth: more than 40% of infants born\nat less than 28 weeks' gestation have persistent\nPDA by 4 months of age.3,4 The risk of broncho-\npulmonary dysplasia or death in extremely pre-\nterm infants also increases with the persistence of\nPDA beyond 1 to 2 weeks of age.5\nVarious treatment strategies have been inves-\ntigated for the management of PDA.6 Prophylaxis\nwith indomethacin or ibuprofen in the first 12 to\n24 hours of life has been reported to reduce the\nrisk of severe intraventricular hemorrhage and\npulmonary hemorrhage but has not been found\nto increase survival without neurosensory impair-\nment at 18 months.7 However, if a prophylactic\napproach is used, many infants will receive\ntreatment unnecessarily, since PDAs can close\nspontaneously.8 Data on the treatment of infants\nwith a symptomatic PDA are limited, and reports\nof improvements in clinical outcomes are lack-\ning.9 Consequently, the number of extremely pre-\nterm infants with a PDA who are treated pharma-\ncologically has decreased.10\nWith the use of bedside functional echocar-\ndiography,11 infants can now be screened to iden-\ntify large PDAs with unrestricted flow that are\nunlikely to close spontaneously. Selective early\ntargeted treatment of patients with these PDAs\nmay make it possible to avoid unnecessary treat-\nment of all patients with PDAs.12 Parenteral indo-\nmethacin and ibuprofen have been used for early\ntargeted treatment of PDA, with no evidence of\na difference in their efficacy,13 although the side-\neffect profile of ibuprofen has been reported to\nbe superior.6\nWe hypothesized that among patients with a\nPDA of 1.5 mm or larger in diameter with unre-\nstricted flow identified with the use of bedside\nechocardiography, early selective treatment (\u226472\nhours after birth) with ibuprofen would reduce\nmortality and improve short-term outcomes such\nas bronchopulmonary dysplasia to a greater ex-\ntent than placebo.\nMethods\nTrial Design\nWe conducted a multicenter, double-blind, ran-\ndomized, placebo-controlled trial in 32 neonatal\nintensive care units in the United Kingdom in\naccordance with a published protocol (available\nwith the full text of this article at NEJM.org).14\nThe main trial was preceded by an internal pilot\nphase to assess the suitability of trial procedures\nand recruitment. The clinicians, the infants' fami-\nlies, and the persons who assessed outcomes\nwere unaware of the randomization assignments.14\nThe trial was coordinated by the National Perina-\ntal Epidemiology Unit (NPEU) Clinical Trials Unit\nat the University of Oxford, United Kingdom\n(which was responsible for the conduct of the\ntrial), and was overseen by the trial steering com-\nmittee, acting on the recommendations of an in-\ndependent data and safety monitoring commit-\ntee. The authors vouch for the accuracy and\ncompleteness of the data and for the fidelity of\nthe trial to the protocol. Additional details are\nprovided in the Supplementary Appendix, avail-\nable at NEJM.org.\nPatients\nAfter written informed consent was obtained\nfrom the parents, infants born between 23 weeks\n0 days' and 28 weeks 6 days' gestation who\nwere less than 72 hours old, were confirmed by\nechocardiography to have a large PDA, and for\nwhom there were no associated clinical con-\ncerns for acute pulmonary hypertension were\nconsidered to be eligible for participation. A\nlarge PDA was defined as a PDA with a diam-\neter of at least 1.5 mm and unrestricted trans-\nductal pulsatile (left-to-right shunting) flow. A\nfull list of the inclusion and exclusion criteria\nis provided in Table S1 in the Supplementary\nAppendix.\nA Quick Take\nis available at\nNEJM.org\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+          "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+          "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+          "start": 0,
+          "start_line": 1,
+          "trial_id": "gupta-2024"
+        },
+        "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b": {
+          "end": 6296,
+          "end_line": 125,
+          "handle": "eh_d6d5b2bf301983ce",
+          "identity": "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b",
+          "kind": "narrative",
+          "page": 6,
+          "quote": "n engl j med 390;4 nejm.org January 25, 2024\n319\nEarly Treatment of PDA with Ibuprofen\nTable 2. Primary and Secondary Outcomes.\nOutcome\nIbuprofen\n(N = 324)\nPlacebo\n(N = 322)\nUnadjusted Risk Ratio\n(95% CI)\nAdjusted Risk Ratio\n (95% CI)*\nPrimary outcome: death or moderate or severe bronchopulmonary dysplasia assessed\nat 36 wk of postmenstrual age - no./total no. (%)\u2020\n220/318 (69.2)\n202/318 (63.5)\n1.09 (0.97-1.22)\n1.09 (0.98-1.20)\u2021\nSecondary outcomes\nDeath by 36 wk of postmenstrual age - no./total no. (%)\n44/323 (13.6)\n33/321 (10.3)\n1.33 (0.87-2.02)\n1.32 (0.92-1.90)\nSurvival to 36 wk of postmenstrual age - no. of infants\n280\n289\nModerate or severe bronchopulmonary dysplasia at 36 wk of postmenstrual age -\nno./total no. (%)\n176/274 (64.2)\n169/285 (59.3)\n1.08 (0.95-1.23)\n1.09 (0.96-1.23)\nAny intraventricular hemorrhage - no. (%)\n137 (42.3)\n132 (41.0)\nGrade I or II without ventricular dilatation\n92 (28.4)\n98 (30.4)\nGrade III or IV with ventricular dilatation or intraparenchymal abnormality\u00a7\n45 (13.9)\n34 (10.6)\n1.32 (0.87-2.00)\n1.30 (0.93-1.82)\nCystic periventricular leukomalacia - no. (%)\n15 (4.6)\n9 (2.8)\n1.66 (0.74-3.73)\n1.62 (0.69-3.83)\nTreatment for retinopathy of prematurity in at least one eye - no. (%)\n45 (13.9)\n45 (14.0)\n0.99 (0.68-1.46)\n0.98 (0.68-1.42)\nClinically significant pulmonary hemorrhage - no./total no. (%)\u00b6\n24/322 (7.5)\n18/322 (5.6)\n1.33 (0.74-2.41)\n1.39 (0.70-2.77)\nTreatment for acute pulmonary hypertension with pulmonary vasodilator - no. (%)\n17 (5.2)\n16 (5.0)\n1.05 (0.54-2.05)\n1.04 (0.51-2.13)\nSevere necrotizing enterocolitis - no./total no. (%)\u2016\n41/323 (12.7)\n41/322 (12.7)\n1.00 (0.67-1.49)\n1.01 (0.67-1.51)\nPDA closed or <1.5 mm at 3 wk of age, confirmed by echocardiography -\nno./total no. (%)**\n176/317 (55.5)\n117/316 (37.0)\n1.50 (1.26-1.79)\n1.50 (1.30-1.74)\nPDA \u22651.5 mm at 3 wk of age, not treated medically or by surgical closure -\nno./total no. (%)**\n74/321 (23.1)\n109/317 (34.4)\n0.67 (0.52-0.86)\n0.67 (0.53-0.85)\nOpen-label surgical treatment of a symptomatic PDA - no. (%)\n9 (2.8)\n31 (9.6)\n0.29 (0.14-0.60)\n0.29 (0.18-0.47)\nDischarged home with supplemental oxygen - no. (%)\n130 (41.3)\n123 (39.2)\n1.05 (0.87-1.27)\n1.06 (0.92-1.22)\nWeight gain\nNo. of infants with data\n257\n265\nMean change in z score between birth and discharge\n-1.0\u00b11.0\n-1.1\u00b11.0\n0.1 (-0.1 to 0.2)\u2020\u2020\n0.1 (-0.1 to 0.2)\u2020\u2020\n* Adjusted for minimization factors (size of the PDA, gestational age at birth, age at randomization, sex, trial site, whether the infant was from a multiple birth, mode of respiratory sup-\nport at randomization, and whether inotropes were received at the time of randomization) and the correlation between siblings from multiple births, where technically possible. Trial\nsite was treated as a random effect in the models, and all other factors as fixed effects.\n\u2020 In the placebo group, 1 infant was withdrawn before 36 weeks and 3 did not have information on oxygen requirement available at 36 weeks. In the ibuprofen group, 1 infant was lost\nto follow-up before 36 weeks and 5 did not have information on oxygen requirement available at approximately 36 weeks.\n\u2021 P = 0.10.\n\u00a7\n Severe intraventricular hemorrhage was defined as grade III or IV.\n\u00b6 Fresh blood in endotracheal tube with increase in respiratory support.\n\u2016\n Severe necrotizing enterocolitis was defined as Bell's stage II or higher as confirmed by radiography, histopathological analysis, or both. Stages in the Bell classification system for\nnecrotizing enterocolitis range from I to III, with higher stages indicating more severe illness.\n** Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA.\n\u2020\u2020 Value is the mean difference (95% confidence interval).\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.\n\n[Extracted table 1]\n|Table 2. Primary and Secondary Outcomes.|Ibuprofen Placebo Unadjusted Risk Ratio Adjusted Risk Ratio Outcome (N = 324) (N = 322) (95% CI) (95% CI)*|1.09 (0.98-1.20)\u2021|Secondary outcomes|1.32 (0.92-1.90)|Survival to 36 wk of postmenstrual age - no. of infants 280 289|1.09 (0.96-1.23)|Any intraventricular hemorrhage - no. (%) 137 (42.3) 132 (41.0)||Grade III or IV with ventricular dilatation or intraparenchymal abnormality\u00a7 45 (13.9) 34 (10.6) 1.32 (0.87-2.00) 1.30 (0.93-1.82)|1.62 (0.69-3.83)|Treatment for retinopathy of prematurity in at least one eye - no. (%) 45 (13.9) 45 (14.0) 0.99 (0.68-1.46) 0.98 (0.68-1.42)|1.39 (0.70-2.77)|Treatment for acute pulmonary hypertension with pulmonary vasodilator - no. (%) 17 (5.2) 16 (5.0) 1.05 (0.54-2.05) 1.04 (0.51-2.13)|1.01 (0.67-1.51)|PDA closed or <1.5 mm at 3 wk of age, confirmed by echocardiography - 176/317 (55.5) 117/316 (37.0) 1.50 (1.26-1.79) 1.50 (1.30-1.74) no./total no. (%)**|0.67 (0.53-0.85)|Open-label surgical treatment of a symptomatic PDA - no. (%) 9 (2.8) 31 (9.6) 0.29 (0.14-0.60) 0.29 (0.18-0.47)|1.06 (0.92-1.22)|Weight gain||Mean change in z score between birth and discharge -1.0\u00b11.0 -1.1\u00b11.0 0.1 (-0.1 to 0.2)\u2020\u2020 0.1 (-0.1 to 0.2)\u2020\u2020|\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n|||1.09 (0.97-1.22)||1.33 (0.87-2.02)||1.08 (0.95-1.23)||||1.66 (0.74-3.73)||1.33 (0.74-2.41)||1.00 (0.67-1.49)||0.67 (0.52-0.86)||1.05 (0.87-1.27)||||\n|||202/318 (63.5)||33/321 (10.3)||169/285 (59.3)||98 (30.4)||9 (2.8)||18/322 (5.6)||41/322 (12.7)||109/317 (34.4)||123 (39.2)||265||\n|||220/318 (69.2)||44/323 (13.6)||176/274 (64.2)||92 (28.4)||15 (4.6)||24/322 (7.5)||41/323 (12.7)||74/321 (23.1)||130 (41.3)||257||\n|||Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age - no./total no. (%)\u2020||Death by 36 wk of postmenstrual age - no./total no. (%)||Moderate or severe bronchopulmonary dysplasia at 36 wk of postmenstrual age - no./total no. (%)||Grade I or II without ventricular dilatation||Cystic periventricular leukomalacia - no. (%)||Clinically significant pulmonary hemorrhage - no./total no. (%)\u00b6||Severe necrotizing enterocolitis - no./total no. (%)\u2016||PDA \u22651.5 mm at 3 wk of age, not treated medically or by surgical closure - no./total no. (%)**||Discharged home with supplemental oxygen - no. (%)||No. of infants with data||",
+          "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+          "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+          "start": 0,
+          "start_line": 1,
+          "trial_id": "gupta-2024"
+        }
+      },
+      "identity": "sha256:f7e6c315bb1597b2779076c2b30917095c0b4f638f7e3be957b221755aab8303",
+      "proposal": {
+        "results": [
+          {
+            "applicability": {
+              "design": "individual_parallel",
+              "evidence": [
+                "eh_802cea64f3f2c544",
+                "eh_664cb2e87a63db02"
+              ],
+              "rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually."
+            },
+            "bindings": [
+              {
+                "evidence_index": 4,
+                "field": {
+                  "path": "/reported/effect_measure"
+                },
+                "value_digest": "sha256:8c66f695300c5661a1c9ae1bc42b25f8d7e9a1104ce6214e1c48dec624f64eaf"
+              },
+              {
+                "evidence_index": 4,
+                "field": {
+                  "path": "/reported/estimate"
+                },
+                "value_digest": "sha256:edb8215ecd5ee75f596058857e9479196822a9c51d25503731ca18ce9dc0340a"
+              },
+              {
+                "evidence_index": 2,
+                "field": {
+                  "path": "/reported/precision"
+                },
+                "value_digest": "sha256:096b26fbfd6445310210040893c894bb5dfab04fec17447c41dd674e3003de6e"
+              },
+              {
+                "evidence_index": 4,
+                "field": {
+                  "path": "/reported/endpoint/name"
+                },
+                "value_digest": "sha256:e2a5ee3ed1a73ed1202831d19c9603273d6dac0f3f6adc2b090d45557acebdcd"
+              }
+            ],
+            "clarity": {
+              "analysis_population": "unclear",
+              "comparison_groups": "unclear",
+              "effect_measure": "unclear",
+              "eligible_result_choice": "unclear",
+              "measurement": "unclear",
+              "outcome_definition": "unclear",
+              "source_table_meaning": "unclear",
+              "time_point": "unclear"
+            },
+            "evidence": [
+              {
+                "handle": "eh_49ac77da50b0bd19",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_664cb2e87a63db02",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_68123b0bf4654ecc",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_7266c0cb8d0368a8",
+                "kind": "narrative"
+              },
+              {
+                "handle": "eh_d6d5b2bf301983ce",
+                "kind": "narrative"
+              }
+            ],
+            "kind": "assessable",
+            "relation": "narrower",
+            "relation_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+            "reported": {
+              "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+              "effect_measure": "Adjusted risk ratio",
+              "endpoint": {
+                "definition": null,
+                "name": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age"
+              },
+              "estimate": "1.09",
+              "form": "comparative_effect",
+              "group_values": [],
+              "precision": "0.98 to 1.20"
+            },
+            "requested_outcome": "death or moderate or severe bronchopulmonary dysplasia",
+            "target": {
+              "comparison_groups": [
+                {
+                  "assignment": "Ibuprofen",
+                  "id": "ibuprofen"
+                },
+                {
+                  "assignment": "Placebo",
+                  "id": "placebo"
+                }
+              ],
+              "effect_of_interest": "assignment",
+              "intended_analysis_population": "All randomized participants in the comparison groups",
+              "intended_effect_measure": "Risk ratio",
+              "measurement": {
+                "method": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age",
+                "metric": "death or moderate or severe bronchopulmonary dysplasia"
+              },
+              "outcome_definition": "death or moderate or severe bronchopulmonary dysplasia",
+              "time_point_or_window": {
+                "description": "At 36 weeks of postmenstrual age",
+                "kind": "quantified",
+                "unit": "weeks",
+                "value": "36"
+              }
+            },
+            "trial_id": "gupta-2024"
+          }
+        ]
+      }
+    },
+    "identity": "sha256:6d1ff6e7599845d305b256e856c3570971ca743fb80ba7f49f12e927c4773b73",
+    "kind": "review",
+    "purpose": "proposal",
+    "workflow_basis": 2
+  },
+  "revision": 3,
+  "trial_dispositions": {
+    "gupta-2024": "pending"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "case_id": "gupta-2024",
+  "code_sha": "fcd83d706c1841515cc5542cb887f1086394d3f9",
+  "protocol_commit": "5a40b2f4ea04d66c8681a654b4518868579535cd",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "limits": {
+    "total_turns": 3,
+    "wall_seconds": 1200,
+    "tool_calls": 80,
+    "output_tokens": 15000,
+    "idle_seconds": 180,
+    "no_progress_boundaries": 2,
+    "identical_errors": 2,
+    "input_telemetry_only": true
+  },
+  "authorization": "Ali standing small evaluation approval; parent delegated instruction authorizes exactly this case and matching proposal acknowledgment. Updated parent limits supersede protocol limits.",
+  "parent_source_thread_id": "01a0fae8-209c-74b0-bd95-43be086b40e3",
+  "native_manifest_sha256": "706c458bca5e101ac5b62c6916ca70a05c14819030f78bbd7eb8e36323d970c3",
+  "configuration_sha256": "71bc12701ab8c5b0f30a3e01c2f5ca55058c490607a57cd183c341180c662963",
+  "instructions_sha256": "04e1e42e4edba6684954038de14a627f91693ea606afe4f791a768018e2b4a33",
+  "prompt_sha256": "2e39a8b62e6dc174754f3699eb3e0d1f928979542109d0c418e0f381ee9493e2",
+  "no_reference_labels_or_old_answers": true,
+  "no_retry": true,
+  "scope_approval_is_external_to_controller": true,
+  "launcher_sha256": "2eb49ce1575707aa76ef8ec7a65db9af7c48404c045e4be447a074680a4207c5",
+  "offline_tests": {
+    "passed": 25,
+    "scope": "7 cumulative adapter guard tests plus 18 production controller/preflight tests",
+    "initial_fixture_failure": "Simulated 300-second approval gap correctly hit 180-second idle guard; fixture corrected to120seconds without changing guard."
+  }
+}

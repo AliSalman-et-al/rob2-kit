@@ -1,0 +1,718 @@
+{
+  "outcome": "success",
+  "state_revision": 8,
+  "phase": "assessment",
+  "trial_dispositions": {
+    "gupta-2024": "pending"
+  },
+  "terminal_counts": {
+    "assessed": 0,
+    "needs_input": 0,
+    "unsupported_design": 0,
+    "failed": 0,
+    "pending": 1,
+    "reviewable": 0
+  },
+  "continuation": {
+    "operation": "get_domain_context",
+    "authority": "host",
+    "trial_id": "gupta-2024",
+    "domain_id": "domain:selection"
+  },
+  "working_checkpoint": {
+    "status": "stale",
+    "reason": "canonical_newer",
+    "trial_id": "gupta-2024",
+    "checkpoint_identity": "sha256:35b9d8d5c72437690da3791c6ca74908d6dbd7adaadfdd41de9a42ee8562e5c4",
+    "checkpoint": {
+      "identity": "sha256:35b9d8d5c72437690da3791c6ca74908d6dbd7adaadfdd41de9a42ee8562e5c4",
+      "batch_id": "sha256:71ebfb2779ccab6b3d70b2f19f9a4666d0d5cba49c4b36ae70181ff20dded328",
+      "trial_id": "gupta-2024",
+      "result_identity": "sha256:c042f91e678e9d9aeaed2e48c72d0dc133420c83d8152b1a17930d63e17f0f0b",
+      "main_report_source_id": "sh_ec3fcba1a06e0ddc",
+      "domain_checkpoint_identities": [],
+      "source_scope": [
+        {
+          "source_id": "source_4665b37b8242dc7521d264a9107e1c68cd0c989bd96472168970010fc0ff2f56",
+          "projection_hash": "sha256:08ea3a424cb382d656ab6cdc223d633d5b036a2875fa7d38da08b24a2c2af123"
+        },
+        {
+          "source_id": "source_af0386b8458837c5a709e9768be4f6cdaece3efaa36cc82b0ee1c6dc1250ab23",
+          "projection_hash": "sha256:aca5b01560f51e26333a29168b9532bd740612ed1f715fe16024ec68268d6df5"
+        },
+        {
+          "source_id": "source_cb7067006a91d4e53d09d8476b0d76a0ac6292b03d6db7ce32a4df4f5c2fbef8",
+          "projection_hash": "sha256:5054b0a70b155f8b278081f3afb37ce906ce450e4309444954b00c55aaeee122"
+        },
+        {
+          "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+          "projection_hash": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169"
+        },
+        {
+          "source_id": "source_f5de7e58b7a415fc5cc82d9469fe4bbc371ac4f10f270b8d8e8156fbe328994a",
+          "projection_hash": "sha256:deba28941be66d40a9a2b5c686b31424eb751d41796e1fd47b619cc02c81def2"
+        }
+      ],
+      "observations": [
+        {
+          "text": "Trial is randomized, double-blind, placebo-controlled; primary outcome death or moderate/severe BPD at 36 weeks PMA; adjusted RR 1.09 (95% CI 0.98 to 1.20).",
+          "sources": [
+            {
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "page": 1,
+              "start_line": 40,
+              "end_line": 68
+            }
+          ]
+        },
+        {
+          "text": "Dynamic randomization used secure Web system and probabilistic minimization; infants from multiple births randomized individually.",
+          "sources": [
+            {
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "page": 3,
+              "start_line": 4,
+              "end_line": 19
+            }
+          ]
+        },
+        {
+          "text": "Primary outcome assessment possible for 318/324 ibuprofen and 318/322 placebo; missing primary-outcome information in additional 10 infants.",
+          "sources": [
+            {
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "page": 7,
+              "start_line": 8,
+              "end_line": 13
+            }
+          ]
+        }
+      ],
+      "interpretations": [],
+      "terminology": [],
+      "unread_ranges": [],
+      "open_questions": [
+        {
+          "text": "Examine supplement/protocol for BPD component definitions and ascertainment details.",
+          "sources": [
+            {
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "page": 3,
+              "start_line": 45,
+              "end_line": 74
+            }
+          ]
+        }
+      ],
+      "drafts": [],
+      "premise_records": [],
+      "domain_checkpoint_bindings": [],
+      "next_action": "Await researcher decision on Proposal Review."
+    },
+    "stale_domains": [
+      "domain:deviations",
+      "domain:measurement",
+      "domain:missing",
+      "domain:randomization"
+    ],
+    "recovery": "resume_from_checkpoint"
+  },
+  "investigation": {
+    "proposition": "No Domain-specific premise has been recorded yet.",
+    "status": "not_established",
+    "sufficiency": {
+      "status": "not_established",
+      "attribution": "not_established"
+    },
+    "workflow_permission": {
+      "permitted": true,
+      "operation": "save_working_checkpoint",
+      "authority": "host",
+      "detail": "The working checkpoint is advisory and may be replaced without changing assessment state."
+    },
+    "coverage": {
+      "source_scope": [
+        "sh_4665b37b8242dc75",
+        "sh_af0386b8458837c5",
+        "sh_cb7067006a91d4e5",
+        "sh_ec3fcba1a06e0ddc",
+        "sh_f5de7e58b7a415fc"
+      ],
+      "state": "partial",
+      "ranges": [
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 38,
+          "start_line": 17,
+          "end_line": 36,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 86,
+          "start_line": 38,
+          "end_line": 49,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 109,
+          "start_line": 1,
+          "end_line": 56,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 110,
+          "start_line": 1,
+          "end_line": 94,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 111,
+          "start_line": 1,
+          "end_line": 35,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 112,
+          "start_line": 1,
+          "end_line": 55,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 113,
+          "start_line": 1,
+          "end_line": 52,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 114,
+          "start_line": 1,
+          "end_line": 54,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 115,
+          "start_line": 1,
+          "end_line": 56,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 116,
+          "start_line": 1,
+          "end_line": 28,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 117,
+          "start_line": 1,
+          "end_line": 14,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 117,
+          "start_line": 15,
+          "end_line": 51,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 118,
+          "start_line": 1,
+          "end_line": 43,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 120,
+          "start_line": 1,
+          "end_line": 54,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 121,
+          "start_line": 1,
+          "end_line": 156,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 122,
+          "start_line": 1,
+          "end_line": 55,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 123,
+          "start_line": 1,
+          "end_line": 48,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 124,
+          "start_line": 1,
+          "end_line": 52,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 125,
+          "start_line": 1,
+          "end_line": 53,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 126,
+          "start_line": 1,
+          "end_line": 56,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 127,
+          "start_line": 1,
+          "end_line": 60,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 128,
+          "start_line": 1,
+          "end_line": 69,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 129,
+          "start_line": 1,
+          "end_line": 48,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 130,
+          "start_line": 1,
+          "end_line": 47,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 131,
+          "start_line": 1,
+          "end_line": 30,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 132,
+          "start_line": 1,
+          "end_line": 49,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 133,
+          "start_line": 1,
+          "end_line": 144,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 134,
+          "start_line": 1,
+          "end_line": 3,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 81,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 81,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 102,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 102,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 102,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 102,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 105,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 105,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 101,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 102,
+          "end_line": 147,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 103,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 104,
+          "end_line": 147,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 125,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 125,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 125,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 125,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 121,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 121,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 63,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 64,
+          "end_line": 99,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 72,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 73,
+          "end_line": 99,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 14,
+          "start_line": 20,
+          "end_line": 45,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 15,
+          "start_line": 1,
+          "end_line": 48,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 16,
+          "start_line": 10,
+          "end_line": 38,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 18,
+          "start_line": 28,
+          "end_line": 54,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 22,
+          "start_line": 65,
+          "end_line": 110,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 23,
+          "start_line": 18,
+          "end_line": 51,
+          "phase": "assessment"
+        }
+      ],
+      "range_count": 62,
+      "delivered_sources": [
+        "sh_cb7067006a91d4e5",
+        "sh_ec3fcba1a06e0ddc",
+        "sh_f5de7e58b7a415fc"
+      ],
+      "sources_without_delivery": [
+        "sh_4665b37b8242dc75",
+        "sh_af0386b8458837c5"
+      ],
+      "ranges_truncated": false
+    },
+    "host_notes": {
+      "referenced_sources": [
+        "sh_ec3fcba1a06e0ddc"
+      ],
+      "unread_ranges": [],
+      "observation_count": 3
+    },
+    "observations": [
+      {
+        "text": "Trial is randomized, double-blind, placebo-controlled; primary outcome death or moderate/severe BPD at 36 weeks PMA; adjusted RR 1.09 (95% CI 0.98 to 1.20).",
+        "sources": [
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 1,
+            "start_line": 40,
+            "end_line": 68
+          }
+        ]
+      },
+      {
+        "text": "Dynamic randomization used secure Web system and probabilistic minimization; infants from multiple births randomized individually.",
+        "sources": [
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 3,
+            "start_line": 4,
+            "end_line": 19
+          }
+        ]
+      },
+      {
+        "text": "Primary outcome assessment possible for 318/324 ibuprofen and 318/322 placebo; missing primary-outcome information in additional 10 infants.",
+        "sources": [
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 7,
+            "start_line": 8,
+            "end_line": 13
+          }
+        ]
+      }
+    ],
+    "support": [],
+    "counterevidence": [],
+    "unresolved": null,
+    "recovery_choices": [
+      {
+        "operation": "save_working_checkpoint",
+        "available": true,
+        "rationale": "Replace source-linked working notes without changing canonical assessment state."
+      },
+      {
+        "operation": "search_sources",
+        "available": true,
+        "rationale": "Search captured Sources for a discriminating passage when the premise remains open."
+      },
+      {
+        "operation": "read_pages",
+        "available": true,
+        "rationale": "Read the exact cited or unread Source range before relying on it as Evidence."
+      },
+      {
+        "operation": "accept_limitation",
+        "available": true,
+        "rationale": "Record the unresolved premise and stopping rationale through Domain submission when further accessible investigation is not discriminating."
+      }
+    ],
+    "stopping_rationale": null,
+    "stale": [],
+    "checkpoint_identity": "sha256:35b9d8d5c72437690da3791c6ca74908d6dbd7adaadfdd41de9a42ee8562e5c4",
+    "legacy": "supported",
+    "premises": []
+  },
+  "trial_review": null,
+  "selected_evidence": [],
+  "main_report_reading": {
+    "gupta-2024": {
+      "identity_status": "identified",
+      "identity_basis": "declared_role",
+      "identity_sources": [
+        "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510"
+      ],
+      "identity_observations": [],
+      "orientation_source_ids": [],
+      "orientation_reading": {
+        "source_ids": [],
+        "ranges": [],
+        "range_count": 0,
+        "ranges_truncated": false
+      },
+      "limitation": null,
+      "status": "complete",
+      "budget_bytes": 65536,
+      "covered_prefix_bytes": 52831,
+      "required_ranges": [],
+      "required_range_count": 0,
+      "unread_ranges": [],
+      "unread_range_count": 0
+    }
+  },
+  "scope_review": [],
+  "conditions": [],
+  "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed.",
+  "counters": {
+    "extraction_calls": 0,
+    "derivative_rebuilds": 0,
+    "source_projection_verifications": 0,
+    "database_queries": 125,
+    "serialized_bytes": 0,
+    "render_bytes": 0,
+    "search_ranking_validations": 0,
+    "elapsed_ms": 296.75488504290115,
+    "source_bytes_hashed": 0,
+    "projection_rows_read": 0,
+    "fts_rows_read": 0,
+    "search_fts_rows_built": 0,
+    "candidate_reconstructions": 0,
+    "response_bytes": 0,
+    "search_ranking_builds": 0,
+    "search_ranking_cache_writes": 0,
+    "search_cache_writes": 0,
+    "search_ranking_cache_hits": 0,
+    "search_ranking_recomputations": 0,
+    "search_fts_corpus_builds": 0,
+    "search_fts_corpus_cache_hits": 0,
+    "search_spelling_catalogue_builds": 0,
+    "search_spelling_catalogue_cache_hits": 0
+  }
+}

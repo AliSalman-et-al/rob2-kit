@@ -1,0 +1,16 @@
+{
+  "usage": {
+    "input_tokens": 8358147,
+    "cached_input_tokens": 8077568,
+    "output_tokens": 16523,
+    "reasoning_output_tokens": 4927
+  },
+  "elapsed_seconds": 535.5084631443024,
+  "turns": 2,
+  "tool_calls": 56,
+  "stop": "cumulative output limit",
+  "output_overshoot": 1523,
+  "tool_overshoot": 0,
+  "reactive_guards": true,
+  "input_telemetry_only": true
+}

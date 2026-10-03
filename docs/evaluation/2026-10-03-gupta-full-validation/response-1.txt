@@ -1,0 +1,7 @@
+## Proposal Review — gupta-2024
+
+I propose the reported primary outcome: death or moderate or severe bronchopulmonary dysplasia at 36 weeks’ postmenstrual age, comparing ibuprofen with placebo. The adjusted risk ratio was **1.09** (95% CI **0.98 to 1.20**).
+
+The reported primary-outcome analysis included 318 infants per group, fewer than the 326 and 327 randomized. I therefore classified the Result as **narrower** than the all-randomized target. The main-report reading is complete, and the working checkpoint is current.
+
+**Do you approve this Proposal Review?**

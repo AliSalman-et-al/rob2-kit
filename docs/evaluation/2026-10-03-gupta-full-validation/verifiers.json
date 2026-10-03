@@ -1,0 +1,7 @@
+{
+  "producer_verifier": "not_run",
+  "independent_verifier": "not_run",
+  "reason": "No finalized bundle produced; operator must not finalize incomplete assessment",
+  "final_phase": "assessment",
+  "revision": 8
+}

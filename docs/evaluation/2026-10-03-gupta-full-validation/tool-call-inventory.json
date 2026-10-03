@@ -1,0 +1,1572 @@
+[
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "get_status",
+    "arguments": {},
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "prepare_batch",
+    "arguments": {
+      "expected_revision": 0,
+      "requested_outcome": "death or moderate or severe bronchopulmonary dysplasia",
+      "trial_labels": [
+        "gupta-2024"
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "get_status",
+    "arguments": {},
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 81
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 102
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 102
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 147
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 121
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 99
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 104,
+          "end_line": 147
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 121
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 99
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 73,
+          "end_line": 99
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "get_status",
+    "arguments": {},
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "validate_proposal",
+    "arguments": {
+      "expected_revision": 1,
+      "selections": [
+        {
+          "trial_id": "gupta-2024",
+          "relation": "narrower",
+          "candidate": {
+            "design": "individual_parallel",
+            "design_rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually.",
+            "design_evidence": [
+              "eh_802cea64f3f2c544",
+              "eh_664cb2e87a63db02"
+            ],
+            "target_measurement": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age",
+            "target_window": "At 36 weeks of postmenstrual age",
+            "comparison_groups": [
+              {
+                "id": "ibuprofen",
+                "assignment": "Ibuprofen"
+              },
+              {
+                "id": "placebo",
+                "assignment": "Placebo"
+              }
+            ],
+            "baseline_subgroup": null,
+            "intended_effect_measure": "Risk ratio",
+            "reported_outcome": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age",
+            "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+            "effect_measure": "Adjusted risk ratio",
+            "estimate": "1.09",
+            "precision": "95% CI, 0.98 to 1.20",
+            "target_time_value": "36",
+            "target_time_unit": "weeks"
+          },
+          "scope_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+          "population_rationale": "Target is all 326 ibuprofen and 327 placebo randomized infants. Seven withdrew consent to data use (2 vs 5), and primary-outcome information was unavailable for additional participants; primary-outcome denominators are 318 per arm. These analysis omissions are distinguished from eligibility criteria.",
+          "source_passages": [
+            "eh_68123b0bf4654ecc",
+            "eh_664cb2e87a63db02",
+            "eh_7266c0cb8d0368a8",
+            "eh_d6d5b2bf301983ce",
+            "eh_49ac77da50b0bd19"
+          ],
+          "unknowns": [
+            "The primary outcome is a composite; the specific definitions and adjudication details of moderate/severe bronchopulmonary dysplasia are further described in protocol/supplement material and will be examined during Domain assessment."
+          ],
+          "counterevidence": []
+        }
+      ]
+    },
+    "outcome": "repair",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "validate_proposal",
+    "arguments": {
+      "expected_revision": 1,
+      "selections": [
+        {
+          "trial_id": "gupta-2024",
+          "relation": "narrower",
+          "candidate": {
+            "design": "individual_parallel",
+            "design_rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually.",
+            "design_evidence": [
+              "eh_802cea64f3f2c544",
+              "eh_664cb2e87a63db02"
+            ],
+            "target_measurement": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age",
+            "target_window": "At 36 weeks of postmenstrual age",
+            "comparison_groups": [
+              {
+                "id": "ibuprofen",
+                "assignment": "Ibuprofen"
+              },
+              {
+                "id": "placebo",
+                "assignment": "Placebo"
+              }
+            ],
+            "baseline_subgroup": null,
+            "intended_effect_measure": "Risk ratio",
+            "reported_outcome": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age",
+            "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+            "effect_measure": "Adjusted risk ratio",
+            "estimate": "1.09",
+            "precision": "95% confidence interval [0.98 to 1.20]",
+            "target_time_value": "36",
+            "target_time_unit": "weeks"
+          },
+          "scope_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+          "population_rationale": "Target is all 326 ibuprofen and 327 placebo randomized infants. Seven withdrew consent to data use (2 vs 5), and primary-outcome information was unavailable for additional participants; primary-outcome denominators are 318 per arm. These analysis omissions are distinguished from eligibility criteria.",
+          "source_passages": [
+            "eh_68123b0bf4654ecc",
+            "eh_664cb2e87a63db02",
+            "eh_7266c0cb8d0368a8",
+            "eh_d6d5b2bf301983ce",
+            "eh_49ac77da50b0bd19"
+          ],
+          "unknowns": [
+            "The primary outcome is a composite; the specific definitions and adjudication details of moderate/severe bronchopulmonary dysplasia are further described in protocol/supplement material and will be examined during Domain assessment."
+          ],
+          "counterevidence": []
+        }
+      ]
+    },
+    "outcome": "repair",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "validate_proposal",
+    "arguments": {
+      "expected_revision": 1,
+      "selections": [
+        {
+          "trial_id": "gupta-2024",
+          "relation": "narrower",
+          "candidate": {
+            "design": "individual_parallel",
+            "design_rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually.",
+            "design_evidence": [
+              "eh_802cea64f3f2c544",
+              "eh_664cb2e87a63db02"
+            ],
+            "target_measurement": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age",
+            "target_window": "At 36 weeks of postmenstrual age",
+            "comparison_groups": [
+              {
+                "id": "ibuprofen",
+                "assignment": "Ibuprofen"
+              },
+              {
+                "id": "placebo",
+                "assignment": "Placebo"
+              }
+            ],
+            "baseline_subgroup": null,
+            "intended_effect_measure": "Risk ratio",
+            "reported_outcome": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age",
+            "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+            "effect_measure": "Adjusted risk ratio",
+            "estimate": "1.09",
+            "precision": "0.98 to 1.20",
+            "target_time_value": "36",
+            "target_time_unit": "weeks"
+          },
+          "scope_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+          "population_rationale": "Target is all 326 ibuprofen and 327 placebo randomized infants. Seven withdrew consent to data use (2 vs 5), and primary-outcome information was unavailable for additional participants; primary-outcome denominators are 318 per arm. These analysis omissions are distinguished from eligibility criteria.",
+          "source_passages": [
+            "eh_68123b0bf4654ecc",
+            "eh_664cb2e87a63db02",
+            "eh_7266c0cb8d0368a8",
+            "eh_d6d5b2bf301983ce",
+            "eh_49ac77da50b0bd19"
+          ],
+          "unknowns": [
+            "The primary outcome is a composite; the specific definitions and adjudication details of moderate/severe bronchopulmonary dysplasia are further described in protocol/supplement material and will be examined during Domain assessment."
+          ],
+          "counterevidence": []
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "save_proposal",
+    "arguments": {
+      "expected_revision": 2
+    },
+    "outcome": "review_required",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "save_working_checkpoint",
+    "arguments": {
+      "checkpoint": {
+        "trial_id": "gupta-2024",
+        "main_report_source_id": "sh_ec3fcba1a06e0ddc",
+        "observations": [
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 1,
+            "start_line": 40,
+            "end_line": 68,
+            "text": "Trial is randomized, double-blind, placebo-controlled; primary outcome is death or moderate/severe BPD at 36 weeks PMA; 326 ibuprofen and 327 placebo randomized; adjusted RR 1.09 (95% CI 0.98 to 1.20)."
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 3,
+            "start_line": 4,
+            "end_line": 19,
+            "text": "Dynamic randomization via secure Web system, probabilistic minimization; concealed assignments; infants from multiple births randomized individually."
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 3,
+            "start_line": 45,
+            "end_line": 74,
+            "text": "Primary outcome evaluated at 36 weeks PMA; oxygen-reduction challenge differentiates mild/moderate BPD; outcomes recorded from clinical notes or trial assessments."
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 4,
+            "start_line": 98,
+            "end_line": 103,
+            "text": "Outcome analyses had 324 ibuprofen and 322 placebo participants after consent withdrawals."
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 6,
+            "start_line": 14,
+            "end_line": 19,
+            "text": "Table 2 primary outcome estimates 220/318 vs 202/318, adjusted RR 1.09 (0.98-1.20); footnote details primary outcome missingness."
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 7,
+            "start_line": 8,
+            "end_line": 13,
+            "text": "Primary outcome assessment possible for 318/324 ibuprofen and 318/322 placebo; required data missing for additional 10 infants."
+          }
+        ],
+        "open_questions": [
+          {
+            "question": "Complete definitions and ascertainment details for the BPD composite component; protocol/supplement may clarify.",
+            "source_id": "sh_f5de7e58b7a415fc"
+          }
+        ],
+        "next_action": "Await researcher decision on Proposal Review; upon approval recover current Result and continue Domain assessment."
+      }
+    },
+    "outcome": null,
+    "status": "failed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "save_working_checkpoint",
+    "arguments": {
+      "checkpoint": {
+        "trial_id": "gupta-2024",
+        "main_report_source_id": "sh_ec3fcba1a06e0ddc",
+        "observations": [
+          {
+            "text": "Trial is randomized, double-blind, placebo-controlled; primary outcome death or moderate/severe BPD at 36 weeks PMA; adjusted RR 1.09 (95% CI 0.98 to 1.20).",
+            "sources": [
+              {
+                "source_id": "sh_ec3fcba1a06e0ddc",
+                "page": 1,
+                "start_line": 40,
+                "end_line": 68
+              }
+            ]
+          },
+          {
+            "text": "Dynamic randomization used secure Web system and probabilistic minimization; infants from multiple births randomized individually.",
+            "sources": [
+              {
+                "source_id": "sh_ec3fcba1a06e0ddc",
+                "page": 3,
+                "start_line": 4,
+                "end_line": 19
+              }
+            ]
+          },
+          {
+            "text": "Primary outcome assessment possible for 318/324 ibuprofen and 318/322 placebo; missing primary-outcome information in additional 10 infants.",
+            "sources": [
+              {
+                "source_id": "sh_ec3fcba1a06e0ddc",
+                "page": 7,
+                "start_line": 8,
+                "end_line": 13
+              }
+            ]
+          }
+        ],
+        "open_questions": [
+          {
+            "text": "Examine supplement/protocol for BPD component definitions and ascertainment details.",
+            "sources": [
+              {
+                "source_id": "sh_ec3fcba1a06e0ddc",
+                "page": 3,
+                "start_line": 45,
+                "end_line": 74
+              }
+            ]
+          }
+        ],
+        "next_action": "Await researcher decision on Proposal Review."
+      }
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-1.jsonl",
+    "tool": "get_status",
+    "arguments": {},
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_status",
+    "arguments": {},
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 81
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 102
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 102
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 147
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 121
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 99
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 5,
+          "start_line": 102,
+          "end_line": 147
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 125
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 121
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 99
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 9,
+          "start_line": 64,
+          "end_line": 99
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 105
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 166
+        },
+        {
+          "source_id": "sh_ec3fcba1a06e0ddc",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 32
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:randomization"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.d81c1af5f59b4287bcadd562803ed59f.1"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.d81c1af5f59b4287bcadd562803ed59f.2"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:randomization",
+      "expected_revision": 4,
+      "answers": [
+        {
+          "question_id": "sq:randomization:sequence",
+          "answer": "yes",
+          "bases": [
+            {
+              "evidence": "eh_664cb2e87a63db02",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The report states that the randomization program used a probabilistic minimization algorithm. The random component is explicit in probabilistic minimization, supporting a random sequence-generation process.",
+          "unknowns": [],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:randomization:concealment",
+          "answer": "yes",
+          "bases": [
+            {
+              "evidence": "eh_664cb2e87a63db02",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "A secure Web-based system hosted by the independent NPEU Clinical Trials Unit performed allocation, with 24/7 telephone backup, and the report explicitly says it ensured concealment. Enrolment was by delegated site clinicians.",
+          "unknowns": [],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:randomization:baseline-imbalance",
+          "answer": "no",
+          "bases": [
+            {
+              "evidence": "eh_066381493f1847a9",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_7266c0cb8d0368a8",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The report says maternal and infant baseline characteristics appeared well balanced. The baseline table shows similar group sizes and distributions for major prognostic/randomization factors, including gestational age, PDA diameter, respiratory support, and inotrope use; differences are compatible with chance, not a randomization problem.",
+          "unknowns": [],
+          "counterevidence": []
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:deviations"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.f0bb9e00d9f24f6ba8420ceaf40a59fc.1"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.f0bb9e00d9f24f6ba8420ceaf40a59fc.2"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.f0bb9e00d9f24f6ba8420ceaf40a59fc.3"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "list_sources",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "source_id": "sh_cb7067006a91d4e5",
+      "limit": 12
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "search_sources_batch",
+    "arguments": {
+      "requests": [
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "open-label treatment",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:deviations",
+          "purpose_question_id": "sq:deviations:context-deviations"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_cb7067006a91d4e5",
+          "query": "analysis population",
+          "mode": "all",
+          "limit": 10,
+          "purpose_domain_id": "domain:deviations",
+          "purpose_question_id": "sq:deviations:appropriate-analysis"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "did not receive all doses",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:deviations",
+          "purpose_question_id": "sq:deviations:context-deviations"
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 38,
+          "start_line": 17,
+          "end_line": 36
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 86,
+          "start_line": 38,
+          "end_line": 49
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 22,
+          "start_line": 65,
+          "end_line": 110
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 16,
+          "start_line": 10,
+          "end_line": 38
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 23,
+          "start_line": 18,
+          "end_line": 51
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:deviations",
+      "expected_revision": 5,
+      "answers": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "answer": "no",
+          "bases": [
+            {
+              "evidence": "eh_802cea64f3f2c544",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The report states that the infants' families were unaware of randomization assignments, and the trial was double-blind and placebo-controlled. No reported indication suggests participants learned assignment.",
+          "unknowns": [],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "answer": "no",
+          "bases": [
+            {
+              "evidence": "eh_802cea64f3f2c544",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_664cb2e87a63db02",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The report directly states clinicians were unaware of assignment. The identical-appearing coded ibuprofen/placebo cartons and secure allocation process support that the personnel delivering treatment remained blinded.",
+          "unknowns": [],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "answer": "yes",
+          "bases": [
+            {
+              "evidence": "eh_664cb2e87a63db02",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_7266c0cb8d0368a8",
+              "role": "inference"
+            },
+            {
+              "evidence": "eh_49ac77da50b0bd19",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The report says the analysis followed the intention-to-treat principle and excluded infants only if data were missing; it also reports missing required primary-outcome information. The protocol defines the primary analysis as comparing participants in randomized groups regardless of deviation or treatment received. Thus the reported missing-data exclusions are an appropriate modified-ITT approach for estimating assignment effect, rather than an adherence-conditioned or wrong-group analysis.",
+          "unknowns": [],
+          "counterevidence": []
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:missing"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.cab50097fe0544f28993403ad07af141.1"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.cab50097fe0544f28993403ad07af141.2"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.cab50097fe0544f28993403ad07af141.3"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:missing",
+      "expected_revision": 6,
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "probably_yes",
+          "bases": [
+            {
+              "evidence": "eh_49ac77da50b0bd19",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_d6d5b2bf301983ce",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The report gives outcome status for the approved primary composite: assessment was possible for 318 of 326 randomized ibuprofen infants and 318 of 327 randomized placebo infants (97.5% and 97.2%). It distinguishes 7 consent withdrawals from 10 additional participants without required primary-outcome data; among the latter, 1 ibuprofen participant was lost to follow-up and oxygen data were unavailable for 5 ibuprofen and 3 placebo infants, while 1 placebo infant withdrew before 36 weeks. Missing outcome data are few relative to the randomized populations and the observed event counts (220 and 202); although missing outcomes could shift the estimate somewhat, the high and similar availability supports a calibrated probably-yes judgment that they are unlikely to make an important difference.",
+          "unknowns": [
+            "The observed status of the seven consent-withdrawn participants cannot be used in the outcome analysis; specific reasons for unavailable oxygen data are not reported."
+          ],
+          "counterevidence": [],
+          "missing_data": [
+            {
+              "arm": "ibuprofen",
+              "population": "All randomized infants",
+              "unit": "infants",
+              "time_point": "36 weeks' postmenstrual age",
+              "randomized": 326,
+              "eligible": 326,
+              "observed": 318,
+              "analyzed": 318,
+              "excluded": 2,
+              "exclusions": [
+                "2 withdrawn consent to use data"
+              ],
+              "event_count": 220,
+              "event_definition": "Death or moderate/severe bronchopulmonary dysplasia",
+              "basis": [
+                "eh_49ac77da50b0bd19",
+                "eh_d6d5b2bf301983ce"
+              ],
+              "semantics": {
+                "population_role": "randomized",
+                "outcome_status": "observed",
+                "post_randomization_exclusions": [
+                  "2 infants had consent to use data withdrawn"
+                ],
+                "censoring": {
+                  "kind": "loss_to_follow_up",
+                  "count": 1,
+                  "timing": "before 36 weeks",
+                  "reason": "lost to follow-up"
+                }
+              }
+            },
+            {
+              "arm": "placebo",
+              "population": "All randomized infants",
+              "unit": "infants",
+              "time_point": "36 weeks' postmenstrual age",
+              "randomized": 327,
+              "eligible": 327,
+              "observed": 318,
+              "analyzed": 318,
+              "excluded": 5,
+              "exclusions": [
+                "5 withdrawn consent to use data"
+              ],
+              "event_count": 202,
+              "event_definition": "Death or moderate/severe bronchopulmonary dysplasia",
+              "basis": [
+                "eh_49ac77da50b0bd19",
+                "eh_d6d5b2bf301983ce"
+              ],
+              "semantics": {
+                "population_role": "randomized",
+                "outcome_status": "observed",
+                "post_randomization_exclusions": [
+                  "5 infants had consent to use data withdrawn"
+                ],
+                "censoring": {
+                  "kind": "withdrawal",
+                  "count": 1,
+                  "timing": "before 36 weeks",
+                  "reason": "withdrawn before 36 weeks"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:measurement"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.ecf4e024eb8d4d62b06a69fda025f760.1"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.ecf4e024eb8d4d62b06a69fda025f760.2"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.ecf4e024eb8d4d62b06a69fda025f760.3"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "search_sources_batch",
+    "arguments": {
+      "requests": [
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "oxygen reduction test",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:measurement",
+          "purpose_question_id": "sq:measurement:method-inappropriate"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "bronchopulmonary dysplasia definition",
+          "mode": "all",
+          "limit": 10,
+          "purpose_domain_id": "domain:measurement",
+          "purpose_question_id": "sq:measurement:method-inappropriate"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "assessor blinded",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:measurement",
+          "purpose_question_id": "sq:measurement:assessor-aware"
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 14,
+          "start_line": 20,
+          "end_line": 45
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 15,
+          "start_line": 1,
+          "end_line": 50
+        },
+        {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 18,
+          "start_line": 28,
+          "end_line": 54
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "render_page",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "source_id": "sh_f5de7e58b7a415fc",
+      "page": 8
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "render_page",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "source_id": "sh_f5de7e58b7a415fc",
+      "page": 8,
+      "inline": true
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:measurement",
+      "expected_revision": 7,
+      "answers": [
+        {
+          "question_id": "sq:measurement:method-inappropriate",
+          "answer": "probably_no",
+          "bases": [
+            {
+              "evidence": "eh_324148091d5038f7",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_9a06baf660397d1f",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_664cb2e87a63db02",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The composite includes objectively recorded death and a protocol-defined BPD component at 36 weeks PMA. BPD criteria incorporate oxygen/respiratory-support thresholds after at least 28 days of support; where oxygen need is subjective, an oxygen-reduction test confirms dependency using an oxygen-saturation threshold. This is a structured, clinically relevant method for the outcome, though the BPD component requires some clinical judgment and the protocol does not establish external validation for this exact trial implementation. The evidence therefore supports probably not inappropriate.",
+          "unknowns": [
+            "The oxygen-reduction test flowchart was not visually inspectable in the tool response; the applicable textual criteria were inspected."
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:measurement:differential",
+          "answer": "probably_no",
+          "bases": [
+            {
+              "evidence": "eh_324148091d5038f7",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_664cb2e87a63db02",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_d6d5b2bf301983ce",
+              "role": "inference"
+            }
+          ],
+          "justification": "The same 36-week assessment point, BPD criteria, and oxygen-reduction approach apply to both randomized groups; trial personnel and outcome assessors were blinded. For eligible infants, oxygen-reduction testing was not performed in similar proportions (13/86 vs 13/94). No group-specific threshold or assessment method is reported. This supports probably no differential measurement; the exact assessment opportunity for every participant is not fully detailed.",
+          "unknowns": [
+            "Outcome information was unavailable for some participants and reasons for all missing oxygen assessments are not fully reported; this relates chiefly to D3 availability rather than showing differential measurement."
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:measurement:assessor-aware",
+          "answer": "no",
+          "bases": [
+            {
+              "evidence": "eh_802cea64f3f2c544",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The report states that the persons assessing outcomes were unaware of randomization assignments. This addresses assessor awareness directly; it does not rely solely on the endpoint being objective.",
+          "unknowns": [],
+          "counterevidence": []
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "domain_id": "domain:selection"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.53e77cd6f6ae479cb1ac9d00de3b121e.1"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.53e77cd6f6ae479cb1ac9d00de3b121e.2"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.53e77cd6f6ae479cb1ac9d00de3b121e.3"
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "search_sources_batch",
+    "arguments": {
+      "requests": [
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_cb7067006a91d4e5",
+          "query": "death or moderate or severe bronchopulmonary dysplasia",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:prespecified-analysis"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_cb7067006a91d4e5",
+          "query": "outcome data will be reported",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:prespecified-analysis"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_cb7067006a91d4e5",
+          "query": "Statistical Analysis Plan Version",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:prespecified-analysis"
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "source_id": "sh_cb7067006a91d4e5",
+      "pages": [
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "source_id": "sh_cb7067006a91d4e5",
+      "pages": [
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "search_sources_batch",
+    "arguments": {
+      "requests": [
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_cb7067006a91d4e5",
+          "query": "primary outcome will",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:prespecified-analysis"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_cb7067006a91d4e5",
+          "query": "Primary outcome",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:prespecified-analysis"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_cb7067006a91d4e5",
+          "query": "adjusted risk ratios",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:multiple-analyses"
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "source_id": "sh_cb7067006a91d4e5",
+      "pages": [
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119
+      ]
+    },
+    "outcome": null,
+    "status": "failed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "source_id": "sh_cb7067006a91d4e5",
+      "pages": [
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "gupta-2024",
+      "windows": [
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 117,
+          "start_line": 15,
+          "end_line": 51
+        },
+        {
+          "source_id": "sh_cb7067006a91d4e5",
+          "page": 118,
+          "start_line": 1,
+          "end_line": 43
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  },
+  {
+    "turn": "turn-2.jsonl",
+    "tool": "search_sources_batch",
+    "arguments": {
+      "requests": [
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "primary outcome excluding infants",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:multiple-analyses"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "Table S9",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:multiple-analyses"
+        },
+        {
+          "trial_id": "gupta-2024",
+          "source_id": "sh_f5de7e58b7a415fc",
+          "query": "primary inference will be based on adjusted",
+          "mode": "phrase",
+          "limit": 10,
+          "purpose_domain_id": "domain:selection",
+          "purpose_question_id": "sq:selection:multiple-analyses"
+        }
+      ]
+    },
+    "outcome": "success",
+    "status": "completed"
+  }
+]
