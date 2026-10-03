@@ -77,7 +77,14 @@ missing outcomes could make an important difference to this Result. For
 dichotomous outcomes, compare the missing count with observed events, not only
 the randomized denominator. A count below the randomized total does not settle
 that question, and no universal percentage threshold replaces this impact
-judgment.
+judgment. Explain in the justification why residual unobserved outcomes plausibly
+could or could not materially affect the approved estimate, relating the reported
+extent to event scale or variability and known follow-up circumstances. For a
+time-to-event Result, event-count comparisons give context, not a mathematical
+bound on its hazard ratio or interval. Nearly complete follow-up may support a
+calibrated probable judgment without precise censoring times or a formal
+sensitivity analysis. Preserve unknown reasons or timing without automatically
+turning them into No information or an adverse judgment.
 
 Distinguish administrative censoring at a common data cutoff from censoring
 caused by missing follow-up before the outcome could be observed. Treatment

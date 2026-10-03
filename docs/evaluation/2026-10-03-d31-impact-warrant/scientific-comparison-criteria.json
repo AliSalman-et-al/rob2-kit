@@ -1,0 +1,22 @@
+{
+  "frozen_before_inference": true,
+  "classification": "Repeated diagnostic, previously seen trial and approved target; not held-out generalization.",
+  "comparison_baseline": "Oct2 ad312a4 D3.1 PY/serverLow and Oct1 Code output retained in e089432 audit.",
+  "criteria": [
+    "Actual observation or follow-up accounting distinguished from analysis membership; no fabricated observed denominator.",
+    "Missingness extent related to relevant event-risk scale without claiming a mathematical HR or CI bound from crude counts.",
+    "Known timing/reasons assessed and missing information retained; no automatic negative/NI solely because timing is unreported.",
+    "Explicit source-grounded reason why residual unknown outcomes plausibly can or cannot materially change the selected estimate; judged for inferential support, not length."
+  ],
+  "separate_outcomes": [
+    "Tool/reading/delivery success",
+    "Accepted complete path and server label",
+    "Scientific warrant quality",
+    "Reference agreement remains full-scope unknown"
+  ],
+  "exclude_from_model_prompt": [
+    "These case-specific evaluation conclusions",
+    "Baseline/reference labels",
+    "Event-count solutions or desired signalling answers"
+  ]
+}

@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.8"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.9"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -392,7 +392,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
             "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
             "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
-            "Neutral paired control: complete ascertainment and an analysis denominator with unresolved ascertainment differ only in the availability premise; administrative censoring and worsening-related follow-up loss differ only in the missingness mechanism.",
+            "Where follow-up is incomplete, explain why the unobserved outcomes plausibly could or could not make an important difference to the approved estimate, rather than citing a small percentage alone. Relate the reported extent to the outcome event scale or variability and any known follow-up timing or reasons; retain what is unknown. For time-to-event estimates, event counts contextualize scale but do not by themselves mathematically bound the hazard ratio or its interval. A calibrated probable judgment can rest on nearly complete outcome accounting without exact censoring times or a formal sensitivity analysis. Missing reasons or timing alone do not require no_information; judge whether available circumstances support a reasonable inference.",
         ),
         (
             "a complete-case analysis label",
