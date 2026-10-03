@@ -197,3 +197,50 @@ def test_selected_unicode_fragments_preserve_snapshot_and_reject_changed_review_
         connection.execute("DELETE FROM review_views")
     with pytest.raises(ValueError, match="review_cursor_expired.*restart review_trial"):
         _project(receipt, root, cursor=cursor)
+
+
+@pytest.mark.parametrize(
+    "later_warrant",
+    [
+        "The SAP plans missing-follow-up imputation; performed results remain unavailable.",
+        "The results demonstrate missing-follow-up imputation was performed.",
+        "The source contradicts the earlier assertion: no such analysis was planned.",
+        "A similarly worded imputation plan concerns a different endpoint only.",
+    ],
+)
+def test_compact_review_colocates_authored_claims_without_resolving_them(later_warrant):
+    receipt = _review()
+    earlier = receipt["data"]["domain_findings"][0]["answers"][0]
+    earlier.update(
+        warrant="Whether a missing-outcome analysis exists remains to be investigated.",
+        unknowns=["Performed results remain unknown."],
+        evidence=[{"handle": "eh_0000000000000000", "identity": _identity("earlier")}],
+    )
+    later = json.loads(json.dumps(receipt["data"]["domain_findings"][0]))
+    later["domain_id"] = "domain:selection"
+    later["answers"][0].update(
+        question_id="sq:selection:multiple-analyses",
+        warrant=later_warrant,
+        unknowns=["Execution/results are a separate premise."],
+        evidence=[{"handle": "eh_1111111111111111", "identity": _identity("later")}],
+    )
+    receipt["data"]["domain_findings"].append(later)
+    before = json.loads(json.dumps(receipt))
+    compact = server._review_summary(
+        receipt,
+        "digest",
+        "0" * 32,
+        keep_previews=False,
+        keep_missing=False,
+        keep_evidence=True,
+        keep_result=False,
+        preview_chars=400,
+    )
+    answers = [d["answers"][0] for d in compact["data"]["domain_findings"]]
+    assert answers[0]["warrant"] == earlier["warrant"]
+    assert answers[1]["warrant"] == later_warrant
+    assert answers[0]["unknowns"] == ["Performed results remain unknown."]
+    assert answers[0]["answer"] == earlier["answer"]
+    assert answers[1]["evidence"] == later["answers"][0]["evidence"]
+    assert "conflicts" not in answers[0]  # No invented semantic relationship.
+    assert receipt == before

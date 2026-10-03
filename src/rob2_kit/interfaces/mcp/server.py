@@ -880,6 +880,24 @@ def _review_summary(
                     for field in (*_REVIEW_DETAIL_ARRAYS, "warrant", "justification")
                     if counts.get(field, 0)
                 )
+                # Preserve host-authored uncertainty and warrants across Domains
+                # before spending transport space on source text/duplicate prose.
+                # Colocation makes later support reviewable; it does not infer
+                # relevance, execution of a plan, or resolution of uncertainty.
+                if preview_chars:
+                    for field in ("unknowns",):
+                        values = answer.get(field)
+                        if isinstance(values, list) and values:
+                            preview, truncated = _review_preview_array(field, values, preview_chars)
+                            summary_answer[field] = preview
+                            if not truncated:
+                                answer_deferred.discard(field)
+                    warrant = answer.get("warrant")
+                    if isinstance(warrant, str) and warrant:
+                        preview, truncated = _review_preview_text(warrant, preview_chars)
+                        summary_answer["warrant"] = preview
+                        if not truncated:
+                            answer_deferred.discard("warrant")
                 deferred.update(answer_deferred)
             summary_answer["detail_projection"] = {
                 "mode": "summary",
@@ -1064,6 +1082,11 @@ def _project_review_trial(
         for keep_previews, keep_missing, keep_evidence, keep_result, preview_chars in (
             (True, True, True, True, _REVIEW_PREVIEW_TEXT_CHARS),
             (True, True, True, True, 80),
+            (False, True, True, True, 400),
+            (False, True, True, False, 400),
+            (False, True, True, False, 320),
+            (False, True, True, False, 240),
+            (False, True, True, False, 160),
             (False, True, True, True, 0),
             (False, True, True, False, 0),
             (False, False, True, False, 0),

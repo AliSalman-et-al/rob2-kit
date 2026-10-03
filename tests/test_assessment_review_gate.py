@@ -446,3 +446,31 @@ def test_discard_is_not_a_public_mcp_tool() -> None:
     from rob2_kit.interfaces.mcp.server import PUBLIC_TOOL_NAMES
 
     assert "discard" not in PUBLIC_TOOL_NAMES
+
+
+def test_warrant_correction_preserves_answers_label_and_audit_history(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    domain_id = SCIENTIFIC_PACK.domains[0].id
+    draft = _domain_draft("trial", domain_id, revision, evidence)
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    key = f"trial:{domain_id}"
+    prior = _state(workspace)["domain_records"][key]
+    _call(workspace, "get_domain_context", {"trial_id": "trial", "domain_id": domain_id})
+    draft["expected_revision"] = saved["head"]["state_revision"]
+    draft["answers"][0]["justification"] += (
+        " A later source establishes a planned analysis; its execution remains unresolved."
+    )
+    draft["supersedes"] = prior["identity"]
+    draft["revision_basis"] = {
+        "kind": "self_correction",
+        "rationale": "Correct stale existence while retaining execution uncertainty.",
+    }
+    corrected = _call(workspace, "save_domain_judgment", draft)
+    assert corrected["outcome"] == "success", corrected
+    state = _state(workspace)
+    current = state["domain_records"][key]
+    assert current["judgment"] == prior["judgment"]
+    assert [a["answer"] for a in current["answers"]] == [a["answer"] for a in prior["answers"]]
+    assert state["domain_history"][key] == [prior["identity"], current["identity"]]
+    assert state["domain_history_records"][key][0] == prior
