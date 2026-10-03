@@ -1,0 +1,25 @@
+{
+  "exit_code": 0,
+  "stop": null,
+  "session": "01a103e0-dd92-7211-91c1-6215adab91d6",
+  "cli_turns": 1,
+  "provider_response_count": 4,
+  "elapsed_seconds": 32.51216819600086,
+  "tool_calls": 3,
+  "tool_call_ids": [
+    "mcp:item_1",
+    "mcp:item_2",
+    "mcp:item_3"
+  ],
+  "usage": {
+    "input_tokens": 40500,
+    "cached_input_tokens": 23808,
+    "output_tokens": 980,
+    "reasoning_output_tokens": 0
+  },
+  "uncached_input_tokens": 16692,
+  "output_overshoot": 0,
+  "tool_overshoot": 0,
+  "reactive_guards": true,
+  "retry_or_continuation": false
+}

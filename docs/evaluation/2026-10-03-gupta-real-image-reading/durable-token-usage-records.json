@@ -1,0 +1,130 @@
+[
+  {
+    "timestamp": "2026-10-03T22:27:19.282Z",
+    "thread_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "session_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "root_turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "response_id": "resp_0e4d580c49908c93016ac18145a3bc87d095523537ab911a31",
+    "usage": {
+      "input_tokens": 7452,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 30,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 7482
+    },
+    "turn_token_usage": {
+      "input_tokens": 7452,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 30,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 7482
+    },
+    "thread_token_usage": {
+      "input_tokens": 7452,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 30,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 7482
+    }
+  },
+  {
+    "timestamp": "2026-10-03T22:27:22.282Z",
+    "thread_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "session_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "root_turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "response_id": "resp_0e4d580c49908c93016ac1814805c487d0ac8fca16d93f8301",
+    "usage": {
+      "input_tokens": 7916,
+      "cached_input_tokens": 6912,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 90,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 8006
+    },
+    "turn_token_usage": {
+      "input_tokens": 15368,
+      "cached_input_tokens": 6912,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 120,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 15488
+    },
+    "thread_token_usage": {
+      "input_tokens": 15368,
+      "cached_input_tokens": 6912,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 120,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 15488
+    }
+  },
+  {
+    "timestamp": "2026-10-03T22:27:25.049Z",
+    "thread_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "session_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "root_turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "response_id": "resp_0e4d580c49908c93016ac1814b019887d081d1528de2f615b2",
+    "usage": {
+      "input_tokens": 10378,
+      "cached_input_tokens": 6912,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 46,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 10424
+    },
+    "turn_token_usage": {
+      "input_tokens": 25746,
+      "cached_input_tokens": 13824,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 166,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 25912
+    },
+    "thread_token_usage": {
+      "input_tokens": 25746,
+      "cached_input_tokens": 13824,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 166,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 25912
+    }
+  },
+  {
+    "timestamp": "2026-10-03T22:27:41.837Z",
+    "thread_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "session_id": "01a103e0-dd92-7211-91c1-6215adab91d6",
+    "root_turn_id": "01a103e0-ee76-7830-a1d0-646bfaef0f0d",
+    "response_id": "resp_0e4d580c49908c93016ac1814de31487d09685150698c86204",
+    "usage": {
+      "input_tokens": 14754,
+      "cached_input_tokens": 9984,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 814,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 15568
+    },
+    "turn_token_usage": {
+      "input_tokens": 40500,
+      "cached_input_tokens": 23808,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 980,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 41480
+    },
+    "thread_token_usage": {
+      "input_tokens": 40500,
+      "cached_input_tokens": 23808,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 980,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 41480
+    }
+  }
+]

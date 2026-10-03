@@ -1,0 +1,119 @@
+{
+  "status": "offline audit preparation; no model or new domain submission",
+  "closed_trace_sha256": {
+    "turn-1.jsonl": "8c26c8acc890e42c38f9421da598e846d92e739f5776c7d00ee82f21413b1bdb",
+    "turn-2.jsonl": "d0465d1ff695de16c5c7cda522efb09835b10d85446d4d41441eac2c3ccea436"
+  },
+  "retained_negative_case": {
+    "question_id": "sq:measurement:differential",
+    "justification": "The same 36-week assessment point, BPD criteria, and oxygen-reduction approach apply to both randomized groups; trial personnel and outcome assessors were blinded. For eligible infants, oxygen-reduction testing was not performed in similar proportions (13/86 vs 13/94). No group-specific threshold or assessment method is reported. This supports probably no differential measurement; the exact assessment opportunity for every participant is not fully detailed.",
+    "submitted_bases": [
+      {
+        "evidence": "eh_324148091d5038f7",
+        "role": "direct_support"
+      },
+      {
+        "evidence": "eh_664cb2e87a63db02",
+        "role": "direct_support"
+      },
+      {
+        "evidence": "eh_d6d5b2bf301983ce",
+        "role": "inference"
+      }
+    ],
+    "actual_basis_material": [
+      {
+        "source_id": "sh_f5de7e58b7a415fc",
+        "page": 14,
+        "numbered_text": "20|Severity-Based Diagnostic Criteria for BPD\n21|Time point of assessment:\n22|36 weeks of postmenstrual age\n23|Therapy with oxygen > 21% and/or respiratory support for \u2265 28 days and the following:\n24|Mild BPD;\n25|Baby is breathing room air\n26|Moderate BPD;\n27|Baby is in 22-29% oxygen, or 0.01-1.0 L/min\n28|Severe BPD;\n29|FiO2 \u2265 0.3, or low flow oxygen \u2265 1.1 L/min, or the baby is receiving\n30|any respiratory support (ventilation, CPAP, or high flow oxygen\n31|therapy) to achieve oxygen saturation \u2265 91%\n32|FiO2 denotes the fraction of inspired oxygen and CPAP continuous positive airway pressure.\n33|The need for oxygen is subjective and hence oxygen dependency will be confirmed using an 'oxygen\n34|reduction test'. This is based on the threshold at which the baby is able to maintain oxygen\n35|saturations \u2265 91% whilst breathing in air or at a given minimum FiO2. Babies unable to achieve this\n36|will be considered to be oxygen dependent. This test will only apply to those babies whose oxygen\n37|requirements are < 0.3, or low flow oxygen < 1.1 L/min, and who have not received any additional\n38|respiratory support in the previous 24 hours. Babies outside of this will not be tested, but their\n39|oxygen requirements will be collected.\n40|\n41|[Extracted table 2]\n42||Time point of assessment:|36 weeks of postmenstrual age|\n43||---|---|\n44||Therapy with oxygen > 21% and/or respiratory support for \u2265 28 days and the following:||\n45||Mild BPD;|Baby is breathing room air|",
+        "line_count": 47,
+        "returned_start_line": 20,
+        "returned_end_line": 45,
+        "page_remainder": {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 14,
+          "start_line": 46,
+          "end_line": 47
+        },
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_324148091d5038f7"
+      },
+      {
+        "candidate_rank": null,
+        "domain_id": null,
+        "end": 4625,
+        "end_line": 102,
+        "handle": "eh_664cb2e87a63db02",
+        "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a",
+        "inclusion_reason": "result",
+        "kind": "narrative",
+        "page": 3,
+        "question_id": null,
+        "quote": "n engl j med 390;4 nejm.org January 25, 2024\n316\nThe new engl and jour nal of medicine\nRandomization\nDynamic randomization was performed with a\nsecure Web-based system that was created and\nhosted by the NPEU Clinical Trials Unit with\n24/7 telephone backup, ensuring concealment of\nthe group assignments. The randomization pro-\ngram used a probabilistic minimization algorithm\nand assigned patients in a 1:1 ratio to one of the\ntwo groups to ensure balance with respect to the\nsize of the PDA, gestational age at birth, age, sex,\ntrial site, whether the infant was from a multiple\nbirth, mode of respiratory support, and whether\ninotropes were received. Infants in multiple births\nunderwent randomization individually. Partici-\npants were enrolled by the delegated clinician at\nthe trial site.14\nIntervention and Trial Procedures\nThe trial intervention was ibuprofen sodium,\nand the matched placebo was a clear sterile solu-\ntion of 0.9% sodium chloride. Each carton con-\ntaining ibuprofen or placebo was labeled with a\nunique code in compliance with the guidance\nprovided in annex 13 of the European Commis-\nsion guidelines for Good Manufacturing Prac-\ntice. Ibuprofen was administered parenterally as\na loading dose of 10 mg per kilogram of body\nweight, followed by two doses of 5 mg per kilo-\ngram at least 24 hours apart. Placebo was ad-\nministered as an equal volume of 0.9% sodium\nchloride (Table S2). Only one course of ibuprofen\nor placebo was given. Prespecified criteria for\nopen-label medical or surgical treatment after\nenrollment are shown in Table S3.\nTransthoracic echocardiography was performed\nto assess eligibility within 72 hours after birth\nand at 3 weeks (18 to 24 days) of age to assess the\npatency of the PDA while minimizing open-label\ntreatment. For quality control, a sample of echo-\ncardiograms from 65 infants was reviewed inde-\npendently by a pediatric echocardiographer who\nwas unaware of the treatment assignments.\nOutcomes\nThe primary outcome was a composite of death\nor moderate or severe bronchopulmonary dyspla-\nsia assessed at 36 weeks of postmenstrual age15\n(Tables S4 and S5). A physiological challenge of\nsupplemental oxygen reduction was used to test\nfor oxygen need at 36 weeks of postmenstrual\nage16 to differentiate mild from moderate bron-\nchopulmonary dysplasia (Fig. S1). Secondary\nshort-term outcomes up to the time of discharge\nincluded individual components of the primary\noutcome, the severity of bronchopulmonary dys-\nplasia, severe intraventricular hemorrhage, cystic\nperiventricular leukomalacia, retinopathy of pre-\nmaturity requiring treatment, clinically signifi-\ncant pulmonary hemorrhage, acute pulmonary\nhypertension, definitive necrotizing enterocoli-\ntis, closed or clinically nonsignificant PDA less\nthan 1.5 mm in diameter with restricted flow at\n3 weeks age, open-label treatment of a PDA caus-\ning symptoms, weight gain, and discharge home\nwhile receiving supplemental oxygen (Table\nS5).14 Other secondary short-term outcomes are\nlisted in the Supplementary Appendix and in the\nstatistical analysis plan (available with the pro-\ntocol).17 All outcome data were recorded rou-\ntinely, including demographic data and compli-\ncations of prematurity; these data were obtained\nfrom clinical notes or trial-related assessments\n(Table S6).\nA list of foreseeable serious adverse events\nthat are common in this patient population was\nprespecified (see section 9.1.4 in the protocol);\nunforeseeable serious adverse events were de-\nfined as those that were not included on this\nlist. A serious adverse reaction was defined as a\nserious adverse event that was considered to\nhave been caused by the administration of the\ntrial agent; if such an event was not consistent\nwith the safety profile of the trial agent, it was\nclassed as a suspected unexpected serious ad-\nverse reaction.14\nStatistical Analysis\nThe incidence of the primary outcome was pre-\ndicted to be 60% in the placebo group (see Sup-\nplementary Methods). A sample of 730 infants was\ncalculated to be required in order to detect a\nclinically important absolute risk reduction of 12\npercentage points (i.e., an incidence of 60% in\nthe placebo group and an incidence of 48% in the\nibuprofen group) with 90% power and a type I\nerror of 5% under the assumption that 1% of in-\nfants would be lost to follow-up.14\nAnalyses were performed according to the\nintention-to-treat principle, with infants exclud-\ned from the analysis only if their data were miss-\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.",
+        "recovery": null,
+        "returned_previously": null,
+        "search_session": null,
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "text_status": "complete",
+        "trial_id": "gupta-2024"
+      },
+      {
+        "candidate_rank": null,
+        "domain_id": null,
+        "end": 6296,
+        "end_line": 125,
+        "handle": "eh_d6d5b2bf301983ce",
+        "identity": "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b",
+        "inclusion_reason": "result",
+        "kind": "narrative",
+        "page": 6,
+        "question_id": null,
+        "quote": null,
+        "recovery": {
+          "operation": "read_pages",
+          "trial_id": "gupta-2024",
+          "windows": [
+            {
+              "end_line": 125,
+              "page": 6,
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "start_line": 1
+            }
+          ]
+        },
+        "returned_previously": null,
+        "search_session": null,
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "source_version": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "start": 0,
+        "start_line": 1,
+        "text_status": "omitted",
+        "trial_id": "gupta-2024"
+      }
+    ]
+  },
+  "correct_source_control": {
+    "source_id": "sh_ec3fcba1a06e0ddc",
+    "page": 7,
+    "numbered_text": "1|n engl j med 390;4 nejm.org January 25, 2024\n2|320\n3|The new engl and jour nal of medicine\n4|(Fig. 1). Parental consent to use the data from\n5|7 infants was withdrawn, which left data from\n6|324 infants in the ibuprofen group and 322 in\n7|the placebo group available for outcome analy-\n8|ses (Fig. 1). Data that were required to assess the\n9|primary outcome were missing for an additional\n10|10 infants, and therefore assessment of the pri-\n11|mary outcome was possible for 318 infants (97.5%)\n12|in the ibuprofen group and 318 (97.2%) in the\n13|placebo group.\n14|Outcomes\n15|A primary-outcome event (death or moderate or\n16|severe bronchopulmonary dysplasia assessed at\n17|Table 3. Process Outcomes.\n18|Outcome\n19|Ibuprofen\n20|(N = 324)\n21|Placebo\n22|(N = 322)\n23|Did not receive assigned intervention - no. (%)\n24|7 (2.2)\n25|11 (3.4)\n26|Did not receive all doses of ibuprofen or placebo - no. (%)\n27|41 (12.7)\n28|34 (10.6)\n29|Doses received - no. (%)\n30|0\n31|7 (2.2)\n32|9 (2.8)\n33|1\n34|17 (5.2)\n35|11 (3.4)\n36|2\n37|17 (5.2)\n38|14 (4.3)\n39|3\n40|283 (87.3)\n41|288 (89.4)\n42|Reason for early discontinuation - no./total no. (%)*\n43|Clinical decision\n44|38/41 (92.7)\n45|26/34 (76.5)\n46|Parental request\n47|0\n48|1/34 (2.9)\n49|Infant death\n50|2/41 (4.9)\n51|2/34 (5.9)\n52|Missed dose or doses in error\n53|1/41 (2.4)\n54|2/34 (5.9)\n55|Intervention window outside of trial period\n56|0\n57|2/34 (5.9)\n58|Transfer out of recruiting site\n59|0\n60|1/34 (2.9)\n61|Median age at first dose (IQR) - hr\u2020\n62|61 (47-68)\n63|61 (48-69)\n64|Distribution of median age at first dose - no. (%)\n65|0 to <24 hr\n66|14/316 (4.4)\n67|14/313 (4.5)\n68|24 to <48 hr\n69|68/316 (21.5)\n70|65/313 (20.8)\n71|48 to <72 hr\n72|220/316 (69.6)\n73|225/313 (71.9)\n74|\u226572 hr\n75|14/316 (4.4)\n76|9/313 (2.9)\n77|Received second or third dose outside of dosing window -\n78|no./total no. (%)\n79|5/297 (1.7)\n80|4/301 (1.3)\n81|Echocardiography not performed at 3 wk of age - no./total no.\n82|(%)\u2021\n83|65/291 (22.3)\n84|60/301 (19.9)\n85|Oxygen reduction test not performed when infant was eligible\n86|- no./total no. (%)\u00a7\n87|13/86 (15.1)\n88|13/94 (13.8)\n89|* Early discontinuation was defined as discontinuation when fewer than three doses had been received.\n90|\u2020 The median was assessed among infants who had received at least one dose.\n91|\u2021 Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA;\n92|infants who died before the 3-week echocardiogram could be obtained were excluded (33 infants in the ibuprofen group\n93|and 21 in the placebo group).\n94|\u00a7 Denominators are the numbers of infants who were eligible for the test.\n95|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\n96|Downloaded from nejm.org on September 23, 2026.\n97|\n98|[Extracted table 1]\n99||Column 1|Column 2|Column 3|\n100||---|---|---|\n101||Table 3. Process Outcomes.|||\n102||Ibuprofen Placebo<br>Outcome (N = 324) (N = 322)|||\n103||Did not receive assigned intervention - no. (%)|7 (2.2)|11 (3.4)|\n104||Did not receive all doses of ibuprofen or placebo - no. (%) 41 (12.7) 34 (10.6)|||\n105||Doses received - no. (%)|||\n106||0 7 (2.2) 9 (2.8)|||\n107||1|17 (5.2)|11 (3.4)|\n108||2 17 (5.2) 14 (4.3)|||\n109||3|283 (87.3)|288 (89.4)|\n110||Reason for early discontinuation - no./total no. (%)*|||\n111||Clinical decision|38/41 (92.7)|26/34 (76.5)|\n112||Parental request 0 1/34 (2.9)|||\n113||Infant death|2/41 (4.9)|2/34 (5.9)|\n114||Missed dose or doses in error 1/41 (2.4) 2/34 (5.9)|||\n115||Intervention window outside of trial period|0|2/34 (5.9)|\n116||Transfer out of recruiting site 0 1/34 (2.9)|||\n117||Median age at first dose (IQR) - hr\u2020|61 (47-68)|61 (48-69)|\n118||Distribution of median age at first dose - no. (%)|||\n119||0 to <24 hr|14/316 (4.4)|14/313 (4.5)|\n120||24 to <48 hr 68/316 (21.5) 65/313 (20.8)|||\n121||48 to <72 hr|220/316 (69.6)|225/313 (71.9)|\n122||\u226572 hr 14/316 (4.4) 9/313 (2.9)|||\n123||Received second or third dose outside of dosing window -<br>no./total no. (%)|5/297 (1.7)|4/301 (1.3)|\n124||Echocardiography not performed at 3 wk of age - no./total no. 65/291 (22.3) 60/301 (19.9)<br>(%)\u2021|||\n125||Oxygen reduction test not performed when infant was eligible<br>- no./total no. (%)\u00a7|13/86 (15.1)|13/94 (13.8)|",
+    "line_count": 125,
+    "returned_start_line": 1,
+    "returned_end_line": 125,
+    "page_remainder": null,
+    "truncated": false,
+    "next_start_line": null,
+    "passage_ref": "eh_49ac77da50b0bd19"
+  },
+  "scientific_boundary": "Wrong citation support does not itself overturn probably_no or D4Low; correctness of source claim and correctness of scientific answer remain separate. Presence/absence of number strings alone is not a semantic support validator.",
+  "future_controls": [
+    "Supported claim with correct narrative passage: accept source attribution, no label forcing.",
+    "Actual retained numeric premise paired to wrong pages: expose unsupported attribution and exact alternative source.",
+    "Literal visible procedure in diagram: support stated rule with actual image/transcription identity.",
+    "Diagram used to claim actual measurement count, adherence or assessor blindness: retain unsupported-conduct uncertainty unless narrative evidence establishes it."
+  ],
+  "implementation_audit": "Existing _review_domain_findings exposes factual text derived from selected material, host-asserted basis kind and exact evidence expansion; source assignment in save_domain_judgment derives from selected quote/transcription, not arbitrary host paraphrase. Refine use of these fields before adding another representation or semantic gate."
+}

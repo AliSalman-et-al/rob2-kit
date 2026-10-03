@@ -140,11 +140,22 @@ It records that it returned the image block; the receipt does not establish that
 person or model inspected or understood it. The host supplies the transcription;
 `text_corroborated` means the complete-page transcription also occurs in extracted
 Source text, while `host_visual` means it is grounded in the delivered pixels.
-Host-visual Evidence can support only literal visible labels, endpoint text,
-values, axes, arm labels, and stated timing. Use narrative or text-corroborated
-Evidence for population, analysis or measurement methods, prespecification, and
-conduct. Put interpretation in the Result rationale or Domain justification,
-not in the transcription.
+Host-visual Evidence can support literal visible labels, endpoint text,
+values, axes, arm labels, stated timing, and procedure steps or decision criteria
+explicitly printed in a diagram. Transcribe branch labels and arrow connections
+with their prerequisites; do not turn a diagram into an invented patient scenario.
+A stated procedure does not establish that it was performed, how many participants
+were measured, or whether assessors followed it or were blinded. Use narrative or
+text-corroborated Evidence for those conduct claims, population, analysis methods,
+and prespecification. Put interpretation in the Result rationale or Domain
+justification, not in the transcription.
+
+Keep each claim with the material that contains it. A caption or abbreviation
+legend does not support numerical values or routes found only in the image.
+Read the named definition and applicable adjacent notes when they determine the
+meaning, while preserving which facts come from each passage or visual region.
+If you cannot inspect the image in your host, retain that specific limitation;
+text showing only a figure title and legend is not inspection of its contents.
 
 ## Ground a Result
 
