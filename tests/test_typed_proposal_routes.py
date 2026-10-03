@@ -318,3 +318,42 @@ def test_missing_record_failure_has_only_missing_record_recovery(tmp_path: Path)
     assert "effect_measure" not in feedback["requirements"]
     assert all(d["path"].startswith("/missing_results/") for d in feedback["defects"])
     assert len(str(caught.value).encode()) <= 4096
+
+
+@pytest.mark.parametrize("ordinal", range(2))
+def test_recovery_feedback_exposes_independent_defects_in_one_reply(tmp_path: Path, ordinal: int):
+    audit = _REPO / "docs/evaluation/2026-10-03-emperor-recovery-687fb24"
+    attempts = json.loads((audit / "proposal-attempts.json").read_text())
+    attempt = attempts[ordinal]
+    before = json.loads(attempt["result"]["content"][0]["text"])
+    with pytest.raises(ToolError) as caught:
+        _native(tmp_path, attempt["arguments"])
+    after = json.loads(str(caught.value))
+    assert len(str(caught.value).encode()) <= 4096
+    assert after["additional_defects"] == 0
+    assert sum(d["count"] for d in after["defects"]) == (
+        len(before["defects"]) + before["additional_defects"]
+    )
+    paths = {d["path"] for d in after["defects"]}
+    assert {"/results/0/clarity", "/results/0/group_values", "/results/0/evidence"} <= paths
+    assert after["syntax"]["clarity"]["required"] == list(ResultClarity.model_fields)
+    assert after["syntax"]["clarity"]["each_value"] == [
+        "specified",
+        "unclear",
+        "unavailable",
+        "conflicting",
+    ]
+    assert after["syntax"]["group_values[]"]["required"] == [
+        "group_id",
+        "statistic",
+        "value",
+        "unit",
+    ]
+    assert "passage_refs" in after["syntax"]["evidence[]"]
+    assert "target_time_value and target_time_unit together" in after["requirements"]
+    if ordinal == 0:
+        assert {"/assessments/0/unknowns", "/assessments/0/counterevidence"} <= paths
+    else:
+        assert {"/results/1", "/results/1/missing_facts"} <= paths
+        assert next(d for d in after["defects"] if d["path"] == "/results/0/clarity")["count"] == 8
+        assert "assessments[].unknowns" in after["requirements"]

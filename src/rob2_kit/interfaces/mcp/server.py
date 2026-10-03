@@ -98,6 +98,7 @@ from rob2_kit.workflow_models import (
     DomainRevisionBasis,
     DomainSaveAnswer,
     ExpectedRevision,
+    GroupResultValue,
     Identity,
     MissingDataRow,
     MissingResultProposal,
@@ -106,6 +107,7 @@ from rob2_kit.workflow_models import (
     ProposalDraft,
     ProposalReasoningAssessment,
     QuestionId,
+    ResultClarity,
     ResultProposal,
     SourceHandle,
     StrictModel,
@@ -185,22 +187,41 @@ def _proposal_argument_feedback(error: ValidationError) -> str:
         for name, model in models.items()
         if name in roots
     }
-    defects = [
-        {
-            "path": "/"
-            + "/".join(
-                str(part) for part in item["loc"] if not str(part).startswith("function-after[")
-            ),
-            "detail": item["msg"][:240],
-        }
-        for item in errors[:8]
-    ]
+    # Group by record field: eight missing clarity facets must not hide another record.
+    grouped: dict[tuple[str, ...], dict[str, Any]] = {}
+    for item in errors:
+        location = tuple(
+            str(part)[:80] for part in item["loc"] if not str(part).startswith("function-after[")
+        )
+        field_missing = item["type"] == "missing" and len(location) == 3
+        key = location[:2] if field_missing else location[:3]
+        defect = grouped.setdefault(
+            key, {"path": "/" + "/".join(key), "count": 0, "details": [], "missing_fields": []}
+        )
+        defect["count"] += 1
+        detail = item["msg"][:160].replace("valid tuple", "JSON array")
+        if detail not in defect["details"] and len(defect["details"]) < 3:
+            defect["details"].append(detail)
+        if item["type"] == "missing":
+            field = location[-1]
+            if field not in defect["missing_fields"] and len(defect["missing_fields"]) < 16:
+                defect["missing_fields"].append(field)
+    defects = list(grouped.values())[:8]
     syntax = {}
     if "results" in roots:
         syntax = {
             "comparison_groups[]": _construction_schema(ComparisonGroup),
+            "clarity": {
+                "required": list(ResultClarity.model_fields),
+                "each_value": _construction_schema(ResultClarity)["properties"][
+                    "outcome_definition"
+                ]["enum"],
+            },
+            "group_values[]": _construction_schema(GroupResultValue),
             "passage_refs[]": "selected handle string",
             "design_evidence[]": "selected handle string",
+            "evidence[]": "Advanced table/derived proof objects only; selected narrative/figure "
+            "handles belong in passage_refs, not evidence.",
             "estimate/precision/effect_measure": "source strings; not numeric objects",
         }
     if "assessments" in roots:
@@ -210,7 +231,11 @@ def _proposal_argument_feedback(error: ValidationError) -> str:
     if "results" in roots:
         requirements.append(
             "Comparative effect_measure and estimate must be supplied together; "
-            "known design requires design_evidence. Exact requires specified scope facets."
+            "known design requires design_evidence. Exact requires specified scope facets. "
+            "Supply target_time_value and target_time_unit together or omit both. "
+            "Each group value requires its source statistic, value and unit. "
+            "Missing Result records belong in missing_results; unresolved facts about an "
+            "assessable Result belong in assessments[].unknowns."
         )
     if "missing_results" in roots:
         syntax["missing_results[].missing_facts[]"] = _construction_schema(
@@ -226,7 +251,7 @@ def _proposal_argument_feedback(error: ValidationError) -> str:
         "code": "invalid_proposal_arguments",
         "saved": False,
         "defects": defects,
-        "additional_defects": max(0, len(errors) - len(defects)),
+        "additional_defects": len(errors) - sum(defect["count"] for defect in defects),
         "required_fields": required,
         "syntax": syntax,
         "requirements": " ".join(requirements),
@@ -236,8 +261,8 @@ def _proposal_argument_feedback(error: ValidationError) -> str:
     }
     # A batch with arbitrarily many invalid fields still receives a bounded reply.
     while len(json.dumps(payload, ensure_ascii=False).encode()) > 4096 and defects:
-        defects.pop()
-        payload["additional_defects"] += 1
+        removed = defects.pop()
+        payload["additional_defects"] += removed["count"]
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
@@ -3543,6 +3568,14 @@ def select_visual_evidence(
         "and unresolved facts; do not infer unavailable facts. The server validates structure, "
         "Evidence references and workflow requirements, not scientific correctness. Construct "
         "the complete typed request before calling. Arm objects require id and assignment. "
+        "Estimate and precision are source strings. For exact relation, clarity is an object "
+        "with outcome_definition, measurement, time_point, analysis_population, comparison_groups, "
+        "effect_measure, source_table_meaning and eligible_result_choice; each is specified, "
+        "unclear, unavailable or conflicting. Exact requires all specified; do not infer clarity. "
+        "Optional group_values items require group_id, statistic (string or null), value and unit; "
+        "these are source strings, not combined statistic/value prose. Timing value and unit "
+        "must be supplied together or omitted. Assessment evidence_basis is a handle array; "
+        "unknowns is a string array; counterevidence is an object array or []. "
         "Use passage_refs for selected narrative/figure handles; the server supplies Evidence "
         "record kinds and identity metadata. A comparative estimate requires effect_measure and "
         "estimate together, with optional precision. Known designs require design_evidence. "

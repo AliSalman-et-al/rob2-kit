@@ -7,6 +7,29 @@ receipt returned by that call.
 
 ## Construct the request
 
+Construct the scientific card before sending it. A comparative `estimate`,
+`effect_measure` and optional `precision` are source strings. Selected narrative
+or figure handles belong in `passage_refs`; `evidence` is only for advanced typed
+proof objects. Handles already carry record-kind/source metadata, but cannot
+supply scientific scope, clarity, units or uncertainty.
+
+For `exact`, `clarity` requires eight explicit facets: `outcome_definition`,
+`measurement`, `time_point`, `analysis_population`, `comparison_groups`,
+`effect_measure`, `source_table_meaning` and `eligible_result_choice`. Each accepts
+`specified`, `unclear`, `unavailable` or `conflicting`; exact requires every facet
+specified. Do not fill these from matching numbers or treat them as defaults.
+An optional group value needs separate `group_id`, `statistic` (string or null),
+`value` and `unit`, supported by the source. Timing value and unit must be given
+together or both omitted. Assessment `evidence_basis` is a handle array,
+`unknowns` a string array, and `counterevidence` an object array or `[]`.
+
+A missing Result goes in `missing_results`. Unknown scope facts about an existing
+assessable Result go in its assessment's `unknowns`; they are not another Result
+card. Construction feedback groups repeated defects by record field, with counts
+and missing fields, so independent failures remain visible. A reading receipt
+repair is separate: satisfy its exact pending source ranges before validation
+can complete. Structural acceptance does not settle source entailment.
+
 This fictional example shows the shape of one complete `validate_proposal` request
 for an assessable comparative Result. It assumes supporting Evidence has already
 been selected. Replace every example fact and identifier with information from
