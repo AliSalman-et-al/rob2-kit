@@ -1,0 +1,20 @@
+{
+  "session": "01a101e4-5479-72f1-baf2-bc69f7221a18",
+  "scientific_code_sha": "bd92ec84fb1b24a05ac742db8ea01f3c9b7bcf6a",
+  "host_commit": "230a662fac777cbb509e4aa00bf966e018446dd5",
+  "controller_sha256": "83293ed623a8095a29c8b297146b1c563d1278dca0fa000f1cd57982eef59811",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-bd92ec8/workspace",
+  "authorization": "Explicit parent authorization: ONE recovery experiment on SAME approved EXSCEL session. Original failed run preserved. Up to3resumed turns/900secsharedwall/180secidle/60cumulativetools/12kcumulativeoutput/2consecutivenoprogress or identicalerrors;inputtelemetry;no fresh session,automaticapproval,operatorrepair,furtherexperiment.",
+  "limits": {
+    "resumed_turns": 3,
+    "wall_seconds": 900,
+    "idle_seconds": 180,
+    "tools": 60,
+    "output_tokens": 12000,
+    "no_progress_boundaries": 2,
+    "input_tokens": null
+  },
+  "guard_scope": "ONE Monitor instance and baseline response-ID set shared across every turn; tool IDs namespaced by resumed turn; original usage excluded."
+}

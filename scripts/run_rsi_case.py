@@ -32,7 +32,7 @@ from benchmark_contract import (
     trace_session_ids,
 )
 from prepare_rsi_workspace import approved_scope_record, prepare_workspace
-from workflow_completion import Turn, drive
+from workflow_completion import Turn, drive, finalized_artifact
 
 try:
     import fcntl
@@ -2424,7 +2424,7 @@ def main() -> None:
                 return json.loads(receipt.stdout)
 
             def verify_workflow_artifact(status: dict[str, object]) -> bool:
-                artifact = status.get("artifact")
+                artifact = status.get("artifact") or finalized_artifact(status, turn_paths)
                 if status.get("phase") != "finalized" or not isinstance(artifact, dict):
                     return False
                 path = artifact.get("path")

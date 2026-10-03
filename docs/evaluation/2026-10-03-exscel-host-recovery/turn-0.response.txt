@@ -1,0 +1,8 @@
+The approved EXSCEL assessment was finalized.
+
+- **Overall risk of bias:** High, driven by Missing outcome data (High). Deviations and outcome measurement were Low; randomization was Low; selection of the reported result had Some concerns.
+- **Key uncertainties retained:** Outcome availability and whether missingness depended on true MACE status could not be resolved from participant flow, vital-status counts, or MACE patient-year coverage alone. The dated SAP matched the primary analysis, but the timing of investigators’ access to unblinded results remained unknown.
+- **Identity conflict preserved:** The article identifies EXSCEL as NCT01144338, while intake metadata names NCT01455896; registry retrieval was unavailable. The identifiers were not reconciled.
+- **Final artifact:** `.rob2-kit/finalized/03f253a5fe93eb715eb486e99f56a5b9d445e0fa1dfb6072718a09d0f652a481.rob2.zip`
+- **Artifact identity:** `sha256:03f253a5fe93eb715eb486e99f56a5b9d445e0fa1dfb6072718a09d0f652a481`  
+  **SHA-256:** `sha256:84b24f31679cca7139c15bebccb046e42853847bcca3a1f25aa670ed80a848a7`

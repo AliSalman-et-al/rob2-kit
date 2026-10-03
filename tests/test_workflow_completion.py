@@ -204,3 +204,17 @@ def test_novel_queries_and_timestamps_are_not_durable_progress(tmp_path: Path) -
     )
     assert result["boundary"] == "unfinished"
     assert len(result["turns"]) == 2 and not any(t["progress"] for t in result["turns"])
+
+
+def test_finalization_receipt_lookup_matches_authoritative_revision() -> None:
+    from workflow_completion import finalized_artifact
+
+    trace_path = (
+        Path(__file__).parents[1]
+        / "docs/evaluation/2026-10-03-exscel-host-recovery/turn-0.events.jsonl"
+    )
+    status = {"phase": "finalized", "state_revision": 12}
+    artifact = finalized_artifact(status, [trace_path])
+    assert artifact and artifact["path"].endswith(".rob2.zip")
+    assert finalized_artifact({**status, "state_revision": 13}, [trace_path]) is None
+    assert finalized_artifact({**status, "phase": "assessment"}, [trace_path]) is None

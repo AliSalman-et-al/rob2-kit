@@ -1,0 +1,8 @@
+{
+  "same_session_verified": true,
+  "baseline_excluded_input_tokens": 334932,
+  "original_config_unchanged": true,
+  "no_prior_Domain_answers_added": true,
+  "one_shared_monitor": true,
+  "cross_turn_guard_tests": "passed offline baseline/cross-turn responseIDs and reused toolIDs/sharedwall/idle/repeatederrors"
+}

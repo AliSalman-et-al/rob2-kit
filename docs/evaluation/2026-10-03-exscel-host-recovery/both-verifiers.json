@@ -1,0 +1,13 @@
+{
+  "phase": "finalized",
+  "installed": {
+    "passed": true,
+    "diagnostic": {}
+  },
+  "independent": {
+    "passed": true,
+    "exit_code": 0,
+    "stdout": "bundle verified\n",
+    "stderr": ""
+  }
+}

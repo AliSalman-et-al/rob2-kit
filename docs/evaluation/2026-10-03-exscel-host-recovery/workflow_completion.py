@@ -77,37 +77,6 @@ def trace_facts(path: Path) -> dict[str, Any]:
     }
 
 
-def finalized_artifact(status: Mapping[str, Any], traces: list[Path]) -> dict[str, Any] | None:
-    """Recover only a successful finalization receipt matching authoritative revision."""
-    head = status.get("head") or status
-    if head.get("phase") != "finalized":
-        return None
-    for trace in reversed(traces):
-        for line in reversed(trace.read_text(encoding="utf-8").splitlines()):
-            row = json.loads(line)
-            item = row.get("item", {})
-            if (
-                row.get("type") != "item.completed"
-                or item.get("type") != "mcp_tool_call"
-                or item.get("tool") != "finalize_batch"
-                or item.get("status") == "failed"
-                or item.get("error")
-            ):
-                continue
-            payload = (item.get("result") or {}).get("structured_content") or {}
-            receipt_head = payload.get("head") or {}
-            if (
-                payload.get("outcome") == "success"
-                and receipt_head.get("phase") == "finalized"
-                and receipt_head.get("state_revision") == head.get("state_revision")
-                and isinstance(head.get("state_revision"), int)
-            ):
-                artifact = (payload.get("data") or {}).get("artifact")
-                if isinstance(artifact, dict):
-                    return artifact
-    return None
-
-
 def drive(
     invoke: Callable[[str | None, str, float, int], Turn],
     read_status: Callable[[], dict[str, Any]],
