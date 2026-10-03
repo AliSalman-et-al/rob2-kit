@@ -1,0 +1,29 @@
+{
+  "identity_status": "identified",
+  "identity_basis": "declared_role",
+  "identity_sources": [
+    "source_86a079a751dac5fe91aed868c3f6fc3c1396eecbc57e8b27f1d708ddaff28133"
+  ],
+  "identity_observations": [],
+  "orientation_source_ids": [],
+  "orientation_reading": {
+    "source_ids": [],
+    "ranges": [],
+    "range_count": 0,
+    "ranges_truncated": false
+  },
+  "limitation": null,
+  "status": "required",
+  "budget_bytes": 65536,
+  "covered_prefix_bytes": 38703,
+  "unread_ranges": [],
+  "required_ranges": [
+    {
+      "trial_id": "emperor-reduced",
+      "source_id": "source_86a079a751dac5fe91aed868c3f6fc3c1396eecbc57e8b27f1d708ddaff28133",
+      "page": 10,
+      "start_line": 17,
+      "end_line": 202
+    }
+  ]
+}

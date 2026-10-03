@@ -1,0 +1,67 @@
+{
+  "no_model_calls": true,
+  "native_stdio_tools_list_verified": true,
+  "schema_collections": {
+    "results": {
+      "required": [
+        "trial_id",
+        "relation",
+        "relation_rationale",
+        "design",
+        "design_rationale",
+        "target_measurement",
+        "target_window",
+        "comparison_groups",
+        "baseline_subgroup",
+        "intended_effect_measure",
+        "reported_outcome",
+        "analysis_population"
+      ],
+      "properties": [
+        "trial_id",
+        "relation",
+        "relation_rationale",
+        "clarity",
+        "design",
+        "design_rationale",
+        "design_evidence",
+        "target_measurement",
+        "target_window",
+        "target_time_value",
+        "target_time_unit",
+        "comparison_groups",
+        "baseline_subgroup",
+        "intended_effect_measure",
+        "reported_outcome",
+        "reported_definition",
+        "analysis_population",
+        "effect_measure",
+        "estimate",
+        "precision",
+        "group_values",
+        "category_group_id",
+        "category_denominator",
+        "category_axis_names",
+        "categories",
+        "passage_refs",
+        "evidence"
+      ],
+      "homogeneous_object": true
+    },
+    "missing_results": {
+      "required": [
+        "trial_id",
+        "relation",
+        "missing_facts"
+      ],
+      "properties": [
+        "trial_id",
+        "relation",
+        "missing_facts"
+      ],
+      "homogeneous_object": true
+    }
+  },
+  "service_delivery_verified": false,
+  "default_supported_routing_restored": true
+}

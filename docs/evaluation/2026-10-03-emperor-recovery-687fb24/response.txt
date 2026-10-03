@@ -1,0 +1,1 @@
+Construction failed: `validate_proposal` did not accept the candidate. The remaining reported defect requires eight `clarity` fields: `outcome_definition`, `measurement`, `time_point`, `analysis_population`, `comparison_groups`, `effect_measure`, `source_table_meaning`, and `eligible_result_choice`. No proposal was successfully validated.

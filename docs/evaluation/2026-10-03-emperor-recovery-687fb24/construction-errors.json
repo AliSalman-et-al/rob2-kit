@@ -1,0 +1,451 @@
+[
+  {
+    "attempt": 1,
+    "native_feedback_bytes": 1814,
+    "native_feedback": {
+      "code": "invalid_proposal_arguments",
+      "saved": false,
+      "defects": [
+        {
+          "path": "/results/0/clarity",
+          "detail": "Input should be a valid dictionary or instance of ResultClarity"
+        },
+        {
+          "path": "/results/0/estimate",
+          "detail": "Input should be a valid string"
+        },
+        {
+          "path": "/results/0/precision",
+          "detail": "Input should be a valid string"
+        },
+        {
+          "path": "/results/0/group_values/0/statistic",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/group_values/1/statistic",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/evidence",
+          "detail": "Input should be a valid tuple"
+        },
+        {
+          "path": "/assessments/0/evidence_basis",
+          "detail": "Input should be a valid tuple"
+        },
+        {
+          "path": "/assessments/0/unknowns",
+          "detail": "Input should be a valid tuple"
+        }
+      ],
+      "additional_defects": 1,
+      "required_fields": {
+        "results": [
+          "trial_id",
+          "relation",
+          "relation_rationale",
+          "design",
+          "design_rationale",
+          "target_measurement",
+          "target_window",
+          "comparison_groups",
+          "baseline_subgroup",
+          "intended_effect_measure",
+          "reported_outcome",
+          "analysis_population"
+        ],
+        "assessments": [
+          "trial_id",
+          "unknowns"
+        ]
+      },
+      "syntax": {
+        "comparison_groups[]": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "assignment": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "assignment"
+          ],
+          "type": "object"
+        },
+        "passage_refs[]": "selected handle string",
+        "design_evidence[]": "selected handle string",
+        "estimate/precision/effect_measure": "source strings; not numeric objects",
+        "assessments[].evidence_basis[]": "selected handle string",
+        "assessments[].counterevidence": "array, including [] when none; not null"
+      },
+      "requirements": "Comparative effect_measure and estimate must be supplied together; known design requires design_evidence. Exact requires specified scope facets. Supply one source-bound assessment per submitted Trial.",
+      "instruction": "Preserve scientific facts, relation and uncertainty; correct construction only."
+    },
+    "unrelated_missing_record_branch_errors": 0,
+    "offline_unmodified_result_shape_errors": [
+      {
+        "record_index": 0,
+        "path": [
+          "clarity"
+        ],
+        "type": "model_type",
+        "detail": "Input should be a valid dictionary or instance of ResultClarity"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "estimate"
+        ],
+        "type": "string_type",
+        "detail": "Input should be a valid string"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "precision"
+        ],
+        "type": "string_type",
+        "detail": "Input should be a valid string"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "group_values",
+          0,
+          "statistic"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "group_values",
+          1,
+          "statistic"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "evidence"
+        ],
+        "type": "tuple_type",
+        "detail": "Input should be a valid tuple"
+      }
+    ],
+    "qualification": "Offline model validation explains bounded-away errors; no request repaired, accepted, or saved."
+  },
+  {
+    "attempt": 2,
+    "native_feedback_bytes": 1548,
+    "native_feedback": {
+      "code": "invalid_proposal_arguments",
+      "saved": false,
+      "defects": [
+        {
+          "path": "/results/0/clarity/outcome_definition",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/clarity/measurement",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/clarity/time_point",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/clarity/analysis_population",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/clarity/comparison_groups",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/clarity/effect_measure",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/clarity/source_table_meaning",
+          "detail": "Field required"
+        },
+        {
+          "path": "/results/0/clarity/eligible_result_choice",
+          "detail": "Field required"
+        }
+      ],
+      "additional_defects": 17,
+      "required_fields": {
+        "results": [
+          "trial_id",
+          "relation",
+          "relation_rationale",
+          "design",
+          "design_rationale",
+          "target_measurement",
+          "target_window",
+          "comparison_groups",
+          "baseline_subgroup",
+          "intended_effect_measure",
+          "reported_outcome",
+          "analysis_population"
+        ]
+      },
+      "syntax": {
+        "comparison_groups[]": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "assignment": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "assignment"
+          ],
+          "type": "object"
+        },
+        "passage_refs[]": "selected handle string",
+        "design_evidence[]": "selected handle string",
+        "estimate/precision/effect_measure": "source strings; not numeric objects"
+      },
+      "requirements": "Comparative effect_measure and estimate must be supplied together; known design requires design_evidence. Exact requires specified scope facets.",
+      "instruction": "Preserve scientific facts, relation and uncertainty; correct construction only."
+    },
+    "unrelated_missing_record_branch_errors": 0,
+    "offline_unmodified_result_shape_errors": [
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "outcome_definition"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "measurement"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "time_point"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "analysis_population"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "comparison_groups"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "effect_measure"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "source_table_meaning"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "clarity",
+          "eligible_result_choice"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "group_values",
+          0,
+          "value"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "group_values",
+          1,
+          "value"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "evidence",
+          0
+        ],
+        "type": "model_attributes_type",
+        "detail": "Input should be a valid dictionary or object to extract fields from"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "evidence",
+          1
+        ],
+        "type": "model_attributes_type",
+        "detail": "Input should be a valid dictionary or object to extract fields from"
+      },
+      {
+        "record_index": 0,
+        "path": [
+          "evidence",
+          2
+        ],
+        "type": "model_attributes_type",
+        "detail": "Input should be a valid dictionary or object to extract fields from"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "relation"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "relation_rationale"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "design"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "design_rationale"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "target_measurement"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "target_window"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "comparison_groups"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "baseline_subgroup"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "intended_effect_measure"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "reported_outcome"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "analysis_population"
+        ],
+        "type": "missing",
+        "detail": "Field required"
+      },
+      {
+        "record_index": 1,
+        "path": [
+          "missing_facts"
+        ],
+        "type": "extra_forbidden",
+        "detail": "Extra inputs are not permitted"
+      }
+    ],
+    "qualification": "Offline model validation explains bounded-away errors; no request repaired, accepted, or saved."
+  }
+]
