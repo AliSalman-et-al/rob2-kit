@@ -1,0 +1,15 @@
+{
+  "condition": "condition_b",
+  "code_sha": "e6b893b167a978ab84fde21c2d2da89714e48bfd",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "prompt_sha256": "107307b1723609d8c303e06364acc0ad2818e23cffa69f603748625c7897c68e",
+  "preflight_input_token_upper_bound": 13647,
+  "max_words": 600,
+  "wall_seconds": 480,
+  "idle_seconds": 120,
+  "one_response_only": true,
+  "tool_free": true,
+  "synthetic": true,
+  "no_retry": true
+}

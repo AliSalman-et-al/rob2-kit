@@ -1,0 +1,166 @@
+{
+  "code_sha": "e6b893b167a978ab84fde21c2d2da89714e48bfd",
+  "conditions": {
+    "condition_a": "Report: Terminal endpoint measurements after additional treatment were obtained for all such participants.",
+    "condition_b": "Report: Terminal endpoint measurements after additional treatment were not obtained for any such participants."
+  },
+  "single_changed_fact": "Terminal endpoint measurements obtained versus not obtained after the same outcome-driven treatment change.",
+  "fixed_unknown_control": "Separate drug discontinuers have unspecified endpoint collection status and reasons.",
+  "source_basis": "Code AWARD-1 article pre-rescue efficacy handling and supplemental glucose-linked rescue; terminal observation facts are explicitly synthetic because actual source status was not established.",
+  "guidance": [
+    {
+      "question_id": "sq:deviations:appropriate-analysis",
+      "wording": "Was an appropriate analysis used to estimate the effect of assignment to intervention?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance p. 29, Box 6, signalling question 2.6",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "Both intention-to-treat (ITT) analyses and modified intention-to-treat (mITT) analyses excluding participants with missing outcome data should be considered appropriate. Both na\u00efve \u2018per-protocol\u2019 analyses and \u2018as treated\u2019 analyses should be considered inappropriate. Analyses excluding eligible trial participants post-randomization should also be considered inappropriate."
+        },
+        "operational": {
+          "decision_rule": "Consider ITT and modified ITT excluding participants with missing outcome data appropriate. Consider naive per-protocol, as-treated, and post-randomization exclusion of eligible participants inappropriate; post-randomization exclusion of ineligible participants may be appropriate when eligibility could not have been influenced by assignment.",
+          "evidence_needed": [
+            "The actual analysis population and grouping rule: who was assigned, who was analysed in each group, who was excluded or reassigned after randomization, and why."
+          ],
+          "no_information_rule": "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; an incomplete analysis description alone is insufficient when those facts support a probable judgment about appropriateness."
+        }
+      }
+    },
+    {
+      "question_id": "sq:missing:data-available",
+      "wording": "Were data for this outcome available for all, or nearly all, participants randomized?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "\u2018Nearly all\u2019 should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data."
+        },
+        "operational": {
+          "decision_rule": "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When the extent remains unknown, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
+          "evidence_needed": [
+            "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
+            "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
+            "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts."
+          ],
+          "no_information_rule": "Answer no_information when the extent of missing outcome data remains unknown after bounded retrieval. Lack of evidence for complete availability is not evidence of materially incomplete availability."
+        }
+      }
+    },
+    {
+      "question_id": "sq:missing:true-value-dependent",
+      "wording": "If N/PN to 3.2: Could missingness in the outcome depend on its true value?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.3",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "If loss to follow up, or withdrawal from the study, could be related to participants\u2019 health status, then it is possible that missingness in the outcome was influenced by its true value. However, if all missing outcome data occurred for documented reasons that are unrelated to the outcome then the risk of bias due to missing outcome data will be low."
+        },
+        "operational": {
+          "decision_rule": "Answer yes or probably yes when loss to follow-up or withdrawal could relate to health status or outcome. Answer no or probably no when all missingness had documented reasons unrelated to outcome, such as a failed measuring device or interruption to routine data collection.",
+          "evidence_needed": [
+            "Reasons for missingness and their relationship to participants' health status or true outcome, including censoring and treatment switching in time-to-event analyses."
+          ],
+          "no_information_rule": "Use no_information when the reasons for missingness do not permit assessment of dependence on the true value."
+        }
+      }
+    },
+    {
+      "question_id": "sq:missing:likely-dependent",
+      "wording": "If Y/PY/NI to 3.3: Is it likely that missingness in the outcome depended on its true value?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "This question distinguishes between situations in which (i) missingness could depend on its true value and (ii) it is likely that missingness depended on its true value. Five reasons for answering \u2018Yes\u2019 are differences between intervention groups in the proportions of missing outcome data; reported reasons that provide evidence that missingness depends on its true value; reasons that differ between intervention groups; trial circumstances; and censoring when participants stop or change their assigned intervention."
+        },
+        "operational": {
+          "id": "rob2-kit.parallel-assignment.question-guidance",
+          "version": "1.0.8",
+          "attribution": "rob2-kit maintainers",
+          "bias_construct": "Whether missingness that could depend on true value likely depended on it.",
+          "decision_rule": "Consider differences in missingness or censoring rates, reasons that depend on true value, reasons differing between groups, trial circumstances, and censoring after stopping or changing intervention. Answer no when analysis accounted for participant characteristics likely to explain the relationship.",
+          "evidence_needed": [
+            "Group-specific missingness or censoring, reasons for missingness, trial circumstances, and any analysis accounting for relevant participant characteristics."
+          ],
+          "no_information_rule": "Use no_information when likelihood of dependence on true value cannot be judged from the available evidence.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "Missingness likely depended on the true outcome value."
+            },
+            {
+              "answer": "no",
+              "text": "The analysis accounted for characteristics explaining the relationship, or dependence was not likely."
+            }
+          ],
+          "considerations": [
+            "Possible dependence in 3.3 does not establish likely dependence in 3.4. Judge likelihood from missingness reasons and trial circumstances; absent contrary evidence alone does not establish likelihood.",
+            "Keep the stages distinct: observed outcome data and follow-up availability describe what was obtained; 3.3 asks whether missingness could depend on the true value; 3.4 asks whether that dependence was likely. Do not promote possible dependence to likely dependence without supporting evidence.",
+            "Full guidance section 6.1, p. 39 distinguishes genuinely missing measurements (D3) from available outcomes deliberately excluded from analysis (D2). Outcome-driven rescue, switching, or post-change analysis exclusion does not by itself establish non-observation; scheduled collection does not establish observation either. Link the outcome-related reason to actual missing measurements or missing follow-up before treating it as a D3 mechanism. If that link is unknown, retain it as an unresolved premise rather than assigning analysis exclusions to missingness.",
+            "Paired control: after the same outcome-driven treatment change, endpoint measurements collected but omitted from analysis raise an assignment-analysis concern in D2; measurements not obtained require D3 appraisal. If collection is only planned or unspecified, observed availability remains unknown. Differences in rescue rates alone are not differences in missing-outcome rates. Compare post-change handling with the approved assignment target; matching endpoint and time point alone does not establish the same estimand."
+          ],
+          "invalid_shortcuts": [
+            "different group sizes alone",
+            "an ITT analysis",
+            "a generic loss-to-follow-up statement"
+          ],
+          "query_suggestions": [
+            {
+              "query": "censoring",
+              "mode": "any",
+              "source_role": null,
+              "purpose": "outcome-dependent missingness"
+            },
+            {
+              "query": "missing by treatment group",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "differential missingness"
+            },
+            {
+              "query": "reason for missing outcome",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "missingness mechanism"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "no_gold_risk_labels": true,
+  "max_invocations": 2,
+  "max_responses_per_condition": 1
+}

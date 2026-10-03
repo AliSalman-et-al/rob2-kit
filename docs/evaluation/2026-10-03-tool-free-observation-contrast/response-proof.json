@@ -1,0 +1,16 @@
+[
+  {
+    "condition": "condition_a",
+    "actual_provider_tool_calls": 0,
+    "durable_response_generations": 1,
+    "response_matches_durable_assistant_text": true,
+    "response_sha256": "922207c92f6ebc8fa613a3eb661a34396744228a13dcec88e7d1696fbb96a733"
+  },
+  {
+    "condition": "condition_b",
+    "actual_provider_tool_calls": 0,
+    "durable_response_generations": 1,
+    "response_matches_durable_assistant_text": true,
+    "response_sha256": "dc57d1e0ddbe27a9797815c47cd7558aa5ab5d3141cf9313553655e66feb53c9"
+  }
+]
