@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "manifest_sha256": "8e159af83576aa95c04ac177b8a852cb8b8a9218addcce15d9da76494466f369",
+  "input_sha256": "37d85bd8b45fe6e79d8b242b59033b43893e1e73fc65f4c839c44eab15d88790",
+  "required_window_count": 4,
+  "supplied_window_count": 4,
+  "scope": "declared research-design coverage only; no semantic sufficiency claim"
+}

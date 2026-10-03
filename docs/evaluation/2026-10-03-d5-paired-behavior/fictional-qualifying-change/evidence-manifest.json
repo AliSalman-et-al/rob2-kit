@@ -1,0 +1,68 @@
+{
+  "research_question": "Does the revised D5 presentation retain material analysis-correspondence uncertainty while allowing a documented qualifying change, separately from result-driven selection?",
+  "input_sha256": "37d85bd8b45fe6e79d8b242b59033b43893e1e73fc65f4c839c44eab15d88790",
+  "required_windows": [
+    {
+      "source_identity": "synthetic-original-plan",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "source_identity": "synthetic-amendment",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "source_identity": "synthetic-chronology",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1
+    },
+    {
+      "source_identity": "synthetic-report",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "synthetic-original-plan",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1,
+      "input_start_byte": 25000,
+      "input_end_byte": 25741,
+      "text_sha256": "ab6b08c5313a207bb6329bc5bbb735da2342b006f82760a4b0a69a320e7d5134"
+    },
+    {
+      "source_identity": "synthetic-amendment",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1,
+      "input_start_byte": 25776,
+      "input_end_byte": 26622,
+      "text_sha256": "4d2b4340272c8131275f248416222046470b98f300fd4df1c7d62c268ceb029b"
+    },
+    {
+      "source_identity": "synthetic-chronology",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1,
+      "input_start_byte": 26658,
+      "input_end_byte": 27286,
+      "text_sha256": "0d2cfb92e0ff592309a730b09d7eb5f0f4720f11142ada0375379513b2eb5832"
+    },
+    {
+      "source_identity": "synthetic-report",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 1,
+      "input_start_byte": 27318,
+      "input_end_byte": 28273,
+      "text_sha256": "41e7f24d79f996140d97b359a272e9559f2a197cb8e8614e395719d59d1aa14e"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "frozen_inputs_outputs_unchanged": true,
+  "original_Code_primary_PDF_hashes_still_match": true,
+  "number_of_fresh_rollouts": {
+    "recovery": 1,
+    "fictional-qualifying-change": 1
+  },
+  "focused_tests": "9 diagnostic evidence preflight tests passed",
+  "no_assessment_mutation": true,
+  "no_inference_beyond_two_frozen_responses": true
+}

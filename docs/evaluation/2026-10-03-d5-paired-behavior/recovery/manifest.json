@@ -1,0 +1,12 @@
+{
+  "condition": "recovery",
+  "input_sha256": "48bfcba2232946320fc38c9334c6d068003469b8bbb6b2b8ea0fa46dbe668161",
+  "evidence_manifest_sha256": "bf334f71d5d367a6a7cb3030b2fb16ba0bb5d19546074194de99c0cd25500fe8",
+  "input_bytes": 73494,
+  "estimated_tokens_bytes_over4": 18373,
+  "instructions_sha256": "79eb20e542135c1a5912d27d73f71cf47023c53e1992cd8ed57e312a47ed8f21",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "no_retry": true,
+  "source_type": "actual Code benchmark primary sources"
+}
