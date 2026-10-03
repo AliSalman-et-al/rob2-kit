@@ -1,0 +1,9 @@
+{
+  "preflight_passed": true,
+  "exact_model": "gpt-6-luna",
+  "effort": "medium",
+  "huge_input_counts_do_not_stop": true,
+  "output_tool_controls_passed": true,
+  "approval_and_domain_tools_disabled": true,
+  "proposal_attempt_limit": 4
+}

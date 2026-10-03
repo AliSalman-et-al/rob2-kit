@@ -1,0 +1,71 @@
+{
+  "updated_date": "2026-10-03",
+  "offline_pass_paid_invocations": 0,
+  "unique_full_allsop_invocations": [
+    {
+      "run": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-allsop-full-72bf943",
+      "code_sha": "72bf94372a020c7708b34496c8ed71df88c913c5",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "medium",
+      "paid_invocations": 1,
+      "input_tokens": 2080700,
+      "cached_input_tokens": 1950208,
+      "uncached_input_tokens": 130492,
+      "output_tokens": 5268,
+      "reported_reasoning_tokens": 777,
+      "elapsed_seconds": 151.04732775399316,
+      "mcp_calls": 31,
+      "stop_reason": "total input threshold"
+    },
+    {
+      "run": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-allsop-full-b54db92",
+      "code_sha": "b54db92ebef65ca20734bdf31a24ad8a25ced728",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "medium",
+      "paid_invocations": 1,
+      "input_tokens": 519863,
+      "cached_input_tokens": 449280,
+      "uncached_input_tokens": 70583,
+      "output_tokens": 1717,
+      "reported_reasoning_tokens": 187,
+      "elapsed_seconds": 63.89076330199896,
+      "mcp_calls": 13,
+      "stop_reason": null
+    },
+    {
+      "run": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-allsop-full-544a523",
+      "code_sha": "544a523aa3b0ccec7459a5be32e3c87f5a95fb1a",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "medium",
+      "paid_invocations": 1,
+      "input_tokens": 4974118,
+      "cached_input_tokens": 4738816,
+      "uncached_input_tokens": 235302,
+      "output_tokens": 8813,
+      "reported_reasoning_tokens": 1376,
+      "elapsed_seconds": 274.78684504300327,
+      "mcp_calls": 44,
+      "stop_reason": null
+    }
+  ],
+  "qualification": "Provider-reported usage, not monetary billing. Three unique full-Allsop invocations plus this one proposal-only invocation. Copied archives are not additional runs. Allsop remains excluded from unseen validation.",
+  "latest_proposal_diagnostic_paid_invocations": 1,
+  "proposal_only_invocations": [
+    {
+      "run": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-allsop-scope-b12fe45",
+      "code_sha": "b12fe4556d704bbe5381f769758ba05d0ac3a8d2",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "medium",
+      "paid_invocations": 1,
+      "input_tokens": 452191,
+      "cached_input_tokens": 376832,
+      "uncached_input_tokens": 75359,
+      "output_tokens": 2668,
+      "reported_reasoning_tokens": 255,
+      "elapsed_seconds": 85.56667442100297,
+      "mcp_calls": 13,
+      "stop_reason": null,
+      "terminal": "Voluntary incomplete proposal construction after two schema errors."
+    }
+  ]
+}

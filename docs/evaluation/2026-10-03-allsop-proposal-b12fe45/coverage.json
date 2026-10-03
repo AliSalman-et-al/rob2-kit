@@ -1,0 +1,320 @@
+{
+  "native_read_page_windows": [
+    {
+      "event_ordinal": 8,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 1,
+      "line_count": 62,
+      "returned_start_line": 1,
+      "returned_end_line": 62,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_e4f9a0a74c284123"
+    },
+    {
+      "event_ordinal": 8,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 2,
+      "line_count": 121,
+      "returned_start_line": 1,
+      "returned_end_line": 121,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_b053652db9562fef"
+    },
+    {
+      "event_ordinal": 8,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 3,
+      "line_count": 126,
+      "returned_start_line": 1,
+      "returned_end_line": 126,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_8bdfb7ef29fe8133"
+    },
+    {
+      "event_ordinal": 8,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 4,
+      "line_count": 120,
+      "returned_start_line": 1,
+      "returned_end_line": 76,
+      "page_remainder": {
+        "source_id": "sh_8e86ff5709473924",
+        "page": 4,
+        "start_line": 77,
+        "end_line": 120
+      },
+      "truncated": true,
+      "next_start_line": 77,
+      "passage_ref": "eh_a99d4250d38718bc"
+    },
+    {
+      "event_ordinal": 10,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 4,
+      "line_count": 120,
+      "returned_start_line": 77,
+      "returned_end_line": 120,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_6f60657b907c0f76"
+    },
+    {
+      "event_ordinal": 10,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 5,
+      "line_count": 228,
+      "returned_start_line": 1,
+      "returned_end_line": 228,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_a9584e60e4851fb0"
+    },
+    {
+      "event_ordinal": 10,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 6,
+      "line_count": 226,
+      "returned_start_line": 1,
+      "returned_end_line": 226,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_d775ca39764afbeb"
+    },
+    {
+      "event_ordinal": 10,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 7,
+      "line_count": 209,
+      "returned_start_line": 1,
+      "returned_end_line": 209,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_73e96ee9d5aeb12d"
+    },
+    {
+      "event_ordinal": 10,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 8,
+      "line_count": 213,
+      "returned_start_line": 1,
+      "returned_end_line": 28,
+      "page_remainder": {
+        "source_id": "sh_8e86ff5709473924",
+        "page": 8,
+        "start_line": 29,
+        "end_line": 213
+      },
+      "truncated": true,
+      "next_start_line": 29,
+      "passage_ref": "eh_33bf7ec81cf67454"
+    },
+    {
+      "event_ordinal": 12,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 8,
+      "line_count": 213,
+      "returned_start_line": 29,
+      "returned_end_line": 213,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_819bd147bde21cda"
+    },
+    {
+      "event_ordinal": 12,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 9,
+      "line_count": 191,
+      "returned_start_line": 1,
+      "returned_end_line": 191,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_79f88bacd5f2539a"
+    },
+    {
+      "event_ordinal": 12,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 10,
+      "line_count": 215,
+      "returned_start_line": 1,
+      "returned_end_line": 215,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_c771929d62f99273"
+    },
+    {
+      "event_ordinal": 12,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 11,
+      "line_count": 186,
+      "returned_start_line": 1,
+      "returned_end_line": 1,
+      "page_remainder": {
+        "source_id": "sh_8e86ff5709473924",
+        "page": 11,
+        "start_line": 1,
+        "end_line": 186,
+        "start_char": 20
+      },
+      "truncated": true,
+      "next_start_line": 1,
+      "returned_start_char": 0,
+      "next_start_char": 20,
+      "line_fragment": true,
+      "passage_ref": null
+    },
+    {
+      "event_ordinal": 14,
+      "source_id": "sh_8e86ff5709473924",
+      "page": 11,
+      "line_count": 186,
+      "returned_start_line": 1,
+      "returned_end_line": 186,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "returned_start_char": 20,
+      "next_start_char": null,
+      "line_fragment": true,
+      "passage_ref": null
+    }
+  ],
+  "durable_page_read_receipts": [
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 62,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 121,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 126,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 76,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 4,
+      "start_line": 77,
+      "end_line": 120,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 228,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 226,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 209,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 28,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 8,
+      "start_line": 29,
+      "end_line": 213,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 9,
+      "start_line": 1,
+      "end_line": 191,
+      "phase": "proposal"
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 215,
+      "phase": "proposal"
+    }
+  ],
+  "source_reading_status": {
+    "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375": "partially_read"
+  },
+  "main_report_reading": {
+    "identity_status": "identified",
+    "identity_basis": "declared_role",
+    "identity_sources": [
+      "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375"
+    ],
+    "identity_observations": [],
+    "orientation_source_ids": [],
+    "orientation_reading": {
+      "source_ids": [],
+      "ranges": [],
+      "range_count": 0,
+      "ranges_truncated": false
+    },
+    "limitation": null,
+    "status": "required",
+    "budget_bytes": 65536,
+    "covered_prefix_bytes": 57733,
+    "unread_ranges": [
+      {
+        "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+        "page": 11,
+        "start_line": 185,
+        "end_line": 186
+      }
+    ],
+    "required_ranges": [
+      {
+        "trial_id": "allsop-2014",
+        "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+        "page": 11,
+        "start_line": 1,
+        "end_line": 184
+      }
+    ]
+  },
+  "qualification": "Native read responses cover all main-report pages including page11, but durable reading receipts omit page11 and source_reading_status remains partially_read. Supplement was not read. Main-report bounded pass remains required for durable page11 lines1\u2013184, despite native delivery; do not claim it was satisfied. Do not call the whole source durably read_complete. This did not cause the two schema errors."
+}

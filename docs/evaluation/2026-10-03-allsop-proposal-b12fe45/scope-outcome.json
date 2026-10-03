@@ -1,0 +1,35 @@
+{
+  "source_window_found_and_delivered": true,
+  "location": "Main report physical page7, line156 (Table2 footnote); days2\u20136 means at lines158\u2013159.",
+  "used_in_model_drafts": true,
+  "draft_window": "Repeated measures model uses days 1\u20139; abstinence means are days 2\u20136 (drug administration phase excluding baseline).",
+  "first_scope_justification": "Outcome definition aligns with target overall CWS severity. Reported model is repeated measures across days 1\u20139, whereas target specifies treatment days 1\u20136; table means summarize abstinence days 2\u20136 and do not provide an exact change difference estimate. Population analysis is intention-to-treat of all 51 randomized participants with imputation, consistent with target population though observed data were missing.",
+  "selected_scope_footnote_evidence": false,
+  "selected_evidence_locations": [
+    [
+      3,
+      37,
+      47
+    ],
+    [
+      4,
+      14,
+      30
+    ],
+    [
+      4,
+      75,
+      81
+    ]
+  ],
+  "relation_attempts": [
+    "supports",
+    "supports"
+  ],
+  "valid_relation_accepted": false,
+  "populated_scope_review_delivered": false,
+  "accepted_candidate": null,
+  "approved": false,
+  "domains_assessed": false,
+  "qualification": "Source window recognized in prose before any populated scope_review. Both relation values are invalid supports, not an accepted exact/non-exact/unknown choice. Numerical draft combines unadjusted and adjusted F results rather than one valid typed reported Result. No direct attribution to scope_review or general accuracy claim."
+}
