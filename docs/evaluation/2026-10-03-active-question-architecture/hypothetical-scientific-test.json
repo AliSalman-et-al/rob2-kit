@@ -1,0 +1,99 @@
+{
+  "status": "Falsifiable design only; runtimeprototype rejected for adoption, no inference/launchauthorization",
+  "actual_Code_case": "award-10-2018",
+  "source_repository": "/home/ali/Documents/Code/rob2-kit-benchmark",
+  "original_corpus": "rob2-meta-set-full-2026-09-29",
+  "original_campaign": "benchmark-luna6-medium-2026-10-01",
+  "exact_preserved_result": {
+    "kind": "assessable",
+    "trial_id": "award-10-2018",
+    "requested_outcome": "Change in HbA1c from baseline",
+    "relation": "narrower",
+    "relation_rationale": "The Figure 2 result matches change in HbA1c from baseline at 24 weeks, measured centrally, comparing dulaglutide doses with placebo. Its intention-to-treat population excluded one randomized patient who received no study dose.",
+    "target": {
+      "outcome_definition": "Change in HbA1c from baseline",
+      "measurement": {
+        "metric": "Change in HbA1c from baseline",
+        "method": "Change in HbA1c concentration measured by central laboratory"
+      },
+      "time_point_or_window": {
+        "kind": "quantified",
+        "description": "24 weeks after randomization; change from baseline",
+        "value": "24",
+        "unit": "weeks"
+      },
+      "effect_of_interest": "assignment",
+      "comparison_groups": [
+        {
+          "id": "dula15",
+          "assignment": "Dulaglutide 1\u22195 mg"
+        },
+        {
+          "id": "dula075",
+          "assignment": "Dulaglutide 0\u221975 mg"
+        },
+        {
+          "id": "placebo",
+          "assignment": "Placebo"
+        }
+      ],
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "LSM difference"
+    },
+    "reported": {
+      "form": "comparative_effect",
+      "effect_measure": "LSM differences for treatment versus placebo at 24 weeks",
+      "estimate": "-0\u221979%",
+      "precision": "95% CI -0\u221997 to -0\u221961",
+      "analysis_population": "Intention-to-treat population, defined as all randomly assigned patients who received at least one dose of study drug; one patient randomized to dulaglutide 0\u221975 mg received no dose and was excluded.",
+      "endpoint": {
+        "name": "Change in HbA1c from baseline to 24 weeks",
+        "definition": null
+      },
+      "group_values": []
+    },
+    "clarity": {
+      "outcome_definition": "unclear",
+      "measurement": "unclear",
+      "time_point": "unclear",
+      "analysis_population": "unclear",
+      "comparison_groups": "unclear",
+      "effect_measure": "unclear",
+      "source_table_meaning": "unclear",
+      "eligible_result_choice": "unclear"
+    },
+    "evidence": [
+      {
+        "kind": "narrative",
+        "handle": "eh_8279e5b4e4400564",
+        "identity": "sha256:8279e5b4e440056443684b73e86fbba7c4c79a718015b22a8de8fd1e9e71bf66"
+      },
+      {
+        "kind": "narrative",
+        "handle": "eh_c8d49086079dec27",
+        "identity": "sha256:c8d49086079dec276e74e55e30aba61a887af9c3e4393d600a36f4633606a095"
+      },
+      {
+        "kind": "narrative",
+        "handle": "eh_f0acd03861dedab1",
+        "identity": "sha256:f0acd03861dedab1b2262a713fb376cc3d91a2c9ae8a146e86587996802998ec"
+      }
+    ]
+  },
+  "question": "sq:missing:data-available",
+  "comparison": "Same exacttarget/result, complete publishedsourcecorpus, guidancepack/model/task; fullDomain versus optionalinitialactive-setprojection with identicalevidence and executablefullguidancerecovery ifeverimplemented",
+  "scientific_criteria": [
+    "Does not infer Week24measurement from132/134/133analysiseligibility denominators",
+    "Keeps135/142,137/142,137/140studycompletion distinct from actualWeek24measurement and treatmentstopping",
+    "Explains why residual uncertain outcomeavailability could/couldnot importantly change selectedcontinuousHbA1c result, allowing source-supportedprobability without formalbound",
+    "Ifdraft3.1activateslaterbranches, recovers their fullguidance and answers completeactivepath before oneatomicDomain save",
+    "No narrowerresult/three-armtarget substitution; no refreshedregistry or reference-labelhints"
+  ],
+  "success": "Independently reviewed source-to-warrant improvement or equivalent adequate warrant with practical delivery benefit, without source/uncertainty/conditional-path regression; bytesorLowlabelnotprimaryendpoint",
+  "falsification": "Lost materially relevantcross-questionguidance, inventedobservations, weaker warrant, skipped activebranch, extra obligatoryquestioncalls, or no scientificimprovement despite lowerbytes",
+  "source_completeness_requirement": "AllthreeoriginalpublishedPDFswithunchangedhashes; sourcewindows mustinclude uncited outcomeavailability/flow/analysis clauses and visuallycheckedfigures, not just previouslycitedpassages; preserved missingregistryrawcondition, no source substitution. launch_checked requiredifeverauthorized.",
+  "prior_source_manifest": "../2026-10-03-award10-production-d3/manifest.json",
+  "prior_observer_criteria": "../2026-10-03-award10-production-d3/observer-criteria.json",
+  "class": "Repeateddevelopmentcase, reference-scopeunknown; notheldout/benchmarkaccuracy",
+  "no_model_calls": true
+}

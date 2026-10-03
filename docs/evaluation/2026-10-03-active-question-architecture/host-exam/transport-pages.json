@@ -1,0 +1,1407 @@
+[
+  {
+    "id": "item_2",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "host-exam",
+      "domain_id": "domain:selection"
+    },
+    "result": {
+      "content": [],
+      "structured_content": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 4,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.1",
+            "max_response_bytes": 32768
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "trial_id": "host-exam",
+          "domain_id": "domain:selection",
+          "result": {
+            "kind": "assessable",
+            "trial_id": "host-exam",
+            "requested_outcome": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+            "relation": "exact",
+            "relation_rationale": "Primary composite matches the requested event set and 24-month time point, compares randomized clopidogrel and aspirin assignment, and is analyzed by intention to treat; incomplete event-free follow-up is censored.",
+            "target": {
+              "outcome_definition": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+              "measurement": {
+                "metric": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+                "method": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary syndrome, and BARC type 3 or greater bleeding"
+              },
+              "time_point_or_window": {
+                "kind": "quantified",
+                "description": "24 months after randomisation",
+                "value": "24",
+                "unit": "months"
+              },
+              "effect_of_interest": "assignment",
+              "comparison_groups": [
+                {
+                  "id": "clopidogrel",
+                  "assignment": "Clopidogrel monotherapy 75 mg once daily"
+                },
+                {
+                  "id": "aspirin",
+                  "assignment": "Aspirin monotherapy 100 mg once daily"
+                }
+              ],
+              "intended_analysis_population": "All randomized participants in the comparison groups",
+              "intended_effect_measure": "Hazard ratio"
+            },
+            "reported": {
+              "form": "comparative_effect",
+              "effect_measure": "Hazard ratio",
+              "estimate": "0·73",
+              "precision": "95% CI 0·59-0·90",
+              "analysis_population": "All 5438 randomized patients in the ITT population; endpoint ascertainment was complete in 5338 (98.2%).",
+              "endpoint": {
+                "name": "Primary composite endpoint†",
+                "definition": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to ACS, and major bleeding events (BARC type ≥3)."
+              },
+              "group_values": []
+            },
+            "clarity": {
+              "outcome_definition": "specified",
+              "measurement": "specified",
+              "time_point": "specified",
+              "analysis_population": "specified",
+              "comparison_groups": "specified",
+              "effect_measure": "specified",
+              "source_table_meaning": "specified",
+              "eligible_result_choice": "specified"
+            },
+            "evidence": [
+              {
+                "kind": "narrative",
+                "handle": "eh_34b9e33af5d98c9e",
+                "identity": "sha256:34b9e33af5d98c9e2a2a4bd70b7f470fdf1087125b7bfd627ae997e133ad4cff"
+              },
+              {
+                "kind": "narrative",
+                "handle": "eh_358af5abcb650409",
+                "identity": "sha256:358af5abcb650409ef7345f48e3f44627d4fb95360c19d56d8b1bc424ab8da9e"
+              },
+              {
+                "kind": "narrative",
+                "handle": "eh_4ad5fddf4c86e404",
+                "identity": "sha256:4ad5fddf4c86e40463395f0d1465b32b9e08422b63a4caaa2a551081ec0f5a0a"
+              },
+              {
+                "kind": "narrative",
+                "handle": "eh_8c3d6a3b83c63f7c",
+                "identity": "sha256:8c3d6a3b83c63f7ccb364262ad899061ff5c2b524c002911cb40b7dcad63fa6a"
+              },
+              {
+                "kind": "narrative",
+                "handle": "eh_c7f5d3ebca2123d2",
+                "identity": "sha256:c7f5d3ebca2123d2c75a6b511146ba5e4acf107b04ce37e2ba4ad1bcc99b67a2"
+              },
+              {
+                "kind": "narrative",
+                "handle": "eh_f42b7fa5f365b42d",
+                "identity": "sha256:f42b7fa5f365b42d8755e41c0770467f477d831f6c2157ed52fb281965f6ae8a"
+              }
+            ]
+          },
+          "primary_report": [],
+          "investigation": {
+            "proposition": "Were the data that produced this result analysed in accordance with a pre-specified analysis plan that was finalized before unblinded outcome data were available for analysis?",
+            "status": "not_established",
+            "sufficiency": {
+              "status": "not_established",
+              "attribution": "not_established"
+            },
+            "workflow_permission": {
+              "permitted": true,
+              "operation": "save_domain_judgment",
+              "authority": "host",
+              "detail": "The complete Domain draft may be submitted; structural success does not establish scientific correctness or sufficiency."
+            },
+            "coverage": {
+              "source_scope": [
+                "sh_109cceda14485a1b",
+                "sh_25d8d4f18074e7ea"
+              ],
+              "state": "partial",
+              "ranges": [
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 1,
+                  "start_line": 1,
+                  "end_line": 121,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 2,
+                  "start_line": 1,
+                  "end_line": 133,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 3,
+                  "start_line": 1,
+                  "end_line": 132,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 4,
+                  "start_line": 1,
+                  "end_line": 91,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 4,
+                  "start_line": 1,
+                  "end_line": 227,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 4,
+                  "start_line": 92,
+                  "end_line": 227,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 5,
+                  "start_line": 1,
+                  "end_line": 64,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 5,
+                  "start_line": 1,
+                  "end_line": 187,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 6,
+                  "start_line": 1,
+                  "end_line": 180,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 7,
+                  "start_line": 1,
+                  "end_line": 196,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 8,
+                  "start_line": 1,
+                  "end_line": 57,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 8,
+                  "start_line": 58,
+                  "end_line": 116,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 9,
+                  "start_line": 1,
+                  "end_line": 120,
+                  "phase": "proposal"
+                },
+                {
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "page": 10,
+                  "start_line": 1,
+                  "end_line": 139,
+                  "phase": "proposal"
+                }
+              ],
+              "range_count": 14,
+              "delivered_sources": [
+                "sh_25d8d4f18074e7ea"
+              ],
+              "sources_without_delivery": [
+                "sh_109cceda14485a1b"
+              ],
+              "ranges_truncated": false
+            },
+            "host_notes": {
+              "referenced_sources": [],
+              "unread_ranges": [],
+              "observation_count": 0
+            },
+            "observations": [],
+            "support": [],
+            "counterevidence": [],
+            "premises": [],
+            "unresolved": "Were the data that produced this result analysed in accordance with a pre-specified analysis plan that was finalized before unblinded outcome data were available for analysis?",
+            "recovery_choices": [
+              {
+                "operation": "save_working_checkpoint",
+                "available": true,
+                "rationale": "Save source-linked observations without committing an answer."
+              },
+              {
+                "operation": "search_sources",
+                "available": true,
+                "rationale": "Search captured Sources for Evidence that discriminates the premise."
+              },
+              {
+                "operation": "read_pages",
+                "available": true,
+                "rationale": "Read exact Source pages before relying on a passage as Evidence."
+              },
+              {
+                "operation": "accept_limitation",
+                "available": true,
+                "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+              },
+              {
+                "operation": "save_domain_judgment",
+                "available": true,
+                "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+              }
+            ],
+            "stopping_rationale": null,
+            "stale": [],
+            "checkpoint_identity": null,
+            "legacy": "supported"
+          },
+          "questions": [
+            {
+              "id": "sq:selection:prespecified-analysis",
+              "wording": "Were the data that produced this result analysed in accordance with a pre-specified analysis plan that was finalized before unblinded outcome data were available for analysis?",
+              "options": [
+                "yes",
+                "probably_yes",
+                "probably_no",
+                "no",
+                "no_information"
+              ],
+              "activation_status": "always_active",
+              "activation": {
+                "kind": "always"
+              },
+              "official_guidance": "To avoid the possibility of selection of the reported result, finalization of the analysis intentions must precede availability of unblinded outcome data to the trial investigators. Changes to analysis plans that were made before unblinded outcome data were available, or that were clearly unrelated to the results, do not raise concerns about bias in selection of the reported result.",
+              "source_locator": "Full guidance p. 63, Box 11, signalling question 5.1",
+              "bias_construct": "Whether data producing this result followed a pre-specified plan finalized before unblinded outcome data were available.",
+              "decision_rule": "Compare the approved Result with the applicable plan for the exact intervention comparison, cohort, endpoint, time window, population, analysis, and effect measure. Distinguish protocol or ethics approval, plan finalization, amendment effective dates, registry posting or update, data cutoff, database lock, and investigators' access to unblinded outcome data; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
+              "evidence_needed": [
+                "A sufficiently detailed protocol or SAP, its source-located chronology and finalization date relative to unblinded outcome data, and the reported analysis. Capture each dated event as reported; approval, cutoff, or database lock does not by itself establish when investigators could see unblinded outcomes.",
+                "For an original plan and an amended plan, capture the source-located content and chronology separately. An SAP embedded in a protocol, supplement, or combined document is still plan Evidence when its section and scope can be located; a separate SAP file is not required. An absent or unresolved plan remains an information limit."
+              ],
+              "no_information_rule": "Use a definitive answer when firm evidence establishes timing and correspondence. Use a probable answer when source facts and trial circumstances support only an inference. Use no_information when neither is supported. A plan mention or matching endpoint alone does not establish timing.",
+              "answer_anchors": [
+                {
+                  "answer": "yes",
+                  "text": "The result follows a sufficiently detailed plan finalized before unblinded outcome data were available."
+                },
+                {
+                  "answer": "no",
+                  "text": "The result did not follow such a pre-specified plan."
+                },
+                {
+                  "answer": "no_information",
+                  "text": "Analysis intentions or their timing are not sufficiently reported."
+                }
+              ],
+              "considerations": [
+                "Assess correspondence between the applicable plan and the exact approved Result: outcome, time point, population, effect measure, and analysis must be compared.",
+                "Assess applicability before chronology: a platform or master plan may cover several comparisons and cohorts, so its presence does not establish applicability to the approved Result. Establish chronology separately: plan finalization must precede availability of unblinded outcome data. Protocol approval, ethics approval, amendment, initial registry posting, registry update, retrieval, data cutoff, and database lock are distinct events; none substitutes for the source-located date of plan finalization or investigator access to unblinded results.",
+                "Current registry content does not establish unseen historical intent. A data cutoff or database lock is not itself proof of when investigators accessed unblinded outcomes. Preserve unresolved applicability or chronology instead of filling the gap from report wording that merely looks prespecified.",
+                "Results-driven selection is a separate concern from whether a plan exists or whether its chronology is known. Do not infer selection merely from an amendment or from a mismatch without evidence that the choice was driven by results. Not establishing that a plan was early is not evidence that it was late: ground a negative chronology inference in source facts and trial circumstances, or preserve no_information when those cannot support a reasonable probable answer.",
+                "Neutral paired control: an applicable plan for the approved cohort differs from a platform plan for another phase; a source-located finalization date before investigator access differs from the same plan with access timing unresolved.",
+                "A plan may be an identified section of a combined protocol or supplement. Navigate to that section and retain its exact Source and page coordinates; the lack of a separately named SAP file does not show that no plan exists.",
+                "Distinguish confidential data-monitoring access from access by trial investigators making analysis decisions. Staff providing confidential data to a monitoring committee are excepted in the official guidance; that access alone does not establish late prespecification. Public interim results are different evidence. Refining an analysis with blinded data is generally acceptable unless variables reveal intervention identity."
+              ],
+              "invalid_shortcuts": [
+                "an objective definition",
+                "a registry link",
+                "an endpoint label",
+                "a protocol mention without date or detail",
+                "current registry content treated as historical intent",
+                "a data cutoff treated as investigator unblinding",
+                "a platform master plan treated as applicable to every comparison"
+              ],
+              "query_suggestions": [
+                {
+                  "query": "analysis plan",
+                  "mode": "phrase",
+                  "source_role": "sap",
+                  "purpose": "prespecified analysis"
+                },
+                {
+                  "query": "prespecified final analysis",
+                  "mode": "all",
+                  "source_role": null,
+                  "purpose": "reported final-analysis timing"
+                },
+                {
+                  "query": "final analysis",
+                  "mode": "phrase",
+                  "source_role": null,
+                  "purpose": "reported analysis threshold"
+                },
+                {
+                  "query": "before unblinding",
+                  "mode": "phrase",
+                  "source_role": "protocol",
+                  "purpose": "analysis timing"
+                },
+                {
+                  "query": "statistical analysis plan",
+                  "mode": "phrase",
+                  "source_role": "sap",
+                  "purpose": "finalized analysis plan"
+                }
+              ]
+            }
+          ],
+          "evidence": [
+            {
+              "kind": "narrative",
+              "handle": "eh_34b9e33af5d98c9e",
+              "identity": "sha256:34b9e33af5d98c9e2a2a4bd70b7f470fdf1087125b7bfd627ae997e133ad4cff",
+              "trial_id": "host-exam",
+              "source_id": "sh_25d8d4f18074e7ea",
+              "source_version": "sha256:778d5b234f3be70ffa24ac446f8937d1878c5031f09eab6c8c601d039df12ff5",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 227,
+              "start": 0,
+              "end": 5513,
+              "quote": "Articles\n2490\nwww.thelancet.com Vol 397 June 26, 2021\n5530 patients were needed to ensure a power of at least\n80% with a two-sided α of 5%. All patients randomly\nassigned were included in the primary intention-to-\ntreat analysis and a per-protocol analysis was also done.\nThe intention-to-treat population included all patients\nrandomly assigned to a treatment group and the\nper-protocol population were those who received the\nallocated single antiplatelet therapy for the full duration\nof the 24-month follow-up unless they had an adverse\nclinical event.\nContinuous variables were reported as means (SD)\nand categorical variables were presented as absolute\nvalues and their proportions. Differences between\ncontinuous variables were compared by Student's t test\nfor independent data. All primary and secondary\nendpoints were analysed both on intention-to-treat\nand per-protocol sets and on a per-patient basis. The\nprimary endpoint was analysed by a Cox proportional\nhazards model and Kaplan-Meier survival curves to\nestimate the risk of clinical events according to the type\nof antiplatelet agent. No factor variables other than the\ntrial group were used for stratification. Event-free\nsurvival with incomplete follow-up was counted as\ncensored data for all time-to-event analyses. A Cox\nproportional hazards model was used for analysis of\nprespecified subgroups, defined according to age\n(<65 years or ≥65 years), sex (male or female), clinical\npresentation (acute myocardial infarction or not and\nacute coronary syndrome or not), renal function,\ndiabetes (defined as being of any type), and complex\nPCI. Post-hoc subgroup analyses were done to analyse\nthe presence of any interaction between the treatment\neffect and high bleeding risk, angiographic severity\n(single vessel disease vs multivessel disease), DES\ngeneration (first generation DES vs second generation\nDES), duration from index PCI to randomisation,\npotent P2Y12 inhibitor usage before randomisation, and\nClopidogrel\n(n=2710)\nAspirin\n(n=2728)\nAge, years\n63·5 (10·7)\n63·4 (10·7)\nSex\nFemale\n695 (25·6%)\n689 (25·3%)\nMale\n2015 (74·4%)\n2039 (74·7%)\nDiabetes*\n925 (34·1%)\n935 (34·3%)\nInsulin-dependent diabetes\n55 (2·0%)\n62 (2·3%)\nHypertension\n1664 (61·4%)\n1674 (61·4%)\nDyslipidaemia\n1884 (69·5%)\n1883 (69·0%)\nCurrent smoker\n545 (20·1%)\n581 (21·3%)\nChronic kidney disease\n356 (13·1%)\n337 (12·4%)\nPrevious myocardial infarction\n437 (16·1%)\n435 (15·9%)\nPrevious cerebrovascular\naccident\n120 (4·4%)\n133 (4·9%)\nClinical indication of PCI\nSilent ischaemia\n58 (2·1%)\n70 (2·6%)\nStable angina\n688 (25·4%)\n701 (25·7%)\nUnstable angina\n975 (36·0%)\n959 (35·2%)\nNSTEMI\n526 (19·4%)\n528 (19·4%)\nSTEMI\n463 (17·1%)\n470 (17·2%)\nLaboratory results\nWhite blood cells, cells per μL\n6·7 (1·9)\n6·8 (1·9)\nHaemoglobin, g/dL\n13·7 (1·7)\n13·8 (1·6)\nCreatinine, mg/dL\n1·0 (0·7)\n1·0 (0·7)\nTotal cholesterol, mg/dL\n136·8 (29·)8\n138·2 (30·5)\nTriglyceride, mg/dL\n126·8 (86·5)\n125·2 (70·8)\nHDL cholesterol, mg/dL\n46·3 (12·0)\n46·5 (12·2)\nLDL cholesterol, mg/dL\n70·7 (23·7)\n72·1 (23·2)\nHbA1c\n6·5 (1·1)\n6·5 (1·2)\nDays from PCI to\nrandomisation\n383 (357-424)\n380 (358-421)\n(Table 1 continues in next column)\nClopidogrel\n(n=2710)\nAspirin\n(n=2728)\n(Continued from previous column)\nDAPT at the randomisation\nAspirin plus clopidogrel\n2218 (81·8%)\n2212 (81·1%)\nAspirin plus ticagrelor\n266 (9·8%)\n268 (9·8%)\nAspirin plus prasugrel\n212 (7·8%)\n235 (8·6%)\nAspirin plus clopidogrel plus\ncilostazol\n14 (0·5%)\n13 (0·5%)\nAngiographic data per patient\nExtent of CAD\nOne-vessel disease\n1367 (50·4%)\n1376 (50·4%)\nTwo-vessel disease\n855 (31·5%)\n844 (30·9%)\nThree-vessel disease\n488 (18·0%)\n507 (18·6%)\nLeft main disease\n142 (5·2%)\n130 (4·8%)\nPCI for bifurcation lesion\n285 (10·5%)\n295 (10·8%)\nTwo-stenting for\nbifurcation PCI\n46 (1·7%)\n42 (1·5%)\nPCI for CTO lesion\n257 (9·5%)\n254 (9·3%)\nNumber of treated lesions†\n1·3 (0·6)\n1·3 (0·6)\nMean diameter of implanted\nstents, mm\n3·1 (0·4)\n3·1 (0·4)\nMinimum diameter of\nimplanted stents, mm\n3·0 (0·5)\n3·0 (0·5)\nTotal length of implanted\nstents, mm\n36·1 (24·2)\n35·7 (23·6)\nTotal number of implanted\nstents\n1·5 (0·8)\n1·5 (0·8)\nGeneration of DES\nFirst generation DES\n54 (2·0%)\n52 (1·9%)\nSecond generation DES\n2627 (96·9%)\n2651 (97·2%)\nUnknown generation\n29 (1·1%)\n25 (0·9%)\nData are n (%), mean (SD), or median (IQR). CAD=coronary artery disease.\nCTO=chronic total occlusion. DAPT=dual antiplatelet therapy. DES=drug-\neluting stent. HbA1c=glycated haemoglobin. NSTEMI=non ST-segment\nelevation myocardial infarction. PCI=percutaneous coronary intervention.\nSTEMI=ST-segment elevation myocardial infarction. *Diabetes was defined as\nany type of diabetes. †3562 lesions were treated in the clopidogrel group and\n3565 in the aspirin group.\nTable 1: Baseline characteristics of the intention-to-treat population\n\n[Extracted table 2]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|DAPT at the randomisation|||\n|Aspirin plus clopidogrel|2218 (81·8%)|2212 (81·1%)|\n|Aspirin plus ticagrelor|266 (9·8%)|268 (9·8%)|\n|Aspirin plus prasugrel|212 (7·8%)|235 (8·6%)|\n|Aspirin plus clopidogrel plus<br>cilostazol|14 (0·5%)|13 (0·5%)|\n\n[Extracted table 7]\n|Column 1|Column 2|Column 3|\n|---|---|---|\n|Laboratory results|||\n|White blood cells, cells per μL|6·7 (1·9)|6·8 (1·9)|\n|Haemoglobin, g/dL|13·7 (1·7)|13·8 (1·6)|\n|Creatinine, mg/dL|1·0 (0·7)|1·0 (0·7)|\n|Total cholesterol, mg/dL|136·8 (29·)8|138·2 (30·5)|\n|Triglyceride, mg/dL|126·8 (86·5)|125·2 (70·8)|\n|HDL cholesterol, mg/dL|46·3 (12·0)|46·5 (12·2)|\n|LDL cholesterol, mg/dL|70·7 (23·7)|72·1 (23·2)|\n|HbA<br>1c|6·5 (1·1)|6·5 (1·2)|",
+              "inclusion_reason": "result",
+              "domain_id": null,
+              "question_id": null,
+              "search_session": null,
+              "candidate_rank": null,
+              "returned_previously": null,
+              "text_status": "complete",
+              "recovery": null
+            }
+          ],
+          "comparison_cards": [],
+          "answers": [],
+          "guidance": [
+            "Answer every initially active question plus each dependent question whose activation predicate is met by your earlier answers. Extra inactive branch answers are ignored and never committed. Preserve the approved Result target.",
+            "Evaluate activated questions in question order. Submit every activated question with a justification, unknowns, and counterevidence. Review the inspected passages against its exact proposition and check material contradictions. Reuse adequate Evidence. When a premise remains unresolved, state the unresolved premise and why you stopped, and use bounded discovery across relevant Sources, including a protocol or SAP when relevant. Inspect returned passages before using them. A limitation requires that explicit premise and stopping rationale; include a Trial-scoped search receipt when retrieval provenance is useful, but a direct read does not require a search receipt. Absence requires a scoped untruncated no-hit receipt.",
+            "Cite complete premises for the active question. One passage may support several facts. When an answer depends on separate passages, cite each with its own boundaries. A relationship kind describes the use of Evidence; it adds no scientific fact.",
+            "When inference, conflict, or uncertainty connects Evidence to an answer, include a concise question-specific justification. State what the passages establish, what remains unresolved, and why the selected option follows. Any support relationship is host-asserted: the server checks structure, ownership, and exact Evidence provenance but does not independently judge semantic entailment.",
+            "Working premise records are source-grounded resumable notes. Reuse them only when the working checkpoint is current for this exact approved Result and captured Source projection; a stale checkpoint requires the stated recovery action and never carries a prior Domain judgment into this assessment.",
+            "A definitive yes or no needs direct_support, indirect_support, or contradiction; a limitation or absence alone supports uncertainty, not a definitive answer. For D3.2 No, inspected context/inference or a valid scoped no-hit receipt can instead support the scoped absence of reassuring evidence; it does not assert bias occurred.",
+            "Evaluate activation against your draft answers. If validation reports missing active question IDs, add those questions with allowed answer values and supported bases, then resubmit the complete active set in one validation call. The server commits only active answers.",
+            "Apply every reported repair and retain other drafted answers. Add missing questions to the existing answer set. Resolve further activation from the repaired answers before resubmitting. The server ignores inactive answers."
+          ],
+          "response_framework": {
+            "version": "22 August 2019",
+            "source_locator": "Full guidance p. 3, sections 1.1 and 1.1.1",
+            "response_options": [
+              "yes",
+              "probably_yes",
+              "probably_no",
+              "no",
+              "no_information"
+            ],
+            "firm_evidence_rule": "The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence is available in relation to the signalling question.",
+            "probable_judgment_rule": "The ‘Probably’ versions would typically imply that a judgement has been made. ‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do ‘No’ and ‘Probably no’.",
+            "no_information_rule": "Use ‘No information’ only when both (i) insufficient details are reported to permit a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the circumstances of the trial.",
+            "independence_rule": "Signalling questions should be answered independently: the answer to one question should not affect answers to other questions in the same or other domains other than through determining which subsequent questions are answered.",
+            "quotation_rule": "Brief direct quotations from the text of the study report should be used whenever possible to support the answer."
+          },
+          "traps": [
+            "A no-hit search describes one lexical query, not scientific absence.",
+            "A planned method does not prove conduct; a time origin or analysis population does not prove complete follow-up or equal assessment.",
+            "An endpoint label or definition does not prove objectivity, blinding, prespecification, or no alternative analyses.",
+            "A treatment assignment or visibly different intervention does not by itself prove that participants or personnel knew the assignment.",
+            "Different treatment or visit schedules do not by themselves prove that outcome measurement differed between groups.",
+            "Stratification does not prove allocation concealment."
+          ],
+          "completion_rule": "Ground each active proposition and uncertainty in inspected Evidence, scoped search receipts, or an explicit scientific limitation. Complete reading_recovery with read_pages and all context continuations. Document-structure recovery in coverage is navigation, not selected Evidence; inspect relevant unopened windows before claiming information is unreported, or retain a bounded stopping rationale. Inactive extras are ignored.",
+          "working_checkpoint": {
+            "status": "absent",
+            "reason": "not_saved",
+            "trial_id": "host-exam",
+            "checkpoint_identity": null,
+            "recovery": "reorient_from_sources",
+            "checkpoint": null
+          },
+          "coverage": [
+            {
+              "source_id": "sh_25d8d4f18074e7ea",
+              "source_role": "main_article",
+              "page_count": 10,
+              "status": "partially_read",
+              "search": "unsearched",
+              "read": "partially_read",
+              "render": "not_delivered",
+              "recovery": []
+            },
+            {
+              "source_id": "sh_109cceda14485a1b",
+              "source_role": "supplement",
+              "page_count": 69,
+              "status": "unsearched",
+              "search": "unsearched",
+              "read": "unread",
+              "render": "not_delivered",
+              "recovery": []
+            }
+          ],
+          "pack": {
+            "id": "rob2.parallel.assignment",
+            "version": "2019.1",
+            "content_hash": "sha256:d66cd4805702afc472ec980fe1c64446bcc97e6da0eb8730a8edc243c70a532a"
+          },
+          "official_guidance": {
+            "pack": {
+              "id": "rob2.parallel.assignment",
+              "version": "2019.1",
+              "content_hash": "sha256:d66cd4805702afc472ec980fe1c64446bcc97e6da0eb8730a8edc243c70a532a"
+            },
+            "sections": [
+              {
+                "question_ids": [
+                  "sq:selection:prespecified-analysis"
+                ],
+                "source_version": "22 August 2019",
+                "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+                "source_locator": "Full guidance p. 63, Box 11, signalling question 5.1",
+                "excerpt": "To avoid the possibility of selection of the reported result, finalization of the analysis intentions must precede availability of unblinded outcome data to the trial investigators. Changes to analysis plans that were made before unblinded outcome data were available, or that were clearly unrelated to the results, do not raise concerns about bias in selection of the reported result."
+              },
+              {
+                "question_ids": [
+                  "sq:selection:multiple-measurements"
+                ],
+                "source_version": "22 August 2019",
+                "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+                "source_locator": "Full guidance pp. 63-64, Box 11, signalling question 5.2",
+                "excerpt": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a domain was measured in multiple eligible ways, but data for only one or a subset of measures is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome domain could have been measured."
+              },
+              {
+                "question_ids": [
+                  "sq:selection:multiple-analyses"
+                ],
+                "source_version": "22 August 2019",
+                "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+                "source_locator": "Full guidance pp. 64-65, Box 11, signalling question 5.3",
+                "excerpt": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a measurement was analysed in multiple eligible ways, but data for only one or a subset of analyses is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome measurement could have been analysed."
+              }
+            ],
+            "complete": true,
+            "next_cursor": null
+          },
+          "reading_recovery": {
+            "operation": "read_pages",
+            "trial_id": "host-exam",
+            "windows": [
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 121
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 133
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 132
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 227
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 187
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 6,
+                "start_line": 1,
+                "end_line": 180
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 196
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 116
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 9,
+                "start_line": 1,
+                "end_line": 120
+              },
+              {
+                "source_id": "sh_25d8d4f18074e7ea",
+                "page": 10,
+                "start_line": 1,
+                "end_line": 139
+              }
+            ],
+            "window_count": 10,
+            "status": "required",
+            "unread_ranges": [],
+            "unread_range_count": 0
+          },
+          "evidence_workspace": {
+            "selection_policy_version": "rob2-kit.domain-projection.v0.7",
+            "groups": [
+              {
+                "inclusion_reason": "result",
+                "question_ids": [],
+                "evidence_handles": [
+                  "eh_34b9e33af5d98c9e",
+                  "eh_358af5abcb650409",
+                  "eh_4ad5fddf4c86e404",
+                  "eh_8c3d6a3b83c63f7c",
+                  "eh_c7f5d3ebca2123d2",
+                  "eh_f42b7fa5f365b42d"
+                ]
+              }
+            ],
+            "omitted_count": 0,
+            "omitted_by_category": {
+              "result": 0,
+              "checkpoint": 0,
+              "contradiction": 0,
+              "active_domain_candidate": 0,
+              "explicit_carry_forward": 0,
+              "trial_discovery": 0,
+              "deduplicated": 0
+            },
+            "continuation": null,
+            "continuations": [],
+            "recoverable_narrative_text_budget": 12288,
+            "recoverable_narrative_text_bytes": 11575,
+            "omitted_narrative_text_bytes": 16997,
+            "omitted_narrative_text_count": 4,
+            "unrecoverable_inline_text_bytes": 0
+          },
+          "context_page": {
+            "view_version": "rob2-kit.domain-context.v1",
+            "snapshot_digest": "41fe226871fe23232fff4f227f02e3adee234670ed2a339b981b0bf0fa997e99",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "state_revision": 4,
+            "index": 0,
+            "count": 4,
+            "delivery_status": "incomplete",
+            "section": "complete",
+            "item_start": 0,
+            "item_count": 0,
+            "max_response_bytes": 32768,
+            "cursor": null,
+            "next_cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.1",
+            "stable_recovery": {
+              "operation": "get_domain_context",
+              "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.0"
+            }
+          }
+        }
+      }
+    },
+    "error": null,
+    "status": "completed"
+  },
+  {
+    "id": "item_6",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.1"
+    },
+    "result": {
+      "content": [],
+      "structured_content": {
+        "data": {
+          "questions": [
+            {
+              "activation": {
+                "kind": "always"
+              },
+              "activation_status": "always_active",
+              "answer_anchors": [
+                {
+                  "answer": "yes",
+                  "text": "Multiple eligible measurements existed and the reported subset was likely selected on the results."
+                },
+                {
+                  "answer": "no",
+                  "text": "All eligible measurements correspond to intentions, or only one eligible measurement was possible."
+                },
+                {
+                  "answer": "no_information",
+                  "text": "Measurement intentions are insufficiently reported despite multiple possible measurements."
+                }
+              ],
+              "bias_construct": "Whether the result was selected from multiple eligible outcome measurements within the outcome domain on the basis of results.",
+              "considerations": [
+                "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported measurement with all eligible alternatives. Keep the exact Result's comparison, cohort, endpoint, time window, population, and analysis scope fixed while doing so.",
+                "An applicable plan's correspondence and chronology are relevant context but do not themselves establish results-driven selection. The approved Result fixes the target being assessed; it does not erase other eligible measurements in the outcome domain or make their selection an observed fact.",
+                "If eligible alternatives remain unresolved, preserve no_information rather than treating the absence of documented selection as no/probably no. Eligibility is defined independently of which result was reported. A located protocol is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
+                "An embedded SAP or platform plan may list eligible measurements without proving that it applied to the approved cohort; applicability and chronology remain separate premises."
+              ],
+              "decision_rule": "Answer yes or probably yes when clear evidence shows multiple eligible measures but only one or a subset is fully reported without justification and selection likely depended on results. Answer no or probably no when all eligible intended measures are reported, only one possible measurement exists, or an unrelated inconsistency is explained.",
+              "evidence_needed": [
+                "Eligible scales, definitions, time points, assessors or subscales and which were reported, with any justification. Use a protocol or SAP when available; article methods, results and companion reports can also establish the alternatives and the reporting choice."
+              ],
+              "id": "sq:selection:multiple-measurements",
+              "invalid_shortcuts": [
+                "an endpoint definition",
+                "a single reported time point",
+                "a single scale without the eligible set",
+                "a single ITT analysis"
+              ],
+              "no_information_rule": "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible measurement was possible, and the inspected reports do not support a reasonable judgment about selection. A missing protocol does not override source-supported evidence of results-driven choice.",
+              "official_guidance": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a domain was measured in multiple eligible ways, but data for only one or a subset of measures is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome domain could have been measured.",
+              "options": [
+                "yes",
+                "probably_yes",
+                "probably_no",
+                "no",
+                "no_information"
+              ],
+              "query_suggestions": [
+                {
+                  "mode": "all",
+                  "purpose": "eligible outcome measurements",
+                  "query": "multiple outcome measures",
+                  "source_role": "protocol"
+                },
+                {
+                  "mode": "any",
+                  "purpose": "eligible outcome timing",
+                  "query": "time points",
+                  "source_role": "protocol"
+                },
+                {
+                  "mode": "phrase",
+                  "purpose": "eligible measurement scales",
+                  "query": "outcome scale",
+                  "source_role": "protocol"
+                }
+              ],
+              "source_locator": "Full guidance pp. 63-64, Box 11, signalling question 5.2",
+              "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (e.g. scales, definitions, time points) within the outcome domain?"
+            },
+            {
+              "activation": {
+                "kind": "always"
+              },
+              "activation_status": "always_active",
+              "answer_anchors": [
+                {
+                  "answer": "yes",
+                  "text": "Multiple eligible analyses existed and the reported subset was likely selected on the results."
+                },
+                {
+                  "answer": "no",
+                  "text": "All eligible analyses correspond to intentions, or only one eligible analysis was possible."
+                },
+                {
+                  "answer": "no_information",
+                  "text": "Analysis intentions are insufficiently reported despite multiple possible analyses."
+                }
+              ],
+              "bias_construct": "Whether the result was selected from multiple eligible analyses of the data on the basis of results.",
+              "considerations": [
+                "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported analysis with the complete set of multiple eligible analyses. Keep the exact Result's comparison, cohort, endpoint, time window, population, and effect measure fixed.",
+                "An applicable plan's correspondence and chronology are distinct checks. The approved Result fixes the target being assessed; it does not erase eligible alternative analyses or turn an unresolved alternative into an observed selection.",
+                "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred. A located SAP is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
+                "When the plan is insufficiently detailed and multiple eligible analyses remain possible but unresolved, use no_information; do not turn an unobserved selection into no/probably no merely because the report names one analysis. Preserve the evidence path's support for Low, Some concerns, High, or legitimate uncertainty without forcing a severity category."
+              ],
+              "decision_rule": "Multiplicity alone does not establish result-based selection. Answer yes or probably yes only when the justification identifies the eligible alternatives, the reporting or selection evidence, and why selection likely depended on the results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
+              "evidence_needed": [
+                "Eligible analysis methods and which were reported, including adjustment, transformation, composite definitions and missing-data strategies. Use a protocol or SAP when available; article methods, results and companion reports can also establish the alternatives and the reporting choice."
+              ],
+              "id": "sq:selection:multiple-analyses",
+              "invalid_shortcuts": [
+                "an endpoint definition",
+                "a single ITT analysis",
+                "one reported model",
+                "a registry link without analysis detail"
+              ],
+              "no_information_rule": "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible analysis was possible, and the inspected reports do not support a reasonable judgment about selection. A missing SAP does not override source-supported evidence of results-driven choice.",
+              "official_guidance": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a measurement was analysed in multiple eligible ways, but data for only one or a subset of analyses is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome measurement could have been analysed.",
+              "options": [
+                "yes",
+                "probably_yes",
+                "probably_no",
+                "no",
+                "no_information"
+              ],
+              "query_suggestions": [
+                {
+                  "mode": "phrase",
+                  "purpose": "eligible analysis methods",
+                  "query": "multiple analyses",
+                  "source_role": "sap"
+                },
+                {
+                  "mode": "all",
+                  "purpose": "planned analysis alternatives",
+                  "query": "analysis methods",
+                  "source_role": "sap"
+                },
+                {
+                  "mode": "phrase",
+                  "purpose": "analysis adjustment choice",
+                  "query": "adjusted analysis",
+                  "source_role": "sap"
+                }
+              ],
+              "source_locator": "Full guidance pp. 64-65, Box 11, signalling question 5.3",
+              "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible analyses of the data?"
+            }
+          ],
+          "evidence": [],
+          "comparison_cards": [],
+          "context_page": {
+            "view_version": "rob2-kit.domain-context.v1",
+            "snapshot_digest": "41fe226871fe23232fff4f227f02e3adee234670ed2a339b981b0bf0fa997e99",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "state_revision": 4,
+            "index": 1,
+            "count": 4,
+            "delivery_status": "incomplete",
+            "section": "questions",
+            "item_start": 1,
+            "item_count": 2,
+            "max_response_bytes": 32768,
+            "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.1",
+            "next_cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.2",
+            "stable_recovery": {
+              "operation": "get_domain_context",
+              "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.0"
+            }
+          }
+        },
+        "head": {
+          "phase": "assessment",
+          "state_revision": 4,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.2",
+            "max_response_bytes": 32768
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "outcome": "success"
+      }
+    },
+    "error": null,
+    "status": "completed"
+  },
+  {
+    "id": "item_7",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.2"
+    },
+    "result": {
+      "content": [],
+      "structured_content": {
+        "data": {
+          "evidence": [
+            {
+              "candidate_rank": null,
+              "domain_id": null,
+              "end": 6458,
+              "end_line": 187,
+              "handle": "eh_358af5abcb650409",
+              "identity": "sha256:358af5abcb650409ef7345f48e3f44627d4fb95360c19d56d8b1bc424ab8da9e",
+              "inclusion_reason": "result",
+              "kind": "narrative",
+              "page": 5,
+              "question_id": null,
+              "quote": null,
+              "recovery": {
+                "operation": "read_pages",
+                "trial_id": "host-exam",
+                "windows": [
+                  {
+                    "end_line": 187,
+                    "page": 5,
+                    "source_id": "sh_25d8d4f18074e7ea",
+                    "start_line": 1
+                  }
+                ]
+              },
+              "returned_previously": null,
+              "search_session": null,
+              "source_id": "sh_25d8d4f18074e7ea",
+              "source_version": "sha256:778d5b234f3be70ffa24ac446f8937d1878c5031f09eab6c8c601d039df12ff5",
+              "start": 0,
+              "start_line": 1,
+              "text_status": "omitted",
+              "trial_id": "host-exam"
+            },
+            {
+              "candidate_rank": null,
+              "domain_id": null,
+              "end": 5884,
+              "end_line": 121,
+              "handle": "eh_4ad5fddf4c86e404",
+              "identity": "sha256:4ad5fddf4c86e40463395f0d1465b32b9e08422b63a4caaa2a551081ec0f5a0a",
+              "inclusion_reason": "result",
+              "kind": "narrative",
+              "page": 1,
+              "question_id": null,
+              "quote": "Articles\nwww.thelancet.com Vol 397 June 26, 2021\n2487\nAspirin versus clopidogrel for chronic maintenance\nmonotherapy after percutaneous coronary intervention\n(HOST-EXAM): an investigator-initiated, prospective,\nrandomised, open-label, multicentre trial\nBon-Kwon Koo*, Jeehoon Kang*, Kyung Woo Park*, Tae-Min Rhee, Han-Mo Yang, Ki-Bum Won, Seung-Woon Rha, Jang-Whan Bae, Nam Ho Lee,\nSeung-Ho Hur, Junghan Yoon, Tae-Ho Park, Bum Soo Kim, Sang Wook Lim, Yoon Haeng Cho, Dong Woon Jeon, Sang-Hyun Kim, Jung-Kyu Han,\nEun-Seok Shin, Hyo-Soo Kim, on behalf of the HOST-EXAM investigators†\nSummary\nBackground Optimal antiplatelet monotherapy during the chronic maintenance period in patients who undergo\ncoronary stenting is unknown. We aimed to compare head to head the efficacy and safety of aspirin and clopidogrel\nmonotherapy in this population.\nMethods We did an investigator-initiated, prospective, randomised, open-label, multicentre trial at 37 study sites in\nSouth Korea. We enrolled patients aged at least 20 years who maintained dual antiplatelet therapy without clinical\nevents for 6-18 months after percutaneous coronary intervention with drug-eluting stents (DES). We excluded\npatients with any ischaemic and major bleeding complications. Patients were randomly assigned (1:1) to receive a\nmonotherapy agent of clopidogrel 75 mg once daily or aspirin 100 mg once daily for 24 months. The primary endpoint\nwas a composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary\nsyndrome, and Bleeding Academic Research Consortium (BARC) bleeding type 3 or greater, in the intention-to-treat\npopulation. This trial is registered with ClinicalTrials.gov, NCT02044250.\nFindings Between March 26, 2014, and May 29, 2018, we enrolled 5530 patients. 5438 (98·3%) patients were randomly\nassigned to either the clopidogrel group (2710 [49·8%]) or to the aspirin group (2728 [50·2%]). Ascertainment of the\nprimary endpoint was completed in 5338 (98·2%) patients. During 24-month follow-up, the primary outcome\noccurred in 152 (5·7%) patients in the clopidogrel group and 207 (7·7%) in the aspirin group (hazard ratio 0·73\n[95% CI 0·59-0·90]; p=0·0035).\nInterpretation Clopidogrel monotherapy, compared with aspirin monotherapy during the chronic maintenance\nperiod after percutaneous coronary intervention with DES significantly reduced the risk of the composite of all-cause\ndeath, non-fatal myocardial infarction, stroke, readmission due to acute coronary syndrome, and BARC bleeding\ntype 3 or greater. In patients requiring indefinite antiplatelet monotherapy after percutaneous coronary intervention,\nclopidogrel monotherapy was superior to aspirin monotherapy in preventing future adverse clinical events.\nFunding ChongKunDang, SamJin, HanMi, DaeWoong, and the South Korea Ministry of Health and Welfare.\nCopyright © 2021 Elsevier Ltd. All rights reserved.\nIntroduction\nAfter\npercutaneous\ncoronary\nintervention\n(PCI),\nguidelines recommend an initial 6-12 months of dual\nantiplatelet therapy (DAPT), which is decided on the basis\nof various factors, including clinical presentation (acute\ncoronary syndrome vs chronic coronary syndrome).1,2\nAfter this period, indefinite maintenance of single\nantiplatelet therapy is indicated for secondary prevention\nof atherosclerotic cardiovascular events. Aspirin, a\ncyclooxygenase pathway inhibitor, is the most widely used\nantiplatelet agent and is recommended as standard\ntherapy in patients after PCI.3 The evidence for this\nrecommendation is based on collective analyses of\ntrials done several decades ago that showed benefit\nof aspirin for secondary prevention of cardiovascular\ndisease.4,5 However, recent trials in the primary prevention\nsetting found little or no benefit in the prevention of\nvascular events for aspirin and showed that aspirin might\nbe associated with an increased bleeding risk, including\nintracranial and gastrointestinal bleeding.6-8 Clopidogrel,\nan adenosine diphosphate-receptor blocker, is recom\nmended as an alternative in patients who do not tolerate\naspirin therapy.9 One previous trial in 1996 reported\nthat clopidogrel might have potential benefits in patients\nwith atherosclerotic vascular disease, such as reducing\ncardiovascular events with a reduced incidence of gastro\nintestinal complications.10 However, the trial did not\nspecifically address the post-PCI population and was not\ndone in an era when drug-eluting stents (DES) or high-\nintensity statins were available. A few registry-based\nLancet 2021; 397: 2487-96\nPublished Online\nMay 16, 2021\nhttps://doi.org/10.1016/\nS0140-6736(21)01063-1\nSee Comment page 2443\n*Authors contributed equally\n†All investigators of the\nHOST-EXAM trial are listed in the\nappendix (pp 4-8)\nDepartment of Internal\nMedicine, Cardiology Centre,\nSeoul National University\nHospital, Seoul, South Korea\n(Prof B-K Koo MD, J Kang MD,\nK W Park MD, T-M Rhee MD,\nH-M Yang MD, J-K Han MD,\nProf H-S Kim MD); Department\nof Internal Medicine, Ulsan\nUniversity Hospital, Ulsan,\nSouth Korea (K-B Won MD,\nE-S Shin MD); Korea University\nGuro Hospital, Seoul,\nSouth Korea (Prof S-W Rha MD);\nDepartment of Internal\nMedicine, Chungbuk National\nUniversity Hospital, Cheongju,\nSouth Korea (J-W Bae MD);\nDepartment of Internal\nMedicine, Kangnam Sacred\nHeart Hospital, Hallym\nUniversity, Seoul, South Korea\n(Prof N H Lee MD); Department\nof Internal Medicine,\nKeimyung University Dongsan\nHospital, Daegu, South Korea\n(Prof S-H Hur MD); Department\nof Internal Medicine, Yonsei\nUniversity Wonju Severance\nChristian Hospital, Wonju,\nSouth Korea (Prof J Yoon MD);\nDepartment of Internal\nMedicine, Dong-A University\nHospital, Busan, South Korea\n(T-H Park MD); Department of\nInternal Medicine, Kangbuk\nSamsung Hospital,\nSungkyunkwan University,\nSeoul, South Korea\n(B S Kim MD); Department of\nInternal Medicine, CHA\nBundang Medical Center,\nCHA University, Seongnam,",
+              "recovery": null,
+              "returned_previously": null,
+              "search_session": null,
+              "source_id": "sh_25d8d4f18074e7ea",
+              "source_version": "sha256:778d5b234f3be70ffa24ac446f8937d1878c5031f09eab6c8c601d039df12ff5",
+              "start": 0,
+              "start_line": 1,
+              "text_status": "complete",
+              "trial_id": "host-exam"
+            },
+            {
+              "candidate_rank": null,
+              "domain_id": null,
+              "end": 3075,
+              "end_line": 64,
+              "handle": "eh_8c3d6a3b83c63f7c",
+              "identity": "sha256:8c3d6a3b83c63f7ccb364262ad899061ff5c2b524c002911cb40b7dcad63fa6a",
+              "inclusion_reason": "result",
+              "kind": "narrative",
+              "page": 5,
+              "question_id": null,
+              "quote": null,
+              "recovery": {
+                "operation": "read_pages",
+                "trial_id": "host-exam",
+                "windows": [
+                  {
+                    "end_line": 64,
+                    "page": 5,
+                    "source_id": "sh_25d8d4f18074e7ea",
+                    "start_line": 1
+                  }
+                ]
+              },
+              "returned_previously": null,
+              "search_session": null,
+              "source_id": "sh_25d8d4f18074e7ea",
+              "source_version": "sha256:778d5b234f3be70ffa24ac446f8937d1878c5031f09eab6c8c601d039df12ff5",
+              "start": 0,
+              "start_line": 1,
+              "text_status": "omitted",
+              "trial_id": "host-exam"
+            },
+            {
+              "candidate_rank": null,
+              "domain_id": null,
+              "end": 5122,
+              "end_line": 132,
+              "handle": "eh_c7f5d3ebca2123d2",
+              "identity": "sha256:c7f5d3ebca2123d2c75a6b511146ba5e4acf107b04ce37e2ba4ad1bcc99b67a2",
+              "inclusion_reason": "result",
+              "kind": "narrative",
+              "page": 3,
+              "question_id": null,
+              "quote": null,
+              "recovery": {
+                "operation": "read_pages",
+                "trial_id": "host-exam",
+                "windows": [
+                  {
+                    "end_line": 132,
+                    "page": 3,
+                    "source_id": "sh_25d8d4f18074e7ea",
+                    "start_line": 1
+                  }
+                ]
+              },
+              "returned_previously": null,
+              "search_session": null,
+              "source_id": "sh_25d8d4f18074e7ea",
+              "source_version": "sha256:778d5b234f3be70ffa24ac446f8937d1878c5031f09eab6c8c601d039df12ff5",
+              "start": 0,
+              "start_line": 1,
+              "text_status": "omitted",
+              "trial_id": "host-exam"
+            },
+            {
+              "candidate_rank": null,
+              "domain_id": null,
+              "end": 2117,
+              "end_line": 180,
+              "handle": "eh_f42b7fa5f365b42d",
+              "identity": "sha256:f42b7fa5f365b42d8755e41c0770467f477d831f6c2157ed52fb281965f6ae8a",
+              "inclusion_reason": "result",
+              "kind": "narrative",
+              "page": 6,
+              "question_id": null,
+              "quote": null,
+              "recovery": {
+                "operation": "read_pages",
+                "trial_id": "host-exam",
+                "windows": [
+                  {
+                    "end_line": 180,
+                    "page": 6,
+                    "source_id": "sh_25d8d4f18074e7ea",
+                    "start_line": 1
+                  }
+                ]
+              },
+              "returned_previously": null,
+              "search_session": null,
+              "source_id": "sh_25d8d4f18074e7ea",
+              "source_version": "sha256:778d5b234f3be70ffa24ac446f8937d1878c5031f09eab6c8c601d039df12ff5",
+              "start": 0,
+              "start_line": 1,
+              "text_status": "omitted",
+              "trial_id": "host-exam"
+            }
+          ],
+          "comparison_cards": [],
+          "context_page": {
+            "view_version": "rob2-kit.domain-context.v1",
+            "snapshot_digest": "41fe226871fe23232fff4f227f02e3adee234670ed2a339b981b0bf0fa997e99",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "state_revision": 4,
+            "index": 2,
+            "count": 4,
+            "delivery_status": "incomplete",
+            "section": "evidence",
+            "item_start": 1,
+            "item_count": 5,
+            "max_response_bytes": 32768,
+            "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.2",
+            "next_cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.3",
+            "stable_recovery": {
+              "operation": "get_domain_context",
+              "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.0"
+            }
+          }
+        },
+        "head": {
+          "phase": "assessment",
+          "state_revision": 4,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.3",
+            "max_response_bytes": 32768
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "outcome": "success"
+      }
+    },
+    "error": null,
+    "status": "completed"
+  },
+  {
+    "id": "item_8",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.3"
+    },
+    "result": {
+      "content": [],
+      "structured_content": {
+        "data": {
+          "comparison_cards": [
+            {
+              "card_id": "sha256:7257e5135b34a71d0cb959a436c0361ee3e13e0116f12b48eb0e145a06beb16c",
+              "missing_data": null,
+              "paired_examples": [
+                {
+                  "changed_premise": "whether the located plan covers the approved Result",
+                  "left_facts": [
+                    "The SAP names the approved comparison, cohort, endpoint, window, population, analysis, and effect measure."
+                  ],
+                  "pair_id": "d5-applicable-versus-inapplicable-plan",
+                  "reasoning_focus": "Assess plan applicability before using its dates or content for chronology.",
+                  "right_facts": [
+                    "A platform master plan names a different cohort and intervention phase."
+                  ]
+                },
+                {
+                  "changed_premise": "whether reporting choice depended on the result",
+                  "left_facts": [
+                    "The SAP lists three eligible analyses. All three were conducted, but only the adjusted model was reported. Dated correspondence made before unblinded results confirms that reporting plan."
+                  ],
+                  "pair_id": "d5-multiplicity-versus-selection",
+                  "reasoning_focus": "Hold the eligible analyses and reporting pattern fixed; inspect the evidence about why the reporting decision was made.",
+                  "right_facts": [
+                    "The SAP lists the same three eligible analyses. All three were conducted, but only the adjusted model was reported. Dated minutes after unblinding state it was chosen because its estimate was favorable and the other two were withheld."
+                  ]
+                },
+                {
+                  "changed_premise": "whether unblinded access preceded the amendment",
+                  "left_facts": [
+                    "Amended SAP signed June 15; cutoff and lock were August 1.",
+                    "Same cohort, endpoint, and analysis.",
+                    "Unblinded access began July 15."
+                  ],
+                  "pair_id": "d5-amendment-versus-unblinded-access",
+                  "reasoning_focus": "Compare access with amendment timing; chronology alone does not establish result-driven selection.",
+                  "right_facts": [
+                    "Amended SAP signed June 15; cutoff and lock were August 1.",
+                    "Same cohort, endpoint, and analysis.",
+                    "Unblinded access began May 15."
+                  ]
+                },
+                {
+                  "changed_premise": "whether the timing of unblinded access is known",
+                  "left_facts": [
+                    "Applicable SAP signed June 15. Enrollment ended May 1.",
+                    "The reports do not identify when investigators accessed unblinded results."
+                  ],
+                  "pair_id": "d5-unknown-versus-late-access",
+                  "reasoning_focus": "Unknown timing is not proof of late finalization. Establish the negative chronology premise separately; neither branch proves results-driven choice.",
+                  "right_facts": [
+                    "The same applicable SAP signed June 15. Enrollment ended May 1.",
+                    "A dated report confirms investigators accessed unblinded results May 15."
+                  ]
+                },
+                {
+                  "changed_premise": "whether the report establishes why a subset was reported",
+                  "left_facts": [
+                    "No protocol or SAP is captured. Article methods identify three eligible analyses. Results report one; the reporting reason is unresolved."
+                  ],
+                  "pair_id": "d5-report-documented-choice-without-plan",
+                  "reasoning_focus": "Keep plan availability and alternatives fixed. Preserve direct evidence of results-driven choice; missing plan chronology does not erase it.",
+                  "right_facts": [
+                    "No protocol or SAP is captured. The same article methods identify three eligible analyses. The authors state that only the favorable estimate was reported after comparing the three results."
+                  ]
+                },
+                {
+                  "changed_premise": "where the same signed analysis plan is packaged",
+                  "left_facts": [
+                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
+                    "Plan signed before unblinded access.",
+                    "Plan is protocol appendix 2."
+                  ],
+                  "pair_id": "d5-embedded-versus-separate-sap",
+                  "reasoning_focus": "Find the plan by scope and chronology; packaging does not change its content.",
+                  "right_facts": [
+                    "Plan covers the same cohort, endpoint, window, population, and analysis.",
+                    "Plan signed before unblinded access.",
+                    "Plan is a separate repository PDF."
+                  ]
+                }
+              ],
+              "participant_flow": [],
+              "passage_groups": [
+                {
+                  "logical_path": "mmc1.pdf",
+                  "page_count": 69,
+                  "passages": [],
+                  "registry_field_paths": [],
+                  "registry_recovery": null,
+                  "registry_retrieved_at": null,
+                  "registry_url": null,
+                  "registry_window_count": 0,
+                  "sha256": "sha256:5bb2b73db768761c39659ffa494ec3a92f932c8e35ad9091148f1887370eedde",
+                  "source_id": "sh_109cceda14485a1b",
+                  "source_label": "mmc1.pdf",
+                  "source_origin": "local_dossier",
+                  "source_role": "supplement"
+                },
+                {
+                  "logical_path": "S0140-6736-21-01063-1.pdf",
+                  "page_count": 10,
+                  "passages": [
+                    {
+                      "end_line": 121,
+                      "handle": "eh_4ad5fddf4c86e404",
+                      "page": 1,
+                      "retrieval_question_ids": null,
+                      "source_id": "sh_25d8d4f18074e7ea",
+                      "start_line": 1
+                    },
+                    {
+                      "end_line": 132,
+                      "handle": "eh_c7f5d3ebca2123d2",
+                      "page": 3,
+                      "retrieval_question_ids": null,
+                      "source_id": "sh_25d8d4f18074e7ea",
+                      "start_line": 1
+                    },
+                    {
+                      "end_line": 227,
+                      "handle": "eh_34b9e33af5d98c9e",
+                      "page": 4,
+                      "retrieval_question_ids": null,
+                      "source_id": "sh_25d8d4f18074e7ea",
+                      "start_line": 1
+                    },
+                    {
+                      "end_line": 187,
+                      "handle": "eh_358af5abcb650409",
+                      "page": 5,
+                      "retrieval_question_ids": null,
+                      "source_id": "sh_25d8d4f18074e7ea",
+                      "start_line": 1
+                    },
+                    {
+                      "end_line": 64,
+                      "handle": "eh_8c3d6a3b83c63f7c",
+                      "page": 5,
+                      "retrieval_question_ids": null,
+                      "source_id": "sh_25d8d4f18074e7ea",
+                      "start_line": 1
+                    },
+                    {
+                      "end_line": 180,
+                      "handle": "eh_f42b7fa5f365b42d",
+                      "page": 6,
+                      "retrieval_question_ids": null,
+                      "source_id": "sh_25d8d4f18074e7ea",
+                      "start_line": 1
+                    }
+                  ],
+                  "registry_field_paths": [],
+                  "registry_recovery": null,
+                  "registry_retrieved_at": null,
+                  "registry_url": null,
+                  "registry_window_count": 0,
+                  "sha256": "sha256:5f85f9e28b55d2d73c5a1ff9cf7571b396e2af8289ae35e16b116008b92c0f88",
+                  "source_id": "sh_25d8d4f18074e7ea",
+                  "source_label": "S0140-6736-21-01063-1.pdf",
+                  "source_origin": "local_dossier",
+                  "source_role": "main_article"
+                }
+              ],
+              "prompt": "Compare result_scope (target), reported_result, and target_relation. Retain scope differences; assess the reported Result. Read reported_result, analysis_plan, correspondence, amendment, and unblinded_access together: locate the selected and planned methods in their cited passages, then evidence about whether, when, and why a material change was made. Keep unresolved method correspondence explicit even when plan timing is well supported. Distinguish method content from labels; a discrepancy does not establish results-based selection. target or analyzed populations do not establish observed outcomes. Classify remaining propositions; do not infer causation, availability, censoring, measurement influence, plan correspondence, or risk from metadata, arithmetic, or wording alone. An empty passage group is unopened; inspect relevant Sources before recording an information limitation.",
+              "propositions": [
+                {
+                  "depends_on": [],
+                  "name": "document_availability",
+                  "passages": [],
+                  "proposition": "A plan or SAP describing the approved Result is available in the captured Sources.",
+                  "question_id": "sq:selection:prespecified-analysis",
+                  "status": "unknown"
+                },
+                {
+                  "depends_on": [
+                    "sq:selection:prespecified-analysis"
+                  ],
+                  "name": "plan_applicability",
+                  "passages": [],
+                  "proposition": "Compare the selected reported analysis with the applicable planned analysis for the exact comparison, cohort, endpoint, population, window, and effect measure. Keep their source citations together with any evidence about a change's timing and reason. Matching endpoint or population and an early plan do not resolve a material analysis difference. A documented change before unblinded access or clearly unrelated to results may qualify; an unknown amendment or a different method label alone establishes neither correspondence nor noncorrespondence.",
+                  "question_id": "sq:selection:prespecified-analysis",
+                  "status": "unknown"
+                },
+                {
+                  "depends_on": [
+                    "sq:selection:prespecified-analysis"
+                  ],
+                  "name": "chronology",
+                  "passages": [],
+                  "proposition": "Plan finalization preceded access to unblinded outcome data.",
+                  "question_id": "sq:selection:prespecified-analysis",
+                  "status": "unknown"
+                },
+                {
+                  "depends_on": [
+                    "sq:selection:prespecified-analysis"
+                  ],
+                  "name": "eligible_measurements",
+                  "passages": [],
+                  "proposition": "The eligible outcome measurements and the reported subset are known.",
+                  "question_id": "sq:selection:multiple-measurements",
+                  "status": "unknown"
+                },
+                {
+                  "depends_on": [
+                    "sq:selection:prespecified-analysis"
+                  ],
+                  "name": "eligible_analyses",
+                  "passages": [],
+                  "proposition": "The eligible analyses and the reported analysis are known.",
+                  "question_id": "sq:selection:multiple-analyses",
+                  "status": "unknown"
+                },
+                {
+                  "depends_on": [
+                    "sq:selection:multiple-measurements"
+                  ],
+                  "name": "measurement_selection",
+                  "passages": [],
+                  "proposition": "The reported measurement was selected because of its result; inspected report methods/results or companion reports may establish this without a protocol.",
+                  "question_id": "sq:selection:multiple-measurements",
+                  "status": "unknown"
+                },
+                {
+                  "depends_on": [
+                    "sq:selection:multiple-measurements",
+                    "sq:selection:multiple-analyses"
+                  ],
+                  "name": "results_based_selection",
+                  "passages": [],
+                  "proposition": "The reported analysis was selected because of its result; inspected report methods/results or companion reports may establish this without an SAP.",
+                  "question_id": "sq:selection:multiple-analyses",
+                  "status": "unknown"
+                }
+              ],
+              "question_id": "sq:selection:prespecified-analysis",
+              "reported_result": {
+                "analysis_population": "All 5438 randomized patients in the ITT population; endpoint ascertainment was complete in 5338 (98.2%).",
+                "effect_measure": "Hazard ratio",
+                "endpoint": {
+                  "definition": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to ACS, and major bleeding events (BARC type ≥3).",
+                  "name": "Primary composite endpoint†"
+                },
+                "estimate": "0·73",
+                "form": "comparative_effect",
+                "group_values": [],
+                "precision": "95% CI 0·59-0·90"
+              },
+              "result_identity": "sha256:6b3eb7c44ab4edf1fb3bdb996c5895921fdad9bcc2a3b4b521be28855a3dce47",
+              "result_scope": {
+                "comparison_groups": [
+                  "clopidogrel: Clopidogrel monotherapy 75 mg once daily",
+                  "aspirin: Aspirin monotherapy 100 mg once daily"
+                ],
+                "effect_measure": "Hazard ratio",
+                "endpoint": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+                "measurement": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary syndrome, and BARC type 3 or greater bleeding",
+                "population": "All randomized participants in the comparison groups",
+                "result_identity": "sha256:6b3eb7c44ab4edf1fb3bdb996c5895921fdad9bcc2a3b4b521be28855a3dce47",
+                "scope_basis": "assessment_target",
+                "time_window": "24 months after randomisation"
+              },
+              "slots": [
+                {
+                  "name": "reported_result",
+                  "passages": [
+                    {
+                      "end_line": 187,
+                      "handle": "eh_358af5abcb650409",
+                      "page": 5,
+                      "retrieval_question_ids": null,
+                      "source_id": "sh_25d8d4f18074e7ea",
+                      "start_line": 1
+                    }
+                  ],
+                  "status": "supported",
+                  "value": "comparative_effect | Primary composite endpoint† | Hazard ratio"
+                },
+                {
+                  "name": "analysis_plan",
+                  "passages": [],
+                  "status": "unknown",
+                  "value": null
+                },
+                {
+                  "name": "correspondence",
+                  "passages": [],
+                  "status": "unknown",
+                  "value": null
+                },
+                {
+                  "name": "amendment",
+                  "passages": [],
+                  "status": "unknown",
+                  "value": null
+                },
+                {
+                  "name": "unblinded_access",
+                  "passages": [],
+                  "status": "unknown",
+                  "value": null
+                }
+              ],
+              "target_relation": "exact"
+            }
+          ],
+          "context_page": {
+            "view_version": "rob2-kit.domain-context.v1",
+            "snapshot_digest": "41fe226871fe23232fff4f227f02e3adee234670ed2a339b981b0bf0fa997e99",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "state_revision": 4,
+            "index": 3,
+            "count": 4,
+            "delivery_status": "complete",
+            "section": "comparison_cards",
+            "item_start": 0,
+            "item_count": 1,
+            "max_response_bytes": 32768,
+            "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.3",
+            "next_cursor": null,
+            "stable_recovery": {
+              "operation": "get_domain_context",
+              "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.0"
+            }
+          }
+        },
+        "head": {
+          "phase": "assessment",
+          "state_revision": 4,
+          "next_action": {
+            "operation": "save_domain_judgment",
+            "authority": "host",
+            "trial_id": "host-exam",
+            "domain_id": "domain:selection",
+            "expected_revision": 4,
+            "caller_inputs": [
+              "answers"
+            ]
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "outcome": "success"
+      }
+    },
+    "error": null,
+    "status": "completed"
+  }
+]
