@@ -1,0 +1,45 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "proposal",
+    "state_revision": 1,
+    "next_action": {
+      "operation": "validate_proposal",
+      "authority": "host",
+      "expected_revision": 1,
+      "caller_inputs": [
+        "selections"
+      ]
+    },
+    "authoritative_wording": "Proposal is being prepared or submitted; no Trial is assessable yet."
+  },
+  "data": {
+    "pages": [
+      {
+        "source_id": "sh_f5de7e58b7a415fc",
+        "page": 8,
+        "numbered_text": "1| 7\n2|Figures\n3|Figure S1: Oxygen reduction test flow chart\n4|FiO2 denotes the fraction of inspired oxygen and CPAP continuous positive airway pressure.",
+        "line_count": 4,
+        "returned_start_line": 1,
+        "returned_end_line": 4,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_f182e72c5ec51c5a"
+      },
+      {
+        "source_id": "sh_f5de7e58b7a415fc",
+        "page": 14,
+        "numbered_text": "1| 13\n2|Table S3: Criteria for open-label medical or surgical treatment after enrollment\n3|Clinical Criteria\n4|Echocardiography Criteria\n5|Inability to wean on ventilator (ventilated for\n6|at least 7 days continuously) and any of the\n7|following:\n8| Inability to wean oxygen; or\n9| Persistent hypotension; or\n10| Pulmonary hemorrhage; or\n11| Signs of cardiac failure\n12|Presence of a large PDA with a ductal dimension of \u2265\n13|2.0 mm\n14|AND\n15|Unrestrictive pulsatile left to right flow in PDA\n16|AND\n17|Presence of a hyperdynamic circulation OR ductal\n18|steal\n19|Table S4: Severity-Based Criteria for BPD\n20|Severity-Based Diagnostic Criteria for BPD\n21|Time point of assessment:\n22|36 weeks of postmenstrual age\n23|Therapy with oxygen > 21% and/or respiratory support for \u2265 28 days and the following:\n24|Mild BPD;\n25|Baby is breathing room air\n26|Moderate BPD;\n27|Baby is in 22-29% oxygen, or 0.01-1.0 L/min\n28|Severe BPD;\n29|FiO2 \u2265 0.3, or low flow oxygen \u2265 1.1 L/min, or the baby is receiving\n30|any respiratory support (ventilation, CPAP, or high flow oxygen\n31|therapy) to achieve oxygen saturation \u2265 91%\n32|FiO2 denotes the fraction of inspired oxygen and CPAP continuous positive airway pressure.\n33|The need for oxygen is subjective and hence oxygen dependency will be confirmed using an 'oxygen\n34|reduction test'. This is based on the threshold at which the baby is able to maintain oxygen\n35|saturations \u2265 91% whilst breathing in air or at a given minimum FiO2. Babies unable to achieve this\n36|will be considered to be oxygen dependent. This test will only apply to those babies whose oxygen\n37|requirements are < 0.3, or low flow oxygen < 1.1 L/min, and who have not received any additional\n38|respiratory support in the previous 24 hours. Babies outside of this will not be tested, but their\n39|oxygen requirements will be collected.\n40|\n41|[Extracted table 2]\n42||Time point of assessment:|36 weeks of postmenstrual age|\n43||---|---|\n44||Therapy with oxygen > 21% and/or respiratory support for \u2265 28 days and the following:||\n45||Mild BPD;|Baby is breathing room air|\n46||Moderate BPD;|Baby is in 22-29% oxygen, or 0.01-1.0 L/min|\n47||Severe BPD;|FiO \u2265 0.3, or low flow oxygen \u2265 1.1 L/min, or the baby is receiving<br>2<br>any respiratory support (ventilation, CPAP, or high flow oxygen<br>therapy) to achieve oxygen saturation \u2265 91%|",
+        "line_count": 47,
+        "returned_start_line": 1,
+        "returned_end_line": 47,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_192c7e7694833ada"
+      }
+    ],
+    "remaining_windows": []
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "proposal",
+    "state_revision": 1,
+    "next_action": {
+      "operation": "validate_proposal",
+      "authority": "host",
+      "expected_revision": 1,
+      "caller_inputs": [
+        "selections"
+      ]
+    },
+    "authoritative_wording": "Proposal is being prepared or submitted; no Trial is assessable yet."
+  },
+  "data": {
+    "pages": [
+      {
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "page": 3,
+        "numbered_text": "1|n engl j med 390;4 nejm.org January 25, 2024\n2|316\n3|The new engl and jour nal of medicine\n4|Randomization\n5|Dynamic randomization was performed with a\n6|secure Web-based system that was created and\n7|hosted by the NPEU Clinical Trials Unit with\n8|24/7 telephone backup, ensuring concealment of\n9|the group assignments. The randomization pro-\n10|gram used a probabilistic minimization algorithm\n11|and assigned patients in a 1:1 ratio to one of the\n12|two groups to ensure balance with respect to the\n13|size of the PDA, gestational age at birth, age, sex,\n14|trial site, whether the infant was from a multiple\n15|birth, mode of respiratory support, and whether\n16|inotropes were received. Infants in multiple births\n17|underwent randomization individually. Partici-\n18|pants were enrolled by the delegated clinician at\n19|the trial site.14\n20|Intervention and Trial Procedures\n21|The trial intervention was ibuprofen sodium,\n22|and the matched placebo was a clear sterile solu-\n23|tion of 0.9% sodium chloride. Each carton con-\n24|taining ibuprofen or placebo was labeled with a\n25|unique code in compliance with the guidance\n26|provided in annex 13 of the European Commis-\n27|sion guidelines for Good Manufacturing Prac-\n28|tice. Ibuprofen was administered parenterally as\n29|a loading dose of 10 mg per kilogram of body\n30|weight, followed by two doses of 5 mg per kilo-\n31|gram at least 24 hours apart. Placebo was ad-\n32|ministered as an equal volume of 0.9% sodium\n33|chloride (Table S2). Only one course of ibuprofen\n34|or placebo was given. Prespecified criteria for\n35|open-label medical or surgical treatment after\n36|enrollment are shown in Table S3.\n37|Transthoracic echocardiography was performed\n38|to assess eligibility within 72 hours after birth\n39|and at 3 weeks (18 to 24 days) of age to assess the\n40|patency of the PDA while minimizing open-label\n41|treatment. For quality control, a sample of echo-\n42|cardiograms from 65 infants was reviewed inde-\n43|pendently by a pediatric echocardiographer who\n44|was unaware of the treatment assignments.\n45|Outcomes\n46|The primary outcome was a composite of death\n47|or moderate or severe bronchopulmonary dyspla-\n48|sia assessed at 36 weeks of postmenstrual age15\n49|(Tables S4 and S5). A physiological challenge of\n50|supplemental oxygen reduction was used to test\n51|for oxygen need at 36 weeks of postmenstrual\n52|age16 to differentiate mild from moderate bron-\n53|chopulmonary dysplasia (Fig. S1). Secondary\n54|short-term outcomes up to the time of discharge\n55|included individual components of the primary\n56|outcome, the severity of bronchopulmonary dys-\n57|plasia, severe intraventricular hemorrhage, cystic\n58|periventricular leukomalacia, retinopathy of pre-\n59|maturity requiring treatment, clinically signifi-\n60|cant pulmonary hemorrhage, acute pulmonary\n61|hypertension, definitive necrotizing enterocoli-\n62|tis, closed or clinically nonsignificant PDA less\n63|than 1.5 mm in diameter with restricted flow at\n64|3 weeks age, open-label treatment of a PDA caus-\n65|ing symptoms, weight gain, and discharge home\n66|while receiving supplemental oxygen (Table\n67|S5).14 Other secondary short-term outcomes are\n68|listed in the Supplementary Appendix and in the\n69|statistical analysis plan (available with the pro-\n70|tocol).17 All outcome data were recorded rou-\n71|tinely, including demographic data and compli-\n72|cations of prematurity; these data were obtained\n73|from clinical notes or trial-related assessments\n74|(Table S6).\n75|A list of foreseeable serious adverse events\n76|that are common in this patient population was\n77|prespecified (see section 9.1.4 in the protocol);\n78|unforeseeable serious adverse events were de-\n79|fined as those that were not included on this\n80|list. A serious adverse reaction was defined as a\n81|serious adverse event that was considered to\n82|have been caused by the administration of the\n83|trial agent; if such an event was not consistent\n84|with the safety profile of the trial agent, it was\n85|classed as a suspected unexpected serious ad-\n86|verse reaction.14\n87|Statistical Analysis\n88|The incidence of the primary outcome was pre-\n89|dicted to be 60% in the placebo group (see Sup-\n90|plementary Methods). A sample of 730 infants was\n91|calculated to be required in order to detect a\n92|clinically important absolute risk reduction of 12\n93|percentage points (i.e., an incidence of 60% in\n94|the placebo group and an incidence of 48% in the\n95|ibuprofen group) with 90% power and a type I\n96|error of 5% under the assumption that 1% of in-\n97|fants would be lost to follow-up.14\n98|Analyses were performed according to the\n99|intention-to-treat principle, with infants exclud-\n100|ed from the analysis only if their data were miss-\n101|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\n102|Downloaded from nejm.org on September 23, 2026.",
+        "line_count": 102,
+        "returned_start_line": 1,
+        "returned_end_line": 102,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_664cb2e87a63db02"
+      }
+    ],
+    "remaining_windows": []
+  }
+}

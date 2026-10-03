@@ -1,0 +1,38 @@
+{
+  "case": "gupta-2024-FigureS1-new-reading-only",
+  "code_sha": "52669e36caaa3919bdac53046b326004bba8f25b",
+  "installed_wheel_code_sha": "ce13dceedbc513e47323ae7755357f8484075079",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "limits": {
+    "cli_turns": 1,
+    "tool_calls": 8,
+    "output_tokens": 2000,
+    "wall_seconds": 240,
+    "idle_seconds": 90,
+    "input_telemetry_only": true
+  },
+  "authorization": "One new native clinical-source reading check authorized by parent; closed Baby-OSCAR assessment untouched. No retries/continuation/domain judgments.",
+  "source_origins": {
+    "NEJMoa2305582.pdf": {
+      "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/gupta-2024/NEJMoa2305582.pdf",
+      "sha256": "9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4"
+    },
+    "nejmoa2305582_appendix.pdf": {
+      "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/gupta-2024/nejmoa2305582_appendix.pdf",
+      "sha256": "97e8259cc7e1e617ae2dd1c69f37f5908c94034d70966a0b7a2955ce32802771"
+    }
+  },
+  "evidence_manifest_sha256": "923b36ecd08dc543b52ac0f1daacc469cfe9978f4650f4fce698273fcdd898b1",
+  "expected_sha256": "d44b6626d7a42e2e793cf158be1fad263b244e00fc54e023e28f870fda600e31",
+  "prompt_sha256": "45faf26162554da82a29529849cead93569e58a9c31e8e42a71868923e59530d",
+  "instructions_sha256": "d95a923ca877d9e16259a17c3d8aacd9930530e153ba5d4dc794be4f73c4168e",
+  "config_sha256": "733623440be4fb9f66717b007b4c1ab46041a85badb9c91557287ef3fdf6ec95",
+  "source_packet_sha256": "77d23e916da60c403be953790d971e60921cab151a6bdf7ac13975d886eb0626",
+  "installed_wheel_sha256": "0645bc339ebd5129827578ee9afe886a2ce21b7a975aa8133700e79fd254ce83",
+  "expected_not_in_model_input": true,
+  "coverage_semantics": "Offline source-complete availability; actual model retrieval and image-exclusive observations must be checked after run. Packet and gold never supplied to model.",
+  "original_assessment_not_resumed": true,
+  "runner_sha256": "0dde49de57a2ab9447d5fb9d9bf2cb29dd772160bad636b9ebb5f3e3d250a661",
+  "interpretation_of_one_turn": "One CLI turn/final response, with each necessary provider tool-roundtrip response separately counted."
+}

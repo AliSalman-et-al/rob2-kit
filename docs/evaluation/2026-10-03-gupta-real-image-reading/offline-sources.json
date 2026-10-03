@@ -1,0 +1,49 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "proposal",
+    "state_revision": 1,
+    "next_action": {
+      "operation": "validate_proposal",
+      "authority": "host",
+      "expected_revision": 1,
+      "caller_inputs": [
+        "selections"
+      ]
+    },
+    "authoritative_wording": "Proposal is being prepared or submitted; no Trial is assessable yet."
+  },
+  "data": {
+    "sources": [
+      {
+        "id": "sh_ec3fcba1a06e0ddc",
+        "trial_id": "gupta-2024",
+        "role": "main_article",
+        "label": "NEJMoa2305582.pdf",
+        "logical_path": "NEJMoa2305582.pdf",
+        "sha256": "sha256:9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4",
+        "media_type": "application/pdf",
+        "page_count": 12,
+        "projection_hash": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "origin": "local_dossier",
+        "declared_role": "main_article"
+      },
+      {
+        "id": "sh_f5de7e58b7a415fc",
+        "trial_id": "gupta-2024",
+        "role": "supplement",
+        "label": "nejmoa2305582_appendix.pdf",
+        "logical_path": "nejmoa2305582_appendix.pdf",
+        "sha256": "sha256:97e8259cc7e1e617ae2dd1c69f37f5908c94034d70966a0b7a2955ce32802771",
+        "media_type": "application/pdf",
+        "page_count": 30,
+        "projection_hash": "sha256:deba28941be66d40a9a2b5c686b31424eb751d41796e1fd47b619cc02c81def2",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      }
+    ],
+    "conditions": [],
+    "omissions": [],
+    "navigation": null
+  }
+}
