@@ -332,10 +332,10 @@ def test_recovery_feedback_exposes_independent_defects_in_one_reply(tmp_path: Pa
     assert len(str(caught.value).encode()) <= 4096
     assert after["additional_defects"] == 0
     assert sum(d["count"] for d in after["defects"]) == (
-        len(before["defects"]) + before["additional_defects"]
+        len(before["defects"]) + before["additional_defects"] - (2 if ordinal == 0 else 0)
     )
     paths = {d["path"] for d in after["defects"]}
-    assert {"/results/0/clarity", "/results/0/group_values", "/results/0/evidence"} <= paths
+    assert {"/results/0/clarity", "/results/0/evidence"} <= paths
     assert after["syntax"]["clarity"]["required"] == list(ResultClarity.model_fields)
     assert after["syntax"]["clarity"]["each_value"] == [
         "specified",
@@ -345,7 +345,6 @@ def test_recovery_feedback_exposes_independent_defects_in_one_reply(tmp_path: Pa
     ]
     assert after["syntax"]["group_values[]"]["required"] == [
         "group_id",
-        "statistic",
         "value",
         "unit",
     ]

@@ -18,8 +18,8 @@ For `exact`, `clarity` requires eight explicit facets: `outcome_definition`,
 `effect_measure`, `source_table_meaning` and `eligible_result_choice`. Each accepts
 `specified`, `unclear`, `unavailable` or `conflicting`; exact requires every facet
 specified. Do not fill these from matching numbers or treat them as defaults.
-An optional group value needs separate `group_id`, `statistic` (string or null),
-`value` and `unit`, supported by the source. Timing value and unit must be given
+An optional group value needs separate `group_id`, `value` and `unit`, supported
+by the source. `statistic` is an optional source label (string or null). Timing value and unit must be given
 together or both omitted. Assessment `evidence_basis` is a handle array,
 `unknowns` a string array, and `counterevidence` an object array or `[]`.
 
@@ -297,8 +297,8 @@ row label such as `Total`.
 
 Keep quantities as Source strings. Put a comparative estimate's reported
 interval in `precision`. Keep a group statistic's label, value, and unit in
-their separate fields. Use `statistic: null` when the source gives a group value
-but does not identify its statistic; keep `source_table_meaning` unclear and
+their separate fields. Omit `statistic` or use `statistic: null` when the source
+gives a group value but does not identify its statistic; keep `source_table_meaning` unclear and
 explain the unresolved meaning in the Result rationale. A nearby verb such as
 “changed” is not a statistic label. Do not invent statistics or units. For a
 comparative effect, omit optional `group_values` unless the Source states one

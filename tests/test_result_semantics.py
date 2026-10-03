@@ -801,7 +801,18 @@ def test_unidentified_group_statistic_survives_assessment_without_inventing_a_la
     assert invented["outcome"] == "repair", invented
     assert any(item["code"] == "result_value_not_supported" for item in invented["repairs"])
 
-    reported["group_values"] = [{**value, "statistic": None} for value in reported["group_values"]]
+    reported["group_values"] = [
+        {key: item for key, item in value.items() if key != "statistic"}
+        for value in reported["group_values"]
+    ]
+    # Omission retains unresolved meaning and must not pass as specified clarity.
+    result["clarity"]["source_table_meaning"] = "specified"
+    overclaim = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
+    assert overclaim["outcome"] == "repair", overclaim
+    assert any(
+        item["code"] == "unknown_statistic_conflicts_with_clarity" for item in overclaim["repairs"]
+    )
+    result["clarity"]["source_table_meaning"] = "unclear"
     saved = _call(workspace, "save_proposal", _proposal_args(workspace, [result]))
     assert saved["outcome"] == "review_required", saved
     _review(workspace)

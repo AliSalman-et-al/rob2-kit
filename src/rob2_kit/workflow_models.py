@@ -951,7 +951,9 @@ class GroupResultValue(StrictModel):
         ),
     )
     statistic: NonBlankText | None = Field(
-        description="Source statistic label; use null when the Source does not identify it."
+        default=None,
+        description="Source statistic label when identified. Omission or null preserves "
+        "unresolved meaning; the server does not infer a label.",
     )
     value: NonBlankText = Field(description="Source-reported value for this group.")
     unit: NonBlankText = Field(description="Source-reported unit for this group value.")
