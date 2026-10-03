@@ -37,10 +37,15 @@ An eligible participant excluded from the assignment-effect analysis after
 randomization is an analysis exclusion whether the exclusion occurred before
 the approved endpoint was measured or after an outcome value was recorded.
 Record whether the endpoint was unavailable or was observed and then omitted.
-The first may also require D3 missing-outcome reasoning; the second does not
-become missing outcome data merely because the analysis left it out. For 2.7,
-assess the excluded participants and their reasons against this endpoint. Do not
-use timing or a fixed percentage as a substitute for impact reasoning.
+An observed value omitted by analysis does not become missing outcome data.
+Treatment stopping alone establishes neither; a censoring rule does not count
+actually omitted measurements. Keep possible outcome-dependent loss distinct
+from a restriction on recorded data. For 2.7, carry the mechanism from 2.6 into
+its potential effect on this estimate: use endpoint-relevant outcomes,
+prognosis and analysis assumptions. A small component cannot settle a separate
+restriction. Supported probable judgments need no numerical bound or formal
+sensitivity analysis; a small or balanced count alone is not the explanation.
+Negligible impact does not make an inappropriate analysis appropriate.
 
 Support each conduct-chain proposition with source facts and any stated
 inference. A passage supporting one proposition does not settle the others.

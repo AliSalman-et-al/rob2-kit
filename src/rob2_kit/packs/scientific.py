@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.9"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.10"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -358,9 +358,9 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "This is conditional on an inappropriate or uncertain analysis in 2.6.",
-            "Assess potential impact only after deciding whether 2.6 was appropriate; a small or balanced exclusion can have low impact without making an inappropriate analysis appropriate.",
-            "Use facts about this endpoint and the excluded participants. Exclusion before outcome ascertainment may also leave outcome data missing; exclusion after ascertainment may omit observed values from the analysis. Neither timing alone settles the possible effect on the estimate.",
+            "Carry the inappropriate or uncertain analysis mechanism from 2.6 into this conditional impact judgment. Explain how the affected participants or observations could change this selected estimate, considering their outcomes, prognostic differences and the analysis assumptions. A small component of a restriction does not settle the impact of other components.",
+            "Treatment stopping, unmeasured outcomes and measured values omitted by an analysis rule are different facts. Stopping alone establishes neither omission nor bias; a censoring rule alone does not establish how many measured values were omitted. Preserve uncertainty about actual availability and selection, including possible outcome-dependent loss.",
+            "A source-supported probable judgment is valid without a numerical bound, demonstrated bias or a sensitivity analysis. Explain why the restriction is plausibly important or negligible for this endpoint; a small or balanced count alone is insufficient. Low potential impact does not make an inappropriate analysis appropriate.",
         ),
         ("a small percentage alone", "an ITT analysis", "a group label without exclusion counts"),
     ),

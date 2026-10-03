@@ -1,0 +1,22 @@
+{
+  "status": "frozen preparation only; no model calls authorized by this artifact",
+  "maximum_future_responses": 2,
+  "design": "same synthetic complete facts/task/model, old-versus-new considerations only",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "tools": 0,
+  "retry": false,
+  "output_guard": 4000,
+  "wall_seconds": 300,
+  "idle_seconds": 120,
+  "launch_requires": "new explicit paid-test authorization and launch_checked against frozen hashes",
+  "criteria": [
+    "Supported important restriction must not be dismissed because a different component is small",
+    "Supported negligible restriction can yield probable negligible impact without demanding additional numerical bounds",
+    "Unknown measured-value availability/outcome-dependence preserved; no invented omitted measurements",
+    "Treatment stopping with retained outcomes does not itself establish assignment-analysis failure"
+  ],
+  "reference_labels_in_input": false,
+  "production_risk_labels_in_input": false,
+  "model_calls_so_far": 0
+}

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "only_substantive_question_change": [
+    "sq:deviations:substantial-impact"
+  ],
+  "official_text_options_activation_rule_sets_unchanged": true,
+  "operational_version": "1.0.10",
+  "prior_hash": "sha256:d66cd4805702afc472ec980fe1c64446bcc97e6da0eb8730a8edc243c70a532a",
+  "new_hash": "sha256:2a11301824d7fa0a2f773d0fd75985ad03a2dca2a2cd7107e7376f46cdb8905a",
+  "model_calls": 0
+}

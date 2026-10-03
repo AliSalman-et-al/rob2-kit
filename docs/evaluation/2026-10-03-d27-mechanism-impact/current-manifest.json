@@ -1,0 +1,68 @@
+{
+  "research_question": "Does replacement conditional-impact guidance improve mechanism-to-estimate warrants while preserving supported negligible impact and legitimate uncertainty? Synthetic-only, not benchmark accuracy.",
+  "input_sha256": "a7b333df27ad2a54b7f1b4c6531acf55562c49683c33e9871ba3945690355afa",
+  "required_windows": [
+    {
+      "source_identity": "synthetic:important-restriction",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "synthetic:negligible-restriction",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "synthetic:unknown-impact",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    },
+    {
+      "source_identity": "synthetic:stopping-with-retained-outcomes",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "synthetic:important-restriction",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 8372,
+      "input_end_byte": 9110,
+      "text_sha256": "1246e04f2153e26e756e4d752d6117f9ab5f60b303cab1ea14b8e6c6480d55b5"
+    },
+    {
+      "source_identity": "synthetic:negligible-restriction",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 9111,
+      "input_end_byte": 9739,
+      "text_sha256": "7110d544dbca3c99f1c0f63aa1e9ab342dd575c3e230373cab3927e284e49833"
+    },
+    {
+      "source_identity": "synthetic:unknown-impact",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 9740,
+      "input_end_byte": 10339,
+      "text_sha256": "e01a583d32dfbc03b66f24349fa3bdd9758a59c559144463ad5386a4ed15eb30"
+    },
+    {
+      "source_identity": "synthetic:stopping-with-retained-outcomes",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 3,
+      "input_start_byte": 10340,
+      "input_end_byte": 10785,
+      "text_sha256": "8e9fabc5889b10081c3a81f20e42486448e380752bd1badef7160523ba33b8dd"
+    }
+  ]
+}
