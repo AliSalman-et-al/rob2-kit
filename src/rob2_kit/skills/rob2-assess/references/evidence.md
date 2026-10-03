@@ -152,10 +152,8 @@ justification, not in the transcription.
 
 Keep each claim with the material that contains it. A caption or abbreviation
 legend does not support numerical values or routes found only in the image.
-Read the named definition and applicable adjacent notes when they determine the
-meaning, while preserving which facts come from each passage or visual region.
-If you cannot inspect the image in your host, retain that specific limitation;
-text showing only a figure title and legend is not inspection of its contents.
+Preserve which facts come from each inspected passage or visual region; a
+figure title and legend alone do not establish its visual contents.
 
 ## Ground a Result
 

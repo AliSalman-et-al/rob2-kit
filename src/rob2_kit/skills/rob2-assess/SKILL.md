@@ -408,12 +408,10 @@ Inspect the review's exact Result, checkpoint identities, and compact
 `domain_findings` projection. Use its decisive justifications, material
 unknowns, counterevidence, and exact Evidence expansion actions to reconcile
 concrete contradictions or unsupported links in one bounded pass. Compare material
-numbers, procedure rules, and source-attributed statements with the cited fact
-text or its exact Evidence expansion. A valid handle or host-asserted support role
-does not prove semantic support. Keep a figure's content separate from its legend
-and a stated method separate from its actual application. Repair the citation or
-premise when the claim is defensible elsewhere; reconsider the answer only if the
-source evidence warrants it. Large reviews
+claims with cited fact text or exact Evidence expansions; a valid handle or
+host-asserted support role does not prove semantic support. For figure, legend and
+conduct distinctions, use [visual Evidence](references/evidence.md#use-visual-evidence-for-visual-meaning).
+Large reviews
 return `data.review_page.mode:"summary"`: all answer headers and actual driver
 flags remain visible, but named deferred fields and counts identify incomplete
 support. Use `review_trial` with `domain_id` and, when needed, `question_id` to
