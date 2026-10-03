@@ -1,0 +1,4134 @@
+Supplementary appendix
+This appendix formed part of the original submission and has been peer reviewed.
+We post it as supplied by the authors.
+Supplement to: Koo B-K, Kang J, Park KW, et al. Aspirin versus clopidogrel for chronic
+maintenance monotherapy after percutaneous coronary intervention (HOST-EXAM):
+an investigator-initiated, prospective, randomised, open-label, multicentre trial. Lancet
+2021; published online May 16. http://dx.doi.org/10.1016/S0140-6736(21)01063-1.
+
+1
+
+
+Supplementary Appendix
+
+
+
+Aspirin vs. Clopidogrel for Chronic Maintenance Monotherapy
+after Percutaneous Coronary Intervention
+
+Harmonizing Optimal Strategy for Treatment of coronary artery
+diseases- EXtended Antiplatelet Monotherapy
+: The HOST-EXAM Randomized Controlled Trial
+
+
+On behalf of the HOST-EXAM investigators
+
+
+
+
+2
+
+Table of Contents
+1. Investigators and Collaborators
+a. Principal Investigator
+b. Steering Committee
+c. Clinical Event Adjudication Committee
+d. Data Safety Monitoring Board
+e. Publication Committee
+f. Data Coordination and Management
+g. Primary Statistician
+h. List of Investigators
+2. Data sharing statement
+3. Inclusion and Exclusion Criteria
+4. Sample size calculation
+5. Definition of clinical outcomes
+6. Supplementary tables
+a. Table S1. Baseline Medication Profiles of the Intention-to-treat
+Population, including the DAPT Regimen before Randomization and
+Non-trial Related Medications
+b. Table S2. Detailed brand of the Drug-eluting Stent used in the
+Intention-to-treat Population
+c. Table S3. Detailed clinical diagnosis of patients stopped DAPT before
+12 months
+d. Table S4. Detailed Clinical Outcomes of the Intention-to-treat
+Population
+e. Table S5. Summary of Causes of Mortality Events
+f. Table S6. Summary of Bleeding Event by the Bleeding Academic
+
+3
+
+Research Consortium type
+g. Table S7. Absolute Risk Reduction and Number Needed to Treat of
+Primary and Secondary Outcomes
+h. Table S8. Baseline Characteristics of the Per-protocol Population
+i. Table S9. Clinical Outcomes of the Per-protocol Population
+7. Supplementary Figures
+a. Figure S1. Schematic Study Design
+b. Figure S2. Kaplan Meier Cumulative Event Analysis of the Primary
+Endpoint Based on the Per-protocol Population
+c. Figure S3. Subgroup Analysis for the Primary Endpoint in the
+Intention-to-treat Population
+d. Figure S4 Subgroup Analysis for the Primary Endpoint in the Per-
+protocol Population
+e. Figure S5. Subgroup Analysis for the Thrombotic Composite Endpoint
+in the Intention-to-treat Population
+f. Figure S6. Subgroup Analysis for the Any Bleeding in the Intention-to-
+treat Population
+8. Reference
+9. Study Protocol and Statistical Analysis Plan
+
+
+4
+
+1. Investigators and Collaborators
+(1) Principal Investigator
+Hyo-Soo Kim, MD, PhD, Seoul National University Hospital, Seoul, Korea
+
+(2) Steering Committee
+
+Hyo-Soo Kim, MD, PhD, Seoul National University Hospital, Seoul, Korea
+
+Bon-Kwon Koo, MD, PhD, Seoul National University Hospital, Seoul, Korea
+
+Eun-Seok Shin, MD, PhD, Ulsan University Hospital, Ulsan, Korea
+
+Jung-Kyu Han, MD, PhD, Seoul National University Hospital, Seoul, Korea
+
+(3) Clinical Event Adjudication Committee
+Woo Jin Jang, Ewha Womans University Seoul Hospital, Seoul, Korea
+Ki-Hyun Jeon, Mediplex Sejong Hospital, Incheon, Korea
+
+(4) Data Safety Monitoring Board
+Yung-Jue Bang, Oncologist, the Chairman of Seoul National University Hospital Clinical
+Trials Center, retired
+Hyun-Jae Kang, Cardiologist, Seoul National University Hospital, Seoul, Korea
+Joong-Yub Lee, Medical epidemiologist, Department of Preventive Medicine, Seoul
+National University Hospital, Korea
+Kyung-Ha Seo, Medical epidemiologist, Seoul National University Hospital, Korea
+Seo-Kyung Hahn, Biostatistician, Seoul National University Hospital, Korea
+
+
+5
+
+(5) Publication Committee
+
+Hyo-Soo Kim, MD, PhD, Seoul National University Hospital, Seoul, Korea
+
+Bon-Kwon Koo, MD, PhD, Seoul National University Hospital, Seoul, Korea
+
+Eun-Seok Shin, MD, PhD, Ulsan University Hospital, Ulsan, Korea
+
+Seung-Woon Rha, MD, PhD, Korea University Guro Hospital, Seoul, Korea
+
+Jang-Whan Bae, MD, PhD, Chungbuk National University, Cheongju, Korea
+
+
+
+Kyung Woo Park, MD, PhD, Seoul National University Hospital, Seoul, Korea
+
+Jung-Kyu Han, MD, PhD, Seoul National University Hospital, Seoul, Korea
+Jeehoon Kang, MD, Seoul National University Hospital, Seoul, Korea
+
+(6) Data Coordination and Management
+Data collection, coordination, and site monitoring will be performed by the Medical
+Research Collaborating Center of Seoul National University Hospital.
+Hee jung Ahn, Medical Research Collaborating Center of Seoul National University
+Hospital, Korea
+Jisu Kim, Medical Research Collaborating Center of Seoul National University Hospital,
+Korea
+Yujin Kwon, RN, Seoul National University Hospital, Korea
+
+(7) Primary Statistician
+Jeehoon Kang, MD, Seoul National University Hospital, Seoul, Korea
+Jayoun Kim, PhD, Medical Research Collaborating Center of Seoul National University
+Hospital
+Tae-Min Rhee, MD, Seoul National University Hospital, Seoul, Korea
+
+6
+
+
+(8) List of Investigators
+Hyo-Soo Kim, MD, PhD, Seoul National University Hospital, Seoul, Korea
+Ki-Bum Won, MD, PhD, Ulsan University Hospital, Ulsan, Korea
+Eun-Seok Shin, MD, PhD, Ulsan University Hospital, Ulsan, Korea
+Seung-Woon Rha, MD, PhD, Korea University Guro Hospital, Seoul, Korea
+Jang-Whan Bae, MD, PhD, Chungbuk National University College of Medicine, Cheongju,
+Korea
+Nam Ho Lee, MD, PhD, Kangnam Sacred Heart Hospital, Hallym University, Seoul, Korea
+Seung-Ho Hur, MD, PhD, Keimyung University Dongsan Hospital, Daegu, Korea
+Junghan Yoon, MD, PhD, Yonsei University Wonju Severance Christian Hospital, Wonju,
+Korea
+Tae-Ho Park, MD, PhD, Dong-A University Hospital, Busan, Korea
+Bum Soo Kim, MD, PhD, Kangbuk Samsung Hospital, Sungkyunkwan University, Seoul,
+Korea
+Sang Wook Lim, MD, PhD, CHA Bundang Medical Center, CHA University, Seongnam,
+Korea
+Yoon Haeng Cho, MD, PhD, Soonchunhyang University Bucheon Hospital, Bucheon, Korea
+Dong Woon Jeon, MD, PhD, National Health Insurance Service Ilsan Hospital, Goyang,
+Korea
+Sang-Hyun Kim, MD, PhD, Boramae Medical Center, Seoul National University College of
+Medicine, Seoul, Korea
+Kyoo-Rok Han, MD, PhD, Kangdong Sacred Heart Hospital, Hallym University, Seoul, Korea
+Keon-Woong Moon, MD, PhD, St.Vincent's Hospital, The Catholic University of Korea,
+
+7
+
+Seoul, Korea
+Seok Kyu Oh, MD, PhD, Wonkwang University Hospital, Iksan, Korea
+Ung Kim, MD, PhD, Yeungnam University Hospital, Daegu, Korea
+Moo-Yong Rhee, MD, PhD, Dongguk University Ilsan Hospital, Goyang, Korea
+Doo-Il Kim, MD, PhD, Haeundae Paik Hospital, Inje University, Busan, Korea
+Song-Yi Kim, MD, PhD, College of Medicine, Jeju National University, Jeju, Korea
+Sung-Yun Lee, MD, PhD, Ilsan Paik Hospital, Inje University, Ilsan, Goyang, Korea
+Seung Uk Lee, MD, PhD, Kwangju Christian Hospital, Gwangju, Korea
+Sang-Wook Kim, MD, PhD, Chung-Ang University Hospital, Seoul, Korea
+Seok Yeon Kim, MD, PhD, Seoul Medical Center, Seoul, Korea
+Hui-Kyung Jeon, MD, PhD, Uijeongbu St. Mary's Hospital, Catholic University of Korea,
+Uijeongbu, Korea
+Kwang Soo Cha, MD, PhD, Pusan National University School of Medicine, Busan, Korea
+Sang-Ho Jo, MD, PhD, Hallym University Sacred Heart Hospital, Anyang, Korea
+Jae Kean Ryu, MD, PhD, Daegu Catholic University Medical Center, Daegu, Korea
+Il-Woo Suh, MD, PhD, Anyang SAM Medical Center, Anyang, Korea
+Hyun-Hee Choi, MD, PhD, Chuncheon Sacred Heart Hospital, Hallym University, Chuncheon,
+Korea
+Seoung-Il Woo, MD, PhD, Inha University Hospital, Incheon, Korea
+In-Ho Chae, MD, PhD, Seoul National University Bundang Hospital, Seongnam, Korea
+Won-Yong Shin, MD, PhD, Soonchunhyang University Cheonan Hospital, Cheonan, Korea
+Dae-Kyeong Kim, MD, PhD, Busan Paik Hospital, Inje University, Busan, Korea
+Ju Hyeon Oh, MD, PhD, Samsung Changwon Hospital, Sungkyunkwan University,
+
+8
+
+Changwon, Korea
+Myung Ho Jeong, MD, PhD, Chonnam National University Hospital, Gwangju, Korea
+Yong Hoon Kim, MD, PhD, Kangwon National University, School of Medicine, Chuncheon,
+Korea
+
+
+
+
+
+9
+
+2. Data sharing statement
+The HOST-EXAM trial is planning to continue follow-up until year 2025. No individual
+participant data will be available prior to this. Any relevant inquiry should be emailed to Dr. Hyo-
+Soo Kim (Email: hyosoo@snu.ac.kr).
+
+
+
+
+10
+
+3. Inclusion and Exclusion Criteria
+1) Inclusion Criteria:
+-
+Male and female aged ≥20 years
+-
+Maintenance of dual or triple antiplatelet therapy at least 12 ± 6 months after PCI with
+DES
+-
+No history of further clinical event after PCI with DES
+-
+Plan to change to antiplatelet monotherapy
+-
+Agreement to give written informed consent
+
+2) Exclusion Criteria:
+-
+History of hypersensitivity to aspirin or clopidogrel
+-
+History of contraindication to aspirin or clopidogrel
+-
+Active pathologic bleeding, such as peptic ulcer, tumor bleeding or intracranial
+haemorrhage
+-
+History of major bleeding, BARC type ≥3, resulting in stop of antiplatelet agents within
+3 months
+-
+Bleeding diathesis
+-
+Known coagulopathy or refusal of blood transfusion
+-
+Presence of non-cardiac comorbidity with life expectancy ≤2 years from randomization
+-
+Plan to surgery or intervention which needs to stop antiplatelet agents ≥3 months
+-
+Females with childbearing potential or breast-feeding
+-
+Conditions that may result in protocol non-compliance by the committees
+-
+Co-administration of contraindicated medications as follows: other P2Y12 inhibitors
+(prasugrel or ticagrelor); anticoagulants (warfarin, new oral anticoagulants, or chronic
+therapy of heparin); cytochrome P450 2C19 inhibitors (fluoxetine, moclobemid or
+voriconazole); probenecid; high dose of methotrexate (≥15 mg/week); lithium
+-
+Refusal to give written informed consent
+
+
+
+11
+
+4. Sample size calculation
+Hypothesis: Clopidogrel is superior to aspirin in preventing clinical events, defined as a
+composite of all-cause death, nonfatal myocardial infarction, stroke, readmission due to
+acute coronary syndrome, or major bleeding at 24 months after randomization. Based on
+the event rates of a previous trials performed in various populations including Korean,1,2
+we predicted clinical event rate of clopidogrel and aspirin. Specifically, Lee et al1 reported
+that the rates of patient-oriented composite events (all-cause death, non-fatal MI, and any
+revascularization) at 1- and 3-year follow-up were 7.5% and 13.3%, respectively. This
+would leave an event rate of approximately 6% from 1 year after PCI. Also, the CAPRIE
+trial2 reported that bleeding events occurred in 1.5% and stroke occurred in 4.5% during
+the 2-year follow-up period.
+The primary outcome of our study was a composite of all-cause death, non-fatal
+myocardial infarction, stroke, readmission due to acute coronary syndrome, and major
+bleeding events, which would add up to 12%. Additionally, we assumed that clopidogrel
+would reduce the risk of clinical events and bleeding by 20%, based on analysis of the
+CAPRIE trial. Therefore, we predicted clinical event rates of clopidogrel and aspirin
+monotherapy to be 9.6% and 12%, respectively, at 24 months after single antiplatelet
+therapy.
+
+
+• Primary endpoint: clinical events defined as a composite of all-cause death, nonfatal
+myocardial infarction, stroke, readmission due to acute coronary syndrome, or
+major bleeding at 24 months after randomization.
+• Design: superiority
+• Sampling ratio: Clopidogrel versus Aspirin = 1:1
+• Type I error (α): two-sided 5%
+
+1 Lee JM, Park KW, Han JK, et al. Three-year patient-related andstent-related outcomes of second-generation
+everolimus-elutingXience V stents versus zotarolimus-eluting resolute stents in real-worldpractice (from the
+Multicenter Prospective EXCELLENT andRESOLUTE-Korea Registries). Am J Cardiol 2014;114(9):1329-38.
+2 C.S. Committee, A randomised, blinded, trial of clopidogrel versus aspirin in patients at risk of ischaemic events
+(CAPRIE). CAPRIE Steering Committee, Lancet, 348 (9038) (1996), pp. 1329-1339
+
+12
+
+• Accrual time : 4 years
+• Total time : 6 years (accrual year + follow-up 2 years)
+• Assumption: Clinical event rate 9·6% in clopidogrel vs. 12·0% in aspirin group
+• Statistical power (1- β): 80%
+• Potential withdrawal rates : 5% in each groups
+
+Based on the above assumption, the expected number of events in each test drug group is 567.
+We would need total 5530 patients (2765 patients in each group) with consideration of
+withdrawal rates.
+
+
+
+13
+
+5. Definition of subgroups and clinical outcomes
+Complex PCI
+Complex PCI was defined as having at least 1 of the following features: 3 vessels treated, ≥3 stents
+implanted, ≥3 lesions treated, bifurcation with 2 stents implanted, total stent length >60 mm, or
+chronic total occlusion.3
+
+High bleeding risk
+The definition of high bleeding risk was based on the recent ARC definition (Urban P et al.
+Circulation 2019, Urban P et al. EHJ 2019). 4 , 5 In this definition, 20 clinical criteria were
+established (14 major criteria and 6 minor criteria) based on available published evidence. Patients
+are considered at 'high bleeding risk' if at least one major or two minor criteria are present.
+
+Death
+All deaths are adjudicated and classified all-cause death, cardiovascular death, and non-
+cardiovascular death. Cardiovascular deaths are defined as all deaths excluding those for which
+underlying cause is solely documented as non-cardiovascular and all deaths for which
+cardiovascular contributing cause is suspected.
+
+Myocardial infarction
+The definition of myocardial infarction follows the third universal definition of myocardial
+
+3 G Giustino, A Chieffo, T Palmerini et al. Efficacy and Safety of Dual Antiplatelet Therapy After Complex PCI. J
+Am Coll Cardiol. 2016 Oct 25;68(17):1851-1864.
+4 Urban P, Mehran R, Colleran R, et al. Defining High Bleeding Risk in Patients Undergoing Percutaneous Coronary
+Intervention. Circulation. 2019 Jul 16;140(3):240-261
+5 Urban P, Mehran R, Colleran R, et al. Defining high bleeding risk in patients undergoing percutaneous coronary
+intervention: a consensus document from the Academic Research Consortium for High Bleeding Risk. Eur Heart J.
+2019 Aug 14;40(31):2632-2653.
+
+14
+
+infarction. Briefly, myocardial infarction is diagnosed by detection of an increased level of cardiac
+biomarkers, preferably cardiac troponins, with at least one value above the 99th percentile of the
+upper reference limit, accompanied with at least one of the followings: symptoms of myocardial
+ischemia, ECG changes (ST elevation, left bundle branch block, ST change without ST elevation),
+and imaging findings suggestive of myocardial infarction (loss of viable myocardium or new
+regional wall motion abnormality.
+
+Stroke
+Stroke is defined as any non-convulsive, focal or global neurological deficit of abrupt onset lasting
+for more than 24 hours or leading to death, which is caused by ischemia or hemorrhage within
+brain.
+
+Ischemic Stroke
+Ischemic stroke is defined as an acute episode of infarction of central nervous system tissue,
+causing any neurologic symptom. If the patients admitted for an acute neurologic symptom and
+thrombolysis or interventions resulting in complete recovery, these events are also classified at an
+ischemic stroke.
+
+Hemorrhagic Stroke
+Hemorrhagic stroke is defined as an acute neurologic episode that originated from a non-traumatic
+intraparenchymal, intraventricular, or subarachnoid hemorrhage.
+
+Readmission due to acute coronary syndrome
+Readmission due to at least one of following: 1) An episode of rest discomfort fulfilling criteria
+for Canadian Heart Association class III-IV angina, lasting at least 5 minutes; 2) Documentation
+of new ST segment shifts ≥0.05 mV on 12 lead ECG or lasting ≥20 minutes on ambulatory ECG
+
+15
+
+monitoring; 3) An episode of acute pulmonary edema or hemodynamic instability presumed to be
+ischemic in origin; 4) A recurrent myocardial infarction.
+
+Unstable angina
+An episode of rest discomfort fulfilling criteria for Canadian Heart Association class III-IV angina,
+presumed to be ischemic in origin and lasting at least 5 minutes.
+
+Urgent revascularization
+Any coronary intervention or coronary artery bypass grafting that occurs as a rescue within 48
+hours after admission for acute coronary syndrome.
+
+BARC bleeding classification
+Type 0: No bleeding
+Type 1: Bleeding that is not actionable and does not cause the patient to seek unscheduled
+performance of studies, hospitalization, or treatment by a health care professional
+Type 2: Any overt, actionable sign of hemorrhage (e.g. more bleeding than would be expected for
+a clinical circumstance; including bleeding found by imaging alone) that does not fit the criteria
+for Types 3, 4, or 5, but does meet at least one of the following criteria: (1) requiring non-surgical,
+medical intervention by a health care professional, (2) leading to hospitalization or increased level
+of care, (3) prompting evaluation
+Type 3
+Type 3a:
+- Overt bleeding plus hemoglobin drop of 3 to ,5*g/dL (provided hemoglobin drop is related to
+bleed)
+- Any transfusion with overt bleeding
+
+16
+
+Type 3b:
+- Overt bleeding plus hemoglobin drop ≥ 5 g/dL (provided hemoglobin drop is related to bleed)
+- Cardiac tamponade
+- Bleeding requiring surgical intervention for control (excluding dental/nasal/skin/hemorrhoids)
+- Bleeding requiring intravenous vasoactive drugs
+Type 3c:
+- Intracranial hemorrhage (does not include microbleeds or hemorrhagic transformation; does
+include intraspinal)
+- Subcategories; confirmed by autopsy or imaging or LP
+- Intra-ocular bleed compromising vision
+Type 4: CABG-related bleeding
+- Perioperative intracranial bleeding within 48 h
+- Reoperation following closure of sternotomy for the purpose of controlling bleeding
+- Transfusion of ≥ 5 units of whole blood or packed red blood cells within a 48 period**
+- Chest tube output ≥ 2 L within a 24 h period
+- If a CABG-related bleed is not adjudicated as at least a Type 3 severity event, it will be classified
+as 'not a bleeding event'
+Type 5: fatal bleeding
+Type 5a: Probable fatal bleeding: no autopsy or imaging confirmation, but clinically suspicious
+Type 5b: Definite fatal bleeding: overt bleeding or autopsy or imaging confirmation
+
+Repeat Revascularization
+
+17
+
+To reduce the change of so-called "oculostenotic reflex," whereby the rates of repeat
+revascularization are disproportionately high, the investigators in this study encouraged to perform
+a non-invasive stress test before the decision making. This study only counted on the clinically-
+driven
+revascularization.
+Clinically-driven
+revascularization
+was
+defined
+as
+repeat
+revascularization in the presence of % diameter stenosis ≥ 70%, or in % diameter stenosis ≥ 50%
+with at least one of the following: 1) Recurrence of anginal symptoms; 2) Positive non-invasive
+test; or 3) Positive invasive physiologic test.
+Target lesion revascularization
+Target lesion revascularization is defined as any repeat revascularization procedure (PCI or
+CABG) at the original lesion of the index procedure any time during the follow-up period
+Target vessel revascularization
+Target vessel revascularization is defined as any repeat revascularization procedure (PCI or
+CABG) involving at least one of the target vessels that were treated in the index procedure
+
+Stent thrombosis
+Stent thrombosis is defined according to the Academic Research Consortium (ARC).6 In brief,
+stent thrombosis is defined as abrupt onset of an acute coronary syndrome, which is confirmed
+with angiographic evidence of acute thrombotic occlusion in the stented segment of a coronary
+artery. Stent thrombosis is classified by the timing in to Acute thrombosis (occurs within 24 hours
+of initial placement), subacute thrombosis (occurs between 24 hours to one month of initial
+placement), late stent thrombosis (occurs between 1 and 12 months of initial placement), and very
+late stent thrombosis (occurs after 12 months of initial placement). Also, the classifications include
+definite, probable, and possible stent thrombosis.
+
+6 Garcia-Garcia HM et al., Standardized End Point Definitions for Coronary Intervention Trials:
+The Academic Research Consortium-2 Consensus Document, Eur Heart J. 2018 Jun
+14;39(23):2192-2207
+Garcia-Garcia HM et al., Standardized End Point Definitions for Coronary Intervention Trials:
+The Academic Research Consortium-2 Consensus Document, Circulation. 2018 Jun
+12;137(24):2635-2650
+
+18
+
+Possible stent thrombosis
+Consider with unexplained death 30 days or later after stent placement.
+Probable stent thrombosis
+Any unexplained death within 30 days of stent placement.
+Consider if there is active ischemia on electrocardiogram or stress in the distribution of prior
+stent and absence of significant coronary lesion on angiography.
+Definite stent thrombosis
+The presence of a thrombus that originates in the stent/scaffold or in the segment 5 mm proximal
+or distal to the stent/scaffold or in a side branch originating from the stented/scaffolded segment
+and the presence of at least 1 of the following criteria: Acute onset of ischemic symptoms at rest
+OR New electrocardiographic changes suggestive of acute ischemia OR Typical rise and fall in
+cardiac biomarkers. Pathological confirmation of stent/scaffold thrombosis can be performed
+by evidence of recent thrombus determined at autopsy OR by examination of tissue retrieved
+following thrombectomy (visual/histology)
+
+
+Minor gastrointestinal complications
+Minor gastrointestinal complications are defined as patient-reported outcomes of newly developed
+GI symptoms including various symptoms such as epigastric soreness, dyspepsia, abdominal pain,
+nausea, vomiting, diarrhea, constipation, melena, or hematochezia. Also, newly added GI
+medications, or symptom-driven GI endoscopy were collected.
+
+
+
+19
+
+6. Supplementary Tables
+Table S1. Baseline Medication Profiles of the Intention-to-treat Population, including the
+DAPT Regimen before Randomization and Non-trial Related Medications
+
+
+Clopidogrel
+(N = 2710)
+Aspirin
+(N = 2728)
+DAPT at the randomization point - no. (%)
+
+
+Aspirin plus clopidogrel
+81·8% (2218)
+81·1% (2212)
+Aspirin plus ticagrelor
+9·8% (266)
+9·8% (268)
+Aspirin plus prasugrel
+7·8% (212)
+8·6% (235)
+Aspirin plus clopidogrel plus cilostazol
+0·5% (14)
+0·5% (13)
+Baseline medications - no. (%)
+
+
+ Beta blockers
+50·3% (1364)
+49·5% (1350)
+ACE inhibitors
+15·5% (420)
+13·7% (373)
+ARBs
+34·7% (940)
+33·9% (925)
+Calcium-channel blockers
+27·7% (750)
+26·8% (731)
+Diuretics
+9·7% (262)
+10·9% (297)
+Nitrates
+9·4% (255)
+8·6% (234)
+Statins
+84·5% (2290)
+84·1% (2294)
+Proton pump inhibitors
+10·7% (290)
+12·1% (331)
+Esomeprazole/Omeprazole
+2·9% (79)
+2·7% (73)
+Lansoprazole/Dexlansoprazole
+4·5% (121)
+5·5% (150)
+Pantoprazole
+2·2% (60)
+2·9% (79)
+Rabeprazole
+1·1% (30)
+1·1% (29)
+Abbreviations: ACE, angiotensin-converting enzyme; ARB, angiotensin II receptor blocker;
+DAPT, dual antiplatelet therapy.
+
+
+
+
+20
+
+Table S2. Detailed Drug-eluting Stent generation and brand name used in the Intention-to-
+treat Population
+
+
+Clopidogrel (N = 2710)
+Aspirin (N = 2728)
+Type of implanted stent
+
+
+2nd generation or newer DES
+96.9% (2627)
+97.2% (2651)
+1st generation DES
+2.0% (54)
+1.9% (52)
+Unknown
+1.1% (29)
+0.9% (25)
+Type of implanted stent in detail
+
+
+Absorb BVS
+0.2% (5)
+0.1% (2)
+BioFreedom DCS
+0.6% (16)
+0.3% (9)
+Biomatrix BES
+17.1% (463)
+18.3% (499)
+Coroflex ISAR SES
+1.7% (45)
+1.7% (47)
+DESyne NES
+3.8% (102)
+2.9% (80)
+Endeavor ZES
+1.0% (26)
+1.0% (27)
+Nobori BES
+3.7% (99)
+3.9% (105)
+Orsiro SES
+8.2% (223)
+8.4% (229)
+Promus EES
+14.9% (404)
+14.0% (382)
+Resolute ZES
+20.9% (565)
+22.1% (604)
+Synergy EES
+3.1% (85)
+2.8% (77)
+Taxus PES
+0.1% (2)
+0.0% (1)
+Ultimaster SES
+1.2% (32)
+1.2% (33)
+Xience EES
+20.6% (559)
+20.2% (550)
+Other 1st generation DES
+1.0% (26)
+0.9% (24)
+Other 2nd generation DES
+1.1% (29)
+1.3% (34)
+Unknown
+1.1% (29)
+0.9% (25)
+
+Abbreviation: BES, Biolimus eluting stent; BVS, Bioresorbable vascular scaffold; DES, Drug-
+eluting stent; EES, Everolimus eluting stent; NES, Novolimus eluting stent; PES, Paclitaxel eluting
+
+21
+
+stent; SES, Sirolimus eluting stent; ZES, Zotarolimus eluting stent
+
+* Data presented as n (%).
+
+
+22
+
+Table S3. Detailed clinical diagnosis of patients stopped DAPT before 12 months
+
+DAPT duration < 365 days
+Clopidogrel (n=2710)
+Aspirin (n=2728)
+Total population
+31·4% (852)
+32·3% (882)
+Clinical diagnosis
+
+
+- Non-acute coronary syndrome
+9·6% (260)
+9·1% (248)
+- STEMI
+4·1% (110)
+5·1% (140)
+- NSTEMI
+6·0% (163)
+6·7% (182)
+- Unstable Angina
+11·8% (319)
+11·4% (312)
+* Data presented as n (%).
+
+
+
+
+23
+
+Table S4. Detailed Clinical Outcomes of the Intention-to-treat Population
+
+
+Clopidogrel
+(n=2710)
+Aspirin
+(n=2728)
+No. of patients (%)
+Primary composite endpoint
+5·7% (152)
+7·7% (207)
+Key secondary endpoints
+
+
+ Thrombotic composite endpoint
+3·7% (99)
+5·5% (146)
+ Any bleeding (BARC type ≥2)
+2·3% (61)
+3·3% (87)
+All-cause death
+1·9% (51)
+1·3% (36)
+ Cardiac death
+0·7% (19)
+0·5% (14)
+ Cardiac Arrest
+0·4% (11)
+0·3% (7)
+ Unknown origin of death
+0·3% (8)
+0·3% (7)
+ Non-cardiac death
+1·2% (32)
+0·8% (22)
+ Cerebrovascular Accident
+0·2% (6)
+0·1% (4)
+Non-fatal myocardial infarction
+0·7% (18)
+1·0% (28)
+ Target-vessel myocardial infarction
+0·3% (9)
+0·6% (17)
+Stroke
+0·7% (18)
+1·6% (43)
+ Ischemic stroke
+0·5% (14)
+1·0% (26)
+ Hemorrhagic stroke
+0·2% (4)
+0·6% (17)
+Readmission due to ACS
+2·5% (66)
+4·1% (109)
+ Unstable angina
+1·8% (47)
+3·0% (79)
+ Urgent revascularization
+1·7% (44)
+2·2% (58)
+Major bleeding (BARC type ≥3)
+1·2% (33)
+2·0% (53)
+Minor bleeding (BARC type 2)
+1·1% (28)
+1·3% (34)
+Any revascularization
+2·1% (56)
+2·6% (69)
+ Target lesion revascularization
+0·9% (24)
+1·4% (36)
+ Target vessel revascularization
+1·4% (37)
+1·8% (48)
+Definite or probable stent thrombosis
+0·4% (10)
+0·6% (16)
+ Definite stent thrombosis
+0·2% (6)
+0·3% (9)
+
+[Extracted table 1]
+|Column 1|Column 2|
+|---|---|
+||Clopidogrel Aspirin<br>(n=2710) (n=2728)|
+||No. of patients (%)|
+|Primary composite endpoint<br>Key secondary endpoints<br>Thrombotic composite endpoint<br>Any bleeding (BARC type ≥2)|5·7% (152) 7·7% (207)<br>3·7% (99) 5·5% (146)<br>2·3% (61) 3·3% (87)|
+|All-cause death<br>Cardiac death<br>Cardiac Arrest<br>Unknown origin of death<br>Non-cardiac death<br>Cerebrovascular Accident<br>Non-fatal myocardial infarction<br>Target-vessel myocardial infarction<br>Stroke<br>Ischemic stroke<br>Hemorrhagic stroke<br>Readmission due to ACS<br>Unstable angina<br>Urgent revascularization<br>Major bleeding (BARC type ≥3)<br>Minor bleeding (BARC type 2)<br>Any revascularization<br>Target lesion revascularization<br>Target vessel revascularization<br>Definite or probable stent thrombosis<br>Definite stent thrombosis|1·9% (51) 1·3% (36)<br>0·7% (19) 0·5% (14)<br>0·4% (11) 0·3% (7)<br>0·3% (8) 0·3% (7)<br>1·2% (32) 0·8% (22)<br>0·2% (6) 0·1% (4)<br>0·7% (18) 1·0% (28)<br>0·3% (9) 0·6% (17)<br>0·7% (18) 1·6% (43)<br>0·5% (14) 1·0% (26)<br>0·2% (4) 0·6% (17)<br>2·5% (66) 4·1% (109)<br>1·8% (47) 3·0% (79)<br>1·7% (44) 2·2% (58)<br>1·2% (33) 2·0% (53)<br>1·1% (28) 1·3% (34)<br>2·1% (56) 2·6% (69)<br>0·9% (24) 1·4% (36)<br>1·4% (37) 1·8% (48)<br>0·4% (10) 0·6% (16)<br>0·2% (6) 0·3% (9)|
+
+24
+
+ Definite or probable stent thrombosis
+0·4% (10)
+0·6% (16)
+Any minor GI complications
+10·2% (272)
+11·9% (320)
+ Epigastric soreness
+3·1% (82)
+3·7% (99)
+ Dyspepsia
+2·9% (76)
+2·9% (77)
+ Abdominal pain
+3·1% (82)
+3·0% (81)
+ Nausea
+2·1% (55)
+2·4% (65)
+ Vomiting
+1·8% (48)
+1·4% (37)
+ Diarrhea
+1·9% (51)
+1·6% (42)
+ Constipation
+1·3% (35)
+1·7% (45)
+ Melena or hematochezia
+1·1% (28)
+1·4% (37)
+Abbreviations: ACS, acute coronary syndrome; BARC, Bleeding Academic Research Consortium;
+GI, gastrointestinal
+
+
+
+
+25
+
+Table S5. Summary of Causes of Mortality Events
+
+No. of patients
+Total
+Clopidogrel
+group
+Aspirin
+group
+P value
+Cardiovascular cause
+43
+25
+18
+0·274
+-
+Cardiac arrest
+18
+11
+7
+0·338
+-
+Cerebrovascular accident
+10
+6
+4
+0·520
+-
+Unknown origin of death
+15
+8
+7
+0·786
+Non-cardiovascular cause
+44
+26
+18
+0·217
+-
+Malignancy
+29
+18
+11
+0·186
+-
+Gastrointestinal origin
+12
+8
+4
+
+-
+Respiratory origin
+8
+4
+4
+
+-
+Endocrinology origin
+2
+1
+1
+
+-
+Genitourinary origin
+4
+2
+2
+
+-
+Other
+2
+2
+0
+
+-
+Unknown primary
+1
+1
+0
+
+-
+Infectious disease
+9
+4
+5
+0·746
+-
+Suicide or Trauma
+3
+2
+1
+0·560
+-
+Others
+3
+2
+1
+0·560
+
+* Comparisons between groups were carried out using the Pearson's chi-squared test or Fisher's
+exact test depending on the data distribution. The definite cause of mortality cases was confirmed
+through the National Health Insurance Service system of Korea and the Korea National Statistics
+System. Mortality causes were classified by the International Classification of Disease-10th
+Revision-Clinical Modification (ICD-10-CM) codes.
+
+[Extracted table 1]
+|No. of patients|Total|Clopidogrel Aspirin<br>group group|P value|
+|---|---|---|---|
+|Cardiovascular cause|43|25 18|0·274|
+|- Cardiac arrest<br>- Cerebrovascular accident<br>- Unknown origin of death|18<br>10<br>15|11 7<br>6 4<br>8 7|0·338<br>0·520<br>0·786|
+|Non-cardiovascular cause|44|26 18|0·217|
+|- Malignancy<br>- Gastrointestinal origin<br>- Respiratory origin<br>- Endocrinology origin<br>- Genitourinary origin<br>- Other<br>- Unknown primary<br>- Infectious disease<br>- Suicide or Trauma<br>- Others|29<br>12<br>8<br>2<br>4<br>2<br>1<br>9<br>3<br>3|18 11<br>8 4<br>4 4<br>1 1<br>2 2<br>2 0<br>1 0<br>4 5<br>2 1<br>2 1|0·186<br>0·746<br>0·560<br>0·560|
+
+26
+
+Table S6. Summary of Bleeding Event by the Bleeding Academic Research Consortium type
+
+(Number of cases)
+Total
+Clopidogrel group
+Aspirin group
+P value
+BARC type 2
+62
+28
+34
+0·459
+BARC type 3
+
+
+
+
+-
+BARC type 3A
+40
+19
+21
+0·767
+-
+BARC type 3B
+23
+9
+14
+0·304
+-
+BARC type 3C
+19
+4
+15
+0·012
+BARC type 5
+4
+1
+3
+0·320
+
+Abbreviations: BARC, Bleeding Academic Research Consortium
+* Comparisons between groups were carried out using the Pearson's chi-squared test or Fisher's
+exact test depending on the data distribution. The bleeding complications were classified according
+to the Bleeding Academic Research Consortium definition. Specific definitions are shown in the
+'Definition of clinical outcomes' section.
+
+[Extracted table 1]
+|Total|Clopidogrel group Aspirin group|
+|---|---|
+|62|28 34|
+|40<br>23<br>19|19 21<br>9 14<br>4 15|
+|4|1 3|
+
+27
+
+Table S7. Absolute Risk Reduction and Number Needed to Treat of Primary and Secondary
+Outcomes
+
+
+Clopidogrel
+group
+Aspirin
+group
+ARR
+(95% CI)
+NNT
+(95% CI)
+Primary composite endpoint
+5·7% (152)
+7·7% (207)
+2·0 (0·6, 3·3)
+50·6 (30·0, 161·9)
+Thrombotic composite endpoint
+3·7% (99)
+5·5% (146)
+1·7 (0·6, 2·8)
+58·9 (35·7, 167·3)
+All-cause death
+1·9% (51)
+1·3% (36)
+-0·8 (-1·5, -0·1)
+-127·5 (-1359·8, -66·9)
+Cardiac death
+0·7% (19)
+0·5% (14)
+-0·2 (-0·6, 0·2)
+-532·2 (-166·4, 444·2)
+Non-cardiac death
+1·2% (32)
+0·8% (22)
+-0·4 (-0·9, 0·2)
+-267·1 (-110·9, 653·8)
+Non-fatal myocardial infarction
+0·7% (18)
+1·0% (28)
+0·4 (-0·1, 0·8)
+276·1 (-805·1, 117·8)
+Stroke
+0·7% (18)
+1·6% (43)
+0·9 (0·3, 1·4)
+114·3 (69·1, 330·3)
+Ischemic stroke
+0·5% (14)
+1·0% (26)
+0·4 (0·1, 0·8)
+275·7 (-978·3, 120·8)
+Hemorrhagic stroke
+0·2% (4)
+0·6% (17)
+0·5 (0·2, 0·8)
+195·2 (117·8, 568·9)
+Readmission due to ACS
+2·5% (66)
+4·1% (109)
+1·8 (0·8, 2·7)
+56·2 (36·4, 123·0)
+Major bleeding (BARC type ≥3)
+1·2% (33)
+2·0% (53)
+0·8 (0·2, 1·5)
+119·7 (66·3, 619·0)
+Any bleeding (BARC type ≥2)
+2·3% (61)
+3·3% (87)
+0·9 (0·0, 1·8)
+111·1 (55·9, 9058·4)
+
+Abbreviations: ACS, acute coronary syndrome; ARR, absolute risk reduction; BARC, Bleeding Academic Research
+Consortium; CI, confidence interval; NNT, number needed to treat
+
+[Extracted table 1]
+||Clopidogrel Aspirin<br>group group|ARR NNT<br>(95% CI) (95% CI)|
+|---|---|---|
+|Primary composite endpoint<br>Thrombotic composite endpoint|5·7% (152) 7·7% (207)<br>3·7% (99) 5·5% (146)|2·0 (0·6, 3·3) 50·6 (30·0, 161·9)<br>1·7 (0·6, 2·8) 58·9 (35·7, 167·3)|
+|All-cause death<br>Cardiac death<br>Non-cardiac death<br>Non-fatal myocardial infarction<br>Stroke<br>Ischemic stroke<br>Hemorrhagic stroke<br>Readmission due to ACS<br>Major bleeding (BARC type ≥3)<br>Any bleeding (BARC type ≥2)|1·9% (51) 1·3% (36)<br>0·7% (19) 0·5% (14)<br>1·2% (32) 0·8% (22)<br>0·7% (18) 1·0% (28)<br>0·7% (18) 1·6% (43)<br>0·5% (14) 1·0% (26)<br>0·2% (4) 0·6% (17)<br>2·5% (66) 4·1% (109)<br>1·2% (33) 2·0% (53)<br>2·3% (61) 3·3% (87)|-0·8 (-1·5, -0·1) -127·5 (-1359·8, -66·9)<br>-0·2 (-0·6, 0·2) -532·2 (-166·4, 444·2)<br>-0·4 (-0·9, 0·2) -267·1 (-110·9, 653·8)<br>0·4 (-0·1, 0·8) 276·1 (-805·1, 117·8)<br>0·9 (0·3, 1·4) 114·3 (69·1, 330·3)<br>0·4 (0·1, 0·8) 275·7 (-978·3, 120·8)<br>0·5 (0·2, 0·8) 195·2 (117·8, 568·9)<br>1·8 (0·8, 2·7) 56·2 (36·4, 123·0)<br>0·8 (0·2, 1·5) 119·7 (66·3, 619·0)<br>0·9 (0·0, 1·8) 111·1 (55·9, 9058·4)|
+
+28
+
+Table S8. Baseline Characteristics of the Per-protocol Population
+
+
+Clopidogrel
+(N = 2648)
+Aspirin
+(N = 2655)
+Demographics and Comorbidities
+
+
+Age - yr
+63·5 ± 10·7
+63·4 ± 10·7
+Male - no. (%)
+74·5% (1974)
+74·7% (1984)
+Diabetes mellitus - no. (%)
+34·0% (901)
+34·3% (911)
+Insulin dependent Diabetes mellitus - no. (%)
+2·0% (54)
+2·3% (61)
+Hypertension - no. (%)
+61·3% (1622)
+61·5% (1632)
+Dyslipidemia - no. (%)
+69·7% (1846)
+69·5% (1845)
+Current smoker - no. (%)
+20·1% (533)
+21·2% (563)
+Chronic kidney disease - no. (%)
+12·8% (339)
+12·3% (327)
+Previous MI - no. (%)
+16·3% (431)
+15·9% (423)
+Previous CVA - no. (%)
+4·3% (115)
+4·9% (130)
+Clinical indication of PCI - no. (%)
+
+
+ Silent ischemia
+2·2% (57)
+2·6% (69)
+Stable angina
+25·6% (678)
+25·8% (684)
+Unstable angina
+35·8% (948)
+35·0% (929)
+NSTEMI
+19·3% (510)
+19·3% (513)
+STEMI
+17·2% (455)
+17·3% (460)
+Laboratory results
+
+
+White blood cells - /uL
+6·7 ± 1·9
+6·8 ± 1·9
+Hemoglobin - g/dL
+13·8 ± 1·7
+13·8 ± 1·6
+Creatinine - mg/dL
+1·0 ± 0·7
+1·0 ± 0·6
+Total cholesterol - mg/dL
+136·7 ± 29·7
+138·3 ± 30·5
+Triglyceride - mg/dL
+126·5 ± 86·5
+125·4 ± 70·8
+HDL-cholesterol - mg/dL
+46·3 ± 12·0
+46·5 ± 12·3
+LDL-cholesterol - mg/dL
+70·7 ± 23·6
+72·1 ± 23·2
+HbA1c - %
+6·5 ± 1·1
+6·5 ± 1·1
+Days from PCI to randomization
+383 (357-423)
+381 (358-421)
+DAPT at the randomization point - no. (%)
+
+
+Aspirin plus Clopidogrel
+81·8% (2166)
+80·9% (2147)
+ Aspirin plus Ticagrelor
+9·8% (260)
+9·9% (262)
+ Aspirin plus Prasugrel
+7·9% (208)
+8·8% (233)
+ Aspirin plus Clopidogrel plus Cilostazol
+0·5% (14)
+0·5% (13)
+
+29
+
+Angiographic data per patient †
+
+
+Extent of CAD - no. (%)
+
+
+ 1-vessel disease
+50·6% (1340)
+50·5% (1342)
+2-vessel disease
+31·6% (836)
+30·8% (819)
+3-vessel disease
+17·8% (472)
+18·6% (493)
+Left main disease - no. (%)
+5·2% (138)
+4·7% (126)
+PCI for bifurcation lesion - no. (%)
+10·6% (281)
+10·8% (287)
+ 2-stenting for bifurcation PCI - no. (%)
+1·7% (45)
+1·5% (41)
+PCI for CTO lesion - no. (%)
+9·5% (251)
+9·4% (249)
+Number of treated lesions
+1·3 ± 0·6
+1·3 ± 0·6
+Mean diameter of implanted stents
+3·1 ± 0·4
+3·1 ± 0·4
+Minimum diameter of implanted stents
+3·0 ± 0·5
+3·0 ± 0·5
+Total length of implanted stents
+36·0 ± 24·2
+35·7 ± 23·5
+Total number of implanted stents
+1·5 ± 0·8
+1·5 ± 0·8
+Generation of DES
+
+
+1st generation DES
+2·0% (52)
+1·9% (50)
+2nd generation DES
+97·0% (2568)
+97·2% (2581)
+Unknown generation
+1·1% (28)
+0·9% (24)
+Abbreviations: CAD, coronary artery disease; CTO, chronic total occlusion; CVA, cerebrovascular
+accident; DES, drug-eluting stent; HDL, high-density lipoprotein; LDL, low-density lipoprotein;
+MI, myocardial infarction; NSTEMI, non ST-segment elevation myocardial infarction; PCI,
+percutaneous coronary intervention; STEMI, ST-segment elevation myocardial infarction
+
+
+* Data presented as mean ± standard deviation or as n (%). 'Days from PCI to randomization' is
+presented in median and interquartile range. There were no significant differences between the two
+groups.
+
+† A total of 3473 lesions were treated in the clopidogrel group and 3471 in the aspirin group.
+
+
+
+30
+
+Table S9. Clinical Outcomes of the Per-protocol Population
+
+Clopidogrel
+(n=2648)
+Aspirin
+(n=2655)
+No. of patients (%)
+Primary composite endpoint
+5·6% (149)
+7·8% (206)
+Key secondary endpoints
+
+
+ Thrombotic composite endpoint
+3·6% (96)
+5·5% (145)
+ Any bleeding (BARC type ≥2)
+2·2% (59)
+3·2% (85)
+All-cause death
+1·9% (51)
+1·4% (36)
+Cardiac death
+0·7% (19)
+0·5% (14)
+Non-cardiac death
+1·2% (32)
+0·8% (22)
+Non-fatal MI
+0·6% (17)
+1·0% (27)
+Target-vessel MI
+0·3% (8)
+0·6% (16)
+Stroke
+0·6% (17)
+1·6% (43)
+Ischemic stroke
+0·5% (13)
+1·0% (26)
+Hemorrhagic stroke
+0·2% (4)
+0·6% (17)
+Readmission due to ACS
+2·4% (64)
+4·1% (108)
+Unstable angina
+1·8% (46)
+3·0% (79)
+Urgent revascularization
+1·6% (42)
+2·2% (57)
+Major bleeding (BARC type ≥3)
+1·3% (33)
+2·0% (53)
+Minor bleeding (BARC type 2)
+1·0% (26)
+1·2% (32)
+Any revascularization
+2·0% (53)
+2·5% (67)
+Target lesion revascularization
+0·9% (23)
+1·3% (34)
+Target vessel revascularization
+1·3% (35)
+1·7% (46)
+Definite/Probable stent thrombosis
+0·3% (9)
+0·6% (15)
+Definite stent thrombosis
+0·2% (5)
+0·3% (9)
+Any minor GI complications
+10·0% (262)
+11·7% (308)
+ Epigastric soreness
+3·1% (81)
+3·6% (96)
+Dyspepsia
+2·9% (75)
+2·9% (76)
+Abdominal pain
+3·0% (78)
+2·9% (77)
+
+[Extracted table 1]
+|Column 1|Column 2|
+|---|---|
+||Clopidogrel Aspirin<br>(n=2648) (n=2655)|
+||No. of patients (%)|
+|Primary composite endpoint<br>Key secondary endpoints<br>Thrombotic composite endpoint<br>Any bleeding (BARC type ≥2)|5·6% (149) 7·8% (206)<br>3·6% (96) 5·5% (145)<br>2·2% (59) 3·2% (85)|
+|All-cause death<br>Cardiac death<br>Non-cardiac death<br>Non-fatal MI<br>Target-vessel MI<br>Stroke<br>Ischemic stroke<br>Hemorrhagic stroke<br>Readmission due to ACS<br>Unstable angina<br>Urgent revascularization<br>Major bleeding (BARC type ≥3)<br>Minor bleeding (BARC type 2)<br>Any revascularization<br>Target lesion revascularization<br>Target vessel revascularization<br>Definite/Probable stent thrombosis<br>Definite stent thrombosis<br>Any minor GI complications<br>Epigastric soreness<br>Dyspepsia<br>Abdominal pain|1·9% (51) 1·4% (36)<br>0·7% (19) 0·5% (14)<br>1·2% (32) 0·8% (22)<br>0·6% (17) 1·0% (27)<br>0·3% (8) 0·6% (16)<br>0·6% (17) 1·6% (43)<br>0·5% (13) 1·0% (26)<br>0·2% (4) 0·6% (17)<br>2·4% (64) 4·1% (108)<br>1·8% (46) 3·0% (79)<br>1·6% (42) 2·2% (57)<br>1·3% (33) 2·0% (53)<br>1·0% (26) 1·2% (32)<br>2·0% (53) 2·5% (67)<br>0·9% (23) 1·3% (34)<br>1·3% (35) 1·7% (46)<br>0·3% (9) 0·6% (15)<br>0·2% (5) 0·3% (9)<br>10·0% (262) 11·7% (308)<br>3·1% (81) 3·6% (96)<br>2·9% (75) 2·9% (76)<br>3·0% (78) 2·9% (77)|
+
+31
+
+Nausea
+1·9% (50)
+2·3% (61)
+Vomiting
+1·8% (46)
+1·4% (36)
+Diarrhea
+1·9% (49)
+1·6% (41)
+Constipation
+1·3% (34)
+1·6% (42)
+Melena or hematochezia
+1·0% (35)
+1·3% (27)
+Abbreviations: ACS, acute coronary syndrome; BARC, Bleeding Academic Research
+Consortium; CI, confidence interval; GI, gastrointestinal; HR, hazard ratio; MI, myocardial
+infarction.
+
+
+
+32
+
+7. Supplementary Figures
+Figure S1. Schematic Study Design
+
+
+33
+
+Figure S2. Kaplan Meier Cumulative Event Analysis of the Primary Endpoint Based on the
+Per-protocol Population
+
+
+
+The cumulative incidence of the primary endpoint, consisting of all-cause death, nonfatal myocardial
+infarction, stroke, readmission due to acute coronary syndrome, and major bleeding (Bleeding
+Academic Research Consortium type ≥3 bleeding) complications, in the per-protocol population.
+
+
+
+
+34
+
+Figure S3. Subgroup Analysis for the Primary Endpoint in the Intention-to-treat Population
+
+
+35
+
+
+ The hazard ratio for the primary efficacy end point (a composite of all-cause death, nonfatal myocardial
+infarction, stroke, readmission due to acute coronary syndrome, and major bleeding complications) in the
+two groups are shown according to various subgroups, in the intention-to-treat population.
+
+
+
+36
+
+Figure S4 Subgroup Analysis for the Primary Endpoint in the Per-protocol Population
+
+
+37
+
+The hazard ratio for the primary efficacy end point (a composite of all-cause death, nonfatal myocardial
+infarction, stroke, readmission due to acute coronary syndrome, and major bleeding complications)
+in the two groups are shown according to various subgroups, in the per-protocol population.
+
+
+
+38
+
+Figure S5. Subgroup Analysis for the Thrombotic Composite Endpoint in the Intention-to-
+treat Population
+
+
+39
+
+The hazard ratio for the thrombotic composite end point (a composite of cardiac death, non-fatal MI,
+ischemic stroke, readmission due to ACS, and definite or probable stent thrombosis) in the two groups are
+shown according to various subgroups, in the intention-to-treat population.
+
+
+
+40
+
+Figure S6. Subgroup Analysis for the Any Bleeding in the Intention-to-treat Population
+
+
+41
+
+The hazard ratio for the bleeding end point (BARC type>=2 bleeding) in the two groups are shown
+according to various subgroups, in the intention-to-treat population.
+
+
+
+42
+
+8. Reference
+1. Lee H, Koo BK, Park KW, Shin ES, Lim SW, Rha SW, Bae JW, Jeon DW, Oh SK, Hur SH, Kim
+BS, Lee JH, Park TH, Lee NH, Kim HS and investigators H-E. A randomized clinical trial
+comparing long-term clopidogrel vs aspirin monotherapy beyond dual antiplatelet therapy after
+drug-eluting coronary stent implantation: Design and rationale of the Harmonizing Optimal
+Strategy for Treatment of coronary artery stenosis-Extended Antiplatelet Monotherapy (HOST-
+EXAM) trial. Am Heart J. 2017;185:17-25.
+
+2. Lee JM, Park KW, Han JK, HM Yang, HJ Kang, BK Koo, JW Bae, SI Woo, JS Park, DK Jin,
+DW Jeon, SK Oh, JS Park, DI Kim, MS Hyon, HK Jeon, DS Lim, MG Kim, SW Rha, SH Her, JY
+Hwang, S Kim, YJ Choi, JH Kang, KW Moon, Y Jang, HS Kim. Three-year patient-related
+andstent-related outcomes of second-generation everolimus-elutingXience V stents versus
+zotarolimus-eluting resolute stents in real-worldpractice (from the Multicenter Prospective
+EXCELLENT andRESOLUTE-Korea Registries). Am J Cardiol 2014;114(9):1329-38.
+
+3. C.S. Committee, A randomised, blinded, trial of clopidogrel versus aspirin in patients at risk of
+ischaemic events (CAPRIE). CAPRIE Steering Committee, Lancet, 348 (9038) (1996), pp. 1329-
+1339
+
+
+43
+
+9. Study Protocol
+10.
+
+
+Research Summary
+
+
+
+44
+
+Trial name and
+number
+Harmonizing Optimal Strategy for Treatment of coronary artery
+stenosis - EXtended Antiplatelet Monotherapy
+(HOST-EXAM RCT)
+Principle
+investigator
+Hyo-Soo Kim, Seoul National University Hospital, Seoul, Korea
+Objectives
+1) To compare the efficacy and safety of antiplatelet monotherapy with
+aspirin or clopidogrel for 2 years in patients who have not experienced
+MACE including all-cause death, acute coronary syndrome (ACS)
+including nonfatal MI, or urgent revascularization or bleeding under
+combined antiplatelet therapy for 12 ± 6 months after PCI with DES
+2) The trial tests the hypothesis that clopidogrel is superior to aspirin in
+preventing clinical events and device-oriented outcomes
+Study design
+A prospective, randomized, open-labeled, multicenter, comparative
+effectiveness trial
+Patient
+enrollment
+5,530 patients enrolled at 37 centers in Republic of Korea
+Patient follow-up
+A clinical follow-up is planned at 12 and 24 months, and additional
+visits are at the discretion of attending physicians. The investigators will
+be urged to follow up the patients by office visits or telephone contacts
+Primary endpoint
+A composite of all-cause death, nonfatal myocardial infarction, stroke,
+readmission due to acute coronary syndrome, or major bleeding at 24
+months after randomization
+
+[Extracted table 1]
+|Trial name and<br>number|Harmonizing Optimal Strategy for Treatment of coronary artery<br>stenosis - EXtended Antiplatelet Monotherapy<br>(HOST-EXAM RCT)|
+|---|---|
+|Principle<br>investigator|Hyo-Soo Kim, Seoul National University Hospital, Seoul, Korea|
+|Objectives|1) To compare the efficacy and safety of antiplatelet monotherapy with<br>aspirin or clopidogrel for 2 years in patients who have not experienced<br>MACE including all-cause death, acute coronary syndrome (ACS)<br>including nonfatal MI, or urgent revascularization or bleeding under<br>combined antiplatelet therapy for 12 ± 6 months after PCI with DES<br>2) The trial tests the hypothesis that clopidogrel is superior to aspirin in<br>preventing clinical events and device-oriented outcomes|
+|Study design|A prospective, randomized, open-labeled, multicenter, comparative<br>effectiveness trial|
+|Patient<br>enrollment|5,530 patients enrolled at 37 centers in Republic of Korea|
+|Patient follow-up|A clinical follow-up is planned at 12 and 24 months, and additional<br>visits are at the discretion of attending physicians. The investigators will<br>be urged to follow up the patients by office visits or telephone contacts|
+|Primary endpoint|A composite of all-cause death, nonfatal myocardial infarction, stroke,<br>readmission due to acute coronary syndrome, or major bleeding at 24<br>months after randomization|
+
+45
+
+Secondary
+endpoint
+-
+Target lesion revascularization : defined as any repeat revascularization
+procedure at the original lesion of the index procedure any time during
+the follow-up period
+-
+Target vessel revascularization : defined as any repeat revascularization
+procedure involving at least one of the target vessels that were treated in
+the index procedure
+-
+Stent thrombosis : defined according to the Academic Research
+Consortium (ARC)
+-
+Minor GI complications : assessed on the basis of newly added GI
+medications (including H2-blockers and PPIs documented for each
+patient), or symptom-driven GI endoscopy (type of endoscopy, test
+results, and further interventions)
+-
+Cost-effectiveness : Additional medical costs related to these minor GI
+complications (South Korean won/year) will be calculated to assess the
+cost-effectiveness of each drug based on average Korean expenses
+
+
+
+
+
+46
+
+Research Proposal
+
+1.
+Title of Study
+Comparison of long-term clopidogrel versus aspirin monotherapy beyond dual antiplatelet therapy after
+drug-eluting coronary stent implantation: Harmonizing Optimal Strategy for Treatment of coronary artery
+diseases - EXtended Antiplatelet Monotherapy (HOST-EXAM RCT)
+
+2.
+Clinical Research Center
+Medical Research Collaborating Center or Cardiovascular Center & Clinical Research Center, Seoul National
+University Hospital, 101 Daehak-ro, Jongno-gu, Seoul, 03080, Republic of Korea
+
+3.
+Principle Investigator, Staff, Co-Researchers
+Name
+Center
+Position
+Principle
+investigator
+Hyo-Soo Kim
+Seoul National University Hospital, Seoul,
+Korea
+Professor
+Co-
+researchers
+Bon-Kwon Koo
+Seoul National University Hospital, Seoul,
+Korea
+Professor
+Kyung Woo Park
+Seoul National University Hospital, Seoul,
+Korea
+Professor
+Han-Mo Yang
+Seoul National University Hospital, Seoul,
+Korea
+Professor
+Hyun-Jae Kang
+Seoul National University Hospital, Seoul,
+Korea
+Professor
+Hyun-Jai Cho
+Seoul National University Hospital, Seoul,
+Korea
+Professor
+Jung-Kyu Han
+Seoul National University Hospital, Seoul,
+Korea
+Professor
+Jeehoon Kang
+Seoul National University Hospital, Seoul,
+Republic of Korea
+Professor
+In-Ho Chae
+Seoul National University Bundang
+Hospital, Seongnam, Republic of Korea
+Professor
+Sang-Hyun Kim
+Boramae Medical Center, Seoul, Republic
+f K
+Professor
+
+[Extracted table 1]
+||Name|Center|Position|
+|---|---|---|---|
+|Principle<br>investigator|Hyo-Soo Kim|Seoul National University Hospital, Seoul,<br>Korea|Professor|
+|Co-<br>researchers|Bon-Kwon Koo|Seoul National University Hospital, Seoul,<br>Korea|Professor|
+||Kyung Woo Park|Seoul National University Hospital, Seoul,<br>Korea|Professor|
+||Han-Mo Yang|Seoul National University Hospital, Seoul,<br>Korea|Professor|
+||Hyun-Jae Kang|Seoul National University Hospital, Seoul,<br>Korea|Professor|
+||Hyun-Jai Cho|Seoul National University Hospital, Seoul,<br>Korea|Professor|
+||Jung-Kyu Han|Seoul National University Hospital, Seoul,<br>Korea|Professor|
+||Jeehoon Kang|Seoul National University Hospital, Seoul,<br>Republic of Korea|Professor|
+||In-Ho Chae|Seoul National University Bundang<br>Hospital, Seongnam, Republic of Korea|Professor|
+||Sang-Hyun Kim|Boramae Medical Center, Seoul, Republic|Professor|
+
+47
+
+Seung Woon Rha
+Korea University Medical Center, Seoul,
+Republic of Korea
+Professor
+Seung-ho Hur
+Keimyung University Dongsan Medical
+Center, Daegu, Republic of Korea
+Professor
+Kyoo-Rok Han
+Kangdong Sacred Heart Hospital, Hallym
+University Medical Center
+Professor
+Jang-hwan Bae
+Chungbuk National University Hospital,
+Cheongju, Republic of Korea
+Professor
+
+Namho Lee
+Kangnam Sacred Heart Hospital, Hallym
+University, Republic of Korea
+Professor
+Dong Woon Jeon
+National Health Insurance Corporation
+Ilsan Hospital, Ilsan
+Professor
+Sung-Yun Lee
+College of Medicine, In-Je University,
+Ilsan, Korea
+Professor
+Gwang-soo Cha
+Busan National Univ. Hosp., Busan,
+Republic of Korea
+Professor
+Woong Kim
+Yeungnam University Hospital, Daegu,
+Republic of Korea
+Professor
+Myung Ho Jeong
+Chonnam National University Hospital,
+Gwangju, Republic of Korea
+Professor
+Tae-ho Park
+Dong-a University Hospital, Busan,
+Republic of Korea
+Professor
+Seok-yeon Kim
+Seoul Medical Center, Seoul, Republic of
+Korea
+Professor
+Sang-Wook Lim
+Bundang CHA Hospital, Seongnam,
+Korea
+Professor
+Ki-Beom Won
+Ulsan University Hospital, Ulsan,
+Republic of Korea
+Professor
+Seok-gyu Oh
+Wonkwang University Hospital, Iksan,
+Republic of Korea
+Professor
+Keon-woong Moon Catholic University of Korea, St.
+Vincent`s Hospital, Suwon, Korea
+Professor
+Moo-yong Lee
+Dongkuk University Ilsan Hospital, Ilsan,
+Korea
+Professor
+
+[Extracted table 1]
+||Seung Woon Rha|Korea University Medical Center, Seoul,<br>Republic of Korea|Professor|
+|---|---|---|---|
+||Seung-ho Hur|Keimyung University Dongsan Medical<br>Center, Daegu, Republic of Korea|Professor|
+||Kyoo-Rok Han|Kangdong Sacred Heart Hospital, Hallym<br>University Medical Center|Professor|
+||Jang-hwan Bae|Chungbuk National University Hospital,<br>Cheongju, Republic of Korea|Professor|
+
+[Extracted table 2]
+||Namho Lee|Kangnam Sacred Heart Hospital, Hallym<br>University, Republic of Korea|Professor|
+|---|---|---|---|
+||Dong Woon Jeon|National Health Insurance Corporation<br>Ilsan Hospital, Ilsan|Professor|
+||Sung-Yun Lee|College of Medicine, In-Je University,<br>Ilsan, Korea|Professor|
+||Gwang-soo Cha|Busan National Univ. Hosp., Busan,<br>Republic of Korea|Professor|
+||Woong Kim|Yeungnam University Hospital, Daegu,<br>Republic of Korea|Professor|
+||Myung Ho Jeong|Chonnam National University Hospital,<br>Gwangju, Republic of Korea|Professor|
+||Tae-ho Park|Dong-a University Hospital, Busan,<br>Republic of Korea|Professor|
+||Seok-yeon Kim|Seoul Medical Center, Seoul, Republic of<br>Korea|Professor|
+||Sang-Wook Lim|Bundang CHA Hospital, Seongnam,<br>Korea|Professor|
+||Ki-Beom Won|Ulsan University Hospital, Ulsan,<br>Republic of Korea|Professor|
+||Seok-gyu Oh|Wonkwang University Hospital, Iksan,<br>Republic of Korea|Professor|
+||Keon-woong Moon|Catholic University of Korea, St.<br>Vincent`s Hospital, Suwon, Korea|Professor|
+||Moo-yong Lee|Dongkuk University Ilsan Hospital, Ilsan,<br>Korea|Professor|
+
+48
+
+Songi Kim
+Jeju University Hospital, Jeju, Korea
+Professor
+Doo-il Kim
+In-je University Haeundae Paik
+Hospital, Busan, Korea
+Professor
+Sang-ho Cho
+Hallym University Medical Center,
+Pyeongchon, Republic of Korea
+Professor
+Won-yong Shin
+Soonchunhyang University Hospital,
+Cheonan, Republic of Korea
+Professor
+Jae-geun Ryu
+Daegu Catholic University Medical
+Center, Daegu, Republic of Korea
+Professor
+Hyun-Hui Choi
+Chunchun Sacred Heart Hospital, Hallym
+University, Republic of Korea
+Professor
+Hui-Kyung Jeon
+The Catholic University of Korea,
+Uijeongbu St. Mary's Hospital,
+Uij
+b
+K
+Professor
+Sang-Wook Kim
+Chung-Ang University Hosptial, Seoul,
+Korea
+Professor
+Dae-Kyung Kim
+In-je University Pusan Paik Hospital,
+Busan, Korea
+Professor
+Seung-Uk Lee
+Kwangju Christian Hospital, Gwangju,
+Korea
+Professor
+Jung-Han Yoon
+Wonju Christian Hospital, Wonju, Korea
+Professor
+Sung-Il Woo
+Inha University Hospital, Incheon, Korea
+Professor
+Joo-Hyun Oh
+Changwon Samsung Hospital, Changwon,
+Korea
+Professor
+Yong-hoon Kim
+Kangwon National University Hospital,
+Chuncheon, Republic of Korea
+Professor
+Il-Woo Seo
+Anyang Sam Hospital, Anyang, Korea
+Professor
+Yoon-Haeng Cho
+Bucheon SOONCHUNHYANG
+University Hospital, Bucheon, Korea
+Professor
+
+[Extracted table 1]
+||Songi Kim|Jeju University Hospital, Jeju, Korea|Professor|
+|---|---|---|---|
+||Doo-il Kim|In-je University Haeundae Paik<br>Hospital, Busan, Korea|Professor|
+||Sang-ho Cho|Hallym University Medical Center,<br>Pyeongchon, Republic of Korea|Professor|
+||Won-yong Shin|Soonchunhyang University Hospital,<br>Cheonan, Republic of Korea|Professor|
+||Jae-geun Ryu|Daegu Catholic University Medical<br>Center, Daegu, Republic of Korea|Professor|
+||Hyun-Hui Choi|Chunchun Sacred Heart Hospital, Hallym<br>University, Republic of Korea|Professor|
+||Hui-Kyung Jeon|The Catholic University of Korea,<br>Uijeongbu St. Mary's Hospital,|Professor|
+||Sang-Wook Kim|Uij b K<br>Chung-Ang University Hosptial, Seoul,<br>Korea|Professor|
+||Dae-Kyung Kim|In-je University Pusan Paik Hospital,<br>Busan, Korea|Professor|
+||Seung-Uk Lee|Kwangju Christian Hospital, Gwangju,<br>Korea|Professor|
+||Jung-Han Yoon|Wonju Christian Hospital, Wonju, Korea|Professor|
+||Sung-Il Woo|Inha University Hospital, Incheon, Korea|Professor|
+||Joo-Hyun Oh|Changwon Samsung Hospital, Changwon,<br>Korea|Professor|
+||Yong-hoon Kim|Kangwon National University Hospital,<br>Chuncheon, Republic of Korea|Professor|
+||Il-Woo Seo|Anyang Sam Hospital, Anyang, Korea|Professor|
+||Yoon-Haeng Cho|Bucheon SOONCHUNHYANG<br>University Hospital, Bucheon, Korea|Professor|
+
+49
+
+Bum-Soo Kim
+Kangbuk Samsung Hospital, Seoul, Korea
+Professor
+
+
+4.
+Funding Agencies
+* Chong Kun Dang Pharmaceutical Corp
+* Samjin Pharmaceutical Co, Ltd
+* HANMI PHARMA Co, Ltd
+* Daewoong Pharmaceutical Co, Ltd.
+
+
+
+5.
+Background and hypothesis
+1) Background
+Coronary artery disease (CAD) is the leading cause of mortality and morbidity worldwide, and
+numerous studies have investigated its proper management and prevention. The advent of percutaneous
+coronary intervention (PCI) with drug-eluting stents (DESs) after antiplatelet therapy was an important
+advance in CAD management. Previous studies proposed different antiplatelet regimens to protect
+against thrombotic/ischemic events and minimize bleeding complications after stent implantation.
+However, the optimal regimen after PCI with DES is still a subject of debate. Several randomized trials
+including the RESET, OPTIMIZE, and PRODIGY have compared dual antiplatelet therapy (DAPT) for
+durations of 3-6 or 12-24 months and consistently showed no benefit with respect to thrombotic/ischemic
+events and a higher risk of bleeding complications for longer therapy. The recent DAPT, PEGASUS-
+TIMI, and OPTIDUAL trials reported a better efficacy of extended duration of DAPT over 12 months
+in common, whereas the ARCTIC-Interruption trial suggested no apparent benefit but instead harm with
+extended duration of DAPT.
+Current guidelines recommend at least 6- to 12 months of DAPT with aspirin and a P2Y12 receptor
+inhibitor, such as clopidogrel, after DES implantation, according to clinical event leading to PCI.
+Therefore, in real-world practice, clinicians usually switch from DAPT to a single agent beyond 1 year
+after PCI with DES. The currently preferred choice for antiplatelet monotherapy tends to be aspirin,
+because low-dose aspirin has known efficacy for occlusive vascular disease and the issue of clopidogrel
+resistance is considered as an obstacle for effective post-PCI management. However, routine screening
+for clopidogrel responsiveness has not been shown to improve clinical outcomes, and guidelines do not
+
+50
+
+recommend a platelet function test for all patients undergoing PCI with DES, implying clopidogrel
+monotherapy may also be beneficial for patients with DES implantation. It remains uncertain whether
+aspirin monotherapy is superior to clopidogrel monotherapy in the stable phase after PCI with DES for
+reducing the risk of thrombotic/ischemic events and bleeding complications, although the CAPRIE trial
+demonstrated the superiority of clopidogrel to aspirin in patients with vascular disease including
+myocardial infarction (MI). To our knowledge, there have been no large-scale randomized controlled
+trials comparing antiplatelet monotherapies for patients in the chronic phase after PCI with DES. For
+now, there is only one single-center observational study directly comparing aspirin and clopidogrel
+monotherapies in the chronic phase beyond DAPT after PCI with DES.
+To present a new direction of long-term medical therapy after DES implantation, we designed this
+study entitled "Harmonizing Optimal Strategy for Treatment of coronary artery stenosis-EXtended
+Antiplatelet Monotherapy (HOST-EXAM)." This randomized trial will compare the incidence of major
+adverse cardiovascular events (MACEs) and bleeding complications during clopidogrel or aspirin
+monotherapy for 2 years. We hypothesize that long-term maintenance with clopidogrel will have better
+outcomes than those of aspirin in patients with PCI with DES.
+
+2) Hypothesis
+Clopidogrel is superior to aspirin in preventing clinical events and device-oriented outcomes
+
+6.
+Research Materials
+Clopidogrel 75mg qd p.o. monotherapy, Aspirin 100mg qd p.o. monotherapy
+
+7.
+Study Population
+5,530 patients derived from a population of Korean patients that received PCI with DES without
+events for 12 ± 6 months under maintenance of dual or triple antiplatelet therapy will be
+enrolled in the present trial.
+
+
+8.
+Study Period
+IRB approval date ~ December 2028
+
+
+51
+
+9.
+Eligible criteria, Sample size calculation
+3) Inclusion Criteria:
+-
+Male and female aged ≥20 years
+-
+Maintenance of dual or triple antiplatelet therapy at least 12 ± 6 months after PCI with
+DES
+-
+No history of further clinical event after PCI with DES
+-
+Plan to change to antiplatelet monotherapy
+-
+Agreement to give written informed consent
+
+4) Exclusion Criteria:
+-
+History of hypersensitivity to aspirin or clopidogrel
+-
+History of contraindication to aspirin or clopidogrel
+-
+Active pathologic bleeding, such as peptic ulcer, tumor bleeding or intracranial
+haemorrhage
+-
+History of major bleeding, BARC class ≥3, resulting in stop of antiplatelet agents within
+3 months
+-
+Bleeding diathesis
+-
+Known coagulopathy or refusal of blood transfusion
+-
+Presence of non-cardiac comorbidity with life expectancy ≤2 years from randomization
+-
+Plan to surgery or intervention which needs to stop antiplatelet agents ≥3 months
+-
+Females with childbearing potential or breast-feeding
+-
+Conditions that may result in protocol non-compliance by the committees
+-
+Co-administration of contraindicated medications as follows: other P2Y12 inhibitors
+(prasugrel or ticagrelor); anticoagulants (warfarin, new oral anticoagulants, or chronic
+therapy of heparin); cytochrome P450 2C19 inhibitors (fluoxetine, moclobemid or
+voriconazole); probenecid; high dose of methotrexate (≥15 mg/week); lithium
+-
+Refusal to give written informed consent
+
+5) Sample size calculation
+Hypothesis: Clopidogrel is superior to aspirin in preventing clinical events, defined as a
+
+52
+
+composite of all-cause death, nonfatal myocardial infarction, stroke, readmission due to
+acute coronary syndrome, or major bleeding at 24 months after randomization. Based on the
+event rates of a previous trials performed in various populations including Korean, we
+predicted clinical event rate of clopidogrel and aspirin to be 9.6% and 12.0%, respectively.
+
+• Primary endpoint: clinical events defined as a composite of all-cause death, nonfatal
+myocardial infarction, stroke, readmission due to acute coronary syndrome, or major
+bleeding at 24 months after randomization.
+• Design: superiority
+• Sampling ratio: Clopidogrel versus Aspirin = 1:1
+• Type I error (α): two-sided 5%
+• Accrual time : 4 years
+• Total time : 6 years (accrual year + follow-up 2 years)
+• Assumption: Clinical event rate 9.6% in clopidogrel vs. 12.0% in aspirin group
+• Statistical power (1- β): 80%
+• Potential withdrawal rates : 5% in each groups
+
+Based on the above assumption, expected number of events in each test drug group is 567.
+We would need total 5,530 patients (2,765 patients in each group) with consideration of
+withdrawal rates.
+
+
+Final Sample Size
+
+5,530 patients (Clopidogrel group : 2,765 patients, Aspirin group : 2,765 patients)
+
+10. Methods
+1) Study design
+The HOST-EXAM is designed as a prospective, randomized, open-labeled, multicenter,
+comparative effectiveness trial. The study algorithm is shown in Figure below. This trial
+is investigator-initiated with grant support from the 4 Korean pharmaceutical firms:
+Chong Kun Dang Pharmaceutical Corp; Samjin Pharmaceutical Co, Ltd; HANMI
+
+53
+
+PHARMA Co, Ltd; and Daewoong Pharmaceutical Co, Ltd. Other than financial support,
+the companies will not be involved in protocol development or the study process,
+including site selection, implementation, management, data collection, or data analysis.
+We are responsible for the design and implementation of the trial, related statistical
+analyses, and all aspects of manuscript preparation including drafting, editing, and
+approving final content. This study is based on principles outlined in the Declaration of
+Helsinki. All patients will be required to provide written informed consent at the time of
+enrollment. The study will be conducted by the independent Seoul National University
+Hospital Clinical Trial Center, which includes 2 managing clinical research associates
+who are independent from the study and have no conflicts of interest. The Medical
+Research Collaborating Center will help the Clinical Trial Center conduct the study.
+
+2) Randomization, blinding, and interventions with study drugs
+Once all eligible criteria are satisfied and written informed consent is obtained by the
+investigators, patients will be randomized to aspirin or clopidogrel monotherapy in a 1:1
+ratio. The randomization will be balanced, stratified by the center, and independently
+conducted online via Interactive Web Response Service, a Web-based application by the
+Seoul National University Hospital Medical Research Collaborating Center. A total of
+5,530 patients will be enrolled from 37 high-volume PCI centers in Korea. The study
+participants will be randomized to the experimental (clopidogrel 75 mg) or control (aspirin
+100 mg) group. The medication is maintained for up to 24 months after randomization. A
+clinical follow-up is planned at 12 and 24 months, and additional visits are at the discretion
+of attending physicians. The investigators will be urged to follow up the patients by office
+visits or telephone contacts as necessary. When a patient does not appear at the scheduled
+time, an investigator or research coordinator checks his/her status via telephone visits to
+minimize the risk of underreporting clinical events. On each visit, patient adherence to the
+study drug will be assessed, and discontinuation of the allocated drug will always be
+discussed and checked based on the physician's recommendation.
+Drug adherence will be evaluated by the indirect method, which includes patient self-
+reporting, pill counts, and pharmacy refills. These parameters have been established as
+good tools for assessing drug adherence. It is allowed to interrupt antiplatelet therapy
+
+54
+
+within consecutive 14 days, regardless of type of allocated drug or the reason leading to
+temporary cessation (invasive procedures, medical condition requiring a fast, deficiency
+of pills, or etc). During the study, some medications should not be administered
+simultaneously as mentioned above. For example, when the enrolled patients get to initiate
+anticoagulation treatment during the study, their attending physicians will stop the study
+progression, assess ischemic and bleeding risk, prescribe oral anticoagulant (warfarin with
+lower INR or new oral anticoagulants) and 1 antiplatelet (clopidogrel or low-dose aspirin),
+and consider adding proton pump inhibitors. Although, each will be followed up till the
+study completes.
+
+3) Permitted/prohibited concomitant medications
+If the drug is not prohibited for concomitant use, it can be allowed if necessary. For
+concomitant drugs during the clinical trial period, the drug name, dosage, and duration of
+use must be recorded in the case report.
+
+The following medications can be registered as subjects after discontinuation.
+⚫ CYP2C19 inhibitors: fluvoxamine, fluoxetine, moclobemid, voriconazole
+⚫ Long-term warfarin treatment
+⚫ Probenecid (stimulating uric acid excretion)
+⚫ High dose methotrexate (15 mg/week or more)
+⚫ Lithium preparations: Lithium preparations, lithium carbonate
+
+4) Study flow
+Screening
+~ Day 0
+Baseline
+Day 0
+Visit at
+1 year ± 30days
+Visit at
+2 years ± 90days
+Informed Consent
+●
+
+
+
+Allocation of Subject Number (SN)
+●
+
+
+
+Medical and Clinical History (clinical
+diagnosis, risk factors, angina status,
+cardiac history)
+●
+
+
+
+Demographic Characteristics (age,
+sex, familial history, social history)
+●
+
+[Extracted table 1]
+||Screening|Baseline|Visit at|Visit at|
+|---|---|---|---|---|
+||||||
+||~ Day 0|Day 0|1 year ± 30days|2 years ± 90days|
+||||||
+|Informed Consent|●||||
+|Allocation of Subject Number (SN)|●||||
+|Medical and Clinical History (clinical<br>diagnosis, risk factors, angina status,<br>cardiac history)|●||||
+|Demographic Characteristics (age,<br>sex, familial history, social history)|●||||
+
+55
+
+Vital
+Signs
+and
+Anthropometric Data
+●
+
+●
+●
+Laboratory Results
+●
+
+●
+●
+Brief Physical Examination
+●
+
+
+
+Evaluation of inclusion and
+exclusion criteria
+●
+
+
+
+Allocation of Randomization
+Number (RN)
+
+●
+
+
+Baseline Angiographic and
+Procedural Data
+●
+
+
+
+Previous and Concomitant
+Medications
+●
+●
+●
+●
+Clinical Outcomes
+●
+●
+●
+●
+Minor GI Complications
+
+
+●
+●
+
+(1) Screening (Visit 1, ~ Day 0)
+*Informed consent
+*Subject number allocation
+*History taking
+Silent Ischemia/Stable Angina/Unstable Angina/NSTEMI/STEMI, Previous CABG,
+Previous MI, Heart Failure, Valvular Heart Disease, Previous Heart Transplantation,
+Diabetes Mellitus, Renal Failure, Stroke, Hypertension, Peripheral Vascular Disease,
+Dyslipidemia, Chronic Lung Disease, Family History of Coronary Artery Disease,
+Gastrointestinal Bleeding
+*Demographics: sex, birth date, smoking history, alcohol intake history
+*Vital signs and physical examinations: blood pressure, pulse rate, body weight, height, BSA,
+BMI
+*Laboratory results
+*Evaluation for inclusion and exclusion criteria
+*Information of PCI procedure: stenosis site, number of implanted stents, type of implanted
+stents
+*Clinical Outcomes l: All cause death, non-fatal MI, stroke, major bleeding, readmission due
+
+[Extracted table 1]
+|Vital Signs and<br>Anthropometric Data|●||●|●|
+|---|---|---|---|---|
+|Laboratory Results|●||●|●|
+|Brief Physical Examination|●||||
+|Evaluation of inclusion and<br>exclusion criteria|●||||
+|Allocation of Randomization<br>Number (RN)||●|||
+|Baseline Angiographic and<br>Procedural Data|●||||
+|Previous and Concomitant<br>Medications|●|●|●|●|
+|Clinical Outcomes|●|●|●|●|
+|Minor GI Complications|||●|●|
+
+56
+
+to ACS
+*Clinical Outcomes II: TVR, TLR, Stent thrombosis
+*Prior medication history
+
+(2) Baseline data (Visit 2, Day 0)
+*Evaluation for inclusion and exclusion criteria
+*Clinical Outcomes l: All cause death, non-fatal MI, stroke, major bleeding, readmission due
+to ACS
+*Clinical Outcomes II: TVR, TLR, Stent thrombosis
+*Concomitant medications
+
+(3) Week 48 ± 90 days (Visit 3)
+*Vital signs and physical examinations: blood pressure, pulse rate
+*Laboratory results
+*Angiographic results
+*Clinical Outcomes l: All cause death, non-fatal MI, stroke, major bleeding, readmission due
+to ACS
+*Clinical Outcomes II: TVR, TLR, Stent thrombosis, minor GI complications
+*Concomitant medications
+*Adverse events: UGI endoscopy due to GI symptoms
+
+(4) Week 96 ± 90 days (Visit 4)
+*Vital signs and physical examinations: blood pressure, pulse rate
+*Laboratory results
+*Angiographic results
+*Clinical Outcomes l: All cause death, non-fatal MI, stroke, major bleeding, readmission due
+to ACS
+*Clinical Outcomes II: TVR, TLR, Stent thrombosis, minor GI complications
+*Concomitant medications
+*Adverse events: UGI endoscopy due to GI symptoms
+
+57
+
+
+5) Study endpoints
+(1) Primary endpoint
+[1] A composite of all-cause death, nonfatal myocardial infarction, stroke, readmission
+due to acute coronary syndrome, or major bleeding at 24 months after randomization
+•
+Detailed definition of each clinical events was determined by the third universal
+definition of MI, the American College of Cardiology Foundation and the
+American Heart Association, or objective evidence
+(2) Secondary endpoints
+[1] Target lesion revascularization : defined as any repeat revascularization procedure at
+the original lesion of the index procedure any time during the follow-up period
+[2] Target vessel revascularization : defined as any repeat revascularization procedure
+involving at least one of the target vessels that were treated in the index procedure
+
+
+[3] Stent thrombosis : defined according to the Academic Research Consortium (ARC)
+[4] Minor GI complications : assessed on the basis of newly added GI medications
+(including H2-blockers and PPIs documented for each patient), or symptom-driven GI
+endoscopy (type of endoscopy, test results, and further interventions)
+[5] Cost-effectiveness : Additional medical costs related to these minor GI complications
+(South Korean won/year) will be calculated to assess the cost-effectiveness of each drug
+based on average Korean expenses
+
+6) Protocol violation
+The followings will be recorded as protocol violation and the reason will be recorded and the
+data coordinating center must be notified promptly.
+⚫ Patients who will be lost to follow-up before 2 years, excluding patient withdrawal.
+⚫ Patients who are enrolled, but does not met inclusion/exclusion criteria.
+⚫ Patients who are not treated with allocated antiplatelet agent
+
+In order not to miss out on the occurrence of an adverse reaction that the investigator cannot
+identify, a clinical subject who refuses to visit should be directly contacted by phone, letter,
+
+58
+
+or in person. The reason for drop-out should be recorded in the case report form. Since the
+final analysis should be performed with both intention-to-treat (ITT) and per-protocol (PP)
+methods, follow-up should be maintained for all subjects except for the case of dropout due
+to the subject's withdrawal of consent. Clinical trial subjects who have been eliminated
+cannot be re-enrolled.
+
+7) Trial organization and data management
+(1) Executive committee
+The executive committee, which consists of the study chairperson and principal investigators
+of the primary investigating centers, oversees the administrative progress of the study and
+approves the study design, protocol, and amendment to the data safety and monitoring board
+(DSMB) and the participating centers. The executive committee is in charge of reviewing the
+results, determining the adjudication of the publication, and selecting secondary projects. The
+executive committee also has the final decision to modify or stop the study prematurely based
+on DSMB recommendations.
+
+(2) Data safety and monitoring board (DSMB)
+An independent DSMB, which consists of cardiologists and biostatisticians, reviews safety
+data from the study and constructs recommendations for adverse events/serious adverse events,
+protocol deviations, and follow-up case reports. Regular DSMB meetings are held before the
+start of the study to establish the study policies; review the raw data; discuss the issue of patient
+safety, compliance, and treatment efficacy; and advise the executive committee to modify or
+stop the study if there are any important issues such as significant harm or benefit to the
+experimental group. According to the DSMB report, the executive committee decides whether
+the study should be continued or stopped. Because there are no formal guidelines to guide the
+DSMB with regard to the level of significance needed to prematurely stop the trial for either
+efficacy or safety, a type I error, α will not be changed. The DSMB helps conduct the trial
+appropriately by reviewing the cumulative investigational data for accuracy and completeness
+and by ensuring protocol compliance. The independent clinical research associates will
+regularly check compliance with good clinical practice and protocol, dropouts, systematic
+deficiency, and quality of data. The risk-based source data verification will be applied to
+
+59
+
+eliminate risk and improve the data quality by cross-referencing data recorded in a case report
+form to the original source information. The DSMB develops a consensus understanding of
+all trial endpoints and definitions used in the event adjudication process. All DSMB reports
+remain strictly confidential but are available to regulatory authorities on request.
+
+(3) Clinical event adjudication committee
+The centralized clinical event adjudication committee (CEAC), which consists of independent
+cardiologists, also helps execute the trial properly and reduces potential bias. The CEAC is
+responsible for all aspects of reviewing the results, determining the adjudication of the
+publication, and selecting secondary projects. In particular, the CEAC develops specific
+criteria for categorizing clinical events and endpoints based on the protocol. At the study onset,
+the CEAC will establish clear rules outlining the minimum amount of data required and the
+algorithm followed to classify the clinical events. To maximize the procedural justice of our
+study and guarantee CEAC independence, all CEAC members are masked to the assigned
+study arm when performing their assessment of clinical events.
+
+(4) Data coordination and site management
+Data collection, coordination, and site monitoring will be performed by a research coordinator
+of the Clinical Trials Center at Seoul National University Hospital, the main investigating
+center.
+
+(5) Minimizing sources of bias
+The following methods will be performed to minimize potential sources of bias
+• Enrollment of subjects is limited by inclusion and exclusion criteria
+• Subjects will be systematically randomized with blinding procedures implemented.
+• An external, independent Clinical Events Committee (CEC) blinded to treatment
+assignment will review and adjudicate, at minimum, all deaths and safety-endpoint related
+adverse events. Safety endpoint results will be based on CEC adjudications.
+• An external, independent Data Monitoring Committee (DMC) will evaluate safety data and
+advise the Sponsor in regard to continued safety of the study, to ensure the well-being of
+the subjects.
+
+60
+
+• An independent Angiographic Core Lab will evaluate all event angiograms.
+• Statistical analyses will be independently validated
+• Study sites should follow their institutional procedures for maintenance of angiography
+and laboratory equipment used for assessing the study variables.
+Study monitors will verify subject data and ensure compliance with this Clinical
+Investigational Plan and other study requirements, i.e., blinding and informed consenting
+processes
+
+11. Statistical analysis plan
+(1) Timing of analyses
+• The primary outcome and its individual components will be analyzed on both intention-to-
+treat basis and per-protocol basis at 2 years after randomization.
+• All secondary outcomes will be analyzed on both intention-to-treat basis and per-protocol
+basis at 2 years after randomization.
+
+(2) Analysis populations
+[1] Intention-to-treat population
+• All patients who sign the written informed consent and randomized in this study will
+be included in the analysis regardless of their adherence to the entry criteria, the
+treatment they actually received, deviation from the prescribed protocol, or withdrawal
+from the study. Despite discontinuation of the allocated study drug in patients with
+protocol violation, they will be followed up till the study completes and analyzed for
+the primary endpoint.
+[2] Per-protocol population
+• The per-protocol set will be supportive to minimize unanticipated problems that could
+dilute treatment differences of interest.
+
+(3) Missing data
+The primary analysis of the study endpoints will not be covariate-adjusted. No imputation
+methods will be used to infer missing values of baseline variables. For the study endpoints,
+
+61
+
+patients lost to follow-up and subsequently lost to assessment of primary endpoint, will be
+considered to be censored in the estimation of Kaplan-Meier event rates. As a secondary
+analysis, we will also examine the patients who have been lost to follow-up. We will perform
+a comparison of baseline characteristics in patients with vs. without 2-year follow up. The
+baseline characteristics will include as followed Table 1. In addition, a sensitivity analysis
+will be performed to assess the impact of these patients on the study outcomes. For patients
+lost to follow-up, multiple imputation techniques will be used to calculate pooled estimates
+of the treatment effect and confidence intervals which will then be compared to the primary
+statistical analysis.
+
+(4) General principles of statistical analysis
+
+In this clinical trial, unless otherwise specified, the significance level of the statistical
+test is set to 0.05, and a two-sided test is a principle. In addition, the number of observational
+objects, mean, standard deviation, median, minimum, and maximum values are presented for
+continuous variables, and frequencies and ratios are presented for categorical data.
+
+
+[1] Demographic information and clinical history data
+⚫ This is a process to confirm that there is no difference between each administration group
+by comparing the characteristics of clinical subjects in the treatment group and the
+control group before enrollment in the clinical trial.
+⚫ Demographic information such as gender and age is evaluated in ITT. For continuous
+data, the mean, standard deviation, median, minimum, and maximum value are
+presented and compared using a two-sample t-test or Wilcoxon's rank sum test
+depending on whether the normality assumption is satisfied. In the case of categorical
+data, frequency and ratio are presented and compared using Pearson's chi-square test
+or Fisher's exact test.
+
+
+[2] Analysis of the primary endpoint
+⚫ Incidence of all-cause death, non-fatal MI, stroke, major bleeding, readmission due to ACS up
+
+62
+
+to 2 years after antiplatelet therapy
+: The incidence of all-cause death, non-fatal MI, stroke, major bleeding, and readmission
+due to ACS up to 2 years after antiplatelet therapy will be estimated by Kaplan-Meier
+method, and the difference between the two groups will be compared using a log-rank
+test. Subjects who do not have all-cause death, non-fatal MI, stroke, major bleeding, or
+readmission due to ACS will be censored at the time of their last visit.
+
+
+[3] Analysis of the secondary endpoints
+⚫ Incidence of TVR & TLR (target vessel/lesion revascularization) up to 2 years after antiplatelet
+therapy
+ : The incidence of TVR and TLR up to 2 years after antiplatelet therapy will be estimated
+by Kaplan-Meier method, and the difference between the two groups will be compared
+using a log-rank test. Subjects who do not have TVR or TLR will be censored at the time
+of their last visit.
+⚫ Incidence of stent thrombosis up to 2 years after antiplatelet therapy
+ : The incidence of stent thrombosis up to 2 years after antiplatelet therapy will be
+estimated by the Kaplan-Meier method, and the difference between the two groups will
+be compared using a log-rank. Subjects who do not have stent thrombosis will be
+censored at the time of their last visit.
+⚫ Incidence of minor GI complications up to 2 years after antiplatelet therapy
+ : The incidence of minor GI complications up to 2 years after antiplatelet therapy will be
+estimated by the Kaplan-Meier method, and the difference between the two groups will
+be compared using a log-rank. Subjects who do not have minor GI complications will be
+censored at the time of their last visit.
+
+[4] Cost-effectiveness analysis
+i. In this analysis, we will compare Clopidogrel and Aspirin to estimate cost-effectiveness
+patients who underwent antiplatelet therapy after drug-eluting stent implantation for
+coronary artery disease.
+
+63
+
+ii. Analysis will be performed from the perspective of the health care system, and accordingly,
+the cost is directly calculated based on the medical cost.
+⚫ If necessary, further analysis will be performed from a social point of view. In this case,
+in addition to direct medical expenses, the patient's time expenses, transportation
+expenses, nursing expenses, and productivity loss expenses will be estimated.
+
+iii. Effectiveness endpoint will be presented in Quality-adjusted life years (QALYs).
+⚫ Clinical events (all cause death, non-fatal MI, stroke, major bleeding, readmission due
+to ACS, etc.) are reported as each health status, and the corresponding quality of life
+life) will be applied to estimate the effect.
+⚫ To estimate the effect, the use of the EuroQol five-dimensional questionnaire (EQ-5D),
+a health-related quality of life measurement tool, will be utilized.
+iv. Cost estimation basically utilizes micro-costing, which calculates the total cost value by
+grasping information on the amount of medical resources used and the unit cost used
+throughout the analysis period, and ischemia and bleeding. For medical expenses according
+to clinical cases, macro-costing is used through analysis of health insurance claim data.
+⚫ For health insurance claim data, customized health information data provided by the
+National Health Insurance Corporation (hereinafter, customized research DB) will be
+used. After approval of the IRB, an application for the use of customized research DB
+will be made at NHISS (http://nhiss.nhis.or.kr), a data providing site operated by the
+Korean National Health Insurance Service, and the research plan and IRB approval
+results from the National Health Insurance Service. Data is provided after deliberation
+based on the notice.
+⚫ All data is provided in the form of an alternative identification number of the resident
+registration number to ensure anonymity, and the alternative identification number is
+not used in presenting the analysis results.
+v. Cost-effectiveness will be calculated in the form of an incremental cost-effectiveness ratio
+(ICER) representing the additional cost versus the additional effect between monotherapy.
+vi. One-way sensitivity analysis and probabilistic sensitivity analysis will be performed on
+uncertainty.
+
+64
+
+
+
+12. Care for the safety of the subjects
+1) For conducting institution
+The head of the conducting institution should be equipped with clinical laboratories,
+facilities, prepare experts necessary for conducting the relevant clinical trial step by step,
+and make adequate preparations so that the clinical trial can be properly conducted.
+2) For principal investigator
+The principal investigator must be fully aware of the adverse reactions and cautions
+specified in this clinical trial protocol in advance, and if any serious adverse reactions
+occur during the clinical trial, they must immediately report it to the Institutional Review
+Board.
+3) For clinical trial managers
+Predicted adverse reactions and precautions for use specified in the protocol should be
+fully understood, and if any serious adverse reactions occur during clinical trials, they
+must be reported to the supervisor immediately.
+
+13. Additional statements
+1) Pharmaceutical Clinical Trials Management Standards (KGCP) and Helsinki
+Declaration
+⚫ The procedures stipulated in this protocol are designed to ensure that clinical trial
+investigators comply with the standards for management of pharmaceutical clinical
+trials and the basic spirit of the Helsinki Declaration in conducting, evaluating and
+recording the results of this study. This clinical trial will also be conducted in
+accordance with national regulations.
+
+2) Clinical trial subject consent
+⚫ Investigators should give patients and their caregivers ample opportunity to elaborate
+on all aspects of the study and to know all predictable outcomes. The patient's consent
+must be documented.
+
+65
+
+⚫ The investigator must sign and confirm the clinical subject consent form. Investigators
+should not perform specific tests for the sole purpose of clinical trials until consent is
+obtained from the patient.
+
+3) Approval of clinical trial protocol
+Before starting a clinical trial, submit the clinical trial protocol and related documents to
+the clinical trial review committee in accordance with local regulations. Investigators must
+inform each other in writing that all ethical and legal requirements have been met prior to
+enrollment of the first subject.
+
+4) Case Report Form
+⚫ Patient's source documents refer to the patient records of the doctor in charge that are
+kept in the laboratory. Most of the supporting documents are charts from the hospital
+or the attending physician, and all information recorded in the patient's case report
+should be consistent with the supporting documents.
+⚫ It is the investigator's job to record, review and sign the case record. After filling out
+the case record, the examiner certifies that the information recorded in the case record
+is true by signing each case record. In all cases, the investigator is ultimately
+responsible for the accuracy and reliability of all clinical and laboratory values
+recorded in the case report.
+
+5) Confidentiality Guarantee
+All names of clinical subjects shall be kept confidential, and subjects shall be identified at
+the time of recording and evaluation by the number given in the clinical study. Inform the
+subject that all clinical trial data are stored on a computer and treated strictly confidentially.
+The signed automated clinical trial subject will be kept by the investigator. By signing this
+protocol, the investigator agreed to obtain the correct consent from the clinical trial subjects
+participating in the clinical trial, and also agreed to undergo due diligence upon request.
+The person in charge of the clinical trial shall have a list of the subject number and subject
+name recorded so that the record can be retrieved later. The consent of the clinical subject
+and the list of subjects are kept for 3 years from the date of approval of the item (the date
+
+66
+
+of completion of the clinical trial if the product is not approved).
+
+6) Understanding the clinical trial plan
+Investigators and managers accurately analyze and understand the clinical trial plan, and
+conduct the clinical trial.
+
+7) Clinical trial monitoring and inspection
+In order to ensure that clinical trials are conducted in accordance with KGCP and that test
+data can be recognized at home and abroad, monitoring and inspection can be carried out
+when necessary. When monitoring this test, it is necessary to check whether the case record
+is complete and clear, and to review the record with the examiner in the presence of the
+investigator, and the investigator must cooperate with the monitor or inspector at any time.
+
+8) Record and use of clinical test results
+⚫ Record of clinical trial results
+- All data collected during this clinical trial should be recorded by the investigator in the
+supporting document and the original should be kept.
+- In case of missing data, the tester must attach a reasonable explanation.
+- When revising the contents entered in the case record, the original record must be
+recognizable and the revised clinical trial officer's signature must be signed.
+⚫ Use of clinical trial results
+By signing this clinical trial protocol, the investigator has agreed to use the results of this
+trial for the purposes of registration, presentation, and information provision for medical
+experts.
+
+9) Clinical test result data management
+⚫ Record of data
+All data entered in the electronic case record (e-CRF) should be verifiable by each
+laboratory against appropriate supporting documents. The laboratory should cooperate
+with the clinical trial coordinator to carry out this process if necessary. In the case of
+monitoring, each agency's supporting document check list will be used to verify the
+
+67
+
+supporting documents for all collected data.
+⚫ Data management
+Data for this clinical trial is collected using the electronic (e-CRF). Management of clinical
+data will be performed in accordance with relevant guidelines. This process also applies to
+data entered into the e-CRF and other supporting documents (eg blood pressure, laboratory
+test data, etc.). Internationally certified and used dictionaries will be used for data coding
+(adverse reactions, concomitant drugs, etc.).
+⚫ Storage of data
+All essential documents will be safely stored in a form that can be used/verified upon
+request by a person with the appropriate authority. In addition, the electronic case record
+(e-CRF) must be kept in the form of an electronic document at each laboratory.
+
+10) Modification of clinical trial protocol
+The contents of this protocol cannot be changed during the trial without the consent of the
+clinical trial director. Once the test has begun, modifications should only be made in
+exceptional cases. Any changes to the plan must be signed and agreed in writing by all
+parties involved. The revised content must be approved by the Institutional Review Board.
+
+14. References
+1) MS Kim, MH Jeong, SH Hwang et al. Clinical pattern changes in elderly patients who
+underwent percutaneous coronary intervention in the last ten years. Korean J of Medicine.
+2010;79(6):661-72
+2) Gruentzig AR, Senning A, Siegenthaler WE. Nonoperative dilatation of coronary artery stenosis:
+Percuataneous transluminal coronary angioplasty. N Engl J Med 1979;301:61-8.
+3) Serruys pW, de Jaegrr P, Kiemeneij F, et al. A comparison of balloon-expandable-stent
+implantation with balloon angioplasty in patients with coronary artery disease. N Engl J Med.
+1994;331:489-95
+4) Fischman DL, Leon MB, Baim DS, et al. A randomized comparison coronary-stent placement
+and balloon angioplasty in the treatment of coronary artery disease. N Engl J Med. 1994;331:496-
+501
+
+68
+
+5) Bertrand ME, Rupprecht HJ, Urban P et al. Double-blind study of the safety of clopidogrel with
+and without a loading dose in combination with aspirin compared with ticlopidine in combination
+with aspirin after coronary stenting : the clopidogrel aspirin stent international cooperative study
+(CLASSICS). Circulation. 2000;102(6):624-9
+6) Song JH, Yoon C, Rhee I et al. A randomized comparison of cilostazol versus ticlopidine therapy
+after elective coronary stent implantation. Korean Circ J. 2001;31:780-7
+7) Leon MB, Baim DS, Popma JJ et al. A clinical trial comparing 3 antithrombotic drug regimens
+after coronary artery stenting. N Eng J Med. 1998;339:1665-71
+8) Yves Cadroy, Jean-Pierre Bossavy, Claire Thalamas et al. Early potent antithrombotic effect
+with cobined aspirin and a loading dose of clopidogrel on experimental arterial thrombogenesis in
+humans. American heart association. 2000;101:2823-8
+9) Iakovou I, Schmidt T, Bonizzoni E et al. Incidence, predictors, and outcome of thrombosis after
+successful implantation of drug eluting stents. JAMA. 2005;293:2126-30
+10) Cooke GE, Goldschmidt-Clermont. The safety and efficacy of aspirin and clopidogrel as a
+combination treatment in patients with coronary heart disease. Expert Opin Drug Saf. 2006;5:815-
+26
+11) Mehran R, Rao SV, Bhatt DL et al. Standardized bleeding definitions for cardiovascular clinical
+trials: a consensus report from the Bleeding Academic Research Consortium. Circulation. 2011
+Jun 14;123(23):2736-47
+
+
+Articles
+www.thelancet.com Vol 397 June 26, 2021
+2487
+Aspirin versus clopidogrel for chronic maintenance
+monotherapy after percutaneous coronary intervention
+(HOST-EXAM): an investigator-initiated, prospective,
+randomised, open-label, multicentre trial
+Bon-Kwon Koo*, Jeehoon Kang*, Kyung Woo Park*, Tae-Min Rhee, Han-Mo Yang, Ki-Bum Won, Seung-Woon Rha, Jang-Whan Bae, Nam Ho Lee,
+Seung-Ho Hur, Junghan Yoon, Tae-Ho Park, Bum Soo Kim, Sang Wook Lim, Yoon Haeng Cho, Dong Woon Jeon, Sang-Hyun Kim, Jung-Kyu Han,
+Eun-Seok Shin, Hyo-Soo Kim, on behalf of the HOST-EXAM investigators†
+Summary
+Background Optimal antiplatelet monotherapy during the chronic maintenance period in patients who undergo
+coronary stenting is unknown. We aimed to compare head to head the efficacy and safety of aspirin and clopidogrel
+monotherapy in this population.
+Methods We did an investigator-initiated, prospective, randomised, open-label, multicentre trial at 37 study sites in
+South Korea. We enrolled patients aged at least 20 years who maintained dual antiplatelet therapy without clinical
+events for 6-18 months after percutaneous coronary intervention with drug-eluting stents (DES). We excluded
+patients with any ischaemic and major bleeding complications. Patients were randomly assigned (1:1) to receive a
+monotherapy agent of clopidogrel 75 mg once daily or aspirin 100 mg once daily for 24 months. The primary endpoint
+was a composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary
+syndrome, and Bleeding Academic Research Consortium (BARC) bleeding type 3 or greater, in the intention-to-treat
+population. This trial is registered with ClinicalTrials.gov, NCT02044250.
+Findings Between March 26, 2014, and May 29, 2018, we enrolled 5530 patients. 5438 (98·3%) patients were randomly
+assigned to either the clopidogrel group (2710 [49·8%]) or to the aspirin group (2728 [50·2%]). Ascertainment of the
+primary endpoint was completed in 5338 (98·2%) patients. During 24-month follow-up, the primary outcome
+occurred in 152 (5·7%) patients in the clopidogrel group and 207 (7·7%) in the aspirin group (hazard ratio 0·73
+[95% CI 0·59-0·90]; p=0·0035).
+Interpretation Clopidogrel monotherapy, compared with aspirin monotherapy during the chronic maintenance
+period after percutaneous coronary intervention with DES significantly reduced the risk of the composite of all-cause
+death, non-fatal myocardial infarction, stroke, readmission due to acute coronary syndrome, and BARC bleeding
+type 3 or greater. In patients requiring indefinite antiplatelet monotherapy after percutaneous coronary intervention,
+clopidogrel monotherapy was superior to aspirin monotherapy in preventing future adverse clinical events.
+Funding ChongKunDang, SamJin, HanMi, DaeWoong, and the South Korea Ministry of Health and Welfare.
+Copyright © 2021 Elsevier Ltd. All rights reserved.
+Introduction
+After
+percutaneous
+coronary
+intervention
+(PCI),
+guidelines recommend an initial 6-12 months of dual
+antiplatelet therapy (DAPT), which is decided on the basis
+of various factors, including clinical presentation (acute
+coronary syndrome vs chronic coronary syndrome).1,2
+After this period, indefinite maintenance of single
+antiplatelet therapy is indicated for secondary prevention
+of atherosclerotic cardiovascular events. Aspirin, a
+cyclooxygenase pathway inhibitor, is the most widely used
+antiplatelet agent and is recommended as standard
+therapy in patients after PCI.3 The evidence for this
+recommendation is based on collective analyses of
+trials done several decades ago that showed benefit
+of aspirin for secondary prevention of cardiovascular
+disease.4,5 However, recent trials in the primary prevention
+setting found little or no benefit in the prevention of
+vascular events for aspirin and showed that aspirin might
+be associated with an increased bleeding risk, including
+intracranial and gastrointestinal bleeding.6-8 Clopidogrel,
+an adenosine diphosphate-receptor blocker, is recom
+mended as an alternative in patients who do not tolerate
+aspirin therapy.9 One previous trial in 1996 reported
+that clopidogrel might have potential benefits in patients
+with atherosclerotic vascular disease, such as reducing
+cardiovascular events with a reduced incidence of gastro
+intestinal complications.10 However, the trial did not
+specifically address the post-PCI population and was not
+done in an era when drug-eluting stents (DES) or high-
+intensity statins were available. A few registry-based
+Lancet 2021; 397: 2487-96
+Published Online
+May 16, 2021
+https://doi.org/10.1016/
+S0140-6736(21)01063-1
+See Comment page 2443
+*Authors contributed equally
+†All investigators of the
+HOST-EXAM trial are listed in the
+appendix (pp 4-8)
+Department of Internal
+Medicine, Cardiology Centre,
+Seoul National University
+Hospital, Seoul, South Korea
+(Prof B-K Koo MD, J Kang MD,
+K W Park MD, T-M Rhee MD,
+H-M Yang MD, J-K Han MD,
+Prof H-S Kim MD); Department
+of Internal Medicine, Ulsan
+University Hospital, Ulsan,
+South Korea (K-B Won MD,
+E-S Shin MD); Korea University
+Guro Hospital, Seoul,
+South Korea (Prof S-W Rha MD);
+Department of Internal
+Medicine, Chungbuk National
+University Hospital, Cheongju,
+South Korea (J-W Bae MD);
+Department of Internal
+Medicine, Kangnam Sacred
+Heart Hospital, Hallym
+University, Seoul, South Korea
+(Prof N H Lee MD); Department
+of Internal Medicine,
+Keimyung University Dongsan
+Hospital, Daegu, South Korea
+(Prof S-H Hur MD); Department
+of Internal Medicine, Yonsei
+University Wonju Severance
+Christian Hospital, Wonju,
+South Korea (Prof J Yoon MD);
+Department of Internal
+Medicine, Dong-A University
+Hospital, Busan, South Korea
+(T-H Park MD); Department of
+Internal Medicine, Kangbuk
+Samsung Hospital,
+Sungkyunkwan University,
+Seoul, South Korea
+(B S Kim MD); Department of
+Internal Medicine, CHA
+Bundang Medical Center,
+CHA University, Seongnam,
+
+Articles
+2488
+www.thelancet.com Vol 397 June 26, 2021
+studies have shown promising results for clopidogrel as
+an antiplatelet agent in the chronic maintenance period
+after PCI11-13 but no randomised trial in the contemporary
+DES era has specifically addressed which antiplatelet
+agent might be the optimal choice during the period of
+indefinite antiplatelet monotherapy in the PCI population.
+Therefore, we did the HOST-EXtended Antiplatelet
+Monotherapy (HOST-EXAM) trial to compare head
+to head the efficacy and safety of aspirin and clopidogrel
+monotherapy in patients who received PCI for coronary
+artery disease and required chronic maintenance
+antiplatelet therapy.
+Methods
+Study design
+The HOST-EXAM trial was an investigator-initiated,
+prospective, randomised, open-label, multicentre trial
+done at 37 study sites in South Korea. Details regarding
+the trial design have been described previously.14 All
+participating centres and trial personnel are listed in
+the appendix (pp 4-8).
+The Seoul National University Hospital Clinical Trial
+Center and Medical Research Collaborating Center
+(MRCC) were responsible for the scientific conduct of
+the trial and an independent analysis of the data. All
+events were adjudicated by an independent clinical-
+event committee whose members were unaware of the
+trial group assignments. Members of the independent
+clinical-event committee received medical records of
+adverse events after removal of any reference to the
+treatment groups. The safety of the patients was overseen
+by the data and safety monitoring board. The authors
+vouch for the accuracy and completeness of the data and
+for the fidelity of the trial to the protocol, available in
+the appendix (pp 46-68).
+Participants
+Patients aged 20 years or older who underwent PCI
+with DES and maintained DAPT without any clinical
+events within 6-18 months after PCI were eligible for
+this study. Patients with any ischaemic and major
+bleeding
+complications
+(ie,
+non-fatal
+myocardial
+infarction, any repeat revascularisation, readmission
+due to a cardiovascular cause, and major bleeding) were
+excluded from randomisation. Antiplatelet therapy
+before enrolment was composed of aspirin plus any
+P2Y12 inhibitor. We had no restriction regarding the
+clinical diagnosis at the index PCI period, stenosis
+location, length, or numbers of lesions or vessels at
+the time of PCI. Key exclusion criteria were patients
+with known hypersensitivity or contraindications for
+clopidogrel, or those who could not cease their current
+antiplatelet agents for medical, financial, or personal
+reasons. Other antiplatelet agents, including cilostazol
+and sarpogrelate hydrochloride, were not permitted
+during the follow-up period. Detailed inclusion and
+exclusion criteria of this study are described in the
+appendix (p 10).
+South Korea (Prof S W Lim MD);
+Department of Internal
+Medicine, Soonchunhyang
+University Bucheon Hospital,
+Bucheon, South Korea
+(Y H Cho MD); Department of
+Internal Medicine, National
+Health Insurance Service Ilsan
+Hospital, Goyang, South Korea
+(D W Jeon MD); Department of
+Internal Medicine, Boramae
+Medical Center, Seoul National
+University College of Medicine,
+Seoul, South Korea
+(Prof S-H Kim MD)
+Correspondence to:
+Prof Hyo-Soo Kim, Department
+of Internal Medicine,
+Cardiovascular Center, Seoul
+National University Hospital,
+Seoul, South Korea
+hyosoo@snu.ac.kr
+See Online for appendix
+Research in context
+Evidence before this study
+After percutaneous coronary intervention, standard therapy
+is dual antiplatelet therapy for 6-12 months followed by
+indefinite duration of antiplatelet monotherapy. Aspirin is the
+recommendation of choice for antiplatelet monotherapy and
+clopidogrel is recommended as an alternative in patients who
+do not tolerate aspirin therapy. However, no trial has
+specifically studied which antiplatelet agent might be the
+optimal choice during the chronic maintenance period in a
+percutaneous coronary intervention population in the drug-
+eluting stent era. We searched PubMed on March 1, 2021,
+for articles published in English, with the search terms "single
+antiplatelet therapy", "chronic maintenance", "secondary
+prevention", "percutaneous coronary intervention", "aspirin",
+and "clopidogrel". Our search identified two previous
+randomised studies that investigated this issue. In the large-
+scale CAPRIE study, which enrolled patients with
+atherosclerotic vascular disease, clopidogrel showed a modest
+benefit over aspirin in reducing future vascular events. In the
+ASCET study, a smaller study that enrolled patients with
+stable coronary artery disease on aspirin indicated for long-
+term single antiplatelet therapy, clinical outcomes were not
+different between aspirin and clopidogrel use. However,
+these studies were neither done in a dedicated percutaneous
+coronary intervention population nor done in the
+contemporary drug-eluting stent era.
+Added value of this study
+The HOST-EXAM is the first randomised trial to compare
+clopidogrel and aspirin monotherapy in patients who received
+percutaneous coronary intervention with a drug-eluting stent.
+In 5438 patients, clopidogrel monotherapy was associated with
+a reduced risk of adverse clinical events (a composite of
+all-cause death, non-fatal myocardial infarction, stroke,
+readmission due to acute coronary syndrome, and Bleeding
+Academic Research Consortium bleeding of type 3 or more
+during the 24-month follow-up period. Prespecified and
+post-hoc subgroup analyses also showed that the beneficial
+effect of clopidogrel monotherapy was consistent in various
+subgroups without any significant interaction.
+Implications of all the available evidence
+In patients who received percutaneous coronary intervention
+and successfully maintained the intended duration of dual
+antiplatelet therapy, clopidogrel monotherapy was superior to
+aspirin monotherapy in preventing future adverse clinical
+events, including both the thrombotic composite and any
+bleeding.
+
+Articles
+www.thelancet.com Vol 397 June 26, 2021
+2489
+The trial protocol was approved by the institutional
+review board at each participating site and all patients
+were required to provide written informed consent at the
+time of enrolment and randomisation. This study was
+done in accordance with the standards specified in the
+International Council for Harmonization Guidelines
+for Good Clinical Practice and the principles of the
+Declaration of Helsinki.
+Randomisation and masking
+In each participating centre, patients were randomly
+assigned by a web-based application (MRCC IWRS
+System; software configuration, Apache 2, PHP 5, and
+mysql 5) developed by the MRCC (Seoul, South Korea),
+without blocking or stratification methods. Patients who
+met all the inclusion criteria and none of the exclusion
+criteria were randomly assigned in consecutive order
+to either the clopidogrel group (75 mg once daily) or
+aspirin group (100 mg once daily) in a ratio of 1:1
+(figure 1). This study used a web-based electronic case
+report form with the Pharmaco-epidemiology and
+Clinical Trial Application X (PhactaX), which was
+developed by the MRCC. When patients previously
+using potent P2Y12 inhibitors were randomly assigned to
+the clopidogrel group, clopidogrel 600 mg loading was
+recommended for ticagrelor users, while prasugrel
+users switched to clopidogrel 75 mg without a loading
+dose. Participants and study investigators were not
+masked to the assigned group.
+Procedures
+Participants received either clopidogrel (75 mg once
+daily) or aspirin (100 mg once daily) orally. Clinical
+follow-up was scheduled at 12 months and 24 months
+(each with a window of plus or minus 3 months). Any
+additional visits were at the discretion of attending
+physicians. On each visit, active surveillance was done
+for any adverse clinical events, along with the assessment
+of adherence to the study drug.
+Outcomes
+The primary endpoint was a composite of all-cause death,
+non-fatal myocardial infarction, stroke, readmission due
+to acute coronary syndrome, and major bleeding
+complications during the 24-month follow-up period.
+Major bleeding was defined as Bleeding Academic
+Research Consortium (BARC) type bleeding of least 3.
+The individual components of the primary endpoint,
+revascularisation, and minor gastrointestinal complica
+tions were analysed as secondary endpoints at 24 months.
+Interim analysis was not planned and was not done
+during the follow-up duration. Post-hoc secondary com
+posite endpoints, including the thrombotic composite
+endpoint (defined as cardiac death, non-fatal myocardial
+infarction, ischaemic stroke, readmission due to acute
+coronary syndrome, and definite or probable stent
+thrombosis) and any bleeding (defined as BARC type ≥2
+bleeding), were analysed. Detailed definitions of each
+clinical event are described in the appendix (pp 13-18).
+The vital status of all patients was cross-checked through
+the National Health Insurance Service system of South
+Korea and the South Korea National Statistics System.
+The definite cause of death was confirmed by the
+recorded data classified by the International Classification
+of Disease, 10th Revision, Clinical Modification codes.
+Additionally, all source data were checked for at least
+80% of the patients in all centres. All serious adverse
+events, primary endpoints, and secondary endpoints
+were monitored on site.
+Statistical analysis
+The working hypothesis of our study was that clopidogrel
+75 mg once daily would be superior to aspirin 100 mg
+once daily as a chronic maintenance monotherapy agent.
+The sample size calculation was based on the assumption
+that the event rates of the primary endpoint at 24 months
+would be 9·6% for the clopidogrel group and 12·0% for
+the aspirin monotherapy group. The specific assumptions
+and calculations are reported in the appendix (pp 11-12).
+With a sampling ratio of 1:1 and an estimated rate of
+follow-up loss as 5% in each group for 24 months,
+Figure 1: Trial profile
+Patients who underwent percutaneous coronary intervention with a drug-eluting stent and maintained dual
+antiplatelet therapy without any clinical events within 6-18 months after the index procedure were eligible for this
+study and underwent randomisation. The primary efficacy endpoint was analysed during the 24-month follow-up
+duration in the intention-to-treat population, which included all patients who underwent randomisation.
+2728 allocated to aspirin
+monotherapy
+2677 completed 24-month
+follow-up (including
+36 who died)
+73 excluded
+
+1 withdrew consent
+
+50 lost to follow-up
+
+22 used a different
+antiplatelet regimen
+5530 patients enrolled
+5438 randomly assigned
+92 excluded
+
+50 did not meet eligibility critieria
+
+28 declined to participate
+
+14 randomisation error
+2710 allocated to clopidogrel
+monotherapy
+2661 completed 24-month
+follow-up (including
+51 who died)
+62 excluded
+
+8 withdrew consent
+
+41 lost to follow-up
+
+13 used a different
+antiplatelet regimen
+2728 included in the
+intention-to-treat
+analysis
+2655 included in the
+per-protocol
+analysis
+2710 included in the
+intention-to-treat
+analysis
+2648 included in the
+per-protocol
+analysis
+
+Articles
+2490
+www.thelancet.com Vol 397 June 26, 2021
+5530 patients were needed to ensure a power of at least
+80% with a two-sided α of 5%. All patients randomly
+assigned were included in the primary intention-to-
+treat analysis and a per-protocol analysis was also done.
+The intention-to-treat population included all patients
+randomly assigned to a treatment group and the
+per-protocol population were those who received the
+allocated single antiplatelet therapy for the full duration
+of the 24-month follow-up unless they had an adverse
+clinical event.
+Continuous variables were reported as means (SD)
+and categorical variables were presented as absolute
+values and their proportions. Differences between
+continuous variables were compared by Student's t test
+for independent data. All primary and secondary
+endpoints were analysed both on intention-to-treat
+and per-protocol sets and on a per-patient basis. The
+primary endpoint was analysed by a Cox proportional
+hazards model and Kaplan-Meier survival curves to
+estimate the risk of clinical events according to the type
+of antiplatelet agent. No factor variables other than the
+trial group were used for stratification. Event-free
+survival with incomplete follow-up was counted as
+censored data for all time-to-event analyses. A Cox
+proportional hazards model was used for analysis of
+prespecified subgroups, defined according to age
+(<65 years or ≥65 years), sex (male or female), clinical
+presentation (acute myocardial infarction or not and
+acute coronary syndrome or not), renal function,
+diabetes (defined as being of any type), and complex
+PCI. Post-hoc subgroup analyses were done to analyse
+the presence of any interaction between the treatment
+effect and high bleeding risk, angiographic severity
+(single vessel disease vs multivessel disease), DES
+generation (first generation DES vs second generation
+DES), duration from index PCI to randomisation,
+potent P2Y12 inhibitor usage before randomisation, and
+Clopidogrel
+(n=2710)
+Aspirin
+(n=2728)
+Age, years
+63·5 (10·7)
+63·4 (10·7)
+Sex
+Female
+695 (25·6%)
+689 (25·3%)
+Male
+2015 (74·4%)
+2039 (74·7%)
+Diabetes*
+925 (34·1%)
+935 (34·3%)
+Insulin-dependent diabetes
+55 (2·0%)
+62 (2·3%)
+Hypertension
+1664 (61·4%)
+1674 (61·4%)
+Dyslipidaemia
+1884 (69·5%)
+1883 (69·0%)
+Current smoker
+545 (20·1%)
+581 (21·3%)
+Chronic kidney disease
+356 (13·1%)
+337 (12·4%)
+Previous myocardial infarction
+437 (16·1%)
+435 (15·9%)
+Previous cerebrovascular
+accident
+120 (4·4%)
+133 (4·9%)
+Clinical indication of PCI
+Silent ischaemia
+58 (2·1%)
+70 (2·6%)
+Stable angina
+688 (25·4%)
+701 (25·7%)
+Unstable angina
+975 (36·0%)
+959 (35·2%)
+NSTEMI
+526 (19·4%)
+528 (19·4%)
+STEMI
+463 (17·1%)
+470 (17·2%)
+Laboratory results
+White blood cells, cells per μL
+6·7 (1·9)
+6·8 (1·9)
+Haemoglobin, g/dL
+13·7 (1·7)
+13·8 (1·6)
+Creatinine, mg/dL
+1·0 (0·7)
+1·0 (0·7)
+Total cholesterol, mg/dL
+136·8 (29·)8
+138·2 (30·5)
+Triglyceride, mg/dL
+126·8 (86·5)
+125·2 (70·8)
+HDL cholesterol, mg/dL
+46·3 (12·0)
+46·5 (12·2)
+LDL cholesterol, mg/dL
+70·7 (23·7)
+72·1 (23·2)
+HbA1c
+6·5 (1·1)
+6·5 (1·2)
+Days from PCI to
+randomisation
+383 (357-424)
+380 (358-421)
+(Table 1 continues in next column)
+Clopidogrel
+(n=2710)
+Aspirin
+(n=2728)
+(Continued from previous column)
+DAPT at the randomisation
+Aspirin plus clopidogrel
+2218 (81·8%)
+2212 (81·1%)
+Aspirin plus ticagrelor
+266 (9·8%)
+268 (9·8%)
+Aspirin plus prasugrel
+212 (7·8%)
+235 (8·6%)
+Aspirin plus clopidogrel plus
+cilostazol
+14 (0·5%)
+13 (0·5%)
+Angiographic data per patient
+Extent of CAD
+One-vessel disease
+1367 (50·4%)
+1376 (50·4%)
+Two-vessel disease
+855 (31·5%)
+844 (30·9%)
+Three-vessel disease
+488 (18·0%)
+507 (18·6%)
+Left main disease
+142 (5·2%)
+130 (4·8%)
+PCI for bifurcation lesion
+285 (10·5%)
+295 (10·8%)
+Two-stenting for
+bifurcation PCI
+46 (1·7%)
+42 (1·5%)
+PCI for CTO lesion
+257 (9·5%)
+254 (9·3%)
+Number of treated lesions†
+1·3 (0·6)
+1·3 (0·6)
+Mean diameter of implanted
+stents, mm
+3·1 (0·4)
+3·1 (0·4)
+Minimum diameter of
+implanted stents, mm
+3·0 (0·5)
+3·0 (0·5)
+Total length of implanted
+stents, mm
+36·1 (24·2)
+35·7 (23·6)
+Total number of implanted
+stents
+1·5 (0·8)
+1·5 (0·8)
+Generation of DES
+First generation DES
+54 (2·0%)
+52 (1·9%)
+Second generation DES
+2627 (96·9%)
+2651 (97·2%)
+Unknown generation
+29 (1·1%)
+25 (0·9%)
+Data are n (%), mean (SD), or median (IQR). CAD=coronary artery disease.
+CTO=chronic total occlusion. DAPT=dual antiplatelet therapy. DES=drug-
+eluting stent. HbA1c=glycated haemoglobin. NSTEMI=non ST-segment
+elevation myocardial infarction. PCI=percutaneous coronary intervention.
+STEMI=ST-segment elevation myocardial infarction. *Diabetes was defined as
+any type of diabetes. †3562 lesions were treated in the clopidogrel group and
+3565 in the aspirin group.
+Table 1: Baseline characteristics of the intention-to-treat population
+
+[Extracted table 2]
+|Column 1|Column 2|Column 3|
+|---|---|---|
+|DAPT at the randomisation|||
+|Aspirin plus clopidogrel|2218 (81·8%)|2212 (81·1%)|
+|Aspirin plus ticagrelor|266 (9·8%)|268 (9·8%)|
+|Aspirin plus prasugrel|212 (7·8%)|235 (8·6%)|
+|Aspirin plus clopidogrel plus<br>cilostazol|14 (0·5%)|13 (0·5%)|
+
+[Extracted table 7]
+|Column 1|Column 2|Column 3|
+|---|---|---|
+|Laboratory results|||
+|White blood cells, cells per μL|6·7 (1·9)|6·8 (1·9)|
+|Haemoglobin, g/dL|13·7 (1·7)|13·8 (1·6)|
+|Creatinine, mg/dL|1·0 (0·7)|1·0 (0·7)|
+|Total cholesterol, mg/dL|136·8 (29·)8|138·2 (30·5)|
+|Triglyceride, mg/dL|126·8 (86·5)|125·2 (70·8)|
+|HDL cholesterol, mg/dL|46·3 (12·0)|46·5 (12·2)|
+|LDL cholesterol, mg/dL|70·7 (23·7)|72·1 (23·2)|
+|HbA<br>1c|6·5 (1·1)|6·5 (1·2)|
+
+Articles
+www.thelancet.com Vol 397 June 26, 2021
+2491
+proton-pump inhibitor usage. The specific definitions
+of complex PCI and high bleeding risk are shown in the
+appendix (p 13). Statistical tests were done using SPSS
+(version 24) and R (version 4.0.4).
+This study is registered with ClinicalTrials.gov,
+NCT02044250.
+Role of the funding source
+The funder of the study had no role in study design, data
+collection, data analysis, data interpretation, or writing of
+the report.
+Results
+Between March 26, 2014, and May 29, 2018, 5530 patients
+who were event free for 6-18 months after PCI and
+successfully received the intended duration of DAPT
+were enrolled from 37 centres. Among these patients,
+5438 (98·3%) patients were successfully randomly
+assigned to aspirin monotherapy (2728 [50·2%]) or
+clopidogrel monotherapy (2710 [49·8%]; figure 1).
+During the follow-up period, 35 (0·6%) patients used a
+different antiplatelet regimen from that of the allocated
+group, nine (0·2%) patients withdrew informed con
+sent, and 91 (1·7%) patients were lost to follow-up.
+Ascertainment of the primary endpoint was complete in
+5338 (98·2%) patients and vital status cross-checked in
+all patients who were randomly assigned.
+The baseline characteristics of the total population are
+shown in table 1 and the appendix (p 19). The two groups
+were well balanced for demographic, clinical, and
+procedural characteristics, and non-trial-related medica
+tions. The mean age was 63·5 years (SD 10·7) and
+4054 (74·5%) patients were male and 1384 (25·5%) were
+female. The clinical diagnosis at the time of PCI was
+stable angina in 1389 (25·5%) patients, unstable angina
+in 1934 (35·5%), non-ST segment elevation myocardial
+infarction in 1054 (19·4%), and ST segment elevation
+myocardial infarction in 933 (17·2%). Angiographically,
+955 (18·3%) had three-vessel disease, 272 (5·0%) had
+left main disease, and the mean number of stents used
+for treatment was 1·5 (SD 0·8). The median time from
+PCI to randomisation was 382 days (IQR 357-422). The
+DAPT regimen before randomisation was mainly aspirin
+plus clopidogrel (4430 [81·5%]). The allocated treatment
+discontinuation rates (for less than 3 months) in the
+two groups were similar (281 [5·1%] vs 272 [4·9%]).
+During the 24-month follow-up, the primary endpoint
+occurred in 152 patients (Kaplan-Meier estimate at
+24 months 5·7%) who received clopidogrel mono
+therapy and in 207 patients (Kaplan-Meier estimate at
+24 months 7·7%) who received aspirin monotherapy
+(hazard ratio [HR] 0·73 [95% CI 0·59-0·90]; p=0·0035)
+with an absolute risk reduction of 2·0% (95% CI 0·6-3·3;
+number needed to treat [NNT]=51 patients; table 2;
+figure 2A).
+The incidences of the individual components of the
+primary endpoint and other secondary endpoints are
+shown in table 2 and the appendix (pp 23-24). The
+incidence of all-cause death was similar (51 [1·9%] in
+the clopidogrel group and 36 [1·3%] in the aspirin
+group). The specific causes of mortality events are
+described in the appendix (p 25). The incidence of
+stroke, readmission due to acute coronary syndrome,
+and major bleeding were lower in the clopidogrel
+group than in the aspirin group (table 2; appendix
+pp 23-24).
+The secondary composite thrombotic endpoint of
+cardiac death, non-fatal myocardial infarction, stroke,
+readmission due to acute coronary syndrome, or definite
+or probable stent thrombosis occurred in 99 (3·7%)
+patients in the clopidogrel group and 146 (5·5%) patients
+in the aspirin group (HR 0·68 [95% CI 0·52-0·87];
+p=0·0028), for a difference in risk of 1·7% (95% CI
+0·6-2·8; NNT=59 patients; figure 2B). Any bleeding
+(BARC type ≥2) occurred in 61 (2·3%) patients in the
+clopidogrel group and 87 (3·3%) patients in the aspirin
+group (HR 0·70 [0·51-0·98]; p=0·036), for a difference
+in risk of 0·9% (0·0-1·8; NNT=111 patients; figure 2C).
+The individual type of bleeding according to the BARC
+definition is presented in the appendix (p 26). The
+incidence of revascularisation and definite or probable
+stent thrombosis were similar in both groups (table 2).
+Clopidogrel
+(n=2710)
+Aspirin
+(n=2728)
+Hazard ratio
+(95% CI)*
+p value
+Primary composite endpoint†
+152 (5·7%)
+207 (7·7%)
+0·73 (0·59-0·90)
+0·003
+Thrombotic composite endpoint‡
+99 (3·7%)
+146 (5·5%)
+0·68 (0·52-0·87)
+0·003
+Any bleeding (BARC type ≥2)§
+61 (2·3%)
+87 (3·3%)
+0·70 (0·51-0·98)
+0·036
+All-cause death¶
+51 (1·9%)
+36 (1·3%)
+1·43 (0·93-2·19)
+0·101
+Cardiac death
+19 (0·7%)
+14 (0·5%)
+1·37 (0·69-2·73)
+0·374
+Non-cardiac death
+32 (1·2%)
+22 (0·8%)
+1·47 (0·85-2·52)
+0·167
+Non-fatal myocardial infarction
+18 (0·7%)
+28 (1·0%)
+0·65 (0·36-1·17)
+0·150
+Stroke
+18 (0·7%)
+43 (1·6%)
+0·42 (0·24-0·73)
+0·002
+Ischaemic stroke
+14 (0·5%)
+26 (1·0%)
+0·54 (0·28-1·04)
+0·064
+Haemorrhagic stroke
+4 (0·2%)
+17 (0·6%)
+0·24 (0·08-0·70)
+0·010
+Readmission due to ACS
+66 (2·5%)
+109 (4·1%)
+0·61 (0·45-0·82)
+0·001
+Major bleeding (BARC type ≥3)
+33 (1·2%)
+53 (2·0%)
+0·63 (0·41-0·97)
+0·035
+Any revascularisation
+56 (2·1%)
+69 (2·6%)
+0·82 (0·57-1·16)
+0·261
+Target lesion revascularisation
+24 (0·9%)
+36 (1·4%)
+0·67 (0·40-1·12)
+0·130
+Target vessel revascularisation
+37 (1·4%)
+48 (1·8%)
+0·78 (0·50-1·19)
+0·245
+Definite or probable stent thrombosis
+10 (0·4%)
+16 (0·6%)
+0·63 (0·29-1·39)
+0·251
+Any minor gastrointestinal
+complications
+272 (10·2%)
+320 (11·9%)
+0·85 (0·72-1·00)
+0·048
+Data are n (%), unless otherwise specified. Clinical endpoints were assessed in the intention-to-treat population at
+24 months after randomisation. The percentages shown are Kaplan-Meier estimates. All primary and secondary
+endpoints and their associated definitions are listed in the appendix (pp 13-18). ACS=acute coronary syndrome.
+BARC=Bleeding Academic Research Consortium. *The 95% CIs for secondary endpoints have not been adjusted for
+multiple testing and therefore no clinical inferences can be made from these analyses. †The primary composite
+endpoint was defined as a composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to
+ACS, and major bleeding events (BARC type ≥3). ‡The thrombotic composite endpoint was defined as cardiac death,
+non-fatal myocardial infarction, ischaemic stroke, readmission due to ACS, and definite or probable stent thrombosis.
+§The specific types of bleeding events are described in the appendix (p 26). Any bleeding event was defined as BARC
+type bleeding of 2 or more. ¶The specific causes of death are described in the appendix (p 25).
+Table 2: Clinical outcomes in the intention-to-treat population
+
+Articles
+2492
+www.thelancet.com Vol 397 June 26, 2021
+Figure 2: 24-month cumulative incidence of the primary composite outcome and secondary composite outcome
+(A) The cumulative incidence of the primary endpoint, consisting of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary
+syndrome, and major bleeding (Bleeding Academic Research Consortium bleeding type 3 or more) complications. (B) The cumulative incidence of the secondary
+composite thrombotic endpoint, consisting of cardiac death, non-fatal myocardial infarction, ischaemic stroke, readmission due to acute coronary syndrome,
+or definite or probable stent thrombosis. (C) The cumulative incidence of any bleeding events. The HR shown is for clopidogrel monotherapy versus aspirin
+monotherapy. The inset shows the same data on an enlarged y-axis. HR=hazard ratio.
+A
+Number at risk
+(number censored)
+Clopidogrel
+Aspirin
+0
+2710 (0)
+2728 (0)
+3
+2667 (22)
+2677 (23)
+6
+2654 (22)
+2657 (26)
+9
+2626 (24)
+2629 (31)
+12
+2597 (33)
+2585 (40)
+15
+2565 (41)
+2555 (48)
+18
+2549 (43)
+2531 (49)
+21
+2521 (54)
+2493 (64)
+24
+2500 (58)
+2456 (66)
+Time since randomisation (months)
+0
+20
+40
+60
+80
+100
+0
+3
+6
+9
+12
+15
+18
+21
+24
+0
+2
+4
+6
+8
+10
+Cumulative incidence of events (%)
+B
+Number at risk
+(number censored)
+Clopidogrel
+Aspirin
+0
+2710 (0)
+2728 (0)
+3
+2670 (25)
+2685 (23)
+6
+2661 (26)
+2670 (28)
+9
+2639 (34)
+2649 (35)
+12
+2612 (46)
+2608 (49)
+15
+2584 (58)
+2577 (59)
+18
+2569 (64)
+2557 (64)
+21
+2545 (79)
+2525 (82)
+24
+2524 (86)
+2495 (87)
+0
+20
+40
+60
+80
+100
+0
+3
+6
+9
+12
+15
+18
+21
+24
+0
+2
+4
+6
+8
+10
+Cumulative incidence of events (%)
+C
+Number at risk
+(number censored)
+Clopidogrel
+Aspirin
+0
+2710 (0)
+2728 (0)
+3
+2676 (28)
+2690 (26)
+6
+2664 (29)
+2677 (31)
+9
+2643 (37)
+2653 (39)
+12
+2621 (56)
+2626 (54)
+15
+2597 (72)
+2610 (65)
+18
+2585 (77)
+2595 (67)
+21
+2556 (98)
+2572 (85)
+24
+2542 (105)
+2547 (93)
+0
+20
+40
+60
+80
+100
+0
+3
+6
+9
+12
+15
+18
+21
+24
+0
+2
+4
+6
+8
+10
+Cumulative incidence of events (%)
+Clopidogrel
+Aspirin
+HR 0·73 (95% CI 0·59-0·90); p=0·0035
+Log-rank p=0·0033
+HR 0·68 (95% CI 0·52-0·87); p=0·0028
+Log-rank p=0·0026
+HR 0·70 (95% CI 0·51-0·98); p=0·036
+Log-rank p=0·035
+
+Articles
+www.thelancet.com Vol 397 June 26, 2021
+2493
+Minor gastrointestinal complications such as epigastric
+soreness, dyspepsia, abdominal pain, nausea, vomiting,
+diarrhoea, constipation, melena, or haematochezia
+occurred in 272 (10·2%) patients in the clopidogrel group
+and 320 (11·9%) patients in the aspirin group (HR 0·85
+[0·72-1·00]; p=0·048; table 2).
+Regarding the primary endpoint, the beneficial effect
+of clopidogrel monotherapy compared with aspirin
+monotherapy was generally consistent across all pre-
+specified subgroups (figure 3). Also, post-hoc analyses
+showed no statistically significant interaction between
+the treatment effect and various subgroups (figure 3).
+Figure 3: Primary efficacy endpoint in selected subgroups
+The HRs for the primary efficacy endpoint (a composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary syndrome,
+and major bleeding complications) in both groups are shown according to prespecified and post-hoc subgroups. HR=hazard ratio. DES=drug-eluting stents.
+PCI=percutaneous coronary intervention. PPI=proton-pump inhibitor. *1734 patients stopped dual antiplatelet therapy before 12 months, which was similar
+between both groups (852 [31·4%] vs 882 [32·3%]). Detailed clinical diagnosis of these patients is described in the appendix (p 22). †Complex PCI was defined as
+having at least one of the following features: three vessels treated, three or more stents implanted, three or more lesions treated, bifurcation with two stents
+implanted, total stent length greater than 60 mm, or chronic total occlusion. Data were available in 5398 (99·3%) of 5438 patients. ‡High bleeding risk was defined
+according to the Academic Research Consortium for High Bleeding Risk definition. Data were available in 4620 (85·0%) patients.
+Clopidogrel group
+(events/patients)
+Aspirin group
+(events/patients)
+HR (95% CI)
+p value
+pinteraction
+Age (years)
+≥65
+95/1177
+121/1186
+0·79 (0·60-1·03)
+0·077
+0·42
+<65
+57/1533
+86/1542
+0·66 (0·47-0·92)
+0·015
+Sex
+Male
+110/2015
+155/2039
+0·71 (0·56-0·91)
+0·059
+0·63
+Female
+42/695
+52/689
+0·80 (0·53-1·20)
+0·275
+Acute myocardial infarction
+Yes
+53/989
+72/998
+0·74 (0·52-1·06)
+0·096
+0·94
+No
+99/1721
+135/1730
+0·73 (0·56-0·94)
+0·016
+Acute coronary syndrome
+Yes
+112/1964
+146/1957
+0·76 (0·59-0·97)
+0·028
+0·58
+No
+40/746
+61/771
+0·67 (0·45-0·99)
+0·045
+Chronic kidney disease
+Yes
+31/356
+39/337
+0·75 (0·47-1·21)
+0·24
+0·89
+No
+121/2354
+168/2391
+0·72 (0·57-0·91)
+0·0065
+Diabetes
+Yes
+58/925
+84/935
+0·69 (0·49-0·96)
+0·030
+0·65
+No
+94/1785
+123/1793
+0·76 (0·58-1·00)
+0·046
+Multivessel disease
+Yes
+86/1343
+114/1351
+0·75 (0·57-0·99)
+0·045
+0·79
+No
+66/1367
+93/1376
+0·71 (0·52-0·97)
+0·032
+Generation of DES
+First generation DES
+5/54
+3/52
+1·63 (0·39-6·84)
+0·50
+0·25
+Second generation DES
+146/2627
+204/2651
+0·71 (0·58-0·88)
+0·019
+Time from index PCI*
+<365 days
+51/852
+73/882
+0·71 (0·50-1·02)
+0·063
+0·85
+≥365 days
+101/1857
+134/1844
+0·74 (0·57-0·96)
+0·024
+Complex PCI†
+Yes
+33/598
+49/595
+0·67 (0·43-1·04)
+0·072
+0·66
+No
+118/2091
+158/2114
+0·75 (0·59-0·95)
+0·016
+High bleeding risk‡
+Yes
+46/521
+66/467
+0·61 (0·42-0·89)
+0·0094
+0·21
+No
+88/1800
+109/1832
+0·82 (0·62-1·09)
+0·17
+P2Y12 inhibitor used before randomisation
+Clopidogrel
+132/2218
+169/2212
+0·77 (0·61-0·97)
+0·026
+0·43
+Ticagrelor
+12/266
+21/268
+0·57 (0·28-1·16)
+0·12
+Prasugrel
+8/212
+16/235
+0·55 (0·23-1·27)
+0·16
+PPI usage
+Yes
+29/290
+39/331
+0·84 (0·52-1·35)
+0·46
+0·58
+No
+123/2420
+168/2397
+0·72 (0·57-0·91)
+0·0054
+Favours clopidogrel Favours aspirin
+0·5
+1·0
+2·0
+1·5
+
+Articles
+2494
+www.thelancet.com Vol 397 June 26, 2021
+A similar consistency of effect was observed for the
+thrombotic composite endpoint and any bleeding
+(appendix pp 38-41). The per-protocol analyses yielded
+similar results to the intention-to-treat analyses for the
+primary study endpoint (HR 0·72 [0·58-0·89]; p=0·002)
+and the secondary endpoints (appendix pp 36-37).
+Discussion
+The HOST-EXAM trial is the first large-scale randomised
+controlled trial to compare clopidogrel with aspirin
+monotherapy during the chronic maintenance period in
+patients who received stenting with DES and had
+successfully completed 6-18 months of DAPT without
+events. Compared with aspirin, clopidogrel monotherapy
+was associated with a lower risk of the composite of
+all-cause death, non-fatal myocardial infarction, stroke,
+readmission due to acute coronary syndrome, and major
+bleeding during the 24-month follow-up period. The
+benefit of clopidogrel monotherapy was observed in both
+thrombotic and bleeding endpoints. The results were
+consistent across major patient subgroups, regardless
+of baseline clinical and angiographic characteristics.
+Also, post-hoc subgroup analyses reported no signifi
+cant interaction between the treatment effect and
+various subgroups, such as the DES generation, duration
+from index PCI to randomisation, and concomitant
+medications. Collectively, our results show that clopido
+grel monotherapy compared with aspirin monotherapy
+provides clinical benefit with fewer thrombotic and
+bleeding events, when given in the chronic maintenance
+period for patients who received PCI with DES.
+Current practice guidelines recommend DAPT as
+standard therapy after PCI to prevent immediate com
+plications such as stent thrombosis and myocardial
+infarction. After an intended duration of DAPT, clinicians
+de-escalate to antiplatelet monotherapy during the
+chronic maintenance phase for secondary prevention
+of cardiovascular events. For this purpose, aspirin is
+recommended and is the mainstay of therapy.3 Although
+clopidogrel is used as an alternative to aspirin, especially
+in those who are intolerant of or allergic to aspirin,
+few studies have done a head-to-head comparison
+between aspirin and clopidogrel in patients with stable
+coronary artery disease. Previously, the CAPRIE trial10
+showed that clopidogrel was moderately more effective
+than aspirin was in reducing cardiovascular adverse
+events in patients at risk for vascular events. Subsequent
+studies15-17 suggested that the benefit of clopidogrel over
+aspirin on ischaemic event reduction is increased in
+higher-risk patients. Several differences exist between
+the CAPRIE trial and our study. First, the study
+population of the CAPRIE trial was not a PCI population
+and thus cannot represent pharmacotherapy in post-PCI
+patients. Second, the aspirin dose in the CAPRIE trial
+was 325 mg once daily, whereas our study used 100 mg
+once daily. Finally, contemporary practice uses DES
+and high-intensity statins, which were never part
+of the CAPRIE trial because the trial was done in
+the early 1990s. Subsequently, a few non-randomised,
+registry-based studies compared the efficacy and safety
+of clopidogrel with that of aspirin monotherapy for
+secondary prevention in patients with stable coronary
+artery disease, showing promising results for clopido
+grel.11-13 Further, a study-level meta-analysis compared
+P2Y12 inhibitor monotherapy with aspirin mono
+therapy for secondary prevention and concluded that
+P2Y12 inhibitor monotherapy was associated with a
+reduced risk of myocardial infarction and a neutral
+effect on mortality.18 Collectively, the previous studies
+raised important hypotheses regarding which antiplatelet
+monotherapy might yield the best clinical results in the
+chronic maintenance period after PCI. Our study, which
+was done in a homogeneous population of stabilised
+patients after PCI who received DES, confirms these
+previous findings for the first time in a large-scale
+randomised study.
+Two trials (the STOPDAPT-2 and SMART-CHOICE
+trials) investigated the feasibility of P2Y12 inhibitor
+monotherapy in patients after PCI. A meta-analysis also
+reported that 1-3 months of DAPT followed by P2Y12
+inhibitor monotherapy was associated with a reduced
+risk of adverse clinical events.19 However, the major
+difference between our study and these previous studies
+is the timepoint at which this regimen was used.
+Previous trials compared the efficacy and safety of P2Y12
+inhibitor monotherapy versus DAPT within the first
+year after PCI, whereas we compared P2Y12 inhibitor
+monotherapy versus aspirin monotherapy 6-18 months
+post-PCI.
+The cumulative event curves seemed to significantly
+diverge at 9 months. However, we saw a slight separation
+even in the early phase and a small bump in the clopidogrel
+group curve around 7-8 months makes it appear as
+though the curves overlap until 9 months. Without this
+small bump, we believe that the curves would have looked
+as though there was a steady separation between the
+two groups. Additionally, the cumulative incidence of
+adverse clinical events continuously increased without
+any plateau effect, implying a constant incidence of
+clinical events during the chronic maintenance period
+after PCI with DES. This finding is similar to the event
+curve that was observed in the DAPT trial, which also
+enrolled patients who had not had an adverse clinical
+event within the first year after PCI.20 Moreover, we found
+progressive divergence of the cumulative incidence curve
+between the clopidogrel and aspirin groups, suggesting a
+continuous benefit of clopidogrel throughout the study
+period. Compared with the DAPT trial, the event rate in
+our study was slightly lower despite longer follow-up
+(18 months vs 24 months). This difference can be partially
+explained by the fact that the DAPT trial had a much
+higher rate of patients who received early generation DES,
+whereas 97% of our population was treated with second
+generation DES. Also, most of the patients in the DAPT
+
+Articles
+www.thelancet.com Vol 397 June 26, 2021
+2495
+study were White, whereas our study was done in an
+east Asian population who are known to have lower rates
+of thrombotic events compared with those of White
+people.21,22
+One interesting finding from our study was that the
+reduction of adverse clinical events, both ischaemic and
+bleeding events, did not translate into a reduced risk of
+death. Regarding the specific cause of death, the trend
+of mortality rates due to cardiovascular and non-
+cardiovascular causes were in the opposite direction
+compared with other non-fatal outcomes, although this
+finding was not statistically significant. Also, we found
+numerically more cancer-related deaths in the clopidogrel
+group than in the aspirin group. This finding could be
+due to including more patients with unknown cancer
+before enrolment in the clopidogrel group than in the
+aspirin group. The protective effect of aspirin in cancer-
+related death has been suggested in a few previous
+studies.23,24 However, in the ASPREE trial,25 cancer-related
+mortality occurred more frequently in healthy adults
+who received aspirin compared to those who received
+placebo. The influence of aspirin versus clopidogrel on
+death (including cancer-related deaths) requires further
+investigation and longer follow-up. We hope that the
+extended follow-up of the HOST-EXAM trial, the so-
+called HOST-EXAM Extended study, will bring further
+insights on the true effect of chronic maintenance
+monotherapy on death.
+Our study has several limitations. First, the open-label
+design has a potential for bias in outcome reporting
+and ascertainment. However, all endpoints had a stan
+dardised definition and were specifically adjudicated by
+an independent committee that was unaware of the
+treatment group. Second, the observed event rate of the
+primary endpoint was lower than what was anticipated
+in the sample size calculation, suggesting a possibility of
+selection bias or under-reporting of events. However, we
+periodically monitored every participating centre, where
+imputed data were cross-checked with source documen
+tation in more than 80% of the enrolled patients. Further,
+the vital status of all patients randomly assigned was
+double-checked using two national databases that have
+access to individual mortality information. Another
+limitation when the rate of the primary endpoint is
+lower than expected is the possibility of a false-negative
+result (type II error). However, our findings were
+significant for both the primary endpoint and secondary
+composite endpoints and the benefit of clopidogrel
+was consistent in all prespecified subgroups. Third,
+phenotypic and genetic testing for clopidogrel was not
+done and the study population was east Asian patients,
+which might limit the generalisability of the study.
+50-60% of the east Asian population carry loss-of-
+function mutations of the CYP2C19 gene causing an
+attenuated antiplatelet effect of clopidogrel. However,
+multiple studies have shown that thrombotic event rates
+are lower in east Asian people compared with in White
+people, implying that the prognostic value of clopidogrel
+resistance might be different between ethnicities, a
+phenomenon termed the east Asian paradox.26 Further
+more, drug-resistance issues are not confined to only
+clopidogrel. In our previous study, 27 the prevalence of
+aspirin resistance (aspirin reactivity unit >550) was
+18·0% (164 of 911 patients), similar to 19·7% (180 of
+911 patients) for clopidogrel resistance (platelet reactivity
+unit >275). The clinical significance of clopidogrel
+resistance is still under debate and current guidelines do
+not recommend routine platelet function tests in the
+decision making for personalised treatment approaches.3
+Fourth, the comparison between clopidogrel and aspirin
+for the secondary endpoints was not adjusted for multiple
+testing and, therefore, we cannot make any definitive
+conclusions regarding the secondary endpoints. Fifth,
+the follow-up duration of 24 months might be too short
+to give a concrete conclusion, considering the fact
+that maintenance antiplatelet therapy is administered
+indefinitely. Therefore, we have launched the HOST-
+EXAM Extended study, in which we will be extending the
+median follow-up to 10 years. Finally, our results only
+apply to those who had 6-18 months of DAPT without
+any major adverse events. Thus, extrapolation of our
+results directly to those who use a shorter duration of
+DAPT, such as 1 month or 3 months, is difficult. Also,
+we cannot clearly address the optimal antiplatelet agent
+in patients with atrial fibrillation treated with oral
+anticoagulants.
+In conclusion, among patients who were event free
+for 6-18 months post-PCI and successfully received the
+intended duration of DAPT, clopidogrel monotherapy
+compared with aspirin monotherapy significantly
+reduced the risk of the composite of all-cause death,
+non-fatal myocardial infarction, stroke, readmission due
+to acute coronary syndrome, and BARC type bleeding
+of 3 or more.
+Contributors
+B-KK, KWP, E-SS, J-KH, and H-SK conceived and designed the study.
+JK, T-MR and B-KK acquired the data and participated in data analysis
+and data interpretation. All authors participated in enrolment of
+patients and performed clinical follow-up, along with revising the draft
+critically for important intellectual content. B-KK, JK, and KWP wrote
+the first draft, reviewed, and revised the manuscript. All authors
+approved the final version of the manuscript and ensured that the
+accuracy or integrity of any part of the work is appropriately investigated
+and resolved. All authors had full access to all the data in the study and
+had final responsibility for the decision to submit for publication.
+Declaration of interests
+H-SK has received research grants or speaker's fees from Medtronic,
+Abbott Vascular, Edwards Life Science, Boston Scientific, Terumo,
+Biotronik and Dio, AmGen, Pfizer, AstraZeneca, MSD, Daiichi Sankyo,
+and Boehringer Ingelheim. B-KK has received institutional research grants
+from Abbott Vascular and Philips. KWP reports fees from Daiichi Sankyo,
+AstraZeneca, Sanofi, Bristol-Myers Squibb, Bayer, and Pfizer outside the
+submitted work. All other authors declare no competing interests.
+Data sharing
+The HOST-EXAM trial is planning to continue follow-up until 2025.
+No individual participant data will be available before this. Any relevant
+inquiries should be sent to the corresponding author.
+
+Articles
+2496
+www.thelancet.com Vol 397 June 26, 2021
+Acknowledgments
+The funding source of this study was a consortium of four
+Pharmaceutical Companies (ChongKunDang, SamJin, HanMi,
+and DaeWoong), and grants from the Patient-Centered Clinical Research
+Coordinating Center (HI19C0481 and HC19C0305) and Korea Health
+Technology R&D Project (HI17C2085) funded by the South Korea
+Ministry of Health and Welfare.
+References
+1
+Levine GN, Bates ER, Bittl JA, et al. 2016 ACC/AHA guideline
+focused update on duration of dual antiplatelet therapy in patients
+with coronary artery disease: a report of the American College of
+Cardiology/American Heart Association Task Force on Clinical
+Practice Guidelines: an update of the 2011 ACCF/AHA/SCAI
+Guideline for Percutaneous Coronary Intervention, 2011 ACCF/
+AHA Guideline for Coronary Artery Bypass Graft Surgery,
+2012 ACC/AHA/ACP/AATS/PCNA/SCAI/STS Guideline for the
+Diagnosis and Management of Patients With Stable Ischemic
+Heart Disease, 2013 ACCF/AHA Guideline for the Management of
+ST-Elevation Myocardial Infarction, 2014 AHA/ACC Guideline for
+the Management of Patients With Non-ST-Elevation Acute
+Coronary Syndromes, and 2014 ACC/AHA Guideline on
+Perioperative Cardiovascular Evaluation and Management of
+Patients Undergoing Noncardiac Surgery. Circulation 2016;
+134: e123-55.
+2
+Valgimigli M, Bueno H, Byrne RA, et al. 2017 ESC focused update
+on dual antiplatelet therapy in coronary artery disease developed in
+collaboration with EACTS: the task force for dual antiplatelet therapy
+in coronary artery disease of the European Society of Cardiology
+(ESC) and of the European Association for Cardio-Thoracic Surgery
+(EACTS). Eur Heart J 2018; 39: 213-60.
+3
+Neumann FJ, Sousa-Uva M, Ahlsson A, et al. 2018 ESC/EACTS
+guidelines on myocardial revascularization. Eur Heart J 2019;
+40: 87-165.
+4
+Collaboration AT. Collaborative meta-analysis of randomised trials
+of antiplatelet therapy for prevention of death, myocardial
+infarction, and stroke in high risk patients. BMJ 2002; 324: 71-86.
+5
+Baigent C, Blackwell L, Collins R, et al. Aspirin in the primary and
+secondary prevention of vascular disease: collaborative
+meta-analysis of individual participant data from randomised trials.
+Lancet 2009; 373: 1849-60.
+6
+Gaziano JM, Brotons C, Coppolecchia R, et al. Use of aspirin to
+reduce risk of initial vascular events in patients at moderate risk of
+cardiovascular disease (ARRIVE): a randomised, double-blind,
+placebo-controlled trial. Lancet 2018; 392: 1036-46.
+7
+Bowman L, Mafham M, Wallendszus K, et al. Effects of aspirin for
+primary prevention in persons with diabetes mellitus. N Engl J Med
+2018; 379: 1529-39.
+8
+McNeil JJ, Wolfe R, Woods RL, et al. Effect of aspirin on
+cardiovascular events and bleeding in the healthy elderly.
+N Engl J Med 2018; 379: 1509-18.
+9
+Smith SC Jr, Benjamin EJ, Bonow RO, et al. AHA/ACCF secondary
+prevention and risk reduction therapy for patients with coronary
+and other atherosclerotic vascular disease: 2011 update: a guideline
+from the American Heart Association and American College of
+Cardiology Foundation. Circulation 2011; 124: 2458-73.
+10 CAPRIE Steering Committee. A randomised, blinded, trial of
+clopidogrel versus aspirin in patients at risk of ischaemic events
+(CAPRIE). Lancet 1996; 348: 1329-39.
+11 Sim DS, Jeong MH, Kim HS, et al. Clopidogrel versus aspirin after
+dual antiplatelet therapy in acute myocardial infarction patients
+undergoing drug-eluting stenting. Korean Circ J 2020; 50: 120-29.
+12 Park TK, Song YB, Ahn J, et al. Clopidogrel versus aspirin as an
+antiplatelet monotherapy after 12-month dual-antiplatelet therapy
+in the era of drug-eluting stents. Circ Cardiovasc Interv 2016;
+9: e002816.
+13 Lemesle G, Schurtz G, Meurice T, et al. Clopidogrel use as single
+antiplatelet therapy in outpatients with stable coronary artery
+disease: prevalence, correlates and association with prognosis
+(from the CORONOR Study). Cardiology 2016; 134: 11-18.
+14 Lee H, Koo BK, Park KW, et al. A randomized clinical trial
+comparing long-term clopidogrel vs aspirin monotherapy beyond
+dual antiplatelet therapy after drug-eluting coronary stent
+implantation: design and rationale of the Harmonizing Optimal
+Strategy for Treatment of coronary artery stenosis-Extended
+Antiplatelet Monotherapy (HOST-EXAM) trial. Am Heart J 2017;
+185: 17-25.
+15 Bhatt DL, Chew DP, Hirsch AT, Ringleb PA, Hacke W, Topol EJ.
+Superiority of clopidogrel versus aspirin in patients with prior
+cardiac surgery. Circulation 2001; 103: 363-68.
+16
+Bhatt DL, Marso SP, Hirsch AT, Ringleb PA, Hacke W, Topol EJ.
+Amplified benefit of clopidogrel versus aspirin in patients with
+diabetes mellitus. Am J Cardiol 2002; 90: 625-28.
+17
+Ringleb PA, Bhatt DL, Hirsch AT, Topol EJ, Hacke W. Benefit of
+clopidogrel over aspirin is amplified in patients with a history of
+ischemic events. Stroke 2004; 35: 528-32.
+18 Chiarito M, Sanz-Sánchez J, Cannata F, et al. Monotherapy with a
+P2Y12 inhibitor or aspirin for secondary prevention in patients with
+established atherosclerosis: a systematic review and meta-analysis.
+Lancet 2020; 395: 1487-95.
+19 Giacoppo D, Matsuda Y, Fovino LN, et al. Short dual antiplatelet
+therapy followed by P2Y12 inhibitor monotherapy vs. prolonged dual
+antiplatelet therapy after percutaneous coronary intervention with
+second-generation drug-eluting stents: a systematic review and
+meta-analysis of randomized clinical trials. Eur Heart J 2021;
+42: 308-19.
+20 Mauri L, Kereiakes DJ, Yeh RW, et al. Twelve or 30 months of dual
+antiplatelet therapy after drug-eluting stents. N Engl J Med 2014;
+371: 2155-66.
+21 Kim BK, Hong SJ, Cho YH, et al. Effect of ticagrelor monotherapy
+vs ticagrelor with aspirin on major bleeding and cardiovascular
+events in patients with acute coronary syndrome: the TICO
+randomized clinical trial. JAMA 2020; 323: 2407-16.
+22 Kim HS, Kang J, Hwang D, et al. Prasugrel-based de-escalation of
+dual antiplatelet therapy after percutaneous coronary intervention
+in patients with acute coronary syndrome (HOST-REDUCE-
+POLYTECH-ACS): an open-label, multicentre, non-inferiority
+randomised trial. Lancet 2020; 396: 1079-89.
+23 Rothwell PM, Fowkes FG, Belch JF, Ogawa H, Warlow CP,
+Meade TW. Effect of daily aspirin on long-term risk of death due to
+cancer: analysis of individual patient data from randomised trials.
+Lancet 2011; 377: 31-41.
+24 Rothwell PM, Wilson M, Price JF, Belch JF, Meade TW, Mehta Z.
+Effect of daily aspirin on risk of cancer metastasis: a study of
+incident cancers during randomised controlled trials. Lancet 2012;
+379: 1591-601.
+25 McNeil JJ, Nelson MR, Woods RL, et al. Effect of aspirin on
+all-cause mortality in the healthy elderly. N Engl J Med 2018;
+379: 1519-28.
+26 Kang J, Kim HS. The evolving concept of dual antiplatelet therapy
+after percutaneous coronary intervention: focus on unique feature
+of east Asian and "Asian paradox". Korean Circ J 2018; 48: 537-51.
+27 Lim WH, Chae IH, Yoon CH, et al. Comparison of dual antiplatelet
+therapy prescribed as one-pill versus two-pill regimen. A pooled
+analysis of individual patient data from the three MR-CAPCIS
+trials. Thromb Haemost 2016; 116: 78-86.
+

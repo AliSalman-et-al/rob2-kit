@@ -1,0 +1,12 @@
+{
+  "research_question": "Does the current D5 comparison presentation support a source-grounded distinction between exact estimator/plan correspondence, missing finalization/access chronology, planned sensitivity analysis reporting and eligible primary measurements in this distinct case?",
+  "criteria": [
+    "Locate the complete applicable embedded SAP, including adjacent missing-data/primary-analysis text; a source role or empty selected passages does not establish absence.",
+    "Compare the exact primary Cox HR with documented planned methods and explicitly investigate any method/change/sensitivity-analysis gaps. Matching endpoint/ITT cannot replace analysis correspondence; no particular5.1 label required.",
+    "Separate planned intent, actual conduct and chronology. Neither open-label design nor absent access dates alone establishes late finalization; explain any probable inference or why neither probable answer is warranted.",
+    "Assess measurement eligibility for the fixed24-month composite separately from secondary endpoints/12-month visits; neither automaticNo nor automaticNI from absent selection evidence.",
+    "Distinguish planned sensitivity analysis, eligible/conducted/reported alternatives and evidence of results-dependent choice. Missing or unexplained reporting is not by itself proof of favorable-result selection.",
+    "Ground material claims in actually delivered and selected source passages; identify inference and stopping limits. Mechanical save or same label is not scientific success."
+  ],
+  "prior_comparability": "ArchivedNI/No/NI is private historical warrant, not gold; compare reasoning only, not target-unmatched human labels. This case has a located plan with planned imputation and an incompletely specified numerical estimator, unlike RECOVERYs explicitly different named hazard estimators and the fictional fully documented amendment."
+}

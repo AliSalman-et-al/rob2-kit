@@ -1,0 +1,44 @@
+{
+  "answers": [
+    "no_information",
+    "no",
+    "no_information"
+  ],
+  "domain_judgment": "some_concerns",
+  "revision": 5,
+  "code_sha": "6d0ac5e9dead96419571877159f2cc2d3d23dfec",
+  "model": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "turn_id": "01a10284-8436-7c30-8669-d8d7b2fcdc23"
+    }
+  ],
+  "one_invocation": true,
+  "elapsed_seconds": 135.05554271000437,
+  "native_calls": 21,
+  "wrapper_calls": 1,
+  "conservatively_counted_calls": 22,
+  "save_attempts": 1,
+  "save_rejections": 0,
+  "output_overshoot": 0,
+  "usage": {
+    "input_tokens": 1325696,
+    "cached_input_tokens": 1222400,
+    "output_tokens": 5001,
+    "reasoning_output_tokens": 2242
+  },
+  "uncached_input_tokens": 103296,
+  "condition": "One model request started at line33 on a32-line page63; typed invalid_request response; model recovered valid windows in-run. No transport failure or operator repair.",
+  "source_availability": "79 hash-matching native PDF pages; registry raw unavailable, blocked live transport, no substitute",
+  "scientific_disposition": "Mixed: exact result/plan located; correspondence/chronology retained;5.2 separatelygroundedNo;5.3avoidedselectionclaim. Known planned imputation passage delivered but absent from saved bases/unknowns/rationale, so planned-analysis coverage criterion not met.",
+  "prior_comparison": "SameNI/No/NI/SomeConcerns as archival source-matchedcase; archived5.3explicitlyretainedplannedMI, newwarrantlostit. No accuracyoroverallreasoninggain.",
+  "next_work": "Offline source-grounded eligibility/binding audit for planned conditional sensitivity analyses and observed trigger, not another immediate paid case.",
+  "named_diagnostics_usage_with_prior_pair": {
+    "input_tokens": 9368060,
+    "cached_input_tokens": 8787456,
+    "uncached_input_tokens": 580604,
+    "output_tokens": 28010,
+    "reasoning_output_tokens": 10311
+  }
+}

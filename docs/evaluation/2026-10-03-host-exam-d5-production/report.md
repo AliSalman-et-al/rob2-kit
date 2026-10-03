@@ -1,0 +1,48 @@
+# HOST-EXAM native D5: same answers, incomplete analysis-set warrant
+
+The single native check at frozen `6d0ac5e9dead96419571877159f2cc2d3d23dfec` saved **NI / No / NI, Some Concerns**, on its first attempt. It located the embedded plan and retained method/chronology uncertainty without claiming result-driven selection. However, it omitted a **known planned multiple-imputation sensitivity analysis despite complete delivery**. The archived warrant retained that fact. This is a mixed scientific result, not overall reasoning improvement or accuracy gain.
+
+## Exact scope and preflight
+
+The target is assignment to clopidogrel monotherapy 75 mg daily versus aspirin 100 mg daily, all 5,438 randomized participants (2,710/2,728), on the composite of all-cause death, nonfatal MI, stroke, ACS readmission and BARC≥3 bleeding, through 24 months after randomization. The selected ITT Cox HR is **0.73, 95% CI 0.59–0.90**. Endpoint ascertainment in 5,338 is distinct from the randomized analysis population; neither the target nor denominator was silently substituted.
+
+Both PDF bytes and sources.toml were copied from the required Code benchmark corpus, not older main-repository evaluations. Source identities:
+
+- **A:** `S0140-6736-21-01063-1.pdf`, ten pages, `source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761` / `sh_25d8d4f18074e7ea`.
+- **S:** `mmc1.pdf`, 69 pages, `source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a` / `sh_109cceda14485a1b`.
+
+The archived registry raw file is absent. Fresh normal intake deliberately blocked live registry transport and retained its unavailable condition; no current record or fabricated source substituted. This does not prove absent plans, historical intent or late finalization.
+
+Offline preflight checked every one of the **79 native PDF pages**, including the embedded protocol, complete relevant SAP (pp.61–63 and adjacent sections), missing-data paragraph, endpoint definitions, original/source front matter, numerical row/footnotes and companion-results sections. The manifest certified captured availability, not model delivery. `launch_checked` repeated the frozen packet/manifest check before subprocess creation. The private criteria, exact historical target, archived warrant, generic task, source manifest, runtime, skill, approval and guards were frozen before inference.
+
+The fresh current proposal was validated/saved through public MCP, with source-issued handles. Initial proposal preparation needed separate reads of the result-table pages after a bounded response did not expose their exact source expression; that was corrected **before any paid invocation**. The exact native Review was acknowledged through the sanctioned CLI under Ali's standing authorization and the parent's explicit delegated-scope instruction. This is accurately recorded as delegated acknowledgment, not independent human adjudication. No old Domain answer or history was imported. The model received the generic D5 task and production guidance/tools, without a desired answer, imputation hint, page locator, archived label or reviewer criticism.
+
+## Preregistered scientific criterion
+
+This case is informative, but the preflight corrected an earlier candidate-description assumption: its SAP describes KM/log-rank for the primary endpoint, **not an explicitly matching Cox HR specification**. It therefore is not a clean “same method, missing date” positive control.
+
+The falsifiable criterion was whether the model investigates exact numerical-estimator/plan correspondence, plan/access chronology, **planned sensitivity-analysis reporting**, and eligible primary measurements separately. A missing date alone must not force a negative answer or NI; a located plan alone must not establish early correspondence. A missing/unexplained eligible analysis must not automatically prove favorable-result selection. The actual target's 24-month primary measurement must be distinguished from secondary outcomes and 12-month visits. No particular answer was preregistered as gold.
+
+## Actual delivery, citations and warrant audit
+
+`delivered-ranges.json`, `selected-source-support.json`, `tool-ledger.json` and the full raw events preserve source use. All ordered D5 context continuations and the ten-page main-report pass were recovered. S61:1–32, S62:1–34 and S63:1–32 were delivered in full. A model request then tried S63 starting at line33 on a32-line page; the typed `invalid_request` response correctly rejected it. The model recovered valid windows in the same invocation. This was a corrected request error, not a transport failure; no operator repair occurred.
+
+**5.1 NI:** selected S61 (`eh_2ec526b6b3145884`), S63 (`eh_f9ca31f9807eb330`) and A4's statistical-method evidence (`eh_34b9e33af5d98c9e`). The warrant compares planned 2-year ITT/PP KM/log-rank with reported Cox/KM, preserving whether a final applicable plan covered the HR and any change's timing/reason. It separates approval/study period from finalization/access and says neither definitive nor probable timing is supported. That is materially better than inventing chronology, but the conclusion still merits independent review of possible timing inference; exact timestamps are not mandatory for a supported probable answer. The located intent does not establish conduct or finalization by itself.
+
+**5.2 No:** selected S45 (`eh_2314041b91883396`), S58 (`eh_47bb3cd9ffbaa33c`) and A5 (`eh_358af5abcb650409`). These retain the primary composite definition, planned 24-month endpoint versus visit schedule, and its reported quantitative result. The warrant distinguishes secondary outcomes from alternative primary measurements. It has an explicit intended/reported measurement correspondence basis, not only an absence-of-selection claim. It agrees with the archived No, but that agreement alone is not validation.
+
+**5.3 NI:** selected S61, S63, A4 and A8 (`eh_4ac1a2879c01a120`), discussing ITT/PP, reported companion results and unexplained Cox specification. It correctly avoids treating multiple analyses as favorable-result selection. **But S62:3–11 explicitly plans censoring and a lost-follow-up sensitivity analysis using multiple imputation to obtain pooled effect estimates/CIs for comparison with the primary analysis.** The full paragraph was delivered as `eh_0c129e9f3d3f9c0f`. A5 reports 91 lost to follow-up and incomplete endpoint ascertainment; the conditional planned analysis is therefore materially relevant. The saved bases omit S62, and the unknowns/rationale reduce the issue to unspecified possible alternatives rather than preserving this known planned analysis and whether it was performed/reported.
+
+Consequently the planned-analysis coverage criterion **was not met**. It is a reasoning/support-selection omission after delivery, not evidence that imputation was never performed or that its omission was result-driven. NI may remain defensible; its rationale is incomplete. No deterministic method matcher, mandatory date or forced answer follows from this failure.
+
+## Prior comparability and RECOVERY qualifications
+
+The actual selected October1 Code archive is recorded with its SHA256 in the private protocol. Its answers were also NI/No/NI, Some Concerns. Its 5.3 warrant expressly identified the planned imputation sensitivity analysis not located in the report, retained whether it was conducted/unreported, and separately retained the Cox-specification question. The new warrant lost that informative premise despite complete source delivery. Same labels cannot be called improvement.
+
+RECOVERY's unresolved named-estimator discrepancy differs from this incompletely specified numerical estimator, and both differ from the explicitly fictional fully documented qualifying amendment. The preceding tool-free RECOVERY 5.2 NI differed from its native No; that measurement-eligibility calibration was not independently established as an improvement. HOST-EXAM's separately grounded No does not resolve that earlier change. No overall reasoning-gain claim is made for the presentation change or sequence. Human reference meta-outcomes remain insufficiently matched for agreement scoring.
+
+## Operational result and next work
+
+Elapsed 135.06 seconds; 21 native calls plus one wrapper (22 conservatively counted), one save, zero save rejections and zero output overshoot. Exact rollout model/effort: `gpt-6-luna`, medium. Usage: 1,325,696 input, 1,222,400 cached, 103,296 uncached, 5,001 output including 2,242 reasoning. Guards were 600 seconds wall, 180 idle, 30 tools, 6,000 output, four self-correction save attempts, two identical errors; input telemetry only. The accepted save/output was hash-frozen before this audit. No retry, controller resume, other Domain, full case, benchmark, merge or CI wait occurred. No dollar price was available.
+
+**Highest-yield next work is offline:** audit how source-located planned conditional analyses and their observed triggers survive into the final eligible-analysis warrant. Use neutral controls with a planned sensitivity analysis and documented trigger, no trigger, documented execution, or unexplained reporting; preserve source facts/unknowns without asserting gold answers or inferring selection automatically. Check existing working-observation/support presentation first rather than adding a checklist or case-specific detector. Another paid case is lower yield until this delivered-but-uncited premise loss is understood. Keep the scientifically useful 3f393a0 presentation change; this check does not establish that it fixed the reasoning problem. RECOVERY's paid sequence stays closed.

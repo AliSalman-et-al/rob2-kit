@@ -1,0 +1,1181 @@
+{
+  "slug": "host-exam",
+  "archive": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/.rob2-kit/finalized/3a642cf6326607afb5e14fdcf7488c26a96e19dc958733af3c0bac0fce9f4989.rob2.zip",
+  "archive_sha256": "6f10872697f8b2f5f37ba34da1568e26c74d3aab93cf66ac5dd594d28c31d6a4",
+  "target": {
+    "applicability": {
+      "design": "individual_parallel",
+      "evidence": [
+        "eh_71cda85cba722ad3"
+      ],
+      "rationale": "Patients were individually randomized 1:1 to parallel treatment groups by web-based application."
+    },
+    "bindings": [
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/effect_measure"
+        },
+        "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/estimate"
+        },
+        "value_digest": "sha256:83befeb32be707e48e581cf5be9ff610a942d52f1cd060712200f38ed27fbf7d"
+      },
+      {
+        "evidence_index": 2,
+        "field": {
+          "path": "/reported/precision"
+        },
+        "value_digest": "sha256:13f62ec94c035282df726a47aa6c3f5c99c6de009151d415074df37e782c71f1"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/endpoint/name"
+        },
+        "value_digest": "sha256:0eb2f0f19cfb716db78f5f7a0cae1c237b0c007f4dc0b52ae0f5d885dcb8c752"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/endpoint/definition"
+        },
+        "value_digest": "sha256:710d23f53987022ac1f5cf407508b26b110431d1c8980c853707999124488b5a"
+      }
+    ],
+    "clarity": {
+      "analysis_population": "specified",
+      "comparison_groups": "specified",
+      "effect_measure": "specified",
+      "eligible_result_choice": "specified",
+      "measurement": "specified",
+      "outcome_definition": "specified",
+      "source_table_meaning": "specified",
+      "time_point": "specified"
+    },
+    "evidence": [
+      {
+        "handle": "eh_160cc8ea9517a8e6",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_1883271310095e6d",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_5d608a21257f49ab",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_71cda85cba722ad3",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_81ff925d2297ec95",
+        "kind": "narrative"
+      }
+    ],
+    "kind": "assessable",
+    "relation": "exact",
+    "relation_rationale": "Primary composite matches the requested event set and 24-month time point, compares randomized clopidogrel and aspirin assignment, and is analyzed by intention to treat; incomplete event-free follow-up is censored.",
+    "reported": {
+      "analysis_population": "All 5438 randomized patients in the ITT population; endpoint ascertainment was complete in 5338 (98.2%).",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "definition": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to ACS, and major bleeding events (BARC type \u22653).",
+        "name": "Primary composite endpoint\u2020"
+      },
+      "estimate": "0\u00b773",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI 0\u00b759-0\u00b790"
+    },
+    "requested_outcome": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "Clopidogrel monotherapy 75 mg once daily",
+          "id": "clopidogrel"
+        },
+        {
+          "assignment": "Aspirin monotherapy 100 mg once daily",
+          "id": "aspirin"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary syndrome, and BARC type 3 or greater bleeding",
+        "metric": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding"
+      },
+      "outcome_definition": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+      "time_point_or_window": {
+        "description": "24 months after randomisation",
+        "kind": "quantified",
+        "unit": "months",
+        "value": "24"
+      }
+    },
+    "trial_id": "host-exam"
+  },
+  "source_inventory": [
+    {
+      "declared_role": "supplement",
+      "id": "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      "label": "mmc1.pdf",
+      "logical_path": "mmc1.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 69,
+      "projection_hash": "sha256:aafa7dfe0d1563ce8a35a1453f7993d7092f7601c5359f39f313e3c84f33b062",
+      "role": "supplement",
+      "sha256": "sha256:5bb2b73db768761c39659ffa494ec3a92f932c8e35ad9091148f1887370eedde",
+      "trial_id": "host-exam"
+    },
+    {
+      "declared_role": "main_article",
+      "id": "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      "label": "S0140-6736-21-01063-1.pdf",
+      "logical_path": "S0140-6736-21-01063-1.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 10,
+      "projection_hash": "sha256:778d5b234f3be70ffa24ac446f8937d1878c5031f09eab6c8c601d039df12ff5",
+      "role": "main_article",
+      "sha256": "sha256:5f85f9e28b55d2d73c5a1ff9cf7571b396e2af8289ae35e16b116008b92c0f88",
+      "trial_id": "host-exam"
+    },
+    {
+      "declared_role": null,
+      "id": "source_c4d377883c1c02eb87cdb1ac29b92450346873fdbb1dcf5fe9e89410254acb64",
+      "label": "ClinicalTrials.gov NCT02044250",
+      "logical_path": "registry/NCT02044250.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:c30bd17c6e5309a76ca78e1a62f663b988691800097c1a2ec11aabf34f8bbb1f",
+      "role": "registry",
+      "sha256": "sha256:1ead60445c9a1608f9ec85e5fb6eb2c15c6da71136a793d1a92b085717b3cadd",
+      "trial_id": "host-exam"
+    }
+  ],
+  "reference_label": {
+    "slug": "host-exam",
+    "meta_id": "lancet-clopidogrel",
+    "field": "01 GenMed",
+    "trial_label": "HOST-EXAM",
+    "D1": "Low",
+    "D2": "Low",
+    "D3": "Low",
+    "D4": "Low",
+    "D5": "Low",
+    "overall": "Low",
+    "label_outcome": "(meta outcomes)",
+    "label_source": "Figure S1 mmc1 p55, read by eye",
+    "nct": "",
+    "doi": "10.1016/s0140-6736(21)01063-1",
+    "note": "columns 5-7 names to confirm from the included-trial list"
+  },
+  "d5": {
+    "identity": "sha256:4a8b2fa26a52097b7281b2a11a0d30d2deecdf663ff78431d05746d3a2adbad4",
+    "judgment": "some_concerns",
+    "trace": [
+      "selection.some_concerns"
+    ],
+    "active_questions": [
+      "sq:selection:prespecified-analysis",
+      "sq:selection:multiple-measurements",
+      "sq:selection:multiple-analyses"
+    ]
+  },
+  "answers": [
+    {
+      "question_id": "sq:selection:prespecified-analysis",
+      "answer": "no_information",
+      "justification": "A protocol/SAP is available and specifies a 24-month endpoint analysis in ITT and per-protocol populations. However, participants and investigators were unmasked, and the captured protocol/SAP has no date or amendment history establishing that the final analysis plan preceded unblinded outcome access. Registry submission and study-start dates do not date this SAP version.",
+      "unknowns": [
+        "When the SAP was finalized and whether any amendments were made before unblinded outcome data were available."
+      ],
+      "counterevidence": []
+    },
+    {
+      "question_id": "sq:selection:multiple-measurements",
+      "answer": "no",
+      "justification": "The protocol identifies one primary endpoint: the specified composite at 24 months after randomization. Although follow-up visits were planned at 12 and 24 months, the primary outcome was fixed at 24 months, and the reported primary result uses that endpoint and window. No competing eligible measurement for this primary composite is identified.",
+      "unknowns": [],
+      "counterevidence": []
+    },
+    {
+      "question_id": "sq:selection:multiple-analyses",
+      "answer": "no_information",
+      "justification": "The primary ITT analysis and supportive per-protocol result are both reported, with similar effects, and the article reports both a Cox hazard ratio and log-rank result. This does not show result-based selection. However, the protocol also planned an imputation sensitivity analysis that is not located in the report, and the reported Cox estimate is not specified in the captured SAP. The available intentions and reporting therefore do not fully resolve the eligible analysis set.",
+      "unknowns": [
+        "Whether the planned multiple-imputation analysis was conducted or why its result was not reported.",
+        "Whether the Cox model was prespecified in a later or amended analysis plan."
+      ],
+      "counterevidence": []
+    }
+  ],
+  "bases": [
+    {
+      "question_id": "sq:selection:prespecified-analysis",
+      "references": [
+        {
+          "evidence": "sha256:a0435fbff586dedd1c67a7bc6bde19d17e1b837339f64ffa4f353c7f48c49f14",
+          "kind": "direct_support",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": "sha256:fc6d126946d4ca2aac24484c50b86d77f3f878c0429a2dd9cad4fe3978b585b5",
+          "kind": "context",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": "sha256:71cda85cba722ad35f0749d4270c33c17e34ac5551579057adb85238f3c8ff98",
+          "kind": "context",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": null,
+          "kind": "limitation",
+          "unresolved_premise": "The supplement contains a protocol and statistical analysis plan, but does not date the plan or establish when its final version was fixed relative to unblinded outcome access.",
+          "stopping_rationale": "I inspected the protocol and SAP sections, the full main report, the registry dates, and targeted searches for a protocol version date and database lock. The trial was open-label and the first-participant date is recorded, but the SAP has no source-located finalization date or amendment chronology, so pre-access finalization cannot be established."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:selection:multiple-measurements",
+      "references": [
+        {
+          "evidence": "sha256:df95df129f7a3ea13d0658127eccadfbdd5b0a80dcec4fe33125ca2ae2c7e742",
+          "kind": "direct_support",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": "sha256:e35e29cf2afda319aa303c8e5f126c5a5efa7efefc20502f367d832ef79d4831",
+          "kind": "direct_support",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        }
+      ]
+    },
+    {
+      "question_id": "sq:selection:multiple-analyses",
+      "references": [
+        {
+          "evidence": "sha256:a0435fbff586dedd1c67a7bc6bde19d17e1b837339f64ffa4f353c7f48c49f14",
+          "kind": "direct_support",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": "sha256:6c940508b1982c8408baba04c48b06f511221aac83c9136a28a551593bf42a77",
+          "kind": "direct_support",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": "sha256:1c2ffdf195f32229b714066695ec281b664f5f2db66537d06c35545c7bed013d",
+          "kind": "direct_support",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": "sha256:d919ee60eadc54ff9eb1714c9e2a442481bc9519716fcdde352597948591e6fe",
+          "kind": "context",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": "sha256:e35e2c50b740cee8fd847d809604d7938f3fd6e82940fd08c5c904893acebb38",
+          "kind": "context",
+          "unresolved_premise": null,
+          "stopping_rationale": null
+        },
+        {
+          "evidence": null,
+          "kind": "limitation",
+          "unresolved_premise": "The captured sources do not fully reconcile all eligible planned analyses with those reported for this result.",
+          "stopping_rationale": "The SAP plans ITT and per-protocol analyses and a multiple-imputation sensitivity analysis for loss to follow-up. The main report and supplement report ITT and per-protocol results, but I did not locate the planned imputation estimate. The SAP specifies Kaplan-Meier/log-rank methods, whereas the article also reports a Cox-model hazard ratio; both log-rank and Cox results are shown, but the SAP does not explain that model difference."
+        }
+      ]
+    }
+  ],
+  "delivered_ranges": [
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      14,
+      1,
+      30
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      14,
+      13,
+      30
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      15,
+      1,
+      28
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      16,
+      1,
+      27
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      17,
+      1,
+      24
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      18,
+      1,
+      39
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      45,
+      25,
+      42
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      46,
+      1,
+      28
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      54,
+      12,
+      24
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      54,
+      24,
+      33
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      55,
+      1,
+      12
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      58,
+      1,
+      20
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      60,
+      1,
+      33
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      61,
+      1,
+      32
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      61,
+      16,
+      26
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      62,
+      1,
+      34
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      62,
+      30,
+      34
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      62,
+      33,
+      34
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      62,
+      34,
+      34
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      63,
+      1,
+      32
+    ],
+    [
+      "assessment",
+      "source_109cceda14485a1b3a25ea977a10aa5adb852a6bfd9528e48953e1e71c7e592a",
+      68,
+      1,
+      32
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      1,
+      1,
+      121
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      2,
+      1,
+      133
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      2,
+      24,
+      37
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      3,
+      1,
+      132
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      3,
+      32,
+      69
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      4,
+      1,
+      81
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      4,
+      19,
+      34
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      4,
+      45,
+      80
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      4,
+      82,
+      227
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      5,
+      1,
+      187
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      5,
+      19,
+      28
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      6,
+      1,
+      180
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      7,
+      1,
+      196
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      8,
+      1,
+      51
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      8,
+      4,
+      10
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      8,
+      52,
+      116
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      9,
+      1,
+      120
+    ],
+    [
+      "assessment",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      10,
+      1,
+      139
+    ],
+    [
+      "assessment",
+      "source_c4d377883c1c02eb87cdb1ac29b92450346873fdbb1dcf5fe9e89410254acb64",
+      1,
+      1,
+      120
+    ],
+    [
+      "assessment",
+      "source_c4d377883c1c02eb87cdb1ac29b92450346873fdbb1dcf5fe9e89410254acb64",
+      1,
+      1,
+      182
+    ],
+    [
+      "assessment",
+      "source_c4d377883c1c02eb87cdb1ac29b92450346873fdbb1dcf5fe9e89410254acb64",
+      1,
+      183,
+      221
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      1,
+      1,
+      121
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      1,
+      15,
+      27
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      2,
+      1,
+      133
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      3,
+      1,
+      132
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      3,
+      12,
+      40
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      3,
+      81,
+      132
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      4,
+      1,
+      90
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      4,
+      91,
+      227
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      5,
+      1,
+      187
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      5,
+      15,
+      56
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      5,
+      84,
+      187
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      5,
+      177,
+      187
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      6,
+      1,
+      180
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      7,
+      1,
+      196
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      8,
+      1,
+      57
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      8,
+      58,
+      116
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      9,
+      1,
+      120
+    ],
+    [
+      "proposal",
+      "source_25d8d4f18074e7ea6d90e8d16089d254aef8b4bd26c4f1e89a0239d5b8eec761",
+      10,
+      1,
+      139
+    ]
+  ],
+  "searches": [
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-1.jsonl",
+      "item_id": "item_13",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "query": "primary endpoint 24 months BARC",
+            "mode": "any",
+            "limit": 5
+          },
+          {
+            "trial_id": "host-exam",
+            "query": "randomly assigned",
+            "mode": "phrase",
+            "limit": 5
+          },
+          {
+            "trial_id": "host-exam",
+            "query": "primary endpoint",
+            "mode": "phrase",
+            "source_id": "sh_109cceda14485a1b",
+            "limit": 5
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_10",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "random sequence",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:sequence"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "allocation concealment",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:concealment"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "web-based application",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:sequence"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_c4d377883c1c02eb",
+            "query": "randomization",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:sequence"
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_11",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "host-exam",
+        "source_id": "sh_109cceda14485a1b",
+        "query": "random sequence",
+        "mode": "any",
+        "limit": 10,
+        "cursor": "sc_02099fb08801eadb_10",
+        "purpose_domain_id": "domain:randomization",
+        "purpose_question_id": "sq:randomization:sequence"
+      },
+      "result_metadata": {
+        "query": "random sequence",
+        "mode": "any",
+        "total_matches": 20,
+        "truncated": true,
+        "condition": null,
+        "search_receipt": "sr_9d6ae3966efb96d6",
+        "exhausted": false
+      }
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_14",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "host-exam",
+        "source_id": "sh_109cceda14485a1b",
+        "query": "random sequence",
+        "mode": "any",
+        "limit": 10,
+        "cursor": "sc_02099fb08801eadb_20",
+        "purpose_domain_id": "domain:randomization",
+        "purpose_question_id": "sq:randomization:sequence"
+      },
+      "result_metadata": {
+        "query": "random sequence",
+        "mode": "any",
+        "total_matches": 20,
+        "truncated": true,
+        "condition": null,
+        "search_receipt": "sr_9ab5018c0eb0cdfc",
+        "exhausted": false
+      }
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_15",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "host-exam",
+        "source_id": "sh_109cceda14485a1b",
+        "query": "random sequence",
+        "mode": "any",
+        "limit": 10,
+        "cursor": "sc_02099fb08801eadb_30",
+        "purpose_domain_id": "domain:randomization",
+        "purpose_question_id": "sq:randomization:sequence"
+      },
+      "result_metadata": {
+        "query": "random sequence",
+        "mode": "any",
+        "total_matches": 20,
+        "truncated": false,
+        "condition": null,
+        "search_receipt": "sr_a15208cfffede522",
+        "exhausted": true
+      }
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_16",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "computer generated random numbers",
+            "mode": "all",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:sequence"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "randomly permuted blocks",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:sequence"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "random number table",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:sequence"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "minimization",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:randomization",
+            "purpose_question_id": "sq:randomization:sequence"
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_29",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "query": "different antiplatelet regimen",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:deviations",
+            "purpose_question_id": "sq:deviations:context-deviations"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "allocated drug discontinuation",
+            "mode": "any",
+            "limit": 10,
+            "purpose_domain_id": "domain:deviations",
+            "purpose_question_id": "sq:deviations:context-deviations"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "stop the allocated",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:deviations",
+            "purpose_question_id": "sq:deviations:context-deviations"
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_47",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "query": "independent clinical-event committee",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:assessor-aware"
+          },
+          {
+            "trial_id": "host-exam",
+            "query": "outcome assessor blinding",
+            "mode": "all",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:assessor-aware"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "definition of clinical outcomes",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:method-inappropriate"
+          },
+          {
+            "trial_id": "host-exam",
+            "query": "follow-up active surveillance",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:differential"
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_48",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "readmission due to acute coronary syndrome",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:method-inappropriate"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "BARC type 3 bleeding",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:method-inappropriate"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "myocardial infarction definition",
+            "mode": "all",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:method-inappropriate"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "stroke was defined",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:measurement",
+            "purpose_question_id": "sq:measurement:method-inappropriate"
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_62",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "statistical analysis plan",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:prespecified-analysis"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "protocol version date",
+            "mode": "all",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:prespecified-analysis"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "database lock",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:prespecified-analysis"
+          },
+          {
+            "trial_id": "host-exam",
+            "query": "interim analysis was not planned",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_69",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "query": "multiple imputation",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          },
+          {
+            "trial_id": "host-exam",
+            "query": "sensitivity analysis",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "primary endpoint will be estimated by Kaplan-Meier",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          }
+        ]
+      },
+      "result_metadata": {}
+    },
+    {
+      "trace": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+      "item_id": "item_72",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "Cox proportional hazards",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "Kaplan-Meier",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "per-protocol population",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          },
+          {
+            "trial_id": "host-exam",
+            "source_id": "sh_109cceda14485a1b",
+            "query": "lost to follow-up",
+            "mode": "phrase",
+            "limit": 10,
+            "purpose_domain_id": "domain:selection",
+            "purpose_question_id": "sq:selection:multiple-analyses"
+          }
+        ]
+      },
+      "result_metadata": {}
+    }
+  ]
+}

@@ -1,0 +1,455 @@
+[
+  {
+    "tool": "get_status",
+    "arguments": {},
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments": {
+      "trial_id": "host-exam",
+      "domain_id": "domain:selection"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "windows": [
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 121
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 133
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 132
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 227
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 187
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 180
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 196
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 116
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 120
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 139
+        }
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "windows": [
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 4,
+          "start_line": 80,
+          "end_line": 227
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 187
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 180
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 196
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 116
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 120
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 139
+        }
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "windows": [
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 8,
+          "start_line": 51,
+          "end_line": 116
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 120
+        },
+        {
+          "source_id": "sh_25d8d4f18074e7ea",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 139
+        }
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.1"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.2"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments": {
+      "cursor": "dcp2.2594e353a0fa49ad97a7ebc90d8c135c.3"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "list_sources",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "list_sources",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6YWFmYTdkZmUwZDE1NjNjZThhMzVhMTQ1M2Y3OTkzZDcwOTJmNzYwMWM1MzU5ZjM5ZjMxM2UzYzg0ZjMzYjA2MiIsInNvdXJjZV9pZCI6InNvdXJjZV8xMDljY2VkYTE0NDg1YTFiM2EyNWVhOTc3YTEwYWE1YWRiODUyYTZiZmQ5NTI4ZTQ4OTUzZTFlNzFjN2U1OTJhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjMifQ"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "search_sources",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "query": "statistical analysis plan",
+      "mode": "phrase",
+      "purpose_domain_id": "domain:selection",
+      "purpose_question_id": "sq:selection:prespecified-analysis"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "pages": [
+        60,
+        61,
+        62
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "pages": [
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68
+      ],
+      "start_line": 33
+    },
+    "outcome": "condition",
+    "condition": {
+      "code": "invalid_request",
+      "detail": "start_line 33 is outside page 63; choose 1 <= start_line <= 32"
+    }
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "pages": [
+        62
+      ],
+      "start_line": 33
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "pages": [
+        63,
+        64,
+        65,
+        66,
+        67,
+        68
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "pages": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "search_sources",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "query": "unblinded",
+      "mode": "any",
+      "purpose_domain_id": "domain:selection",
+      "purpose_question_id": "sq:selection:prespecified-analysis"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "get_status",
+    "arguments": {},
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "search_sources",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "query": "finalized before",
+      "mode": "phrase",
+      "purpose_domain_id": "domain:selection",
+      "purpose_question_id": "sq:selection:prespecified-analysis"
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "host-exam",
+      "source_id": "sh_109cceda14485a1b",
+      "pages": [
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  },
+  {
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "host-exam",
+      "domain_id": "domain:selection",
+      "expected_revision": 4,
+      "answers": [
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "no_information",
+          "bases": [
+            {
+              "evidence": "eh_2ec526b6b3145884",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_f9ca31f9807eb330",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_34b9e33af5d98c9e",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The supplement's statistical-analysis section prespecifies the 2-year primary outcome and ITT/per-protocol populations and describes Kaplan\u2013Meier/log-rank analysis; the report describes the primary result using Cox and Kaplan\u2013Meier methods. But the captured plan has no located finalization date, and the report/supplement do not establish when investigators first had unblinded outcome data. Approval and a study period are not evidence of SAP finalization or investigator access. Correspondence and the required chronology therefore remain uncertain; neither definitive nor probable timing is supportable.",
+          "unknowns": [
+            "When this plan/SAP was finalized or last amended relative to unblinded outcome access by investigators.",
+            "Whether the reported Cox hazard-ratio method was covered by a final applicable analysis plan or was a change, and if changed, its timing and reason."
+          ],
+          "counterevidence": [],
+          "limitations": [
+            {
+              "premise": "Chronology of the applicable plan/SAP finalization and investigators' access to unblinded outcome data is not reported in the captured main report or inspected protocol/SAP pages.",
+              "stopping_rationale": "Inspected the complete bounded main-report pass and the relevant supplement protocol/SAP section and front matter. The study period/approval language is not a dated plan-finalization or unblinded-access record. A captured-source lexical search for \u201cunblinded\u201d had no hits; registry retrieval was unavailable at intake, and no outside source was used. Stop with chronology unresolved."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "no",
+          "bases": [
+            {
+              "evidence": "eh_47bb3cd9ffbaa33c",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_2314041b91883396",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_358af5abcb650409",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The protocol specifies the primary composite at 24 months after randomization, and the report fully reports that composite at the same time point. The protocol and report also describe other secondary outcomes, but these are distinct outcomes rather than alternative measurements of this approved composite. The inspected sources do not indicate that alternative eligible scales, definitions, or time points for this composite were selectively reported.",
+          "unknowns": [],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "no_information",
+          "bases": [
+            {
+              "evidence": "eh_2ec526b6b3145884",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_f9ca31f9807eb330",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_34b9e33af5d98c9e",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_4ac1a2879c01a120",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The plan calls for ITT and per-protocol analysis, and the report says primary/secondary endpoints were analyzed in both populations and reports similar per-protocol results. The report additionally describes Cox and Kaplan\u2013Meier methods, while the inspected SAP passage specifies Kaplan\u2013Meier/log-rank; it does not clearly establish the full eligible set of models or why the HR model was used. There is no inspected evidence that a result-favorable subset was chosen, but the plan/report detail is insufficient to conclude all eligible analyses were specified and reported. Thus neither result-driven selection nor its absence is supportable.",
+          "unknowns": [
+            "Whether the Cox hazard-ratio analysis was prespecified in an applicable final plan or added later, and whether any eligible alternative analysis was omitted.",
+            "Whether reporting choices among any eligible alternative analyses depended on observed results."
+          ],
+          "counterevidence": [],
+          "limitations": [
+            {
+              "premise": "The full set of eligible analyses for the approved composite, and plan correspondence for the reported Cox hazard-ratio analysis, remain unresolved.",
+              "stopping_rationale": "Inspected the report's statistical methods and per-protocol results and the supplement's SAP section, including the stated ITT/PP populations and primary endpoint method. The captured documents do not resolve the analysis-set discrepancy or selection rationale; no evidence establishes result-dependent choice."
+            }
+          ]
+        }
+      ]
+    },
+    "outcome": "success",
+    "condition": null
+  }
+]

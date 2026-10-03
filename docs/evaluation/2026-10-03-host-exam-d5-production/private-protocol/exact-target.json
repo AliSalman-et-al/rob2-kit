@@ -1,0 +1,121 @@
+{
+  "applicability": {
+    "design": "individual_parallel",
+    "evidence": [
+      "eh_71cda85cba722ad3"
+    ],
+    "rationale": "Patients were individually randomized 1:1 to parallel treatment groups by web-based application."
+  },
+  "bindings": [
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/effect_measure"
+      },
+      "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+    },
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/estimate"
+      },
+      "value_digest": "sha256:83befeb32be707e48e581cf5be9ff610a942d52f1cd060712200f38ed27fbf7d"
+    },
+    {
+      "evidence_index": 2,
+      "field": {
+        "path": "/reported/precision"
+      },
+      "value_digest": "sha256:13f62ec94c035282df726a47aa6c3f5c99c6de009151d415074df37e782c71f1"
+    },
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/endpoint/name"
+      },
+      "value_digest": "sha256:0eb2f0f19cfb716db78f5f7a0cae1c237b0c007f4dc0b52ae0f5d885dcb8c752"
+    },
+    {
+      "evidence_index": 1,
+      "field": {
+        "path": "/reported/endpoint/definition"
+      },
+      "value_digest": "sha256:710d23f53987022ac1f5cf407508b26b110431d1c8980c853707999124488b5a"
+    }
+  ],
+  "clarity": {
+    "analysis_population": "specified",
+    "comparison_groups": "specified",
+    "effect_measure": "specified",
+    "eligible_result_choice": "specified",
+    "measurement": "specified",
+    "outcome_definition": "specified",
+    "source_table_meaning": "specified",
+    "time_point": "specified"
+  },
+  "evidence": [
+    {
+      "handle": "eh_160cc8ea9517a8e6",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_1883271310095e6d",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_5d608a21257f49ab",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_71cda85cba722ad3",
+      "kind": "narrative"
+    },
+    {
+      "handle": "eh_81ff925d2297ec95",
+      "kind": "narrative"
+    }
+  ],
+  "kind": "assessable",
+  "relation": "exact",
+  "relation_rationale": "Primary composite matches the requested event set and 24-month time point, compares randomized clopidogrel and aspirin assignment, and is analyzed by intention to treat; incomplete event-free follow-up is censored.",
+  "reported": {
+    "analysis_population": "All 5438 randomized patients in the ITT population; endpoint ascertainment was complete in 5338 (98.2%).",
+    "effect_measure": "Hazard ratio",
+    "endpoint": {
+      "definition": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to ACS, and major bleeding events (BARC type \u22653).",
+      "name": "Primary composite endpoint\u2020"
+    },
+    "estimate": "0\u00b773",
+    "form": "comparative_effect",
+    "group_values": [],
+    "precision": "95% CI 0\u00b759-0\u00b790"
+  },
+  "requested_outcome": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+  "target": {
+    "comparison_groups": [
+      {
+        "assignment": "Clopidogrel monotherapy 75 mg once daily",
+        "id": "clopidogrel"
+      },
+      {
+        "assignment": "Aspirin monotherapy 100 mg once daily",
+        "id": "aspirin"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Hazard ratio",
+    "measurement": {
+      "method": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission due to acute coronary syndrome, and BARC type 3 or greater bleeding",
+      "metric": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding"
+    },
+    "outcome_definition": "Composite of all-cause death, non-fatal myocardial infarction, stroke, readmission for acute coronary syndrome, and BARC type 3 or greater bleeding",
+    "time_point_or_window": {
+      "description": "24 months after randomisation",
+      "kind": "quantified",
+      "unit": "months",
+      "value": "24"
+    }
+  },
+  "trial_id": "host-exam"
+}

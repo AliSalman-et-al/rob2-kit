@@ -1,0 +1,18 @@
+{
+  "frozen_prelaunch_hashes_unchanged": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/prepare-host-exam-d5.py": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/run-host-exam-d5.py": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/manifest.json": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/prompt.txt": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/instructions.md": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/native-evidence-manifest.json": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/native-source-packet.txt": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/approved-seed-state.json": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/approval-authorization.json": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/private-protocol/private-criteria.json": true,
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/host-exam-d5-6d0ac5e/private-protocol/private-archived-d5.json": true
+  },
+  "all_source_bytes_unchanged": true,
+  "output_frozen_before_audit": true,
+  "one_fresh_rollout": true
+}
