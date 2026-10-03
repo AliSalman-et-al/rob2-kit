@@ -146,8 +146,11 @@ Construct the complete request before calling `validate_proposal`. Never call it
 with `{}`, placeholder strings, partial nested objects, or guessed enum values to
 discover the schema. Open and follow the complete assessable or unavailable
 example in [Specify the Result](references/result.md), replace every fictional
-value, and then make one validation call. In particular, `applicability`,
-`target`, and `reported` are typed objects rather than prose shortcuts.
+value, and then make one validation call. The public card uses flat scientific fields: `design`, `target_window`,
+`reported_outcome`, `effect_measure`, `estimate`, and source handles. Do not copy
+stored `kind`, nested `target`/`reported`, or `form` tags into the proposal call.
+The server derives these tags and bookkeeping; relation remains your explicit
+scientific choice. `supports` is not a scope relation.
 
 For an assessable Result, classify `clarity` for the outcome definition,
 measurement, time point, analysis population, comparison groups, effect measure,
@@ -159,8 +162,7 @@ visible.
 Omitted clarity is stored as `unclear`; use `exact` only when every facet is
 specified. Clarity is your report of the scope, not a server-verified scientific
 conclusion. The server reconstructs the captured outcome and closed effect of
-interest, then derives retained Evidence and bindings. Do not put Evidence
-objects inside `reported`.
+interest, then derives retained Evidence and bindings. Use `passage_refs` or typed `evidence` for source binding.
 Inspect `scope_review` in validation and pending Proposal status. It separates
 the target from represented reported fields and lists numeric/endpoint binding
 paths. Reported timing and estimand are not separately typed: null in this
@@ -176,8 +178,8 @@ Selected narrative Evidence in `get_status` is locator-only by default. Reuse
 familiar inspected passages; set `include_evidence_text:true` for bounded text
 when reorienting, or follow exact `read_pages` recovery for unfamiliar passages.
 
-Copy `reported.endpoint.name`, `reported.precision`, and other Source-owned
-quantities from the quantitative passage. Include `reported.endpoint.definition`
+Copy `reported_outcome`, `precision`, and other Source-owned
+quantities from the quantitative passage. Include `reported_definition`
 only when one selected passage explicitly joins that name and definition.
 For `analysis_population`, a supported summary may combine passages when it preserves
 the reported inclusion criteria and exclusions.

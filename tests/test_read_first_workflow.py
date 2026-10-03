@@ -669,3 +669,38 @@ def test_budget_deferred_ranges_cover_later_pages_and_overlap_replays(
     complete = _call(workspace, "get_status", {})["data"]["main_report_reading"]["trial"]
     assert complete["status"] == "complete"
     assert complete["unread_ranges"] == []
+
+
+def test_fragment_recovery_records_only_complete_delivered_lines(tmp_path: Path) -> None:
+    import sqlite3
+
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/main.txt").write_text(
+        "first partial line\nsecond complete\nthird complete\n"
+    )
+    _call(
+        workspace,
+        "prepare_batch",
+        {"requested_outcome": "requested outcome", "expected_revision": 0},
+    )
+    source = _source(workspace, "main.txt")
+    delivered = _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 3,
+                    "start_char": 6,
+                }
+            ],
+        },
+    )
+    assert delivered["outcome"] == "success"
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        ranges = connection.execute("SELECT start_line,end_line FROM page_reads").fetchall()
+    assert ranges == [(2, 3)]

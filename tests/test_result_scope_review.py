@@ -43,7 +43,8 @@ def test_scope_gaps_are_explicit_without_relabeling_inherited_exactness() -> Non
     review = result_scope_review([raw])[0]
     assert review["result_identity"] == _identity(original)
     assert review["claimed_relation"] == "exact"
-    assert review["target"] == original["target"]
+    assert review["target"]["window"] == original["target"]["time_point_or_window"]["description"]
+    assert review["target"]["outcome"] == original["target"]["outcome_definition"]
     assert review["reported_endpoint"] == original["reported"]["endpoint"]
     assert review["reported_analysis_population"] == original["reported"]["analysis_population"]
     assert review["reported_time_point_or_window"] is None

@@ -1,0 +1,237 @@
+{
+  "requests": [
+    {
+      "trial_id": "allsop-2014",
+      "windows": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 62
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 121
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 126
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 120
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 228
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 226
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 209
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 213
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 191
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 215
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 186
+        }
+      ]
+    },
+    {
+      "trial_id": "allsop-2014",
+      "windows": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 4,
+          "start_line": 77,
+          "end_line": 120
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 228
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 226
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 209
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 213
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 191
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 215
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 186
+        }
+      ]
+    },
+    {
+      "trial_id": "allsop-2014",
+      "windows": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 8,
+          "start_line": 29,
+          "end_line": 213
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 191
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 215
+        },
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 186
+        }
+      ]
+    },
+    {
+      "trial_id": "allsop-2014",
+      "windows": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 186,
+          "start_char": 20
+        }
+      ]
+    }
+  ],
+  "durable_ranges_after": [
+    [
+      1,
+      1,
+      62
+    ],
+    [
+      2,
+      1,
+      121
+    ],
+    [
+      3,
+      1,
+      126
+    ],
+    [
+      4,
+      1,
+      76
+    ],
+    [
+      4,
+      77,
+      120
+    ],
+    [
+      5,
+      1,
+      228
+    ],
+    [
+      6,
+      1,
+      226
+    ],
+    [
+      7,
+      1,
+      209
+    ],
+    [
+      8,
+      1,
+      28
+    ],
+    [
+      8,
+      29,
+      213
+    ],
+    [
+      9,
+      1,
+      191
+    ],
+    [
+      10,
+      1,
+      215
+    ],
+    [
+      11,
+      2,
+      186
+    ]
+  ],
+  "qualification": "Offline exact native read-request replay. Complete page11 lines2\u2013186 durable; fragmented line1 remains unclaimed. No inference."
+}

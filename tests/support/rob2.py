@@ -79,6 +79,47 @@ def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _public_result(result: dict[str, Any]) -> dict[str, Any]:
+    """Translate internal fixture cards to the public scientific-input contract."""
+    if result.get("kind") != "assessable":
+        return {key: value for key, value in result.items() if key != "kind"}
+    target, reported = result["target"], result["reported"]
+    design = result.get("applicability", {})
+    value = {
+        "trial_id": result["trial_id"],
+        "relation": result["relation"],
+        "relation_rationale": result["relation_rationale"],
+        "design": design.get("design", "unclear"),
+        "design_rationale": design.get("rationale", "Design unresolved"),
+        "design_evidence": design.get("evidence", []),
+        "target_measurement": target["measurement"]["method"],
+        "target_window": target["time_point_or_window"]["description"],
+        "comparison_groups": target["comparison_groups"],
+        "baseline_subgroup": target["baseline_subgroup"],
+        "intended_effect_measure": target["intended_effect_measure"],
+        "reported_outcome": reported["endpoint"]["name"],
+        "reported_definition": reported["endpoint"].get("definition"),
+        "analysis_population": reported["analysis_population"],
+    }
+    for key in ("clarity", "passage_refs", "evidence"):
+        if key in result:
+            value[key] = result[key]
+    for key in ("effect_measure", "estimate", "precision", "group_values"):
+        if key in reported:
+            value[key] = reported[key]
+    if reported["form"] == "single_group_category_profile":
+        value.update(
+            category_group_id=reported["group_id"],
+            category_denominator=reported["denominator_basis"],
+            category_axis_names=reported["category_axis_names"],
+            categories=reported["categories"],
+        )
+    if target["time_point_or_window"]["kind"] == "quantified":
+        value["target_time_value"] = target["time_point_or_window"]["value"]
+        value["target_time_unit"] = target["time_point_or_window"]["unit"]
+    return value
+
+
 def _call(
     workspace: Path,
     tool: str,
@@ -104,7 +145,7 @@ def _call(
                     reasoned = await client.call_tool(
                         "validate_proposal",
                         {
-                            "results": request["results"],
+                            "results": [_public_result(item) for item in request["results"]],
                             "assessments": _proposal_assessments(request["results"]),
                             "expected_revision": request["expected_revision"],
                         },
@@ -115,6 +156,8 @@ def _call(
                     cached = dict(reasoned_value["data"]["next_action"])
                     _PROPOSAL_RECEIPTS[cache_key] = cached
                 request = dict(cached)
+            if tool == "validate_proposal" and "results" in request:
+                request["results"] = [_public_result(item) for item in request["results"]]
             result = await client.call_tool(tool, request)
             value = dict(result.structured_content or {})
             for _ in range(3):

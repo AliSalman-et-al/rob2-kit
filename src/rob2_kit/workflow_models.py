@@ -1486,6 +1486,20 @@ class AssessableResult(StrictModel):
         return self
 
 
+class ScopeTargetSummary(StrictModel):
+    outcome: NonBlankText
+    measurement: NonBlankText
+    window: NonBlankText
+    population: NonBlankText
+    effect_measure: NonBlankText
+    comparison: tuple[NonBlankText, ...]
+
+
+class ScopeEndpointSummary(StrictModel):
+    name: NonBlankText
+    definition: NonBlankText | None
+
+
 class ResultScopeReview(StrictModel):
     """Read-only comparison of represented scope; not an entailment judgment."""
 
@@ -1493,8 +1507,8 @@ class ResultScopeReview(StrictModel):
     result_identity: Identity
     claimed_relation: AssessableTargetRelation
     relation_rationale: NonBlankText
-    target: ResultTarget
-    reported_endpoint: ReportedEndpoint
+    target: ScopeTargetSummary
+    reported_endpoint: ScopeEndpointSummary
     reported_analysis_population: NonBlankText
     reported_time_point_or_window: None = None
     reported_effect_of_interest: None = None
@@ -1681,6 +1695,140 @@ class UnavailableResultDraft(StrictModel):
             "preserved source passage."
         ),
     )
+
+
+class MissingResultProposal(StrictModel):
+    trial_id: TrialId
+    relation: Literal[TargetRelation.AMBIGUOUS, TargetRelation.UNAVAILABLE]
+    missing_facts: tuple[UnavailableMissingFactDraft, ...] = Field(min_length=1)
+
+    def to_draft(self) -> UnavailableResultDraft:
+        return UnavailableResultDraft(kind="unavailable", **self.model_dump())
+
+
+class ResultProposal(StrictModel):
+    """Scientific proposal inputs; canonical record tags are server-owned."""
+
+    trial_id: TrialId
+    relation: AssessableTargetRelation = Field(
+        description="Explicit scope relation: exact, broader, narrower, component, or related. "
+        "Compare outcome, model window, population and estimand; supports is not a relation."
+    )
+    relation_rationale: NonBlankText
+    clarity: ResultClarity | None = None
+    design: Literal["individual_parallel", "cluster_randomized", "crossover", "unclear"]
+    design_rationale: NonBlankText
+    design_evidence: tuple[SubmittedEvidenceHandle, ...] = ()
+    target_measurement: NonBlankText
+    target_window: NonBlankText = Field(description="Preserve the requested target window.")
+    target_time_value: NonBlankText | None = None
+    target_time_unit: NonBlankText | None = None
+    comparison_groups: tuple[ComparisonGroup, ...] = Field(min_length=2)
+    baseline_subgroup: NonBlankText | None
+    intended_effect_measure: NonBlankText
+    reported_outcome: NonBlankText
+    reported_definition: NonBlankText | None = Field(
+        default=None,
+        description="Source-tied definition including reported model window and "
+        "population when supported; do not borrow the target window.",
+    )
+    analysis_population: NonBlankText
+    effect_measure: NonBlankText | None = None
+    estimate: NonBlankText | None = None
+    precision: NonBlankText | None = None
+    group_values: tuple[GroupResultValue, ...] = ()
+    category_group_id: NonBlankText | None = None
+    category_denominator: NonBlankText | None = None
+    category_axis_names: tuple[NonBlankText, ...] = ()
+    categories: tuple[CategoryValue, ...] = ()
+    passage_refs: tuple[SubmittedEvidenceHandle, ...] = ()
+    evidence: tuple[ResultEvidenceDraft, ...] = ()
+
+    @field_validator("group_values", mode="before")
+    @classmethod
+    def missing_units_reach_scientific_repair(cls, value: Any) -> Any:
+        if not isinstance(value, (list, tuple)):
+            return value
+        return [
+            {**group, "unit": MISSING_GROUP_VALUE_UNIT}
+            if isinstance(group, dict) and group.get("unit") is None
+            else group
+            for group in value
+        ]
+
+    @model_validator(mode="after")
+    def complete_result(self) -> ResultProposal:
+        # Constructing the existing strict scientific objects preserves their gates.
+        self.to_draft()
+        return self
+
+    def to_draft(self) -> AssessableResultDraft:
+        if (self.target_time_value is None) != (self.target_time_unit is None):
+            raise ValueError("target_time_value and target_time_unit must be supplied together")
+        timing = {"kind": "described", "description": self.target_window}
+        if self.target_time_value is not None:
+            timing.update(
+                kind="quantified", value=self.target_time_value, unit=self.target_time_unit
+            )
+        reported = {
+            "analysis_population": self.analysis_population,
+            "endpoint": {"name": self.reported_outcome, "definition": self.reported_definition},
+            "group_values": self.group_values,
+        }
+        if self.category_group_id is not None or self.categories:
+            if self.estimate is not None or self.effect_measure is not None or self.group_values:
+                raise ValueError("a category profile cannot also be a comparative estimate")
+            if self.precision is not None:
+                raise ValueError("precision requires a comparative estimate")
+            reported.pop("group_values")
+            reported.update(
+                form="single_group_category_profile",
+                group_id=self.category_group_id,
+                denominator_basis=self.category_denominator,
+                category_axis_names=self.category_axis_names,
+                categories=self.categories,
+            )
+        elif self.estimate is not None or self.effect_measure is not None:
+            if self.category_denominator is not None or self.category_axis_names:
+                raise ValueError("category metadata requires a category profile")
+            if self.estimate is None or self.effect_measure is None:
+                raise ValueError("effect_measure and estimate must be supplied together")
+            reported.update(
+                form="comparative_effect",
+                effect_measure=self.effect_measure,
+                estimate=self.estimate,
+                precision=self.precision,
+            )
+        else:
+            if self.category_denominator is not None or self.category_axis_names:
+                raise ValueError("category metadata requires a category profile")
+            if self.precision is not None:
+                raise ValueError("precision requires a comparative estimate")
+            reported["form"] = "group_bound_values"
+        return AssessableResultDraft.model_validate(
+            {
+                "kind": "assessable",
+                "trial_id": self.trial_id,
+                "relation": self.relation,
+                "relation_rationale": self.relation_rationale,
+                "clarity": self.clarity,
+                "applicability": {
+                    "design": self.design,
+                    "rationale": self.design_rationale,
+                    "evidence": self.design_evidence,
+                },
+                "target": {
+                    "measurement": {"method": self.target_measurement},
+                    "time_point_or_window": timing,
+                    "comparison_groups": self.comparison_groups,
+                    "baseline_subgroup": self.baseline_subgroup,
+                    "intended_effect_measure": self.intended_effect_measure,
+                },
+                "reported": reported,
+                "passage_refs": self.passage_refs,
+                "evidence": self.evidence,
+            }
+        )
 
 
 AssessableResultChoice = Annotated[AssessableResult, Field(discriminator="kind")]
