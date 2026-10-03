@@ -1,0 +1,13 @@
+{
+  "case": "bendix-1996",
+  "classification": "Previously benchmarked; first identified paid campaign diagnostic; not held out",
+  "code_sha": "edf55fa696d0aa69f96506165f4b33b894f7d080",
+  "criteria": [
+    "Do not promote treatment difficulty, smoking restrictions, pain or protocol nonadherence alone into a research-participation-specific cause. An affirmative causal inference must identify additional source-grounded trial-context circumstances; reasonable PN/N or NI allowed.",
+    "Preserve awareness, protocol inconsistency, trial-context cause and outcome effect as separate propositions.",
+    "D2.6: distinguish genuinely missing-only exclusions from outcomes known to have been obtained and omitted; do not infer observed workability solely from contactability. Preserve source uncertainty and justify any probable answer."
+  ],
+  "positive_control": "Archived Boeree2017 authors explicitly identify allocation-awareness influence; absence of direct proof must not automatically suppress a supported probable trial-context inference. No Boeree model invocation in this batch.",
+  "no_case_hints_in_model_prompt": true,
+  "no_operator_repair_or_retry": true
+}

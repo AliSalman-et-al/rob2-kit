@@ -1,0 +1,179 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "assessment",
+    "state_revision": 13,
+    "next_action": {
+      "operation": "get_domain_context",
+      "authority": "host",
+      "trial_id": "bendix-1996",
+      "domain_id": "domain:deviations",
+      "cursor": null,
+      "max_response_bytes": null
+    },
+    "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+  },
+  "data": {
+    "scope_review": [],
+    "trial_dispositions": {
+      "bendix-1996": "pending"
+    },
+    "terminal_counts": {
+      "assessed": 0,
+      "needs_input": 0,
+      "unsupported_design": 0,
+      "failed": 0,
+      "pending": 1,
+      "reviewable": 0
+    },
+    "selected_evidence": [],
+    "working_checkpoint": {
+      "status": "absent",
+      "reason": "not_saved",
+      "trial_id": "bendix-1996",
+      "checkpoint_identity": null,
+      "checkpoint": null,
+      "stale_domains": [],
+      "recovery": "reorient_from_sources"
+    },
+    "investigation": {
+      "proposition": "Were participants aware of their assigned intervention during the trial?",
+      "status": "not_established",
+      "sufficiency": {
+        "status": "not_established",
+        "attribution": "not_established"
+      },
+      "workflow_permission": {
+        "permitted": true,
+        "operation": "save_working_checkpoint",
+        "authority": "host",
+        "detail": "Working notes are optional and may be saved without changing canonical assessment state."
+      },
+      "coverage": {
+        "source_scope": [
+          "sh_36194f1aa06ed76f"
+        ],
+        "state": "unobserved",
+        "ranges": [],
+        "range_count": 0,
+        "delivered_sources": [],
+        "sources_without_delivery": [
+          "sh_36194f1aa06ed76f"
+        ],
+        "ranges_truncated": false
+      },
+      "host_notes": {
+        "referenced_sources": [],
+        "unread_ranges": [],
+        "observation_count": 0
+      },
+      "observations": [],
+      "support": [],
+      "counterevidence": [],
+      "premises": [],
+      "unresolved": "Were participants aware of their assigned intervention during the trial?",
+      "recovery_choices": [
+        {
+          "operation": "save_working_checkpoint",
+          "available": true,
+          "rationale": "Save source-linked observations without committing an answer."
+        },
+        {
+          "operation": "search_sources",
+          "available": true,
+          "rationale": "Search captured Sources for Evidence that discriminates the premise."
+        },
+        {
+          "operation": "read_pages",
+          "available": true,
+          "rationale": "Read exact Source pages before relying on a passage as Evidence."
+        },
+        {
+          "operation": "accept_limitation",
+          "available": true,
+          "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+        }
+      ],
+      "stopping_rationale": null,
+      "stale": [],
+      "checkpoint_identity": null,
+      "legacy": "supported"
+    },
+    "trial_review": null,
+    "main_report_reading": {
+      "bendix-1996": {
+        "identity_status": "identified",
+        "identity_basis": "declared_role",
+        "identity_sources": [
+          "sh_36194f1aa06ed76f"
+        ],
+        "identity_observations": [],
+        "orientation_source_ids": [],
+        "orientation_reading": {
+          "source_ids": [],
+          "ranges": [],
+          "range_count": 0,
+          "ranges_truncated": false
+        },
+        "limitation": null,
+        "status": "required",
+        "budget_bytes": 65536,
+        "covered_prefix_bytes": 0,
+        "required_ranges": [
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 81
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 139
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 112
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 134
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 161
+          },
+          {
+            "source_id": "sh_36194f1aa06ed76f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 112
+          }
+        ],
+        "required_range_count": 8,
+        "unread_ranges": [],
+        "unread_range_count": 0
+      }
+    },
+    "conditions": []
+  }
+}
