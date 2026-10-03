@@ -8,7 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from rob2_kit.application.proposal import _proposal_shape_repairs
-from rob2_kit.workflow_models import ProposalDraft, ProposalSelection
+from rob2_kit.workflow_models import AssessableResultDraft, ProposalDraft, ProposalSelection
 from tests.test_result_scope_review import _allsop_result, _draft
 
 
@@ -23,6 +23,7 @@ def test_flat_route_preserves_canonical_draft_without_tags() -> None:
     flat = flat_result()
     assert not {"kind", "form", "target", "reported"} & flat.keys()
     result = ProposalSelection.model_validate(flat).to_result_draft()
+    assert isinstance(result, AssessableResultDraft)
     new = result.model_dump(mode="json")
     old = _draft(_allsop_result()).results[0].model_dump(mode="json")
     assert new.pop("passage_refs") == [item["handle"] for item in old["evidence"]]
@@ -58,6 +59,7 @@ def test_uncertainty_cannot_be_laundered_into_exactness_or_rewrite_target() -> N
     flat["candidate"]["clarity"]["time_point"] = "conflicting"
     flat["scope_rationale"] = "Target days 1–6; source model days 1–9."
     result = ProposalSelection.model_validate(flat).to_result_draft()
+    assert isinstance(result, AssessableResultDraft)
     draft = ProposalDraft(results=(result,), expected_revision=0)
     assert any(
         r["code"] == "exact_result_scope_not_established"
@@ -65,6 +67,7 @@ def test_uncertainty_cannot_be_laundered_into_exactness_or_rewrite_target() -> N
     )
     flat["relation"] = "related"
     result = ProposalSelection.model_validate(flat).to_result_draft()
+    assert isinstance(result, AssessableResultDraft)
     assert result.target.time_point_or_window.description == original["candidate"]["target_window"]
     assert not _proposal_shape_repairs(
         ProposalDraft(results=(result,), expected_revision=0),

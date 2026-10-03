@@ -188,7 +188,11 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         domain_tool.parameters["properties"]["answers"]["items"],
     )
     assert set(answer_schema["required"]) == {
-        "question_id", "answer", "justification", "unknowns", "counterevidence"
+        "question_id",
+        "answer",
+        "justification",
+        "unknowns",
+        "counterevidence",
     }
     assert "support the response" in answer_schema["properties"]["justification"]["description"]
     assert "explicitly use []" in answer_schema["properties"]["unknowns"]["description"]

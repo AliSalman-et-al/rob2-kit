@@ -16,6 +16,7 @@ from support.rob2 import (
     _domain_submission,
     _prepared_evidence,
     _proposal_args,
+    _public_proposal_records,
     _read_required_main_reports,
     _result,
     _review,
@@ -319,21 +320,19 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
         validation = call(
             "validate_proposal",
             {
-                "results": [result],
-                "assessments": [
-                    {
-                        "trial_id": "trial",
-                        "evidence_basis": [evidence["handle"]],
-                        "scope_justification": (
-                            "The selected endpoint and follow-up match the captured passage."
-                        ),
-                        "population_justification": (
-                            "The randomized population is the reported analysis population."
-                        ),
-                        "unknowns": [],
-                        "counterevidence": [],
-                    }
-                ],
+                **_public_proposal_records(
+                    [result],
+                    [
+                        {
+                            "trial_id": "trial",
+                            "evidence_basis": [evidence["handle"]],
+                            "scope_justification": "The reported endpoint matches the target.",
+                            "population_justification": "Analysis retains randomized participants.",
+                            "unknowns": [],
+                            "counterevidence": [],
+                        }
+                    ],
+                ),
                 "expected_revision": revision,
             },
         )
@@ -390,23 +389,31 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
             assert context["outcome"] == "success", context
             context_page = context["data"]["context_page"]
         if rebind_notes:
-            assert recovery is None
             assert investigation["status"] == "unresolved"
             assert investigation["proposition"] == (
                 "The allocation sequence was generated unpredictably."
             )
             assert investigation["stale"] == []
+            # Reading recovery reports phase-local delivery gaps even when a
+            # result-bound checkpoint supplies the authorized handoff.
+            assert recovery["status"] == "required"
             saved = call("save_domain_judgment", draft)
             assert saved["outcome"] == "success", saved
         else:
             assert recovery["status"] == "required"
-            assert inline_report_bytes > 0
+            rejected = call("save_domain_judgment", draft)
+            assert rejected["outcome"] == "repair", rejected
+            assert any(
+                r["code"] == "post_approval_main_report_reading_required"
+                for r in rejected["repairs"]
+            )
+            call("read_pages", {"trial_id": "trial", "source_id": source["id"], "pages": [1]})
             saved = call("save_domain_judgment", draft)
             assert saved["outcome"] == "success", saved
 
         assert calls.count("request_proposal_approval") == 1
-        assert calls.count("read_pages") == 1
-        assert calls.count("save_domain_judgment") == 1
+        assert calls.count("read_pages") == (1 if rebind_notes else 2)
+        assert calls.count("save_domain_judgment") == (1 if rebind_notes else 2)
         return {
             "repairs": repairs,
             "inline_report_bytes": inline_report_bytes,
@@ -420,13 +427,13 @@ def test_result_bound_checkpoint_handoff_avoids_postapproval_main_report_read(
     without_rebind = run_handoff_case(tmp_path / "without-rebind", rebind_notes=False)
     with_rebind = run_handoff_case(tmp_path / "with-rebind", rebind_notes=True)
 
-    assert without_rebind["inline_report_bytes"] > 0
+    assert without_rebind["inline_report_bytes"] == 0
     assert with_rebind["inline_report_bytes"] == 0
-    assert without_rebind["postapproval_read_calls"] == 0
+    assert without_rebind["postapproval_read_calls"] == 1
     assert with_rebind["postapproval_read_calls"] == 0
-    assert without_rebind["repeated_source_bytes"] == 0
+    assert without_rebind["repeated_source_bytes"] > 0
     assert with_rebind["repeated_source_bytes"] == 0
-    assert without_rebind["repairs"] == 0
+    assert without_rebind["repairs"] == 1
     assert with_rebind["repairs"] == 0
 
 

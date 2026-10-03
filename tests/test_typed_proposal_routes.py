@@ -213,10 +213,15 @@ def test_minimal_source_bound_hr_ci_preserves_internal_result_identity(source_re
     from rob2_kit.application._state import _identity, _state
     from rob2_kit.application.proposal import _canonical_result, _evidence_catalog
     from rob2_kit.application.proposal import validate_proposal as validate_internal
-    from rob2_kit.workflow_models import NarrativeEvidenceDraft, ProposalSelection
+    from rob2_kit.workflow_models import (
+        AssessableResultDraft,
+        NarrativeEvidenceDraft,
+        ProposalSelection,
+    )
 
     workspace, request = source_request
     current = ProposalSelection.model_validate(request["selections"][0]).to_result_draft()
+    assert isinstance(current, AssessableResultDraft)
     legacy = current.model_copy(
         update={
             "passage_refs": (),

@@ -130,8 +130,8 @@ unavailable Result with the missing comparator result as a concrete missing fact
 
 Read [Select Evidence](references/evidence.md). Use exact passages you have
 inspected. Search hits and `read_pages` windows already provide reusable
-`passage_ref` handles. Put the chosen handles in an assessable card's optional
-`passage_refs`; the server promotes them atomically to Evidence. Use
+`passage_ref` handles. Put the chosen handles in the Trial selection's
+`source_passages`; the server promotes them atomically to Evidence. Use
 `select_text_evidence` only when you need a different line boundary. Use
 `render_page` and `select_visual_evidence` when layout carries meaning. Select
 visual Evidence only with the `delivery_receipt` returned alongside an actual

@@ -85,7 +85,7 @@ premise was not reported. `searched_no_match` remains a lexical fact and never
 supports a scientific absence claim. Render delivery records pixels only; it
 does not establish visual inspection or comprehension.
 `read_pages` likewise prepares a `passage_ref` for each non-empty window. After
-you inspect a complete passage, reuse that handle in Proposal `passage_refs` or
+you inspect a complete passage, reuse that handle in Proposal `source_passages` or
 Domain `bases`; no separate text-selection call is required.
 If the serialized UTF-8 response bound splits one physical line, the returned
 fragment includes exact character offsets and `next_start_char` but has no
@@ -144,7 +144,7 @@ not in the transcription.
 
 ## Ground a Result
 
-Use `passage_refs` for ordinary Result support and `applicability.evidence` for
+Use selection `source_passages` for ordinary Result support and `candidate.design_evidence` for
 design support. Do not place Evidence objects in `reported`. Use ordinary
 selected Evidence for a single passage; use `table_multispan` only when a table
 title or definition, header, quantitative row, unit, or footnote was selected

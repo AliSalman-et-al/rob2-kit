@@ -12,7 +12,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fastmcp import Client
 
@@ -136,7 +136,7 @@ def _public_proposal_records(
     selections = []
     for result in results:
         public = _public_result(result)
-        assessment = by_trial.get(result["trial_id"], {})
+        assessment = cast(dict[str, Any], by_trial.get(result["trial_id"], {}))
         candidate = None if "missing_facts" in public else public
         scope = (
             public.get("relation_rationale")
@@ -184,7 +184,7 @@ def _call(
                 and "cursor" not in arguments
                 and "max_response_bytes" not in arguments
             )
-            request = (
+            request: dict[str, Any] = (
                 _domain_submission(arguments) if tool == "save_domain_judgment" else dict(arguments)
             )
             if not _raw and tool == "save_proposal" and "results" in request:
