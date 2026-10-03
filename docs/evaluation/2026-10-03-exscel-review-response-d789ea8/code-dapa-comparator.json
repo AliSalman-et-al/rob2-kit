@@ -1,0 +1,26 @@
+{
+  "archive": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/dapa-hf/.rob2-kit/finalized/cf82c987f84aad37506762f441b5099c01edc111f46b55a8fa07352a6e766c3b.rob2.zip",
+  "archive_sha256": "d1774f77c85f2aeb6700222b9c56986d4a4cb5ebe8696610b91b394548f97570",
+  "question_id": "sq:selection:prespecified-analysis",
+  "justification": "The protocol states that SAP amendments would be completed before unblinding. The captured SAP version 3.0 is dated 23 July 2019 and specifies this dapagliflozin\u2013placebo primary composite, time-to-first-event, ITT/FAS population, Cox model, covariates, censoring rules, and HR with 95% CI. The report's primary analysis and reported estimate correspond to that plan.",
+  "basis": {
+    "evidence": "sha256:e8f90c585b8de93cca01bf3c909836ff158f6aa2b20e30ff731feff11d001c5e",
+    "kind": "direct_support",
+    "source": "A comprehensive Statistical Analysis Plan (SAP) will be developed prior to first patient\nrandomised and any subsequent amendments will be documented, with final amendments\ncompleted prior to unblinding of the data.\nThe results of the key study outcome will be independently validated by an external statistical\nteam."
+  },
+  "evidence": {
+    "end": 758,
+    "end_line": 20,
+    "handle": "eh_e8f90c585b8de93c",
+    "identity": "sha256:e8f90c585b8de93cca01bf3c909836ff158f6aa2b20e30ff731feff11d001c5e",
+    "kind": "narrative",
+    "page": 161,
+    "quote": "A comprehensive Statistical Analysis Plan (SAP) will be developed prior to first patient\nrandomised and any subsequent amendments will be documented, with final amendments\ncompleted prior to unblinding of the data.\nThe results of the key study outcome will be independently validated by an external statistical\nteam.",
+    "source_id": "source_62c074c3ab8e1f2f6e7ce168bd43ca92a8947a93c5de8e0ca594938d9cef3ca6",
+    "source_version": "sha256:dd324e6ae4072310a6871b713905ecb666757394069a87654b7fa50cebb09078",
+    "start": 442,
+    "start_line": 16,
+    "trial_id": "dapa-hf"
+  },
+  "conclusion": "Explicit SAP-before-unblinding premise is present in its cited source; no same-pattern omission established in this sampled claim."
+}

@@ -1,0 +1,86 @@
+{
+  "research_question": "Can supplied primary evidence test reconciliation of analysis-plan existence separately from performed results?",
+  "input_sha256": "d6306ff715172ff127ce48abbe652daec42d88dcda7ea1dceaedf2c894de79fc",
+  "required_windows": [
+    {
+      "source_identity": "sh_bcf70e5423c2d8ef",
+      "page": 188,
+      "start_line": 20,
+      "end_line": 40
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "sh_693e51915e5ffefc",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 107,
+      "input_start_byte": 27259,
+      "input_end_byte": 32328,
+      "text_sha256": "4c60c70afde1c93854a2c3685ec73c8b4d72dafc3e26ee643ebd36b30c937de5"
+    },
+    {
+      "source_identity": "sh_693e51915e5ffefc",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 106,
+      "input_start_byte": 32530,
+      "input_end_byte": 37575,
+      "text_sha256": "5907942ff3f900939f228b993dc33cf42634862d2974dff40d0d93c045a67166"
+    },
+    {
+      "source_identity": "sh_693e51915e5ffefc",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 108,
+      "input_start_byte": 37777,
+      "input_end_byte": 42866,
+      "text_sha256": "0b214944170e2460f46f60b993f685bd706195a97ee9330c90542b9d9a53f92a"
+    },
+    {
+      "source_identity": "sh_693e51915e5ffefc",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 148,
+      "input_start_byte": 43068,
+      "input_end_byte": 48636,
+      "text_sha256": "1b9f7166b771c32d46abc61bc8eb8ad521efc7e84f7e78ea51ea6fecc810c4ca"
+    },
+    {
+      "source_identity": "sh_08fbea6d1ed99fc0",
+      "page": 31,
+      "start_line": 1,
+      "end_line": 53,
+      "input_start_byte": 48838,
+      "input_end_byte": 50817,
+      "text_sha256": "d9f54f7c00016555464a5ccb763321ff7d8876743fa3804624d56fad26f08e85"
+    },
+    {
+      "source_identity": "sh_bcf70e5423c2d8ef",
+      "page": 193,
+      "start_line": 1,
+      "end_line": 43,
+      "input_start_byte": 51020,
+      "input_end_byte": 53634,
+      "text_sha256": "cc7b8b3650f4cd170d3aaa42d332cf54cdf2a6d22d9e39bdd17d15454b9d5cfc"
+    },
+    {
+      "source_identity": "sh_bcf70e5423c2d8ef",
+      "page": 187,
+      "start_line": 1,
+      "end_line": 45,
+      "input_start_byte": 53837,
+      "input_end_byte": 56510,
+      "text_sha256": "7616fed33e884a3cd19cbbe523770b551d9b70a126543758c210d78816193e52"
+    },
+    {
+      "source_identity": "sh_bcf70e5423c2d8ef",
+      "page": 192,
+      "start_line": 1,
+      "end_line": 43,
+      "input_start_byte": 56713,
+      "input_end_byte": 59824,
+      "text_sha256": "1ad2c158ec732b23007573b6c4e1bf1ed7273cebeeb2b39d43a94da643092839"
+    }
+  ]
+}
