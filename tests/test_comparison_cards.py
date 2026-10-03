@@ -295,7 +295,9 @@ def test_selection_card_keeps_unopened_supplement_and_combined_protocol_navigabl
     assert all(not item["passages"] for item in groups.values())
     # The inventory adds bounded metadata, not captured source text.
     serialized = json.dumps(card, ensure_ascii=False, separators=(",", ":"))
-    assert len(serialized) < 6_200
+    baseline = _comparison_cards("domain:selection", {}, {}, [], [])[0]
+    baseline_size = len(json.dumps(baseline, ensure_ascii=False, separators=(",", ":")))
+    assert 0 < len(serialized) - baseline_size < 2_000
 
 
 def test_unopened_irrelevant_source_is_a_control_not_evidence() -> None:
@@ -390,7 +392,7 @@ def test_public_domain_cards_pair_endpoint_specific_scientific_contrasts() -> No
         )
     }
     expected_pairs = (
-        ("domain:deviations", "d2-exclusion-before-versus-after-outcome"),
+        ("domain:deviations", "d2-exclusion-rule-and-outcome-availability"),
         ("domain:missing", "d3-treatment-stop-with-followup-versus-loss"),
         ("domain:measurement", "d4-toxicity-visits-by-endpoint"),
         ("domain:measurement", "d4-safety-window-evidence"),
@@ -429,3 +431,38 @@ def test_public_domain_cards_pair_endpoint_specific_scientific_contrasts() -> No
     packaging = d5_by_id["d5-embedded-versus-separate-sap"]
     assert "appendix 2" in " ".join(packaging["left_facts"]).casefold()
     assert "separate repository pdf" in " ".join(packaging["right_facts"]).casefold()
+
+
+def test_analysis_rule_context_preserves_conditional_inference() -> None:
+    from copy import deepcopy
+
+    from rob2_kit.interfaces.mcp.contracts import ComparisonCard
+
+    answers = {"sq:deviations:appropriate-analysis": {"answer": "probably_no"}}
+    original = deepcopy(answers)
+    card = _comparison_cards("domain:deviations", {}, answers, [], [])[0]
+    assert answers == original
+    ComparisonCard.model_validate(card)
+    propositions = {p["name"]: p for p in card["propositions"]}
+    rule = propositions["assignment_analysis_rule"]
+    impact = propositions["conditional_analysis_impact"]
+    assert rule["question_id"] == "sq:deviations:appropriate-analysis"
+    assert impact["question_id"] == "sq:deviations:substantial-impact"
+    assert impact["depends_on"] == (rule["question_id"],)
+    assert rule["status"] == impact["status"] == "unknown"
+    assert rule["passages"] == impact["passages"] == []
+    assert "source-stated" in rule["proposition"]
+    assert "host-inferred" in rule["proposition"]
+    assert "conditional" in impact["proposition"]
+    pairs = {p["pair_id"]: p for p in card["paired_examples"]}
+    availability = pairs["d2-exclusion-rule-and-outcome-availability"]
+    assert "90" in availability["left_facts"][0] and "90" in availability["right_facts"][0]
+    assert "unmeasured" in availability["left_facts"][0]
+    assert "measured for all 100" in availability["right_facts"][0]
+    overlap = pairs["d2-exclusion-flow-versus-stated-rule"]
+    assert "not reported" in overlap["left_facts"][0]
+    assert "regardless" in overlap["right_facts"][0]
+    assert "contact is not measurement" in overlap["reasoning_focus"]
+    assert all(
+        not {"expected_answer", "expected_judgment", "severity"} & p.keys() for p in pairs.values()
+    )

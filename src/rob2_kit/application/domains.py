@@ -786,6 +786,24 @@ def _comparison_cards(
                 "The identified deviation was balanced between randomized groups.",
                 ("sq:deviations:context-deviations", "sq:deviations:affected-outcome"),
             ),
+            (
+                "sq:deviations:appropriate-analysis",
+                "assignment_analysis_rule",
+                "The actual grouping and exclusion rule estimated the assignment effect. "
+                "Separate observed participant flow, a source-stated rule, and a host-inferred "
+                "rule: noncompletion and missing outcomes can overlap without establishing "
+                "which rule selected the analysis population.",
+                (),
+            ),
+            (
+                "sq:deviations:substantial-impact",
+                "conditional_analysis_impact",
+                "If the assignment analysis was inappropriate, the affected participants could "
+                "substantially change this Result. Keep an inferred exclusion population "
+                "conditional on its mechanism; not all noncompleters or unavailable outcomes "
+                "are established inappropriate exclusions.",
+                ("sq:deviations:appropriate-analysis",),
+            ),
         ),
         "domain:missing": (
             (
@@ -965,25 +983,43 @@ def _comparison_cards(
                 ),
             },
             {
-                "pair_id": "d2-exclusion-before-versus-after-outcome",
-                "changed_premise": (
-                    "when eligible participants were excluded relative to outcome assessment"
-                ),
+                "pair_id": "d2-exclusion-rule-and-outcome-availability",
+                "changed_premise": "the source-stated exclusion rule and outcome availability",
                 "left_facts": (
-                    "The same 12 eligible randomized participants were excluded from analysis "
-                    "for the same recorded reasons.",
-                    "The approved endpoint was assessed for all 12 participants at day 90.",
-                    "The exclusions occurred before the day-90 endpoint assessment.",
+                    "Of 100 eligible randomized participants, 90 were analyzed in assigned groups. "
+                    "The report states that only the ten with unmeasured endpoint outcomes were "
+                    "excluded; adherence did not restrict the analysis.",
                 ),
                 "right_facts": (
-                    "The same 12 eligible randomized participants were excluded from analysis "
-                    "for the same recorded reasons.",
-                    "The approved endpoint was assessed for all 12 participants at day 90.",
-                    "The exclusions occurred after the day-90 endpoint assessment.",
+                    "Of the same 100 eligible randomized participants, 90 were analyzed in "
+                    "assigned groups. The report states that only treatment completers were "
+                    "analyzed even though endpoint outcomes were measured for all 100.",
                 ),
                 "reasoning_focus": (
-                    "Keep exclusions fixed. Timing may distinguish observed-but-omitted outcomes "
-                    "from outcome availability, but does not set a risk label."
+                    "The same analysis count can reflect missing-only availability or an "
+                    "adherence-conditioned rule. Source-stated observed outcomes omitted from "
+                    "analysis are affirmative evidence, not merely an uncertain denominator."
+                ),
+            },
+            {
+                "pair_id": "d2-exclusion-flow-versus-stated-rule",
+                "changed_premise": "whether the source establishes an exclusion rule",
+                "left_facts": (
+                    "Of 100 eligible randomized participants, 90 completed treatment and 90 "
+                    "were analyzed. Some noncompleters were contactable, but their endpoint "
+                    "measurement and the analysis restriction are not reported.",
+                ),
+                "right_facts": (
+                    "The same flow, contactability and unknown endpoint measurements are "
+                    "reported. The source additionally states that the analysis excluded all "
+                    "noncompleters regardless of whether their endpoint outcomes were available.",
+                ),
+                "reasoning_focus": (
+                    "Compatible counts do not identify a rule; contact is not measurement. "
+                    "A documented restriction can establish a mechanism without complete "
+                    "measurement counts. Carry uncertainty about an inferred mechanism into "
+                    "the participants considered for conditional impact, while allowing "
+                    "source-supported probable judgments."
                 ),
             },
         ),
