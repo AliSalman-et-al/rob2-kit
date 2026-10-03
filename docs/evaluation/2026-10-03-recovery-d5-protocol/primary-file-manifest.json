@@ -1,0 +1,23 @@
+[
+  {
+    "logical_path": "NEJMoa1912846.pdf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/kang25-recovery-2020/NEJMoa1912846.pdf",
+    "sha256": "sha256:202bd5616525f53b27832f61edeb0edbf93b32295234c12b96c021c5ea32bb68",
+    "source_identity": "source_26304a09859b2b93a0b5af5fd313a1cfb244b0905f06935852a1e8fd0927404e",
+    "page_count": 9
+  },
+  {
+    "logical_path": "nejmoa1912846_appendix.pdf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/kang25-recovery-2020/nejmoa1912846_appendix.pdf",
+    "sha256": "sha256:1a8fed775b531c684227cf11842071fa3b619bf03f94cf7ea71c7ec8608386a5",
+    "source_identity": "source_9c02baeea826f7fa15d44b75cac943ec8447654b3d598282dd68ea9eef6d8a8e",
+    "page_count": 18
+  },
+  {
+    "logical_path": "nejmoa1912846_protocol.pdf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/kang25-recovery-2020/nejmoa1912846_protocol.pdf",
+    "sha256": "sha256:265780f7dd6e1558eaf9e21f7230661e5d4cacdee082f8806f3418f1cc67b09b",
+    "source_identity": "source_6e180ea6db363981b8eaba9497e750ece5beefcf2bcbc751e9f88015fc216208",
+    "page_count": 47
+  }
+]
