@@ -1,0 +1,1477 @@
+{
+  "read_windows": [
+    {
+      "source_id": "source_3140a8f4c2b6371805efa037032fa89b9dff1e19a67b9fc4310c72864235fdc6",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 28
+    },
+    {
+      "source_id": "source_3140a8f4c2b6371805efa037032fa89b9dff1e19a67b9fc4310c72864235fdc6",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 33
+    },
+    {
+      "source_id": "source_3140a8f4c2b6371805efa037032fa89b9dff1e19a67b9fc4310c72864235fdc6",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 52
+    },
+    {
+      "source_id": "source_3140a8f4c2b6371805efa037032fa89b9dff1e19a67b9fc4310c72864235fdc6",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 18
+    },
+    {
+      "source_id": "source_3140a8f4c2b6371805efa037032fa89b9dff1e19a67b9fc4310c72864235fdc6",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 15
+    },
+    {
+      "source_id": "source_3140a8f4c2b6371805efa037032fa89b9dff1e19a67b9fc4310c72864235fdc6",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 14
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 62
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 121
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 126
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 75
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 4,
+      "start_line": 76,
+      "end_line": 120
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 228
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 226
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 209
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 26
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 8,
+      "start_line": 27,
+      "end_line": 213
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 9,
+      "start_line": 1,
+      "end_line": 191
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 196
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 10,
+      "start_line": 197,
+      "end_line": 215
+    },
+    {
+      "source_id": "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375",
+      "page": 11,
+      "start_line": 1,
+      "end_line": 186
+    }
+  ],
+  "contexts": [
+    {
+      "event_ordinal": 6,
+      "arguments": {
+        "domain_id": "domain:randomization",
+        "trial_id": "allsop-2014",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 13,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:randomization",
+          "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.1",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "b1ea06c7587cc9af865994caa6a7fd87aa9465c873beb97dfff50513438d1b94",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:randomization",
+        "state_revision": 13,
+        "index": 0,
+        "count": 3,
+        "delivery_status": "incomplete",
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "max_response_bytes": 32768,
+        "cursor": null,
+        "next_cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.1",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "source_role": "main_article",
+          "page_count": 11,
+          "status": "partially_read",
+          "search": "unsearched",
+          "read": "partially_read",
+          "render": "not_delivered",
+          "recovery": []
+        },
+        {
+          "source_id": "sh_3140a8f4c2b63718",
+          "source_role": "supplement",
+          "page_count": 6,
+          "status": "unsearched",
+          "search": "unsearched",
+          "read": "unread",
+          "render": "not_delivered",
+          "recovery": []
+        }
+      ],
+      "reading_recovery": {
+        "operation": "read_pages",
+        "trial_id": "allsop-2014",
+        "windows": [
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 62
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 121
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 126
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 120
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 228
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 226
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 209
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 213
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 191
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 215
+          },
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 184
+          }
+        ],
+        "window_count": 11,
+        "status": "required",
+        "unread_ranges": [
+          {
+            "source_id": "sh_8e86ff5709473924",
+            "page": 11,
+            "start_line": 185,
+            "end_line": 186
+          }
+        ],
+        "unread_range_count": 1
+      },
+      "first_question_ids": [
+        "sq:randomization:sequence"
+      ]
+    },
+    {
+      "event_ordinal": 12,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:randomization",
+        "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.1",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 13,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:randomization",
+          "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.2",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "b1ea06c7587cc9af865994caa6a7fd87aa9465c873beb97dfff50513438d1b94",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:randomization",
+        "state_revision": 13,
+        "index": 1,
+        "count": 3,
+        "delivery_status": "incomplete",
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 2,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.1",
+        "next_cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.2",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ]
+    },
+    {
+      "event_ordinal": 14,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:randomization",
+        "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.2",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 13,
+        "next_action": {
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:randomization",
+          "expected_revision": 13,
+          "caller_inputs": [
+            "answers"
+          ]
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "b1ea06c7587cc9af865994caa6a7fd87aa9465c873beb97dfff50513438d1b94",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:randomization",
+        "state_revision": 13,
+        "index": 2,
+        "count": 3,
+        "delivery_status": "complete",
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 4,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.2",
+        "next_cursor": null,
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.053a653ccb6b4f2eb3f7733ecffcf445.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 26,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:deviations",
+          "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.1",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "b1c7812b83fcda95a89d152776b04bd6ec04fa6cd355fcbf6582099f268cffbb",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "state_revision": 14,
+        "index": 0,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "max_response_bytes": 32768,
+        "cursor": null,
+        "next_cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.1",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "source_role": "main_article",
+          "page_count": 11,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        },
+        {
+          "source_id": "sh_3140a8f4c2b63718",
+          "source_role": "supplement",
+          "page_count": 6,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        }
+      ],
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:deviations:participants-aware"
+      ]
+    },
+    {
+      "event_ordinal": 28,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.1",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:deviations",
+          "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.2",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "b1c7812b83fcda95a89d152776b04bd6ec04fa6cd355fcbf6582099f268cffbb",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "state_revision": 14,
+        "index": 1,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 6,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.1",
+        "next_cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.2",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:affected-outcome",
+        "sq:deviations:balanced",
+        "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact"
+      ]
+    },
+    {
+      "event_ordinal": 30,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.2",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:deviations",
+          "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.3",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "b1c7812b83fcda95a89d152776b04bd6ec04fa6cd355fcbf6582099f268cffbb",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "state_revision": 14,
+        "index": 2,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 20,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.2",
+        "next_cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.3",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 32,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.3",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": {
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:deviations",
+          "expected_revision": 14,
+          "caller_inputs": [
+            "answers"
+          ]
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "b1c7812b83fcda95a89d152776b04bd6ec04fa6cd355fcbf6582099f268cffbb",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations",
+        "state_revision": 14,
+        "index": 3,
+        "count": 4,
+        "delivery_status": "complete",
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.3",
+        "next_cursor": null,
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.a3778237c9fd4cbd9b566a4c5465bf52.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 36,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 15,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.1",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "5b4feb1e58fb1483c96fb35ae762a0219a14a46c236b27f2e2ff10c99e9f93d3",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 15,
+        "index": 0,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "max_response_bytes": 32768,
+        "cursor": null,
+        "next_cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.1",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "source_role": "main_article",
+          "page_count": 11,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        },
+        {
+          "source_id": "sh_3140a8f4c2b63718",
+          "source_role": "supplement",
+          "page_count": 6,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        }
+      ],
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:missing:data-available"
+      ]
+    },
+    {
+      "event_ordinal": 38,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.1"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 15,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.2",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "5b4feb1e58fb1483c96fb35ae762a0219a14a46c236b27f2e2ff10c99e9f93d3",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 15,
+        "index": 1,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 3,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.1",
+        "next_cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.2",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ]
+    },
+    {
+      "event_ordinal": 40,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.2"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 15,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.3",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "5b4feb1e58fb1483c96fb35ae762a0219a14a46c236b27f2e2ff10c99e9f93d3",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 15,
+        "index": 2,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 20,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.2",
+        "next_cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.3",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 42,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.3"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 15,
+        "next_action": {
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "expected_revision": 15,
+          "caller_inputs": [
+            "answers"
+          ]
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "5b4feb1e58fb1483c96fb35ae762a0219a14a46c236b27f2e2ff10c99e9f93d3",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 15,
+        "index": 3,
+        "count": 4,
+        "delivery_status": "complete",
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.3",
+        "next_cursor": null,
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.52cabd588d7a46ed8038a3c7f0d935d6.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 46,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 16,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:measurement",
+          "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.1",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "dfa426a9d7d0eb815171c80ee51f257c418ea984adaaa3a5d9ee5b24470854c9",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "state_revision": 16,
+        "index": 0,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "max_response_bytes": 32768,
+        "cursor": null,
+        "next_cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.1",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "source_role": "main_article",
+          "page_count": 11,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        },
+        {
+          "source_id": "sh_3140a8f4c2b63718",
+          "source_role": "supplement",
+          "page_count": 6,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        }
+      ],
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:measurement:method-inappropriate"
+      ]
+    },
+    {
+      "event_ordinal": 48,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.1"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 16,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:measurement",
+          "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.2",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "dfa426a9d7d0eb815171c80ee51f257c418ea984adaaa3a5d9ee5b24470854c9",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "state_revision": 16,
+        "index": 1,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 4,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.1",
+        "next_cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.2",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely"
+      ]
+    },
+    {
+      "event_ordinal": 50,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.2"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 16,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:measurement",
+          "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.3",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "dfa426a9d7d0eb815171c80ee51f257c418ea984adaaa3a5d9ee5b24470854c9",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "state_revision": 16,
+        "index": 2,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 20,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.2",
+        "next_cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.3",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 52,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.3"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 16,
+        "next_action": {
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:measurement",
+          "expected_revision": 16,
+          "caller_inputs": [
+            "answers"
+          ]
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "dfa426a9d7d0eb815171c80ee51f257c418ea984adaaa3a5d9ee5b24470854c9",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:measurement",
+        "state_revision": 16,
+        "index": 3,
+        "count": 4,
+        "delivery_status": "complete",
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.3",
+        "next_cursor": null,
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.2dfff1e4b23a4014a09e6f3b1925706a.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 56,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 17,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:selection",
+          "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.1",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "6bb083de32e1b734027d2e248983fbb85c184cb77c0f270696ca85b6b680dc48",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "state_revision": 17,
+        "index": 0,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "max_response_bytes": 32768,
+        "cursor": null,
+        "next_cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.1",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "source_role": "main_article",
+          "page_count": 11,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        },
+        {
+          "source_id": "sh_3140a8f4c2b63718",
+          "source_role": "supplement",
+          "page_count": 6,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        }
+      ],
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:selection:prespecified-analysis"
+      ]
+    },
+    {
+      "event_ordinal": 58,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.1"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 17,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:selection",
+          "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.2",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "6bb083de32e1b734027d2e248983fbb85c184cb77c0f270696ca85b6b680dc48",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "state_revision": 17,
+        "index": 1,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 2,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.1",
+        "next_cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.2",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ]
+    },
+    {
+      "event_ordinal": 60,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.2"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 17,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:selection",
+          "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.3",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "6bb083de32e1b734027d2e248983fbb85c184cb77c0f270696ca85b6b680dc48",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "state_revision": 17,
+        "index": 2,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 20,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.2",
+        "next_cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.3",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 62,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.3"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 17,
+        "next_action": {
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:selection",
+          "expected_revision": 17,
+          "caller_inputs": [
+            "answers"
+          ]
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "6bb083de32e1b734027d2e248983fbb85c184cb77c0f270696ca85b6b680dc48",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:selection",
+        "state_revision": 17,
+        "index": 3,
+        "count": 4,
+        "delivery_status": "complete",
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.3",
+        "next_cursor": null,
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.f9655cd3e4224f9eb334845d7d2e23ac.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 74,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "include_candidates": true
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 19,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.1",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "850d0c43fd02b42c81f63039df6a3c05fdd775e314eadcb65b2c898866e615f1",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 19,
+        "index": 0,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "max_response_bytes": 32768,
+        "cursor": null,
+        "next_cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.1",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": [
+        {
+          "source_id": "sh_8e86ff5709473924",
+          "source_role": "main_article",
+          "page_count": 11,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        },
+        {
+          "source_id": "sh_3140a8f4c2b63718",
+          "source_role": "supplement",
+          "page_count": 6,
+          "status": "read_complete",
+          "search": "unsearched",
+          "read": "read_complete",
+          "render": "not_delivered",
+          "recovery": []
+        }
+      ],
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:missing:data-available"
+      ]
+    },
+    {
+      "event_ordinal": 76,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.1"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 19,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.2",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "850d0c43fd02b42c81f63039df6a3c05fdd775e314eadcb65b2c898866e615f1",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 19,
+        "index": 1,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 3,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.1",
+        "next_cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.2",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": [
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ]
+    },
+    {
+      "event_ordinal": 78,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.2"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 19,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.3",
+          "max_response_bytes": 32768
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "850d0c43fd02b42c81f63039df6a3c05fdd775e314eadcb65b2c898866e615f1",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 19,
+        "index": 2,
+        "count": 4,
+        "delivery_status": "incomplete",
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 20,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.2",
+        "next_cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.3",
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    },
+    {
+      "event_ordinal": 80,
+      "arguments": {
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.3"
+      },
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 19,
+        "next_action": {
+          "operation": "save_domain_judgment",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "expected_revision": 19,
+          "caller_inputs": [
+            "answers",
+            "revision_basis"
+          ],
+          "supersedes": "sha256:f17fe2dca936a740dc720acbd2c134754b1d59ffca6726efcfa9d90971274896"
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "context_page": {
+        "view_version": "rob2-kit.domain-context.v1",
+        "snapshot_digest": "850d0c43fd02b42c81f63039df6a3c05fdd775e314eadcb65b2c898866e615f1",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "state_revision": 19,
+        "index": 3,
+        "count": 4,
+        "delivery_status": "complete",
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "max_response_bytes": 32768,
+        "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.3",
+        "next_cursor": null,
+        "stable_recovery": {
+          "operation": "get_domain_context",
+          "cursor": "dcp2.0fc8734ef43f4500844d6af0b8b9834f.0"
+        }
+      },
+      "inline_primary_items": 0,
+      "coverage": null,
+      "reading_recovery": null,
+      "first_question_ids": []
+    }
+  ],
+  "verified_source_read_status": {
+    "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375": "read_complete",
+    "source_3140a8f4c2b6371805efa037032fa89b9dff1e19a67b9fc4310c72864235fdc6": "read_complete"
+  },
+  "terminal_phase_source_reading_status": {},
+  "terminal_phase_note": "Production helper scopes receipts to current phase and therefore returns empty after finalization. Archived assessment receipts were independently merged against verified complete projections above.",
+  "main_report_status": {
+    "identity_status": "identified",
+    "identity_basis": "declared_role",
+    "identity_sources": [
+      "source_8e86ff570947392411bcd829079f402b2e43cc0580be41233465a42516a7a375"
+    ],
+    "identity_observations": [],
+    "orientation_source_ids": [],
+    "orientation_reading": {
+      "source_ids": [],
+      "ranges": [],
+      "range_count": 0,
+      "ranges_truncated": false
+    },
+    "limitation": null,
+    "status": "complete",
+    "budget_bytes": 65536,
+    "covered_prefix_bytes": 65497,
+    "unread_ranges": [],
+    "required_ranges": []
+  },
+  "qualification": "Actual response/delivery receipts and source-hash/projection verification, not comprehension."
+}

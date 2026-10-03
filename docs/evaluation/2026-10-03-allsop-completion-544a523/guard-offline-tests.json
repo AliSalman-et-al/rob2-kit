@@ -1,0 +1,15 @@
+{
+  "null_input_limits_verified": true,
+  "huge_input_counts_do_not_stop": true,
+  "remaining_guard_controls": {
+    "output": "output threshold",
+    "tool": "tool limit",
+    "wall": "wall threshold",
+    "idle": "idle threshold",
+    "save": "save attempt limit",
+    "identical": "repeated identical rejection"
+  },
+  "exact_model": "gpt-6-luna",
+  "effort": "medium",
+  "preflight_passed": true
+}

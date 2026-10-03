@@ -1,0 +1,549 @@
+{
+  "code_sha": "544a523aa3b0ccec7459a5be32e3c87f5a95fb1a",
+  "guard_identity": "sha256:f22caa168c18058c58322903aa0a0d7b8d112daac8fbccb78d51859a2f241743",
+  "guards": {
+    "wall_seconds": 1200,
+    "idle_seconds": 180,
+    "tool_calls": 60,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": null,
+    "uncached_input_tokens": null,
+    "output_tokens": 15000
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-allsop-full-544a523/response.txt",
+    "-"
+  ],
+  "stop_reason": null,
+  "exit_code": 0,
+  "elapsed_seconds": 274.78684504300327,
+  "model_code_calls": 1,
+  "mcp_calls": 44,
+  "save_calls": 7,
+  "model_code_calls_completed": 1,
+  "mcp_calls_completed": 44,
+  "accepted_checkpoint": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 20,
+      "next_action": {
+        "operation": "review_trial",
+        "authority": "host",
+        "trial_id": "allsop-2014",
+        "expected_revision": 20
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:4639d02b121c28222b4743f7e77d443fa5ccb589061618d99d1318dbe4fbc4a8",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:missing",
+        "judgment": "some_concerns",
+        "driver_questions": [
+          "sq:missing:data-available",
+          "sq:missing:evidence-unbiased",
+          "sq:missing:true-value-dependent",
+          "sq:missing:likely-dependent"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:missing:data-available",
+              "status": "supported",
+              "evidence": [
+                "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                "sha256:ff8343312556093cf193a8fa6eb237ac861e25815e723169ce1b054319dd84bb"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:missing:evidence-unbiased",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:missing:true-value-dependent",
+              "status": "indirect",
+              "evidence": [
+                "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:missing:likely-dependent",
+              "status": "supported",
+              "evidence": [
+                "sha256:a9584e60e4851fb05a171b8136276462b682447347b3575c345b0bb25e6a8cc8",
+                "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            }
+          ],
+          "identity": "sha256:a7e3cb3d39cd5f91163bf0322658ca26ca6d33f0dc4b9d61eb13d79b51a6abf0"
+        }
+      },
+      "trial_ready_for_review": true,
+      "retry": false
+    }
+  },
+  "accepted_domains": {
+    "domain:randomization": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:deviations",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:72a93d220e0601b9c16230d465c6b324de2b5722914925496c8b30791a26354c",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:randomization",
+          "judgment": "some_concerns",
+          "driver_questions": [
+            "sq:randomization:concealment"
+          ],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:randomization:sequence",
+                "status": "supported",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:randomization:concealment",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:ccb0efa9c73105a5defce44c7143c30f7e718a03671348328fa142175c3bddae"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [
+                  "Whether allocation was concealed until participants were enrolled and assigned."
+                ],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:randomization:baseline-imbalance",
+                "status": "supported",
+                "evidence": [
+                  "sha256:a9584e60e4851fb05a171b8136276462b682447347b3575c345b0bb25e6a8cc8",
+                  "sha256:ff8343312556093cf193a8fa6eb237ac861e25815e723169ce1b054319dd84bb"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              }
+            ],
+            "identity": "sha256:3801cd7575610221b6e7449a0515052c0a96765e23156833eb240684f6cea43b"
+          }
+        },
+        "trial_ready_for_review": false,
+        "retry": false
+      }
+    },
+    "domain:deviations": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 15,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:45ea9940a58f57f49234e65208dfe7ffb3fe84114e72efad1bdf2544dc5e0af9",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:deviations",
+          "judgment": "low",
+          "driver_questions": [],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:deviations:participants-aware",
+                "status": "indirect",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:79f88bacd5f2539a9b7d158c748fdca83f2c95ee81b686af1c0e2f1bf22a5b70"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:deviations:personnel-aware",
+                "status": "supported",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:deviations:appropriate-analysis",
+                "status": "supported",
+                "evidence": [
+                  "sha256:ff8343312556093cf193a8fa6eb237ac861e25815e723169ce1b054319dd84bb"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              }
+            ],
+            "identity": "sha256:bd736abec8b35a239019b3c1eb130607f7fed6f2042853ea57d4c01f1223c275"
+          }
+        },
+        "trial_ready_for_review": false,
+        "retry": false
+      }
+    },
+    "domain:missing": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 20,
+        "next_action": {
+          "operation": "review_trial",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "expected_revision": 20
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:4639d02b121c28222b4743f7e77d443fa5ccb589061618d99d1318dbe4fbc4a8",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:missing",
+          "judgment": "some_concerns",
+          "driver_questions": [
+            "sq:missing:data-available",
+            "sq:missing:evidence-unbiased",
+            "sq:missing:true-value-dependent",
+            "sq:missing:likely-dependent"
+          ],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:missing:data-available",
+                "status": "supported",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:ff8343312556093cf193a8fa6eb237ac861e25815e723169ce1b054319dd84bb"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:missing:evidence-unbiased",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:missing:true-value-dependent",
+                "status": "indirect",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:missing:likely-dependent",
+                "status": "supported",
+                "evidence": [
+                  "sha256:a9584e60e4851fb05a171b8136276462b682447347b3575c345b0bb25e6a8cc8",
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              }
+            ],
+            "identity": "sha256:a7e3cb3d39cd5f91163bf0322658ca26ca6d33f0dc4b9d61eb13d79b51a6abf0"
+          }
+        },
+        "trial_ready_for_review": true,
+        "retry": false
+      }
+    },
+    "domain:measurement": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 17,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:selection",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:53de90c92582826f75d0abdea13e58594b52e73e4ee892f730a13a45a3445969",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:measurement",
+          "judgment": "low",
+          "driver_questions": [],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:measurement:method-inappropriate",
+                "status": "supported",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:26dc217143c325737110ac84fa3e33df21d70f83eaa71d5c8ab209e1a44a4196"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:measurement:differential",
+                "status": "indirect",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:ff8343312556093cf193a8fa6eb237ac861e25815e723169ce1b054319dd84bb"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:measurement:assessor-aware",
+                "status": "indirect",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:79f88bacd5f2539a9b7d158c748fdca83f2c95ee81b686af1c0e2f1bf22a5b70"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              }
+            ],
+            "identity": "sha256:971f95f91b7d8b65e1e428734f4e775913b3aefb8b75c6dda74c8c405bdd9729"
+          }
+        },
+        "trial_ready_for_review": false,
+        "retry": false
+      }
+    },
+    "domain:selection": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 18,
+        "next_action": {
+          "operation": "review_trial",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "expected_revision": 18
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:48150c9e3f64f470d2546a5277c348d6662aa359901046dec53dabf4f98006c8",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:selection",
+          "judgment": "some_concerns",
+          "driver_questions": [
+            "sq:selection:prespecified-analysis",
+            "sq:selection:multiple-measurements"
+          ],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:selection:prespecified-analysis",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:b053652db9562feff726b6b8d484987ae18042225172b803ac49a17617bd3f84",
+                  "sha256:ff8343312556093cf193a8fa6eb237ac861e25815e723169ce1b054319dd84bb",
+                  "sha256:94f875d7945c5ebd292b603e72cc6923706487a79375c1252fca50ef210b5ed4"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [
+                  "Whether the reported CWS comparison and MMRM analysis followed an applicable plan finalized before unblinded outcomes were available."
+                ],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:selection:multiple-measurements",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:956ff20d30e336b79fb086da718de7ec65d360c34b2ada2908431b22f0bf1ab4",
+                  "sha256:6f60657b907c0f760194c705c57d60bcac0f78eee8c9686591ffd1362a8ec30d"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:selection:multiple-analyses",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:ff8343312556093cf193a8fa6eb237ac861e25815e723169ce1b054319dd84bb",
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b",
+                  "sha256:bec66d896d277d8f65a64a44433084a8e79860eb1c00ed0a73efd80ca04156fe"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              }
+            ],
+            "identity": "sha256:bef5abd19dc22df3bcf8a8e6d36e1b3639a9919b1374fff5c03dfe46b46c69d3"
+          }
+        },
+        "trial_ready_for_review": true,
+        "retry": false
+      }
+    }
+  },
+  "per_domain": {
+    "domain:randomization": {
+      "started": 1,
+      "completed": 1,
+      "rejected": 0,
+      "identical": 0,
+      "previous": null
+    },
+    "domain:deviations": {
+      "started": 1,
+      "completed": 1,
+      "rejected": 0,
+      "identical": 0,
+      "previous": null
+    },
+    "domain:missing": {
+      "started": 3,
+      "completed": 3,
+      "rejected": 1,
+      "identical": 0,
+      "previous": "55af6c42c85f0bcefdaaa5ea64c192b766dc2dc958dfb0256ef69f1118fcc627"
+    },
+    "domain:measurement": {
+      "started": 1,
+      "completed": 1,
+      "rejected": 0,
+      "identical": 0,
+      "previous": null
+    },
+    "domain:selection": {
+      "started": 1,
+      "completed": 1,
+      "rejected": 0,
+      "identical": 0,
+      "previous": null
+    }
+  },
+  "rejections": 1,
+  "save_calls_completed": 7,
+  "rejection_records": [
+    {
+      "save_attempt": 6,
+      "domain_id": "domain:missing",
+      "domain_save_attempt": 2,
+      "fingerprint": "55af6c42c85f0bcefdaaa5ea64c192b766dc2dc958dfb0256ef69f1118fcc627",
+      "consecutive_identical": 1,
+      "result": {
+        "content": [],
+        "structured_content": {
+          "outcome": "condition",
+          "head": {
+            "phase": "assessment",
+            "state_revision": 19,
+            "next_action": {
+              "operation": "close_trial",
+              "authority": "host",
+              "trial_id": "allsop-2014",
+              "expected_revision": 19,
+              "review_reference": "sha256:a5a29cf6dce3ecdc271d2249377a3c8be00799dc6d89b45e626638f72ef9887f"
+            },
+            "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+          },
+          "condition": {
+            "code": "domain_context_delivery_stale",
+            "detail": "The approved Result, RoB 2 pack, current Domain checkpoint, or preview changed. Restart get_domain_context before submitting this assessment.",
+            "recovery": null
+          }
+        }
+      }
+    }
+  ],
+  "other_error_records": [],
+  "consecutive_identical_rejections": 1,
+  "usage": {
+    "input_tokens": 4974118,
+    "cached_input_tokens": 4738816,
+    "output_tokens": 8813,
+    "reasoning_output_tokens": 1376
+  },
+  "uncached_input_tokens": 235302,
+  "input_limits_enabled": false,
+  "output_overshoot": 0,
+  "tool_start_overshoot": 0,
+  "save_start_overshoot": 0,
+  "no_invocation_retry": true
+}

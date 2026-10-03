@@ -1,0 +1,18 @@
+**allsop-2014 — finalized assessment**
+
+| Domain | Accepted judgment |
+|---|---|
+| D1 Randomization | Some concerns |
+| D2 Deviations from intended interventions | Low |
+| D3 Missing outcome data | Some concerns |
+| D4 Measurement of the outcome | Low |
+| D5 Selection of the reported result | Some concerns |
+
+**Overall risk of bias: High**, under the rule that three Some concerns domains yield High overall.
+
+The assessment retained the approved target: the assignment effect of nabiximols versus placebo on overall 19-item Cannabis Withdrawal Scale severity during the six-day medication phase, among all randomized participants. The reported treatment-by-time result was \(F=2.39\); the repeated-measures model included days 1–9. The assessment did not treat that broader model window as changing the approved target.
+
+**Scientific limitations:** Allocation concealment was not described. CWS data were reported as 14.4% missing through day 7 and 28.6% through day 9, with multiple imputation; arm-specific observed counts for the approved window and sensitivity to plausible missingness remain unknown. The report and supplement do not establish plan timing or the complete set of eligible outcome measurements. The report’s MCAR test and stated dropout reasons counter, but do not eliminate, concern about outcome-dependent missingness.
+
+**Artifact:** finalized verified bundle at `.rob2-kit/finalized/ae8d89700e5915ce9d93e4be472bc78f8165d4f3dfaeee3e92c8e3e47a6565e8.rob2.zip`  
+SHA-256: `845b43ae089382cfd53c3f32dd492c5222752ce60e4cd1ddf880cb4427a0c6d6`

@@ -1,0 +1,59 @@
+{
+  "reviews": {
+    "allsop-2014": {
+      "checkpoint_ids": [
+        "sha256:72a93d220e0601b9c16230d465c6b324de2b5722914925496c8b30791a26354c",
+        "sha256:45ea9940a58f57f49234e65208dfe7ffb3fe84114e72efad1bdf2544dc5e0af9",
+        "sha256:4639d02b121c28222b4743f7e77d443fa5ccb589061618d99d1318dbe4fbc4a8",
+        "sha256:53de90c92582826f75d0abdea13e58594b52e73e4ee892f730a13a45a3445969",
+        "sha256:48150c9e3f64f470d2546a5277c348d6662aa359901046dec53dabf4f98006c8"
+      ],
+      "disposition": "assessed",
+      "domain_attribution": [
+        {
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:72a93d220e0601b9c16230d465c6b324de2b5722914925496c8b30791a26354c",
+          "domain_id": "domain:randomization"
+        },
+        {
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:45ea9940a58f57f49234e65208dfe7ffb3fe84114e72efad1bdf2544dc5e0af9",
+          "domain_id": "domain:deviations"
+        },
+        {
+          "attribution": "self_correction",
+          "checkpoint_identity": "sha256:4639d02b121c28222b4743f7e77d443fa5ccb589061618d99d1318dbe4fbc4a8",
+          "domain_id": "domain:missing",
+          "revision_basis": {
+            "kind": "self_correction",
+            "rationale": "Review exposed missed relevant dropout-reason evidence in the Results section; use it with the MCAR result to revise likely-dependence answer."
+          },
+          "supersedes": "sha256:f17fe2dca936a740dc720acbd2c134754b1d59ffca6726efcfa9d90971274896"
+        },
+        {
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:53de90c92582826f75d0abdea13e58594b52e73e4ee892f730a13a45a3445969",
+          "domain_id": "domain:measurement"
+        },
+        {
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:48150c9e3f64f470d2546a5277c348d6662aa359901046dec53dabf4f98006c8",
+          "domain_id": "domain:selection"
+        }
+      ],
+      "facts": [],
+      "identity": "sha256:012a69eb9c3c29beb26fb5048b5b830f4ab2971e47cc2dd43d44d4ba11928b86",
+      "reason": null,
+      "result_identity": "sha256:4ccb6a6304e544e3da19a9fbe9cc321edcb70fc01a5370269577a6f9ed423030",
+      "trial_id": "allsop-2014"
+    }
+  },
+  "closures": {
+    "allsop-2014": {
+      "disposition": "assessed",
+      "identity": "sha256:4d4ac8b1dfeb325f482fb9ecc562a1955b8a86be8d598083def0f4f264061cf3",
+      "review_identity": "sha256:012a69eb9c3c29beb26fb5048b5b830f4ab2971e47cc2dd43d44d4ba11928b86",
+      "trial_id": "allsop-2014"
+    }
+  }
+}

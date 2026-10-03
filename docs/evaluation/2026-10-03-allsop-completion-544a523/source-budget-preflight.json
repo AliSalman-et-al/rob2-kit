@@ -1,0 +1,33 @@
+{
+  "source_projection_utf8_bytes": 72190,
+  "prompt_utf8_bytes": 2337,
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "enabled_tools": [
+    "get_status",
+    "review_trial",
+    "close_trial",
+    "finalize_batch",
+    "get_domain_context",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "list_sources",
+    "render_page",
+    "select_visual_evidence",
+    "save_domain_judgment"
+  ],
+  "uncached_preflight_basis": "Input counts are telemetry only; no total or uncached input cutoff. Source projection byte count is inherited from the identical verified sources, not a model usage guarantee.",
+  "guards": {
+    "wall_seconds": 1200,
+    "idle_seconds": 180,
+    "tool_calls": 60,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": null,
+    "uncached_input_tokens": null,
+    "output_tokens": 15000
+  },
+  "qualification": "Same verified source projection bytes as prior run; current prompt bytes and input telemetry-only guards. Transport/source bounds unchanged."
+}
