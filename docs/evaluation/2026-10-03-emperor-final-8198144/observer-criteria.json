@@ -1,0 +1,14 @@
+{
+  "outside_model_context": true,
+  "audit": [
+    "raw quantitative-anchor endpoint label separate from faithful interpreted event set",
+    "time origin/window and HR versus fixed-duration risk",
+    "all-randomized Trial target and analysis exclusions versus enrollment eligibility/external generalizability",
+    "ITT separate from complete follow-up",
+    "assignment contrast and arm dose/background therapy",
+    "source-bound point/interval and all persisted bindings",
+    "scope relation and clarity independently supported",
+    "reading receipts and unreviewed sources"
+  ],
+  "no_reference_label_or_desired_relation": true
+}

@@ -1,0 +1,33 @@
+[
+  {
+    "type": "custom_tool_call",
+    "id": "ctc_090b7413e7d1b313016ac0effdeedc87d0b4b67c24df0a0bb2",
+    "status": "completed",
+    "call_id": "call_aHiL2J2laLGTxN9eP7Ixrr1Q",
+    "name": "exec",
+    "input": "const r = await tools.mcp__rob2__get_status();\ntext({isError:r?.isError??false,payload:r?.structuredContent??r?.content??[]});\n",
+    "internal_chat_message_metadata_passthrough": {
+      "turn_id": "01a101a9-68a3-7e61-ae3f-6535fe614f5a",
+      "create_time": 1791029245.250624
+    }
+  },
+  {
+    "type": "custom_tool_call_output",
+    "id": "ctco_01a101a9-7b24-74d3-a192-89159208d572",
+    "call_id": "call_aHiL2J2laLGTxN9eP7Ixrr1Q",
+    "output": [
+      {
+        "type": "input_text",
+        "text": "Script failed\nWall time 0.0 seconds\nOutput:\n"
+      },
+      {
+        "type": "input_text",
+        "text": "Script error:\nTypeError: tools.mcp__rob2__get_status is not a function\n    at exec_main.mjs:1:23"
+      }
+    ],
+    "internal_chat_message_metadata_passthrough": {
+      "turn_id": "01a101a9-68a3-7e61-ae3f-6535fe614f5a",
+      "create_time": 1791029246.7568705
+    }
+  }
+]
