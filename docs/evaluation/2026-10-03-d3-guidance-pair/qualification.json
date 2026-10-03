@@ -1,0 +1,9 @@
+{
+  "qualification": "Supersedes the original interpretation of impact-warrant incompleteness as a scientific inadequacy finding; does not change frozen outputs, criteria or labels.",
+  "preregistered_criterion_clearly_unmet": null,
+  "observable_criteria": "Both responses weigh temporal coverage, separate quantities, avoid a universal threshold/formal HR-bound requirement, and reject ITT/censoring/vital status as sufficient composite availability evidence. Both leave actual unknowns explicit.",
+  "explanation_vs_defensibility": "Their impact explanation is brief and could be more explicit about the selected estimate. That is a transparency limitation, not evidence that either Probably Yes is scientifically wrong or indefensible. Missing counterfactual calculations, numerical bounds or a detailed scenario model are not failure criteria.",
+  "cochrane_basis": "2019 D3.1 guidance asks whether missing outcomes could importantly affect the estimate; the official FAQ permits informed probable answers using other information when extent is not directly known. Neither requires a numerical HR bound or an explicit calculation in each justification.",
+  "corrected_conclusion": "No incremental behavioral gain demonstrated; no observed regression; probable answers are not independently validated or invalidated by this pair.",
+  "model_calls_this_followup": 0
+}

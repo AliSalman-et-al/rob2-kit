@@ -1,0 +1,43 @@
+1: Statistical Analysis Plan 
+2: Study Code D5551C00003(BCB109)
+3: Edition Number 4 
+4: February 23rd  2017
+5: 26
+6: primary composite CV endpoint in patients treated with EQW in addition to usual care 
+7: compared to that of patients treated with usual care alone will be declared.
+8: 4.5.1.2
+9: Primary Efficacy Analysis: Superiority of EQW versus Placebo
+10: If the non-inferiority hypothesis is met, the hypothesis of superiority of EQW, when used in 
+11: addition to usual care versus usual care without EQW with regard to the risk of developing the 
+12: primary composite CV endpoint will be tested at a one-sided significance level of 0.02495 
+13: (i.e. two-sided 0.0499).
+14: The efficacy hypothesis (H1) is defined as:
+15: H0: HR ≥ 1 vs. H1: HR < 1
+16: The Intention to Treat (ITT) population will be used to evaluate the primary efficacy 
+17: hypothesis.  The p-value will be estimated using the same Cox Proportional Hazards model as 
+18: in the non-inferiority analysis .  The estimated HR and two-sided 95% confidence interval for 
+19: the hazard ratio of EQW to placebo will also be presented.
+20: The above primary safety and efficacy analyses will use the Primary Censoring Scheme (see 
+21: Section 4.1.2.1).
+22: 4.5.1.3
+23: Assessment of Model Assumption
+24: The assumption of proportional hazards for the factor for treatment group will be assessed 
+25: visually using log-cumulative hazard plots for each stratum, and with models which assess the 
+26: treatment effect in categorized time intervals (< 1 year, 1- <2 years, 2-<3 years, >=3 years), or 
+27: time-dependent covariates in the model. The effect of any departures from proportional 
+28: hazards will be discussed as part of the presentation of results of the analyses. If there is 
+29: evidence of non-proportionality appropriate further analyses using Lin-Wei information
+30: sandwich3 may be conducted.
+31: 4.5.1.4
+32: Sensitivity Analyses of the Primary Efficacy Endpoint
+33: It is expected that complete information on the components of the primary composite endpoint 
+34: (and as much as possible of the eCRF data for patients contacted by telephone) will be 
+35: obtained for all patients including those who prematurely discontinue investigational product, 
+36: unless they refuse any form of follow-up and withdraw consent or where final status could not 
+37: be determined. 
+38: For the primary efficacy endpoint, the following sensitivity analyses will also be performed:
+39: 1. Analyze the data in ITT population using Primary Censoring Scheme (see Section 
+40: 4.1.2.1) and using a Cox proportional hazards model that includes treatment as an 
+41: explanatory factor and prior CV risk group at randomization based on CRF data as 
+42: stratification variable.
+43: 192

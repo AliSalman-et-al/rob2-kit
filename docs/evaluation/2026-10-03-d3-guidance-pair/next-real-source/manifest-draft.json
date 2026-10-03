@@ -113,6 +113,72 @@
       "projection_sha256": "1eac464875de0a9194f50f2dc1dffea4cfe2e03a7819a8d25edbdb399aae8e4b",
       "text_file": "nejmoa1612917_protocol.pdf-page-188.txt",
       "numbered_text_sha256": "ccb929fccf200d8edf113d42d971c668ebd15047efdbd6d1b356f4dfa6be18a6"
+    },
+    {
+      "source_identity": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "file": "nejmoa1612917_appendix.pdf",
+      "page": 46,
+      "start_line": 1,
+      "end_line": 15,
+      "projection_sha256": "b62059ccd92ec6407da6d21e55cbdd1e9c71a603e48f5ad0dccfb96d79ad1542",
+      "text_file": "nejmoa1612917_appendix.pdf-page-46.txt",
+      "numbered_text_sha256": "2478b93880d96f3d67e8082b7a71b13237043003babecae7189487457ef20fad",
+      "role": "offline coverage-review addendum"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 177,
+      "start_line": 1,
+      "end_line": 68,
+      "projection_sha256": "572309857f2410711fed3233b9cee4ae17c35ac38bd0173b9fc33ef9bab98c15",
+      "text_file": "nejmoa1612917_protocol.pdf-page-177.txt",
+      "numbered_text_sha256": "b9a752b20c4ef1cdd65a652633b8405337e5b4ec12c874b27700bb83650a5a5a",
+      "role": "offline coverage-review addendum"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 178,
+      "start_line": 1,
+      "end_line": 46,
+      "projection_sha256": "0c194e49067f75ad26a464fe521b18dc270d26c7ef062cac7e15bca29a5d1233",
+      "text_file": "nejmoa1612917_protocol.pdf-page-178.txt",
+      "numbered_text_sha256": "7a81c07e9d22da0821ddd4b1a7036de58923746c4709dc1aee5946b6d7c3266c",
+      "role": "offline coverage-review addendum"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 186,
+      "start_line": 1,
+      "end_line": 45,
+      "projection_sha256": "081c24af435644dfb7046f12efe737ce345e8a8fcdc5bf86a9100909394a6b73",
+      "text_file": "nejmoa1612917_protocol.pdf-page-186.txt",
+      "numbered_text_sha256": "152de4602913126ca06d901bdb3f29d6cb2d5952937f7ac195cf562e65ca3aee",
+      "role": "offline coverage-review addendum"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 193,
+      "start_line": 1,
+      "end_line": 43,
+      "projection_sha256": "b5bad6048825a807aac07c4225c926c0ab62bb40e5a80f3d4e82920eebcef3e6",
+      "text_file": "nejmoa1612917_protocol.pdf-page-193.txt",
+      "numbered_text_sha256": "50e4c2135fdf16a4062441a414ae69458b15617de388f7ab8a54c8903c3b1237",
+      "role": "offline coverage-review addendum"
+    },
+    {
+      "source_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "file": "nejmoa1612917_protocol.pdf",
+      "page": 194,
+      "start_line": 1,
+      "end_line": 46,
+      "projection_sha256": "d159a6012180f61cf462db037899356be0367cafa2d6c8920f073140e6a2403b",
+      "text_file": "nejmoa1612917_protocol.pdf-page-194.txt",
+      "numbered_text_sha256": "4041304a46efc4c4f75e9cf6084bbac6668d880c4118acc03843ccfc674e1f7a",
+      "role": "offline coverage-review addendum"
     }
   ],
   "required_images": [
@@ -144,5 +210,6 @@
   ],
   "selected_result_sha256": "a9889ed04a24f0bdea69354d3cd5b86e21d3b7b91045e3023f6fd33b8de6fb58",
   "result_identity": "sha256:4851824b2a81d36da8ab1d25d97b912ff0e1dd72b871c0b1144d9a9b379eb8e7",
-  "reference_scope_conflict": "Intake NCT01455896 versus article NCT01144338; no silent reconciliation or human gold assumption."
+  "reference_scope_conflict": "Intake NCT01455896 versus article NCT01144338; no silent reconciliation or human gold assumption.",
+  "offline_review_addendum": "Original eleven pages omitted Figure S9 legend continuation A46 and important SAP composite-death qualification P186. Additional P177/178 and P193/194 establish Edition4 amendment context and complete planned primary sensitivity section. Seventeen text pages plus two figures now preserved; no automatic diagnostic launch or authorization."
 }
