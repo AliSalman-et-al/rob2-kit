@@ -75,6 +75,9 @@ async def _replay(compat) -> None:
         assert json.loads(blocks[0]["text"]) == receipt
         if compat:
             assert rendered.structured_content is None
+            schema_text = json.loads(blocks[-1]["text"])
+            assert schema_text == {"tool": "render_page", "receipt_schema": original_schema}
+            assert tools["render_page"].meta["rob2_receipt_schema"] == original_schema
             assert any(c["type"] == "image" for c in cli_0159_model_body(wire))
         else:
             assert rendered.structured_content == receipt

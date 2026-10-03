@@ -115,3 +115,61 @@ def test_changed_preregistered_manifest_prevents_launch(tmp_path):
                 expected_manifest_sha256=frozen_hash,
             )
         child.assert_not_called()
+
+
+def image_fixture(tmp_path):
+    import pymupdf
+
+    png = pymupdf.Pixmap(pymupdf.csRGB, pymupdf.IRect(0, 0, 4, 3), False).tobytes("png")
+    input_path = tmp_path / "frame.png"
+    input_path.write_bytes(png)
+    frame = {
+        "source_identity": "captured_source",
+        "page": 1,
+        "png_sha256": hashlib.sha256(png).hexdigest(),
+        "width": 4,
+        "height": 3,
+    }
+    manifest = {
+        "research_question": "Can the image frame be inspected?",
+        "input_sha256": hashlib.sha256(png).hexdigest(),
+        "required_images": [frame],
+        "supplied_images": [{**frame, "input_start_byte": 0, "input_end_byte": len(png)}],
+    }
+    path = tmp_path / "image-manifest.json"
+    path.write_text(json.dumps(manifest))
+    return path, input_path, manifest
+
+
+def test_image_only_manifest_uses_actual_frame_without_inventing_text_lines(tmp_path):
+    path, input_path, _ = image_fixture(tmp_path)
+    receipt = check_manifest(path, input_path)
+    assert receipt["passed"] and receipt["required_image_count"] == 1
+    assert receipt["required_window_count"] == 0
+
+
+@pytest.mark.parametrize("change", ["identity", "page", "pixels", "dimensions", "omitted"])
+def test_image_identity_pixel_and_geometry_drift_prevents_launch(tmp_path, change):
+    path, input_path, data = image_fixture(tmp_path)
+    supplied = data["supplied_images"][0]
+    if change == "identity":
+        supplied["source_identity"] = "different_source"
+    elif change == "page":
+        supplied["page"] = 2
+    elif change == "pixels":
+        supplied["png_sha256"] = "0" * 64
+    elif change == "dimensions":
+        supplied["width"] = 5
+    else:
+        data["supplied_images"] = []
+    path.write_text(json.dumps(data))
+    with patch("scripts.diagnostic_evidence_preflight.subprocess.Popen") as child:
+        with pytest.raises(ValueError):
+            launch_checked(
+                ["paid-launch"],
+                manifest_path=path,
+                input_path=input_path,
+                receipt_path=tmp_path / "receipt.json",
+                expected_manifest_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+            )
+        child.assert_not_called()

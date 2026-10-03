@@ -12,7 +12,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, model_validator
 
 
 class SourceWindow(BaseModel):
@@ -29,12 +29,34 @@ class SuppliedWindow(SourceWindow):
     text_sha256: StrictStr = Field(pattern=r"^[0-9a-f]{64}$")
 
 
+class ImageFrame(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    source_identity: StrictStr = Field(min_length=1)
+    page: StrictInt = Field(gt=0)
+    png_sha256: StrictStr = Field(pattern=r"^[0-9a-f]{64}$")
+    width: StrictInt = Field(gt=0)
+    height: StrictInt = Field(gt=0)
+
+
+class SuppliedImageFrame(ImageFrame):
+    input_start_byte: StrictInt = Field(ge=0)
+    input_end_byte: StrictInt = Field(gt=0)
+
+
 class EvidenceManifest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     research_question: StrictStr = Field(min_length=1)
     input_sha256: StrictStr = Field(pattern=r"^[0-9a-f]{64}$")
-    required_windows: tuple[SourceWindow, ...] = Field(min_length=1)
-    supplied_windows: tuple[SuppliedWindow, ...] = Field(min_length=1)
+    required_windows: tuple[SourceWindow, ...] = ()
+    supplied_windows: tuple[SuppliedWindow, ...] = ()
+    required_images: tuple[ImageFrame, ...] = ()
+    supplied_images: tuple[SuppliedImageFrame, ...] = ()
+
+    @model_validator(mode="after")
+    def require_evidence(self) -> EvidenceManifest:
+        if not self.required_windows and not self.required_images:
+            raise ValueError("diagnostic requires text windows or image frames")
+        return self
 
 
 def check_manifest(manifest_path: Path, input_path: Path) -> dict[str, Any]:
@@ -70,12 +92,34 @@ def check_manifest(manifest_path: Path, input_path: Path) -> dict[str, Any]:
                 f"required diagnostic evidence omitted: {required.source_identity} "
                 f"page {required.page} lines {required.start_line}-{required.end_line}"
             )
+    for supplied in manifest.supplied_images:
+        start, end = supplied.input_start_byte, supplied.input_end_byte
+        if not start < end <= len(prompt):
+            raise ValueError("supplied image bytes outside frozen input")
+        png = prompt[start:end]
+        if hashlib.sha256(png).hexdigest() != supplied.png_sha256:
+            raise ValueError("supplied image hash mismatch")
+        if (
+            png[:8] != b"\x89PNG\r\n\x1a\n"
+            or png[12:16] != b"IHDR"
+            or (int.from_bytes(png[16:20], "big"), int.from_bytes(png[20:24], "big"))
+            != (supplied.width, supplied.height)
+        ):
+            raise ValueError("supplied image is not the declared PNG frame")
+    for required in manifest.required_images:
+        if not any(
+            all(getattr(supplied, key) == value for key, value in required.model_dump().items())
+            for supplied in manifest.supplied_images
+        ):
+            raise ValueError("required diagnostic image omitted")
     return {
         "passed": True,
         "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
         "input_sha256": manifest.input_sha256,
         "required_window_count": len(manifest.required_windows),
         "supplied_window_count": len(manifest.supplied_windows),
+        "required_image_count": len(manifest.required_images),
+        "supplied_image_count": len(manifest.supplied_images),
         "scope": "declared research-design coverage only; no semantic sufficiency claim",
     }
 

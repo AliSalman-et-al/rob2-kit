@@ -7,11 +7,14 @@ unchanged PNG pixels. Codex's structured-content shortcut otherwise drops pixels
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 
 from fastmcp.server.middleware import CallNext, Middleware, MiddlewareContext
 from fastmcp.tools import Tool, ToolResult
-from mcp.types import CallToolRequestParams, ListToolsRequest
+from mcp.types import CallToolRequestParams, ListToolsRequest, TextContent
+
+from rob2_kit.interfaces.mcp.contracts import output_schema
 
 
 class CodexImageContent(Middleware):
@@ -22,7 +25,14 @@ class CodexImageContent(Middleware):
     ) -> Sequence[Tool]:
         tools = await call_next(context)
         return [
-            tool.model_copy(update={"output_schema": None}) if tool.name == "render_page" else tool
+            tool.model_copy(
+                update={
+                    "output_schema": None,
+                    "meta": {**(tool.meta or {}), "rob2_receipt_schema": tool.output_schema},
+                }
+            )
+            if tool.name == "render_page"
+            else tool
             for tool in tools
         ]
 
@@ -36,7 +46,18 @@ class CodexImageContent(Middleware):
             return result
         if not any(block.type == "image" for block in result.content):
             return result
-        return ToolResult(content=result.content, meta=result.meta, is_error=result.is_error)
+        schema = TextContent(
+            type="text",
+            text=json.dumps(
+                {
+                    "tool": "render_page",
+                    "receipt_schema": output_schema("render_page"),
+                }
+            ),
+        )
+        return ToolResult(
+            content=[*result.content, schema], meta=result.meta, is_error=result.is_error
+        )
 
 
 def main() -> None:
