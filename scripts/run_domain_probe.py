@@ -5,9 +5,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import selectors
+import queue
 import signal
 import subprocess
+import threading
 import time
 import tomllib
 from pathlib import Path
@@ -161,14 +162,25 @@ def run(root: Path) -> None:
         assert proc.stdin is not None and proc.stdout is not None
         proc.stdin.write(prompt.encode())
         proc.stdin.close()
-        sel = selectors.DefaultSelector()
-        sel.register(proc.stdout, selectors.EVENT_READ)
+        # Windows select() accepts sockets, not subprocess pipes. A reader
+        # thread keeps line reads off the guard loop on every platform.
+        output: queue.Queue[bytes | None] = queue.Queue()
+
+        def read_output() -> None:
+            assert proc.stdout is not None
+            for raw in proc.stdout:
+                output.put(raw)
+            output.put(None)
+
+        reader = threading.Thread(target=read_output, daemon=True)
+        reader.start()
         try:
             while proc.poll() is None:
-                for key, _ in sel.select(1):
-                    raw = proc.stdout.readline()
-                    if not raw:
-                        continue
+                try:
+                    raw = output.get(timeout=1)
+                except queue.Empty:
+                    raw = None
+                if raw:
                     consume(raw)
                 read_usage()
                 if max(code_calls, mcp_calls) > limits.tool_calls:
@@ -200,10 +212,12 @@ def run(root: Path) -> None:
                     else:
                         proc.kill()
                     proc.wait()
-            for raw in proc.stdout:
-                consume(raw)
+            reader.join(timeout=5)
+            while not output.empty():
+                raw = output.get_nowait()
+                if raw:
+                    consume(raw)
             read_usage()
-            sel.close()
     (root / "run.json").write_text(
         json.dumps(
             {

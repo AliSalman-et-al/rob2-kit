@@ -1,0 +1,3 @@
+# Captured research inputs/manifests are hash-frozen byte artifacts.
+# Preserve repository bytes on Windows rather than applying core.autocrlf.
+docs/evaluation/** -text
