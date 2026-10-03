@@ -1,0 +1,1055 @@
+{
+  "decision": "no demonstrated analogous scientific overconstraint in these two candidate gates",
+  "input_sha256": {
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/canvas-program/turn-2.jsonl": "7617180192cee6724538964149cf595af60e0a41063da9c0255b168f93747233",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-02-frozen-an-5a3e580/an-2021/submissions.json": "6085ee70755a4f6e8f113bc8bec0eaebc1a2ecea43bd3f9d0a1cc8c03db205b8"
+  },
+  "current_pack": "sha256:2a11301824d7fa0a2f773d0fd75985ad03a2dca2a2cd7107e7376f46cdb8905a",
+  "response_framework": {
+    "version": "22 August 2019",
+    "source_locator": "Full guidance p. 3, sections 1.1 and 1.1.1",
+    "response_options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "firm_evidence_rule": "The definitive versions (\u2018Yes\u2019 and \u2018No\u2019) would typically imply that firm evidence is available in relation to the signalling question.",
+    "probable_judgment_rule": "The \u2018Probably\u2019 versions would typically imply that a judgement has been made. \u2018Yes\u2019 and \u2018Probably yes\u2019 have the same implications for risk of bias, as do \u2018No\u2019 and \u2018Probably no\u2019.",
+    "no_information_rule": "Use \u2018No information\u2019 only when both (i) insufficient details are reported to permit a response of \u2018Probably yes\u2019 or \u2018Probably no\u2019, and (ii) in the absence of these details it would be unreasonable to respond \u2018Probably yes\u2019 or \u2018Probably no\u2019 in the circumstances of the trial.",
+    "independence_rule": "Signalling questions should be answered independently: the answer to one question should not affect answers to other questions in the same or other domains other than through determining which subsequent questions are answered.",
+    "quotation_rule": "Brief direct quotations from the text of the study report should be used whenever possible to support the answer."
+  },
+  "questions": [
+    {
+      "id": "sq:deviations:appropriate-analysis",
+      "domain_id": "domain:deviations",
+      "wording": "Was an appropriate analysis used to estimate the effect of assignment to intervention?",
+      "allowed_answers": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation": {
+        "kind": "always"
+      },
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance p. 29, Box 6, signalling question 2.6",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "Both intention-to-treat (ITT) analyses and modified intention-to-treat (mITT) analyses excluding participants with missing outcome data should be considered appropriate. Both na\u00efve \u2018per-protocol\u2019 analyses and \u2018as treated\u2019 analyses should be considered inappropriate. Analyses excluding eligible trial participants post-randomization should also be considered inappropriate."
+        },
+        "operational": {
+          "id": "rob2-kit.parallel-assignment.question-guidance",
+          "version": "1.0.10",
+          "attribution": "rob2-kit maintainers",
+          "bias_construct": "Whether an appropriate analysis estimated the effect of assignment to intervention. Compare randomized assignment with the actual analysis population, grouping, reassignment, and exclusions, including their reasons; an ITT, modified ITT, or as-treated label alone does not establish this.",
+          "decision_rule": "Consider ITT and modified ITT excluding participants with missing outcome data appropriate. Consider naive per-protocol, as-treated, and post-randomization exclusion of eligible participants inappropriate; post-randomization exclusion of ineligible participants may be appropriate when eligibility could not have been influenced by assignment.",
+          "evidence_needed": [
+            "The actual analysis population and grouping rule: who was assigned, who was analysed in each group, who was excluded or reassigned after randomization, and why."
+          ],
+          "no_information_rule": "Use no_information only after considering direct facts, indirect evidence, and trial circumstances; an incomplete analysis description alone is insufficient when those facts support a probable judgment about appropriateness.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "An ITT or appropriate modified ITT analysis estimated assignment effect."
+            },
+            {
+              "answer": "no",
+              "text": "A naive per-protocol, as-treated, or inappropriate post-randomization exclusion analysis was used."
+            }
+          ],
+          "considerations": [
+            "The question is about effect of assignment, so grouping must follow randomized assignment.",
+            "Assess what the analysis actually did, not the label attached to it: ITT/mITT/as-treated terminology is a description to verify against assignment, grouping, and exclusions.",
+            "Never-treated participants are not automatically participants with no adverse event or unavailable outcome. Recover the documented eligibility, outcome availability, and exclusion reason before judging the approved assignment-effect estimand.",
+            "Excluding participants solely because their outcome data are missing can be an appropriate modified ITT analysis for D2; assess the missing outcomes in D3. An eligible participant with an observed outcome omitted from the assignment analysis, or analysed in the wrong randomized group, is a distinct D2 concern. Record whether exclusions occurred before the endpoint was measured or after an outcome value was recorded, but timing alone does not establish availability or the exclusion reason. An observed value omitted from analysis is not thereby missing outcome data. An analyzed count below the randomized count alone does not establish inappropriate analysis; if the exclusion mechanism cannot support a reasonable probable judgment, retain no_information. When 2.6 is no, probably_no, or no_information, assess 2.7 conditionally: could the wrong-group analysis or exclusions substantially affect this Result if the assignment-analysis failure occurred? Keep uncertainty about the analysis mechanism explicit. Assess potential impact using the participants affected, reasons, outcome rarity, and prognostic relevance; demonstrated actual bias or a sensitivity analysis is not required, and no precise percentage rule applies."
+          ],
+          "invalid_shortcuts": [
+            "an endpoint definition",
+            "an ITT label without its population",
+            "a per-protocol label without the analysis population"
+          ],
+          "query_suggestions": [
+            {
+              "query": "intention-to-treat",
+              "mode": "phrase",
+              "source_role": null,
+              "purpose": "analysis by assignment"
+            },
+            {
+              "query": "intent-to-treat",
+              "mode": "phrase",
+              "source_role": null,
+              "purpose": "alternative analysis-by-assignment wording"
+            },
+            {
+              "query": "all randomized patients",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "reported analysis population"
+            },
+            {
+              "query": "per protocol",
+              "mode": "phrase",
+              "source_role": null,
+              "purpose": "analysis restrictions"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sq:deviations:substantial-impact",
+      "domain_id": "domain:deviations",
+      "wording": "If N/PN/NI to 2.6: Was there potential for a substantial impact (on the result) of the failure to analyse participants in the group to which they were randomized?",
+      "allowed_answers": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation": {
+        "kind": "rule",
+        "mode": "any",
+        "predicates": [
+          {
+            "question_id": "sq:deviations:appropriate-analysis",
+            "accepted_answers": [
+              "probably_no",
+              "no",
+              "no_information"
+            ]
+          }
+        ]
+      },
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance p. 29, Box 6, signalling question 2.7",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "This question addresses whether the number of participants who were analysed in the wrong intervention group, or excluded from the analysis, was sufficient that there could have been a substantial impact on the result. It is not possible to specify a precise rule: there may be potential for substantial impact even if fewer than 5% of participants were analysed in the wrong group or excluded, if the outcome is rare or if exclusions are strongly related to prognostic factors."
+        },
+        "operational": {
+          "id": "rob2-kit.parallel-assignment.question-guidance",
+          "version": "1.0.10",
+          "attribution": "rob2-kit maintainers",
+          "bias_construct": "Whether failure to analyse participants in their randomized group could substantially affect the result.",
+          "decision_rule": "Assess whether the number analysed in the wrong group or excluded was sufficient for substantial impact. There is no precise percentage rule: fewer than 5% may still matter for rare outcomes or exclusions strongly related to prognostic factors.",
+          "evidence_needed": [
+            "Counts and reasons for participants analysed in the wrong group or excluded, outcome rarity, and prognostic relevance of exclusions."
+          ],
+          "no_information_rule": "Use no_information when the potential magnitude of impact cannot be assessed.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "The wrong-group analysis or exclusions could substantially affect the result."
+            },
+            {
+              "answer": "no",
+              "text": "The wrong-group analysis or exclusions could not substantially affect the result."
+            }
+          ],
+          "considerations": [
+            "Carry the inappropriate or uncertain analysis mechanism from 2.6 into this conditional impact judgment. Explain how the affected participants or observations could change this selected estimate, considering their outcomes, prognostic differences and the analysis assumptions. A small component of a restriction does not settle the impact of other components.",
+            "Treatment stopping, unmeasured outcomes and measured values omitted by an analysis rule are different facts. Stopping alone establishes neither omission nor bias; a censoring rule alone does not establish how many measured values were omitted. Preserve uncertainty about actual availability and selection, including possible outcome-dependent loss.",
+            "A source-supported probable judgment is valid without a numerical bound, demonstrated bias or a sensitivity analysis. Explain why the restriction is plausibly important or negligible for this endpoint; a small or balanced count alone is insufficient. Low potential impact does not make an inappropriate analysis appropriate."
+          ],
+          "invalid_shortcuts": [
+            "a small percentage alone",
+            "an ITT analysis",
+            "a group label without exclusion counts"
+          ],
+          "query_suggestions": [
+            {
+              "query": "excluded participants",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "post-randomization exclusions"
+            },
+            {
+              "query": "wrong intervention group",
+              "mode": "phrase",
+              "source_role": null,
+              "purpose": "analysis group mismatch"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sq:missing:evidence-unbiased",
+      "domain_id": "domain:missing",
+      "wording": "If N/PN/NI to 3.1: Is there evidence that the result was not biased by missing outcome data?",
+      "allowed_answers": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no"
+      ],
+      "activation": {
+        "kind": "rule",
+        "mode": "any",
+        "predicates": [
+          {
+            "question_id": "sq:missing:data-available",
+            "accepted_answers": [
+              "probably_no",
+              "no",
+              "no_information"
+            ]
+          }
+        ]
+      },
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "Evidence that the result was not biased by missing outcome data may come from analysis methods that correct for bias, or sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as \u2018last-observation-carried-forward\u2019 or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data."
+        },
+        "operational": {
+          "id": "rob2-kit.parallel-assignment.question-guidance",
+          "version": "1.0.10",
+          "attribution": "rob2-kit maintainers",
+          "bias_construct": "Whether there is evidence that the result was not biased by missing outcome data.",
+          "decision_rule": "Evidence may come from methods correcting for bias or sensitivity analyses showing little change under plausible assumptions about missingness and true outcome. The assumptions must match the documented missingness mechanism and the approved Result. A comparison that changes group attribution, such as ITT versus as-treated, does not test unobserved outcome values unless the source explicitly establishes that relationship. Last-observation-carried-forward or multiple imputation based only on intervention group should not be assumed to correct bias.",
+          "evidence_needed": [
+            "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result, including the missingness mechanism it addresses.",
+            "If the source only changes intervention-group attribution or analysis membership, record that distinction; do not describe it as a test of unobserved outcome values without source support."
+          ],
+          "no_information_rule": "No_information is not an allowed response to this question in the parallel-assignment pack. Answer no/probably no when inspected evidence does not establish protection from missing-data bias. No does not assert that bias occurred: retain source coverage limits and unknown missingness mechanisms. Ground the scoped negative answer in inspected Evidence or a valid scoped no-hit receipt; an unsupported limitation alone is insufficient.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "A bias-correcting or informative sensitivity analysis indicates the result was not biased."
+            },
+            {
+              "answer": "no",
+              "text": "The available evidence does not show that the result was free from missing-data bias."
+            }
+          ],
+          "considerations": [
+            "Imputation alone is not evidence that missing outcome data did not bias the result.",
+            "Availability and mitigation are separate premises: a familiar method name or numerically stable estimate is not enough; the sensitivity analysis must span plausible assumptions relevant to the documented missingness mechanism.",
+            "This question permits complete ascertainment, mechanism-matched reassurance, and legitimate uncertainty. Do not apply a universal percentage threshold in place of a Result-specific impact judgment."
+          ],
+          "invalid_shortcuts": [
+            "an ITT analysis",
+            "last observation carried forward",
+            "multiple imputation based only on intervention group"
+          ],
+          "query_suggestions": [
+            {
+              "query": "sensitivity analysis",
+              "mode": "phrase",
+              "source_role": "sap",
+              "purpose": "missing-data sensitivity analysis"
+            },
+            {
+              "query": "missing data bias",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "bias from missing outcomes"
+            },
+            {
+              "query": "multiple imputation",
+              "mode": "phrase",
+              "source_role": "sap",
+              "purpose": "missing-data method"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sq:selection:prespecified-analysis",
+      "domain_id": "domain:selection",
+      "wording": "Were the data that produced this result analysed in accordance with a pre-specified analysis plan that was finalized before unblinded outcome data were available for analysis?",
+      "allowed_answers": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation": {
+        "kind": "always"
+      },
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance p. 63, Box 11, signalling question 5.1",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "To avoid the possibility of selection of the reported result, finalization of the analysis intentions must precede availability of unblinded outcome data to the trial investigators. Changes to analysis plans that were made before unblinded outcome data were available, or that were clearly unrelated to the results, do not raise concerns about bias in selection of the reported result."
+        },
+        "operational": {
+          "id": "rob2-kit.parallel-assignment.question-guidance",
+          "version": "1.0.10",
+          "attribution": "rob2-kit maintainers",
+          "bias_construct": "Whether data producing this result followed a pre-specified plan finalized before unblinded outcome data were available.",
+          "decision_rule": "Compare the approved Result with the applicable plan for the exact intervention comparison, cohort, endpoint, time window, population, analysis, and effect measure. Distinguish protocol or ethics approval, plan finalization, amendment effective dates, registry posting or update, data cutoff, database lock, and investigators' access to unblinded outcome data; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
+          "evidence_needed": [
+            "A sufficiently detailed protocol or SAP, its source-located chronology and finalization date relative to unblinded outcome data, and the reported analysis. Capture each dated event as reported; approval, cutoff, or database lock does not by itself establish when investigators could see unblinded outcomes.",
+            "For an original plan and an amended plan, capture the source-located content and chronology separately. An SAP embedded in a protocol, supplement, or combined document is still plan Evidence when its section and scope can be located; a separate SAP file is not required. An absent or unresolved plan remains an information limit."
+          ],
+          "no_information_rule": "Use a definitive answer when firm evidence establishes timing and correspondence. Use a probable answer when source facts and trial circumstances support only an inference. Use no_information when neither is supported. A plan mention or matching endpoint alone does not establish timing.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "The result follows a sufficiently detailed plan finalized before unblinded outcome data were available."
+            },
+            {
+              "answer": "no",
+              "text": "The result did not follow such a pre-specified plan."
+            },
+            {
+              "answer": "no_information",
+              "text": "Analysis intentions or their timing are not sufficiently reported."
+            }
+          ],
+          "considerations": [
+            "Assess correspondence between the applicable plan and the exact approved Result: outcome, time point, population, effect measure, and analysis must be compared.",
+            "Assess applicability before chronology: a platform or master plan may cover several comparisons and cohorts, so its presence does not establish applicability to the approved Result. Establish chronology separately: plan finalization must precede availability of unblinded outcome data. Protocol approval, ethics approval, amendment, initial registry posting, registry update, retrieval, data cutoff, and database lock are distinct events; none substitutes for the source-located date of plan finalization or investigator access to unblinded results.",
+            "Current registry content does not establish unseen historical intent. A data cutoff or database lock is not itself proof of when investigators accessed unblinded outcomes. Preserve unresolved applicability or chronology instead of filling the gap from report wording that merely looks prespecified.",
+            "Results-driven selection is a separate concern from whether a plan exists or whether its chronology is known. Do not infer selection merely from an amendment or from a mismatch without evidence that the choice was driven by results. Not establishing that a plan was early is not evidence that it was late: ground a negative chronology inference in source facts and trial circumstances, or preserve no_information when those cannot support a reasonable probable answer.",
+            "Neutral paired control: an applicable plan for the approved cohort differs from a platform plan for another phase; a source-located finalization date before investigator access differs from the same plan with access timing unresolved.",
+            "A plan may be an identified section of a combined protocol or supplement. Navigate to that section and retain its exact Source and page coordinates; the lack of a separately named SAP file does not show that no plan exists.",
+            "Distinguish confidential data-monitoring access from access by trial investigators making analysis decisions. Staff providing confidential data to a monitoring committee are excepted in the official guidance; that access alone does not establish late prespecification. Public interim results are different evidence. Refining an analysis with blinded data is generally acceptable unless variables reveal intervention identity."
+          ],
+          "invalid_shortcuts": [
+            "an objective definition",
+            "a registry link",
+            "an endpoint label",
+            "a protocol mention without date or detail",
+            "current registry content treated as historical intent",
+            "a data cutoff treated as investigator unblinding",
+            "a platform master plan treated as applicable to every comparison"
+          ],
+          "query_suggestions": [
+            {
+              "query": "analysis plan",
+              "mode": "phrase",
+              "source_role": "sap",
+              "purpose": "prespecified analysis"
+            },
+            {
+              "query": "prespecified final analysis",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "reported final-analysis timing"
+            },
+            {
+              "query": "final analysis",
+              "mode": "phrase",
+              "source_role": null,
+              "purpose": "reported analysis threshold"
+            },
+            {
+              "query": "before unblinding",
+              "mode": "phrase",
+              "source_role": "protocol",
+              "purpose": "analysis timing"
+            },
+            {
+              "query": "statistical analysis plan",
+              "mode": "phrase",
+              "source_role": "sap",
+              "purpose": "finalized analysis plan"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sq:selection:multiple-measurements",
+      "domain_id": "domain:selection",
+      "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (e.g. scales, definitions, time points) within the outcome domain?",
+      "allowed_answers": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation": {
+        "kind": "always"
+      },
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance pp. 63-64, Box 11, signalling question 5.2",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "Answer \u2018Yes\u2019 or \u2018Probably yes\u2019 if there is clear evidence that a domain was measured in multiple eligible ways, but data for only one or a subset of measures is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer \u2018No information\u2019 if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome domain could have been measured."
+        },
+        "operational": {
+          "id": "rob2-kit.parallel-assignment.question-guidance",
+          "version": "1.0.10",
+          "attribution": "rob2-kit maintainers",
+          "bias_construct": "Whether the result was selected from multiple eligible outcome measurements within the outcome domain on the basis of results.",
+          "decision_rule": "Answer yes or probably yes when clear evidence shows multiple eligible measures but only one or a subset is fully reported without justification and selection likely depended on results. Answer no or probably no when all eligible intended measures are reported, only one possible measurement exists, or an unrelated inconsistency is explained.",
+          "evidence_needed": [
+            "Eligible scales, definitions, time points, assessors or subscales and which were reported, with any justification. Use a protocol or SAP when available; article methods, results and companion reports can also establish the alternatives and the reporting choice."
+          ],
+          "no_information_rule": "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible measurement was possible, and the inspected reports do not support a reasonable judgment about selection. A missing protocol does not override source-supported evidence of results-driven choice.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "Multiple eligible measurements existed and the reported subset was likely selected on the results."
+            },
+            {
+              "answer": "no",
+              "text": "All eligible measurements correspond to intentions, or only one eligible measurement was possible."
+            },
+            {
+              "answer": "no_information",
+              "text": "Measurement intentions are insufficiently reported despite multiple possible measurements."
+            }
+          ],
+          "considerations": [
+            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported measurement with all eligible alternatives. Keep the exact Result's comparison, cohort, endpoint, time window, population, and analysis scope fixed while doing so.",
+            "An applicable plan's correspondence and chronology are relevant context but do not themselves establish results-driven selection. The approved Result fixes the target being assessed; it does not erase other eligible measurements in the outcome domain or make their selection an observed fact.",
+            "If eligible alternatives remain unresolved, preserve no_information rather than treating the absence of documented selection as no/probably no. Eligibility is defined independently of which result was reported. A located protocol is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
+            "An embedded SAP or platform plan may list eligible measurements without proving that it applied to the approved cohort; applicability and chronology remain separate premises."
+          ],
+          "invalid_shortcuts": [
+            "an endpoint definition",
+            "a single reported time point",
+            "a single scale without the eligible set",
+            "a single ITT analysis"
+          ],
+          "query_suggestions": [
+            {
+              "query": "multiple outcome measures",
+              "mode": "all",
+              "source_role": "protocol",
+              "purpose": "eligible outcome measurements"
+            },
+            {
+              "query": "time points",
+              "mode": "any",
+              "source_role": "protocol",
+              "purpose": "eligible outcome timing"
+            },
+            {
+              "query": "outcome scale",
+              "mode": "phrase",
+              "source_role": "protocol",
+              "purpose": "eligible measurement scales"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sq:selection:multiple-analyses",
+      "domain_id": "domain:selection",
+      "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible analyses of the data?",
+      "allowed_answers": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation": {
+        "kind": "always"
+      },
+      "guidance": {
+        "official": {
+          "version": "22 August 2019",
+          "source_locator": "Full guidance pp. 64-65, Box 11, signalling question 5.3",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_excerpt": "Answer \u2018Yes\u2019 or \u2018Probably yes\u2019 if there is clear evidence that a measurement was analysed in multiple eligible ways, but data for only one or a subset of analyses is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer \u2018No information\u2019 if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome measurement could have been analysed."
+        },
+        "operational": {
+          "id": "rob2-kit.parallel-assignment.question-guidance",
+          "version": "1.0.10",
+          "attribution": "rob2-kit maintainers",
+          "bias_construct": "Whether the result was selected from multiple eligible analyses of the data on the basis of results.",
+          "decision_rule": "Multiplicity alone does not establish result-based selection. Answer yes or probably yes only when the justification identifies the eligible alternatives, the reporting or selection evidence, and why selection likely depended on the results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
+          "evidence_needed": [
+            "Eligible analysis methods and which were reported, including adjustment, transformation, composite definitions and missing-data strategies. Use a protocol or SAP when available; article methods, results and companion reports can also establish the alternatives and the reporting choice."
+          ],
+          "no_information_rule": "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible analysis was possible, and the inspected reports do not support a reasonable judgment about selection. A missing SAP does not override source-supported evidence of results-driven choice.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "Multiple eligible analyses existed and the reported subset was likely selected on the results."
+            },
+            {
+              "answer": "no",
+              "text": "All eligible analyses correspond to intentions, or only one eligible analysis was possible."
+            },
+            {
+              "answer": "no_information",
+              "text": "Analysis intentions are insufficiently reported despite multiple possible analyses."
+            }
+          ],
+          "considerations": [
+            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported analysis with the complete set of multiple eligible analyses. Keep the exact Result's comparison, cohort, endpoint, time window, population, and effect measure fixed.",
+            "An applicable plan's correspondence and chronology are distinct checks. The approved Result fixes the target being assessed; it does not erase eligible alternative analyses or turn an unresolved alternative into an observed selection.",
+            "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred. A located SAP is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
+            "When the plan is insufficiently detailed and multiple eligible analyses remain possible but unresolved, use no_information; do not turn an unobserved selection into no/probably no merely because the report names one analysis. Preserve the evidence path's support for Low, Some concerns, High, or legitimate uncertainty without forcing a severity category."
+          ],
+          "invalid_shortcuts": [
+            "an endpoint definition",
+            "a single ITT analysis",
+            "one reported model",
+            "a registry link without analysis detail"
+          ],
+          "query_suggestions": [
+            {
+              "query": "multiple analyses",
+              "mode": "phrase",
+              "source_role": "sap",
+              "purpose": "eligible analysis methods"
+            },
+            {
+              "query": "analysis methods",
+              "mode": "all",
+              "source_role": "sap",
+              "purpose": "planned analysis alternatives"
+            },
+            {
+              "query": "adjusted analysis",
+              "mode": "phrase",
+              "source_role": "sap",
+              "purpose": "analysis adjustment choice"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "an_rejected_draft": {
+    "event_ordinal": 21,
+    "arguments": {
+      "trial_id": "an-2021",
+      "domain_id": "domain:deviations",
+      "expected_revision": 13,
+      "answers": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "answer": "yes",
+          "justification": "Although the paper calls the trial single-blind and says participants were blinded (p. 3), assigned arms involved visibly distinguishable conduct: supervised real-time video telerehabilitation, unsupervised home exercise with daily calls, and usual care (pp. 4\u20135). Participants would know which they received. The explicit blinding assertion is a material counterpoint but does not plausibly conceal these different experiences.",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "eh_6a3a61395c2666c3",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_0815ad60e1dc1f4e",
+              "role": "indirect_support"
+            }
+          ],
+          "absence_searches": [],
+          "limitations": [],
+          "counterevidence": [
+            {
+              "evidence": [
+                "eh_6a3a61395c2666c3"
+              ],
+              "implication": "Authors explicitly state participants were blinded, contrary to likely awareness from the distinct intervention experiences."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "answer": "yes",
+          "justification": "A therapist supervised PT by two-way video and provided real-time feedback; the education arm received daily therapist calls, while control received usual care (pp. 4\u20135). Delivery personnel necessarily knew the intervention they delivered; the blinding statement refers to participants and assessors, not carers/providers.",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "eh_0815ad60e1dc1f4e",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_6a3a61395c2666c3",
+              "role": "indirect_support"
+            }
+          ],
+          "absence_searches": [],
+          "limitations": [],
+          "counterevidence": [
+            {
+              "evidence": [
+                "eh_6a3a61395c2666c3"
+              ],
+              "implication": "The report calls participants and assessors blinded; it does not claim intervention providers were blinded."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:context-deviations",
+          "answer": "probably_no",
+          "justification": "The report notes two participants discontinued because of high intensity (p. 11), potentially inconsistent with completing the 30-session protocol (pp. 4, 12). It does not indicate recruitment, research-only engagement, or trial personnel caused discontinuation; treatment burden is compatible with ordinary non-adherence. Surgery cancellations and a fall are also reported without trial-context causes. No affirmative context-caused deviation is established; cause and protocol status remain uncertain.",
+          "unknowns": [
+            "Whether stopping because of high intensity violated protocol and whether trial-specific engagement/personnel caused it.",
+            "Whether surgery cancellations or the fall were context-caused."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_6cc2e1f4d915b54c",
+              "role": "indirect_support"
+            },
+            {
+              "evidence": "eh_3c87e963806cb79d",
+              "role": "indirect_support"
+            }
+          ],
+          "absence_searches": [],
+          "limitations": [
+            {
+              "premise": "Trial-context causation of the reported non-completion/attrition.",
+              "stopping_rationale": "Main report gives reasons for some losses but does not link them to recruitment, research-only engagement, or trial personnel; no protocol/SAP was available among captured report pages to resolve this."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "answer": "no",
+          "justification": "The approved estimand is effect of assignment among all randomized participants. Sixty were randomized (20/group), but only 53 were analyzed (18, 17, 18). The flow diagram records seven post-randomization losses/exclusions, including intervention discontinuations, surgery cancellations, and a fall; the report describes repeated-measures ANOVA but does not show that all randomized participants were analyzed by assignment or that exclusions were limited to missing outcomes. Excluding eligible randomized participants for reasons beyond missing outcome data is not an appropriate assignment analysis.",
+          "unknowns": [
+            "For each excluded participant, whether the approved strength outcomes were missing or observed and the precise analysis grouping/exclusion rule.",
+            "Whether surgery-cancelled participants remained eligible for the assignment estimand."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_3c87e963806cb79d",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_bec13ad1486a4b6a",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_f628fda610788e52",
+              "role": "direct_support"
+            }
+          ],
+          "absence_searches": [],
+          "limitations": [
+            {
+              "premise": "Whether excluded participants had missing versus observed outcome data, and actual analysis grouping.",
+              "stopping_rationale": "The report supplies randomized/analyzed counts, flow reasons, and the ANOVA approach, but no participant-level outcome availability or assignment-group analysis rule."
+            }
+          ],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:deviations:substantial-impact",
+          "answer": "probably_yes",
+          "justification": "Seven of 60 randomized participants (about 12%) were not analyzed. This is not trivial and could substantially affect the time-by-group estimate, particularly because reasons include intervention discontinuation, surgery cancellation, and a fall rather than a documented missing-outcome-only mITT rule. No prognostic comparison or sensitivity analysis is reported; potential impact is probable, not certain.",
+          "unknowns": [
+            "Whether excluded participants' strength outcomes or prognoses differed materially from those analyzed."
+          ],
+          "bases": [
+            {
+              "evidence": "eh_3c87e963806cb79d",
+              "role": "indirect_support"
+            }
+          ],
+          "absence_searches": [],
+          "limitations": [
+            {
+              "premise": "Magnitude/direction of effect of excluded participants on the reported result.",
+              "stopping_rationale": "No outcome values, prognostic comparisons, or sensitivity analyses for excluded participants are reported."
+            }
+          ],
+          "counterevidence": []
+        }
+      ]
+    },
+    "status": "completed",
+    "result": {
+      "content": [],
+      "structured_content": {
+        "outcome": "repair",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 13,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "an-2021",
+            "domain_id": "domain:deviations"
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "repairs": [
+          {
+            "path": "/answers/3/bases",
+            "code": "complete_claim_has_unresolved_premise",
+            "detail": "a definitive claim cannot be saved while a required premise is unresolved; use a probable answer or resolve the limitation first."
+          }
+        ]
+      }
+    },
+    "error": null
+  },
+  "canvas_structural_rejections_and_accepted_probable": {
+    "item_103": {
+      "id": "item_103",
+      "type": "mcp_tool_call",
+      "server": "rob2",
+      "tool": "save_domain_judgment",
+      "arguments": {
+        "trial_id": "canvas-program",
+        "domain_id": "domain:selection",
+        "expected_revision": 8,
+        "answers": [
+          {
+            "question_id": "sq:selection:prespecified-analysis",
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_e306e74d81806cda"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_28edb73b5e60c390"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_1dd1031455660f3f"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              },
+              {
+                "kind": "context",
+                "evidence": "eh_54ce24e7a1292393"
+              }
+            ],
+            "justification": "The CANVAS protocol identified the exact MACE composite as the primary CV risk-reduction endpoint and described a prespecified integrated safety analysis. The integrated plan specifies the pooled canagliflozin versus placebo ITT comparison, time to first MACE and a stratified Cox hazard ratio; the selected Result follows those features. The 2016 approved SAP preceded completion and says post-November 2012 MACE data remained blinded. An interim CANVAS summary had been unblinded before the integrated plan, and the captured 2013 SAP itself is not available to inspect; therefore timing/correspondence is probable rather than certain. The 2017 revision's stated changes do not indicate a result-driven change to the primary analysis.",
+            "unknowns": [
+              "The exact contents of the October 2013 integrated SAP are not captured, and the 2016 version was prepared after the 2012 CANVAS interim results had been unblinded."
+            ],
+            "counterevidence": [
+              1
+            ]
+          },
+          {
+            "question_id": "sq:selection:multiple-measurements",
+            "answer": "no",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_e306e74d81806cda"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              }
+            ],
+            "justification": "The protocol names the MACE composite of cardiovascular death, nonfatal MI, and nonfatal stroke as the primary endpoint. The integrated SAP specifies the same composite for the primary analysis; the selected report presents this primary outcome. No alternative eligible definition or time point for this outcome domain is identified.",
+            "unknowns": [],
+            "counterevidence": []
+          },
+          {
+            "question_id": "sq:selection:multiple-analyses",
+            "answer": "probably_no",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_3c52076e5ac1e656"
+              },
+              {
+                "kind": "context",
+                "evidence": "eh_54ce24e7a1292393"
+              }
+            ],
+            "justification": "The plan specifies one primary ITT time-to-first-MACE model (stratified Cox) and identifies other analyses as supportive or as separate component/subgroup assessments. Figure 2 reports the primary HR and the protocol-described endpoint, and the paper also reports a missing-data imputation sensitivity analysis. Although multiple analyses were planned, there is no evidence the reported primary model was chosen because its result was favorable or that relevant primary analyses were selectively withheld.",
+            "unknowns": [
+              "The captured Sources do not provide a complete inventory of every analysis conducted and reported."
+            ],
+            "counterevidence": []
+          }
+        ]
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "1 validation error for call[save_domain_judgment]\nanswers.0.counterevidence.0\n  Input should be a valid dictionary or instance of DomainCounterevidence [type=model_type, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/model_type"
+          }
+        ],
+        "structured_content": null
+      },
+      "error": null,
+      "status": "failed"
+    },
+    "item_105": {
+      "id": "item_105",
+      "type": "mcp_tool_call",
+      "server": "rob2",
+      "tool": "save_domain_judgment",
+      "arguments": {
+        "trial_id": "canvas-program",
+        "domain_id": "domain:selection",
+        "expected_revision": 8,
+        "answers": [
+          {
+            "question_id": "sq:selection:prespecified-analysis",
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_e306e74d81806cda"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_28edb73b5e60c390"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_1dd1031455660f3f"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              },
+              {
+                "kind": "context",
+                "evidence": "eh_54ce24e7a1292393"
+              }
+            ],
+            "justification": "The CANVAS protocol identified the exact MACE composite as the primary CV risk-reduction endpoint and described a prespecified integrated safety analysis. The integrated plan specifies the pooled canagliflozin versus placebo ITT comparison, time to first MACE and a stratified Cox hazard ratio; the selected Result follows those features. The 2016 approved SAP preceded completion and says post-November 2012 MACE data remained blinded. An interim CANVAS summary had been unblinded before the integrated plan, and the captured 2013 SAP itself is not available to inspect; therefore timing/correspondence is probable rather than certain. The 2017 revision's stated changes do not indicate a result-driven change to the primary analysis.",
+            "unknowns": [
+              "The exact contents of the October 2013 integrated SAP are not captured, and the 2016 version was prepared after the 2012 CANVAS interim results had been unblinded."
+            ],
+            "counterevidence": [
+              1
+            ]
+          },
+          {
+            "question_id": "sq:selection:multiple-measurements",
+            "answer": "no",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_e306e74d81806cda"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              }
+            ],
+            "justification": "The protocol names the MACE composite of cardiovascular death, nonfatal MI, and nonfatal stroke as the primary endpoint. The integrated SAP specifies the same composite for the primary analysis; the selected report presents this primary outcome. No alternative eligible definition or time point for this outcome domain is identified.",
+            "unknowns": [],
+            "counterevidence": []
+          },
+          {
+            "question_id": "sq:selection:multiple-analyses",
+            "answer": "probably_no",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_3c52076e5ac1e656"
+              },
+              {
+                "kind": "context",
+                "evidence": "eh_54ce24e7a1292393"
+              }
+            ],
+            "justification": "The plan specifies one primary ITT time-to-first-MACE model (stratified Cox) and identifies other analyses as supportive or as separate component/subgroup assessments. Figure 2 reports the primary HR and the protocol-described endpoint, and the paper also reports a missing-data imputation sensitivity analysis. Although multiple analyses were planned, there is no evidence the reported primary model was chosen because its result was favorable or that relevant primary analyses were selectively withheld.",
+            "unknowns": [
+              "The captured Sources do not provide a complete inventory of every analysis conducted and reported."
+            ],
+            "counterevidence": []
+          }
+        ]
+      },
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "1 validation error for call[save_domain_judgment]\nanswers.0.counterevidence.0\n  Input should be a valid dictionary or instance of DomainCounterevidence [type=model_type, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/model_type"
+          }
+        ],
+        "structured_content": null
+      },
+      "error": null,
+      "status": "failed"
+    },
+    "item_108": {
+      "id": "item_108",
+      "type": "mcp_tool_call",
+      "server": "rob2",
+      "tool": "save_domain_judgment",
+      "arguments": {
+        "trial_id": "canvas-program",
+        "domain_id": "domain:selection",
+        "expected_revision": 8,
+        "answers": [
+          {
+            "question_id": "sq:selection:prespecified-analysis",
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_e306e74d81806cda"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_28edb73b5e60c390"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_1dd1031455660f3f"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              },
+              {
+                "kind": "context",
+                "evidence": "eh_54ce24e7a1292393"
+              }
+            ],
+            "justification": "The CANVAS protocol identified the exact MACE composite as the primary CV risk-reduction endpoint and described a prespecified integrated safety analysis. The integrated plan specifies the pooled canagliflozin versus placebo ITT comparison, time to first MACE and a stratified Cox hazard ratio; the selected Result follows those features. The 2016 approved SAP preceded completion and says post-November 2012 MACE data remained blinded. An interim CANVAS summary had been unblinded before the integrated plan, and the captured 2013 SAP itself is not available to inspect; therefore timing/correspondence is probable rather than certain. The 2017 revision's stated changes do not indicate a result-driven change to the primary analysis.",
+            "unknowns": [
+              "The exact contents of the October 2013 integrated SAP are not captured, and the 2016 version was prepared after the 2012 CANVAS interim results had been unblinded."
+            ],
+            "counterevidence": [
+              {
+                "basis_index": 1,
+                "implication": "The 2016 integrated SAP followed unblinding of interim CANVAS results, so exact chronology for the full integrated Result is not certain; however, it states that subsequent MACE data remained blinded and the primary MACE objective was unchanged."
+              }
+            ]
+          },
+          {
+            "question_id": "sq:selection:multiple-measurements",
+            "answer": "no",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_e306e74d81806cda"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              }
+            ],
+            "justification": "The protocol names the MACE composite of cardiovascular death, nonfatal MI, and nonfatal stroke as the primary endpoint. The integrated SAP specifies the same composite for the primary analysis; the selected report presents this primary outcome. No alternative eligible definition or time point for this outcome domain is identified.",
+            "unknowns": [],
+            "counterevidence": []
+          },
+          {
+            "question_id": "sq:selection:multiple-analyses",
+            "answer": "probably_no",
+            "bases": [
+              {
+                "kind": "direct_support",
+                "evidence": "eh_293902eeac2a1d89"
+              },
+              {
+                "kind": "direct_support",
+                "evidence": "eh_3c52076e5ac1e656"
+              },
+              {
+                "kind": "context",
+                "evidence": "eh_54ce24e7a1292393"
+              }
+            ],
+            "justification": "The plan specifies one primary ITT time-to-first-MACE model (stratified Cox) and identifies other analyses as supportive or as separate component/subgroup assessments. Figure 2 reports the primary HR and the protocol-described endpoint, and the paper also reports a missing-data imputation sensitivity analysis. Although multiple analyses were planned, there is no evidence the reported primary model was chosen because its result was favorable or that relevant primary analyses were selectively withheld.",
+            "unknowns": [
+              "The captured Sources do not provide a complete inventory of every analysis conducted and reported."
+            ],
+            "counterevidence": []
+          }
+        ]
+      },
+      "result": {
+        "content": [],
+        "structured_content": {
+          "outcome": "success",
+          "head": {
+            "phase": "assessment",
+            "state_revision": 9,
+            "next_action": {
+              "operation": "review_trial",
+              "authority": "host",
+              "trial_id": "canvas-program",
+              "expected_revision": 9
+            },
+            "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+          },
+          "data": {
+            "checkpoint": {
+              "identity": "sha256:9d7f7548bd999025461e175e3b2ed433ea66fe433fe3f8e9db157ebae73cd964",
+              "trial_id": "canvas-program",
+              "domain_id": "domain:selection",
+              "judgment": "low",
+              "driver_questions": [],
+              "evidence_sufficiency": {
+                "claims": [
+                  {
+                    "question_id": "sq:selection:prespecified-analysis",
+                    "status": "supported",
+                    "evidence": [
+                      "sha256:e306e74d81806cda2ba6c938375dde4d80843a1936306440dd1c6ccb959abc21",
+                      "sha256:28edb73b5e60c3905bf828ff3771d516d53c6da4ac59768db0aa51d2ebfd8924",
+                      "sha256:1dd1031455660f3f103b20d3b427da31bd4c126e429965df4e96aeafe59b8b94",
+                      "sha256:293902eeac2a1d89892f3a81c594279e1fd8a7e20d81210dcd7fa09169503328",
+                      "sha256:54ce24e7a129239341939b65048d685d5b580c00219a020e997bb21c4779ea87"
+                    ],
+                    "search_receipts": [],
+                    "unresolved_premises": [],
+                    "support_attribution": "not_established"
+                  },
+                  {
+                    "question_id": "sq:selection:multiple-measurements",
+                    "status": "supported",
+                    "evidence": [
+                      "sha256:e306e74d81806cda2ba6c938375dde4d80843a1936306440dd1c6ccb959abc21",
+                      "sha256:293902eeac2a1d89892f3a81c594279e1fd8a7e20d81210dcd7fa09169503328"
+                    ],
+                    "search_receipts": [],
+                    "unresolved_premises": [],
+                    "support_attribution": "not_established"
+                  },
+                  {
+                    "question_id": "sq:selection:multiple-analyses",
+                    "status": "supported",
+                    "evidence": [
+                      "sha256:293902eeac2a1d89892f3a81c594279e1fd8a7e20d81210dcd7fa09169503328",
+                      "sha256:3c52076e5ac1e65673b89dd8051e6c33f6660bf07a848e121960ad57960de9ab",
+                      "sha256:54ce24e7a129239341939b65048d685d5b580c00219a020e997bb21c4779ea87"
+                    ],
+                    "search_receipts": [],
+                    "unresolved_premises": [],
+                    "support_attribution": "not_established"
+                  }
+                ],
+                "identity": "sha256:0d0875724f6b43f09e008cc7384d3e187d78bd07eeabac6bbf838f234d97fcc3"
+              }
+            },
+            "trial_ready_for_review": true,
+            "retry": false
+          }
+        }
+      },
+      "error": null,
+      "status": "completed"
+    }
+  }
+}
