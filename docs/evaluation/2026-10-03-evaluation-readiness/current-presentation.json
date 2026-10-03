@@ -1,0 +1,321 @@
+{
+  "question_id": "sq:deviations:context-deviations",
+  "result_identity": "sha256:97dbc725876633efb359a98e94460f2d2bb6df1330543c836bd735f33de6c1f1",
+  "result_scope": {
+    "result_identity": "sha256:97dbc725876633efb359a98e94460f2d2bb6df1330543c836bd735f33de6c1f1",
+    "scope_basis": "assessment_target",
+    "endpoint": "Change from baseline in HbA1c at week 28",
+    "measurement": "Change in HbA1c from baseline, measured at a central laboratory.",
+    "time_window": "Week 28 after randomization",
+    "population": "All randomized participants in the comparison groups",
+    "comparison_groups": [
+      "dulaglutide: Dulaglutide 1.5 mg once weekly added to titrated insulin glargine with metformin and/or acarbose",
+      "placebo: Placebo once weekly added to titrated insulin glargine with metformin and/or acarbose"
+    ],
+    "effect_measure": "Mean difference"
+  },
+  "reported_result": {
+    "analysis_population": "All randomized participants were included in the intention-to-treat population; data after initiation of rescue therapy or premature study-drug discontinuation were excluded from the efficacy analysis.",
+    "effect_measure": "Estimated treatment difference (ETD)",
+    "endpoint": {
+      "definition": null,
+      "name": "Change in glycated haemoglobin (HbA1c) from baseline to Week 28"
+    },
+    "estimate": "-1.0",
+    "form": "comparative_effect",
+    "group_values": [],
+    "precision": "95% CI (-1.1, -0.8)"
+  },
+  "target_relation": "exact",
+  "passage_groups": [
+    {
+      "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+      "source_role": "main_article",
+      "source_label": "dom.15263.pdf",
+      "logical_path": "dom.15263.pdf",
+      "page_count": 10,
+      "sha256": "sha256:55c93b89b9cd1a6103e848d04d5a6eeb6ddc427642fe6ecf4582a7b273774804",
+      "source_origin": "local_dossier",
+      "registry_url": null,
+      "registry_retrieved_at": null,
+      "registry_field_paths": [],
+      "registry_recovery": null,
+      "registry_window_count": 0,
+      "passages": [
+        {
+          "handle": "eh_32933a9327390e27",
+          "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 107
+        },
+        {
+          "handle": "eh_08e801240e244996",
+          "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 123
+        },
+        {
+          "handle": "eh_453ea5aa62ee389a",
+          "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+          "page": 3,
+          "start_line": 78,
+          "end_line": 79
+        },
+        {
+          "handle": "eh_41ba21e197279b7a",
+          "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 94
+        },
+        {
+          "handle": "eh_173d8762318f5212",
+          "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 11
+        },
+        {
+          "handle": "eh_356d1426d53a4a59",
+          "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+          "page": 7,
+          "start_line": 15,
+          "end_line": 28
+        },
+        {
+          "handle": "eh_66057725df7f7c3d",
+          "source_id": "source_759899671c84a27df0f0d1651b2bdd4d04e596810cebc06023b52afc4e411be6",
+          "page": 7,
+          "start_line": 29,
+          "end_line": 44
+        }
+      ]
+    },
+    {
+      "source_id": "source_96631986f0f0c8d1fb7e1e78e6983b282e1f863e889acf35b7c028c1b6928d0d",
+      "source_role": "supplement",
+      "source_label": "orig/supp-dom15263-sup-0001-Supinfo.docx",
+      "logical_path": "orig/supp-dom15263-sup-0001-Supinfo.docx",
+      "page_count": 1,
+      "sha256": "sha256:c8b3321a81a93ba097819b08b161ac792a0ac51228874c5b70e4335a495d836c",
+      "source_origin": "local_dossier",
+      "registry_url": null,
+      "registry_retrieved_at": null,
+      "registry_field_paths": [],
+      "registry_recovery": null,
+      "registry_window_count": 0,
+      "passages": []
+    },
+    {
+      "source_id": "source_a1119d6950a549a287cef4632826ea12e30cb36f7f01822594fcb99790f1fa0f",
+      "source_role": "supplement",
+      "source_label": "supp-dom15263-sup-0001-Supinfo.pdf",
+      "logical_path": "supp-dom15263-sup-0001-Supinfo.pdf",
+      "page_count": 4,
+      "sha256": "sha256:fa05627bc4c4a6a0e83e6f074f6c152d0af3fbcc16701ef02170d518b98332ec",
+      "source_origin": "local_dossier",
+      "registry_url": null,
+      "registry_retrieved_at": null,
+      "registry_field_paths": [],
+      "registry_recovery": null,
+      "registry_window_count": 0,
+      "passages": []
+    },
+    {
+      "source_id": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+      "source_role": "registry",
+      "source_label": "ClinicalTrials.gov NCT04591626",
+      "logical_path": "registry/NCT04591626.json",
+      "page_count": 1,
+      "sha256": "sha256:a054ecf672f36e3bc5feb407acd48198355d1ec71351a2f2b96b9ddaf65c868c",
+      "source_origin": "registry",
+      "registry_url": null,
+      "registry_retrieved_at": null,
+      "registry_field_paths": [],
+      "registry_recovery": null,
+      "registry_window_count": 0,
+      "passages": [
+        {
+          "handle": "eh_1d186b19d70e8539",
+          "source_id": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+          "page": 1,
+          "start_line": 34,
+          "end_line": 51
+        },
+        {
+          "handle": "eh_69ebc4dcd929d6a1",
+          "source_id": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+          "page": 1,
+          "start_line": 1935,
+          "end_line": 1953
+        },
+        {
+          "handle": "eh_3d300e782d733a17",
+          "source_id": "source_d49225d5e19de0aacadfb9a9d188815bd497ac6982743aaeaee8595ad2f4a018",
+          "page": 1,
+          "start_line": 1954,
+          "end_line": 1957
+        }
+      ]
+    }
+  ],
+  "slots": [
+    {
+      "name": "intended_intervention",
+      "status": "supported",
+      "value": "dulaglutide: Dulaglutide 1.5 mg once weekly added to titrated insulin glargine with metformin and/or acarbose; placebo: Placebo once weekly added to titrated insulin glargine with metformin and/or acarbose",
+      "passages": []
+    },
+    {
+      "name": "observed_conduct",
+      "status": "unknown",
+      "value": null,
+      "passages": []
+    },
+    {
+      "name": "trial_context_cause",
+      "status": "unknown",
+      "value": null,
+      "passages": []
+    },
+    {
+      "name": "protocol_consistency",
+      "status": "unknown",
+      "value": null,
+      "passages": []
+    },
+    {
+      "name": "outcome_effect",
+      "status": "unknown",
+      "value": null,
+      "passages": []
+    },
+    {
+      "name": "group_balance",
+      "status": "unknown",
+      "value": null,
+      "passages": []
+    }
+  ],
+  "propositions": [
+    {
+      "question_id": "sq:deviations:context-deviations",
+      "name": "protocol_inconsistency",
+      "proposition": "The observed change was inconsistent with the trial protocol.",
+      "status": "unknown",
+      "depends_on": [],
+      "passages": []
+    },
+    {
+      "question_id": "sq:deviations:context-deviations",
+      "name": "trial_context_cause",
+      "proposition": "Recruitment, research-only engagement, or trial-specific personnel decisions caused the protocol-inconsistent change beyond what could occur during ordinary delivery of the same intervention. Intervention burden or being treated by trial staff does not establish that causal link.",
+      "status": "unknown",
+      "depends_on": [
+        "sq:deviations:context-deviations"
+      ],
+      "passages": []
+    },
+    {
+      "question_id": "sq:deviations:affected-outcome",
+      "name": "outcome_pathway",
+      "proposition": "The identified trial-context deviation could affect the approved outcome.",
+      "status": "unknown",
+      "depends_on": [
+        "sq:deviations:context-deviations"
+      ],
+      "passages": []
+    },
+    {
+      "question_id": "sq:deviations:balanced",
+      "name": "group_balance",
+      "proposition": "The identified deviation was balanced between randomized groups.",
+      "status": "unknown",
+      "depends_on": [
+        "sq:deviations:context-deviations",
+        "sq:deviations:affected-outcome"
+      ],
+      "passages": []
+    },
+    {
+      "question_id": "sq:deviations:appropriate-analysis",
+      "name": "assignment_analysis_rule",
+      "proposition": "The actual grouping and exclusion rule estimated the assignment effect. Separate observed participant flow, a source-stated rule, and a host-inferred rule: noncompletion and missing outcomes can overlap without establishing which rule selected the analysis population.",
+      "status": "unknown",
+      "depends_on": [],
+      "passages": []
+    },
+    {
+      "question_id": "sq:deviations:substantial-impact",
+      "name": "conditional_analysis_impact",
+      "proposition": "If the assignment analysis was inappropriate, the affected participants could substantially change this Result. Keep an inferred exclusion population conditional on its mechanism; not all noncompleters or unavailable outcomes are established inappropriate exclusions.",
+      "status": "unknown",
+      "depends_on": [
+        "sq:deviations:appropriate-analysis"
+      ],
+      "passages": []
+    }
+  ],
+  "paired_examples": [
+    {
+      "pair_id": "d2-protocol-status-same-trial-context",
+      "changed_premise": "whether the same allocation-driven conduct was protocol-consistent",
+      "left_facts": [
+        "The treating clinician reported that knowledge of experimental allocation prompted rescue treatment. The protocol permitted that rescue."
+      ],
+      "right_facts": [
+        "The same treating clinician reported that knowledge of experimental allocation prompted the same rescue treatment. The protocol prohibited that rescue."
+      ],
+      "reasoning_focus": "Hold the documented allocation-driven cause fixed while changing protocol consistency."
+    },
+    {
+      "pair_id": "d2-cause-same-protocol-inconsistency",
+      "changed_premise": "the documented reason for the same clinician's prohibited conduct",
+      "left_facts": [
+        "The protocol prohibited rescue treatment. The treating clinician provided rescue because of the patient's symptoms, as the clinician would in ordinary care."
+      ],
+      "right_facts": [
+        "The protocol prohibited rescue treatment. The same treating clinician provided the same rescue because knowledge of experimental allocation changed the decision."
+      ],
+      "reasoning_focus": "Hold protocol inconsistency, personnel and conduct fixed; distinguish ordinary care from an allocation-driven decision. Personnel identity alone supplies no cause."
+    },
+    {
+      "pair_id": "d2-regimen-burden-versus-research-engagement",
+      "changed_premise": "the documented reason for stopping the same assigned program",
+      "left_facts": [
+        "The protocol required twelve exercise sessions. A participant stopped because the assigned exercises were physically difficult, as could occur in ordinary treatment."
+      ],
+      "right_facts": [
+        "The same protocol required twelve exercise sessions. A participant stopped the same program because additional research-only appointments prevented attendance."
+      ],
+      "reasoning_focus": "Keep non-adherence fixed. Treatment burden and trial-specific engagement are different causes; insufficient cause information remains unresolved."
+    },
+    {
+      "pair_id": "d2-exclusion-rule-and-outcome-availability",
+      "changed_premise": "the source-stated exclusion rule and outcome availability",
+      "left_facts": [
+        "Of 100 eligible randomized participants, 90 were analyzed in assigned groups. The report states that only the ten with unmeasured endpoint outcomes were excluded; adherence did not restrict the analysis."
+      ],
+      "right_facts": [
+        "Of the same 100 eligible randomized participants, 90 were analyzed in assigned groups. The report states that only treatment completers were analyzed even though endpoint outcomes were measured for all 100."
+      ],
+      "reasoning_focus": "The same analysis count can reflect missing-only availability or an adherence-conditioned rule. Source-stated observed outcomes omitted from analysis are affirmative evidence, not merely an uncertain denominator."
+    },
+    {
+      "pair_id": "d2-exclusion-flow-versus-stated-rule",
+      "changed_premise": "whether the source establishes an exclusion rule",
+      "left_facts": [
+        "Of 100 eligible randomized participants, 90 completed treatment and 90 were analyzed. Some noncompleters were contactable, but their endpoint measurement and the analysis restriction are not reported."
+      ],
+      "right_facts": [
+        "The same flow, contactability and unknown endpoint measurements are reported. The source additionally states that the analysis excluded all noncompleters regardless of whether their endpoint outcomes were available."
+      ],
+      "reasoning_focus": "Compatible counts do not identify a rule; contact is not measurement. A documented restriction can establish a mechanism without complete measurement counts. Carry uncertainty about an inferred mechanism into the participants considered for conditional impact, while allowing source-supported probable judgments."
+    }
+  ],
+  "participant_flow": [],
+  "missing_data": null,
+  "prompt": "Compare result_scope (target), reported_result, and target_relation. Retain scope differences; assess the reported Result. target or analyzed populations do not establish observed outcomes. Classify remaining propositions; do not infer causation, availability, censoring, measurement influence, plan correspondence, or risk from metadata, arithmetic, or wording alone. An empty passage group is unopened; inspect relevant Sources before recording an information limitation."
+}

@@ -1,0 +1,13 @@
+{
+  "README.md": "076945cdef48aaede36f1aa9c824350e7bffdae62c760983423cbaa168e50b7f",
+  "baseline-presentation.json": "76390b58f9571de3d32af9766851553ca098f688cb3364859cc8d7881372153d",
+  "ci-snapshot.json": "f2ffdd2dac9e6e277caed6e88a89f3cfe8e6c30584a243f050b6c663a587eb9a",
+  "common-target-and-question.json": "756685161af4c8daeb7fe83b27899717b1d153dc7548594260f6c998c3dc230f",
+  "complete-captured-text-packet.txt": "4bd244f8a9ce559ba5e7810e080f09249f6e1f42083e270b59021aa18ee0154c",
+  "current-presentation.json": "b0f55c11f5fd6293ada4a7ef7fddcbf65f2c06014da36c2abb9192c0eee20329",
+  "primary-fact-locations.json": "4d8bf5bbedc72180851881152b709bfd1c6461e1470445a6716c309914652e1d",
+  "private-adjudication-rubric.json": "b016944436bec66b95fa4f8d68ee9aa805f63c47d47ed6bcee39f7080e70e2ea",
+  "readiness.json": "e11ad324c79c2ba42ba692fe96b8753a6668aa714c74995b87beb058d9f15c2b",
+  "text-coverage-preflight.json": "8b5c24f41252b772016866ec41be77684c2af1cf1c4f1a926b41c20509277a89",
+  "text-packet-manifest.json": "07d3d1e27adf6f297efa6077f88885de70816e3b2bc8cc10cdda912010f1babe"
+}
