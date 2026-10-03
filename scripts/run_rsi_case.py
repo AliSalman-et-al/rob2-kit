@@ -2505,6 +2505,8 @@ def main() -> None:
                 terminal_state = "failed_infrastructure"
             elif completion_record["boundary"] == "waiting_for_user":
                 terminal_state = "waiting_for_user"
+            elif completion_record["boundary"] == "unfinished":
+                terminal_state = "resumable"
         else:
             completed = subprocess.CompletedProcess(
                 command,
