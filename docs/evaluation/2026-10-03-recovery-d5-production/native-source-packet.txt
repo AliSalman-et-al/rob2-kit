@@ -1,0 +1,3731 @@
+The new england
+journal of medicine
+n engl j med 382;2 nejm.org January 9, 2020
+111
+established in 1812
+January 9, 2020
+vol. 382
+no. 2
+From the Division of Cardiology (D.-H.
+Kang, S.-A.L., S.L., D.-H. Kim, J.-M.S.,
+J.-K.S.) and the Departments of Cardio-
+thoracic Surgery (C.-H.C., J.-W.L.) and
+Biostatistics (S.-C.Y.), Asan Medical Cen-
+ter, College of Medicine, University of
+Ulsan, the Division of Cardiology, Sam-
+sung Medical Center, Sungkyunkwan Uni-
+versity School of Medicine (S.-J.P., S.-W.P.),
+the Division of Cardiology, Severance Hos-
+pital (G.-R.H.), and the Cardiovascular
+Center, Seoul National University Hospi-
+tal (H.-K.K.) - all in Seoul, South Korea.
+Address reprint requests to Dr. Kang at
+the Division of Cardiology, Asan Medical
+Center, College of Medicine, University of
+Ulsan, 388-1, Poongnap-dong, Songpa-gu,
+Seoul, South Korea, or at dhkang@amc
+.seoul.kr, or to Dr. S.-W. Park at the Heart
+Vascular Stroke Institute, Samsung Med-
+ical Center, Sungkyunkwan University
+School of Medicine, 81 Irwon-ro, Gang-
+nam-gu, Seoul, South Korea, or at s.woo
+.park@samsung.com.
+This article was published on November
+16, 2019, at NEJM.org.
+N Engl J Med 2020;382:111-9.
+DOI: 10.1056/NEJMoa1912846
+Copyright © 2019 Massachusetts Medical Society.
+BACKGROUND
+The timing and indications for surgical intervention in asymptomatic patients with
+severe aortic stenosis remain controversial.
+METHODS
+In a multicenter trial, we randomly assigned 145 asymptomatic patients with very
+severe aortic stenosis (defined as an aortic-valve area of ≤0.75 cm2 with either an
+aortic jet velocity of ≥4.5 m per second or a mean transaortic gradient of ≥50 mm Hg)
+to early surgery or to conservative care according to the recommendations of cur-
+rent guidelines. The primary end point was a composite of death during or within
+30 days after surgery (often called operative mortality) or death from cardiovascular
+causes during the entire follow-up period. The major secondary end point was death
+from any cause during follow-up.
+RESULTS
+In the early-surgery group, 69 of 73 patients (95%) underwent surgery within 2 months
+after randomization, and there was no operative mortality. In an intention-to-treat
+analysis, a primary end-point event occurred in 1 patient in the early-surgery group
+(1%) and in 11 of 72 patients in the conservative-care group (15%) (hazard ratio,
+0.09; 95% confidence interval [CI], 0.01 to 0.67; P = 0.003). Death from any cause
+occurred in 5 patients in the early-surgery group (7%) and in 15 patients in the con-
+servative-care group (21%) (hazard ratio, 0.33; 95% CI, 0.12 to 0.90). In the con-
+servative-care group, the cumulative incidence of sudden death was 4% at 4 years
+and 14% at 8 years.
+CONCLUSIONS
+Among asymptomatic patients with very severe aortic stenosis, the incidence of the
+composite of operative mortality or death from cardiovascular causes during the
+follow-up period was significantly lower among those who underwent early aortic-
+valve replacement surgery than among those who received conservative care. (Fund-
+ed by the Korean Institute of Medicine; RECOVERY ClinicalTrials.gov number,
+NCT01161732.)
+abstr act
+Early Surgery or Conservative Care for Asymptomatic
+Aortic Stenosis
+Duk-Hyun Kang, M.D., Ph.D., Sung-Ji Park, M.D., Ph.D., Seung-Ah Lee, M.D., Sahmin Lee, M.D., Ph.D.,
+Dae-Hee Kim, M.D., Ph.D., Hyung-Kwan Kim, M.D., Ph.D., Sung-Cheol Yun, Ph.D., Geu-Ru Hong, M.D., Ph.D.,
+Jong-Min Song, M.D., Ph.D., Cheol-Hyun Chung, M.D., Ph.D., Jae-Kwan Song, M.D., Ph.D.,
+Jae-Won Lee, M.D., Ph.D., and Seung-Woo Park, M.D., Ph.D.
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+n engl j med 382;2 nejm.org January 9, 2020
+112
+The new engl and jour nal of medicine
+A
+ortic stenosis is the most common
+valvular disease for which surgery is in-
+dicated in developed countries, and the
+prevalence of this condition is increasing because
+of the aging population.1 Aortic-valve replacement
+is the only effective therapy for severe symptom-
+atic aortic stenosis, and despite limited data from
+randomized clinical trials, current guidelines rec-
+ommend aortic-valve replacement because of the
+dismal natural history of this disorder.1,2 Although
+one third to one half of patients with severe aortic
+stenosis are asymptomatic at the time of diagno-
+sis,3,4 appropriate timing of intervention for these
+patients remains controversial.5,6 On the basis of
+a consensus opinion that the potential benefit of
+aortic-valve replacement to prevent sudden death
+in asymptomatic patients (which has an incidence
+of approximately 1% per year) may not be greater
+than the risk of death during or within 30 days
+after surgery (often called operative mortality) and
+death related to the aortic-valve prosthesis, obser-
+vation is recommended for the majority of asymp-
+tomatic patients with severe aortic stenosis, and
+aortic-valve replacement is recommended once
+symptoms develop.1,2,4 However, advances in sur-
+gical techniques and aortic-valve prostheses may
+change the risk-to-benefit ratio of aortic-valve re-
+placement, especially among patients at low sur-
+gical risk.7-9
+The Randomized Comparison of Early Surgery
+versus Conventional Treatment in Very Severe
+Aortic Stenosis (RECOVERY) trial was designed
+to compare long-term clinical outcomes of early
+surgical aortic-valve replacement with those of a
+conservative care strategy based on current guide-
+lines in asymptomatic patients with very severe
+aortic stenosis (transvalvular velocity ≥4.5 m per
+second). The major hypothesis of this trial was
+that the incidence of death from cardiovascular
+causes would be lower among patients who under-
+went early surgery than among those who received
+conservative care.
+Methods
+Trial Design and Oversight
+We conducted this multicenter, randomized, par-
+allel-group, open-label trial involving asymptom-
+atic patients with very severe aortic stenosis who
+were candidates for either early surgery or conser-
+vative care at four medical centers in Korea. The
+trial protocol (available with the full text of this
+article at NEJM.org) was designed by the principal
+investigator and approved by the institutional re-
+view board at each participating center. The Ko-
+rean Institute of Medicine, which supported the
+trial coordinators during the first 2 years of the
+trial, had no role in the collection, analysis, or
+interpretation of the data, writing of the manu-
+script, or any other aspect of the trial. The trial
+received no other external sources of funding.
+The trial was conducted in accordance with
+the principles of the Declaration of Helsinki.
+An independent clinical-events committee ad-
+judicated all serious adverse events, and a data
+and safety monitoring board oversaw the safety
+of the trial. The first draft of the manuscript
+was prepared by the first author and was re-
+viewed and edited by all the authors. All the
+authors made the decision to submit the manu-
+script for publication and vouch for the accu-
+racy and completeness of the data and for the
+fidelity of the trial to the protocol.
+Patient Selection
+We screened consecutive patients who were 20 to
+80 years of age and who presented with very se-
+vere aortic stenosis, which was assessed by means
+of transthoracic echocardiography. In accordance
+with the 1998 American College of Cardiology-
+American Heart Association (ACC-AHA) guide-
+lines and a traditional definition of severe aortic
+stenosis,10,11 we defined very severe aortic steno-
+sis as an aortic-valve area of 0.75 cm2 or less
+with either a peak aortic jet velocity of 4.5 m per
+second or greater or a mean transaortic gradient
+of 50 mm Hg or greater.
+In accordance with the 2006 ACC-AHA guide-
+lines on surgical indications for severe aortic
+stenosis,12 patients were excluded if they had ex-
+ertional dyspnea, syncope, presyncope or angina,
+a left ventricular ejection fraction of less than 50%,
+or clinically significant aortic regurgitation or
+mitral valve disease or if they had undergone
+cardiac surgery. Exercise testing was selectively
+performed to evaluate patients with nonspecific
+symptoms, and patients with a positive exercise
+test were excluded. We also excluded patients who
+were not candidates for early surgery because of
+age (>80 years) or a medical condition such as
+cancer. All the participants provided written in-
+formed consent.
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+n engl j med 382;2 nejm.org January 9, 2020
+113
+Early Surgery for Asymptomatic Aortic Stenosis
+Trial Procedures
+Eligibility was determined after each patient un-
+derwent a thorough evaluation of symptoms and
+medical records and results of echocardiography
+and exercise testing were reviewed. Details re-
+garding echocardiography and exercise testing are
+provided in the Supplementary Appendix, available
+at NEJM.org. Patients were randomly assigned in
+a 1:1 ratio to early surgery or conservative care
+with the use of a Web-based interactive response
+system. The assignment to each treatment group
+was computer-generated and stratified according
+to the participating center by means of a permuted-
+block sequence with variable block size.
+The protocol specified that patients assigned
+to the early-surgery group should undergo aortic-
+valve replacement within 2 months after random-
+ization. Patients assigned to the conservative-care
+group received treatment according to the ACC-
+AHA guidelines,2,12 and they were referred for
+surgery if they became symptomatic during fol-
+low-up, if the left ventricular ejection fraction
+decreased to less than 50%, or if the peak aortic
+jet velocity increased each year by more than 0.5 m
+per second on follow-up echocardiography. Details
+regarding surgical procedures and patient follow-
+up are provided in the Supplementary Appendix.
+Trial End Points
+The primary end point was a composite of op-
+erative mortality or death from cardiovascular
+causes during the follow-up period (continuing
+until 4 years after the last patient was enrolled).
+Prespecified secondary end points included death
+from any cause, repeat aortic-valve surgery, clini-
+cal thromboembolic events, and hospitalization
+for heart failure during follow-up. Specific defi-
+nitions of trial end points are provided in the
+Supplementary Appendix.
+Statistical Analysis
+On the basis of our previous observational study,13
+we estimated that a sample of 144 patients would
+provide the trial with 80% power, at a two-sided
+significance level of 0.05, to detect a significant
+difference with respect to the primary end point,
+assuming that the incidence of the primary end
+point would be 16% in the conservative-care group
+and 2% in the early-surgery group during a follow-
+up period that continued until 4 years after the last
+patient was enrolled. In calculating the sample size
+by a log-rank survival power analysis, we also
+assumed that an enrollment period of 2 years
+would be needed to complete enrollment and that
+the rate of loss to follow-up would be 10%.
+Analyses were performed on an intention-to-
+treat basis. Differences between the treatment
+groups were evaluated with the use of Student's
+t-test for continuous variables and Fisher's exact
+test for categorical variables. Because random-
+ization was stratified according to the partici-
+pating center, we analyzed the end points with
+the use of stratified Cox proportional-hazards re-
+gression with Firth correction. Estimates of cu-
+mulative incidences were calculated by the Kaplan-
+Meier method and were compared with the use
+of the log-rank test. For the Kaplan-Meier analy-
+sis, we analyzed all clinical events according to
+the time to the first event. Hazard ratios with
+95% confidence intervals were derived with the
+use of the stratified Cox proportional-hazards
+model with Firth correction. The 95% confidence
+intervals have not been adjusted for multiple com-
+parisons, and therefore inferences drawn from
+these intervals may not be reproducible.
+For the primary end-point analysis, we also
+performed a competing-risk analysis in which
+death due to a cause other than a cardiovascular
+cause was considered as a competing risk, and
+hazard ratios with 95% confidence intervals were
+calculated with the use of the method of Fine and
+Gray. The cumulative incidences of the primary
+end point were also compared between the treat-
+ment groups with the use of Gray's test. Subgroup
+analyses were performed to determine whether
+the result of the primary end point was consistent
+in two prespecified subgroups defined according
+to peak aortic velocity and cause of aortic stenosis.
+A per-protocol analysis of the primary end point
+was also performed. All reported P values were
+two-sided, and a P value of less than 0.05 was
+considered to indicate statistical significance. We
+used SAS software, version 9.4 (SAS Institute), for
+statistical analyses.
+Results
+Patients
+From July 2010 through April 2015, a total of 273
+asymptomatic patients with very severe aortic
+stenosis were screened for participation in the
+trial, and 145 were enrolled and were randomly
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+n engl j med 382;2 nejm.org January 9, 2020
+114
+The new engl and jour nal of medicine
+assigned (73 patients to early surgery and 72 pa-
+tients to conservative care) (Fig. 1). Baseline char-
+acteristics of the excluded patients are listed in
+Table S1 in the Supplementary Appendix. After
+randomization, 2 patients assigned to conservative
+care crossed over to early surgery and 4 patients
+assigned to early surgery crossed over to conser-
+vative care; surgical aortic-valve replacement in
+these 4 patients was later performed after devel-
+opment of symptoms in 3 patients and was not
+attempted in 1.
+The treatment groups were generally well bal-
+anced with regard to baseline clinical character-
+istics (Table 1). The mean (±SD) age of the patients
+was 64.2±9.4 years, and 49% were men. The cause
+of aortic stenosis was a bicuspid aortic valve in
+88 patients (61%), degenerative valvular disease in
+48 (33%), and rheumatic valvular disease in 9 (6%).
+The mean peak aortic jet velocity was 5.1±0.5 m
+per second, and the mean aortic-valve area was
+0.63±0.09 cm2. Medication use at baseline was
+also similar in the two groups.
+Figure 1. Enrollment, Randomization, and Follow-up.
+Very severe aortic stenosis was defined as an aortic-valve area of 0.75 cm2 or less with a peak aortic jet velocity of
+at least 4.5 m per second or a mean transaortic gradient of at least 50 mm Hg. Of the four patients in the early-sur-
+gery group who crossed over to conservative care and were excluded from the per-protocol analysis, three under-
+went surgery later after the development of symptoms and one did not undergo surgery.
+273 Had asymptomatic stenosis
+1031 Patients had very severe
+aortic stenosis
+758 Had symptomatic stenosis
+145 Underwent randomization
+128 Were excluded
+11 Had left ventricular rejection fraction <50%
+21 Had cancer
+14 Had mitral valve disease
+16 Had severe aortic regurgitation
+39 Were >80 yr of age
+3 Had positive exercise test
+24 Declined to participate
+73 Were assigned to early-surgery group
+72 Were assigned to conservative-care
+group
+4 Crossed over to conservative
+care
+2 Crossed over to early surgery
+1 Underwent transcatheter
+aortic-valve replacement
+73 Were included in the intention-to-treat
+analysis
+72 Were included in the intention-to-treat
+analysis
+69 Were included in the per-protocol
+analysis
+69 Were included in the per-protocol
+analysis
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+n engl j med 382;2 nejm.org January 9, 2020
+115
+Early Surgery for Asymptomatic Aortic Stenosis
+Characteristic
+Conservative Care (N = 72)
+Early Surgery (N = 73)
+Age - yr
+63.4±10.7
+65.0±7.8
+Male sex - no. (%)
+34 (47)
+37 (51)
+Body-surface area - m2
+1.64±0.17
+1.69±0.17
+Body-mass index†
+24.0±2.6
+24.7±3.4
+Diabetes - no. (%)
+ 7 (10)
+13 (18)
+Hypertension - no. (%)
+39 (54)
+40 (55)
+Smoking - no. (%)
+21 (29)
+19 (26)
+Hypercholesterolemia - no. (%)
+42 (58)
+41 (56)
+Coronary artery disease - no./total no. (%)‡
+1/59 (2)
+5/72 (7)
+Previous PCI - no. (%)
+1 (1)
+3 (4)
+Previous stroke - no. (%)
+3 (4)
+3 (4)
+Peripheral vascular disease - no. (%)
+2 (3)
+1 (1)
+Atrial fibrillation - no. (%)
+6 (8)
+3 (4)
+Serum creatinine level - mg/dl
+0.83±0.16
+0.84±0.23
+EuroSCORE II score - %§
+0.9±0.4
+0.9±0.3
+Medication - no. (%)
+Angiotensin-converting-enzyme inhibitor
+0
+4 (5)
+Angiotensin-receptor blocker
+28 (39)
+24 (33)
+Calcium antagonist
+20 (28)
+19 (26)
+Beta-blocker
+ 8 (11)
+13 (18)
+Diuretic
+17 (24)
+13 (18)
+Statin
+32 (44)
+34 (47)
+Echocardiographic findings
+Cause of aortic stenosis - no. (%)
+Bicuspid aortic valve
+39 (54)
+49 (67)
+Degenerative valvular disease
+26 (36)
+22 (30)
+Rheumatic valvular disease
+ 7 (10)
+2 (3)
+Peak aortic jet velocity - m/sec
+5.04±0.44
+5.14±0.52
+Transaortic pressure gradient - mm Hg
+Peak
+102.5±18.4
+106.9±21.9
+Mean
+ 62.7±12.4
+ 64.3±14.4
+Aortic valve
+Area - cm2
+0.64±0.09
+0.63±0.09
+Area index - cm2/m2
+0.39±0.07
+0.38±0.06
+Left ventricular mass index - g/m2
+133.7±31.1
+135.6±38.2
+Left ventricular ejection fraction - %
+64.8±4.1
+64.8±5.2
+* Plus-minus values are means ±SD. To convert values for serum creatinine to micromoles per liter, multiply by 88.4.
+There were no significant between-group differences. PCI denotes percutaneous coronary intervention.
+† The body-mass index is the weight in kilograms divided by the square of the height in meters.
+‡ Coronary computed tomography or coronary angiography was performed before aortic-valve replacement in 59 patients
+in the conservative-care group and in 72 patients in the early-surgery group.
+§ Scores on the European System for Cardiac Operative Risk Evaluation II (EuroSCORE II), which measures patient risk
+at the time of cardiovascular surgery, are calculated by means of a logistic-regression equation and range from 0 to 100%,
+with higher scores indicating greater risk.
+Table 1. Characteristics of the Patients at Baseline.*
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+[Extracted table 1]
+|Column 1|Column 2|Column 3|
+|---|---|---|
+|Table 1. Characteristics of the Patients at Baseline.*|||
+|Characteristic Conservative Care (N = 72) Early Surgery (N = 73)|||
+|Age - yr|63.4±10.7|65.0±7.8|
+|Male sex - no. (%) 34 (47) 37 (51)|||
+|Body-surface area - m2|1.64±0.17|1.69±0.17|
+|Body-mass index† 24.0±2.6 24.7±3.4|||
+|Diabetes - no. (%)|7 (10)|13 (18)|
+|Hypertension - no. (%) 39 (54) 40 (55)|||
+|Smoking - no. (%)|21 (29)|19 (26)|
+|Hypercholesterolemia - no. (%) 42 (58) 41 (56)|||
+|Coronary artery disease - no./total no. (%)‡|1/59 (2)|5/72 (7)|
+|Previous PCI - no. (%) 1 (1) 3 (4)|||
+|Previous stroke - no. (%)|3 (4)|3 (4)|
+|Peripheral vascular disease - no. (%) 2 (3) 1 (1)|||
+|Atrial fibrillation - no. (%)|6 (8)|3 (4)|
+|Serum creatinine level - mg/dl 0.83±0.16 0.84±0.23|||
+|EuroSCORE II score - %§|0.9±0.4|0.9±0.3|
+|Medication - no. (%)|||
+|Angiotensin-converting-enzyme inhibitor|0|4 (5)|
+|Angiotensin-receptor blocker 28 (39) 24 (33)|||
+|Calcium antagonist|20 (28)|19 (26)|
+|Beta-blocker 8 (11) 13 (18)|||
+|Diuretic|17 (24)|13 (18)|
+|Statin 32 (44) 34 (47)|||
+|Echocardiographic findings|||
+|Cause of aortic stenosis - no. (%)|||
+|Bicuspid aortic valve|39 (54)|49 (67)|
+|Degenerative valvular disease 26 (36) 22 (30)|||
+|Rheumatic valvular disease|7 (10)|2 (3)|
+|Peak aortic jet velocity - m/sec 5.04±0.44 5.14±0.52|||
+|Transaortic pressure gradient - mm Hg|||
+|Peak 102.5±18.4 106.9±21.9|||
+|Mean|62.7±12.4|64.3±14.4|
+|Aortic valve|||
+|Area - cm2|0.64±0.09|0.63±0.09|
+|Area index - cm2/m2 0.39±0.07 0.38±0.06|||
+|Left ventricular mass index - g/m2|133.7±31.1|135.6±38.2|
+|Left ventricular ejection fraction - % 64.8±4.1 64.8±5.2|||
+
+n engl j med 382;2 nejm.org January 9, 2020
+116
+The new engl and jour nal of medicine
+Aortic-Valve Replacement Procedures
+In the early-surgery group, surgical aortic-valve
+replacement was successfully performed in all
+72 patients in whom the procedure was attempt-
+ed; 36 patients (50%) received a mechanical valve
+and 36 (50%) received a biologic prosthesis. All
+the patients except those who crossed over un-
+derwent surgery within 2 months after random-
+ization; the median time between randomization
+and surgery was 23 days (interquartile range, 10 to
+36). There was no operative mortality in the early-
+surgery group.
+Of the 72 patients assigned to conservative care,
+53 patients (74%) underwent surgical aortic-valve
+replacement (52 patients) or transcatheter aortic-
+valve replacement (TAVR) (1 patient) during fol-
+low-up, mainly because of the development of
+symptoms (in 43 patients). Indications for aortic-
+valve replacement are listed in Table S2. Among
+these 53 patients, urgent surgery was performed
+in 9 patients (17%) who were admitted from the
+emergency department. There was no operative
+mortality among the patients who later underwent
+aortic-valve replacement; the median time from
+randomization to aortic-valve replacement was
+700 days (interquartile range, 277 to 1469). Ad-
+ditional information on surgical procedures and
+results are provided in Table S3 and the Supple-
+mental Surgical Results section in the Supplemen-
+tary Appendix.
+Follow-up and End Points
+Data collection ended in April 2019, when the last
+enrolled patient had completed 4 years of follow-
+up. The median follow-up was 6.2 years (interquar-
+tile range, 5.0 to 7.4) in the early-surgery group
+and 6.1 years (interquartile range, 4.5 to 7.3) in the
+conservative-care group. No patients were lost to
+follow-up.
+In an intention-to-treat analysis including all
+the trial patients, 1 of 73 patients assigned to early
+surgery (1%) and 11 of 72 patients assigned to
+conservative care (15%) died from cardiovascu-
+lar causes (hazard ratio, 0.09; 95% confidence
+interval [CI], 0.01 to 0.67) (Table 2). The number
+needed to treat to prevent one death from cardio-
+vascular causes within 4 years was 20 patients. The
+cumulative incidence of the primary end point
+(operative mortality or death from cardiovascu-
+lar causes during the follow-up period), as cal-
+culated with the use of a Kaplan-Meier analysis,
+was 1% at both 4 and 8 years in the early-surgery
+group, as compared with 6% at 4 years and 26%
+at 8 years in the conservative-care group (P = 0.003)
+(Fig. 2A).
+A total of 5 deaths from any cause (7% of the
+patients) occurred in the early-surgery group
+and 15 deaths from any cause (21%) occurred in
+the conservative-care group (hazard ratio, 0.33;
+95% CI, 0.12 to 0.90). The cumulative incidence
+of death from any cause was lower in the early-
+Outcome
+Conservative Care
+ (N = 72)
+Early Surgery
+ (N = 73)
+Hazard Ratio
+(95% CI)*
+number (percent)
+Primary end point: operative mortality or death from
+cardiovascular causes during follow-up†
+11 (15)
+1 (1)
+0.09 (0.01-0.67)‡
+Secondary end points
+Death from any cause
+15 (21)
+5 (7)
+0.33 (0.12-0.90)§
+Clinical thromboembolic event
+4 (6)
+1 (1)
+0.30 (0.04-2.31)§
+Stroke
+3
+1
+Myocardial infarction
+1
+0
+Repeat aortic-valve surgery
+2 (3)
+0
+0.19 (0.10-8.00)§
+Hospitalization for heart failure
+8 (11)
+0
+0.05 (0.00-1.05)§
+* The 95% confidence intervals have not been adjusted for multiple comparisons, and therefore inferences drawn from
+these intervals may not be reproducible.
+† Operative mortality was defined as death during or within 30 days after surgery.
+‡ This hazard ratio was calculated with the use of a Fine and Gray competing-risks analysis.
+§ This hazard ratio was calculated with the use of stratified Cox proportional-hazards models with Firth correction.
+Table 2. Primary and Secondary End Points.
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+[Extracted table 1]
+|Column 1|Column 2|Column 3|Column 4|
+|---|---|---|---|
+|Table 2. Primary and Secondary End Points.||||
+|Conservative Care Early Surgery Hazard Ratio<br>Outcome (N = 72) (N = 73) (95% CI)*<br>number (percent)||||
+|Primary end point: operative mortality or death from<br>cardiovascular causes during follow-up†|11 (15)|1 (1)|0.09 (0.01-0.67)‡|
+|Secondary end points||||
+|Death from any cause|15 (21)|5 (7)|0.33 (0.12-0.90)§|
+|Clinical thromboembolic event 4 (6) 1 (1) 0.30 (0.04-2.31)§||||
+|Stroke|3|1||
+|Myocardial infarction 1 0||||
+|Repeat aortic-valve surgery|2 (3)|0|0.19 (0.10-8.00)§|
+|Hospitalization for heart failure 8 (11) 0 0.05 (0.00-1.05)§||||
+
+n engl j med 382;2 nejm.org January 9, 2020
+117
+Early Surgery for Asymptomatic Aortic Stenosis
+surgery group than in the conservative-care group
+(4% vs. 10% at 4 years and 10% vs. 32% at 8 years)
+(Fig. 2B). Details regarding patients who died are
+summarized in Table S4. In the conservative-care
+group, the cumulative incidence of sudden death
+was 4% at 4 years and 14% at 8 years.
+The incidences of other prespecified second-
+ary end points are listed in Table 2. The incidence
+of hospitalization for heart failure was lower in
+the early-surgery group than in the conservative-
+care group (no cases vs. 11%). The cumulative in-
+cidence of the composite of any secondary end
+point or aortic-valve replacement in the conser-
+vative-care group was 62% at 4 years and 92% at
+8 years (Fig. S1).
+The results of the analyses involving the per-
+protocol population were consistent with those
+involving the intention-to-treat population (Ta-
+ble S5 and Fig. S2). Subgroup analyses were per-
+formed to assess the consistency of the results
+with regard to the primary end point and death
+from any cause in two prespecified subgroups
+(Table S6).
+Discussion
+The RECOVERY trial compared early surgery with
+conservative care in asymptomatic patients with
+very severe aortic stenosis. The trial showed a
+lower incidence of the primary end point of opera-
+tive mortality or death from cardiovascular causes
+during the follow-up period among patients who
+underwent early surgery than among those who
+received conservative care. Moreover, early surgery
+was associated with a lower incidence of death
+from any cause among such patients.
+The decision to perform surgery in an asymp-
+tomatic patient requires careful weighing of the
+risks of early aortic-valve replacement against those
+of observation. In patients with asymptomatic se-
+vere aortic stenosis, it has generally appeared to
+be relatively safe to follow a watchful waiting
+strategy and delay surgery until symptoms de-
+velop.14 However, this conservative care strategy
+is also associated with a risk of sudden death,
+denial or late reporting of symptoms by patients,
+irreversible myocardial damage, and an increase
+in surgical risk while waiting for symptoms to
+develop.4-6 In previous observational studies, base-
+line differences between the treatment groups,
+treatment-selection bias, and unmeasured con-
+founders might have influenced the results.13,15
+By reducing these limitations inherent to observa-
+tional studies,4,16 this randomized trial provides
+evidence to support early aortic-valve replacement
+in asymptomatic patients with very severe aortic
+stenosis.
+There may be several explanations for the sig-
+nificant difference in long-term survival between
+Figure 2. Time-to-Event Curves for the Primary Composite End Point
+and Death from Any Cause.
+Shown are Kaplan-Meier estimates of the cumulative incidence of the pri-
+mary end point of death during or within 30 days after surgery (often called
+operative mortality) or death from cardiovascular causes during the follow-
+up period (Panel A) and of the major secondary end point of death from
+any cause during follow-up (Panel B) among patients who were randomly
+assigned to undergo early surgery or to receive conservative care. The in-
+sets show the same data on an enlarged y axis.
+Cumulative Incidence (%)
+100
+80
+90
+70
+60
+40
+30
+10
+50
+20
+0
+0
+2
+4
+6
+8
+Years since Randomization
+B Death from Any Cause
+A Operative Mortality or Death from Cardiovascular Causes
+P=0.003 by log-rank test
+P=0.003 by Gray's test
+40
+30
+20
+10
+0
+0
+2
+4
+6
+8
+No. at Risk
+Conservative care
+Early surgery
+72
+73
+68
+73
+65
+70
+36
+38
+12
+13
+Early surgery
+Conservative
+care
+Cumulative Incidence (%)
+100
+80
+90
+70
+60
+40
+30
+10
+50
+20
+0
+0
+2
+4
+6
+8
+Years since Randomization
+40
+30
+20
+10
+0
+0
+2
+4
+6
+8
+No. at Risk
+Conservative care
+Early surgery
+72
+73
+68
+73
+65
+70
+36
+38
+12
+13
+Early surgery
+Conservative
+care
+1
+1
+6
+26
+10
+10
+32
+4
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+n engl j med 382;2 nejm.org January 9, 2020
+118
+The new engl and jour nal of medicine
+the two groups. First, surgical risk was substan-
+tially lower in this trial and in recent trials com-
+paring surgical aortic-valve replacement with TAVR
+in low-risk patients8,9 than in previous studies; in
+our trial, the incidence of operative mortality was
+less than 1%. Close monitoring was performed
+after surgery, and improvements in postoperative
+care contributed to a substantial decrease in the
+long-term risk associated with early aortic-valve
+replacement. Second, early surgery appeared to
+prevent sudden death, because no cases of sudden
+death occurred in the early-surgery group. In con-
+trast, in the conservative-care group, the annual
+risk of sudden death tended to increase during the
+progression of aortic stenosis before the develop-
+ment of symptoms. Third, eventual aortic-valve
+replacement was almost unavoidable in the con-
+servative-care group, and the overall risk of aortic-
+valve replacement appeared to increase while
+surgery was deferred until symptoms developed.
+Cardiovascular events that occurred after surgery
+were more frequently observed in the conserva-
+tive-care group, suggesting a higher long-term
+risk associated with later aortic-valve replacement.
+Our trial has several limitations. First, the
+risk-benefit ratio may be shifted toward a benefit
+of early surgery in this trial involving patients
+with very severe aortic stenosis because the risk
+of waiting increases according to the severity of
+aortic stenosis.5 The benefit of early surgery may
+be relatively smaller in asymptomatic patients
+with less severe aortic stenosis. Second, crossover
+occurred in 5% of the patients in the early-surgery
+group and in 3% of the patients in the conserva-
+tive-care group. Nevertheless, the results of the
+per-protocol analysis were similar to those of the
+primary intention-to-treat analysis. Third, since
+this trial was not blinded, the nonfatal outcomes
+could have been influenced by the clinician's
+knowledge of the treatment the patient received.
+Fourth, exercise testing is reasonable to confirm
+the absence of symptoms in asymptomatic patients
+with severe aortic stenosis,2 but it was performed
+only selectively in this trial. Fifth, the small num-
+bers of trial patients and primary end-point events
+constitute an important limitation of this trial.
+However, it was the judgment of the investigators
+that a larger number of patients than the calcu-
+lated sample size could not be enrolled for ethical
+and logistic reasons. Finally, this trial included
+relatively young patients (as compared with pa-
+tients enrolled in recent TAVR trials involving low-
+risk patients8,9), among whom the incidence of
+bicuspid aortic-valve disease was high and who
+had normal left ventricular systolic function, few
+coexisting conditions, and low operative risk.
+Thus, our trial population is quite different from
+the populations enrolled in TAVR trials,8,9,17-19 and
+the results of our trial cannot be directly applied
+to early TAVR for asymptomatic severe aortic ste-
+nosis. Because the incidence of operative mortal-
+ity was very low in our trial, our results may not
+be applicable to low-volume medical centers or to
+patients at high operative risk.
+In conclusion, in this randomized trial, early
+surgical aortic-valve replacement resulted in a sig-
+nificantly lower risk of operative mortality or death
+from cardiovascular causes during the follow-up
+period than conservative care among asymptom-
+atic patients with very severe aortic stenosis.
+A data sharing statement provided by the authors is available
+with the full text of this article at NEJM.org.
+Supported by the Korean Institute of Medicine.
+No potential conflict of interest relevant to this article was
+reported.
+Disclosure forms provided by the authors are available with
+the full text of this article at NEJM.org.
+References
+1. Baumgartner H, Falk V, Bax JJ, et al.
+2017 ESC/EACTS guidelines for the man-
+agement of valvular heart disease. Eur
+Heart J 2017;38:2739-91.
+2. Nishimura RA, Otto CM, Bonow RO,
+et al. 2014 AHA/ACC guideline for the
+management of patients with valvular
+heart disease: a report of the American
+College of Cardiology/American Heart
+Association Task Force on Practice Guide-
+lines. J Am Coll Cardiol 2014;63(22):e57-
+e185.
+3. Pellikka PA, Sarano ME, Nishimura RA,
+et al. Outcome of 622 adults with asymp-
+tomatic, hemodynamically significant aor-
+tic stenosis during prolonged follow-up.
+Circulation 2005;111:3290-5.
+4. Généreux P, Stone GW, O'Gara PT, et al.
+Natural history, diagnostic approaches,
+and therapeutic strategies for patients
+with asymptomatic severe aortic stenosis.
+J Am Coll Cardiol 2016;67:2263-88.
+5. Carabello BA. Should severe aortic
+stenosis be operated on before symptom
+onset? Aortic valve replacement should be
+operated on before symptom onset. Cir-
+culation 2012;126:112-7.
+6. Shah PK. Should severe aortic steno-
+sis be operated on before symptom onset?
+Severe aortic stenosis should not be oper-
+ated on before symptom onset. Circula-
+tion 2012;126:118-25.
+7. Brennan JM, Edwards FH, Zhao Y,
+O'Brien SM, Douglas PS, Peterson ED.
+Long-term survival after aortic valve re-
+placement among high-risk elderly pa-
+tients in the United States: insights from
+the Society of Thoracic Surgeons Adult
+Cardiac Surgery Database, 1991 to 2007.
+Circulation 2012;126:1621-9.
+8. Mack MJ, Leon MB, Thourani VH, et al.
+Transcatheter aortic-valve replacement with
+a balloon-expandable valve in low-risk
+patients. N Engl J Med 2019;380:1695-
+705.
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+n engl j med 382;2 nejm.org January 9, 2020
+119
+Early Surgery for Asymptomatic Aortic Stenosis
+9. Popma JJ, Deeb GM, Yakubov SJ, et al.
+Transcatheter aortic-valve replacement with
+a self-expanding valve in low-risk patients.
+N Engl J Med 2019;380:1706-15.
+10. Oh JK, Taliercio CP, Holmes DR Jr,
+et al. Prediction of the severity of aortic
+stenosis by Doppler aortic valve area de-
+termination: prospective Doppler-catheter-
+ization correlation in 100 patients. J Am
+Coll Cardiol 1988;11:1227-34.
+11. Bonow RO, Carabello B, de Leon AC
+Jr, et al. Guidelines for the management
+of patients with valvular heart disease:
+executive summary: a report of the Amer-
+ican College of Cardiology/American
+Heart Association Task Force on Practice
+Guidelines (Committee on Management
+of Patients with Valvular Heart Disease).
+Circulation 1998;98:1949-84.
+12. American College of Cardiology/Amer-
+ican Heart Association Task Force on Prac-
+tice Guidelines, Society of Cardiovascular
+Anesthesiologists, Society for Cardiovas-
+cular Angiography and Interventions, Soci-
+ety of Thoracic Surgeons. ACC/AHA 2006
+guidelines for the management of pa-
+tients with valvular heart disease: a report
+of the American College of Cardiology/
+American Heart Association Task Force
+on Practice Guidelines. Circulation 2006;
+114(5):e84-e231.
+13. Kang DH, Park SJ, Rim JH, et al. Early
+surgery versus conventional treatment in
+asymptomatic very severe aortic stenosis.
+Circulation 2010;121:1502-9.
+14. Rosenhek R, Binder T, Porenta G, et al.
+Predictors of outcome in severe, asymp-
+tomatic aortic stenosis. N Engl J Med
+2000;343:611-7.
+15. Taniguchi T, Morimoto T, Shiomi H,
+et al. Initial surgical versus conservative
+strategies in patients with asymptomatic
+severe aortic stenosis. J Am Coll Cardiol
+2015;66:2827-38.
+16. Bhattacharyya S, Hayward C, Pepper J,
+Senior R. Risk stratification in asymp-
+tomatic severe aortic stenosis: a criti-
+cal appraisal. Eur Heart J 2012;33:2377-
+87.
+17. Leon MB, Smith CR, Mack M, et al.
+Transcatheter aortic-valve implantation
+for aortic stenosis in patients who cannot
+undergo surgery. N Engl J Med 2010;363:
+1597-607.
+18. Smith CR, Leon MB, Mack MJ, et al.
+Transcatheter versus surgical aortic-valve
+replacement in high-risk patients. N Engl
+J Med 2011;364:2187-98.
+19. Adams DH, Popma JJ, Reardon MJ,
+et al. Transcatheter aortic-valve replacement
+with a self-expanding prosthesis. N Engl
+J Med 2014;370:1790-8.
+Copyright © 2019 Massachusetts Medical Society.
+ARTICLE METRICS NOW AVAILABLE
+Visit the article page at NEJM.org and click on Metrics to view comprehensive and
+cumulative article metrics compiled from multiple sources, including Altmetrics.
+NEJM.org/about-nejm/article-metrics.
+The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.
+Downloaded from nejm.org on September 22, 2026.
+
+Supplementary Appendix
+This appendix has been provided by the authors to give readers additional information about their work.
+Supplement to: Kang D-H, Park S-J, Lee S-A, et al. Early surgery or conservative care for asymptomatic aortic
+stenosis. N Engl J Med 2020;382:111-9. DOI: 10.1056/NEJMoa1912846
+
+2
+
+Table of Contents Page
+I.
+Supplemental Study Procedures ............................................................................... 3
+A. Echocardiography .................................................................................................. 3
+B. Exercise Test .......................................................................................................... 3
+C. Aortic-Valve Replacement ..................................................................................... 4
+D. Follow-up ............................................................................................................... 4
+E. Definition and Adjudication of End Points ............................................................ 5
+
+II.
+Supplemental Surgical Results ................................................................................. 7
+III.
+Supplemental Figures ................................................................................................ 8
+A. Figure S1. Time-to-Event Curves for Any Secondary End Point or Aortic-Valve
+Replacement in the Conservative-Management Group ......................................... 8
+B. Figure S2. Time-to-Event Curves for the Primary Composite End Point and Death
+from Any Cause (Per-Protocol Population) ........................................................... 9
+IV.
+Supplemental Tables ................................................................................................ 10
+A. Table S1. Baseline Clinical and Echocardiographic Characteristics of the
+Asymptomatic Patients Who Were Excluded .................................................................................. 10
+B. Table S2. Indications for Aortic-Valve Replacement in the Conservative-
+Management Group .................................................................................................. 12
+C. Table S3. Aortic-Valve Replacement Procedures and Results ................................. 13
+D. Table S4. Case Fatalities after Randomization ......................................................... 14
+E. Table S5. Primary and Secondary End Points (Per-Protocol Population) ................ 16
+F. Table S6. Subgroup Analyses of the Primary End Point and Death from Any Cause
+ .................................................................................................................................... 17
+V.
+Supplemental References ........................................................................................ 18
+
+3
+
+I.
+Supplemental Study Procedures
+
+A. Echocardiography
+Echocardiographic evaluation was performed at baseline and then annually during
+follow-up.
+Comprehensive
+two-dimensional
+and
+Doppler
+echocardiographic
+examinations were performed on all patients using commercially available imaging
+systems.
+End-systolic
+dimension,
+end-diastolic
+dimension,
+and
+end-diastolic
+interventricular septal and posterior wall thickness of the left ventricle were measured
+from parasternal M-mode acquisitions. End-systolic volume, end-diastolic volume and
+ejection fraction of the left ventricle were obtained using the biplane Simpson method (1),
+and left ventricular mass was calculated using the formula validated by Devereux and
+associates (2). On two-dimensional imaging of the aortic valve in the parasternal short
+axis view, the etiology of aortic stenosis was determined as bicuspid if there was clear
+identification of two leaflets during systole, rheumatic if commissural fusion and mitral-
+valve involvement were observed, and degenerative if thickening and calcification of the
+leaflets were observed (3), and echocardiographic assessment of the etiology of aortic
+stenosis was confirmed by operative findings. The peak aortic jet velocity was recorded
+using the apical, right parasternal or suprasternal window yielding the highest velocity
+signal. The peak and mean pressure gradients across the aortic valve were calculated with
+a modified Bernoulli equation, and the aortic-valve area was calculated with the
+continuity equation (4) and indexed to the body-surface area. For each measurement, at
+least 3 cardiac cycles were averaged. Echocardiographic evaluation was also performed
+at discharge after surgery, according to the same echocardiographic protocol.
+
+B. Exercise Testing
+Exercise testing was performed under the direct supervision of a cardiology fellow on a
+
+4
+
+treadmill using a Bruce protocol modified by two warm-up stages. Blood pressure and
+electrocardiogram were monitored closely. The test was defined as positive if it was
+stopped prematurely because exertional dyspnea, angina, dizziness or syncope occurred.
+Other predetermined criteria for cessation were ventricular tachycardia and a fall in
+systolic blood pressure of > 10 mmHg from baseline.
+
+Exercise testing was performed in 24 patients to confirm the absence of symptoms.
+Among 3 patients with positive exercise test, one patient suddenly collapsed immediately
+after the exercise test was terminated due to development of chest discomfort. She was
+resuscitated after cardiopulmonary resuscitation for 3 minutes and admitted to coronary
+care unit. Preoperative coronary angiography was normal and she underwent surgical
+aortic-valve replacement without event.
+
+C. Aortic-Valve Replacement
+All of the four participating centers in this trial are high-volume, tertiary referral,
+academic centers in Korea, and these centers have performed over 30% of all major
+cardiac surgeries conducted in Korea in recent years (of > 60 hospitals overall). Aortic-
+valve replacement was performed with the use of standard cardiopulmonary bypass. The
+type of valve used was at the discretion of attending physician, who discussed the risks of
+each valve type with the patient and family, and considered the patient's preference most
+importantly.
+
+D. Follow-up
+The protocol specified that patients assigned to the early-surgery group should undergo
+aortic-valve replacement within 2 months of randomization. Patients assigned to the
+
+5
+
+conservative-management group were educated to report immediately to a study
+coordinator or an investigator if they experienced any symptoms of exertional dyspnea,
+chest pain, dizziness or syncope. They were referred for surgery if they became
+symptomatic during follow-up, if the left ventricular ejection fraction decreased to less
+than 50% or if the peak aortic jet velocity increased by greater than 0.5 m/s/year on
+follow-up echocardiography.
+
+All patients were followed up at 4 weeks, 3 months, 6 months, 9 months, and 1 year; and
+at 3- to 6-month intervals thereafter until close-out of the study. The study coordinators
+called the patient if they missed their scheduled appointment for follow-up.
+Echocardiography (as described above) was performed annually during follow-up.
+Anticoagulation was effectively maintained during the entire follow-up period in patients
+with a mechanical valve or atrial fibrillation and for 3 months in those who received a
+biologic prosthesis.
+
+E. Definition and Adjudication of End Points
+Operative mortality was defined as death within 30 days of surgery. Cardiovascular
+mortality was defined as sudden cardiac death, death from myocardial infarction,
+congestive
+heart
+failure,
+complications
+of
+cardiac
+surgery
+or
+intervention,
+cerebrovascular disease or other cardiovascular disease. Sudden cardiac death was
+defined as either witnessed instantaneous unexpected death, or unwitnessed unexpected
+death, if other causes of death were excluded with reasonable certainty. Clinical
+thromboembolic events were defined as the acute onset of clinical symptoms or signs of
+thromboembolism and the occurrence of new lesions on imaging studies. Hospitalization
+due to congestive heart failure was defined as an unplanned, urgent admission for the
+
+6
+
+management of congestive heart failure. All end points were adjudicated according to
+prespecified definition by an independent clinical events committee whose members
+were unaware of treatment-group assignments.
+
+
+7
+
+II.
+Supplemental Surgical Results
+In the early-surgery group, surgical aortic-valve replacement was successfully performed in
+all of 72 patients in whom the procedure was attempted, with 36 patients (50%) receiving a
+mechanical valve and 36 (50%) receiving a biologic prosthesis. Concomitant coronary-artery
+bypass grafting and replacement of ascending aorta at the time of aortic-valve replacement
+was performed in 5 patients (6.9%) and 7 patients (9.7%), respectively.
+
+Of the 72 patients assigned to conservative management, 53 (73.6%) patients underwent
+surgical aortic-valve replacement (52 patients) or transcatheter aortic-valve replacement (1
+patient) during follow-up due to development of indications for the procedure. Indications for
+later aortic-valve replacement are listed in the Table S2. Concomitant coronary artery bypass
+grafting and replacement of ascending aorta was performed on 1 patient (1.9%) and 8 patients
+(15.1%), respectively, while 21 patients (39.6%) received a mechanical valve and 31 (58.5%)
+received a biologic prosthesis. Among 19 patients assigned to the conventional-treatment
+group who did not have aortic-valve replacement throughout the follow-up, no patient
+refused to undergo aortic-valve replacement after an indication for the procedure developed.
+
+A total of 17 secondary end points (8 deaths, 2 strokes, and 7 heart failure hospitalizations)
+occurred before aortic-valve replacement and 12 secondary end points (7 deaths, 1 stroke, 1
+myocardial infarction, 2 repeat aortic-valve surgeries, and 1 heart failure hospitalization) after
+aortic-valve replacement in the conservative-management group. The cumulative incidence
+of the composite of any secondary end point or aortic-valve replacement in the conservative-
+management group was 62.5% at 4 years and 91.8% at 8 years (Fig. S1 in the Supplementary
+Appendix).
+
+
+8
+
+III.
+Supplemental Figures
+Figure S1. Time-to-Event Curves for Any Secondary End Point or Aortic-Valve
+Replacement in the Conservative-Management Group.
+Shown are Kaplan-Meier estimates of the cumulative incidence of any secondary end
+point (death, thromboembolic event, or hospitalization for heart failure) or aortic-valve
+replacement among patients who were randomly assigned to undergo conservative
+management.
+
+
+
+9
+
+Figure S2. Time-to-Event Curves for the Primary Composite End Point and Death from Any Cause (Per-Protocol Population)
+Shown are Kaplan-Meier estimates of the cumulative incidence of the primary end point of operative mortality or death from cardiovascular
+causes (Panel A) and death from any cause (Panel B) among patients who were randomly assigned to undergo early surgery or conservative
+management, and adhered to the randomization strategy; 4 patients in the early surgery group and 3 patients in the conservative management
+group had a protocol deviation and were excluded from the per-protocol analysis. The insets show the same data on an enlarged vertical axis.
+
+
+10
+
+IV.
+Supplemental Tables
+Table S1. Baseline Clinical and Echocardiographic Characteristics of the
+Asymptomatic Patients Who Were Excluded*
+Characteristics
+
+Excluded Patients
+(n=128)
+Age - yr
+71.5±13.6
+Male sex - no. (%)
+68 (52.3)
+Body-surface area
+1.59±0.19
+Body-mass index
+22.9±3.3
+Diabetes - no. (%)
+28 (21.5)
+Hypertension - no. (%)
+89 (68.5)
+Smoking - no. (%)
+25 (19.2)
+Hypercholesterolemia - no. (%)
+52 (40.0)
+Coronary artery disease - no. (%)
+20 (15.3)
+Previous PCI¶- no. (%)
+9 (6.9)
+Previous stroke - no. (%)
+10 (7.7)
+Peripheral vascular disease - no. (%)
+2 (1.5)
+Atrial fibrillation - no. (%)
+28 (21.5)
+Serum creatinine - mg/dL
+1.03±0.57
+EuroSCORE II† - %
+2.03±1.44
+Medication - no. (%)
+
+Angiotensin-converting-enzyme inhibitor
+10 (7.7)
+ Angiotensin-receptor blocker
+38 (29.2)
+ Calcium antagonist
+41 (31.5)
+ Beta-blocker
+26 (20.0)
+ Diuretic
+41 (31.5)
+ Statin
+49 (37.7)
+Echocardiographic findings
+
+Cause of aortic stenosis - no. (%)
+
+Bicuspid aortic valve
+24 (18.5)
+Degenerative valve disease
+84 (64.6)
+Rheumatic valve disease
+20 (15.4)
+
+11
+
+Peak aortic jet velocity - m/sec
+5.22±0.59
+Transaortic pressure gradient - mmHg
+
+Peak
+109.8±25.9
+Mean
+64.9±16.2
+Aortic valve
+
+Area - cm2
+0.70±0.11
+Area index - cm2/m2
+0.38±0.09
+Left ventricular mass index - g/m2
+140.9±39.2
+Left ventricular ejection fraction - %
+61.0±8.2
+*Plus-minus values are means ± SD.
+¶Percutaneous coronary intervention.
+†Scores on the European System for Cardiac Operative Risk Evaluation II (EuroSCORE II),
+which measures patient risk at the time of cardiovascular surgery, are calculated by means of
+a logistic-regression equation and range from 0 to 100%, with higher scores indicating greater
+risk.
+
+
+
+12
+
+Table S2. Indications for Aortic-Valve Replacement in the Conservative-Management
+Group.
+Indications for AVR
+Number (%)
+Later AVR
+
+Development of symptoms - no. (%)
+43 (81.1)
+Symptoms alone - no. (%)
+41
+Associated with LV ejection fraction < 50% - no. (%)
+2
+LV ejection fraction < 50% alone - no. (%)
+0 (0)
+Increase in aortic velocity > 0.5 m/s/yr alone - no. (%)
+ 8 (15.1)
+Cross-over to Early AVR
+2 (3.8)
+Total
+53 (100)
+*Plus-minus values are means ± SD.
+AVR, aortic valve replacement; LV, left ventricle.
+
+
+
+13
+
+Table S3. Aortic-Valve Replacement Procedures and Results. *
+
+
+Performance of AVR - no.
+Conservative Management
+53
+Early Surgery
+72
+Early surgery (within 2 months) - no. (%)
+2 (3.8)
+69 (95.8)
+Urgent surgery - no. (%)
+9 (17.0)
+0 (0)
+Mechanical prosthesis - no. (%)
+21 (39.6)
+36 (50.0)
+Concomitant procedure - no. (%)
+
+
+ Coronary-artery bypass grafting
+1 (1.9)
+5 (6.9)
+ Replacement of ascending aorta
+8 (15.1)
+7 (9.7)
+Operative mortality - no. (%)
+0 (0)
+0 (0)
+Perioperative complications - no. (%)
+
+
+ Stroke
+0 (0)
+1 (1.4)
+Myocardial infarction
+1 (1.9)
+0 (0)
+Life-threatening or disabling bleeding
+0 (0)
+0 (0)
+Major vascular complication
+0 (0)
+0 (0)
+Acute kidney injury stage 2 or 3
+0 (0)
+0 (0)
+New-onset atrial fibrillation
+6 (11.3)
+15 (20.8)
+ Paroxysmal
+5 (9.4)
+12 (16.7)
+ Persistent
+1 (1.9)
+3 (4.2)
+Permanent pacemaker implantation
+0 (0)
+0 (0)
+ Endocarditis
+1 (1.9)
+0 (0)
+ Reoperation
+0 (0)
+0 (0)
+Postoperative echocardiographic findings
+
+
+Peak aortic jet velocity - m/sec
+2.75±0.47
+2.58±0.50
+Mean aortic pressure gradient - mmHg
+16.8±6.2
+14.6±6.4
+Left ventricular mass index
+121.9±27.4
+109.8±35.4
+Left ventricular ejection fraction - %
+60.2±8.0
+62.6±5.6
+*Plus-minus values are means ± SD.
+AVR, aortic valve replacement.
+
+
+
+
+14
+
+Table S4. Case Fatalities after Randomization.
+
+Patient
+Age
+Sex
+Group
+Etiology
+Peak Aortic
+Jet Velocity,
+m/s
+Surgery
+Interval, d
+Cardiovascular
+Death
+Interval, d
+Detailed Information
+Randomization
+to Surgery
+Randomization
+to Death
+1
+68
+M
+CONS
+Degenerative
+5.1
+Yes
+1224
+Yes
+2781
+Quadriplegia occurred during redo AVR due to early prosthetic valve
+endocarditis, and ambulation was not possible because of severe
+disabling stroke. He died suddenly at home.
+2
+73
+M
+OP
+Bicuspid
+5.6
+Yes
+32
+No
+818
+He died of lymphoma.
+3
+61
+M
+OP
+Bicuspid
+4.5
+Yes
+57
+Yes
+1180
+Severe intracerebral hemorrhage occurred at 1 year after AVR, and
+comatose state was not improved after an emergency neurosurgery.
+He had been in a vegetative state for 2 years and died of complications of
+intracerebral hemorrhage.
+4
+70
+F
+CONS
+Degenerative
+5.3
+No
+-
+Yes
+2121
+She was asymptomatic until 2 months before death, and visited the
+emergency room due to shock. She died of cardiogenic shock.
+5
+68
+F
+CONS
+Degenerative
+4.8
+No
+-
+Yes
+1180
+She was asymptomatic until 5 months before death, and died suddenly.
+6
+77
+M
+CONS
+Degenerative
+4.8
+Yes
+139
+Yes
+2973
+Significant aortic regurgitation developed after redo AVR due to
+prosthetic valve endocarditis. He refused to undergo third AVR and died
+of congestive heart failure.
+7
+72
+F
+OP
+Degenerative
+4.6
+Yes
+486
+No
+2598
+She was asymptomatic until 2 months before death, and died of surgical
+complications on the next day after spine surgery.
+8
+74
+M
+CONS
+Degenerative
+5.2
+Yes
+1833
+No
+2533
+He died of sepsis secondary to pneumonia.
+9
+57
+M
+CONS
+Rheumatic
+5.0
+No
+-
+Yes
+2303
+Sudden cardiac arrest occurred while asymptomatic, and he was
+resuscitated without recovery of coma. He was in a vegetative state for 3
+years and died while on a ventilator.
+10
+73
+F
+CONS
+Bicuspid
+5.5
+No
+-
+Yes
+127
+Sudden death occurred during ordinary activity while asymptomatic.
+11
+71
+M
+CONS
+Bicuspid
+4.5
+Yes
+273
+No
+661
+He died of lung cancer.
+12
+57
+F
+CONS
+Rheumatic
+5.0
+Yes
+1169
+Yes
+2690
+She was asymptomatic until 1 month before death, and died suddenly
+during sleep.
+13
+75
+M
+CONS
+Degenerative
+4.5
+Yes
+148
+No
+1334
+He died of lung cancer.
+
+15
+
+14
+66
+M
+CONS
+Degenerative
+4.6
+No
+-
+Yes
+2359
+He was asymptomatic until 1 month before death, and died suddenly.
+15
+77
+F
+OP
+Bicuspid
+4.9
+Yes
+10
+No
+2102
+She died of aplastic anemia.
+16
+73
+M
+CONS
+Degenerative
+5.0
+No
+-
+Yes
+325
+He was asymptomatic until 3 months before death, and died suddenly
+during ordinary activity.
+17
+75
+F
+CONS
+Degenerative
+4.7
+No
+-
+Yes
+1575
+She was asymptomatic until 4 months before death, and died suddenly.
+18
+74
+M
+CONS
+Degenerative
+4.5
+Yes
+153
+No
+238
+He died of adult respiratory distress syndrome related to pneumonia.
+19
+70
+M
+OP
+Degenerative
+4.5
+Yes
+19
+No
+1213
+He died of variceal bleeding related to liver cirrhosis.
+20
+63
+F
+CONS
+Degenerative
+4.5
+No
+-
+Yes
+1165
+She suffered severe intracerebral hemorrhage without recovery of
+consciousness and died in a comatose state.
+AVR, aortic valve replacement; CONS, conservative management; OP, early surgery.
+
+
+16
+
+Table S5. Primary and Secondary End Points (Per-Protocol Population).
+
+
+Outcome
+Conservative Management
+ (n=69)
+Early Surgery
+ (n=69)
+
+Hazard Ratio
+(95% CI)*
+
+Composite primary end point - no. (%)
+Operative or cardiovascular death
+
+11 (15.9)
+
+1 (1.5)
+
+0.09 (0.01-0.67)¶
+Secondary end points - no. (%)
+
+
+
+Death from any cause
+15 (21.7)
+4 (5.8)
+0.27 (0.09-0.79)†
+Clinical thromboembolic event
+4 (5.8)
+1 (1.5)
+0.30 (0.04-2.24)†
+ Stroke
+3
+1
+
+ Myocardial infarction
+1
+0
+
+Repeat aortic-valve surgery
+2 (2.9)
+0 (0)
+0.19 (0.01-7.83)†
+Hospitalization for heart failure
+7 (10.1)
+0 (0)
+0.06 (0.00-1.18)†
+*95% confidence intervals presented in this report have not been adjusted for multiplicity, and therefore inferences drawn from these intervals
+may not be reproducible.
+¶Hazard ratios were calculated with the use of Fine and Gray competing-risks analysis.
+†Hazard ratios were calculated with the use of stratified Cox proportional hazards models with Firth correction.
+
+
+
+17
+
+Table S6. Subgroup Analyses of the Primary End Point and Death from Any Cause.
+
+Outcome
+
+Subgroup
+No. of
+Patients
+Conservative
+Management
+Early Surgery
+Hazard Ratio* (95% CI)¶
+no. of events/total no. (%)
+Primary End Point
+Aortic Jet Velocity
+< 5 m/s
+≥ 5 m/s
+Cause of Aortic Stenosis
+Degenerative
+Non-degenerative
+
+Aortic Jet Velocity
+< 5 m/s
+≥ 5 m/s
+Cause of Aortic Stenosis
+Degenerative
+Non-degenerative
+
+67
+78
+
+48
+97
+
+
+67
+78
+
+48
+97
+
+5/35 (14.3)
+6/37 (16.2)
+
+8/26 (30.8)
+3/46 (6.5)
+
+
+8/35 (22.9)
+7/37 (18.9)
+
+11/26 (42.3)
+4/46 (8.7)
+
+1/32 (3.1)
+0/41 (0)
+
+0/22 (0)
+1/51 (2.0)
+
+
+4/32 (12.5)
+1/41 (2.4)
+
+2/22 (9.1)
+3/51 (5.9)
+
+0.37 (0.05-2.73)
+0.05 (0.00-1.06)
+
+0.09 (0.00-1.80)
+0.32 (0.04-2.74)
+
+
+0.70 (0.21-2.32)
+0.13 (0.02-0.82)
+
+0.30 (0.07-1.24)
+0.60 (0.13-2.65)
+
+Death from Any Cause
+*Hazard ratios were calculated with the use of stratified Cox's proportional hazards models with Firth correction.
+¶95% confidence intervals presented in this report have not been adjusted for multiplicity, and therefore inferences drawn from these intervals
+may not be reproducible.
+
+
+
+18
+
+V.
+Supplemental References
+1. Schiller NB, Shah PM, Crawford M, et al. Recommendations for quantitation of the left
+ventricle by two-dimensional echocardiography. American Society of Echocardiography
+Committee on Standards, Subcommittee on Quantitation of Two-Dimensional
+Echocardiograms. J Am Soc Echocardiogr 1989;2:358-67.
+2. Devereux RB, Alonso DR, Lutas EM, et al. Echocardiographic assessment of left
+ventricular hypertrophy: comparison to necropsy findings. Am J Cardiol. 1986;57:450-8.
+3. Rosenhek R, Binder T, Porenta G, et al. Predictors of outcome in severe, asymptomatic
+aortic stenosis. N Engl J Med. 2000;343:611-7.
+4. Skjaerpe T, Hegrenaes L, Hatle L. Noninvasive estimation of valve area in patients with
+aortic stenosis by Doppler ultrasound and two-dimensional echocardiography.
+Circulation. 1985;72:810-8.
+
+
+Protocol
+This trial protocol has been provided by the authors to give readers additional information about their work.
+Protocol for: Kang D-H, Park S-J, Lee S-A, et al. Early surgery or conservative care for asymptomatic aortic stenosis.
+N Engl J Med 2020;382:111-9. DOI: 10.1056/NEJMoa1912846
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+1
+Study Protocol
+This supplement contains the following items:
+1. Original protocol, final protocol, summary of changes.
+2. Original statistical analysis plan (the only version).
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+2
+Table of Contents Page
+I.
+Study Protocol
+A. Original Protocol 3
+B. Final Protocol 23
+C. Summary of Changes 44
+II.
+Original Statistical Analysis Plan 45
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+3
+Protocol ID: 2010-0065
+
+Randomized Comparison of Early Surgery Versus
+COnventional Treatment in VERY Severe Aortic Stenosis
+
+The RECOVERY trial
+
+
+Principal Investigator:
+Duk-Hyun Kang, MD, PhD.
+Asan Medical Center,
+University of Ulsan College of Medicine
+
+Version Date: 01/February/2010
+
+
+
+Address:
+Duk-Hyun Kang, MD, PhD.
+Department of Medicine, Asan Medical Center,
+University of Ulsan College of Medicine,
+388-1 Poongnap-dong, Songpa-gu, Seoul, 138-736, Korea.
+Fax: (82-2)-486-5918, Tel: (82-2)-3010-3166, E-mail: dhkang@amc.seoul.kr
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+4
+Table of Contents
+Table of Contents --------------------------------------------------------------------------------------------------------- 4
+1. Background ------------------------------------------------------------------------------------------------ 5
+2. Trial Objectives--------------------------------------------------------------------------------- 5
+3. Trial Design --------------------------------------------------------------------------------------------- 6
+4. Study Endpoint ----------------------------------------------------------------------------------------7
+ 4.1 Primary Endpoint-------------------------------------------------------------------------------------------------7
+ 4.2 Secondary Endpoint-------------------------------------------------------------------------------------------7
+5. Study Timeline --------------------------------------------------------------------------------------- 7
+6. Randomization---------------------------------------------------------------------------------------------8
+7. Entry Criteria ---------------------------------------------------------------------------------------- 8
+ 7.1 Inclusion and Exclusion Criteria --------------------------------------------------------8
+ 7.2 Withdrawal Criteria -------------------------------------------------------------------------9
+8. Protocol Procedures ------------------------------------------------------------------------------- 10
+ 8.1 Schedule of Measurements ----------------------------------------------------------10
+ 8.2 Echocardiographic Evaluation ----------------------------------------------------------10
+ 8.3 Early Surgery----------------------------------------------------------------------------------------------11
+ 8.4 Conventional Treatment---------------------------------------------------------------------------------------11
+9. Statistical Analysis --------------------------------------------------------------------------------------------------11
+10. Participant Safety and Confidentiality------------------------------------------------------------------------11
+ 10.1 Elements of Informed Consent --------------------------------------------------------13
+ 10.2 Risk Management---------------------------------------------------------------------------------------13
+ 10.3 Adverse Events/Serious Adverse Events --------------------------------------------------------------13
+11. Study Organization --------------------------------------------------------------------------------------------------
+14
+12. Publication Policy ----------------------------------------------------------------------------------------------16
+13. Regulatory Responsibilities ----------------------------------------------------------------------------16
+14. Quality Control and Quality Assurance------------------------------------------------------------------17
+15. Protocol Deviations ---------------------------------------------------------------------------------------------18
+Appendix --------------------------------------------------------------------------------------------------- 19
+References -----------------------------------------------------------------------------------------------------------21
+
+
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+5
+
+1. Background
+Surgery is the only definitive therapy for severe aortic stenosis (AS) and the guidelines recommend
+that severe AS in symptomatic patients or asymptomatic patients with left ventricular (LV)
+dysfunction should be managed with surgery (1, 2). Management of asymptomatic patients with severe
+AS remains controversial, and the combined risks of aortic valve (AV) surgery and late complications
+of AV prosthesis need to be balanced against the possibility of preventing sudden death and lowering
+cardiac mortality (1). Considering that sudden cardiac death occurs at a rate of approximately 1% per
+year (3) and that the average postoperative mortality of isolated AV replacement is 3.0-4.0% (4, 5), the
+2007 European Society of Cardiology (ESC) guidelines do not recommend AV surgery for
+asymptomatic patients with severe AS (2) and the 2006 American College of Cardiology/American
+Heart Association (ACC/AHA) guidelines recommend surgery as a class IIb indication only in patients
+with extremely severe AS (AV area < 0.6 cm2) and who are at low operative risk (1). Clinical
+outcomes vary widely according to the severity of stenosis in asymptomatic AS (6), and asymptomatic
+patients with very severe AS are often referred for AV replacement in clinical practice despite the lack
+of data supporting early surgery (3, 6, 7). Rosenhek et al recently reported a worse prognosis with a
+higher event rate and a risk of rapid deterioration in very severe AS (8), and we also recently reported
+that compared with the conventional treatment strategy, early surgery in patients with very severe AS
+is associated with an improved long-term survival in a prospective, observational study (9). However,
+there have been no prospective, randomized studies comparing early surgery with a watchful waiting
+strategy in very severe AS. We sought to compare long-term clinical outcomes of early surgery with
+those of conventional management based on current guidelines in asymptomatic patients with very
+severe AS.
+2. Trial Objectives
+The primary objective of the RECOVERY trial is to compare long-term outcomes of early surgery
+with those of a conventional treatment strategy based on current guidelines in asymptomatic patients
+with very severe aortic stenosis.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+6
+
+3. Trial Design
+This study is a prospective, open label, randomized trial of asymptomatic patients with very severe
+aortic stenosis, who were candidates for both early surgery and conventional treatment. Patients
+meeting inclusion criteria without any exclusion criteria will be randomized 1:1 to early surgery or
+conventional treatment. We design the protocol and conduct the trial in accordance with the principles
+of the Declaration of Helsinki, and the study protocol will be approved by the institutional review
+board.
+
+Figure 1. Study flow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Severe Aortic Stenosis
+Very Severe AS
+LV ejection fraction <0.5
+Symptoms
+Primary Cohort
+Early Surgery
+N=72
+Conventional Tx
+N=72
+
+Echocardiography
+No
+No
+Yes
+Yes
+Surgery
+Surgery
+Randomization
+Primary end point:
+A composite of operative mortality and cardiovascular mortality during
+follow-up
+Secondary End Point:
+ The rate of all-cause death, repeat aortic valve surgery, clinical
+thromboembolic events and hospitalization due to congestive heart failure at
+a minimum of 4 years follow-up
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+7
+
+
+4. Study Endpoint
+
+4.1 Primary Endpoint
+A composite of operative mortality or cardiovascular mortalities that occur during entire follow-up (a
+minimum of 4 years)
+
+Operative mortality is defined as death within 30 days of AV surgery.
+Cardiovascular mortality is defined as sudden cardiac death, death from myocardial infarction, heart
+failure, complications of cardiac surgery or intervention, cerebrovascular disease or other
+cardiovascular disease.
+Sudden cardiac death is defined as either witnessed instantaneous unexpected death or unwitnessed
+unexpected death, if other cause of death was excluded with reasonable certainty.
+
+4.2 Secondary Endpoint
+
+ All-cause death occurring during entire follow-up (a minimum of 4 years)
+ Repeat AV surgery occurring during entire follow-up (a minimum of 4 years)
+ Clinical thromboembolic events during entire follow-up (a minimum of 4 years)
+ Hospitalization due to congestive heart failure during entire follow-up (a minimum of 4
+years)
+
+Clinical thromboembolic events are defined as the acute onset of clinical symptoms or signs of
+embolism and the occurrence of new lesions on imaging studies.
+Hospitalization due to congestive heart failure is defined as an unplanned, urgent admission for the
+management of congestive heart failure.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+8
+5. Study Timeline
+Overall study will require 6 years to complete, including 2 years of recruitment and a minimum of 4
+years of follow-up for endpoint and close out, and 2 months for analysis of final results.
+Study Start Date: July 2010
+Study Completion Date: July 2016
+
+6. Randomization
+A written informed consent will be given to all patients. After obtaining informed consent, all enrolled
+patients will be randomly assigned on a 1:1 basis to early surgery or conventional treatment using an
+interactive web response system (https://recovery.e-crf.co.kr). The allocation sequence was computer-
+generated and stratified according to participating center by means of a permuted-block sequence with
+variable block size.
+
+7. Entry criteria
+All patients suspected of AS undergo transthoracic echocardiography. Consecutive asymptomatic
+patients with very severe AS will be evaluated for the entry into the study.
+
+Very severe AS is defined as a critical stenosis in the AV area ≤ 0.75 cm2 fulfilling one of the
+following criteria: a peak aortic velocity ≥ 4.5 m/s or a mean transaortic pressure gradient ≥ 50 mmHg
+on Doppler echocardiography.
+
+7.1 Inclusion and Exclusion Criteria
+
+To be included, patients must fulfill ALL of the following:
+
+Inclusion Criteria:
+1.
+Male or female
+2.
+Age: 20-80 years
+3.
+AV area ≤ 0.75 cm2
+4. Either a peak aortic velocity ≥ 4.5 m/s or a mean transaortic pressure gradient ≥ 50
+
+[Extracted table 1]
+|Column 1|Column 2|
+|---|---|
+|Inclusion Criteria:||
+|1.|Male or female|
+|2.|Age: 20-80 years|
+|3.|AV area ≤ 0.75 cm2|
+|4.|Either a peak aortic velocity ≥ 4.5 m/s or a mean transaortic pressure gradient ≥ 50|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+9
+mmHg on Doppler echocardiography
+5.
+The patient agrees to the study protocol and provides informed, written consent, as
+approved by the Institutional Review Board.
+
+Exclusion Criteria
+1.
+Patients with exertional dyspnea, syncope, presyncope or angina
+2.
+Patients with left ventricular ejection fraction < 50%
+3.
+Patients who were not candidates for surgery based on age > 80 years and/or poor
+medical status, such as coexisting malignancies
+4.
+Patients with significant aortic regurgitation or significant mitral valve disease
+5.
+Patients had previous open heart surgery.
+6.
+Patients who did not consent to participate
+7.
+Pregnancy
+
+7.2. Withdrawal Criteria
+All patients have the right to withdraw at any point during the study without prejudice. The
+investigator may discontinue any patient at any time if medically necessary. However, it will be
+documented whether or not each patient completed the clinical study. If the study treatment(s) or
+observations are discontinued in any patient, the reason will be recorded and the executive committee
+must be notified promptly. It is imperative to obtain complete follow-up data for all patients, whether
+or not they receive their assigned treatment. Every attempt should be made to collect follow-up
+information, except for those patients who specifically withdraw consent for release of such
+information. All procedures and laboratory specimens or tests requested for evaluation following the
+assigned treatment should be carried out when possible, whether or not a patient continues to receive
+treatment according to the protocol. Patients will not be replaced in this trial.
+
+8. Protocol Procedures
+All patients suspected of AS undergo transthoracic echocardiography. Entry evaluation includes
+demographic data, clinical presentation, physical findings and echocardiographic data. Eligibility is
+
+[Extracted table 2]
+|Column 1|Column 2|
+|---|---|
+|Exclusion Criteria||
+|1.|Patients with exertional dyspnea, syncope, presyncope or angina|
+|2.|Patients with left ventricular ejection fraction < 50%|
+|3.|Patients who were not candidates for surgery based on age > 80 years and/or poor<br>medical status, such as coexisting malignancies|
+|4.|Patients with significant aortic regurgitation or significant mitral valve disease|
+|5.|Patients had previous open heart surgery.|
+|6.|Patients who did not consent to participate|
+|7.|Pregnancy|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+10
+determined after a patient undergoes a thorough evaluation of clinical and echocardiograhic data. After
+the patient has signed informed consent, the randomization procedures will take place.
+
+
+144 patients will be randomized at a ratio 1:1 to two arms:
+a) Conventional: Conventional Treatment based on current guidelines
+b) Early Surgery: Early surgery within 2 months of randomization
+
+
+8.1. Schedule of Measurements
+
+Baseline
+3M 6M
+12M
+18M
+24M
+30M
+36M
+42M
+48M
+Informed consent
+X
+
+
+
+
+
+
+
+
+
+Eligibility
+X
+
+
+
+
+
+
+
+
+
+Demographics
+X
+
+
+
+
+
+
+
+
+
+Medical History
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+Physical Examination
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+Laboratory test*
+X
+
+
+
+
+X
+
+
+
+X
+Transthoracic Echo
+X
+
+
+X
+
+X
+
+X
+
+X
+*Includes: CBC, blood chemistry, urine analysis, Chest PA and EKG
+8.2. Echocardiographic Evaluation
+Echocardiographic evaluation will be performed at baseline, and annually during follow-up.
+Comprehensive two- dimensional and Doppler echocardiographic examinations will be performed on
+all patients using a Hewlett-Packard Sonos 5500 imaging system equipped with a 2.5-MHz transducer
+(Hewlett-Packard, Andover, Mass). End-systolic dimension, end-diastolic dimension, end-diastolic
+interventricular septal and posterior wall thickness of the LV are measured from parasternal M-mode
+acquisitions. End-systolic volume, end-diastolic volume and EF of the LV are obtained using the
+biplane Simpson method (10), and LV mass is calculated using the formula validated by Devereux and
+associates (11). On two-dimensional imaging of the AV in the parasternal short axis view, the etiology
+of AS is defined as bicuspid if there was clear identification of two leaflets during systole, rheumatic if
+commissural fusion and mitral valve involvement are observed, and degenerative if thickening and
+
+[Extracted table 1]
+||Baseline|3M|6M|12M|18M|24M|30M|36M|42M|48M|
+|---|---|---|---|---|---|---|---|---|---|---|
+|Informed consent|X||||||||||
+|Eligibility|X||||||||||
+|Demographics|X||||||||||
+|Medical History|X|X|X|X|X|X|X|X|X|X|
+|Physical Examination|X|X|X|X|X|X|X|X|X|X|
+|Laboratory test*|X|||||X||||X|
+|Transthoracic Echo|X|||X||X||X||X|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+11
+calcification of the leaflets are observed (9). AV calcification is graded as mild when a single spot or
+scattered small spots of echo brightness are observed; moderate when the calcified mass involves one
+or two leaflets; and severe when extensive thickening and calcified mass involve all leaflets (6). The
+maximal aortic jet velocity is recorded using apical, right parasternal or suprasternal window yielding
+the highest velocity signal. The maximal and mean pressure gradients across the aortic valve are
+calculated using a modified Bernoulli equation, and the AV area is estimated from the continuity
+equation using LV outflow tract diameter and flow velocity (12).
+
+8.3. Early Surgery
+Patients assigned to the early surgery group should undergo AV surgery within 2 months of
+randomization. Surgical procedures are performed with the use of a standard cardiopulmonary bypass.
+Aortic valve replacements will be performed using mechanical or bioprosthetic valves at the discretion
+of the surgeon. Concomitant coronary artery bypass graft at the time of AV surgery will be performed
+on patients with coronary artery disease detected incidentally on preoperative coronary angiography.
+Anticoagulation will be effectively maintained during the entire follow-up period in patients with
+mechanical valve replacement and for 3 months in those who received a biologic prosthesis and had no
+risk factors. All patients will be followed after AV surgery; at 4 weeks, 3 months, 6 months, and 1 year;
+and at 6-month intervals thereafter until close-out of the study. All patients will be educated to call a
+study coordinator or an investigator if they experience any adverse events.
+
+8.4. Conventional Treatment
+Patients assigned to the conventional treatment group will be treated according to the American Heart
+Association guidelines (1) and they will be educated to report immediately to a study coordinator or an
+investigator, if they experience any symptoms of exertional dyspnea, chest pain, syncope or
+presyncope. All patients will be followed at 3 months, 6 months, and 1 year; and at 6-month intervals
+thereafter until close-out of the study, and they will be referred for surgery if they become
+symptomatic during follow-up, left ventricular ejection fraction < 50% or increase of a peak aortic
+velocity > 0.5 m/s noted on follow-up echocardiography performed annually.
+
+9. Statistical Analysis
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+12
+Sample Size Calculation
+We tried to determine the rate of primary endpoint based on the randomized trials, but no randomized
+trial has been conducted to evaluate outcomes of early surgery. Using a prospective registry data, we
+recently reported that the estimated actuarial 6-year survival and cardiac mortality-free survival rates
+were 98±1% and 100% in the early surgery group, 68±6% and 76±5% in the conventional treatment
+group, respectively (p < 0.001) (9). Based on our prospective observational study, we estimated that a
+sample size of 144 patients would provide 80% power to detect a significant difference with respect to
+the primary end point at the 2-sided significance level of 0.05, assuming that the 4-year rate of a
+composite end point (cardiac mortality or operative mortality) would be 16% in the conventional
+treatment group and 2% in the early surgery group.
+
+Analysis of primary and secondary end point
+All primary and secondary endpoints will be analyzed on an intent-to-treat basis (all patients analyzed
+as part of their assigned treatment group). For intent-to-treat analysis, all patients who sign the written
+informed consent form and are randomized in the study will be included in the analysis, regardless of
+whether or not the correct treatment is administered, or whether crossover occurs.
+To analyze outcomes, estimates of cumulative event rates will be calculated by the Kaplan-Meier
+method and compared employing the log-rank test. For Kaplan-Meier analysis, we will analyze all
+clinical events by time to first event. Hazard ratios with 95% confidence intervals will be derived with
+the use of the Cox proportional hazards model.
+Subgroup analyses will be performed to determine whether the reduction in the primary end point after
+early surgery is consistent in 2 prespecified subgroups of peak aortic velocity (<5 m/s vs. ≥5 m/s) and
+etiology of AS (degenerative vs. non-degenerative), using Cox regression models with tests for
+interaction.
+
+Determination of Treatment Group Comparability
+Baseline demographic and clinical variables will be summarized for each of the treatment groups. All
+continuous variables will be summarized as mean and SDs, or medians (with 95% confidence intervals
+[CIs]) as appropriate. Continuous variables will be tested for normality with Kolmogorov-Smirnov test,
+and compared using the t test if data are normally distributed, otherwise using the Mann-Whitney U
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+13
+test. Categorical variables will be summarized as frequencies and percentages and compared between
+treatment groups using chi-square test or Fisher's exact test.
+
+10. Participant Safety and Confidentiality
+
+10.1. Elements of Informed Consent
+We anticipate enrolling a total of 144 patients. We do not plan to enroll prisoners or institutionalized
+individuals due to logistical limitations in follow-up. Pregnant women and children are excluded from
+the trial for ethical and safety concerns.
+Prior to collecting study data, the details of the study will be explained to the participant including: (1)
+that the study represents a research effort, (2) that participation is voluntary, and there is no penalty for
+withdrawal, (3) any anticipated costs to the patient for participation, (4) potential risks and benefits for
+participation, and (5) contact information for additional concerns. Patients are informed of the purpose
+of the study, the treatment alternative, the random manner of assignment to treatment, the need to be
+available for telephone follow-up and return clinic visits at regular intervals for questionnaires and/or
+medical tests, and of their options to accept or refuse entry into the study without affecting their
+clinical care.
+All sources of research materials will be in the form of medical records, echocardiograms,
+electrocardiograms and routine blood work. This material will be obtained both for routine medical
+care as well as for research purposes.
+In informed consent, we outline the potential risks, protection from these risks and potential benefits
+according to past experience and present knowledge. Informed consent will be obtained at least just
+before the subsequent randomly assigned procedure is to be performed.
+
+10.2 Risk Management
+The executive committee (EC) plays key roles in detecting any hazards the study may pose for its
+participants. Data are routinely collected and regularly monitored to document morbidity and mortality
+associated with study-related procedures. Serious adverse events are reported to the EC within 24
+hours. Timely reports will be made to the IRB. The DSMB is responsible for advising early
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+14
+termination of the trial in the event if there are non-rectifiable, serious safety concerns in the early
+surgery group. This study will not be stopped early based on efficacy results.
+
+10.3 Adverse Events/Serious Adverse Events
+
+10.3.1 Adverse Event
+For the purpose of this trial, an adverse event (AE) is defined as any untoward medical occurrence in a
+patient enrolled in a clinical study and which does not necessarily have to have a causal relationship
+with this treatment. An adverse event can therefore be any unfavorable and unintended sign (including
+an abnormal laboratory finding, for example), symptom or disease temporally associated with the
+study procedures, whether or not considered related to the investigational device or procedure.
+All events meeting the SAE criteria must be reported to the EC within 24 hours of becoming aware of
+the events. To be noted that all endpoint events fall into this category, and must be reported within the
+above timeframe.
+
+10.3.2 Serious Adverse Event
+An adverse event is considered serious for this trial if it meets one or more of the following criteria
+ Results in death
+ Is life-threatening, i.e., the patient was, in the opinion of the Investigator, at immediate risk
+of death from the event as it occurred (It does not include an event that, had it occurred in a
+more severe form, might have caused death.)
+ Results in persistent or significant disability (significant, persistent or permanent change or
+disruption in patient's body function/structure, physical activity or quality of life)
+ Requires in-patient hospitalization or prolongs hospitalization
+ Necessitates immediate medical or surgical intervention to prevent permanent impairment
+of a body function/structure or to relieve unanticipated temporary impairment or damage.
+
+11. Study Organization
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+15
+11.1 Executive Committee (EC)
+The Executive Committee will approve the final trial design and protocol. This committee will also be
+responsible for reviewing the final results, determining the methods of presentation and publication,
+and selection of secondary projects and publications. Members of the committee will include the PI
+and persons who will organize this study.
+
+11.2 Data Safety Monitoring Board (DSMB)
+The DSMB committee will review the safety data from this study and make recommendations based on safety
+analyses of serious adverse events (SAEs), protocol deviation, and follow-up reports. The frequency of the
+DSMB meetings will be determined prior to study commencement. Additionally, the DSMB may call a meeting
+at any time if there is reason to suspect that safety is an issue.
+Prior to the DSMB's first review of the data, the DSMB charter will be drafted. The plan will define the
+stopping rules for stopping the trial for safety. The first meeting of the DSMB will be used for discussion of the
+protocol and an understanding of all the protocol elements. The DSMB will develop a consensus understanding
+of all trial endpoints and definitions used in the trial adjudication process.
+The DSMB is made up of five members who are experienced physicians and clinical trialists, not an
+Investigator of this trial. The composition of the DSMB will include at least two clinicians with expertise in
+cardiology. The DSMB will function in accordance with applicable regulatory guidelines. Dr. Moo-Song Lee
+will be the chairperson of DSMB of this trial.
+The DSMB chairperson will notify EC of any safety or compliance issues. The committee will also provide
+confidential recommendations, when necessary, of study termination based on the safety stopping rules
+determined at the study onset. All DSMB reports will remain strictly confidential, but will be made available to
+the regulatory body upon request.
+
+11.3 Clinical Events Committee
+The Clinical Events Committee (CEC) is made up of cardiologists who are not participants in the study. The
+CEC is charged with the development of specific criteria used for the categorization of clinical events in the
+study which are based on the protocol. The Clinical Events Committee blinded to treatment assignment will
+meet regularly to review and adjudicate all clinical events in which the required minimum data is available. The
+Committee will also review and rule on all clinical events that occur throughout the trial.
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+16
+
+11.4 Early Stopping Guideline
+An independent DSMB will review the safety data related to clinical events. The DSMB will be
+powered to recommend suspension of enrollment or termination of the study based on safety concerns.
+This study will not be stopped early based on efficacy results.
+
+12. Publication Policy
+No results will be released publicly before completion of the final analysis regarding the primary
+endpoint of this study. The statistical analysis will be performed according to the prespecified analysis
+plan as described in this protocol. The Executive Committee will review the primary outcome data
+according to the prespecified statistical analysis plan, and then will provide the data to the principal
+investigator which will in turn (a) first prepare a formal presentation to the Executive Committee
+members and (b) after taking under account the input and comments of the Executive Committee will
+proceed with submitting the manuscript.
+No study results will be released to the scientific or lay community without the approval of the
+Executive Committee.
+Authorship of the primary outcome paper will be credited collectively to the "Investigators."
+
+13. Regulatory Responsibilities
+
+13.1 Investigator Responsibilities
+The investigator is responsible for ensuring the investigation is conducted according to all signed
+agreements, the study protocol and GCP requirements.
+
+13.2 Institutional Review Board (IRB) Approval
+The investigator must submit the study protocol to his IRB and obtain their written approval before
+being allowed to conduct and participate in the study. The investigator is also responsible for
+fulfilling any conditions of approval imposed by the IRB, such as regular reporting, study timing, etc.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+17
+13.3 Informed Consent
+Part of the IRB/EC approval must include approval of an Informed Consent text specific to the study.
+The investigator must administer this approved Informed Consent text to each prospective study
+patient and obtain the patient's signature on the text prior to enrollment in the study.
+
+13.4 Records
+Each investigator must maintain the following accurate, complete, and current records relating to the
+conduct of the investigation.
+
+ All correspondence with another investigator, an IRB
+ Records of each subject's case history, including study-required Case Report Forms,
+evidence of informed consent, all relevant observations of adverse drug effects, the
+condition of each subject upon entering and during the course of the investigation, relevant
+medical history, the results of all diagnostic testing, and the date of each study treatment.
+
+13.5 Reports
+Below is a list of the reports which are the investigator's responsibility to generate. The table also
+shows to whom the report is to be sent and with what frequency or within what time constraints.
+
+Reports Required from Clinical Investigators:
+Type of Report
+Prepared
+by
+Investigator
+For:
+Time Constraints of
+Notification
+Serious adverse event
+IRB/EC
+Per local regulations.
+Annual progress report
+EC
+Submitted per 6 months.
+Deviations from
+investigational plan
+IRB/EC
+Per local standard.
+Informed consent not
+obtained
+IRB
+Notify within 5 days.
+Final summary report
+EC
+Within 1 month.
+
+[Extracted table 1]
+|Type of Report|Prepared by Investigator<br>For:|Time Constraints of<br>Notification|
+|---|---|---|
+|Serious adverse event|IRB/EC|Per local regulations.|
+|Annual progress report|EC|Submitted per 6 months.|
+|Deviations from<br>investigational plan|IRB/EC|Per local standard.|
+|Informed consent not<br>obtained|IRB|Notify within 5 days.|
+|Final summary report|EC|Within 1 month.|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+18
+14. Quality Control and Quality Assurance
+
+14.1 Ethics and Responsibility
+This study will be conducted in compliance with the protocol, local regulations where applicable, the
+International Conference on Harmonization (ICH) GCP guidelines and the Declaration of Helsinki.
+
+14.2 Confidentiality
+All information generated in this study must be considered highly confidential and must not be
+disclosed to any persons not directly concerned with the study. However, authorized regulatory
+officials will be allowed full access to the records. Only initials and unique patient numbers in case
+report forms will identify patients. All medications provided and patient bodily fluids and/or other
+materials collected specifically for this trial shall be used solely in accordance with this protocol.
+
+15. Protocol Deviations
+This study will be conducted as described in this protocol, and The IRB or EC will be informed of all
+protocol changes by the principal investigator in accordance with the IRB or EC established procedure.
+No deviations from the protocol of any type will be made without complying with all the IRB or EC
+established procedures.
+It is intended that all statistical analyses specified in this protocol will be performed. However, it is
+conceivable that due to the study observations, some scheduled analyses may not be performed. In
+addition, study observations or analysis results may suggest the need for additional statistical analyses
+of the collected study data. In either case, deviations (subtractions or additions) from the planned
+statistical analysis will be fully described in the final clinical study report. Furthermore, any additional
+analyses performed beyond those specified in this protocol will be descriptive in nature and will not
+include hypothesis testing for the purposes of inferential conclusions.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+19
+Appendix
+
+Appendix A. Definitions
+Death: The cause of death (cardiac vs. non-cardiac) will be adjudicated. If the cause of death cannot
+be adjudicated the most severe cause will be considered.
+Cardiovascular death is defined as death due to any of the following:
+1. Acute myocardial infarction.
+2. Heart failure
+3. Arrhythmia or conduction abnormality.
+4. Sudden cardiac death
+5. Death due to complication of cardiac surgery or intervention
+6. Cerebrovascular disease
+7. Other cardiovascular disease
+8. Any death in which a cardiac cause cannot be excluded
+Non-cardiac death is defined as a death not due to cardiac causes (as defined above).
+
+Sudden cardiac death is defined as either witnessed instantaneous unexpected death, unwitnessed
+unexpected death, if other cause of death was excluded with reasonable certainty.
+
+Operative Mortality: death within 30 days of the index procedure
+
+Clinical thromboembolic events: the acute onset of clinical symptoms or signs of embolism and the
+occurrence of new lesions on imaging studies.
+
+Hospitalization due to congestive heart failure: an unplanned, urgent admission for the management
+of congestive heart failure.
+
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+20
+Appendix B. List of Committee
+
+Center
+Investigators
+Executive Committee
+Asan Medical Center
+
+
+Samsung Seoul Hospital
+Duk-Hyun Kang, MD
+Jong-Min Song, MD
+Jae-Won Lee, MD
+Seung Woo Park, MD
+Sung-Ji Park, MD
+Pyo-Won Park, MD
+Data Safety Monitoring Board
+Moo-Song Lee, MD
+Kee-Joon Choi, MD
+Gi-Byoung Nam, MD
+Ki-Hoon Han, MD
+Young-Hak Kim, MD
+Clinical Events Committee
+
+Seung-Hwan Lee, MD
+Soo-Jin Kang, MD
+Duk-Woo Park, MD
+
+[Extracted table 1]
+||Center|Investigators|
+|---|---|---|
+|Executive Committee|Asan Medical Center<br>Samsung Seoul Hospital|Duk-Hyun Kang, MD<br>Jong-Min Song, MD<br>Jae-Won Lee, MD<br>Seung Woo Park, MD<br>Sung-Ji Park, MD<br>Pyo-Won Park, MD|
+|Data Safety Monitoring Board||Moo-Song Lee, MD<br>Kee-Joon Choi, MD<br>Gi-Byoung Nam, MD<br>Ki-Hoon Han, MD<br>Young-Hak Kim, MD|
+|Clinical Events Committee||Seung-Hwan Lee, MD<br>Soo-Jin Kang, MD<br>Duk-Woo Park, MD|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+21
+References
+1. Bonow RO, Carabello B, Chatterjee K, de Leon AC Jr, Faxon DP, Freed MD, Gaasch WH, Lytle
+BW, Nishimura RA, O'Gara PT, O'Rourke RA, Otto CM, Shah PM, Shanewise JS. ACC/AHA 2006
+guidelines for the management of patients with valvular heart disease: a report of the American
+College of Cardiology/American Heart Association Task Force on Practice Guidelines (Writing
+Committee to Revise the 1998 Guidelines for the Management of Patients with Valvular Heart
+Disease). Circulation. 2006;114:450-527.
+2. Vahanian A, Baumgartner H, Bax J, Butchart E, Dion R, Filippatos G, Flachskampf F, Hall R, Iung
+B, Kasprzak J, Nataf P, Tornos P, Torracca L, Wenink A. Guidelines on the management of valvular
+heart disease: The Task Force on the Management of Valvular Heart Disease of the European Society
+of Cardiology. Eur Heart J. 2007;28:230-268.
+3. Pellikka PA, Sarano ME, Nishimura RA, Malouf JF, Bailey KR, Scott CG, Barnes ME, Tajik AJ.
+Outcome of 622 adults with asymptomatic, hemodynamically significant aortic stenosis during
+prolonged follow-up. Circulation. 2005;111:3290-3295.
+4. Edwards FH, Peterson ED, Coombs LP, DeLong ER, Jamieson WR, Shroyer ALW, Grover FL.
+Prediction of operative mortality after valve replacement surgery. J Am Coll Cardiol. 2001;37:885-892.
+5. Ambler G, Omar RZ, Royston P, Kinsman R, Keogh BE, Taylor KM. Generic, simple risk
+stratification model for heart valve surgery. Circulation. 2005;112:224-231.
+6. Rosenhek R, Binder T, Porenta G, Lang I, Christ G, Schemper M, Maurer G, Baumgartner H.
+Predictors of outcome in severe, asymptomatic aortic stenosis. N Engl J Med. 2000;343:611-617.
+7. Otto CM, Burwash IG, Legget ME, Munt BI, Fujioka M, Healy NL, Kraft CD, Miyake-Hull CY,
+Schwaegler RG. Prospective study of asymptomatic valvular aortic stenosis. Clinical,
+echocardiographic, and exercise predictors of outcome. Circulation. 1997;95:2262-2270.
+8. Rosenhek R, Zilberszac R, Schemper M, et al. Natural history of very severe aortic stenosis.
+Circulation. 2010;121:151-156.
+9. Kang DH, Park SJ, Rim JH, Yun SC, Kim DH, Song JM, Choo SJ, Park SW, Song JK, Lee JW,
+Park PW. Early surgery versus conventional treatment in asymptomatic very severe aortic stenosis.
+Circulation. 2010;121:1502-1509.
+10. Schiller NB, Shah PM, Crawford M, DeMaria A, Devereux R, Feigenbaum H, Gutgesell H,
+Reichek N, Sahn D, Schnittger I, et al. Recommendations for quantitation of the left ventricle by two-
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+22
+dimensional echocardiography. American Society of Echocardiography Committee on Standards,
+Subcommittee on Quantitation of Two-Dimensional Echocardiograms. J Am Soc Echocardiogr.
+1989;2:358-367.
+11. Devereux RB, Alonso DR, Lutas EM, Gottlieb GJ, Campo E, Sachs I, Reichek N.
+Echocardiographic assessment of left ventricular hypertrophy: comparison to necropsy findings. Am J
+Cardiol. 1986;57:450-458.
+12. Skjaerpe T, Hegrenaes L, Hatle L. Noninvasive estimation of valve area in patients with aortic
+stenosis by Doppler ultrasound and two-dimensional echocardiography. Circulation. 1985;72:810-818.
+
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+23
+Protocol ID: 2010-0065
+
+Randomized Comparison of Early Surgery Versus
+COnventional Treatment in VERY Severe Aortic Stenosis
+
+The RECOVERY trial
+
+
+Principal Investigator:
+Duk-Hyun Kang, MD, PhD.
+Asan Medical Center,
+University of Ulsan College of Medicine
+
+Version Date: 01/July/2014
+
+
+
+Address:
+Duk-Hyun Kang, MD, PhD.
+Department of Medicine, Asan Medical Center,
+University of Ulsan College of Medicine,
+388-1 Poongnap-dong, Songpa-gu, Seoul, 138-736, Korea.
+Fax: (82-2)-486-5918, Tel: (82-2)-3010-3166, E-mail: dhkang@amc.seoul.kr
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+24
+Table of Contents
+Table of Contents --------------------------------------------------------------------------------------------------------- 24
+1. Background ------------------------------------------------------------------------------------------------25
+2. Trial Objectives---------------------------------------------------------------------------------25
+3. Trial Design ---------------------------------------------------------------------------------------------26
+4. Study Endpoint ----------------------------------------------------------------------------------------27
+ 4.1 Primary Endpoint-------------------------------------------------------------------------------------------------27
+ 4.2 Secondary Endpoint-------------------------------------------------------------------------------------------27
+5. Study Timeline --------------------------------------------------------------------------------------- 27
+6. Randomization---------------------------------------------------------------------------------------------28
+7. Entry Criteria ----------------------------------------------------------------------------------------28
+ 7.1 Inclusion and Exclusion Criteria --------------------------------------------------------28
+ 7.2 Withdrawal Criteria ------------------------------------------------------------------------- 29
+8. Protocol Procedures ------------------------------------------------------------------------------- 30
+ 8.1 Schedule of Measurements ----------------------------------------------------------30
+ 8.2 Echocardiographic Evaluation ----------------------------------------------------------30
+ 8. 3 Exercise Test ---------------------------------------------------------------------------------------------------- 31
+ 8.4 Early Surgery----------------------------------------------------------------------------------------------31
+ 8.5 Conventional Treatment------------------------------------------------------------------------------32
+9. Statistical Analysis ----------------------------------------------------------------------------------------------32
+10. Participant Safety and Confidentiality------------------------------------------------------------------------33
+ 10.1 Elements of Informed Consent --------------------------------------------------------33
+ 10.2 Risk Management---------------------------------------------------------------------------------------34
+ 10.3 Adverse Events/Serious Adverse Events --------------------------------------------------------------34
+11. Study Organization --------------------------------------------------------------------------------------------------
+35
+12. Publication Policy ----------------------------------------------------------------------------------------------36
+13. Regulatory Responsibilities ----------------------------------------------------------------------------36
+14. Quality Control and Quality Assurance------------------------------------------------------------------38
+15. Protocol Deviations ---------------------------------------------------------------------------------------------38
+Appendix --------------------------------------------------------------------------------------------------- 40
+References -----------------------------------------------------------------------------------------------------------42
+
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+25
+
+
+1. Background
+Surgery is the only definitive therapy for severe aortic stenosis (AS) and the guidelines recommend
+that severe AS in symptomatic patients or asymptomatic patients with left ventricular (LV)
+dysfunction should be managed with surgery (1, 2). Management of asymptomatic patients with severe
+AS remains controversial, and the combined risks of aortic valve (AV) surgery and late complications
+of AV prosthesis need to be balanced against the possibility of preventing sudden death and lowering
+cardiac mortality (1). Considering that sudden cardiac death occurs at a rate of approximately 1% per
+year (3) and that the average postoperative mortality of isolated AV replacement is 3.0-4.0% (4, 5), the
+2007 European Society of Cardiology (ESC) guidelines do not recommend AV surgery for
+asymptomatic patients with severe AS (2) and the 2006 American College of Cardiology/American
+Heart Association (ACC/AHA) guidelines recommend surgery as a class IIb indication only in patients
+with extremely severe AS (AV area < 0.6 cm2) and who are at low operative risk (1). Clinical
+outcomes vary widely according to the severity of stenosis in asymptomatic AS (6), and asymptomatic
+patients with very severe AS are often referred for AV replacement in clinical practice despite the lack
+of data supporting early surgery (3, 6, 7). Rosenhek et al recently reported a worse prognosis with a
+higher event rate and a risk of rapid deterioration in very severe AS (8), and we also recently reported
+that compared with the conventional treatment strategy, early surgery in patients with very severe AS
+is associated with an improved long-term survival in a prospective, observational study (9). However,
+there have been no prospective, randomized studies comparing early surgery with a watchful waiting
+strategy in very severe AS. We sought to compare long-term clinical outcomes of early surgery with
+those of conventional management based on current guidelines in asymptomatic patients with very
+severe AS.
+2. Trial Objectives
+The primary objective of the RECOVERY trial is to compare long-term outcomes of early surgery
+with those of a conventional treatment strategy based on current guidelines in asymptomatic patients
+with very severe aortic stenosis.
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+26
+
+
+3. Trial Design
+This study is a prospective, open label, randomized trial of asymptomatic patients with very severe
+aortic stenosis, who were candidates for both early surgery and conventional treatment. Patients
+meeting inclusion criteria without any exclusion criteria will be randomized 1:1 to early surgery or
+conventional treatment. We design the protocol and conduct the trial in accordance with the principles
+of the Declaration of Helsinki, and the study protocol will be approved by the institutional review
+board.
+
+Figure 1. Study flow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Severe Aortic Stenosis
+Very Severe AS
+LV ejection fraction <0.5
+Symptoms
+Primary Cohort
+Early Surgery
+N=72
+Conventional Tx
+N=72
+
+Echocardiography
+No
+No
+Yes
+Yes
+Surgery
+Surgery
+Randomization
+Primary end point:
+A composite of operative mortality and cardiovascular mortality during
+follow-up
+Secondary End Point:
+ The rate of all-cause death, repeat aortic valve surgery, clinical
+thromboembolic events and hospitalization due to congestive heart failure at
+a minimum of 4 years follow-up
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+27
+
+
+
+
+4. Study Endpoint
+
+4.1 Primary Endpoint
+A composite of operative mortality or cardiovascular mortalities that occur during entire follow-up (a
+minimum of 4 years)
+
+Operative mortality is defined as death within 30 days of AV surgery.
+Cardiovascular mortality is defined as sudden cardiac death, death from myocardial infarction, heart
+failure, complications of cardiac surgery or intervention, cerebrovascular disease or other
+cardiovascular disease.
+Sudden cardiac death is defined as either witnessed instantaneous unexpected death or unwitnessed
+unexpected death, if other cause of death was excluded with reasonable certainty.
+
+4.2 Secondary Endpoint
+
+ All-cause death occurring during entire follow-up (a minimum of 4 years)
+ Repeat AV surgery occurring during entire follow-up (a minimum of 4 years)
+ Clinical thromboembolic events during entire follow-up (a minimum of 4 years)
+ Hospitalization due to congestive heart failure during entire follow-up (a minimum of 4
+years)
+
+Clinical thromboembolic events are defined as the acute onset of clinical symptoms or signs of
+embolism and the occurrence of new lesions on imaging studies.
+Hospitalization due to congestive heart failure is defined as an unplanned, urgent admission for the
+management of congestive heart failure.
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+28
+
+5. Study Timeline
+Overall study will require 8 years to complete, including 4 years of recruitment and a minimum of 4
+years of follow-up for endpoint and close out, and 2 months for analysis of final results.
+Study Start Date: July 2010
+Study Completion Date: July 2018
+
+6. Randomization
+A written informed consent will be given to all patients. After obtaining informed consent, all enrolled
+patients will be randomly assigned on a 1:1 basis to early surgery or conventional treatment using an
+interactive web response system (https://recovery.e-crf.co.kr). The allocation sequence was computer-
+generated and stratified according to participating center by means of a permuted-block sequence with
+variable block size.
+
+7. Entry criteria
+All patients suspected of AS undergo transthoracic echocardiography. Consecutive asymptomatic
+patients with very severe AS will be evaluated for the entry into the study.
+In the 2006 AHA/ACC Valvular Heart Disease Guideline, exercise testing in asymptomatic patients
+with AS may be considered to elicit exercise-induced symptoms and abnormal blood pressure
+responses (Class IIb), but in the revised 2014 AHA/ACC Valvular Heart Disease Guideline, exercise
+testing is reasonable to confirm the absence of symptoms in asymptomatic patients with severe AS
+(Class IIa). According to the 2014 AHA/ACC Valvular Heart Disease Guideline, exercise testing will
+be selectively performed to evaluate symptoms for patients with non-specific symptoms and those with
+a positive exercise test will be excluded from the entry.
+
+Very severe AS is defined as a critical stenosis in the AV area ≤ 0.75 cm2 fulfilling one of the
+following criteria: a peak aortic velocity ≥ 4.5 m/s or a mean transaortic pressure gradient ≥ 50 mmHg
+on Doppler echocardiography.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+29
+7.1 Inclusion and Exclusion Criteria
+
+To be included, patients must fulfill ALL of the following:
+
+Inclusion Criteria:
+1.
+Male or female
+2.
+Age: 20-80 years
+3.
+AV area ≤ 0.75 cm2
+4. Either a peak aortic velocity ≥ 4.5 m/s or a mean transaortic pressure gradient ≥ 50
+mmHg on Doppler echocardiography
+5.
+The patient agrees to the study protocol and provides informed, written consent, as
+approved by the Institutional Review Board.
+
+Exclusion Criteria
+1.
+Patients with exertional dyspnea, syncope, presyncope or angina
+2.
+Patients with left ventricular ejection fraction < 50%
+3.
+Patients who were not candidates for surgery based on age > 80 years and/or poor
+medical status, such as coexisting malignancies
+4.
+Patients with significant aortic regurgitation or significant mitral valve disease
+5.
+Patients had previous cardiac surgery.
+6.
+Patients who did not consent to participate
+7.
+Pregnancy
+8.
+Positive exercise test
+
+7.2. Withdrawal Criteria
+All patients have the right to withdraw at any point during the study without prejudice. The
+investigator may discontinue any patient at any time if medically necessary. However, it will be
+documented whether or not each patient completed the clinical study. If the study treatment(s) or
+
+[Extracted table 1]
+|Column 1|Column 2|
+|---|---|
+|Inclusion Criteria:||
+|1.|Male or female|
+|2.|Age: 20-80 years|
+|3.|AV area ≤ 0.75 cm2|
+|4.|Either a peak aortic velocity ≥ 4.5 m/s or a mean transaortic pressure gradient ≥ 50<br>mmHg on Doppler echocardiography|
+|5.|The patient agrees to the study protocol and provides informed, written consent, as<br>approved by the Institutional Review Board.|
+
+[Extracted table 2]
+|Column 1|Column 2|
+|---|---|
+|Exclusion Criteria||
+|1.|Patients with exertional dyspnea, syncope, presyncope or angina|
+|2.|Patients with left ventricular ejection fraction < 50%|
+|3.|Patients who were not candidates for surgery based on age > 80 years and/or poor<br>medical status, such as coexisting malignancies|
+|4.|Patients with significant aortic regurgitation or significant mitral valve disease|
+|5.|Patients had previous cardiac surgery.|
+|6.|Patients who did not consent to participate|
+|7.|Pregnancy|
+|8.|Positive exercise test|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+30
+observations are discontinued in any patient, the reason will be recorded and the executive committee
+must be notified promptly. It is imperative to obtain complete follow-up data for all patients, whether
+or not they receive their assigned treatment. Every attempt should be made to collect follow-up
+information, except for those patients who specifically withdraw consent for release of such
+information. All procedures and laboratory specimens or tests requested for evaluation following the
+assigned treatment should be carried out when possible, whether or not a patient continues to receive
+treatment according to the protocol. Patients will not be replaced in this trial.
+
+8. Protocol Procedures
+All patients suspected of AS undergo transthoracic echocardiography. Entry evaluation includes
+demographic data, clinical presentation, physical findings and echocardiographic data. Eligibility is
+determined after a patient undergoes a thorough evaluation of clinical and echocardiograhic data. After
+the patient has signed informed consent, the randomization procedures will take place.
+
+144 patients will be randomized at a ratio 1:1 to two arms:
+a) Conventional: Conventional Treatment based on current guidelines
+b) Early Surgery: Early surgery within 2 months of randomization
+
+8.1. Schedule of Measurements
+
+Baseline
+3M 6M
+12M
+18M
+24M
+30M
+36M
+42M
+48M
+Informed consent
+X
+
+
+
+
+
+
+
+
+
+Eligibility
+X
+
+
+
+
+
+
+
+
+
+Demographics
+X
+
+
+
+
+
+
+
+
+
+Medical History
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+Physical Examination
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+Laboratory test*
+X
+
+
+
+
+X
+
+
+
+X
+Transthoracic Echo
+X
+
+
+X
+
+X
+
+X
+
+X
+*Includes: CBC, blood chemistry, urine analysis, Chest PA and EKG
+8.2. Echocardiographic Evaluation
+
+[Extracted table 1]
+||Baseline|3M|6M|12M|18M|24M|30M|36M|42M|48M|
+|---|---|---|---|---|---|---|---|---|---|---|
+|Informed consent|X||||||||||
+|Eligibility|X||||||||||
+|Demographics|X||||||||||
+|Medical History|X|X|X|X|X|X|X|X|X|X|
+|Physical Examination|X|X|X|X|X|X|X|X|X|X|
+|Laboratory test*|X|||||X||||X|
+|Transthoracic Echo|X|||X||X||X||X|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+31
+Echocardiographic evaluation will be performed at baseline, and annually during follow-up.
+Comprehensive two- dimensional and Doppler echocardiographic examinations will be performed on
+all patients using a Hewlett-Packard Sonos 5500 imaging system equipped with a 2.5-MHz transducer
+(Hewlett-Packard, Andover, Mass). End-systolic dimension, end-diastolic dimension, end-diastolic
+interventricular septal and posterior wall thickness of the LV are measured from parasternal M-mode
+acquisitions. End-systolic volume, end-diastolic volume and EF of the LV are obtained using the
+biplane Simpson method (10), and LV mass is calculated using the formula validated by Devereux and
+associates (11). On two-dimensional imaging of the AV in the parasternal short axis view, the etiology
+of AS is defined as bicuspid if there was clear identification of two leaflets during systole, rheumatic if
+commissural fusion and mitral valve involvement are observed, and degenerative if thickening and
+calcification of the leaflets are observed (9). AV calcification is graded as mild when a single spot or
+scattered small spots of echo brightness are observed; moderate when the calcified mass involves one
+or two leaflets; and severe when extensive thickening and calcified mass involve all leaflets (6). The
+maximal aortic jet velocity is recorded using apical, right parasternal or suprasternal window yielding
+the highest velocity signal. The maximal and mean pressure gradients across the aortic valve are
+calculated using a modified Bernoulli equation, and the AV area is estimated from the continuity
+equation using LV outflow tract diameter and flow velocity (12).
+
+8.3. Exercise Test
+Exercise testing is performed with a treadmill using a Bruce protocol modified by two warm-up stages.
+The test is defined as positive if it is stopped prematurely because exertional dyspnea, angina,
+dizziness or syncope occurs. Other predetermined criteria for cessation are ventricular tachycardia and
+a fall in systolic blood pressure of > 10 mmHg from baseline.
+
+8.4. Early Surgery
+Patients assigned to the early surgery group should undergo AV surgery within 2 months of
+randomization. Surgical procedures are performed with the use of a standard cardiopulmonary bypass.
+Aortic valve replacements will be performed using mechanical or bioprosthetic valves at the discretion
+of the surgeon. Concomitant coronary artery bypass graft at the time of AV surgery will be performed
+on patients with coronary artery disease detected incidentally on preoperative coronary angiography.
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+32
+Anticoagulation will be effectively maintained during the entire follow-up period in patients with
+mechanical valve replacement and for 3 months in those who received a biologic prosthesis and had no
+risk factors. All patients will be followed after AV surgery; at 4 weeks, 3 months, 6 months, and 1 year;
+and at 6-month intervals thereafter until close-out of the study. All patients will be educated to call a
+study coordinator or an investigator if they experience any adverse events.
+
+8.5. Conventional Treatment
+Patients assigned to the conventional treatment group will be treated according to the American Heart
+Association guidelines (1) and they will be educated to report immediately to a study coordinator or an
+investigator, if they experience any symptoms of exertional dyspnea, chest pain, syncope or
+presyncope. All patients will be followed at 3 months, 6 months, and 1 year; and at 6-month intervals
+thereafter until close-out of the study, and they will be referred for surgery if they become
+symptomatic during follow-up, left ventricular ejection fraction < 50% or increase of a peak aortic
+velocity > 0.5 m/s noted on follow-up echocardiography performed annually.
+
+9. Statistical Analysis
+Sample Size Calculation
+We tried to determine the rate of primary endpoint based on the randomized trials, but no randomized
+trial has been conducted to evaluate outcomes of early surgery. Using a prospective registry data, we
+recently reported that the estimated actuarial 6-year survival and cardiac mortality-free survival rates
+were 98±1% and 100% in the early surgery group, 68±6% and 76±5% in the conventional treatment
+group, respectively (p < 0.001) (9). Based on our prospective observational study, we estimated that a
+sample size of 144 patients would provide 80% power to detect a significant difference with respect to
+the primary end point at the 2-sided significance level of 0.05, assuming that the 4-year rate of a
+composite end point (cardiac mortality or operative mortality) would be 16% in the conventional
+treatment group and 2% in the early surgery group.
+
+Analysis of primary and secondary end point
+All primary and secondary endpoints will be analyzed on an intent-to-treat basis (all patients analyzed
+as part of their assigned treatment group). For intent-to-treat analysis, all patients who sign the written
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+33
+informed consent form and are randomized in the study will be included in the analysis, regardless of
+whether or not the correct treatment is administered, or whether crossover occurs.
+To analyze outcomes, estimates of cumulative event rates will be calculated by the Kaplan-Meier
+method and compared employing the log-rank test. For Kaplan-Meier analysis, we will analyze all
+clinical events by time to first event. Hazard ratios with 95% confidence intervals will be derived with
+the use of the Cox proportional hazards model.
+Subgroup analyses will be performed to determine whether the reduction in the primary end point after
+early surgery is consistent in 2 prespecified subgroups of peak aortic velocity (<5 m/s vs. ≥5 m/s) and
+etiology of AS (degenerative vs. non-degenerative), using Cox regression models with tests for
+interaction.
+
+Determination of Treatment Group Comparability
+Baseline demographic and clinical variables will be summarized for each of the treatment groups. All
+continuous variables will be summarized as mean and SDs, or medians (with 95% confidence intervals
+[CIs]) as appropriate. Continuous variables will be tested for normality with Kolmogorov-Smirnov test,
+and compared using the t test if data are normally distributed, otherwise using the Mann-Whitney U
+test. Categorical variables will be summarized as frequencies and percentages and compared between
+treatment groups using chi-square test or Fisher's exact test.
+
+10. Participant Safety and Confidentiality
+
+10.1. Elements of Informed Consent
+We anticipate enrolling a total of 144 patients. We do not plan to enroll prisoners or institutionalized
+individuals due to logistical limitations in follow-up. Pregnant women and children are excluded from
+the trial for ethical and safety concerns.
+Prior to collecting study data, the details of the study will be explained to the participant including: (1)
+that the study represents a research effort, (2) that participation is voluntary, and there is no penalty for
+withdrawal, (3) any anticipated costs to the patient for participation, (4) potential risks and benefits for
+participation, and (5) contact information for additional concerns. Patients are informed of the purpose
+of the study, the treatment alternative, the random manner of assignment to treatment, the need to be
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+34
+available for telephone follow-up and return clinic visits at regular intervals for questionnaires and/or
+medical tests, and of their options to accept or refuse entry into the study without affecting their
+clinical care.
+All sources of research materials will be in the form of medical records, echocardiograms,
+electrocardiograms and routine blood work. This material will be obtained both for routine medical
+care as well as for research purposes.
+In informed consent, we outline the potential risks, protection from these risks and potential benefits
+according to past experience and present knowledge. Informed consent will be obtained at least just
+before the subsequent randomly assigned procedure is to be performed.
+
+10.2 Risk Management
+The executive committee (EC) plays key roles in detecting any hazards the study may pose for its
+participants. Data are routinely collected and regularly monitored to document morbidity and mortality
+associated with study-related procedures. Serious adverse events are reported to the EC within 24
+hours. Timely reports will be made to the IRB. The DSMB is responsible for advising early
+termination of the trial in the event if there are non-rectifiable, serious safety concerns in the early
+surgery group. This study will not be stopped early based on efficacy results.
+
+10.3 Adverse Events/Serious Adverse Events
+
+10.3.1 Adverse Event
+For the purpose of this trial, an adverse event (AE) is defined as any untoward medical occurrence in a
+patient enrolled in a clinical study and which does not necessarily have to have a causal relationship
+with this treatment. An adverse event can therefore be any unfavorable and unintended sign (including
+an abnormal laboratory finding, for example), symptom or disease temporally associated with the
+study procedures, whether or not considered related to the investigational device or procedure.
+All events meeting the SAE criteria must be reported to the EC within 24 hours of becoming aware of
+the events. To be noted that all endpoint events fall into this category, and must be reported within the
+above timeframe.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+35
+10.3.2 Serious Adverse Event
+An adverse event is considered serious for this trial if it meets one or more of the following criteria
+ Results in death
+ Is life-threatening, i.e., the patient was, in the opinion of the Investigator, at immediate risk
+of death from the event as it occurred (It does not include an event that, had it occurred in a
+more severe form, might have caused death.)
+ Results in persistent or significant disability (significant, persistent or permanent change or
+disruption in patient's body function/structure, physical activity or quality of life)
+ Requires in-patient hospitalization or prolongs hospitalization
+ Necessitates immediate medical or surgical intervention to prevent permanent impairment
+of a body function/structure or to relieve unanticipated temporary impairment or damage.
+
+11. Study Organization
+
+11.1 Executive Committee (EC)
+The Executive Committee will approve the final trial design and protocol. This committee will also be
+responsible for reviewing the final results, determining the methods of presentation and publication,
+and selection of secondary projects and publications. Members of the committee will include the PI
+and persons who will organize this study.
+
+11.2 Data Safety Monitoring Board (DSMB)
+The DSMB committee will review the safety data from this study and make recommendations based on safety
+analyses of serious adverse events (SAEs), protocol deviation, and follow-up reports. The frequency of the
+DSMB meetings will be determined prior to study commencement. Additionally, the DSMB may call a meeting
+at any time if there is reason to suspect that safety is an issue.
+Prior to the DSMB's first review of the data, the DSMB charter will be drafted. The plan will define the
+stopping rules for stopping the trial for safety. The first meeting of the DSMB will be used for discussion of the
+protocol and an understanding of all the protocol elements. The DSMB will develop a consensus understanding
+of all trial endpoints and definitions used in the trial adjudication process.
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+36
+The DSMB is made up of five members who are experienced physicians and clinical trialists, not an
+Investigator of this trial. The composition of the DSMB will include at least two clinicians with expertise in
+cardiology. The DSMB will function in accordance with applicable regulatory guidelines. Dr. Moo-Song Lee
+will be the chairperson of DSMB of this trial.
+The DSMB chairperson will notify EC of any safety or compliance issues. The committee will also provide
+confidential recommendations, when necessary, of study termination based on the safety stopping rules
+determined at the study onset. All DSMB reports will remain strictly confidential, but will be made available to
+the regulatory body upon request.
+
+11.3 Clinical Events Committee
+The Clinical Events Committee (CEC) is made up of cardiologists who are not participants in the study. The
+CEC is charged with the development of specific criteria used for the categorization of clinical events in the
+study which are based on the protocol. The Clinical Events Committee blinded to treatment assignment will
+meet regularly to review and adjudicate all clinical events in which the required minimum data is available. The
+Committee will also review and rule on all clinical events that occur throughout the trial.
+
+11.4 Early Stopping Guideline
+An independent DSMB will review the safety data related to clinical events. The DSMB will be
+powered to recommend suspension of enrollment or termination of the study based on safety concerns.
+This study will not be stopped early based on efficacy results.
+
+12. Publication Policy
+No results will be released publicly before completion of the final analysis regarding the primary
+endpoint of this study. The statistical analysis will be performed according to the prespecified analysis
+plan as described in this protocol. The Executive Committee will review the primary outcome data
+according to the prespecified statistical analysis plan, and then will provide the data to the principal
+investigator which will in turn (a) first prepare a formal presentation to the Executive Committee
+members and (b) after taking under account the input and comments of the Executive Committee will
+proceed with submitting the manuscript.
+No study results will be released to the scientific or lay community without the approval of the
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+37
+Executive Committee.
+Authorship of the primary outcome paper will be credited collectively to the "Investigators."
+
+13. Regulatory Responsibilities
+
+13.1 Investigator ResponsibilitiesThe investigator is responsible for ensuring the investigation is
+conducted according to all signed agreements, the study protocol and GCP requirements.
+
+13.2 Institutional Review Board (IRB) Approval
+The investigator must submit the study protocol to his IRB and obtain their written approval before
+being allowed to conduct and participate in the study. The investigator is also responsible for
+fulfilling any conditions of approval imposed by the IRB, such as regular reporting, study timing, etc.
+
+13.3 Informed Consent
+Part of the IRB/EC approval must include approval of an Informed Consent text specific to the study.
+The investigator must administer this approved Informed Consent text to each prospective study
+patient and obtain the patient's signature on the text prior to enrollment in the study.
+
+13.4 Records
+Each investigator must maintain the following accurate, complete, and current records relating to the
+conduct of the investigation.
+
+ All correspondence with another investigator, an IRB
+ Records of each subject's case history, including study-required Case Report Forms,
+evidence of informed consent, all relevant observations of adverse drug effects, the
+condition of each subject upon entering and during the course of the investigation, relevant
+medical history, the results of all diagnostic testing, and the date of each study treatment.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+38
+13.5 Reports
+Below is a list of the reports which are the investigator's responsibility to generate. The table also
+shows to whom the report is to be sent and with what frequency or within what time constraints.
+
+Reports Required from Clinical Investigators:
+Type of Report
+Prepared
+by
+Investigator
+For:
+Time Constraints of
+Notification
+Serious adverse event
+IRB/EC
+Per local regulations.
+Annual progress report
+EC
+Submitted per 6 months.
+Deviations from
+investigational plan
+IRB/EC
+Per local standard.
+Informed consent not
+obtained
+IRB
+Notify within 5 days.
+Final summary report
+EC
+Within 1 month.
+
+14. Quality Control and Quality Assurance
+
+14.1 Ethics and Responsibility
+This study will be conducted in compliance with the protocol, local regulations where applicable, the
+International Conference on Harmonization (ICH) GCP guidelines and the Declaration of Helsinki.
+
+14.2 Confidentiality
+All information generated in this study must be considered highly confidential and must not be
+disclosed to any persons not directly concerned with the study. However, authorized regulatory
+officials will be allowed full access to the records. Only initials and unique patient numbers in case
+report forms will identify patients. All medications provided and patient bodily fluids and/or other
+materials collected specifically for this trial shall be used solely in accordance with this protocol.
+
+[Extracted table 1]
+|Type of Report|Prepared by Investigator<br>For:|Time Constraints of<br>Notification|
+|---|---|---|
+|Serious adverse event|IRB/EC|Per local regulations.|
+|Annual progress report|EC|Submitted per 6 months.|
+|Deviations from<br>investigational plan|IRB/EC|Per local standard.|
+|Informed consent not<br>obtained|IRB|Notify within 5 days.|
+|Final summary report|EC|Within 1 month.|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+39
+15. Protocol Deviations
+This study will be conducted as described in this protocol, and The IRB or EC will be informed of all
+protocol changes by the principal investigator in accordance with the IRB or EC established procedure.
+No deviations from the protocol of any type will be made without complying with all the IRB or EC
+established procedures.
+It is intended that all statistical analyses specified in this protocol will be performed. However, it is
+conceivable that due to the study observations, some scheduled analyses may not be performed. In
+addition, study observations or analysis results may suggest the need for additional statistical analyses
+of the collected study data. In either case, deviations (subtractions or additions) from the planned
+statistical analysis will be fully described in the final clinical study report. Furthermore, any additional
+analyses performed beyond those specified in this protocol will be descriptive in nature and will not
+include hypothesis testing for the purposes of inferential conclusions.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+40
+Appendix
+
+Appendix A. Definitions
+Death: The cause of death (cardiac vs. non-cardiac) will be adjudicated. If the cause of death cannot
+be adjudicated the most severe cause will be considered.
+Cardiovascular death is defined as death due to any of the following:
+1. Acute myocardial infarction.
+2. Heart failure
+3. Arrhythmia or conduction abnormality.
+4. Sudden cardiac death
+5. Death due to complication of cardiac surgery or intervention
+6. Cerebrovascular disease
+7. Other cardiovascular disease
+8. Any death in which a cardiac cause cannot be excluded
+Non-cardiac death is defined as a death not due to cardiac causes (as defined above).
+
+Sudden cardiac death is defined as either witnessed instantaneous unexpected death, unwitnessed
+unexpected death, if other cause of death was excluded with reasonable certainty.
+
+Operative Mortality: death within 30 days of the index procedure
+
+Clinical thromboembolic events: the acute onset of clinical symptoms or signs of embolism and the
+occurrence of new lesions on imaging studies.
+
+Hospitalization due to congestive heart failure: an unplanned, urgent admission for the management
+of congestive heart failure.
+
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+41
+Appendix B. List of Committee
+
+Center
+Investigators
+Executive Committee
+Asan Medical Center
+
+
+Samsung Seoul Hospital
+Duk-Hyun Kang, MD
+Jong-Min Song, MD
+Jae-Won Lee, MD
+Seung Woo Park, MD
+Sung-Ji Park, MD
+Pyo-Won Park, MD
+Data Safety Monitoring Board
+Moo-Song Lee, MD
+Kee-Joon Choi, MD
+Gi-Byoung Nam, MD
+Ki-Hoon Han, MD
+Young-Hak Kim, MD
+Clinical Events Committee
+
+Seung-Hwan Lee, MD
+Soo-Jin Kang, MD
+Duk-Woo Park, MD
+
+[Extracted table 1]
+||Center|Investigators|
+|---|---|---|
+|Executive Committee|Asan Medical Center<br>Samsung Seoul Hospital|Duk-Hyun Kang, MD<br>Jong-Min Song, MD<br>Jae-Won Lee, MD<br>Seung Woo Park, MD<br>Sung-Ji Park, MD<br>Pyo-Won Park, MD|
+|Data Safety Monitoring Board||Moo-Song Lee, MD<br>Kee-Joon Choi, MD<br>Gi-Byoung Nam, MD<br>Ki-Hoon Han, MD<br>Young-Hak Kim, MD|
+|Clinical Events Committee||Seung-Hwan Lee, MD<br>Soo-Jin Kang, MD<br>Duk-Woo Park, MD|
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+42
+References
+1. Bonow RO, Carabello B, Chatterjee K, de Leon AC Jr, Faxon DP, Freed MD, Gaasch WH, Lytle
+BW, Nishimura RA, O'Gara PT, O'Rourke RA, Otto CM, Shah PM, Shanewise JS. ACC/AHA 2006
+guidelines for the management of patients with valvular heart disease: a report of the American
+College of Cardiology/American Heart Association Task Force on Practice Guidelines (Writing
+Committee to Revise the 1998 Guidelines for the Management of Patients with Valvular Heart
+Disease). Circulation. 2006;114:450-527.
+2. Vahanian A, Baumgartner H, Bax J, Butchart E, Dion R, Filippatos G, Flachskampf F, Hall R, Iung
+B, Kasprzak J, Nataf P, Tornos P, Torracca L, Wenink A. Guidelines on the management of valvular
+heart disease: The Task Force on the Management of Valvular Heart Disease of the European Society
+of Cardiology. Eur Heart J. 2007;28:230-268.
+3. Pellikka PA, Sarano ME, Nishimura RA, Malouf JF, Bailey KR, Scott CG, Barnes ME, Tajik AJ.
+Outcome of 622 adults with asymptomatic, hemodynamically significant aortic stenosis during
+prolonged follow-up. Circulation. 2005;111:3290-3295.
+4. Edwards FH, Peterson ED, Coombs LP, DeLong ER, Jamieson WR, Shroyer ALW, Grover FL.
+Prediction of operative mortality after valve replacement surgery. J Am Coll Cardiol. 2001;37:885-892.
+5. Ambler G, Omar RZ, Royston P, Kinsman R, Keogh BE, Taylor KM. Generic, simple risk
+stratification model for heart valve surgery. Circulation. 2005;112:224-231.
+6. Rosenhek R, Binder T, Porenta G, Lang I, Christ G, Schemper M, Maurer G, Baumgartner H.
+Predictors of outcome in severe, asymptomatic aortic stenosis. N Engl J Med. 2000;343:611-617.
+7. Otto CM, Burwash IG, Legget ME, Munt BI, Fujioka M, Healy NL, Kraft CD, Miyake-Hull CY,
+Schwaegler RG. Prospective study of asymptomatic valvular aortic stenosis. Clinical,
+echocardiographic, and exercise predictors of outcome. Circulation. 1997;95:2262-2270.
+8. Rosenhek R, Zilberszac R, Schemper M, et al. Natural history of very severe aortic stenosis.
+Circulation. 2010;121:151-156.
+9. Kang DH, Park SJ, Rim JH, Yun SC, Kim DH, Song JM, Choo SJ, Park SW, Song JK, Lee JW,
+Park PW. Early surgery versus conventional treatment in asymptomatic very severe aortic stenosis.
+Circulation. 2010;121:1502-1509.
+10. Schiller NB, Shah PM, Crawford M, DeMaria A, Devereux R, Feigenbaum H, Gutgesell H,
+Reichek N, Sahn D, Schnittger I, et al. Recommendations for quantitation of the left ventricle by two-
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+43
+dimensional echocardiography. American Society of Echocardiography Committee on Standards,
+Subcommittee on Quantitation of Two-Dimensional Echocardiograms. J Am Soc Echocardiogr.
+1989;2:358-367.
+11. Devereux RB, Alonso DR, Lutas EM, Gottlieb GJ, Campo E, Sachs I, Reichek N.
+Echocardiographic assessment of left ventricular hypertrophy: comparison to necropsy findings. Am J
+Cardiol. 1986;57:450-458.
+12. Skjaerpe T, Hegrenaes L, Hatle L. Noninvasive estimation of valve area in patients with aortic
+stenosis by Doppler ultrasound and two-dimensional echocardiography. Circulation. 1985;72:810-818.
+
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+44
+Summary of Changes
+
+Protocol Version Date February/2010 was changed to July/2014.
+
+Amendment
+
+Section 5. Study Timelines
+"Overall study will require 6 years to complete, including 2 years of recruitment and a minimum of 4
+years of follow-up" was changed to "Overall study will require 8 years to complete, including 4 years
+of recruitment and a minimum of 4 years of follow-up"
+Study completion date was changed from July/2016 to July/2017.
+
+
+Section 7 and 8 were changed to update the indication of exercise test following
+recommendations in the revised 2014 AHA/ACC Valvular Heart Disease Guidelines.
+Added in the final protocol
+In the 2006 AHA/ACC Valvular Heart Disease Guideline, exercise testing in asymptomatic patients
+with AS may be considered to elicit exercise-induced symptoms and abnormal blood pressure
+responses (Class IIb), but in the revised 2014 AHA/ACC Valvular Heart Disease Guideline, exercise
+testing is reasonable to confirm the absence of symptoms in asymptomatic patients with severe AS
+(Class IIa). According to the 2014 AHA/ACC Valvular Heart Disease Guideline, exercise testing will
+be selectively performed to evaluate symptoms for patients with non-specific symptoms and those
+with a positive exercise test will be excluded from the entry.
+
+Exclusion Criteria
+8.
+Positive exercise test
+
+8.3. Exercise Test
+Exercise testing is performed with a treadmill using a Bruce protocol modified by two warm-up
+stages. The test is defined as positive if it is stopped prematurely because exertional dyspnea, angina,
+dizziness or syncope occurs. Other predetermined criteria for cessation are ventricular tachycardia and
+a fall in systolic blood pressure of > 10 mmHg from baseline.
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+45
+ Statistical Analysis Plan
+
+Sample Size Calculation
+We tried to determine the rate of primary endpoint based on the randomized trials, but no randomized
+trial has been conducted to evaluate outcomes of early surgery. Using a prospective registry data, we
+recently reported that the estimated actuarial 6-year survival and cardiac mortality-free survival rates
+were 98±1% and 100% in the early surgery group, 68±6% and 76±5% in the conventional treatment
+group, respectively (p < 0.001) (9). Based on our prospective observational study, we estimated that a
+sample size of 144 patients would provide 80% power to detect a significant difference with respect to
+the primary end point at the 2-sided significance level of 0.05, assuming that the 4-year rate of a
+composite end point (cardiac mortality or operative mortality) would be 16% in the conventional
+treatment group and 2% in the early surgery group.
+
+Analysis of primary and secondary end point
+All primary and secondary endpoints will be analyzed on an intent-to-treat basis (all patients analyzed
+as part of their assigned treatment group). For intent-to-treat analysis, all patients who sign the written
+informed consent form and are randomized in the study will be included in the analysis, regardless of
+whether or not the correct treatment is administered, or whether crossover occurs.
+To analyze outcomes, estimates of cumulative event rates will be calculated by the Kaplan-Meier
+method and compared employing the log-rank test. For Kaplan-Meier analysis, we will analyze all
+clinical events by time to first event. Hazard ratios with 95% confidence intervals will be derived with
+the use of the Cox proportional hazards model.
+Subgroup analyses will be performed to determine whether the reduction in the primary end point after
+early surgery is consistent in 2 prespecified subgroups of peak aortic velocity (<5 m/s vs. ≥5 m/s) and
+etiology of AS (degenerative vs. non-degenerative), using Cox regression models with tests for
+interaction.
+
+Determination of Treatment Group Comparability
+Baseline demographic and clinical variables will be summarized for each of the treatment groups. All
+continuous variables will be summarized as mean and SDs, or medians (with 95% confidence intervals
+
+
+서울아산병원 임상연구심의위원회(AMC IRB)/기관생명윤리심의위원회
+
+
+
+46
+[CIs]) as appropriate. Continuous variables will be tested for normality with Kolmogorov-Smirnov test,
+and compared using the t test if data are normally distributed, otherwise using the Mann-Whitney U
+test. Categorical variables will be summarized as frequencies and percentages and compared between
+treatment groups using chi-square test or Fisher's exact test.
+
+

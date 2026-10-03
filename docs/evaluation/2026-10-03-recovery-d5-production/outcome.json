@@ -1,0 +1,41 @@
+{
+  "one_fresh_invocation": true,
+  "runtime_code_sha": "b01adbc48703df29da16dd54aa80df5a72ee7ccf",
+  "verified_model": "gpt-6-luna",
+  "verified_effort": "medium",
+  "elapsed_seconds": 164.0593325249938,
+  "native_mcp_calls": 20,
+  "model_exec_wrapper_calls": 1,
+  "guard_counted_calls": 21,
+  "save_attempts": 1,
+  "domain_answers": [
+    "probably_yes",
+    "no",
+    "no_information"
+  ],
+  "domain_judgment": "some_concerns",
+  "revision": 5,
+  "output_guard": 6000,
+  "actual_output": 6458,
+  "reactive_output_overshoot": 458,
+  "usage": {
+    "input_tokens": 1194317,
+    "cached_input_tokens": 1098752,
+    "output_tokens": 6458,
+    "reasoning_output_tokens": 3328
+  },
+  "uncached_input_tokens": 95565,
+  "prior_exscel_plus_this_diagnostic": {
+    "input_tokens": 8007683,
+    "output_tokens": 21913,
+    "cached_input_tokens": 7561472,
+    "uncached_input_tokens": 446211,
+    "reasoning_output_tokens": 8069
+  },
+  "scope_qualification": "EXSCEL diagnostic stages plus this RECOVERY invocation only; not complete project spend; no provider pricing available",
+  "guard_note": "Raw runner retains historical proposal variable names; accepted payload is unequivocally Domain5 and derived fields are named correctly here",
+  "availability": "74 native PDF pages; archived registry raw missing; no live substitute",
+  "independent_human_approval": false,
+  "label_agreement_eligible": false,
+  "scientific_disposition": "Retrieval/binding and 5.3 distinction demonstrated. Joint 5.1 correspondence inference remains debatable; no all-criteria success or accuracy-gain claim."
+}

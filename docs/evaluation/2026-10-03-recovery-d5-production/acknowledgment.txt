@@ -1,0 +1,183 @@
+{
+  "candidate": {
+    "evidence": {
+      "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310": {
+        "end": 4678,
+        "end_line": 121,
+        "handle": "eh_122bbac5f99a027b",
+        "identity": "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310",
+        "kind": "narrative",
+        "page": 6,
+        "quote": "n engl j med 382;2 nejm.org January 9, 2020\n116\nThe new engl and jour nal of medicine\nAortic-Valve Replacement Procedures\nIn the early-surgery group, surgical aortic-valve\nreplacement was successfully performed in all\n72 patients in whom the procedure was attempt-\ned; 36 patients (50%) received a mechanical valve\nand 36 (50%) received a biologic prosthesis. All\nthe patients except those who crossed over un-\nderwent surgery within 2 months after random-\nization; the median time between randomization\nand surgery was 23 days (interquartile range, 10 to\n36). There was no operative mortality in the early-\nsurgery group.\nOf the 72 patients assigned to conservative care,\n53 patients (74%) underwent surgical aortic-valve\nreplacement (52 patients) or transcatheter aortic-\nvalve replacement (TAVR) (1 patient) during fol-\nlow-up, mainly because of the development of\nsymptoms (in 43 patients). Indications for aortic-\nvalve replacement are listed in Table S2. Among\nthese 53 patients, urgent surgery was performed\nin 9 patients (17%) who were admitted from the\nemergency department. There was no operative\nmortality among the patients who later underwent\naortic-valve replacement; the median time from\nrandomization to aortic-valve replacement was\n700 days (interquartile range, 277 to 1469). Ad-\nditional information on surgical procedures and\nresults are provided in Table S3 and the Supple-\nmental Surgical Results section in the Supplemen-\ntary Appendix.\nFollow-up and End Points\nData collection ended in April 2019, when the last\nenrolled patient had completed 4 years of follow-\nup. The median follow-up was 6.2 years (interquar-\ntile range, 5.0 to 7.4) in the early-surgery group\nand 6.1 years (interquartile range, 4.5 to 7.3) in the\nconservative-care group. No patients were lost to\nfollow-up.\nIn an intention-to-treat analysis including all\nthe trial patients, 1 of 73 patients assigned to early\nsurgery (1%) and 11 of 72 patients assigned to\nconservative care (15%) died from cardiovascu-\nlar causes (hazard ratio, 0.09; 95% confidence\ninterval [CI], 0.01 to 0.67) (Table 2). The number\nneeded to treat to prevent one death from cardio-\nvascular causes within 4 years was 20 patients. The\ncumulative incidence of the primary end point\n(operative mortality or death from cardiovascu-\nlar causes during the follow-up period), as cal-\nculated with the use of a Kaplan-Meier analysis,\nwas 1% at both 4 and 8 years in the early-surgery\ngroup, as compared with 6% at 4 years and 26%\nat 8 years in the conservative-care group (P = 0.003)\n(Fig. 2A).\nA total of 5 deaths from any cause (7% of the\npatients) occurred in the early-surgery group\nand 15 deaths from any cause (21%) occurred in\nthe conservative-care group (hazard ratio, 0.33;\n95% CI, 0.12 to 0.90). The cumulative incidence\nof death from any cause was lower in the early-\nOutcome\nConservative Care\n (N = 72)\nEarly Surgery\n (N = 73)\nHazard Ratio\n(95% CI)*\nnumber (percent)\nPrimary end point: operative mortality or death from\ncardiovascular causes during follow-up\u2020\n11 (15)\n1 (1)\n0.09 (0.01-0.67)\u2021\nSecondary end points\nDeath from any cause\n15 (21)\n5 (7)\n0.33 (0.12-0.90)\u00a7\nClinical thromboembolic event\n4 (6)\n1 (1)\n0.30 (0.04-2.31)\u00a7\nStroke\n3\n1\nMyocardial infarction\n1\n0\nRepeat aortic-valve surgery\n2 (3)\n0\n0.19 (0.10-8.00)\u00a7\nHospitalization for heart failure\n8 (11)\n0\n0.05 (0.00-1.05)\u00a7\n* The 95% confidence intervals have not been adjusted for multiple comparisons, and therefore inferences drawn from\nthese intervals may not be reproducible.\n\u2020 Operative mortality was defined as death during or within 30 days after surgery.\n\u2021 This hazard ratio was calculated with the use of a Fine and Gray competing-risks analysis.\n\u00a7 This hazard ratio was calculated with the use of stratified Cox proportional-hazards models with Firth correction.\nTable 2. Primary and Secondary End Points.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|\n|---|---|---|---|\n|Table 2. Primary and Secondary End Points.||||\n|Conservative Care Early Surgery Hazard Ratio<br>Outcome (N = 72) (N = 73) (95% CI)*<br>number (percent)||||\n|Primary end point: operative mortality or death from<br>cardiovascular causes during follow-up\u2020|11 (15)|1 (1)|0.09 (0.01-0.67)\u2021|\n|Secondary end points||||\n|Death from any cause|15 (21)|5 (7)|0.33 (0.12-0.90)\u00a7|\n|Clinical thromboembolic event 4 (6) 1 (1) 0.30 (0.04-2.31)\u00a7||||\n|Stroke|3|1||\n|Myocardial infarction 1 0||||\n|Repeat aortic-valve surgery|2 (3)|0|0.19 (0.10-8.00)\u00a7|\n|Hospitalization for heart failure 8 (11) 0 0.05 (0.00-1.05)\u00a7||||",
+        "source_id": "source_26304a09859b2b93a0b5af5fd313a1cfb244b0905f06935852a1e8fd0927404e",
+        "source_version": "sha256:ff994908530de691df9c98fcaacaa98cc625ca142b707cf38372f9e65e06d650",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "kang25-recovery-2020"
+      },
+      "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34": {
+        "end": 4785,
+        "end_line": 103,
+        "handle": "eh_45882a0e281c9667",
+        "identity": "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34",
+        "kind": "narrative",
+        "page": 3,
+        "quote": "n engl j med 382;2 nejm.org January 9, 2020\n113\nEarly Surgery for Asymptomatic Aortic Stenosis\nTrial Procedures\nEligibility was determined after each patient un-\nderwent a thorough evaluation of symptoms and\nmedical records and results of echocardiography\nand exercise testing were reviewed. Details re-\ngarding echocardiography and exercise testing are\nprovided in the Supplementary Appendix, available\nat NEJM.org. Patients were randomly assigned in\na 1:1 ratio to early surgery or conservative care\nwith the use of a Web-based interactive response\nsystem. The assignment to each treatment group\nwas computer-generated and stratified according\nto the participating center by means of a permuted-\nblock sequence with variable block size.\nThe protocol specified that patients assigned\nto the early-surgery group should undergo aortic-\nvalve replacement within 2 months after random-\nization. Patients assigned to the conservative-care\ngroup received treatment according to the ACC-\nAHA guidelines,2,12 and they were referred for\nsurgery if they became symptomatic during fol-\nlow-up, if the left ventricular ejection fraction\ndecreased to less than 50%, or if the peak aortic\njet velocity increased each year by more than 0.5 m\nper second on follow-up echocardiography. Details\nregarding surgical procedures and patient follow-\nup are provided in the Supplementary Appendix.\nTrial End Points\nThe primary end point was a composite of op-\nerative mortality or death from cardiovascular\ncauses during the follow-up period (continuing\nuntil 4 years after the last patient was enrolled).\nPrespecified secondary end points included death\nfrom any cause, repeat aortic-valve surgery, clini-\ncal thromboembolic events, and hospitalization\nfor heart failure during follow-up. Specific defi-\nnitions of trial end points are provided in the\nSupplementary Appendix.\nStatistical Analysis\nOn the basis of our previous observational study,13\nwe estimated that a sample of 144 patients would\nprovide the trial with 80% power, at a two-sided\nsignificance level of 0.05, to detect a significant\ndifference with respect to the primary end point,\nassuming that the incidence of the primary end\npoint would be 16% in the conservative-care group\nand 2% in the early-surgery group during a follow-\nup period that continued until 4 years after the last\npatient was enrolled. In calculating the sample size\nby a log-rank survival power analysis, we also\nassumed that an enrollment period of 2 years\nwould be needed to complete enrollment and that\nthe rate of loss to follow-up would be 10%.\nAnalyses were performed on an intention-to-\ntreat basis. Differences between the treatment\ngroups were evaluated with the use of Student's\nt-test for continuous variables and Fisher's exact\ntest for categorical variables. Because random-\nization was stratified according to the partici-\npating center, we analyzed the end points with\nthe use of stratified Cox proportional-hazards re-\ngression with Firth correction. Estimates of cu-\nmulative incidences were calculated by the Kaplan-\nMeier method and were compared with the use\nof the log-rank test. For the Kaplan-Meier analy-\nsis, we analyzed all clinical events according to\nthe time to the first event. Hazard ratios with\n95% confidence intervals were derived with the\nuse of the stratified Cox proportional-hazards\nmodel with Firth correction. The 95% confidence\nintervals have not been adjusted for multiple com-\nparisons, and therefore inferences drawn from\nthese intervals may not be reproducible.\nFor the primary end-point analysis, we also\nperformed a competing-risk analysis in which\ndeath due to a cause other than a cardiovascular\ncause was considered as a competing risk, and\nhazard ratios with 95% confidence intervals were\ncalculated with the use of the method of Fine and\nGray. The cumulative incidences of the primary\nend point were also compared between the treat-\nment groups with the use of Gray's test. Subgroup\nanalyses were performed to determine whether\nthe result of the primary end point was consistent\nin two prespecified subgroups defined according\nto peak aortic velocity and cause of aortic stenosis.\nA per-protocol analysis of the primary end point\nwas also performed. All reported P values were\ntwo-sided, and a P value of less than 0.05 was\nconsidered to indicate statistical significance. We\nused SAS software, version 9.4 (SAS Institute), for\nstatistical analyses.\nResults\nPatients\nFrom July 2010 through April 2015, a total of 273\nasymptomatic patients with very severe aortic\nstenosis were screened for participation in the\ntrial, and 145 were enrolled and were randomly\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+        "source_id": "source_26304a09859b2b93a0b5af5fd313a1cfb244b0905f06935852a1e8fd0927404e",
+        "source_version": "sha256:ff994908530de691df9c98fcaacaa98cc625ca142b707cf38372f9e65e06d650",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "kang25-recovery-2020"
+      },
+      "sha256:6bc5c2b8b5377d865c673e41e175c18901ccb60b0095fe56a7b8c0173fd2aef7": {
+        "end": 4845,
+        "end_line": 105,
+        "handle": "eh_6bc5c2b8b5377d86",
+        "identity": "sha256:6bc5c2b8b5377d865c673e41e175c18901ccb60b0095fe56a7b8c0173fd2aef7",
+        "kind": "narrative",
+        "page": 2,
+        "quote": "n engl j med 382;2 nejm.org January 9, 2020\n112\nThe new engl and jour nal of medicine\nA\nortic stenosis is the most common\nvalvular disease for which surgery is in-\ndicated in developed countries, and the\nprevalence of this condition is increasing because\nof the aging population.1 Aortic-valve replacement\nis the only effective therapy for severe symptom-\natic aortic stenosis, and despite limited data from\nrandomized clinical trials, current guidelines rec-\nommend aortic-valve replacement because of the\ndismal natural history of this disorder.1,2 Although\none third to one half of patients with severe aortic\nstenosis are asymptomatic at the time of diagno-\nsis,3,4 appropriate timing of intervention for these\npatients remains controversial.5,6 On the basis of\na consensus opinion that the potential benefit of\naortic-valve replacement to prevent sudden death\nin asymptomatic patients (which has an incidence\nof approximately 1% per year) may not be greater\nthan the risk of death during or within 30 days\nafter surgery (often called operative mortality) and\ndeath related to the aortic-valve prosthesis, obser-\nvation is recommended for the majority of asymp-\ntomatic patients with severe aortic stenosis, and\naortic-valve replacement is recommended once\nsymptoms develop.1,2,4 However, advances in sur-\ngical techniques and aortic-valve prostheses may\nchange the risk-to-benefit ratio of aortic-valve re-\nplacement, especially among patients at low sur-\ngical risk.7-9\nThe Randomized Comparison of Early Surgery\nversus Conventional Treatment in Very Severe\nAortic Stenosis (RECOVERY) trial was designed\nto compare long-term clinical outcomes of early\nsurgical aortic-valve replacement with those of a\nconservative care strategy based on current guide-\nlines in asymptomatic patients with very severe\naortic stenosis (transvalvular velocity \u22654.5 m per\nsecond). The major hypothesis of this trial was\nthat the incidence of death from cardiovascular\ncauses would be lower among patients who under-\nwent early surgery than among those who received\nconservative care.\nMethods\nTrial Design and Oversight\nWe conducted this multicenter, randomized, par-\nallel-group, open-label trial involving asymptom-\natic patients with very severe aortic stenosis who\nwere candidates for either early surgery or conser-\nvative care at four medical centers in Korea. The\ntrial protocol (available with the full text of this\narticle at NEJM.org) was designed by the principal\ninvestigator and approved by the institutional re-\nview board at each participating center. The Ko-\nrean Institute of Medicine, which supported the\ntrial coordinators during the first 2 years of the\ntrial, had no role in the collection, analysis, or\ninterpretation of the data, writing of the manu-\nscript, or any other aspect of the trial. The trial\nreceived no other external sources of funding.\nThe trial was conducted in accordance with\nthe principles of the Declaration of Helsinki.\nAn independent clinical-events committee ad-\njudicated all serious adverse events, and a data\nand safety monitoring board oversaw the safety\nof the trial. The first draft of the manuscript\nwas prepared by the first author and was re-\nviewed and edited by all the authors. All the\nauthors made the decision to submit the manu-\nscript for publication and vouch for the accu-\nracy and completeness of the data and for the\nfidelity of the trial to the protocol.\nPatient Selection\nWe screened consecutive patients who were 20 to\n80 years of age and who presented with very se-\nvere aortic stenosis, which was assessed by means\nof transthoracic echocardiography. In accordance\nwith the 1998 American College of Cardiology-\nAmerican Heart Association (ACC-AHA) guide-\nlines and a traditional definition of severe aortic\nstenosis,10,11 we defined very severe aortic steno-\nsis as an aortic-valve area of 0.75 cm2 or less\nwith either a peak aortic jet velocity of 4.5 m per\nsecond or greater or a mean transaortic gradient\nof 50 mm Hg or greater.\nIn accordance with the 2006 ACC-AHA guide-\nlines on surgical indications for severe aortic\nstenosis,12 patients were excluded if they had ex-\nertional dyspnea, syncope, presyncope or angina,\na left ventricular ejection fraction of less than 50%,\nor clinically significant aortic regurgitation or\nmitral valve disease or if they had undergone\ncardiac surgery. Exercise testing was selectively\nperformed to evaluate patients with nonspecific\nsymptoms, and patients with a positive exercise\ntest were excluded. We also excluded patients who\nwere not candidates for early surgery because of\nage (>80 years) or a medical condition such as\ncancer. All the participants provided written in-\nformed consent.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+        "source_id": "source_26304a09859b2b93a0b5af5fd313a1cfb244b0905f06935852a1e8fd0927404e",
+        "source_version": "sha256:ff994908530de691df9c98fcaacaa98cc625ca142b707cf38372f9e65e06d650",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "kang25-recovery-2020"
+      },
+      "sha256:acef2e54a4ab565935b8b47b6b4dab217f575caeaf6fa6b90f6c948e6f663146": {
+        "end": 3733,
+        "end_line": 75,
+        "handle": "eh_acef2e54a4ab5659",
+        "identity": "sha256:acef2e54a4ab565935b8b47b6b4dab217f575caeaf6fa6b90f6c948e6f663146",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "The new england\njournal of medicine\nn engl j med 382;2 nejm.org January 9, 2020\n111\nestablished in 1812\nJanuary 9, 2020\nvol. 382\nno. 2\nFrom the Division of Cardiology (D.-H.\nKang, S.-A.L., S.L., D.-H. Kim, J.-M.S.,\nJ.-K.S.) and the Departments of Cardio-\nthoracic Surgery (C.-H.C., J.-W.L.) and\nBiostatistics (S.-C.Y.), Asan Medical Cen-\nter, College of Medicine, University of\nUlsan, the Division of Cardiology, Sam-\nsung Medical Center, Sungkyunkwan Uni-\nversity School of Medicine (S.-J.P., S.-W.P.),\nthe Division of Cardiology, Severance Hos-\npital (G.-R.H.), and the Cardiovascular\nCenter, Seoul National University Hospi-\ntal (H.-K.K.) - all in Seoul, South Korea.\nAddress reprint requests to Dr. Kang at\nthe Division of Cardiology, Asan Medical\nCenter, College of Medicine, University of\nUlsan, 388-1, Poongnap-dong, Songpa-gu,\nSeoul, South Korea, or at dhkang@amc\n.seoul.kr, or to Dr. S.-W. Park at the Heart\nVascular Stroke Institute, Samsung Med-\nical Center, Sungkyunkwan University\nSchool of Medicine, 81 Irwon-ro, Gang-\nnam-gu, Seoul, South Korea, or at s.woo\n.park@samsung.com.\nThis article was published on November\n16, 2019, at NEJM.org.\nN Engl J Med 2020;382:111-9.\nDOI: 10.1056/NEJMoa1912846\nCopyright \u00a9 2019 Massachusetts Medical Society.\nBACKGROUND\nThe timing and indications for surgical intervention in asymptomatic patients with\nsevere aortic stenosis remain controversial.\nMETHODS\nIn a multicenter trial, we randomly assigned 145 asymptomatic patients with very\nsevere aortic stenosis (defined as an aortic-valve area of \u22640.75 cm2 with either an\naortic jet velocity of \u22654.5 m per second or a mean transaortic gradient of \u226550 mm Hg)\nto early surgery or to conservative care according to the recommendations of cur-\nrent guidelines. The primary end point was a composite of death during or within\n30 days after surgery (often called operative mortality) or death from cardiovascular\ncauses during the entire follow-up period. The major secondary end point was death\nfrom any cause during follow-up.\nRESULTS\nIn the early-surgery group, 69 of 73 patients (95%) underwent surgery within 2 months\nafter randomization, and there was no operative mortality. In an intention-to-treat\nanalysis, a primary end-point event occurred in 1 patient in the early-surgery group\n(1%) and in 11 of 72 patients in the conservative-care group (15%) (hazard ratio,\n0.09; 95% confidence interval [CI], 0.01 to 0.67; P = 0.003). Death from any cause\noccurred in 5 patients in the early-surgery group (7%) and in 15 patients in the con-\nservative-care group (21%) (hazard ratio, 0.33; 95% CI, 0.12 to 0.90). In the con-\nservative-care group, the cumulative incidence of sudden death was 4% at 4 years\nand 14% at 8 years.\nCONCLUSIONS\nAmong asymptomatic patients with very severe aortic stenosis, the incidence of the\ncomposite of operative mortality or death from cardiovascular causes during the\nfollow-up period was significantly lower among those who underwent early aortic-\nvalve replacement surgery than among those who received conservative care. (Fund-\ned by the Korean Institute of Medicine; RECOVERY ClinicalTrials.gov number,\nNCT01161732.)\nabstr act\nEarly Surgery or Conservative Care for Asymptomatic\nAortic Stenosis\nDuk-Hyun Kang, M.D., Ph.D., Sung-Ji Park, M.D., Ph.D., Seung-Ah Lee, M.D., Sahmin Lee, M.D., Ph.D.,\nDae-Hee Kim, M.D., Ph.D., Hyung-Kwan Kim, M.D., Ph.D., Sung-Cheol Yun, Ph.D., Geu-Ru Hong, M.D., Ph.D.,\nJong-Min Song, M.D., Ph.D., Cheol-Hyun Chung, M.D., Ph.D., Jae-Kwan Song, M.D., Ph.D.,\nJae-Won Lee, M.D., Ph.D., and Seung-Woo Park, M.D., Ph.D.\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+        "source_id": "source_26304a09859b2b93a0b5af5fd313a1cfb244b0905f06935852a1e8fd0927404e",
+        "source_version": "sha256:ff994908530de691df9c98fcaacaa98cc625ca142b707cf38372f9e65e06d650",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "kang25-recovery-2020"
+      }
+    },
+    "identity": "sha256:5995b115f032ff9609eff71a3322c16f8e201419bc7d652dd58f91a3bb394a07",
+    "proposal": {
+      "results": [
+        {
+          "applicability": {
+            "design": "individual_parallel",
+            "evidence": [
+              "eh_acef2e54a4ab5659",
+              "eh_6bc5c2b8b5377d86",
+              "eh_45882a0e281c9667",
+              "eh_122bbac5f99a027b"
+            ],
+            "rationale": "Patients were randomized individually 1:1 to parallel early-surgery or conservative-care assignments."
+          },
+          "bindings": [
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/effect_measure"
+              },
+              "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/estimate"
+              },
+              "value_digest": "sha256:9faf3d320d7aa8183268a0c57abcdd960997e7126ee429b62f28be9934878a12"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/precision"
+              },
+              "value_digest": "sha256:ae10e72f8a701e230dba665939e22567f27ca0fa99007f342d799ad3d9e9e36c"
+            },
+            {
+              "evidence_index": 0,
+              "field": {
+                "path": "/reported/endpoint/name"
+              },
+              "value_digest": "sha256:ad46cf3143aa364279cbc96f5bd242165e2973654e5cacf759014d2b021d4ced"
+            }
+          ],
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "specified"
+          },
+          "evidence": [
+            {
+              "handle": "eh_122bbac5f99a027b",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_45882a0e281c9667",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_6bc5c2b8b5377d86",
+              "kind": "narrative"
+            },
+            {
+              "handle": "eh_acef2e54a4ab5659",
+              "kind": "narrative"
+            }
+          ],
+          "kind": "assessable",
+          "relation": "exact",
+          "relation_rationale": "The primary endpoint is the requested composite of operative mortality or cardiovascular death during follow-up, in the randomized early-surgery versus conservative-care groups, analyzed by intention to treat from randomization through follow-up ending four years after the last enrollee.",
+          "reported": {
+            "analysis_population": "All randomized patients in an intention-to-treat analysis: 73 assigned to early surgery and 72 assigned to conservative care.",
+            "effect_measure": "Hazard ratio",
+            "endpoint": {
+              "definition": null,
+              "name": "Primary end point: operative mortality or death from cardiovascular causes during follow-up"
+            },
+            "estimate": "0.09",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% confidence interval [CI], 0.01 to 0.67"
+          },
+          "requested_outcome": "Composite of operative mortality or cardiovascular death during follow-up",
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Early surgery",
+                "id": "early_surgery"
+              },
+              {
+                "assignment": "Conservative care",
+                "id": "conservative_care"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "Operative mortality (death during or within 30 days after surgery) or death from cardiovascular causes during follow-up, adjudicated by an independent clinical-events committee.",
+              "metric": "Composite of operative mortality or cardiovascular death during follow-up"
+            },
+            "outcome_definition": "Composite of operative mortality or cardiovascular death during follow-up",
+            "time_point_or_window": {
+              "description": "From randomization through follow-up until four years after the last patient was enrolled; median follow-up was 6.2 years in early surgery and 6.1 years in conservative care.",
+              "kind": "described"
+            }
+          },
+          "trial_id": "kang25-recovery-2020"
+        }
+      ]
+    }
+  },
+  "identity": "sha256:f3f0f12129a6cc9378b78b29e189ed94e9a4e45efd49acf1a817ba7ba477985e",
+  "kind": "review",
+  "purpose": "proposal",
+  "workflow_basis": 2
+}
+Acknowledge this exact Review record as researcher? [yes/no; ask the model to choose another candidate before approval] {"acknowledgment": "sha256:0a52322e9e227861edf90b4871c45542785b22b33171df86dfd4ab86c92108fa", "acknowledgment_record": {"caller": "cli", "identity": "sha256:0a52322e9e227861edf90b4871c45542785b22b33171df86dfd4ab86c92108fa", "method": "cli", "observed_at": "2026-10-03T15:17:22.870603Z", "purpose": "proposal", "review_identity": "sha256:f3f0f12129a6cc9378b78b29e189ed94e9a4e45efd49acf1a817ba7ba477985e", "workflow_basis": 2}, "approved": true, "continuation": {"authority": "host", "domain_id": "domain:randomization", "operation": "get_domain_context", "trial_id": "kang25-recovery-2020"}, "outcome": "success", "phase": "assessment", "state_revision": 4}

@@ -1,0 +1,227 @@
+{
+  "code_sha": "b01adbc48703df29da16dd54aa80df5a72ee7ccf",
+  "guard_identity": "sha256:201da5b6ce5a1955c864b45f296bb57c93e8230f1d65b14df8659a89ea733211",
+  "guards": {
+    "wall_seconds": 600,
+    "idle_seconds": 180,
+    "tool_calls": 30,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": null,
+    "uncached_input_tokens": null,
+    "output_tokens": 6000
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/response.txt",
+    "-"
+  ],
+  "stop_reason": "first model-owned D5 save accepted",
+  "exit_code": 0,
+  "elapsed_seconds": 164.0593325249938,
+  "model_code_calls": 1,
+  "mcp_calls": 20,
+  "proposal_attempts": 1,
+  "model_code_calls_completed": 1,
+  "mcp_calls_completed": 20,
+  "accepted_proposal_validation": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 5,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "kang25-recovery-2020",
+        "domain_id": "domain:randomization",
+        "cursor": null,
+        "max_response_bytes": null
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:6501ecc2df67626fac2adb1c014ec1488c2cb7d603e5adb24b27c7210a580e5a",
+        "trial_id": "kang25-recovery-2020",
+        "domain_id": "domain:selection",
+        "judgment": "some_concerns",
+        "driver_questions": [
+          "sq:selection:multiple-analyses"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:selection:prespecified-analysis",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:24073ec1c815a7cd23783e4ac2b2856140f5de6b31338c820134ef1f9025ae52",
+                "sha256:b1530cb7162d3c9366bb02d7169012b13b8361fd6d440c08bc9e2b7114c46979",
+                "sha256:4a4db61b21438e7b397c81c94401b980c29fb6ff915653a2152b000aefe3ac51",
+                "sha256:f807c3fc5b52e3697f1fc1a5cff0220f0d49e5275be55edd5a5ade23f250dc8d",
+                "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34",
+                "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "The captured protocol/SAP does not establish when investigators accessed unblinded results, and it does not show whether the reported Fine\u2013Gray HR was prespecified elsewhere."
+              ],
+              "support_attribution": "host_asserted"
+            },
+            {
+              "question_id": "sq:selection:multiple-measurements",
+              "status": "supported",
+              "evidence": [
+                "sha256:fb45d1def9f691b8d0d07545671dba2f7e976aa3785783434c7d58c22d1a067f",
+                "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34",
+                "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310",
+                "sha256:24073ec1c815a7cd23783e4ac2b2856140f5de6b31338c820134ef1f9025ae52"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "host_asserted"
+            },
+            {
+              "question_id": "sq:selection:multiple-analyses",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:4a4db61b21438e7b397c81c94401b980c29fb6ff915653a2152b000aefe3ac51",
+                "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34",
+                "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310",
+                "sha256:19262bce4c37b1affc20502c56c9922b56920d3888b8cf344164a9d7f7c95c1f"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "The captured Sources do not explain why the Fine\u2013Gray estimate was used for the reported primary HR or establish whether eligible alternative analyses were withheld based on results."
+              ],
+              "support_attribution": "host_asserted"
+            }
+          ],
+          "identity": "sha256:dd309c4a4accbdf2b3b787976dd27d2acae7047232ed68f6837fe46b850b1df3"
+        }
+      },
+      "trial_ready_for_review": false,
+      "retry": false
+    }
+  },
+  "accepted_validations": {
+    "selection": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 5,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "kang25-recovery-2020",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:6501ecc2df67626fac2adb1c014ec1488c2cb7d603e5adb24b27c7210a580e5a",
+          "trial_id": "kang25-recovery-2020",
+          "domain_id": "domain:selection",
+          "judgment": "some_concerns",
+          "driver_questions": [
+            "sq:selection:multiple-analyses"
+          ],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:selection:prespecified-analysis",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:24073ec1c815a7cd23783e4ac2b2856140f5de6b31338c820134ef1f9025ae52",
+                  "sha256:b1530cb7162d3c9366bb02d7169012b13b8361fd6d440c08bc9e2b7114c46979",
+                  "sha256:4a4db61b21438e7b397c81c94401b980c29fb6ff915653a2152b000aefe3ac51",
+                  "sha256:f807c3fc5b52e3697f1fc1a5cff0220f0d49e5275be55edd5a5ade23f250dc8d",
+                  "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34",
+                  "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [
+                  "The captured protocol/SAP does not establish when investigators accessed unblinded results, and it does not show whether the reported Fine\u2013Gray HR was prespecified elsewhere."
+                ],
+                "support_attribution": "host_asserted"
+              },
+              {
+                "question_id": "sq:selection:multiple-measurements",
+                "status": "supported",
+                "evidence": [
+                  "sha256:fb45d1def9f691b8d0d07545671dba2f7e976aa3785783434c7d58c22d1a067f",
+                  "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34",
+                  "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310",
+                  "sha256:24073ec1c815a7cd23783e4ac2b2856140f5de6b31338c820134ef1f9025ae52"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "host_asserted"
+              },
+              {
+                "question_id": "sq:selection:multiple-analyses",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:4a4db61b21438e7b397c81c94401b980c29fb6ff915653a2152b000aefe3ac51",
+                  "sha256:45882a0e281c9667c4dda94be150e882f2968d7ea8b5690fe5512df4d6eb2f34",
+                  "sha256:122bbac5f99a027ba87ca38248480ad942efd86aea3a00b5031818313dbca310",
+                  "sha256:19262bce4c37b1affc20502c56c9922b56920d3888b8cf344164a9d7f7c95c1f"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [
+                  "The captured Sources do not explain why the Fine\u2013Gray estimate was used for the reported primary HR or establish whether eligible alternative analyses were withheld based on results."
+                ],
+                "support_attribution": "host_asserted"
+              }
+            ],
+            "identity": "sha256:dd309c4a4accbdf2b3b787976dd27d2acae7047232ed68f6837fe46b850b1df3"
+          }
+        },
+        "trial_ready_for_review": false,
+        "retry": false
+      }
+    }
+  },
+  "proposal_construction_stats": {
+    "selection": {
+      "started": 1,
+      "completed": 1,
+      "rejected": 0,
+      "identical": 0,
+      "previous": null
+    }
+  },
+  "proposal_rejections": 0,
+  "proposal_attempts_completed": 1,
+  "rejection_records": [],
+  "other_error_records": [],
+  "consecutive_identical_rejections": 0,
+  "usage": {
+    "input_tokens": 1194317,
+    "cached_input_tokens": 1098752,
+    "output_tokens": 6458,
+    "reasoning_output_tokens": 3328
+  },
+  "uncached_input_tokens": 95565,
+  "input_limits_enabled": false,
+  "output_overshoot": 458,
+  "tool_start_overshoot": 0,
+  "proposal_start_overshoot": 0,
+  "no_invocation_retry": true
+}

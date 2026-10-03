@@ -1,0 +1,48 @@
+{
+  "all_frozen_prelaunch_hashes_unchanged": true,
+  "source_bytes_unchanged": true,
+  "checks": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/manifest.json": {
+      "matches": true,
+      "sha256": "deb544781a767a437b123cfc946b2bec97658fb93fba1a969b679c593f0fa548"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/prompt.txt": {
+      "matches": true,
+      "sha256": "d02ae6d669d01e18471fee90a825f5659fe6fc2a91be4e429f4076536579a591"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/instructions.md": {
+      "matches": true,
+      "sha256": "c5b8c4ddb4c2f37b5e0f4e4d3a2fc8d2a015a1c9d3e5fcebbe3c11c5ca0434d3"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/native-evidence-manifest.json": {
+      "matches": true,
+      "sha256": "cdd3f7ace10738bd6d86caecd89aed4ae87933a366a4a67b364d18f58ad42d3e"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/native-source-packet.txt": {
+      "matches": true,
+      "sha256": "6f624ee32402acba07712ae2421a8337c6581432eca216d25a7e5c19d507d62a"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/approved-seed-state.json": {
+      "matches": true,
+      "sha256": "a309456a4e1a9163f3c0c390cded47058ecaa7aef64bdd737a1cfbb2e9ffc536"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/recovery-d5-b01adbc/approval-authorization.json": {
+      "matches": true,
+      "sha256": "d487ed04ed32fb1e81c30139163491425c0a09ad02b02e1a18e3c5ff4879c17b"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/run-recovery-d5.py": {
+      "matches": true,
+      "sha256": "e84c0254ad5b6604e8350e3885d17906fe5761ba58fe21f2e762cf63637be3dd"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/prepare-recovery-d5.py": {
+      "matches": true,
+      "sha256": "6b7789c24adac504ac606b5cd4c7cf69ef81c6cf4ffe9c28eaa0c03032343fbd"
+    },
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-recovery-d5-protocol/protocol.md": {
+      "matches": true,
+      "sha256": "5792dafc03d2dec9642c8de7f7f97ff63ac546912d40f14f7681692ef9578d28"
+    }
+  },
+  "focused_validation": "9 diagnostic evidence preflight tests passed; git diff --check passed",
+  "no_active_diagnostic_process": true
+}
