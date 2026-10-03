@@ -138,6 +138,9 @@ def test_request_proposal_approval_accepts_exact_review(tmp_path: Path) -> None:
     assert result["outcome"] == "success"
     assert result["data"]["approved"] is True
     assert review_reference in messages[0]
+    assert '"scope_review"' in messages[0]
+    assert '"reported_time_point_or_window": null' in messages[0]
+    assert "Exact scope is a caller assertion" in messages[0]
     assert result["data"]["acknowledgment_record"]["review_identity"] == review_reference
     assert result["data"]["acknowledgment_record"]["caller"] == "researcher"
     assert result["data"]["acknowledgment_record"]["method"] == "mcp_elicitation"
@@ -160,6 +163,8 @@ def test_modern_proposal_approval_binds_input_request_to_exact_review(
     request = result.input_required.input_requests["proposal_review"]
     assert isinstance(request, mcp_types.ElicitRequest)
     assert review_reference in request.params.message
+    assert '"scope_review"' in request.params.message
+    assert '"reported_time_point_or_window": null' in request.params.message
 
 
 def test_modern_proposal_approval_emits_codex_compatible_schema(tmp_path: Path) -> None:

@@ -1,0 +1,17 @@
+{
+  "artifact_sha256_unchanged": "845b43ae089382cfd53c3f32dd492c5222752ce60e4cd1ddf880cb4427a0c6d6",
+  "result_identity_unchanged": "sha256:4ccb6a6304e544e3da19a9fbe9cc321edcb70fc01a5370269577a6f9ed423030",
+  "source_bound_paths": [
+    "/reported/effect_measure",
+    "/reported/estimate",
+    "/reported/endpoint/name"
+  ],
+  "typed_target_timing_kind": "described",
+  "reported_has_timing_field": false,
+  "reported_has_estimand_field": false,
+  "pack_content_hash_unchanged": "sha256:d6ff8a6af60f92a9f810f24f1264303a8fa90d0ac1d600ed66a37be9eefa6623",
+  "both_verifiers_pass": true,
+  "paid_invocations_added": 0,
+  "semantic_failure": "Inherited exact assertion and specified clarity despite the rationale and Table 2 describing a days1\u20139 model for a days1\u20136 target. No independent typed reported timing to compare; numeric binding does not prove scope equivalence.",
+  "deterministic_behavior": "Exact plus a caller-declared conflicting/unclear/unavailable facet is rejected. Different textual timing descriptions alone are not heuristically rejected. No new semantic inference gate."
+}

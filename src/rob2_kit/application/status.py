@@ -5,6 +5,7 @@ from ..packs import SCIENTIFIC_PACK
 from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
 from .evidence import _evidence_catalog, main_report_reading_status
+from .result_scope import result_scope_review
 from .working import investigation_projection, working_checkpoint_status
 
 _STATUS_RECOVERABLE_NARRATIVE_TEXT_BUDGET = 12_288
@@ -230,6 +231,11 @@ def get_status(workspace: str | Path, *, include_evidence_text: bool = False) ->
             else []
         ),
         main_report_reading=main_report_reading,
+        scope_review=(
+            result_scope_review((state.get("proposal") or {}).get("payload", {}).get("results", []))
+            if state.get("phase") == "proposal"
+            else []
+        ),
         conditions=conditions,
         authoritative_wording=public["wording"],
         counters=dict(COUNTERS),

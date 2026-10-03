@@ -161,6 +161,17 @@ specified. Clarity is your report of the scope, not a server-verified scientific
 conclusion. The server reconstructs the captured outcome and closed effect of
 interest, then derives retained Evidence and bindings. Do not put Evidence
 objects inside `reported`.
+Inspect `scope_review` in validation and pending Proposal status. It separates
+the target from represented reported fields and lists numeric/endpoint binding
+paths. Reported timing and estimand are not separately typed: null in this
+projection means inspect the selected passages, not that the source omits them.
+Compare the reported model window, not only the medication or follow-up window,
+and distinguish knowing both scopes from establishing their equivalence. Record
+material conflicts or unknowns in clarity and rationale; use a supported
+non-exact relation when exactness is not established. Compatible alternate
+wording can express the same scope; different wording alone is not a mismatch.
+Keep the requested target unchanged. Proposal approval displays this same
+comparison for researcher interpretation and does not certify exactness.
 Selected narrative Evidence in `get_status` is locator-only by default. Reuse
 familiar inspected passages; set `include_evidence_text:true` for bounded text
 when reorienting, or follow exact `read_pages` recovery for unfamiliar passages.

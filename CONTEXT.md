@@ -69,6 +69,17 @@ Context delivery completion does not establish scientific sufficiency or
 Domain, Trial, or Batch completion. Status and rejected calls recover a pending
 page only while its Source, Result, pack, and Domain checkpoint basis remains current.
 
+Proposal validation, pending status and approval display a read-only `scope_review`
+of the exact target, reported endpoint/population and source-bound field paths.
+Reported timing and estimand are not separately represented in the Result type;
+their null projection calls for source interpretation, not an absence finding.
+Exactness is a host assertion about equivalent scope, not a consequence of known
+target metadata or bound numbers. Material conflict or uncertainty belongs in
+clarity and rationale; exact relation with a declared non-specified facet is
+repaired, while a supported non-exact candidate can proceed to researcher review.
+Alternate wording is not compared heuristically. Historical Result identities
+and approvals remain unchanged.
+
 An open Trial may have one replaceable **working checkpoint** containing
 source-located observations, interpretations, terminology, unread ranges, open
 questions, and unfinished drafts. It is bound to the Trial's captured Source

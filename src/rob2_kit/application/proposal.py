@@ -26,6 +26,7 @@ from .evidence import (
     _result_value_contains,
     main_report_read_gaps,
 )
+from .result_scope import result_scope_review
 from .working import main_report_identity, working_checkpoint_status
 
 
@@ -1792,7 +1793,7 @@ def validate_proposal(
                     ),
                 },
             )
-        return _reasoning_proposal_receipt(state, prior)
+        return _reasoning_proposal_receipt(state, prior, validation)
     if parsed.expected_revision != state.get("revision", 0):
         raise WorkflowConflict(parsed.expected_revision, int(state.get("revision", 0)))
     record = {
@@ -1810,10 +1811,15 @@ def validate_proposal(
         parsed.expected_revision,
         {f"reasoning:{reasoning_id}": record},
     )
-    return _reasoning_proposal_receipt(committed, record)
+    return _reasoning_proposal_receipt(committed, record, validation)
 
 
-def _reasoning_proposal_receipt(state: dict[str, Any], record: dict[str, Any]) -> dict[str, Any]:
+def _reasoning_proposal_receipt(
+    state: dict[str, Any], record: dict[str, Any], validation: dict[str, Any]
+) -> dict[str, Any]:
+    proposal = validation.get("proposal_payload") or (state.get("proposal") or {}).get(
+        "payload", {}
+    )
     next_action = {
         "expected_revision": state.get("revision", 0),
     }
@@ -1821,6 +1827,7 @@ def _reasoning_proposal_receipt(state: dict[str, Any], record: dict[str, Any]) -
         "success",
         state,
         validation_scope="structure_and_references_only",
+        scope_review=result_scope_review(proposal.get("results", [])),
         repairs=[],
         next_action=next_action,
         continuation={

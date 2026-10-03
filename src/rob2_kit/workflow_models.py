@@ -1486,6 +1486,31 @@ class AssessableResult(StrictModel):
         return self
 
 
+class ResultScopeReview(StrictModel):
+    """Read-only comparison of represented scope; not an entailment judgment."""
+
+    trial_id: TrialId
+    result_identity: Identity
+    claimed_relation: AssessableTargetRelation
+    relation_rationale: NonBlankText
+    target: ResultTarget
+    reported_endpoint: ReportedEndpoint
+    reported_analysis_population: NonBlankText
+    reported_time_point_or_window: None = None
+    reported_effect_of_interest: None = None
+    source_bound_reported_fields: tuple[NonBlankText, ...]
+    caller_declared_clarity: ResultClarity
+    verification: Literal["requires_source_interpretation"] = "requires_source_interpretation"
+    instruction: NonBlankText = (
+        "Compare outcome definition, time window, estimand and population against the selected "
+        "source passages. Null reported timing/estimand means not separately represented, not "
+        "absent from the source. Known target fields, a matching endpoint label, or bound numbers "
+        "do not prove exactness. Keep material conflict/uncertainty in clarity and rationale; "
+        "choose a supported non-exact relation or another candidate when exact scope is not "
+        "established. Do not redefine the target."
+    )
+
+
 class AssessableResultDraft(StrictModel):
     """The MCP proposal form before the server adds canonical leaf digests."""
 
@@ -1518,6 +1543,8 @@ class AssessableResultDraft(StrictModel):
             "the server records every facet as unclear. Include data-cut chronology in "
             "time_point and estimate/precision consistency in source_table_meaning. Exact "
             "relation requires every Result scope facet to be specified."
+            " Specified does not itself prove compatibility with the target; preserve material "
+            "scope conflicts even when both scopes are known."
         ),
     )
     applicability: ResultApplicabilityDraft = Field(

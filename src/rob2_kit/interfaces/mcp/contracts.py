@@ -40,6 +40,7 @@ from rob2_kit.workflow_models import (
     RelativePath,
     ReportedEndpoint,
     ResultClarity,
+    ResultScopeReview,
     ResultTarget,
     ReviewPurpose,
     SearchReceiptHandle,
@@ -919,6 +920,7 @@ class TrialReviewSummary(PublicModel):
 
 
 class StatusData(PublicModel):
+    scope_review: tuple[ResultScopeReview, ...] = ()
     trial_dispositions: dict[
         TrialId,
         Literal["pending", "reviewable", "assessed", "needs_input", "unsupported_design", "failed"],
@@ -1518,6 +1520,7 @@ class ReasoningProposalSaveAction(PublicModel):
 
 class ValidateProposalData(PublicModel):
     validation_scope: Literal["structure_and_references_only"]
+    scope_review: tuple[ResultScopeReview, ...] = ()
     repairs: tuple[RepairDefect, ...] = ()
     next_action: ReasoningProposalSaveAction
 
@@ -3117,6 +3120,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                 "main_report_reading",
                 "conditions",
                 "trial_review",
+                "scope_review",
             )
             if key in value
         }

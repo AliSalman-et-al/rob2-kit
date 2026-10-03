@@ -42,6 +42,7 @@ from ._state import (
     internal_path,
 )
 from .contracts import WorkflowConflict
+from .result_scope import result_scope_review
 from .status import _continuation
 
 
@@ -1013,6 +1014,7 @@ def _clear_discarded_derivatives(root: Path) -> None:
 class ProposalApprovalContext:
     review: dict[str, Any] | None
     acknowledgment: dict[str, Any] | None
+    scope_review: tuple[dict[str, Any], ...] = ()
 
 
 def proposal_approval_context(workspace: str | Path) -> ProposalApprovalContext:
@@ -1021,9 +1023,12 @@ def proposal_approval_context(workspace: str | Path) -> ProposalApprovalContext:
     state = _state(root)
     review = state.get("review")
     acknowledgment = state.get("proposal_acknowledgment")
+    candidate = review.get("candidate", {}) if isinstance(review, dict) else {}
+    results = candidate.get("proposal", {}).get("results", [])
     return ProposalApprovalContext(
         review=review if isinstance(review, dict) and review.get("purpose") == "proposal" else None,
         acknowledgment=acknowledgment if isinstance(acknowledgment, dict) else None,
+        scope_review=tuple(result_scope_review(results)),
     )
 
 

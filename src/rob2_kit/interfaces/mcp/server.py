@@ -3492,7 +3492,11 @@ def select_visual_evidence(
     description=(
         "Before saving a Proposal, submit its Result cards and a brief evidence-based assessment "
         "for each submitted Trial. Explain why the reported result supports the target relation "
-        "and chosen time point or window. Distinguish baseline eligibility from exclusions or "
+        "and chosen time point or window. Compare outcome definition, reported model window, "
+        "estimand and population separately. Known target fields or matching numbers do not "
+        "prove exactness; preserve scope differences or unknowns and use a supported non-exact "
+        "relation when exact scope is not established. Distinguish baseline eligibility from "
+        "exclusions or "
         "missing observations in the reported analysis. Identify material conflicting evidence "
         "and unresolved facts; do not infer unavailable facts. The server validates structure, "
         "Evidence references and workflow requirements, not scientific correctness. Construct "
@@ -3683,6 +3687,16 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
             },
         )
     review_reference = review.get("identity")
+    approval_message = (
+        "Confirm whether to approve this exact Proposal Review. Decline or cancel to leave it "
+        "pending. Exact scope is a caller assertion, not verified by numeric source bindings. "
+        "Inspect outcome definition, time window, estimand and population against the selected "
+        "passages; request a corrected relation or another candidate when exactness is "
+        "unsupported.\n"
+        + json.dumps(
+            {"review": review, "scope_review": approval_context.scope_review}, sort_keys=True
+        )
+    )
     if not isinstance(review_reference, str):
         return _content(
             "request_proposal_approval",
@@ -3711,10 +3725,7 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         if responses is None:
             request = mcp_types.ElicitRequest(
                 params=mcp_types.ElicitRequestFormParams(
-                    message=(
-                        "Confirm whether to approve this exact Proposal Review. Decline or "
-                        "cancel to leave it pending.\n" + json.dumps(review, sort_keys=True)
-                    ),
+                    message=approval_message,
                     requested_schema=ProposalApprovalDecision.model_json_schema(),
                 )
             )
@@ -3790,8 +3801,7 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
         return _content("request_proposal_approval", approved)
     try:
         response = await ctx.elicit(
-            "Confirm whether to approve this exact Proposal Review. Decline or cancel to leave "
-            "it pending.\n" + json.dumps(review, sort_keys=True),
+            approval_message,
             ProposalApprovalDecision,
         )
     except (MCPError, ToolError):
