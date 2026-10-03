@@ -1,0 +1,151 @@
+[
+  {
+    "event_ordinal": 24,
+    "id": "item_11",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "allsop-2014",
+      "domain_id": "domain:randomization",
+      "expected_revision": 13,
+      "answers": [
+        {
+          "question_id": "sq:randomization:sequence",
+          "answer": "yes",
+          "justification": "The report says an independent statistician generated a randomization list for each site using random block sizes in Stata (page 3, lines 28\u201330), directly evidencing random sequence generation.",
+          "bases": [
+            {
+              "evidence": "eh_8bdfb7ef29fe8133",
+              "role": "direct_support"
+            }
+          ],
+          "unknowns": [],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:randomization:concealment",
+          "answer": "no_information",
+          "justification": "The report establishes independent sequence generation but does not describe how upcoming assignments were concealed from enrolling staff before assignment. Blinding after allocation is not concealment. The described method does not establish allocation control or safeguards.",
+          "bases": [
+            {
+              "evidence": "eh_8bdfb7ef29fe8133",
+              "role": "context"
+            }
+          ],
+          "unknowns": [
+            "Whether assignment was remotely/centrally administered or otherwise concealed before enrolment."
+          ],
+          "limitations": [
+            {
+              "premise": "How forthcoming assignments were concealed before enrolment and assignment.",
+              "stopping_rationale": "The main report describes list generation and post-assignment blinding, not concealment mechanics; the protocol is described as available on request, and I cannot infer concealment from independence of the statistician."
+            }
+          ],
+          "counterevidence": [
+            {
+              "evidence": [
+                "eh_8bdfb7ef29fe8133"
+              ],
+              "implication": "Blinding patients, investigators and assessors is reported after treatment allocation, but that does not show allocation concealment beforehand."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:randomization:baseline-imbalance",
+          "answer": "probably_no",
+          "justification": "Groups were similar across the reported baseline characteristics except CWS (P=.02) and Sheehan Disability Scale (P=.002), which were prespecified in analysis as covariates; group sizes 27 versus 24 are not substantially different. This is not evidence of a process failure, though two baseline differences leave some concern.",
+          "bases": [
+            {
+              "evidence": "eh_a9584e60e4851fb0",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_b053652db9562fef",
+              "role": "context"
+            }
+          ],
+          "unknowns": [],
+          "counterevidence": [
+            {
+              "evidence": [
+                "eh_a9584e60e4851fb0"
+              ],
+              "implication": "Two measures\u2014baseline withdrawal and disability\u2014differed statistically between groups, although the report states they were adjusted for."
+            }
+          ]
+        }
+      ]
+    },
+    "result": {
+      "content": [],
+      "structured_content": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 14,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "allsop-2014",
+            "domain_id": "domain:deviations"
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "checkpoint": {
+            "identity": "sha256:4659f73544ee8ea659b02cb2ffeacc8e44be28f7ea6282c54df2966c130dcf43",
+            "trial_id": "allsop-2014",
+            "domain_id": "domain:randomization",
+            "judgment": "some_concerns",
+            "driver_questions": [
+              "sq:randomization:concealment"
+            ],
+            "evidence_sufficiency": {
+              "claims": [
+                {
+                  "question_id": "sq:randomization:sequence",
+                  "status": "supported",
+                  "evidence": [
+                    "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                  ],
+                  "search_receipts": [],
+                  "unresolved_premises": [],
+                  "support_attribution": "not_established"
+                },
+                {
+                  "question_id": "sq:randomization:concealment",
+                  "status": "unresolved",
+                  "evidence": [
+                    "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                  ],
+                  "search_receipts": [],
+                  "unresolved_premises": [
+                    "How forthcoming assignments were concealed before enrolment and assignment."
+                  ],
+                  "support_attribution": "not_established"
+                },
+                {
+                  "question_id": "sq:randomization:baseline-imbalance",
+                  "status": "supported",
+                  "evidence": [
+                    "sha256:a9584e60e4851fb05a171b8136276462b682447347b3575c345b0bb25e6a8cc8",
+                    "sha256:b053652db9562feff726b6b8d484987ae18042225172b803ac49a17617bd3f84"
+                  ],
+                  "search_receipts": [],
+                  "unresolved_premises": [],
+                  "support_attribution": "not_established"
+                }
+              ],
+              "identity": "sha256:f89d9b2b02b924ccfad14f04632d246c5c2319437126a3811793a2b7aad1c25f"
+            }
+          },
+          "trial_ready_for_review": false,
+          "retry": false
+        }
+      }
+    },
+    "error": null,
+    "status": "completed"
+  }
+]

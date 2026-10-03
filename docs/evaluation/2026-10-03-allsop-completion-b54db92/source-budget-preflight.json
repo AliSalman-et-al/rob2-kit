@@ -1,0 +1,32 @@
+{
+  "source_projection_utf8_bytes": 72190,
+  "prompt_utf8_bytes": 2197,
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "enabled_tools": [
+    "get_status",
+    "review_trial",
+    "close_trial",
+    "finalize_batch",
+    "get_domain_context",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "list_sources",
+    "render_page",
+    "select_visual_evidence",
+    "save_domain_judgment"
+  ],
+  "uncached_preflight_basis": "Original 17-page source text plus compact source/guidance/tool overhead can reasonably fit the retained 200k uncached guard. Prior incomplete run used 130492 uncached; full review/output remains runtime-monitored, not a guaranteed bound.",
+  "guards": {
+    "wall_seconds": 1200,
+    "idle_seconds": 180,
+    "tool_calls": 60,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": 5000000,
+    "uncached_input_tokens": 200000,
+    "output_tokens": 15000
+  }
+}

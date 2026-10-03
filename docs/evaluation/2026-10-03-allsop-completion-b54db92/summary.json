@@ -1,0 +1,37 @@
+{
+  "code_sha": "b54db92ebef65ca20734bdf31a24ad8a25ced728",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "terminal": "voluntary incomplete final response",
+  "elapsed_seconds": 63.89076330199896,
+  "accepted_domains": [
+    "domain:randomization"
+  ],
+  "judgments": {
+    "domain:randomization": "some_concerns"
+  },
+  "complete_assessment": false,
+  "artifact_present": false,
+  "usage": {
+    "input_tokens": 519863,
+    "cached_input_tokens": 449280,
+    "output_tokens": 1717,
+    "reasoning_output_tokens": 187
+  },
+  "uncached_input_tokens": 70583,
+  "mcp_calls": 13,
+  "save_calls": 1,
+  "save_rejections": 0,
+  "other_tool_conditions": 2,
+  "overshoots": {
+    "input_overshoot": 0,
+    "uncached_input_overshoot": 0,
+    "output_overshoot": 0,
+    "tool_start_overshoot": 0,
+    "save_start_overshoot": 0
+  },
+  "source_database_hashes_unchanged": true,
+  "known_case_mechanism_check": true,
+  "paid_invocations": 1,
+  "operator_answer_repairs": 0
+}

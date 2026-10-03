@@ -1,0 +1,255 @@
+{
+  "code_sha": "b54db92ebef65ca20734bdf31a24ad8a25ced728",
+  "guard_identity": "sha256:c1d4d36c933c0019285e2255cda1c308662a76681ddee0776bed6e59429e4b43",
+  "guards": {
+    "wall_seconds": 1200,
+    "idle_seconds": 180,
+    "tool_calls": 60,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": 5000000,
+    "uncached_input_tokens": 200000,
+    "output_tokens": 15000
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-allsop-full-b54db92/response.txt",
+    "-"
+  ],
+  "stop_reason": null,
+  "exit_code": 0,
+  "elapsed_seconds": 63.89076330199896,
+  "model_code_calls": 0,
+  "mcp_calls": 13,
+  "save_calls": 1,
+  "model_code_calls_completed": 0,
+  "mcp_calls_completed": 13,
+  "accepted_checkpoint": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 14,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:deviations"
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:4659f73544ee8ea659b02cb2ffeacc8e44be28f7ea6282c54df2966c130dcf43",
+        "trial_id": "allsop-2014",
+        "domain_id": "domain:randomization",
+        "judgment": "some_concerns",
+        "driver_questions": [
+          "sq:randomization:concealment"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:randomization:sequence",
+              "status": "supported",
+              "evidence": [
+                "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:randomization:concealment",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "How forthcoming assignments were concealed before enrolment and assignment."
+              ],
+              "support_attribution": "not_established"
+            },
+            {
+              "question_id": "sq:randomization:baseline-imbalance",
+              "status": "supported",
+              "evidence": [
+                "sha256:a9584e60e4851fb05a171b8136276462b682447347b3575c345b0bb25e6a8cc8",
+                "sha256:b053652db9562feff726b6b8d484987ae18042225172b803ac49a17617bd3f84"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "not_established"
+            }
+          ],
+          "identity": "sha256:f89d9b2b02b924ccfad14f04632d246c5c2319437126a3811793a2b7aad1c25f"
+        }
+      },
+      "trial_ready_for_review": false,
+      "retry": false
+    }
+  },
+  "accepted_domains": {
+    "domain:randomization": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:deviations"
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:4659f73544ee8ea659b02cb2ffeacc8e44be28f7ea6282c54df2966c130dcf43",
+          "trial_id": "allsop-2014",
+          "domain_id": "domain:randomization",
+          "judgment": "some_concerns",
+          "driver_questions": [
+            "sq:randomization:concealment"
+          ],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:randomization:sequence",
+                "status": "supported",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:randomization:concealment",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:8bdfb7ef29fe813358b8538dbfc6418a569788b8a7cf45827fab9dc6638db04b"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [
+                  "How forthcoming assignments were concealed before enrolment and assignment."
+                ],
+                "support_attribution": "not_established"
+              },
+              {
+                "question_id": "sq:randomization:baseline-imbalance",
+                "status": "supported",
+                "evidence": [
+                  "sha256:a9584e60e4851fb05a171b8136276462b682447347b3575c345b0bb25e6a8cc8",
+                  "sha256:b053652db9562feff726b6b8d484987ae18042225172b803ac49a17617bd3f84"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "not_established"
+              }
+            ],
+            "identity": "sha256:f89d9b2b02b924ccfad14f04632d246c5c2319437126a3811793a2b7aad1c25f"
+          }
+        },
+        "trial_ready_for_review": false,
+        "retry": false
+      }
+    }
+  },
+  "per_domain": {
+    "domain:randomization": {
+      "started": 1,
+      "completed": 1,
+      "rejected": 0,
+      "identical": 0,
+      "previous": null
+    }
+  },
+  "rejections": 0,
+  "save_calls_completed": 1,
+  "rejection_records": [],
+  "other_error_records": [
+    {
+      "tool": "get_domain_context",
+      "fingerprint": "2c8ce1e184fb0c8a2b95317393227477f1812ad89d69016f12568218d6ce0c97",
+      "consecutive_identical": 1,
+      "result": {
+        "content": [],
+        "structured_content": {
+          "outcome": "condition",
+          "head": {
+            "phase": "assessment",
+            "state_revision": 13,
+            "next_action": {
+              "operation": "get_domain_context",
+              "authority": "host",
+              "trial_id": "allsop-2014",
+              "domain_id": "domain:randomization"
+            },
+            "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+          },
+          "condition": {
+            "code": "domain_context_header_oversized",
+            "detail": " required_page_size=16612;retry with a larger max_response_bytes"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "tool": "finalize_batch",
+      "fingerprint": "12868e7b7096beb517e647ed5ac7882eda92d3c9779e7142fe70f392bfd12ab7",
+      "consecutive_identical": 1,
+      "result": {
+        "content": [],
+        "structured_content": {
+          "outcome": "condition",
+          "head": {
+            "phase": "assessment",
+            "state_revision": 14,
+            "next_action": {
+              "operation": "get_domain_context",
+              "authority": "host",
+              "trial_id": "allsop-2014",
+              "domain_id": "domain:deviations"
+            },
+            "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+          },
+          "condition": {
+            "code": "invalid_request",
+            "detail": "finalize_batch is available only when next_action.operation is finalize_batch; call get_status and follow next_action."
+          }
+        }
+      },
+      "error": null
+    }
+  ],
+  "consecutive_identical_rejections": 0,
+  "usage": {
+    "input_tokens": 519863,
+    "cached_input_tokens": 449280,
+    "output_tokens": 1717,
+    "reasoning_output_tokens": 187
+  },
+  "uncached_input_tokens": 70583,
+  "input_overshoot": 0,
+  "uncached_input_overshoot": 0,
+  "output_overshoot": 0,
+  "tool_start_overshoot": 0,
+  "save_start_overshoot": 0,
+  "no_invocation_retry": true
+}

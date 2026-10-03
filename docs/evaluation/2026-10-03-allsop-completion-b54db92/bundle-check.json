@@ -1,0 +1,48 @@
+{
+  "phase": "assessment",
+  "accepted_domains": [
+    "domain:randomization"
+  ],
+  "trial_dispositions": {
+    "allsop-2014": "pending"
+  },
+  "artifact_present": false,
+  "snapshot_present": false,
+  "closure_present": false,
+  "review_present": false,
+  "finalize_call": {
+    "event_ordinal": 28,
+    "id": "item_13",
+    "type": "mcp_tool_call",
+    "server": "rob2",
+    "tool": "finalize_batch",
+    "arguments": {
+      "expected_revision": 14
+    },
+    "result": {
+      "content": [],
+      "structured_content": {
+        "outcome": "condition",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 14,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "allsop-2014",
+            "domain_id": "domain:deviations"
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "condition": {
+          "code": "invalid_request",
+          "detail": "finalize_batch is available only when next_action.operation is finalize_batch; call get_status and follow next_action."
+        }
+      }
+    },
+    "error": null,
+    "status": "completed"
+  },
+  "complete_assessment": false,
+  "classification": "Model-owned voluntary early termination after opening D2 and one rejected premature finalize call; no guard exhausted. No final bundle exists."
+}
