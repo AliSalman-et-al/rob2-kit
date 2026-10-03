@@ -1,0 +1,94 @@
+{
+  "recovery": {
+    "files_sha256": {
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-recovery-d5-production/launcher-config.toml": "efc65f44d868b1f6c40d6d1bafb9b0980cc4c6f5dfeedce9603335d39b1464f1",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-recovery-d5-production/model-settings.json": "1a4f6c53b9d840939b756e47aa7f5a171a65d7f3c87119e56c100aaeb6d1ea4b",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-recovery-d5-production/durable-token-usage-records.json": "f9fc18abde5ea53c195579d0f140ab5fcd57f52b85b457baabcfad06a357a9c3",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-recovery-d5-production/run.json": "2468fc46b91c09257167f1436fda14e9e79c9f4f46cb6f0f172431bce3f0756d",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-recovery-d5-production/model-submission.json": "6e123108bcb9269b2bcedea6786abec15f19b5dd73bc9dcd7c652e80206d07fb"
+    },
+    "recorded_model_settings": [
+      {
+        "model": "gpt-6-luna",
+        "effort": "medium",
+        "turn_id": "01a10258-3000-7272-b492-df1c1818b66f"
+      }
+    ],
+    "response_generations": 21,
+    "reasoning_output_tokens": 3328,
+    "all_response_records_have_explicit_reasoning_field": true,
+    "raw_provider_field_availability": "not established by preserved client records",
+    "discriminator_already_in_response": {
+      "question_id": "sq:selection:prespecified-analysis",
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "eh_24073ec1c815a7cd",
+          "role": "direct_support"
+        },
+        {
+          "evidence": "eh_b1530cb7162d3c93",
+          "role": "context"
+        },
+        {
+          "evidence": "eh_4a4db61b21438e7b",
+          "role": "direct_support"
+        },
+        {
+          "evidence": "eh_f807c3fc5b52e369",
+          "role": "context"
+        },
+        {
+          "evidence": "eh_45882a0e281c9667",
+          "role": "context"
+        },
+        {
+          "evidence": "eh_122bbac5f99a027b",
+          "role": "context"
+        }
+      ],
+      "justification": "The captured protocol identifies the trial and is dated 1 February 2010; its contents state that it includes the original SAP as the only version. That plan specifies the primary composite and ITT analysis, Kaplan\u2013Meier/log-rank methods, and Cox hazard ratios. The protocol\u2019s July 2014 revision summary concerns study timeline and exercise-testing eligibility, not analysis; recruitment began July 2010. The report presents the matching primary composite/ITT result and says the authors vouch for fidelity to protocol. This supports, by inference, a prespecified applicable plan before unblinded data were available. However, the approved HR is reported as Fine\u2013Gray, a method not listed in the SAP, and the captured sources do not date investigators\u2019 access to unblinded outcomes; thus not a definitive yes.",
+      "unknowns": [
+        "When investigators first had access to unblinded outcome data.",
+        "Whether the Fine\u2013Gray primary HR method was specified outside the captured original SAP."
+      ],
+      "counterevidence": [
+        {
+          "evidence": [
+            "eh_4a4db61b21438e7b",
+            "eh_45882a0e281c9667",
+            "eh_122bbac5f99a027b"
+          ],
+          "implication": "The SAP specifies Cox HRs, while the article identifies the reported primary HR as Fine\u2013Gray; this leaves a method correspondence gap, although the article also reports Cox analyses and does not explain the choice as result-driven."
+        }
+      ],
+      "limitations": [
+        {
+          "premise": "The captured protocol/SAP does not establish when investigators accessed unblinded results, and it does not show whether the reported Fine\u2013Gray HR was prespecified elsewhere.",
+          "stopping_rationale": "Inspected the full protocol chronology, change summary, original SAP, and main-report analysis/result passages; registry retrieval is unavailable at normal intake. The support for early prespecification is therefore inferential, not conclusive."
+        }
+      ]
+    }
+  },
+  "bendix_source_only": {
+    "files_sha256": {
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-bendix-source-only/cli-config.toml": "a5ed75d8bf72cccfb8b2ed53b7f678ea0975e1aa85e37fc3e4c0ffa6bcbc781a",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-bendix-source-only/response-proof.json": "2cbdae2158e38f045f7ce01eae2b8ca91f71a5446b95d0366e82b370ecd2e482",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-bendix-source-only/durable-token-usage-records.json": "a1624d5892cbd4345b1a9434a6094f6ee58ace503aa02b7315bfc5ba3811b57a",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-bendix-source-only/run.json": "a843888d6325040877c84c93dc0c1cc50d6a5d6eea4b320c55c9882f85a7bc2f",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-bendix-source-only/response.txt": "74efe8f2595de4d959c85c703f397fb2d10d65474785f95e0d01427a3e860c69"
+    },
+    "recorded_model_settings": [
+      {
+        "model": "gpt-6-luna",
+        "effort": "medium",
+        "turn_id": "01a10132-103f-7932-8c33-c08b20802f9f"
+      }
+    ],
+    "response_generations": 1,
+    "reasoning_output_tokens": 0,
+    "all_response_records_have_explicit_reasoning_field": true,
+    "raw_provider_field_availability": "not established by preserved client records",
+    "discriminator_already_in_response": "### D2.6 \u2014 Was an appropriate analysis used to estimate the effect of assignment?\n\n**Answer: No.** The stated target is the effect of assignment among all randomized participants. Instead, the reported comparison includes only the 45 treated and 49 control participants who returned for follow-up; the authors state that the two who never started treatment and seven who dropped out were not included, and only two of those nine could be contacted at four months (p. 6, lines 83\u201394). The result likewise reports 29/45 versus 14/49 able to work (p. 5, lines 85\u201390). This is not an analysis of everyone as randomized. Under the supplied guidance, excluding eligible participants after randomization is inappropriate unless the exclusion is solely for missing outcome data in an otherwise appropriate modified intention-to-treat analysis.\n\n**Uncertainty and counterevidence:** The article does not establish for every excluded participant whether the four-month outcome was unavailable or whether any were ineligible; only two of the nine were contactable at follow-up (p. 6, lines 89\u201394). That limits certainty about the exact exclusion mechanism. However, the flow and reported analysis population show that randomized treated participants were omitted; the supplied evidence does not establish an eligible-participant exclusion exception or an analysis retaining all randomized participants by assignment. The matching of control follow-up intervals to treated participants (p. 5, lines 73\u201379) does not resolve those exclusions.\n\n### D2.7 \u2014 Conditional on the D2.6 answer\n\n**Answer: Yes, there was potential for substantial impact.** Nine of 55 randomized to treatment were excluded from the reported comparison (about 16% of that arm), versus two of 51 controls not represented in the follow-up counts shown in the flow diagram (p. 3, lines 4\u201313, 19\u201331; p. 6, lines 83\u201394). The excluded treated participants included two who never started and seven who dropped out; the reported reasons include increased back pain, finding the program too difficult, and other circumstances (p. 3, lines 8\u201313; p. 4, lines 4\u201312). These factors could plausibly relate to the ability-to-work outcome. The outcome was not so rare among analysed participants\u201464% versus 28%\u2014but the exclusion count is substantial, particularly in the treatment arm (p. 5, lines 83\u201390).\n\n**Uncertainty and counterevidence:** Outcomes for most of the nine excluded treated participants are not reported, and the source does not establish their eligibility or ability to work; their actual effect on the estimate therefore cannot be determined (p. 6, lines 89\u201394). The authors report that dropouts did not differ from graduates on measured characteristics (p. 4, lines 9\u201312), which weighs against assuming a large prognostic difference, but does not establish comparable work outcomes or remove the potential impact of excluding them."
+  }
+}
