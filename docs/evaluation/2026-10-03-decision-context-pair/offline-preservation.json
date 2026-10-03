@@ -1,0 +1,20 @@
+{
+  "all_original_packet_information_preserved": true,
+  "original_source_body_identical": true,
+  "synthetic_control_identical": true,
+  "changes": "Move conditional2.7 and comparison card after full source evidence; active2.6 remains first. No new scientific instruction or case critique.",
+  "input_estimates": {
+    "baseline": {
+      "bytes": 96953,
+      "characters": 96760,
+      "estimated_tokens_at3chars": 32253,
+      "exact_tokens_unavailable": true
+    },
+    "current": {
+      "bytes": 97034,
+      "characters": 96841,
+      "estimated_tokens_at3chars": 32280,
+      "exact_tokens_unavailable": true
+    }
+  }
+}

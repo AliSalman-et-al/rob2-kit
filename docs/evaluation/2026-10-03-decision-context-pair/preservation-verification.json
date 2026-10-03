@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "source_evidence_and_control_equal": true,
+  "exact_questions_guidance_activation_equal": true,
+  "result_target_reported_relation_equal": true,
+  "comparison_card_propositions_examples_recovery_equal": true,
+  "generic_task_equal": true,
+  "production_code_changes": 0,
+  "source_sha256": "6aaa96fec3e6460cbed45b8bb884f8fe9f36969c3e522d1881dc9293f9b6f09a"
+}
