@@ -1,6 +1,6 @@
 {
   "host": "codex",
-  "mcp_command": "rob2 mcp",
+  "mcp_command": "rob2 mcp-codex",
   "skill_directory": "rob2_kit/skills",
   "skills": ["rob2-assess"]
 }

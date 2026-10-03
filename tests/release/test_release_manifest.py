@@ -74,7 +74,25 @@ def test_wheel_archive_rejects_missing_packaged_skill(tmp_path: Path) -> None:
         for host in ("codex.json", "claude-code.json"):
             archive.writestr(
                 f"rob2_kit/hosts/{host}",
-                json.dumps({"mcp_command": "rob2 mcp", "skills": ["rob2-assess"]}),
+                json.dumps(
+                    {
+                        "mcp_command": "rob2 mcp-codex" if host == "codex.json" else "rob2 mcp",
+                        "skills": ["rob2-assess"],
+                    }
+                ),
             )
     with pytest.raises(ValueError, match="wheel skill is incomplete"):
         _verifier()._verify_wheel_archive(wheel)
+
+
+def test_wheel_archive_accepts_packaged_codex_entrypoint(tmp_path: Path) -> None:
+    wheel = tmp_path / "source-layout.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr(
+            "package.dist-info/entry_points.txt",
+            "[console_scripts]\nrob2 = rob2_kit.interfaces.cli.app:main\n",
+        )
+        for member in Path("src/rob2_kit").rglob("*"):
+            if member.is_file() and "__pycache__" not in member.parts:
+                archive.write(member, member.relative_to("src").as_posix())
+    _verifier()._verify_wheel_archive(wheel)

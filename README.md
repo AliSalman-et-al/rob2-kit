@@ -92,9 +92,22 @@ For Codex, add this to `~/.codex/config.toml` or a trusted project's
 ```toml
 [mcp_servers.rob2]
 command = "rob2"
-args = ["mcp"]
+args = ["mcp-codex"]
 env = { ROB2_WORKSPACE = "C:/path/to/my-assessment" }
 ```
+
+The supported Codex entrypoint is `rob2 mcp-codex`. It preserves image-bearing
+`render_page` receipts and full schema as text beside the original PNG. Codex CLI
+0.159.0 otherwise prefers structured content and omits that image from model
+input. A native `gpt-6-luna`/medium smoke verified actual image delivery and
+provenance on that version; clinical comprehension and accuracy are unproven.
+Text-only calls and the standard `rob2 mcp` entrypoint are unchanged.
+
+To opt out, use `args = ["mcp"]`. After a host upgrade, verify delivery by checking
+that the native session `render_page` tool output contains an `input_image` and
+that its decoded PNG hash matches the receipt, then check observations against
+private source facts. A returned MCP image alone does not prove model delivery.
+No host-version detection or global configuration mutation is performed.
 
 For Claude Code, run this from the assessment workspace:
 

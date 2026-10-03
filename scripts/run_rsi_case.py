@@ -450,11 +450,13 @@ def _host_delivery_postcondition(
     )
 
 
-def _codex_mcp_config(command: str, workspace: Path) -> list[str]:
+def _codex_mcp_config(
+    command: str, workspace: Path, mcp_command: str = "mcp-codex"
+) -> list[str]:
     return [
         "[mcp_servers.rob2]",
         "command = " + json.dumps(command),
-        'args = ["mcp"]',
+        "args = " + json.dumps([mcp_command]),
         "env = { ROB2_WORKSPACE = " + json.dumps(str(workspace.resolve())) + " }",
         "required = true",
         'default_tools_approval_mode = "approve"',
@@ -2021,7 +2023,16 @@ def main() -> None:
         except (OSError, ValueError) as error:
             parser.error(str(error))
     try:
-        server_inventory = probe_server_advertised_inventory(rob2_command, workspace)
+        mcp_command = "mcp-codex"
+        if args.phase > 1:
+            previous = json.loads((run_dir / "execution.json").read_text(encoding="utf-8"))
+            binding = previous.get("runtime_inputs", {}).get("codex_registered_mcp", {})
+            if binding.get("args") not in (["mcp"], ["mcp-codex"]):
+                raise ValueError("frozen MCP entrypoint is unavailable; start a fresh attempt")
+            mcp_command = binding["args"][0]
+        server_inventory = probe_server_advertised_inventory(
+            rob2_command, workspace, mcp_command=mcp_command
+        )
         # Process cleanup is per-probe telemetry, not part of frozen server identity.
         preflight["rob2"]["probe_cleanup"] = _first_text(
             server_inventory.pop("probe_cleanup", "unknown"), default="unknown"
@@ -2210,13 +2221,13 @@ def main() -> None:
     codex_mcp_args = codex_mcp_binding.get("args")
     if (
         not isinstance(codex_mcp_command, str)
-        or codex_mcp_args != ["mcp"]
+        or codex_mcp_args not in (["mcp"], ["mcp-codex"])
         or codex_mcp_binding.get("server") != "rob2"
         or codex_mcp_binding.get("workspace_sha256")
         != hashlib.sha256(str(workspace.resolve()).encode("utf-8")).hexdigest()
     ):
         parser.error("Codex rob2 command/args do not match the exact tools/list preflight")
-    profile.extend(_codex_mcp_config(codex_mcp_command, workspace))
+    profile.extend(_codex_mcp_config(codex_mcp_command, workspace, codex_mcp_args[0]))
     codex_config_path = codex_home / "config.toml"
     codex_config_bytes = ("\n".join(profile) + "\n").encode("utf-8")
     codex_config_path.write_bytes(codex_config_bytes)

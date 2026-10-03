@@ -120,7 +120,7 @@ def test_private_codex_config_requires_the_preflighted_rob2_server(tmp_path: Pat
 
     assert config["mcp_servers"]["rob2"] == {
         "command": r"C:\rob2.exe",
-        "args": ["mcp"],
+        "args": ["mcp-codex"],
         "env": {"ROB2_WORKSPACE": str(tmp_path.resolve())},
         "required": True,
         "default_tools_approval_mode": "approve",

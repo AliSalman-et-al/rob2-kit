@@ -16,3 +16,51 @@ The CLI completed normally in 16.248 seconds with two MCP calls and three provid
 - `run_once.py`, `cli-config.toml`, `instructions.md`, `prompt.txt`, `source.pdf`: frozen launch and supplied fixture. Paths are host-specific; these artifacts document this run, not a portable launcher.
 
 Focused controls passed: 18 tests for compatibility metadata/image preservation, unaffected non-render/error/metadata-only paths, and image preflight identity/page/hash/dimensions/bounds/omission rejection. The opt-in behavior addresses the installed Codex structured-content preference; it does not change the standard MCP entrypoint or scientific judgments. This is evidence about the tested host/version only, with no clinical gain claim.
+
+## Offline interpretation audit and supported integration
+
+The original strict comparison remains unchanged. `geometry-audit.json` records a
+960×720 embedded image on a 960×720 PDF page and a 1440×1080 render, with equal
+1.5 scaling in both dimensions. The purple fill's thresholded pixel bounds are
+220×221 (aspect ratio 0.9955); the one-pixel raster boundary difference is not an
+anisotropic stretch. The source geometry is a square. A square is also a
+rectangle, and neither the prompt nor frozen criterion explicitly defined
+exclusive categories or required the most specific name. The answer's
+“rectangle” plus “roughly square” uncertainty is less specific rather than
+mathematically inconsistent. This is rubric ambiguity, not a retrospective pass.
+
+The installed supported command is now `rob2 mcp-codex`, using the same middleware
+moved into the packaged source. The old diagnostic script delegates to it.
+Packaged Codex host metadata and README configuration select this command;
+Claude Code and ordinary `rob2 mcp` retain their original behavior. New runner
+attempts generate `["mcp-codex"]`; continuations select their saved `["mcp"]` or
+`["mcp-codex"]` binding and retain the existing compatibility checks. The server
+probe verifies the original full schema retained in render metadata while binding
+the explicitly selected command. No user-agent or host capability inference is
+used. No installed global configuration or historical run was edited.
+
+Recommended Codex configuration after installing this branch:
+
+```toml
+[mcp_servers.rob2]
+command = "rob2"
+args = ["mcp-codex"]
+env = { ROB2_WORKSPACE = "/absolute/path/to/assessment" }
+```
+
+Use `["mcp"]` to opt out. The observed host is `codex-cli 0.159.0`.
+For future versions, verify actual native `input_image` presence, decoded PNG
+hash against the receipt, and observations against private source facts before
+removing compatibility mode. An MCP image return alone does not prove delivery.
+This batch has no new model calls: image transport and provenance are established
+by the preserved smoke; clinical comprehension or accuracy is not established.
+
+`integration-checks.json` records offline checks and limitations. Actual stdio
+catalog probes passed for both installed CLI modes; image/text/error preservation
+controls and public release-contract verification passed. A source-layout archive
+fixture passed the wheel-content verifier with the Codex-specific host command.
+A real wheel build was not completed because this shared Python environment lacks
+`hatchling`; no dependency installation was attempted. Lint and production-source
+type checks passed (existing unrelated line-length findings in the benchmark
+script were excluded). Initial runner mock failures from the new explicit
+entrypoint argument were corrected and the affected suite passed.

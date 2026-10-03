@@ -109,12 +109,14 @@ def _invoke_failed_run(
     runner_globals["__file__"] = str(scripts / "run_rsi_case.py")
     runner_globals["prepare_workspace"] = prepare_workspace
 
-    def probe_server_inventory(command: Path, workspace: Path) -> dict[str, Any]:
+    def probe_server_inventory(
+        command: Path, workspace: Path, *, mcp_command: str = "mcp"
+    ) -> dict[str, Any]:
         names = sorted(runner_globals["EXPECTED_TOOL_INVENTORY"])
         binding = {
             "server": "rob2",
             "command": str(command.resolve()),
-            "args": ["mcp"],
+            "args": [mcp_command],
             "workspace_sha256": hashlib.sha256(
                 str(workspace.resolve()).encode("utf-8")
             ).hexdigest(),

@@ -640,9 +640,13 @@ def contradictory_result_scope_dimensions(expected: dict[str, object]) -> list[s
     ]
 
 
-def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+def probe_server_advertised_inventory(
+    command: Path, workspace: Path, *, mcp_command: str = "mcp"
+) -> dict[str, object]:
     """Verify the configured rob2 process advertises the complete frozen MCP surface."""
 
+    if mcp_command not in {"mcp", "mcp-codex"}:
+        raise ValueError("unsupported MCP entrypoint")
     command = command.resolve(strict=True)
     workspace = workspace.resolve(strict=True)
     initialize_request = {
@@ -690,11 +694,11 @@ def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[st
         while True:
             remaining = handshake_deadline - time.monotonic()
             if remaining <= 0:
-                raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                raise subprocess.TimeoutExpired([str(command), mcp_command], 30)
             try:
                 line = stdout_lines.get(timeout=remaining)
             except queue.Empty as error:
-                raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                raise subprocess.TimeoutExpired([str(command), mcp_command], 30) from error
             if line is None:
                 detail = "".join(stderr_lines).strip()[-1000:]
                 raise ValueError(
@@ -710,7 +714,7 @@ def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[st
 
     try:
         process = subprocess.Popen(
-            [str(command), "mcp"],
+            [str(command), mcp_command],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -817,6 +821,11 @@ def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[st
         annotations = annotations if isinstance(annotations, dict) else {}
         input_schema = tool.get("inputSchema")
         output_schema = tool.get("outputSchema")
+        if mcp_command == "mcp-codex" and tool.get("name") == "render_page":
+            metadata = tool.get("_meta")
+            if output_schema is not None or not isinstance(metadata, dict):
+                raise ValueError("Codex render_page compatibility schema is invalid")
+            output_schema = metadata.get("rob2_receipt_schema")
         if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
             raise ValueError(
                 f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
@@ -881,7 +890,7 @@ def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[st
     binding = {
         "server": "rob2",
         "command": str(command),
-        "args": ["mcp"],
+        "args": [mcp_command],
         "workspace_sha256": hashlib.sha256(str(workspace).encode("utf-8")).hexdigest(),
     }
     binding_sha256 = hashlib.sha256(

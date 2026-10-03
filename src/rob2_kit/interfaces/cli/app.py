@@ -40,6 +40,7 @@ def main(argv: list[str] | None = None) -> int:
             "export-skill",
             "discard",
             "mcp",
+            "mcp-codex",
         ),
         default="status",
     )
@@ -58,6 +59,11 @@ def main(argv: list[str] | None = None) -> int:
         help=("destination for archive-sources or the rob2-assess directory for export-skill"),
     )
     args = parser.parse_args(argv)
+    if args.command == "mcp-codex":
+        from rob2_kit.interfaces.mcp.codex import main as run_codex_mcp
+
+        run_codex_mcp()
+        return 0
     if args.command == "mcp":
         from rob2_kit.interfaces.mcp.server import main as run_mcp
 
