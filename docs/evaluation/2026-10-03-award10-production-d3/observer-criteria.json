@@ -1,0 +1,8 @@
+{
+  "case": "award-10-2018",
+  "classification": "Repeated production diagnostic, not held out",
+  "criterion": "Do not infer observed week-24 HbA1c completeness solely from 132/134/133 MMRM/evaluable-analysis denominators. Any scientifically defensible answer may follow from genuine outcome-specific evidence actually found.",
+  "target_equal_original_workflow_head": true,
+  "compare_with": "Original accepted domain sha256:c31581a3077ea26922e84ec31f820c6ba4c36f9bbb41141c5b518c6a18d5fda8 and earlier source-supplied diagnostic",
+  "no_operator_repair_or_retry": true
+}

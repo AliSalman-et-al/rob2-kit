@@ -1,0 +1,67 @@
+{
+  "active_questions": [
+    "sq:missing:data-available"
+  ],
+  "answers": [
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:8279e5b4e440056443684b73e86fbba7c4c79a718015b22a8de8fd1e9e71bf66",
+          "kind": "direct_support",
+          "source": "The primary safety and efficacy analysis population was\nthe intention-to-treat population, defined as all randomly\nassigned patients who received at least one injected dose\nof study drug. The primary outcome (change in HbA1c)\nand the key secondary outcomes were analysed separately\non the basis a graphical testing approach27 to control for\ntype I error, based on the intention-to-treat population,\nwith and without post-rescue data. Details of this\napproach are provided in the appendix. A mixed-model\nfor repeated measures was used as the primary analysis\nmodel. The model included treatment, country, SGLT2\ninhibitor dose, metformin use, visit, and treatment-by-\nvisit as fixed effects, and baseline HbA1c concentration as\na covariate. We included samples collected at 4 weeks,\n12 weeks, and 24 weeks. The mixed-model for repeated\nmeasures was used to analyse bodyweight, self-monitored\nplasma glucose, and vital sign data. Fasting serum\nglucose and glucagon concentrations were analysed with\nANCOVA because only one post-baseline measurement\nwas available. The \u03c72 test was used for categorical\nFigure 1: Trial profile\n*One patient did not receive any doses of study drug, but completed the study. \u2020Irrespective of duration of exposure to study drug.\n3 discontinued study before 24 weeks\n 2 lost to follow-up\n 1 withdrawal by patient\n5 discontinued study before 24 weeks\n 3 lost to follow-up\n 2 withdrawal by patient\n7 discontinued study before 24 weeks\n 2 because of adverse events\n 2 deaths\n 1 patient did not come to visit as\n scheduled\n 2 withdrawal by patient\n1 discontinued study drug before\n 24 weeks\n 1 because of adverse events\n4 discontinued study drug before\n 24 weeks\n 2 because of adverse events*\n 1 lost to follow-up\n 1 withdrawal by patient\n135 completed study\u2020\n137 completed study*\u2020\n137 completed study\u2020\n142 assigned to dulaglutide 1\u00b75 mg\n424 randomly assigned\n142 assigned to dulaglutide 0\u00b775 mg\n555 patients screened\n140 assigned to placebo\n131 excluded\n\n113 screen failure\n\n1 lost to follow up\n\n3 doctor's decision\n\n14 withdrawal by patient\n5 discontinued study drug before\n 24 weeks\n 5 because of adverse events"
+        },
+        {
+          "evidence": "sha256:de607059651d695c2a448e4edcab0efec1c25cac2d5582ee7a282a5fd6319e17",
+          "kind": "indirect_support",
+          "source": "Articles\nwww.thelancet.com/diabetes-endocrinology Published online February 23, 2018 http://dx.doi.org/10.1016/S2213-8587(18)30023-8\n5\nmeasures. The proportions of patients achieving HbA1c\ntarget concentrations were analysed using a logistic\nregression model for repeated measures. Hypoglycaemia\nrate was analysed using a generalised linear model with\nnegative binomial distribution. All statistical analyses\nwere done with SAS version 9.2.\nThis trial is registered with ClinicalTrials.gov, number\nNCT02597049.\nRole of the funding source\nThe funder of the study was involved in study design,\ndata collection, data review, data analysis, data inter\npretation, and writing of the report. All authors had full\naccess to all the data in the study. BL and JPF had final\nresponsibility for the decision to submit for publication.\nResults\nBetween Dec 7, 2015, and Feb 3, 2017, 424 patients were\nrandomly assigned to receive dulaglutide 1\u22195 mg (n=142),\ndulaglutide 0\u221975 mg (n=142), or placebo (n=140; figure 1).\nSeven (5%) patients in the dulaglutide 1\u22195 mg group,\nfive (4%) patients in the dulaglutide 0\u221975 mg, and\nthree (2%) patients in the placebo group discontinued the\nstudy early (figure 1). The most frequent reasons for study\ndiscontinuation were adverse events, loss to follow-up,\nand withdrawal by the patient. Baseline characteristics\nwere similar between treatment groups (table 1). The\nduration of SGLT2 inhibitor and metformin treatment at\ntime of screening and the mean SGLT2 inhibitor doses at\nbaseline are summarised in the appendix. Across all\ntreatment groups, most patients had taken an SGLT2\ninhibitor for 3-6 months; high-dose dapagliflozin (about\n10 mg/day) and low-dose empagliflozin (10 mg/day) were\nthe most commonly used SGLT2 inhibitors at screening\nand study end. The mean doses of the SGLT2 inhibitors\nand metformin were stable from baseline to study end.\n15 patients (two in the dulaglutide 1\u00b75 mg group, three in\nthe dulaglutide 0\u221975 mg group, and ten in the placebo\ngroup) received rescue therapy for hyperglycaemia or an\nadverse event (appendix). Additionally, eight patients\n(three in the dulaglutide 1\u22195 mg group, four in the\ndulaglutide 0\u221975 mg group, and one in the placebo group)\ndiscontinued study drug early and were retained in the\nstudy. One patient in the dulaglutide 0\u221975 mg did not\nreceive any doses of study drug and was therefore excluded\nfrom analysis in the intention-to-treat population.\nChanges in HbA1c concentration from baseline to\n24 weeks were larger with both dulaglutide doses than\nwith placebo (p<0\u22190001; figure 2A).\nThe proportions of patients who achieved the HbA1c\ntarget concentrations of less than 7\u22190% (53 mmol/mol)\nand 6\u22195% (48 mmol/mol) or less at 24 weeks was also\nlarger in the dulaglutide groups than in the placebo\ngroup (p<0\u22190001; figure 2B).\nReduction in bodyweight from baseline to 24 weeks\nwas greater with dulaglutide 1\u22195 mg than with placebo\n(p=0\u2219028; figure 2C), but the mean bodyweight reduction\nin the dulaglutide 0\u221975 mg group at 24 weeks did not\nsignificantly differ from that in the placebo group.\nThe reduction in fasting serum glucose concentration\nby 24 weeks was significantly larger with dulaglutide\n1\u00b75 mg than with placebo (p<0\u22190001; figure 2D). Based\non the graphical testing scheme, the superiority of\ndulaglutide 0\u221975 mg versus placebo for change in fasting\nserum glucose concentration from baseline to 24 weeks\ncould not be tested.\nBoth dulaglutide doses reduced self-monitored plasma\nglucose concentration from baseline to 24 weeks more\nthan placebo did at all six timepoints (figure 3A). The first\ncomposite outcome of achieving an HbA1c target less than\n7\u22190% (53 mmol/mol) without weight gain at 24 weeks\nand without documented symptomatic hypoglycaemia\nfrom baseline to 24 weeks was achieved by larger\nproportions of patients treated with both doses of\ndulaglutide than in those treated with placebo (both\np<0\u22190001 vs placebo; figure 3B). The second composite\noutcome of achieving an HbA1c target less than\n7\u22190% (53 mmol/mol) with bodyweight loss more than\n5% at 24 weeks and without documented symptomatic\nhypoglycaemia from baseline to 24 weeks was achieved by\nDulaglutide 1\u22195 mg\n(n=142)\nDulaglutide 0\u221975 mg\n(n=141)\nPlacebo\n(n=140)\nSex\nMen\n77 (54%)\n69 (49%)\n66 (47%)\nWomen\n65 (46%)\n72 (51%)\n74 (53%)\nMean age (years)\n56\u221917 (9\u221926)\n58\u221955 (9\u221914)\n57\u221910 (9\u221959)\nAged \u226565 years\n23 (16%)\n44 (31%)\n31 (22%)\nRace\nAmerican Indian or Alaska Native\n1 (1%)\n2 (1%)\n4 (3%)\nAsian\n0\n1 (1%)\n0\nBlack or African American\n3 (2%)\n3 (2%)\n6 (4%)\nMultiple\n11 (8%)\n8 (6%)\n6 (4%)\nWhite\n127 (89%)\n127 (90%)\n124 (89%)\nEthnic origin\nHispanic or Latino\n51 (36%)\n44 (31%)\n44 (31%)\nNot Hispanic or Latino\n90 (63%)\n97 (69%)\n94 (67%)\nNot reported\n1 (1%)\n0\n2 (1%)\nBodyweight (kg)\n92\u221987 (19\u221973)\n91\u221907 (20\u221999)\n90\u221950 (19\u221947)\nBMI (kg/m2)\n32\u221987 (5\u221956)\n32\u221977 (6\u221927)\n32\u221939 (4\u221998)\nDiabetes duration (years)\n9\u221921 (5\u221974)\n10\u221905 (6\u221956)\n8\u221987 ( 6\u221913)\nHbA1c concentration (%)\n8\u221904 (0\u221965)\n8\u221904 (0\u221961)\n8\u221905 (0\u221966)\nHbA1c concentration (mmol/mol)\n64\u221936 (7\u221911)\n64\u221936 (6\u221967)\n64\u221947 (7\u221921)\nFasting serum glucose concentration\n(mg/dL)\n160\u221965 (33\u221932)\n162\u221900 (35\u221975)\n153\u221929 (30\u221947)\nFasting serum glucose concentration\n(mmol/L)\n8\u221991 (1\u221985)\n8\u221999 (1\u221998)\n8\u221950 (1\u221969)\nSystolic blood pressure (mm Hg)\n129\u221970 (14\u221948)\n130\u221935 (15\u221966)\n130\u221957 (13\u221974)\nDiastolic blood pressure (mm Hg)\n77\u221910 (8\u221996)\n76\u221955 (9\u221998)\n78\u221936 (9\u221946)\nTreated with metformin\n133 (94%)\n135 (96%)\n135 (96%)\nData are n (%) or mean (SD).\nTable 1: Baseline characteristics"
+        }
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 0,
+          "implication": "The trial profile records 15 participants discontinuing the study before 24 weeks, including losses to follow-up and withdrawals, and the reported ITT excludes one randomized participant; this prevents concluding complete ascertainment and leaves exact endpoint availability uncertain."
+        }
+      ],
+      "justification": "The approved Result is the centrally measured HbA1c change from baseline at 24 weeks for assignment to dulaglutide 1.5 mg or 0.75 mg versus placebo, retaining the randomized-population target despite the narrower reported ITT population (one randomized participant received no dose and was excluded). The report says 424 were randomized and the trial profile records 135/142, 137/142, and 137/140 as completing the study (409/424 overall); it reports only 15 early study discontinuations (7, 5, and 3), while eight who stopped study drug remained in the study. This supports nearly complete follow-up as a reasonable, calibrated inference, but completed-study counts are not direct counts of HbA1c measurements at 24 weeks, and analysis membership is not outcome availability. Thus probably yes rather than definitive yes; exact arm-specific observed/imputed HbA1c counts and participant-level endpoint ascertainment are not reported in the inspected material. The one excluded randomized participant and incomplete follow-up remain noted; the small overall fraction is judged unlikely to materially change this continuous-outcome estimate, without treating it as a universal threshold.",
+      "question_id": "sq:missing:data-available",
+      "unknowns": [
+        "Exact arm-specific observed HbA1c values at 24 weeks, imputed outcomes, and endpoint availability among the 15 who discontinued study are not reported.",
+        "The analysis excluded one randomized dulaglutide 0.75 mg participant who received no dose; this remains a scope difference from the all-randomized target."
+      ]
+    }
+  ],
+  "domain_id": "domain:missing",
+  "driver_questions": [],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:8279e5b4e440056443684b73e86fbba7c4c79a718015b22a8de8fd1e9e71bf66",
+          "sha256:de607059651d695c2a448e4edcab0efec1c25cac2d5582ee7a282a5fd6319e17"
+        ],
+        "question_id": "sq:missing:data-available",
+        "search_receipts": [],
+        "status": "indirect",
+        "unresolved_premises": []
+      }
+    ],
+    "identity": "sha256:538c7a4a077ab61a9798e6c557218bf295564a571efc207c59b1b7014fc6eb0b"
+  },
+  "identity": "sha256:291c734e4263b7166c2e3fc2800a970526d5c63a728627682e85b08781a0e250",
+  "inactive_questions": [
+    "sq:missing:evidence-unbiased",
+    "sq:missing:true-value-dependent",
+    "sq:missing:likely-dependent"
+  ],
+  "judgment": "low",
+  "observed_at": "2026-10-03T09:06:16.368199+00:00",
+  "result_identity": "sha256:08879e41c35be829ad4b70acffbc1c4e6e4320a5119a9b2d630301b5157ac2d0",
+  "revision_basis": null,
+  "search_accounts": [],
+  "supersedes": null,
+  "trace": [
+    "missing.low"
+  ],
+  "trial_id": "award-10-2018"
+}

@@ -1,0 +1,143 @@
+{
+  "code_sha": "fbe8a88db52d0bf9fbd291a0034421ca2dcc39d0",
+  "frozen_code_checkout": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-award10-fbe8a88-code",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "case": "award-10-2018",
+  "domain_id": "domain:missing",
+  "guards": {
+    "wall_seconds": 480,
+    "idle_seconds": 120,
+    "tool_calls": 25,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": null,
+    "uncached_input_tokens": null,
+    "output_tokens": 5000
+  },
+  "guard_identity": "sha256:24b69ea38be0e0482ad5a7c71b767119b07e816f543ce4dd83151717286527b5",
+  "prompt_sha256": "bd05e630ad17b49cbf232b5958577dcdaca54475a0cf1519c5182b07ae4f4988",
+  "no_invocation_retry": true,
+  "source_database_sha256": {
+    "canonical.sqlite3": "a6be699c24d08cb0b51998412e2f171b7bd2f237d8abdd3921228b37ee6a735f",
+    "derivative.sqlite3": "4db0f1a7138c9d112bf745e264c5eaf87428adacb241f3e4bb25b2e0180b7abb"
+  },
+  "restored_sources": [
+    {
+      "declared_role": "supplement",
+      "id": "source_7f804f2b8fec7d1ffff8773e7e566b1e33f5c7f118f008c78ed64ec705904ac7",
+      "label": "mmc1.pdf",
+      "logical_path": "mmc1.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 10,
+      "projection_hash": "sha256:e876025e3cb5d8aea24db62f24984037a018937100258ec61a46051706198aa9",
+      "role": "supplement",
+      "sha256": "sha256:a11eb06fe8cc7211f42513e4e84eea420b4442aa5df1425d3b3b345e7bc0fe91",
+      "trial_id": "award-10-2018"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_a4704950a9a30ff9b4eee22b1a628252d5ff54d1b89ba435efa28d70aaeaa3b6",
+      "label": "other-AWARD10-poster-ADC2019.pdf",
+      "logical_path": "other-AWARD10-poster-ADC2019.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:bc38db29692396e3c631a3f5ce294a19193c59c2ab62006db4fd8815ca186d7e",
+      "role": "supplement",
+      "sha256": "sha256:710536e0ec3baab42d388a9e348b42fd5f285f4e00f19a19c7776bcb6599b812",
+      "trial_id": "award-10-2018"
+    },
+    {
+      "declared_role": "main_article",
+      "id": "source_206be9da635545b5862fa4653c15765aaef2286af25fa10cee7d8c1f13adc788",
+      "label": "S2213-8587-18-30023-8.pdf",
+      "logical_path": "S2213-8587-18-30023-8.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 12,
+      "projection_hash": "sha256:6fecb407f80ff9f789ec649874f86715df7875b1628d5722b66c84666afec463",
+      "role": "main_article",
+      "sha256": "sha256:c69858cf9d36e3948b551790b75fa888433f20359d9e246042b947eb0fc95f6d",
+      "trial_id": "award-10-2018"
+    }
+  ],
+  "raw_sources_unavailable": [
+    {
+      "declared_role": null,
+      "id": "source_edfbc7235f273527b1c583bcaceffb1629946bb7f63513a67029d2376b99afb9",
+      "label": "ClinicalTrials.gov NCT02597049",
+      "logical_path": "registry/NCT02597049.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:9d954e65d49f44437b48a87a01ef2b0021ac98db1f3f6b8532a8e1d8270d74d3",
+      "role": "registry",
+      "sha256": "sha256:be01058f91d9d7c137c698bfbb4881efbdac6759bb9b081e736c6dc70fd88ede",
+      "trial_id": "award-10-2018"
+    }
+  ],
+  "approved_target": {
+    "comparison_groups": [
+      {
+        "assignment": "Dulaglutide 1\u22195 mg",
+        "id": "dula15"
+      },
+      {
+        "assignment": "Dulaglutide 0\u221975 mg",
+        "id": "dula075"
+      },
+      {
+        "assignment": "Placebo",
+        "id": "placebo"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "LSM difference",
+    "measurement": {
+      "method": "Change in HbA1c concentration measured by central laboratory",
+      "metric": "Change in HbA1c from baseline"
+    },
+    "outcome_definition": "Change in HbA1c from baseline",
+    "time_point_or_window": {
+      "description": "24 weeks after randomization; change from baseline",
+      "kind": "quantified",
+      "unit": "weeks",
+      "value": "24"
+    }
+  },
+  "reported_result": {
+    "analysis_population": "Intention-to-treat population, defined as all randomly assigned patients who received at least one dose of study drug; one patient randomized to dulaglutide 0\u221975 mg received no dose and was excluded.",
+    "effect_measure": "LSM differences for treatment versus placebo at 24 weeks",
+    "endpoint": {
+      "definition": null,
+      "name": "Change in HbA1c from baseline to 24 weeks"
+    },
+    "estimate": "-0\u221979%",
+    "form": "comparative_effect",
+    "group_values": [],
+    "precision": "95% CI -0\u221997 to -0\u221961"
+  },
+  "prior_retained_domains": [
+    "domain:deviations",
+    "domain:randomization"
+  ],
+  "initial_revision": 13,
+  "classification": "Repeated, source-restored approved-target diagnostic. Not held-out or cold end-to-end benchmark evidence; reference full scope unknown. Historical canonical rows preserved but no history tools exposed; active D3/later records and prior derivative deliveries cleared only in this new disposable copy.",
+  "criteria_frozen_at_commit": "fbe8a88; observer criteria outside model workspace/prompt",
+  "enabled_tools": [
+    "get_status",
+    "get_domain_context",
+    "list_sources",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "select_visual_evidence",
+    "save_domain_judgment"
+  ],
+  "guard_authorization": "Explicit parent authorization for one current HEAD repeated AWARD-10 D3 diagnostic; no operator repair/retry/fullbenchmark."
+}

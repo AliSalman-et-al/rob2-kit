@@ -1,0 +1,55 @@
+{
+  "active_questions": [
+    "sq:missing:data-available"
+  ],
+  "answers": [
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:21c27f39b2a8b6b3f07e671d86a3ae35c80b83ffffcf795efaafec02e03c53cf",
+          "kind": "direct_support",
+          "source": "resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciLowerLimit: \"-0.97\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciUpperLimit: \"-0.61\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].groupIds[0]: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].groupIds[1]: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].nonInferiorityType: \"SUPERIORITY\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].pValue: \"<.001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].paramType: \"Mean Difference (Final Values)\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].paramValue: \"-0.79\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].statisticalMethod: \"Mixed Models Analysis\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciLowerLimit: \"-0.84\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciUpperLimit: \"-0.49\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].groupIds[0]: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].groupIds[1]: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].nonInferiorityType: \"SUPERIORITY\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].pValue: \"< .001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].paramType: \"Mean Difference (Final Values)\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].paramValue: \"-0.66\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].statisticalMethod: \"Mixed Models Analysis\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].groupId: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].spread: \"0.064\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].value: \"-1.34\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].groupId: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].spread: \"0.064\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].value: \"-1.21\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[2].groupId: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[2].spread: \"0.064\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[2].value: \"-0.54\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].groupId: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].value: \"132\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].groupId: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].value: \"134\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[2].groupId: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[2].value: \"133\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].units: \"Participants\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].description: \"Least Squares mean (LS) of the HbA1c change from baseline to primary endpoint at week 24 was adjusted by treatment, country, SGLT2 inhibitor dose, metformin use, treatment-by-visit interactions as fixed effects, and baseline HbA1c as a covariate and participant as a random effect, via a MMRM analysis. The treatment-regimen estimand used all data including post-rescue data and compared the benefit of treatment regimens as they were actually taken.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].dispersionType: \"Standard Error\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"Dulaglutide 1.5 mg given SC QW for 24 weeks.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].id: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].title: \"1.5 mg Dulaglutide\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"Dulaglutide 0.75 milligrams (mg) given subcutaneously (SC) once a week (QW) for 24 weeks.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].id: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].title: \"0.75 mg Dulaglutide\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"Placebo given SC QW for 24 weeks.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].id: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].title: \"Placebo\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].paramType: \"LEAST_SQUARES_MEAN\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].populationDescription: \"All randomized participants who received at least one dose of study medication and had evaluable data.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].reportingStatus: \"POSTED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].timeFrame: \"Baseline, Week 24\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].title: \"Change From Baseline in Hemoglobin A1c (HbA1c) at 24 Weeks (Treatment-regimen Estimand)\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].type: \"PRIMARY\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].unitOfMeasure: \"percentage of HbA1c\""
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The registry reports HbA1c endpoint denominators of 132, 134, and 133 (399 total) in the treatment-regimen analysis, compared with 423 randomized participants who received at least one dose. This indicates outcome data for the great majority, though not all, participants; the modest missing fraction appears compatible with 'nearly all' availability.",
+      "question_id": "sq:missing:data-available",
+      "unknowns": [
+        "The registry denominator is for participants with evaluable data in the MMRM and does not separately state that every participant had a week-24 measurement."
+      ]
+    }
+  ],
+  "domain_id": "domain:missing",
+  "driver_questions": [],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:21c27f39b2a8b6b3f07e671d86a3ae35c80b83ffffcf795efaafec02e03c53cf"
+        ],
+        "question_id": "sq:missing:data-available",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      }
+    ],
+    "identity": "sha256:48d37e2993ac16aa2a36714921ecec2bc1720df35df9a06a8e5d28b2a4a944fb"
+  },
+  "identity": "sha256:c31581a3077ea26922e84ec31f820c6ba4c36f9bbb41141c5b518c6a18d5fda8",
+  "inactive_questions": [
+    "sq:missing:evidence-unbiased",
+    "sq:missing:true-value-dependent",
+    "sq:missing:likely-dependent"
+  ],
+  "judgment": "low",
+  "observed_at": "2026-10-01T12:23:28.035070+00:00",
+  "result_identity": "sha256:08879e41c35be829ad4b70acffbc1c4e6e4320a5119a9b2d630301b5157ac2d0",
+  "revision_basis": null,
+  "search_accounts": [],
+  "supersedes": null,
+  "trace": [
+    "missing.low"
+  ],
+  "trial_id": "award-10-2018"
+}
