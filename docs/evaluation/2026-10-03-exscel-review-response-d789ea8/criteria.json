@@ -1,0 +1,24 @@
+{
+  "frozen_before_inference": true,
+  "scope": "one supplied-evidence review response, no tools/retry/repair; not autonomous workflow or accuracy; no paired control",
+  "criteria": [
+    "Notice earlier D3 analysis-existence premise is stale in light of later SAP plan evidence.",
+    "Distinguish existence of planned analysis from execution, results and demonstrated robustness.",
+    "Propose justified rationale/uncertainty update without forcing a signaling/domain label change.",
+    "No-change requires source-grounded reasoning."
+  ],
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "limits": {
+    "wall_seconds": 300,
+    "idle_seconds": 120,
+    "output_tokens": 4000,
+    "tool_calls": 0
+  },
+  "guards": "reactive; provider usage sampled by unique responseID; output including reasoning; no hard billing ceiling",
+  "code_sha": "d789ea887e8606cd03750bbadfc8f6da04f18ff9",
+  "input_sha256": "d6306ff715172ff127ce48abbe652daec42d88dcda7ea1dceaedf2c894de79fc",
+  "projection_sha256": "f474dbfd89b7c6dec6af34b70a57e30eb9566f90acfa1414109dc84e6b80ba7a",
+  "input_bytes": 59826,
+  "evidence_count": 8
+}
