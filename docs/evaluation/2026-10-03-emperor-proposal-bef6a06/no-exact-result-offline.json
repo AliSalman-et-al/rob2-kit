@@ -1,0 +1,10 @@
+{
+  "frozen_code_sha": "bef6a06c133432ed3c45787bbaed4ebf5c6ae36a",
+  "checks_passed": 5,
+  "exact_without_specified_facets": "Eight facet-specific repairs; no automatic promotion to exact.",
+  "complete_nearby_result": "Explicit related relation with unresolved/conflicting facets is structurally representable; target window unchanged.",
+  "no_complete_result": "Explicit ambiguous/unavailable with concrete missing facts and source-reporting basis is structurally representable.",
+  "empty_missing_facts": "Rejected.",
+  "no_sources_shortcut_when_sources_exist": "Rejected by exact captured-condition check.",
+  "qualification": "Offline shape/policy controls using installed fictional documentation examples. Not a saved proposal, source entailment proof, or scientific determination of source absence. No operator repair of model workspace."
+}

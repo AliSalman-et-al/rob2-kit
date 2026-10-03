@@ -1,0 +1,296 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "native_validation_error_count": 35,
+      "actual_result_branch_paths": [
+        "results.0.function-after[complete_result(), ResultProposal].relation_rationale",
+        "results.0.function-after[complete_result(), ResultProposal].design",
+        "results.0.function-after[complete_result(), ResultProposal].design_rationale",
+        "results.0.function-after[complete_result(), ResultProposal].target_measurement",
+        "results.0.function-after[complete_result(), ResultProposal].target_window",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups",
+        "results.0.function-after[complete_result(), ResultProposal].baseline_subgroup",
+        "results.0.function-after[complete_result(), ResultProposal].intended_effect_measure",
+        "results.0.function-after[complete_result(), ResultProposal].reported_outcome",
+        "results.0.function-after[complete_result(), ResultProposal].analysis_population",
+        "results.0.function-after[complete_result(), ResultProposal].estimate",
+        "results.0.function-after[complete_result(), ResultProposal].target",
+        "results.0.function-after[complete_result(), ResultProposal].outcome",
+        "results.0.function-after[complete_result(), ResultProposal].population",
+        "results.0.function-after[complete_result(), ResultProposal].intervention",
+        "results.0.function-after[complete_result(), ResultProposal].comparator",
+        "results.0.function-after[complete_result(), ResultProposal].measure",
+        "results.0.function-after[complete_result(), ResultProposal].ci_lower",
+        "results.0.function-after[complete_result(), ResultProposal].ci_upper",
+        "results.0.function-after[complete_result(), ResultProposal].p_value",
+        "results.0.function-after[complete_result(), ResultProposal].window"
+      ],
+      "irrelevant_missing_result_branch_errors": 13,
+      "assessment_paths": [
+        "assessments.0.counterevidence"
+      ]
+    },
+    {
+      "attempt": 2,
+      "native_validation_error_count": 24,
+      "actual_result_branch_paths": [
+        "results.0.function-after[complete_result(), ResultProposal].design",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.0",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.1",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.2",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.3",
+        "results.0.function-after[complete_result(), ResultProposal].confidence_interval",
+        "results.0.function-after[complete_result(), ResultProposal].p_value"
+      ],
+      "irrelevant_missing_result_branch_errors": 16,
+      "assessment_paths": []
+    },
+    {
+      "attempt": 3,
+      "native_validation_error_count": 25,
+      "actual_result_branch_paths": [
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.0",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.1",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.0",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.1",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.2",
+        "results.0.function-after[complete_result(), ResultProposal].evidence.3"
+      ],
+      "irrelevant_missing_result_branch_errors": 14,
+      "assessment_paths": [
+        "assessments.0.evidence_basis.0",
+        "assessments.0.evidence_basis.1",
+        "assessments.0.evidence_basis.2",
+        "assessments.0.evidence_basis.3"
+      ]
+    },
+    {
+      "attempt": 4,
+      "native_validation_error_count": 23,
+      "actual_result_branch_paths": [
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.0.id",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.0.assignment",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.0.name",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.0.description",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.1.id",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.1.assignment",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.1.name",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups.1.description",
+        "results.0.function-after[complete_result(), ResultProposal].comparison_groups"
+      ],
+      "irrelevant_missing_result_branch_errors": 14,
+      "assessment_paths": []
+    }
+  ],
+  "actual_advertised_contract": {
+    "result_required_fields": [
+      "trial_id",
+      "relation",
+      "relation_rationale",
+      "design",
+      "design_rationale",
+      "target_measurement",
+      "target_window",
+      "comparison_groups",
+      "baseline_subgroup",
+      "intended_effect_measure",
+      "reported_outcome",
+      "analysis_population"
+    ],
+    "comparison_group": {
+      "additionalProperties": false,
+      "properties": {
+        "assignment": {
+          "description": "Source-supported description of the intervention assigned to this group.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "id": {
+          "description": "Caller-owned structural identifier used to reference this comparison group.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "assignment"
+      ],
+      "type": "object"
+    },
+    "estimate": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "effect_measure": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "source_binding_handles": {
+      "default": [],
+      "items": {
+        "pattern": "^eh_[0-9a-f]{8,64}$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "narrative_evidence_branch": {
+      "additionalProperties": false,
+      "properties": {
+        "handle": {
+          "description": "Selected passage handle copied from this Trial.",
+          "pattern": "^eh_[0-9a-f]{8,64}$",
+          "type": "string"
+        },
+        "kind": {
+          "const": "narrative",
+          "description": "A selected narrative Evidence passage.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "handle"
+      ],
+      "type": "object"
+    },
+    "clarity": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "description": "Host's explicit account of which requested and reported Result facets are known.",
+          "properties": {
+            "analysis_population": {
+              "description": "Whether the requested and reported analysis population is established.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            },
+            "comparison_groups": {
+              "description": "Whether the requested and reported comparison groups are established.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            },
+            "effect_measure": {
+              "description": "Whether the requested and reported effect measure is established.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            },
+            "eligible_result_choice": {
+              "description": "Whether the chosen reported result is established as the target candidate.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            },
+            "measurement": {
+              "description": "Whether the requested and reported measurement is established.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            },
+            "outcome_definition": {
+              "description": "Whether the requested and reported outcome definition is established.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            },
+            "source_table_meaning": {
+              "description": "Whether source-reported values and table cells have a clear meaning, including whether the selected estimate and precision are consistent across the relevant source material.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            },
+            "time_point": {
+              "description": "Whether the requested and reported time point or window, including any material data-cut chronology, is established.",
+              "enum": [
+                "specified",
+                "unclear",
+                "unavailable",
+                "conflicting"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome_definition",
+            "measurement",
+            "time_point",
+            "analysis_population",
+            "comparison_groups",
+            "effect_measure",
+            "source_table_meaning",
+            "eligible_result_choice"
+          ],
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "assessment_evidence_basis": {
+      "default": [],
+      "description": "Same-Trial selected Evidence handles supporting this assessment. Use [] only for an unavailable Result with a captured intake condition.",
+      "items": {
+        "pattern": "^eh_[0-9a-f]{8,64}$",
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "hidden_backend_requirements": [
+    "An estimate requires effect_measure, but both properties are individually optional in the JSON schema; this pairing is checked by Python model validation.",
+    "A known design requires design_evidence, also checked by Python validation.",
+    "Exact requires all eight clarity facets specified; optional/omitted clarity reaches explicit application repair."
+  ],
+  "qualification": "Read-only analysis of actual frozen tool declaration and native errors. No edits, coercion aliases, operator repair, model retry, or claims about provider-side tool schema delivery."
+}

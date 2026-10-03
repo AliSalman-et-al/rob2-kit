@@ -1,0 +1,2053 @@
+{
+  "annotations": {
+    "destructive_hint": false,
+    "idempotent_hint": true,
+    "open_world_hint": false,
+    "read_only_hint": false
+  },
+  "description": "Before saving a Proposal, submit its Result cards and a brief evidence-based assessment for each submitted Trial. Explain why the reported result supports the target relation and chosen time point or window. Compare outcome definition, reported model window, estimand and population separately. Known target fields or matching numbers do not prove exactness; preserve scope differences or unknowns and use a supported non-exact relation when exact scope is not established. Distinguish baseline eligibility from exclusions or missing observations in the reported analysis. Identify material conflicting evidence and unresolved facts; do not infer unavailable facts. The server validates structure, Evidence references and workflow requirements, not scientific correctness. Construct the complete typed request before calling: placeholders, partial nested objects, and guessed enum values are invalid. Save using the returned revision; the server retains the validated draft.",
+  "input_schema": {
+    "additionalProperties": false,
+    "properties": {
+      "assessments": {
+        "description": "One concise source-bound assessment for every submitted Trial card.",
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "counterevidence": {
+              "default": [],
+              "description": "Same-Trial conflicting Evidence and its implication; use [] when none.",
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "evidence": {
+                    "description": "Same-Trial Evidence handle for this counterpoint.",
+                    "pattern": "^eh_[0-9a-f]{8,64}$",
+                    "type": "string"
+                  },
+                  "implication": {
+                    "description": "How this conflicting Evidence limits or challenges the assessment.",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "evidence",
+                  "implication"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "evidence_basis": {
+              "default": [],
+              "description": "Same-Trial selected Evidence handles supporting this assessment. Use [] only for an unavailable Result with a captured intake condition.",
+              "items": {
+                "pattern": "^eh_[0-9a-f]{8,64}$",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "missing_fact_justification": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "For an unavailable Result, explain the captured missing fact without inventing evidence."
+            },
+            "population_justification": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "For an assessable Result, distinguish baseline eligibility from exclusions or missing observations in the reported analysis."
+            },
+            "scope_justification": {
+              "anyOf": [
+                {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "description": "For an assessable Result, why the reported Result supports the target relation and chosen time point or window."
+            },
+            "trial_id": {
+              "description": "Server-issued Trial ID for this assessment.",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+              "type": "string"
+            },
+            "unknowns": {
+              "description": "Material unresolved facts; use [] when none are identified.",
+              "items": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "trial_id",
+            "unknowns"
+          ],
+          "type": "object"
+        },
+        "minItems": 1,
+        "type": "array"
+      },
+      "expected_revision": {
+        "description": "Current revision from get_status.",
+        "ge": 0,
+        "type": "integer"
+      },
+      "results": {
+        "description": "The exact Result cards for this Proposal save.",
+        "items": {
+          "anyOf": [
+            {
+              "additionalProperties": false,
+              "description": "Scientific proposal inputs; canonical record tags are server-owned.",
+              "properties": {
+                "analysis_population": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "baseline_subgroup": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "categories": {
+                  "default": [],
+                  "items": {
+                    "additionalProperties": false,
+                    "description": "One complete source-located cell in a categorical result profile.\n\nA one-arm profile records only the supported randomized arm. Comparator\ncategories must never be invented to satisfy a comparative shape.\n\nThe source cell is copied as one opaque value. Do not invent a statistic\nor unit label that the selected material does not contain.",
+                    "properties": {
+                      "category_axes": {
+                        "description": "Ordered complete non-treatment row, column, or series labels locating one table cell.",
+                        "items": {
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array"
+                      },
+                      "value": {
+                        "description": "Value in this category cell.",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "category_axes",
+                      "value"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "category_axis_names": {
+                  "default": [],
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "category_denominator": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "category_group_id": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "clarity": {
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "description": "Host's explicit account of which requested and reported Result facets are known.",
+                      "properties": {
+                        "analysis_population": {
+                          "description": "Whether the requested and reported analysis population is established.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        },
+                        "comparison_groups": {
+                          "description": "Whether the requested and reported comparison groups are established.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        },
+                        "effect_measure": {
+                          "description": "Whether the requested and reported effect measure is established.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        },
+                        "eligible_result_choice": {
+                          "description": "Whether the chosen reported result is established as the target candidate.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        },
+                        "measurement": {
+                          "description": "Whether the requested and reported measurement is established.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        },
+                        "outcome_definition": {
+                          "description": "Whether the requested and reported outcome definition is established.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        },
+                        "source_table_meaning": {
+                          "description": "Whether source-reported values and table cells have a clear meaning, including whether the selected estimate and precision are consistent across the relevant source material.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        },
+                        "time_point": {
+                          "description": "Whether the requested and reported time point or window, including any material data-cut chronology, is established.",
+                          "enum": [
+                            "specified",
+                            "unclear",
+                            "unavailable",
+                            "conflicting"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "outcome_definition",
+                        "measurement",
+                        "time_point",
+                        "analysis_population",
+                        "comparison_groups",
+                        "effect_measure",
+                        "source_table_meaning",
+                        "eligible_result_choice"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "comparison_groups": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "assignment": {
+                        "description": "Source-supported description of the intervention assigned to this group.",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "Caller-owned structural identifier used to reference this comparison group.",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "assignment"
+                    ],
+                    "type": "object"
+                  },
+                  "minItems": 2,
+                  "type": "array"
+                },
+                "design": {
+                  "enum": [
+                    "individual_parallel",
+                    "cluster_randomized",
+                    "crossover",
+                    "unclear"
+                  ],
+                  "type": "string"
+                },
+                "design_evidence": {
+                  "default": [],
+                  "items": {
+                    "pattern": "^eh_[0-9a-f]{8,64}$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "design_rationale": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "effect_measure": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "estimate": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "evidence": {
+                  "default": [],
+                  "items": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "handle": {
+                            "description": "Selected passage handle copied from this Trial.",
+                            "pattern": "^eh_[0-9a-f]{8,64}$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "narrative",
+                            "description": "A selected narrative Evidence passage.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "handle"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "basis": {
+                            "description": "Whether the selected table material is text or visual.",
+                            "enum": [
+                              "text",
+                              "visual"
+                            ],
+                            "type": "string"
+                          },
+                          "cells": {
+                            "description": "Reported cell labels or values copied exactly or normalization-equivalently from selected table material.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "cohort": {
+                            "description": "Exact or normalization-equivalent cohort label copied from selected table material.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "columns": {
+                            "description": "Complete ordered column labels copied exactly or normalization-equivalently from selected table material.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "denominators": {
+                            "description": "Exact or normalization-equivalent denominators copied from selected table material.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "footnotes": {
+                            "default": [],
+                            "description": "Applicable footnotes copied exactly or normalization-equivalently from selected table material.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "group_or_category_axes": {
+                            "description": "Complete ordered category or series labels copied exactly or normalization-equivalently from selected table material; preserve every applicable dimension.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "handle": {
+                            "description": "Selected table passage handle copied from this Trial.",
+                            "pattern": "^eh_[0-9a-f]{8,64}$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "table",
+                            "description": "Structured evidence from one selected table.",
+                            "type": "string"
+                          },
+                          "row": {
+                            "description": "Exact or normalization-equivalent row label copied from selected table material.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "scope": {
+                            "description": "Exact or normalization-equivalent scope copied from selected table material.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "title": {
+                            "description": "Exact or normalization-equivalent title copied from selected table material.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "units": {
+                            "description": "Exact or normalization-equivalent units copied from selected table material.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "handle",
+                          "basis",
+                          "title",
+                          "scope",
+                          "cohort",
+                          "row",
+                          "columns",
+                          "group_or_category_axes",
+                          "cells",
+                          "units",
+                          "denominators"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "basis": {
+                            "const": "text",
+                            "description": "Multi-span table evidence uses selected text.",
+                            "type": "string"
+                          },
+                          "cells": {
+                            "description": "Reported table cells.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "cohort": {
+                            "description": "Exact or normalized cohort label.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "columns": {
+                            "description": "Complete ordered column labels.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "denominators": {
+                            "description": "Reported denominators.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "footnotes": {
+                            "default": [],
+                            "description": "Applicable table footnotes.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "group_or_category_axes": {
+                            "description": "Complete ordered category or series labels.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "kind": {
+                            "const": "table_multispan",
+                            "description": "Structured evidence assembled from separate table fragments.",
+                            "type": "string"
+                          },
+                          "row": {
+                            "description": "Exact or normalized quantitative row label.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "scope": {
+                            "description": "Exact or normalized scope represented by the table.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "spans": {
+                            "description": "Selected fragments and the table role each fragment supports.",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "handle": {
+                                  "description": "Selected table-fragment handle copied from this Trial.",
+                                  "pattern": "^eh_[0-9a-f]{8,64}$",
+                                  "type": "string"
+                                },
+                                "role": {
+                                  "description": "The part of the table represented by this selected fragment.",
+                                  "enum": [
+                                    "title_or_definition",
+                                    "header",
+                                    "quantitative_row",
+                                    "unit",
+                                    "footnote"
+                                  ],
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "role",
+                                "handle"
+                              ],
+                              "type": "object"
+                            },
+                            "maxItems": 8,
+                            "minItems": 2,
+                            "type": "array"
+                          },
+                          "title": {
+                            "description": "Exact or normalized table title or definition.",
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "units": {
+                            "description": "Reported units.",
+                            "items": {
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "basis",
+                          "spans",
+                          "title",
+                          "scope",
+                          "cohort",
+                          "row",
+                          "columns",
+                          "group_or_category_axes",
+                          "cells",
+                          "units",
+                          "denominators"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "description": "A server-owned figure projection selected by handle.",
+                        "properties": {
+                          "handle": {
+                            "description": "Selected figure handle copied from this Trial.",
+                            "pattern": "^eh_[0-9a-f]{8,64}$",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "figure",
+                            "description": "A server-owned selected figure reference.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "handle"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "inputs": {
+                            "description": "Selected source values used by the calculation.",
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "handle": {
+                                  "description": "Selected source-value handle copied from this Trial.",
+                                  "pattern": "^eh_[0-9a-f]{8,64}$",
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "description": "Source value used in the calculation.",
+                                  "minLength": 1,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "handle",
+                                "value"
+                              ],
+                              "type": "object"
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "kind": {
+                            "const": "derived",
+                            "description": "A calculation over selected source values.",
+                            "type": "string"
+                          },
+                          "operation": {
+                            "description": "The operation used to derive the reported value.",
+                            "enum": [
+                              "difference",
+                              "ratio",
+                              "sum"
+                            ],
+                            "type": "string"
+                          },
+                          "value": {
+                            "description": "Calculated value with units when applicable.",
+                            "minLength": 1,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "operation",
+                          "inputs",
+                          "value"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "type": "array"
+                },
+                "group_values": {
+                  "default": [],
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "group_id": {
+                        "description": "Structural reference to a target comparison-group id; it must match a target id but does not require a separate Source Evidence mapping.",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "statistic": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Source statistic label; use null when the Source does not identify it."
+                      },
+                      "unit": {
+                        "description": "Source-reported unit for this group value.",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "value": {
+                        "description": "Source-reported value for this group.",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "group_id",
+                      "statistic",
+                      "value",
+                      "unit"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "intended_effect_measure": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "passage_refs": {
+                  "default": [],
+                  "items": {
+                    "pattern": "^eh_[0-9a-f]{8,64}$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "precision": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "relation": {
+                  "description": "Explicit scope relation: exact, broader, narrower, component, or related. Compare outcome, model window, population and estimand; supports is not a relation.",
+                  "enum": [
+                    "exact",
+                    "broader",
+                    "narrower",
+                    "component",
+                    "related"
+                  ],
+                  "type": "string"
+                },
+                "relation_rationale": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "reported_definition": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "description": "Source-tied definition including reported model window and population when supported; do not borrow the target window."
+                },
+                "reported_outcome": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "target_measurement": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "target_time_unit": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "target_time_value": {
+                  "anyOf": [
+                    {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "target_window": {
+                  "description": "Preserve the requested target window.",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "trial_id": {
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "trial_id",
+                "relation",
+                "relation_rationale",
+                "design",
+                "design_rationale",
+                "target_measurement",
+                "target_window",
+                "comparison_groups",
+                "baseline_subgroup",
+                "intended_effect_measure",
+                "reported_outcome",
+                "analysis_population"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "missing_facts": {
+                  "items": {
+                    "additionalProperties": false,
+                    "description": "Caller-owned missing input and its typed basis.",
+                    "properties": {
+                      "basis": {
+                        "description": "Typed source or intake basis that establishes this missing fact.",
+                        "oneOf": [
+                          {
+                            "additionalProperties": false,
+                            "description": "Caller-owned Evidence premise before the server copies its exact source.",
+                            "properties": {
+                              "evidence": {
+                                "description": "Selected Evidence handle that establishes the missing fact.",
+                                "pattern": "^eh_[0-9a-f]{8,64}$",
+                                "type": "string"
+                              },
+                              "kind": {
+                                "const": "missing_reporting",
+                                "description": "Use when selected Evidence explicitly establishes missing reporting.",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "evidence"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "additionalProperties": false,
+                            "description": "Caller reference to the captured no-supported-Sources intake condition.",
+                            "properties": {
+                              "code": {
+                                "const": "no_supported_sources",
+                                "description": "Captured condition showing that the Trial has no supported Sources.",
+                                "type": "string"
+                              },
+                              "kind": {
+                                "const": "intake_condition",
+                                "description": "Use only for a captured intake condition.",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "code"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      },
+                      "fact": {
+                        "description": "Specific missing fact required to define a Result.",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "fact",
+                      "basis"
+                    ],
+                    "type": "object"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "relation": {
+                  "enum": [
+                    "ambiguous",
+                    "unavailable"
+                  ],
+                  "type": "string"
+                },
+                "trial_id": {
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "trial_id",
+                "relation",
+                "missing_facts"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "minItems": 1,
+        "type": "array"
+      }
+    },
+    "required": [
+      "results",
+      "assessments",
+      "expected_revision"
+    ],
+    "type": "object"
+  },
+  "meta": {
+    "fastmcp": {
+      "tags": []
+    }
+  },
+  "name": "validate_proposal",
+  "output_schema": {
+    "$defs": {
+      "AnswerPathRecovery": {
+        "additionalProperties": false,
+        "properties": {
+          "active_question_ids": {
+            "items": {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            "title": "Active Question Ids",
+            "type": "array"
+          },
+          "instruction": {
+            "title": "Instruction",
+            "type": "string"
+          },
+          "minimal_answer_schema": {
+            "additionalProperties": true,
+            "title": "Minimal Answer Schema",
+            "type": "object"
+          },
+          "missing_question_ids": {
+            "items": {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+              "type": "string"
+            },
+            "title": "Missing Question Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "active_question_ids",
+          "missing_question_ids",
+          "minimal_answer_schema",
+          "instruction"
+        ],
+        "title": "AnswerPathRecovery",
+        "type": "object"
+      },
+      "AssessableTargetRelation": {
+        "description": "Relations that describe a result eligible for downstream assessment.",
+        "enum": [
+          "exact",
+          "broader",
+          "narrower",
+          "component",
+          "related"
+        ],
+        "title": "AssessableTargetRelation",
+        "type": "string"
+      },
+      "CloseTrialAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation": {
+            "const": "close_trial",
+            "title": "Operation",
+            "type": "string"
+          },
+          "review_reference": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "title": "Review Reference",
+            "type": "string"
+          },
+          "trial_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+            "title": "Trial Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "trial_id",
+          "expected_revision",
+          "review_reference"
+        ],
+        "title": "Closure",
+        "type": "object"
+      },
+      "ConditionData": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Action"
+          },
+          "code": {
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "minLength": 1,
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "detail"
+        ],
+        "title": "ConditionData",
+        "type": "object"
+      },
+      "ConditionReceipt_ConditionData_": {
+        "additionalProperties": false,
+        "properties": {
+          "condition": {
+            "$ref": "#/$defs/ConditionData"
+          },
+          "head": {
+            "$ref": "#/$defs/PublicHead"
+          },
+          "outcome": {
+            "const": "condition",
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "head",
+          "condition"
+        ],
+        "title": "ConditionReceipt[ConditionData]",
+        "type": "object"
+      },
+      "ConflictData": {
+        "additionalProperties": false,
+        "properties": {
+          "current_revision": {
+            "minimum": 0,
+            "title": "Current Revision",
+            "type": "integer"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "current_revision"
+        ],
+        "title": "ConflictData",
+        "type": "object"
+      },
+      "ConflictReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "conflict": {
+            "$ref": "#/$defs/ConflictData"
+          },
+          "head": {
+            "$ref": "#/$defs/PublicHead"
+          },
+          "outcome": {
+            "const": "conflict",
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "head",
+          "conflict"
+        ],
+        "title": "ConflictReceipt",
+        "type": "object"
+      },
+      "FinalizeBatchAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation": {
+            "const": "finalize_batch",
+            "title": "Operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "expected_revision"
+        ],
+        "title": "FinalizeBatchAction",
+        "type": "object"
+      },
+      "GetDomainContextAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cursor"
+          },
+          "domain_id": {
+            "enum": [
+              "domain:randomization",
+              "domain:deviations",
+              "domain:missing",
+              "domain:measurement",
+              "domain:selection"
+            ],
+            "title": "Domain Id",
+            "type": "string"
+          },
+          "max_response_bytes": {
+            "anyOf": [
+              {
+                "maximum": 131072,
+                "minimum": 4096,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Max Response Bytes"
+          },
+          "operation": {
+            "const": "get_domain_context",
+            "title": "Operation",
+            "type": "string"
+          },
+          "trial_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+            "title": "Trial Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "trial_id",
+          "domain_id"
+        ],
+        "title": "GetDomainContextAction",
+        "type": "object"
+      },
+      "PrepareBatchAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "caller_inputs": {
+            "items": {
+              "enum": [
+                "requested_outcome",
+                "trial_labels"
+              ],
+              "type": "string"
+            },
+            "title": "Caller Inputs",
+            "type": "array"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation": {
+            "const": "prepare_batch",
+            "title": "Operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "expected_revision",
+          "caller_inputs"
+        ],
+        "title": "PrepareBatchAction",
+        "type": "object"
+      },
+      "PublicHead": {
+        "additionalProperties": false,
+        "properties": {
+          "authoritative_wording": {
+            "minLength": 1,
+            "title": "Authoritative Wording",
+            "type": "string"
+          },
+          "next_action": {
+            "anyOf": [
+              {
+                "discriminator": {
+                  "mapping": {
+                    "close_trial": "#/$defs/CloseTrialAction",
+                    "finalize_batch": "#/$defs/FinalizeBatchAction",
+                    "get_domain_context": "#/$defs/GetDomainContextAction",
+                    "prepare_batch": "#/$defs/PrepareBatchAction",
+                    "researcher_review": "#/$defs/ResearcherReviewAction",
+                    "review_trial": "#/$defs/ReviewTrialAction",
+                    "save_domain_judgment": "#/$defs/SaveDomainJudgmentAction",
+                    "save_proposal": "#/$defs/SaveProposalAction",
+                    "validate_proposal": "#/$defs/ValidateProposalAction"
+                  },
+                  "propertyName": "operation"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/PrepareBatchAction"
+                  },
+                  {
+                    "$ref": "#/$defs/SaveProposalAction"
+                  },
+                  {
+                    "$ref": "#/$defs/ValidateProposalAction"
+                  },
+                  {
+                    "$ref": "#/$defs/GetDomainContextAction"
+                  },
+                  {
+                    "$ref": "#/$defs/SaveDomainJudgmentAction"
+                  },
+                  {
+                    "$ref": "#/$defs/ReviewTrialAction"
+                  },
+                  {
+                    "$ref": "#/$defs/CloseTrialAction"
+                  },
+                  {
+                    "$ref": "#/$defs/FinalizeBatchAction"
+                  },
+                  {
+                    "$ref": "#/$defs/ResearcherReviewAction"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Action"
+          },
+          "phase": {
+            "enum": [
+              "empty",
+              "proposal",
+              "assessment",
+              "ready_to_finalize",
+              "finalized"
+            ],
+            "title": "Phase",
+            "type": "string"
+          },
+          "state_revision": {
+            "minimum": 0,
+            "title": "State Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "phase",
+          "state_revision",
+          "next_action",
+          "authoritative_wording"
+        ],
+        "title": "PublicHead",
+        "type": "object"
+      },
+      "ReasoningProposalSaveAction": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "title": "ReasoningProposalSaveAction",
+        "type": "object"
+      },
+      "RepairDefect": {
+        "additionalProperties": false,
+        "properties": {
+          "answer_path": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/AnswerPathRecovery"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "code": {
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "minLength": 1,
+            "title": "Detail",
+            "type": "string"
+          },
+          "path": {
+            "minLength": 1,
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "code",
+          "detail"
+        ],
+        "title": "RepairDefect",
+        "type": "object"
+      },
+      "RepairReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "head": {
+            "$ref": "#/$defs/PublicHead"
+          },
+          "outcome": {
+            "const": "repair",
+            "title": "Outcome",
+            "type": "string"
+          },
+          "repairs": {
+            "items": {
+              "$ref": "#/$defs/RepairDefect"
+            },
+            "minItems": 1,
+            "title": "Repairs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "outcome",
+          "head",
+          "repairs"
+        ],
+        "title": "RepairReceipt",
+        "type": "object"
+      },
+      "ResearcherReviewAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "researcher",
+            "title": "Authority",
+            "type": "string"
+          },
+          "operation": {
+            "const": "researcher_review",
+            "title": "Operation",
+            "type": "string"
+          },
+          "purpose": {
+            "$ref": "#/$defs/ReviewPurpose"
+          },
+          "reference": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "reference",
+          "purpose"
+        ],
+        "title": "ResearcherReviewAction",
+        "type": "object"
+      },
+      "ResultClarity": {
+        "additionalProperties": false,
+        "description": "Host's explicit account of which requested and reported Result facets are known.",
+        "properties": {
+          "analysis_population": {
+            "description": "Whether the requested and reported analysis population is established.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Analysis Population",
+            "type": "string"
+          },
+          "comparison_groups": {
+            "description": "Whether the requested and reported comparison groups are established.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Comparison Groups",
+            "type": "string"
+          },
+          "effect_measure": {
+            "description": "Whether the requested and reported effect measure is established.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Effect Measure",
+            "type": "string"
+          },
+          "eligible_result_choice": {
+            "description": "Whether the chosen reported result is established as the target candidate.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Eligible Result Choice",
+            "type": "string"
+          },
+          "measurement": {
+            "description": "Whether the requested and reported measurement is established.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Measurement",
+            "type": "string"
+          },
+          "outcome_definition": {
+            "description": "Whether the requested and reported outcome definition is established.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Outcome Definition",
+            "type": "string"
+          },
+          "source_table_meaning": {
+            "description": "Whether source-reported values and table cells have a clear meaning, including whether the selected estimate and precision are consistent across the relevant source material.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Source Table Meaning",
+            "type": "string"
+          },
+          "time_point": {
+            "description": "Whether the requested and reported time point or window, including any material data-cut chronology, is established.",
+            "enum": [
+              "specified",
+              "unclear",
+              "unavailable",
+              "conflicting"
+            ],
+            "title": "Time Point",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome_definition",
+          "measurement",
+          "time_point",
+          "analysis_population",
+          "comparison_groups",
+          "effect_measure",
+          "source_table_meaning",
+          "eligible_result_choice"
+        ],
+        "title": "ResultClarity",
+        "type": "object"
+      },
+      "ResultScopeReview": {
+        "additionalProperties": false,
+        "description": "Read-only comparison of represented scope; not an entailment judgment.",
+        "properties": {
+          "caller_declared_clarity": {
+            "$ref": "#/$defs/ResultClarity"
+          },
+          "claimed_relation": {
+            "$ref": "#/$defs/AssessableTargetRelation"
+          },
+          "instruction": {
+            "default": "Compare outcome definition, time window, estimand and population against the selected source passages. Null reported timing/estimand means not separately represented, not absent from the source. Known target fields, a matching endpoint label, or bound numbers do not prove exactness. Keep material conflict/uncertainty in clarity and rationale; choose a supported non-exact relation or another candidate when exact scope is not established. Do not redefine the target.",
+            "minLength": 1,
+            "title": "Instruction",
+            "type": "string"
+          },
+          "relation_rationale": {
+            "minLength": 1,
+            "title": "Relation Rationale",
+            "type": "string"
+          },
+          "reported_analysis_population": {
+            "minLength": 1,
+            "title": "Reported Analysis Population",
+            "type": "string"
+          },
+          "reported_effect_of_interest": {
+            "default": null,
+            "title": "Reported Effect Of Interest",
+            "type": "null"
+          },
+          "reported_endpoint": {
+            "$ref": "#/$defs/ScopeEndpointSummary"
+          },
+          "reported_time_point_or_window": {
+            "default": null,
+            "title": "Reported Time Point Or Window",
+            "type": "null"
+          },
+          "result_identity": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "title": "Result Identity",
+            "type": "string"
+          },
+          "source_bound_reported_fields": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Source Bound Reported Fields",
+            "type": "array"
+          },
+          "target": {
+            "$ref": "#/$defs/ScopeTargetSummary"
+          },
+          "trial_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+            "title": "Trial Id",
+            "type": "string"
+          },
+          "verification": {
+            "const": "requires_source_interpretation",
+            "default": "requires_source_interpretation",
+            "title": "Verification",
+            "type": "string"
+          }
+        },
+        "required": [
+          "trial_id",
+          "result_identity",
+          "claimed_relation",
+          "relation_rationale",
+          "target",
+          "reported_endpoint",
+          "reported_analysis_population",
+          "source_bound_reported_fields",
+          "caller_declared_clarity"
+        ],
+        "title": "ResultScopeReview",
+        "type": "object"
+      },
+      "ReviewPurpose": {
+        "enum": [
+          "proposal"
+        ],
+        "title": "ReviewPurpose",
+        "type": "string"
+      },
+      "ReviewTrialAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "caller_inputs": {
+            "anyOf": [
+              {
+                "items": {
+                  "const": "request",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Caller Inputs"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation": {
+            "const": "review_trial",
+            "title": "Operation",
+            "type": "string"
+          },
+          "trial_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+            "title": "Trial Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "trial_id",
+          "expected_revision"
+        ],
+        "title": "Trial review",
+        "type": "object"
+      },
+      "SaveDomainJudgmentAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "caller_inputs": {
+            "items": {
+              "enum": [
+                "answers",
+                "revision_basis"
+              ],
+              "type": "string"
+            },
+            "title": "Caller Inputs",
+            "type": "array"
+          },
+          "domain_id": {
+            "enum": [
+              "domain:randomization",
+              "domain:deviations",
+              "domain:missing",
+              "domain:measurement",
+              "domain:selection"
+            ],
+            "title": "Domain Id",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation": {
+            "const": "save_domain_judgment",
+            "title": "Operation",
+            "type": "string"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Supersedes"
+          },
+          "trial_id": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+            "title": "Trial Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "trial_id",
+          "domain_id",
+          "expected_revision",
+          "caller_inputs"
+        ],
+        "title": "SaveDomainJudgmentAction",
+        "type": "object"
+      },
+      "SaveProposalAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation": {
+            "const": "save_proposal",
+            "title": "Operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "expected_revision"
+        ],
+        "title": "SaveProposalAction",
+        "type": "object"
+      },
+      "ScopeEndpointSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "definition": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Definition"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "definition"
+        ],
+        "title": "ScopeEndpointSummary",
+        "type": "object"
+      },
+      "ScopeTargetSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "comparison": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "title": "Comparison",
+            "type": "array"
+          },
+          "effect_measure": {
+            "minLength": 1,
+            "title": "Effect Measure",
+            "type": "string"
+          },
+          "measurement": {
+            "minLength": 1,
+            "title": "Measurement",
+            "type": "string"
+          },
+          "outcome": {
+            "minLength": 1,
+            "title": "Outcome",
+            "type": "string"
+          },
+          "population": {
+            "minLength": 1,
+            "title": "Population",
+            "type": "string"
+          },
+          "window": {
+            "minLength": 1,
+            "title": "Window",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "measurement",
+          "window",
+          "population",
+          "effect_measure",
+          "comparison"
+        ],
+        "title": "ScopeTargetSummary",
+        "type": "object"
+      },
+      "SuccessReceipt_ValidateProposalData_": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/$defs/ValidateProposalData"
+          },
+          "head": {
+            "$ref": "#/$defs/PublicHead"
+          },
+          "outcome": {
+            "const": "success",
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "head",
+          "data"
+        ],
+        "title": "SuccessReceipt[ValidateProposalData]",
+        "type": "object"
+      },
+      "ValidateProposalAction": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "const": "host",
+            "title": "Authority",
+            "type": "string"
+          },
+          "caller_inputs": {
+            "items": {
+              "enum": [
+                "results",
+                "assessments"
+              ],
+              "type": "string"
+            },
+            "title": "Caller Inputs",
+            "type": "array"
+          },
+          "expected_revision": {
+            "minimum": 0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation": {
+            "const": "validate_proposal",
+            "title": "Operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "authority",
+          "expected_revision",
+          "caller_inputs"
+        ],
+        "title": "ValidateProposalAction",
+        "type": "object"
+      },
+      "ValidateProposalData": {
+        "additionalProperties": false,
+        "properties": {
+          "next_action": {
+            "$ref": "#/$defs/ReasoningProposalSaveAction"
+          },
+          "repairs": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/RepairDefect"
+            },
+            "title": "Repairs",
+            "type": "array"
+          },
+          "scope_review": {
+            "default": [],
+            "items": {
+              "$ref": "#/$defs/ResultScopeReview"
+            },
+            "title": "Scope Review",
+            "type": "array"
+          },
+          "validation_scope": {
+            "const": "structure_and_references_only",
+            "title": "Validation Scope",
+            "type": "string"
+          }
+        },
+        "required": [
+          "validation_scope",
+          "next_action"
+        ],
+        "title": "ValidateProposalData",
+        "type": "object"
+      }
+    },
+    "discriminator": {
+      "mapping": {
+        "condition": "#/$defs/ConditionReceipt_ConditionData_",
+        "conflict": "#/$defs/ConflictReceipt",
+        "repair": "#/$defs/RepairReceipt",
+        "success": "#/$defs/SuccessReceipt_ValidateProposalData_"
+      },
+      "propertyName": "outcome"
+    },
+    "oneOf": [
+      {
+        "$ref": "#/$defs/SuccessReceipt_ValidateProposalData_"
+      },
+      {
+        "$ref": "#/$defs/ConditionReceipt_ConditionData_"
+      },
+      {
+        "$ref": "#/$defs/RepairReceipt"
+      },
+      {
+        "$ref": "#/$defs/ConflictReceipt"
+      }
+    ],
+    "type": "object"
+  },
+  "title": "Validate Proposal draft"
+}
