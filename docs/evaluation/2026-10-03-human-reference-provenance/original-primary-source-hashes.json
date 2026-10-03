@@ -1,0 +1,62 @@
+[
+  {
+    "case": "dapa-hf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_protocol.pdf",
+    "sha256": "2aaa0770fb33dd19335299ad3582779c3ff98125dd6b720b04092d69b01ad053",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "dapa-hf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/NEJMoa1911303.pdf",
+    "sha256": "fa73636e3b883f1c17d4e5883384e8d289073c776fa981476927d03280f6d600",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "dapa-hf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_appendix.pdf",
+    "sha256": "be3782e5cce018dba47c85f09b394cd847ff8c3adf5cf8ddb6280c72a4fe3568",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "dapa-hf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_data-sharing.pdf",
+    "sha256": "f973ddbb5e095ad851ce570cd091afde85fabff9a0cf4a729a0f9dbe3cdef853",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "dapa-hf",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_disclosures.pdf",
+    "sha256": "dd2e45dbc916f040c9e8a8859f20e3e6be2fe56637b8101677ebdef6b244bdf2",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "deliver",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/deliver/nejmoa2206286_disclosures.pdf",
+    "sha256": "59e352bb88de7aa1c7f7b09557beb3fa0a552dab71cae02afdda4c1f0acd0436",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "deliver",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/deliver/nejmoa2206286_protocol.pdf",
+    "sha256": "e4430897f72b7abb309c9b54cfda36e60f3da7173c5953192d63ea642ed685a3",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "deliver",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/deliver/NEJMoa2206286.pdf",
+    "sha256": "e0ebc04bc7f19c0fd8ef6b8dcf23168c75f83cd35dd16b9714bc13b3065ee389",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "deliver",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/deliver/nejmoa2206286_appendix.pdf",
+    "sha256": "6d07f0425b3d4f715b3a3e5105700d482335c46df12ac24298fce2ed59b015cb",
+    "origin": "Original Code benchmark corpus, unchanged"
+  },
+  {
+    "case": "deliver",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/deliver/nejmoa2206286_data-sharing.pdf",
+    "sha256": "6376811d3d49071d896a72ad1d39708b101a38ddffa9d98224755dfb9e05633e",
+    "origin": "Original Code benchmark corpus, unchanged"
+  }
+]

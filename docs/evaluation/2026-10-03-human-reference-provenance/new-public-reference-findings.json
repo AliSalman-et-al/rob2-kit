@@ -1,0 +1,75 @@
+{
+  "review_doi": "10.1001/jama.2025.20834",
+  "review_url": "https://jamanetwork.com/journals/jama/fullarticle/2841163",
+  "repository_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12595549/",
+  "retrieved": "2026-10-03",
+  "new_reference_provenance": true,
+  "original_review_identity_reconstructed_not_archivally_hashed": true,
+  "identity_evidence": [
+    "Same JAMA journal, eTable2 Supplement1 physicalpage4 locator",
+    "Exact primary-outcome footnote meaning and five-domain labels",
+    "Same first-seven-trial table order as corpus acquisition rule",
+    "Review references17/18 identify original DAPA-HF/DELIVER reports"
+  ],
+  "review_main_text": {
+    "risk_assessors": "SMART-C secretariats, B.L.N. and H.J.L.H.",
+    "instrument": "Cochrane Risk of Bias2",
+    "pooled_review_primary": "CKD progression; not the trial-primary heart-failure composite",
+    "primary_trial_references": {
+      "dapa-hf": "Reference17:10.1056/NEJMoa1911303",
+      "deliver": "Reference18:10.1056/NEJMoa2206286"
+    }
+  },
+  "public_etable2": {
+    "physical_page": 4,
+    "scope_quote": "the primary outcome of included trial",
+    "quote_word_count": 7,
+    "rows": {
+      "dapa-hf": {
+        "intervention": "Dapagliflozin",
+        "comparator": "Placebo",
+        "domains": [
+          "Low",
+          "Low",
+          "Low",
+          "Low",
+          "Low"
+        ]
+      },
+      "deliver": {
+        "intervention": "Dapagliflozin",
+        "comparator": "Placebo",
+        "domains": [
+          "Low",
+          "Low",
+          "Low",
+          "Low",
+          "Low"
+        ]
+      }
+    },
+    "overall": "No per-trial overall column; not inferred",
+    "signalling_answers": "Not provided",
+    "exact_estimate_population_time_estimand": "Not specified in risk table"
+  },
+  "public_etable1_context_only": {
+    "dapa-hf": {
+      "cohort_size": 4744,
+      "median_followup_years": 1.5
+    },
+    "deliver": {
+      "cohort_size": 6263,
+      "median_followup_years": 2.3
+    },
+    "qualification": "Trial descriptive characteristics, not an explicit assignment of the risk labels to an exact population/time analysis."
+  },
+  "rejected_specific_candidate": {
+    "doi": "10.1001/jama.2025.20835",
+    "reason": "Different eight-trial review with risk tableeTable3 and heart-failure pool9718. Does not match archived eTable2/page4/first-seven locator. No label substitution."
+  },
+  "public_access_notes": [
+    "PMC main HTML retrieved by normal read; binary supplement route returned browser-check HTML, not PDF",
+    "Journal supplement link supplied public CDN PDF; downloaded normally, no authentication or challenge bypass",
+    "No request to user for missing appendices or contact with reviewers"
+  ]
+}
