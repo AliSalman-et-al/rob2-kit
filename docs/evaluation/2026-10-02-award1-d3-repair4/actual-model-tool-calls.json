@@ -1,0 +1,128 @@
+[
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":12000}",
+    "call_id": "call_FgOxAZxOSiiQCXq9zuSN2wSP"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"include_candidates\":true,\"max_response_bytes\":20000}",
+    "call_id": "call_RZnHwjqcbyieHC3JAgng0UcO"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"cursor\":\"dcp2.48cc79fa501a407b9ca82fc81adc4e42.1\",\"max_response_bytes\":20000}",
+    "call_id": "call_wVHHZMGw89FJkBU45EXukjMY"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"cursor\":\"dcp2.48cc79fa501a407b9ca82fc81adc4e42.2\",\"max_response_bytes\":20000}",
+    "call_id": "call_dE55yJNLXr7857S1t4PDRf1N"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"cursor\":\"dcp2.48cc79fa501a407b9ca82fc81adc4e42.3\",\"max_response_bytes\":20000}",
+    "call_id": "call_cwtrdGXFuku17mRMIizjglWv"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"cursor\":\"dcp2.48cc79fa501a407b9ca82fc81adc4e42.4\",\"max_response_bytes\":20000}",
+    "call_id": "call_NmwpW4yfRxSnjILxyCYAHl7m"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"cursor\":\"dcp2.48cc79fa501a407b9ca82fc81adc4e42.5\",\"max_response_bytes\":20000}",
+    "call_id": "call_lJFoclTDN2ObBblaBPERFDHc"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"cursor\":\"dcp2.48cc79fa501a407b9ca82fc81adc4e42.6\",\"max_response_bytes\":20000}",
+    "call_id": "call_W5itVwBRo1UFycHve1xqplR3"
+  },
+  {
+    "type": "function_call",
+    "name": "get_domain_context",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"domain_id\":\"domain:missing\",\"cursor\":\"dcp2.48cc79fa501a407b9ca82fc81adc4e42.7\",\"max_response_bytes\":20000}",
+    "call_id": "call_KKKSXtrF0Yi7gDu7qJdsqxVz"
+  },
+  {
+    "type": "function_call",
+    "name": "list_sources",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"limit\":10}",
+    "call_id": "call_N2xGpEs1C8Y2rVvmF3feo46r"
+  },
+  {
+    "type": "function_call",
+    "name": "read_pages",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"windows\":[{\"source_id\":\"sh_9c930b3bf92f1574\",\"page\":3,\"start_line\":13,\"end_line\":79},{\"source_id\":\"sh_af5af683eff6bed3\",\"page\":1},{\"source_id\":\"sh_af5af683eff6bed3\",\"page\":2}]}",
+    "call_id": "call_L7fU4eLt1dFHDe2cPdx1vO4I"
+  },
+  {
+    "type": "function_call",
+    "name": "render_page",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"source_id\":\"sh_9c930b3bf92f1574\",\"page\":3}",
+    "call_id": "call_RxCqzh8kms5QAV9KomkXj4HZ"
+  },
+  {
+    "type": "function_call",
+    "name": "select_text_evidence",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"source_id\":\"sh_9c930b3bf92f1574\",\"page\":3,\"start_line\":13,\"end_line\":79}",
+    "call_id": "call_2FtTkuuRZrd58Wbdt47Fn8Jk"
+  },
+  {
+    "type": "function_call",
+    "name": "select_text_evidence",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"source_id\":\"sh_af5af683eff6bed3\",\"page\":2,\"start_line\":8,\"end_line\":28}",
+    "call_id": "call_4oTpK2d6oW8PnJM0o2dGzodU"
+  },
+  {
+    "type": "function_call",
+    "name": "read_pages",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"source_id\":\"sh_9062b2816dbd4d98\",\"pages\":[1]}",
+    "call_id": "call_8zFtMQG218zTzdUi2SzONfCY"
+  },
+  {
+    "type": "function_call",
+    "name": "select_text_evidence",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"source_id\":\"sh_9c930b3bf92f1574\",\"page\":3,\"start_line\":100,\"end_line\":108}",
+    "call_id": "call_slLqvzuJNEiZcB0OTB3RpxEw"
+  },
+  {
+    "type": "function_call",
+    "name": "save_domain_judgment",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"domain_id\":\"domain:missing\",\"expected_revision\":13,\"answers\":[{\"question_id\":\"sq:missing:data-available\",\"answer\":\"no_information\",\"justification\":\"The approved result is 26-week HbA1c change for dulaglutide 1.5 mg versus placebo among all randomized participants. Although 978 were randomized (two exenatide-assigned participants did not receive treatment), reported 26-week study discontinuations were 6.8% (19/279) for dulaglutide 1.5 mg and 12.1% (17/141) for placebo, not outcome-observed counts. Efficacy used pre-rescue data and ANCOVA with LOCF for missingness, which does not establish how many HbA1c outcomes were observed; imputed outcomes count as missing. Thus extent of missing approved outcomes is unresolved, not demonstrably complete or materially incomplete.\",\"bases\":[{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"},{\"evidence\":\"eh_9ffece7270f2dc6e\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032e9f693\"],\"implication\":\"The treated-randomized analysis population and LOCF could yield estimates for many participants, but neither specifies observed HbA1c counts and LOCF is imputation, not observed outcome availability.\"}],\"unknowns\":[\"Arm-specific observed 26-week HbA1c counts, including whether outcomes were missing versus LOCF-imputed.\",\"Whether participants discontinuing study still had HbA1c measured at week 26.\",\"The historical registry projection cannot be recovered: read_pages failed integrity verification; no replacement capture was sought.\"],\"limitations\":[{\"premise\":\"Actual observed 26-week HbA1c availability among all randomized dulaglutide 1.5 mg and placebo participants is unknown; discontinuation counts and analyzed population do not establish it.\",\"stopping_rationale\":\"Read the complete captured main report and relevant local supplement. The historical registry capture failed integrity verification, so retained as a limitation and no replacement was obtained.\"}]},{\"question_id\":\"sq:missing:evidence-unbiased\",\"answer\":\"no\",\"justification\":\"Inspected material reports ANCOVA with LOCF for missing outcomes and a secondary MMRM method, but no missing-outcome sensitivity analysis spanning plausible outcome-dependent assumptions or bias-correcting method for this result. LOCF alone is not reassurance; the rescue-related exclusions make the missingness concern salient. This is no evidence of freedom from bias, not proof that bias occurred.\",\"bases\":[{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032e9f693\"],\"implication\":\"MMRM is reported as a secondary approach, but no missingness assumptions or sensitivity results are provided to establish robustness to missing outcomes.\"}],\"unknowns\":[\"Whether a missing-data sensitivity analysis exists outside the inspected main report and local supplement.\",\"The effect of plausible unobserved HbA1c values on the dulaglutide-placebo contrast.\"]},{\"question_id\":\"sq:missing:true-value-dependent\",\"answer\":\"probably_yes\",\"justification\":\"Rescue intervention was triggered by persistent severe hyperglycemia thresholds (with investigator discretion), and efficacy data after rescue were excluded. Missing post-rescue HbA1c can therefore plausibly be related to glycemic outcome values. This supports possible dependence, although report does not give individual missingness reasons or prove that all rescue participants lacked week-26 measurements.\",\"bases\":[{\"evidence\":\"eh_be6083ee31deb25a\",\"role\":\"direct_support\"},{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032e9f693\",\"eh_be6083ee31deb25a\"],\"implication\":\"Study discontinuation was often due to adverse events or patient decision, and some rescue participants may still have had pre-rescue or endpoint outcome data; these facts prevent treating all discontinuation or rescue as missing endpoint data.\"}],\"unknowns\":[\"Whether each rescue participant lacked week-26 HbA1c and the timing of rescue relative to assessment.\",\"Whether non-rescue missingness reasons were related to true HbA1c.\"]},{\"question_id\":\"sq:missing:likely-dependent\",\"answer\":\"probably_yes\",\"justification\":\"The supplement ties rescue eligibility to sustained high glucose and the analysis excluded efficacy data after rescue; by week 26 rescue was reported in 22/141 placebo participants (15.6%) versus 4/279 dulaglutide 1.5 mg participants (1.4%). That differential and outcome-linked rescue pathway make dependence likely enough for probably yes, while not proving actual missing endpoint data for every rescued participant.\",\"bases\":[{\"evidence\":\"eh_be6083ee31deb25a\",\"role\":\"direct_support\"},{\"evidence\":\"eh_9ffece7270f2dc6e\",\"role\":\"direct_support\"},{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032f2dc6e\"],\"implication\":\"Discontinuation reasons included adverse events and patient decision, and published discontinuations are not observed-outcome missingness rates; precise endpoint availability and its mechanisms remain unknown.\"}],\"unknowns\":[\"Whether rescue resulted in missing 26-week HbA1c for each affected participant.\",\"Whether analysis adjusted for predictors of missingness or included post-rescue HbA1c in an alternate sensitivity analysis.\"]}]}",
+    "call_id": "call_JNmU65wbn5jbMZO1mqk4dJIF"
+  },
+  {
+    "type": "function_call",
+    "name": "save_domain_judgment",
+    "namespace": "mcp__rob2",
+    "arguments": "{\"trial_id\":\"award-1-2014\",\"domain_id\":\"domain:missing\",\"expected_revision\":13,\"answers\":[{\"question_id\":\"sq:missing:data-available\",\"answer\":\"no_information\",\"justification\":\"The approved result is 26-week HbA1c change for dulaglutide 1.5 mg versus placebo among all randomized participants. Although 978 were randomized (two exenatide-assigned participants did not receive treatment), reported 26-week study discontinuations were 6.8% (19/279) for dulaglutide 1.5 mg and 12.1% (17/141) for placebo, not outcome-observed counts. Efficacy used pre-rescue data and ANCOVA with LOCF for missingness, which does not establish how many HbA1c outcomes were observed; imputed outcomes count as missing. Thus extent of missing approved outcomes is unresolved, not demonstrably complete or materially incomplete.\",\"bases\":[{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"},{\"evidence\":\"eh_9ffece7270f2dc6e\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032e9f693\"],\"implication\":\"The treated-randomized analysis population and LOCF could yield estimates for many participants, but neither specifies observed HbA1c counts and LOCF is imputation, not observed outcome availability.\"}],\"unknowns\":[\"Arm-specific observed 26-week HbA1c counts; whether discontinuers still had HbA1c measured at week 26.\",\"The historical registry projection cannot be recovered: read_pages failed integrity verification; no replacement capture was sought.\"],\"limitations\":[{\"premise\":\"Actual observed 26-week HbA1c availability among all randomized dulaglutide 1.5 mg and placebo participants is unknown; discontinuation counts and analyzed population do not establish it.\",\"stopping_rationale\":\"Read the complete captured main report and relevant local supplement. The historical registry capture failed integrity verification, so retained as a limitation and no replacement was obtained.\"}]},{\"question_id\":\"sq:missing:evidence-unbiased\",\"answer\":\"no\",\"justification\":\"Inspected material reports ANCOVA with LOCF for missing outcomes and a secondary MMRM method, but no missing-outcome sensitivity analysis spanning plausible outcome-dependent assumptions or bias-correcting method for this result. LOCF alone is not reassurance; rescue-related exclusions make missingness concern salient. This is no evidence of freedom from bias, not proof that bias occurred.\",\"bases\":[{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032e9f693\"],\"implication\":\"MMRM is reported as a secondary approach, but no missingness assumptions or sensitivity results are provided to establish robustness.\"}],\"unknowns\":[\"Whether a missing-data sensitivity analysis exists outside the inspected main report and local supplement.\",\"Effect of plausible unobserved HbA1c values on the contrast.\"]},{\"question_id\":\"sq:missing:true-value-dependent\",\"answer\":\"probably_yes\",\"justification\":\"Rescue intervention was triggered by persistent severe hyperglycemia thresholds (with investigator discretion), and efficacy data after rescue were excluded. Missing post-rescue HbA1c can plausibly be related to glycemic outcome values. This supports possible dependence, although the report does not give individual missingness reasons or prove that all rescue participants lacked week-26 measurements.\",\"bases\":[{\"evidence\":\"eh_be6083ee31deb25a\",\"role\":\"direct_support\"},{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032e9f693\",\"eh_be6083ee31deb25a\"],\"implication\":\"Some rescue participants may still have had endpoint measurements and study discontinuation reasons included adverse events or patient decision, so not all treatment discontinuation or rescue establishes missing endpoint data.\"}],\"unknowns\":[\"Whether each rescue participant lacked week-26 HbA1c and timing of rescue relative to assessment.\",\"Whether non-rescue missingness reasons related to true HbA1c.\"]},{\"question_id\":\"sq:missing:likely-dependent\",\"answer\":\"probably_yes\",\"justification\":\"The supplement ties rescue eligibility to sustained high glucose and efficacy data after rescue were excluded; by week 26 rescue was reported in 22/141 placebo participants (15.6%) versus 4/279 dulaglutide 1.5 mg participants (1.4%). This differential outcome-linked rescue pathway makes dependence likely enough for probably yes, without proving actual missing endpoint data for each rescued participant.\",\"bases\":[{\"evidence\":\"eh_be6083ee31deb25a\",\"role\":\"direct_support\"},{\"evidence\":\"eh_9ffece7270f2dc6e\",\"role\":\"direct_support\"},{\"evidence\":\"eh_ff06054032e9f693\",\"role\":\"direct_support\"}],\"counterevidence\":[{\"evidence\":[\"eh_ff06054032e9f693\",\"eh_9ffece7270f2dc6e\"],\"implication\":\"Discontinuation reasons included adverse events and patient decision, and discontinuation counts are not endpoint missingness rates; precise availability and mechanisms remain unknown.\"}],\"unknowns\":[\"Whether rescue resulted in missing week-26 HbA1c for each affected participant.\",\"Whether analysis adjusted for missingness predictors or included post-rescue HbA1c in sensitivity analysis.\"]}]}",
+    "call_id": "call_bG9rxnctWYnrZmMHYxsChTnI"
+  }
+]

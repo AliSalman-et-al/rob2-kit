@@ -1,0 +1,127 @@
+{
+  "code_sha": "96ffe34cfd115cb465f1c05f320e76f3b13ceb91",
+  "scientific_implementation_sha": "55c2d042cdd2c5a2956ecc8478c859dfaac152d0",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "cli_version": "codex-cli 0.159.0",
+  "case": "award-1-2014",
+  "domain_id": "domain:missing",
+  "source_database_sha256": {
+    "canonical.sqlite3": "c1d16f05b44c504d0456e314062f7bd829c06ea70560a2e273522d9e93ce9eb0",
+    "derivative.sqlite3": "751deb0a4b096e722b26ab6239b4c1926be3e3340002a69ac5a9d9af2493f3e7"
+  },
+  "restored_source_hash_verified": [
+    {
+      "declared_role": "main_article",
+      "id": "source_9c930b3bf92f1574811a437f9f437b764e5e20c57ff42b278479199ead8c5ab8",
+      "label": "2159.pdf",
+      "logical_path": "2159.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 9,
+      "projection_hash": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "role": "main_article",
+      "sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "trial_id": "award-1-2014"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_af5af683eff6bed3bd60bb4948e6f0ecd0b94046f164c4f738e09b22c23371ff",
+      "label": "dc132760supplementarydata.pdf",
+      "logical_path": "dc132760supplementarydata.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 2,
+      "projection_hash": "sha256:7f3b4d03e790910b7ed0d5b21f321a0014b4ea92a76fd216036a7ba543dac46f",
+      "role": "supplement",
+      "sha256": "sha256:da0de5a1322d6eecaacc7413b471916a87d231a107ab3b6221b3b15d7d9b2886",
+      "trial_id": "award-1-2014"
+    }
+  ],
+  "raw_sources_unavailable": [
+    {
+      "declared_role": null,
+      "id": "source_9062b2816dbd4d98622ac8bedb67562f92878839d52af46f83c04ad122943cfb",
+      "label": "ClinicalTrials.gov NCT01064687",
+      "logical_path": "registry/NCT01064687.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:41d5c767dceed28cf46a137377106a310aac69246837768dc20b375121d28cd8",
+      "role": "registry",
+      "sha256": "sha256:35aba4f0e44689a81610e95b405de5795e7b673f994d6d303f70e12706123bb1",
+      "trial_id": "award-1-2014"
+    }
+  ],
+  "approved_target": {
+    "comparison_groups": [
+      {
+        "assignment": "Dulaglutide 1.5 mg once weekly with metformin and pioglitazone",
+        "id": "dulaglutide_1_5_mg"
+      },
+      {
+        "assignment": "Placebo once weekly with metformin and pioglitazone",
+        "id": "placebo"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Mean difference",
+    "measurement": {
+      "method": "Change in HbA1c from baseline",
+      "metric": "Change in HbA1c from baseline"
+    },
+    "outcome_definition": "Change in HbA1c from baseline",
+    "time_point_or_window": {
+      "description": "26 weeks from randomization",
+      "kind": "quantified",
+      "unit": "weeks",
+      "value": "26"
+    }
+  },
+  "reported_result": {
+    "analysis_population": "Intent-to-treat population of randomized patients who received at least one dose (976 of 978 randomized); efficacy data after rescue medication were excluded. ANCOVA with LOCF for missing data.",
+    "endpoint": {
+      "definition": null,
+      "name": "Change in HbA1c from baseline"
+    },
+    "form": "group_bound_values",
+    "group_values": [
+      {
+        "group_id": "dulaglutide_1_5_mg",
+        "statistic": "LS mean",
+        "unit": "%",
+        "value": "-1.51"
+      },
+      {
+        "group_id": "placebo",
+        "statistic": "LS mean",
+        "unit": "%",
+        "value": "-0.46"
+      }
+    ]
+  },
+  "prior_retained_domains": [
+    "domain:deviations",
+    "domain:randomization"
+  ],
+  "initial_revision": 13,
+  "selection_hypothesis": "Operator-only: continuous HbA1c result with LOCF and post-rescue exclusion. Distinguish observed from analyzed/imputed values and appraise exact handling, without selecting an answer from an ITT denominator. Selected from source evidence and availability, not human labels. No count/page/answer hint to model.",
+  "unused_development_case_inventory": "paid-case-inventory.json",
+  "qualification": "Original Oct1 Code approved Result retained; D1/D2 retained for sequence; D3/later active records and derivative delivery removed only in new copy. Not cold full-trial assessment or held-out validation. Registry raw unavailable; human target alignment provisional.",
+  "no_invocation_retry": true,
+  "manual_repairs_during_run": false,
+  "guard_change_authorization": "Parent explicitly adopts four total saves and two consecutive identical rejections, with retained 800k total/100k uncached/5k output/20 tools/480s wall/120s idle.",
+  "guards": {
+    "wall_seconds": 480,
+    "idle_seconds": 120,
+    "tool_calls": 20,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": 800000,
+    "uncached_input_tokens": 100000,
+    "output_tokens": 5000
+  },
+  "guard_identity": "sha256:cd1ab3203f4385468ce45c8d29494f1b2a27428e7535a5779823b93e928fdc30",
+  "prompt_sha256": "d66d9aabb00aaf6719b850aab97d6e2a008859dff27706e72d53ccbd6a6702a2"
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "get_domain_context",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "list_sources",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "read_pages",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "render_page",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response",
+    "native_png_sha256": "sha256:36041dd488a08990141cec5a7e2e57fd0affea0dcfc9514b075cfddb5eb4cd08",
+    "pixel_delivery_qualification": "Native PNG present and derivative render receipt recorded; separate image pixels not represented in durable model output text. Do not infer visual comprehension."
+  },
+  {
+    "tool": "select_text_evidence",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "select_text_evidence",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "read_pages",
+    "arguments_exact": true,
+    "text_delivery": "exact native error text"
+  },
+  {
+    "tool": "select_text_evidence",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "save_domain_judgment",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  },
+  {
+    "tool": "save_domain_judgment",
+    "arguments_exact": true,
+    "text_delivery": "exact native structured response"
+  }
+]

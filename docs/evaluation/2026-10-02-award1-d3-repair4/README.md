@@ -1,0 +1,45 @@
+# AWARD-1 D3: completed development probe and scientific qualification
+
+Recovered on 2026-10-03 without another model invocation. Yesterday's work had already pushed guard checkpoint `96ffe34cfd115cb465f1c05f320e76f3b13ceb91` and completed exactly one AWARD-1-2014 probe. The workspace was clean, remote matched, and no owned probe processes remained. There was no outstanding account-limit error in the completed probe records; this offline recovery did not test account inference availability.
+
+## Selection and frozen implementation
+
+The parent-authorized next diagnostic adopted at most four total saves, with an earlier stop after two consecutive identical rejections. Limits remained 800k total input / 100k uncached / 5k output / 20 tools / 480 wall seconds / 120 idle seconds. Strict policy, prompt/manifest identity, launcher and monitor were verified before launch; 24 focused offline policy checks passed, including simulated changed-error acceptance, identical-error stop and four-save stop. Production scientific source was identical to `55c2d04`; only guard scripts/tests and inventory documentation changed.
+
+The paid-case inventory excluded Albert, DELIVER, An2021, MONARCH-plus, AWARD-10, GetGoal-Duo1, CANVAS and DAPA-HF. AWARD-1-2014 did not appear in retained development run/manifest/tool records. Original Oct1 baseline participation did not exclude it. Selection used available article/supplement evidence about continuous HbA1c, LOCF and post-rescue exclusion, not a human reference label. Its exact ID/hypothesis were reported before launch. Corpus auditing prevents a held-out validation claim. [Inventory](paid-case-inventory.json), [launch preflight](launch-preflight.json).
+
+The fixture uses the required Oct1 Code-benchmark approved Result: 26-week HbA1c change, dulaglutide 1.5 mg versus placebo, effect of assignment among all randomized participants. The reported result retains its treated-randomized/pre-rescue/LOCF population qualification. D1/D2 were retained only for sequence; D3/later active records and derivative deliveries were removed only in a new copy. Two local PDFs were restored with matching hashes; historical registry raw bytes remained unavailable. Source canonical and derivative database hashes still match their preparation hashes. [Preparation](prepare-fixture.py), [manifest](manifest.json), [unhinted prompt](prompt.txt).
+
+## Actual reading and construction
+
+The exact model was `gpt-6-luna`, Medium, direct-only MCP. No page/count/answer hints, manual repair, new invocation, midrun edit or external capture occurred. The first context request was too small; the model enlarged it and completed all context pages. Typed report-first delivery covered all nine physical main pages and **43,737 source-text bytes**, with final status complete and no unread ranges. Both supplement pages were explicitly requested through read_pages. The model selected the main analysis/discontinuation passage, supplemental rescue criteria and the main Figure 1 rescue-count caption. It attempted the unavailable registry read and retained the resulting integrity limitation. [Final coverage](final-main-coverage.json), [mechanism summary](mechanism-summary.json).
+
+A native render of main p3 also produced a source-bound PNG and derivative receipt. The durable model rollout preserves its structured text response, not separate image pixels, so no independent visual-comprehension claim is made. The rescue quantities used in the draft were also in selected literal caption text, so their source attribution does not depend on presumed image interpretation.
+
+Every one of 18 actual call arguments matches the completed native arguments. All 18 durable model-visible text outputs exactly match native structured responses or native error text, including the first rejection and final acceptance. No clipping or guessed response reconstruction was needed. Native events retain the render PNG. Private rollout metadata, raw reasoning, authentication and stderr diagnostics are excluded. [Delivery proof](delivery-proof.json), [actual calls](actual-model-tool-calls.json), [actual text outputs](actual-model-tool-outputs.json), [native events](events.jsonl).
+
+## Attempts and accepted server label
+
+Both submissions supplied the complete active path: **3.1 No information; 3.2 No; 3.3 Probably Yes; 3.4 Probably Yes**. First save was rejected for an invalid counterevidence handle, surfaced at its normalized evidence-basis path. The model replaced that handle with existing selected handles and rephrased some narrative while retaining all answer choices. Its second save was accepted at revision 14 as **High**, checkpoint `sha256:21ed40744b65204627a28a3284fc3f4ac84ad333019b5ed9cc3ad6a3d17d2a60`, driver 3.4. [First attempt and repair](submission-1.json), [second attempt and acceptance](submission-2.json).
+
+The run used two of four available save attempts. The old two-rejection rule would also have allowed this particular acceptance because only one save was rejected. Therefore this case does not prove that the increased correction allowance improved success. No repeated-identical error occurred. The run demonstrates model-owned handle repair and complete-path construction under the new policy, not the need for its extra allowance.
+
+The server's sufficiency projection marks 3.1 unresolved and 3.2–3.4 supported, with support_attribution not_established for every claim. Those projections reflect host assertions and workflow checks, not independent scientific proof. No Trial-level assessment or finalization occurred.
+
+## Scientific warrant: grounded facts, unresolved D2/D3 bridge
+
+The model correctly distinguished study discontinuations from observed HbA1c counts and did not treat an ITT denominator or LOCF-imputed values as observed outcomes. It retained uncertainty about actual observed 26-week HbA1c and acknowledged a secondary MMRM approach without treating its name alone as proof of unbiased missing-data handling. Its complete-main/supplement reading statement agrees with recorded coverage.
+
+The article reports use of only pre-rescue efficacy data and LOCF for missing data. The supplement ties rescue eligibility to persistent severe hyperglycemia, with investigator discretion. The selected caption reports rescue by week 26 in 22/141 placebo and 4/279 dulaglutide 1.5 mg participants. These facts support an outcome-driven *analysis exclusion* concern and a plausible relationship between rescue and glycemia. They do not by themselves establish that post-rescue HbA1c measurements were genuinely unobserved.
+
+The draft explicitly states that it does not know whether rescued participants lacked week-26 measurements, yet uses differential outcome-linked rescue to support likely dependence of **missing outcomes** at 3.4. This is the unresolved scientific bridge. Cochrane RoB 2 full guidance, section 6.1, p39, places exclusions of eligible participants with available outcome data in D2, while D3 addresses genuinely missing measurements and their imputation. The relevant phrase is “exclusions of eligible participants for whom outcome data are available.” The locally retained primary guidance is `/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/cochrane-2019-guidance-correction.pdf`; no trial-specific rule should replace that general distinction.
+
+High is the correct server output for the submitted path, but cannot yet be called a strongly defensible scientific disagreement from these facts alone. A generic follow-up should clarify whether the outcome was unobserved, observed but excluded, or unknown, and route the established analytic exclusion concern to D2. It should preserve genuine missingness uncertainty without automatically lowering or raising a label. No manual alternate answer or risk label was substituted here, and no code was changed after the finding.
+
+This case-level evidence shows successful broad source delivery and interpretation of several key distinctions, together with a potentially consequential D2/D3 attribution failure. It supplies neither validated human-reference agreement nor aggregate accuracy or superiority over All-Low. Human result/label alignment remains provisional.
+
+## Cost and limits
+
+The monitor stopped on acceptance after **105.528 seconds**, **18 direct MCP calls**, zero code calls, two saves and one rejection. Exact usage: **663,869 input = 575,488 cached + 88,381 uncached**; **3,855 output**, including **619 reasoning output**. Total-input, uncached-input, output, tool-start and save-start overshoot were all zero. [Automatic stop and guards](run.json), [durable token records](durable-token-usage-records.json).
+
+No new paid run, full benchmark, merge or CI wait occurred during recovery. Guard tests and static checks were already complete before the frozen launch. Original benchmark databases and all attempts remain preserved; owned probe processes are stopped. The next implementation step requires reviewing the general D2/D3 attribution gap, rather than treating this accepted High as an accuracy win.

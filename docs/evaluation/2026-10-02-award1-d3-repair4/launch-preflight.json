@@ -1,0 +1,45 @@
+{
+  "runtime_sha": "96ffe34cfd115cb465f1c05f320e76f3b13ceb91",
+  "scientific_sha": "55c2d042cdd2c5a2956ecc8478c859dfaac152d0",
+  "exact_model": "gpt-6-luna",
+  "effort": "medium",
+  "guards": {
+    "wall_seconds": 480,
+    "idle_seconds": 120,
+    "tool_calls": 20,
+    "save_attempts": 4,
+    "identical_rejections": 2,
+    "input_tokens": 800000,
+    "uncached_input_tokens": 100000,
+    "output_tokens": 5000
+  },
+  "guard_identity": "sha256:cd1ab3203f4385468ce45c8d29494f1b2a27428e7535a5779823b93e928fdc30",
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-award1-d3-repair4/response.txt",
+    "-"
+  ],
+  "manifest_prompt_monitor_same_config": true,
+  "paid_development_inventory_checked": true,
+  "inline_main_numbered_bytes": 48444,
+  "uncached_fit": "Main report and short supplement appear to fit 100k; prior report-rich diagnostics used 53k\u201362k uncached. Cache behavior remains uncertain.",
+  "source_config_hashes": {
+    "domain_probe_limits.json": "d5984f6aa35fc20dfc036ca7f75f4910c61b7f9b22e0500de0289c6940832a6f",
+    "domain_probe_controls.py": "9bf1f3b0fc5651a567192f57ba4cb680dd964242fb53e1f20f6823fa0a9580a9",
+    "run_domain_probe.py": "e5cb9e0419cfd1637fee96d12310db20bb498ee3e7b00d32ec377b28a0f1efe5"
+  }
+}
