@@ -1,0 +1,202 @@
+{
+  "d31_guidance": {
+    "baseline_ad312a4": {
+      "official": {
+        "source_excerpt": "\u2018Nearly all\u2019 should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data.",
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "version": "22 August 2019"
+      },
+      "operational": {
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "Outcome data were available for all or nearly all randomized participants."
+          },
+          {
+            "answer": "no",
+            "text": "Outcome data were not available for all or nearly all randomized participants."
+          },
+          {
+            "answer": "no_information",
+            "text": "The report provides no information about the extent of missing outcome data."
+          }
+        ],
+        "attribution": "rob2-kit maintainers",
+        "bias_construct": "Whether outcome data were available for all or nearly all randomized participants.",
+        "considerations": [
+          "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
+          "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
+          "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
+          "Neutral paired control: complete ascertainment and an analysis denominator with unresolved ascertainment differ only in the availability premise; administrative censoring and worsening-related follow-up loss differ only in the missingness mechanism."
+        ],
+        "decision_rule": "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When the extent remains unknown, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
+        "evidence_needed": [
+          "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
+          "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
+          "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts."
+        ],
+        "id": "rob2-kit.parallel-assignment.question-guidance",
+        "invalid_shortcuts": [
+          "a complete-case analysis label",
+          "an ITT analysis",
+          "analysis denominators or ITT membership alone",
+          "planned or scheduled follow-up alone",
+          "treatment continuation or discontinuation alone",
+          "last-known-alive censoring alone",
+          "an event count treated as an observed-outcome count",
+          "an analysis denominator treated as an outcome denominator",
+          "a generic censoring rule without actual rates or follow-up accounting",
+          "imputed data counted as observed outcomes"
+        ],
+        "no_information_rule": "Answer no_information when the extent of missing outcome data remains unknown after bounded retrieval. Lack of evidence for complete availability is not evidence of materially incomplete availability.",
+        "query_suggestions": [
+          {
+            "mode": "all",
+            "purpose": "outcome availability",
+            "query": "missing outcome data",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "follow-up completeness",
+            "query": "loss to follow-up",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "randomized follow-up accounting",
+            "query": "participant flow",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "participant-flow diagram",
+            "query": "CONSORT",
+            "source_role": "supplement"
+          },
+          {
+            "mode": "all",
+            "purpose": "observed outcome reporting",
+            "query": "outcome data available",
+            "source_role": null
+          },
+          {
+            "mode": "all",
+            "purpose": "unknown mortality status",
+            "query": "mortality status unknown",
+            "source_role": "supplement"
+          },
+          {
+            "mode": "all",
+            "purpose": "missing outcome counts",
+            "query": "missing values",
+            "source_role": "supplement"
+          }
+        ],
+        "version": "1.0.3"
+      }
+    },
+    "current": {
+      "official": {
+        "source_excerpt": "\u2018Nearly all\u2019 should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data.",
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "version": "22 August 2019"
+      },
+      "operational": {
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "Outcome data were available for all or nearly all randomized participants."
+          },
+          {
+            "answer": "no",
+            "text": "Outcome data were not available for all or nearly all randomized participants."
+          },
+          {
+            "answer": "no_information",
+            "text": "The report provides no information about the extent of missing outcome data."
+          }
+        ],
+        "attribution": "rob2-kit maintainers",
+        "bias_construct": "Whether outcome data were available for all or nearly all randomized participants.",
+        "considerations": [
+          "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
+          "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
+          "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
+          "Neutral paired control: complete ascertainment and an analysis denominator with unresolved ascertainment differ only in the availability premise; administrative censoring and worsening-related follow-up loss differ only in the missingness mechanism."
+        ],
+        "decision_rule": "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When the extent remains unknown, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
+        "evidence_needed": [
+          "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
+          "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
+          "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts."
+        ],
+        "id": "rob2-kit.parallel-assignment.question-guidance",
+        "invalid_shortcuts": [
+          "a complete-case analysis label",
+          "an ITT analysis",
+          "analysis denominators or ITT membership alone",
+          "planned or scheduled follow-up alone",
+          "treatment continuation or discontinuation alone",
+          "last-known-alive censoring alone",
+          "an event count treated as an observed-outcome count",
+          "an analysis denominator treated as an outcome denominator",
+          "a generic censoring rule without actual rates or follow-up accounting",
+          "imputed data counted as observed outcomes"
+        ],
+        "no_information_rule": "Answer no_information when the extent of missing outcome data remains unknown after bounded retrieval. Lack of evidence for complete availability is not evidence of materially incomplete availability.",
+        "query_suggestions": [
+          {
+            "mode": "all",
+            "purpose": "outcome availability",
+            "query": "missing outcome data",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "follow-up completeness",
+            "query": "loss to follow-up",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "randomized follow-up accounting",
+            "query": "participant flow",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "participant-flow diagram",
+            "query": "CONSORT",
+            "source_role": "supplement"
+          },
+          {
+            "mode": "all",
+            "purpose": "observed outcome reporting",
+            "query": "outcome data available",
+            "source_role": null
+          },
+          {
+            "mode": "all",
+            "purpose": "unknown mortality status",
+            "query": "mortality status unknown",
+            "source_role": "supplement"
+          },
+          {
+            "mode": "all",
+            "purpose": "missing outcome counts",
+            "query": "missing values",
+            "source_role": "supplement"
+          }
+        ],
+        "version": "1.0.8"
+      }
+    }
+  },
+  "d31_scientific_text_identical_ignoring_operational_version": true,
+  "missing_reference_change": "Counterevidence handle grammar only; availability/impact scientific prose byte-identical.",
+  "other_context_changes": "Material-incompleteness negative proposition and transport/read/context recovery changed; do not supply a stronger affirmative impact warrant for this already-PY branch.",
+  "paid_run_not_warranted": true
+}

@@ -1,0 +1,27 @@
+{
+  "randomized": [
+    2373,
+    2371
+  ],
+  "reported_primary_first_events": [
+    386,
+    502
+  ],
+  "incomplete_primary_followup": [
+    14,
+    20
+  ],
+  "unknown_placebo_vital_status": 2,
+  "overlap_unknown": true,
+  "incomplete_over_randomized": [
+    0.0058997050147492625,
+    0.008435259384226065
+  ],
+  "incomplete_over_events": [
+    0.03626943005181347,
+    0.0398406374501992
+  ],
+  "placebo_count_if_unknown_vital_status_disjoint": 22,
+  "largest_documented_union_over_placebo_events": 0.043824701195219126,
+  "limitations": "Incomplete follow-up is not necessarily a missing binary value: an earlier first event may already be known. Observed-participant count is not derived by subtraction; person-time, censoring times and outcome-dependence are unknown. Crude event-count arithmetic does not bound the reported hazard ratio or its CI. These calculations contextualize scale only, not a numerical RoB threshold or proof of unbiasedness."
+}

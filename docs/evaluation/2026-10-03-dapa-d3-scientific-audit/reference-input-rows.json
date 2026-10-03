@@ -1,0 +1,31 @@
+{
+  "OUTCOMES-batch.csv": {
+    "slug": "dapa-hf",
+    "meta_id": "jama-sglt2",
+    "primary_outcome": "Composite of worsening heart failure (hospitalization or urgent visit with IV therapy) or cardiovascular death",
+    "primary_outcome_source": "Methods: The primary outcome was a composite of worsening heart failure or death from cardiovascular causes.",
+    "anchor_as_printed": "the primary outcome occurred in 386 of 2373 patients (16.3%) in the dapagliflozin group and in 502 of 2371 patients (21.2%) in the placebo group (hazard ratio, 0.74; 95% confidence interval [CI], 0.65 to 0.85; P<0.001)",
+    "anchor_source": "Abstract, Results",
+    "nct": "NCT03036124",
+    "registration_other": "",
+    "notes": ""
+  },
+  "LABELS-batch.csv": {
+    "slug": "dapa-hf",
+    "meta_id": "jama-sglt2",
+    "field": "01 GenMed (alternate)",
+    "trial_label": "DAPA-HF",
+    "D1": "Low",
+    "D2": "Low",
+    "D3": "Low",
+    "D4": "Low",
+    "D5": "Low",
+    "overall": "(not given)",
+    "label_outcome": "primary outcome of the trial",
+    "label_source": "eTable 2 supp1 p4, text",
+    "nct": "NCT03036124",
+    "doi": "",
+    "note": ""
+  },
+  "qualification": "CSV primary-outcome declaration and numerical anchor support endpoint matching. Label metadata omits exact contrast, analysis population, estimand and follow-up; fully aligned remains unknown. Referenced meta-analysis eTable2 raw source is not retained in this benchmark repository."
+}
