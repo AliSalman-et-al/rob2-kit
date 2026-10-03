@@ -17,7 +17,7 @@ This strongly reconstructs review identity, but does not establish archival chai
 
 Review eTable 1 full cohort sizes (4744 and 6263) provide context, not proof of RoB assessment population. Median follow-up is not a fixed endpoint time. Host-asserted target_relation=exact concerns target versus reported result, not human-reference alignment.
 
-## Decision
+## Historical decision (superseded for reconstructed DAPA-HF stratum)
 
 Keep both outside a fully matched selected-result accuracy denominator. They support descriptive primary-endpoint/contrast-matched warrant analysis. DAPA-HF is the stronger candidate for later independent, explicitly declared reconstruction adjudication; DELIVER retains concrete primary-population ambiguity. Do not relabel, recompute accuracy, infer overall Low or trigger paid runs. Available sources reviewed do not establish exact binding; this does not claim no further public evidence exists.
 
@@ -26,3 +26,7 @@ Keep both outside a fully matched selected-result accuracy denominator. They sup
 JSON files preserve archived fields, unchanged Code source/archive hashes, new public retrieval provenance, findings, audit boundaries and CI snapshot. The public PDF and rendered page 4 support inspection. Raw public main-text retrievals remain outside git in ../diagnostics/human-reference-provenance/.
 
 CI checked once: latest completed branch revision 6178e93 succeeded in [run 37138424879](https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37138424879). HEAD e8f0157 was in progress (37139802441). No wait/recheck or new regression observed. Artifact-only checkpoint; no implementation tests rerun.
+
+## Subsequent qualified scope review
+
+See [QUALIFIED-MATCHING.md](QUALIFIED-MATCHING.md): independent AI source-scope review accepts DAPA-HF as a separately recorded reconstructed unique-main-result match; DELIVER remains population-ambiguous. The earlier decision above is retained as audit history, not the current reconstructed-stratum inclusion decision.
