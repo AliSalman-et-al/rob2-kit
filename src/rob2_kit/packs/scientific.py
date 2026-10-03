@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.7"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.8"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -478,6 +478,8 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Possible dependence in 3.3 does not establish likely dependence in 3.4. Judge likelihood from missingness reasons and trial circumstances; absent contrary evidence alone does not establish likelihood.",
             "Keep the stages distinct: observed outcome data and follow-up availability describe what was obtained; 3.3 asks whether missingness could depend on the true value; 3.4 asks whether that dependence was likely. Do not promote possible dependence to likely dependence without supporting evidence.",
+            "Full guidance section 6.1, p. 39 distinguishes genuinely missing measurements (D3) from available outcomes deliberately excluded from analysis (D2). Outcome-driven rescue, switching, or post-change analysis exclusion does not by itself establish non-observation; scheduled collection does not establish observation either. Link the outcome-related reason to actual missing measurements or missing follow-up before treating it as a D3 mechanism. If that link is unknown, retain it as an unresolved premise rather than assigning analysis exclusions to missingness.",
+            "Paired control: after the same outcome-driven treatment change, endpoint measurements collected but omitted from analysis raise an assignment-analysis concern in D2; measurements not obtained require D3 appraisal. If collection is only planned or unspecified, observed availability remains unknown. Differences in rescue rates alone are not differences in missing-outcome rates. Compare post-change handling with the approved assignment target; matching endpoint and time point alone does not establish the same estimand.",
         ),
         ("different group sizes alone", "an ITT analysis", "a generic loss-to-follow-up statement"),
     ),

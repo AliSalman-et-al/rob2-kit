@@ -122,3 +122,35 @@ def test_domain_reconciliation_uses_typed_semantics_and_public_contract() -> Non
     assert row.missing == 1
     assert row.semantics is not None
     assert row.semantics.event_count == 2
+
+
+@pytest.mark.parametrize(
+    ("observed", "missing"),
+    [(50, 0), (40, 10), (None, None)],
+)
+def test_analysis_exclusion_does_not_determine_observation(
+    observed: int | None, missing: int | None
+) -> None:
+    # The same outcome-linked analysis restriction can coexist with observed,
+    # unobserved or unknown endpoint measurements. No label follows from counts.
+    facts = {
+        "arm": "active",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "endpoint visit",
+        "randomized": 50,
+        "analyzed": 40,
+        "excluded": 10,
+        "exclusions": ["post-change values omitted; collection was scheduled"],
+    }
+    if observed is not None:
+        facts["observed"] = observed
+    result = reconcile_missing_data([facts])
+    row = result["rows"][0]
+    assert row["observed"] == observed
+    assert row["analyzed"] == 40 and row["excluded"] == 10
+    assert row["missing"] == missing
+    if observed is None:
+        assert row["missing_bounds"]["lower"] == 0
+        assert row["missing_bounds"]["upper"] == 50
+    assert "judgment" not in result

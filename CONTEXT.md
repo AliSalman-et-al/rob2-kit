@@ -265,7 +265,13 @@ contains a bounded, typed set of executable query suggestions with compact
 query text, explicit lexical mode, an optional recommended Source role, and purpose.
 Suggestions are maintained retrieval vocabulary and alternatives, not claims
 that a Source uses those words or a mandatory search sequence. Operational guidance
-supplements the official source; it never replaces or impersonates it. Cards
+supplements the official source; it never replaces or impersonates it. In D3,
+outcome-driven rescue or switching does not establish that endpoint measurements
+were unavailable. Available outcomes excluded from the assignment analysis belong
+to D2; genuinely unobserved measurements require D3 appraisal. A scheduled visit
+proves neither collection nor non-observation. Preserve the unknown observation
+premise and compare the reported handling with the approved effect of interest;
+matching the endpoint and time alone does not establish the same estimand. Cards
 expose the official RoB 2 answer values allowed for each question. The caller
 submits the selected value as `answer`; the server checks it against that
 question's allowed values and the checkpoint retains the official answer. A

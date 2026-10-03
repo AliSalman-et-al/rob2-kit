@@ -1,0 +1,125 @@
+{
+  "benchmark_case_root": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/award-1-2014",
+  "verified_restored_review_copy": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-award1-d3-repair4/workspace",
+  "sources": [
+    {
+      "source_id": "source_9c930b3bf92f1574811a437f9f437b764e5e20c57ff42b278479199ead8c5ab8",
+      "label": "2159.pdf",
+      "raw_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_hash": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "windows": [
+        {
+          "page": 2,
+          "start_line": 120,
+          "end_line": 137,
+          "numbered_text": "120|add-on rescue therapy was allowed for\n121|patients who met prespecified criteria\n122|for severe, persistent hyperglycemia; a\n123|detailed description of the criteria for\n124|rescue therapy is provided in the Sup-\n125|plementary Data. In addition, patients\n126|who discontinued the study drug\n127|because of an adverse event were al-\n128|lowed to remain in the study for safety\n129|follow-up.\n130|The primary outcome measure was\n131|change in HbA1c from baseline to 26\n132|weeks. Secondary efficacy measures\n133|were change in HbA1c from baseline to\n134|52 weeks, percentage of patients with\n135|HbA1c ,7.0% (53 mmol/mol) or #6.5%\n136|(48 mmol/mol), changes in central lab-\n137|oratory fasting serum glucose (FSG),"
+        },
+        {
+          "page": 3,
+          "start_line": 13,
+          "end_line": 35,
+          "numbered_text": "13|The analyses of efficacy and safety\n14|were based on the intent-to-treat pop-\n15|ulation comprising all randomized pa-\n16|tients who received at least one dose\n17|of study treatment. For the assessment\n18|of efficacy and hypoglycemia events,\n19|only data collected before the initiation\n20|of rescue medication were used.\n21|The change from baseline in HbA1c\n22|and weight at 26 and 52 weeks were\n23|analyzed by ANCOVA, with factors for\n24|treatment, country, and baseline value\n25|as covariates. The last observation car-\n26|ried forward (LOCF) was used in the case\n27|of missing data. Secondary analysis\n28|methods for HbA1c and weight and\n29|methods for other continuous second-\n30|ary end points over time included a\n31|mixed-effects,\n32|repeated-measures\n33|(MMRM) analysis, with additional fac-\n34|tors for visit and treatment-by-visit in-\n35|teraction and the patient as a random"
+        },
+        {
+          "page": 3,
+          "start_line": 55,
+          "end_line": 79,
+          "numbered_text": "55|A total of 978 patients were randomized\n56|to dulaglutide 1.5 mg, dulaglutide 0.75\n57|mg, exenatide, and placebo. Two pa-\n58|tients assigned to exenatide did not re-\n59|ceive thedrug;thus,theintention-to-treat\n60|population comprised 976 patients. De-\n61|mographic and baseline characteristics\n62|were balanced across all arms (Table 1).\n63|At randomization, 86% of patients were\n64|receiving $2,500 mg/day of metformin\n65|and 45 mg/day of pioglitazone, and the\n66|mean doses were similar across arms. A\n67|total of 77 (7.9%) patients discontinued\n68|the study at 26 weeks; the distribution\n69|of patients across treatment arms was\n70|as follows: dulaglutide 1.5 mg, 19\n71|(6.8%); dulaglutide 0.75 mg, 17 (6.1%);\n72|exenatide, 24 (8.7%); and placebo, 17\n73|(12.1%). The most common reasons\n74|for study discontinuation at 26 weeks\n75|were adverse events and patient deci-\n76|sion (Fig. 1B). Disposition, including\n77|patients receiving rescue therapy,\n78|throughout the 52-week study period is\n79|shown in Fig. 1B."
+        },
+        {
+          "page": 3,
+          "start_line": 100,
+          "end_line": 108,
+          "numbered_text": "100|Figure 1-Study design (A) and patient disposition (B). All patients underwent a metformin\n101|(1,500-3,000 mg/day) and pioglitazone (30-45 mg/day) lead-in period that lasted up to 12\n102|weeks and was continued for the duration of the study; other OAMs were discontinued. Two\n103|doses of dulaglutide (1.5 mg and 0.75 mg) were evaluated along with exenatide and placebo.\n104|Placebo patients continued until week 26 and were then randomized to dulaglutide 1.5 mg or\n105|dulaglutide 0.75 mg. aNumber of patients rescued at week 26: dulaglutide 1.5 mg, 4 (1.4%);\n106|dulaglutide 0.75 mg, 12 (4.3%); exenatide, 11 (4.0%); placebo, 22 (15.6%). bNumber of patients\n107|rescued at week 52: dulaglutide 1.5 mg, 9 (3.2%); dulaglutide 0.75 mg, 25 (8.9%); exenatide, 24\n108|(8.7%); placebo to dulaglutide 1.5 mg, 1 (1.6%); placebo to dulaglutide 0.75 mg, 3 (4.8%)."
+        }
+      ]
+    },
+    {
+      "source_id": "source_af5af683eff6bed3bd60bb4948e6f0ecd0b94046f164c4f738e09b22c23371ff",
+      "label": "dc132760supplementarydata.pdf",
+      "raw_sha256": "sha256:da0de5a1322d6eecaacc7413b471916a87d231a107ab3b6221b3b15d7d9b2886",
+      "projection_hash": "sha256:7f3b4d03e790910b7ed0d5b21f321a0014b4ea92a76fd216036a7ba543dac46f",
+      "windows": [
+        {
+          "page": 1,
+          "start_line": 1,
+          "end_line": 202,
+          "numbered_text": "1|SUPPLEMENTARY DATA\n2|\n3|\u00a92014 American Diabetes Association. Published online at http://care.diabetesjournals.org/lookup/suppl/doi:10.2337/dc13-2760/-/DC1\n4|Supplementary Table 1. Other end points of interest, change from baseline to 26 and 52 weeks\n5|\n6|26 weeks\n7|52 weeks\n8|\n9|\n10|DU 1.5 mg\n11|(N=279)\n12|\n13|DU 0.75 mg\n14|(N=280)\n15|\n16|EX\n17|(N=276)\n18|\n19|PL\n20|(N=141)\n21|\n22|DU 1.5 mg\n23|(N=279)\n24|\n25|DU 0.75 mg\n26|(N=280)\n27|\n28|EX\n29|(N=276)\n30|Insulin and HOMA Parameters\n31|\n32|\n33|\n34| Fasting\n35| Insulin\n36| (pmol/L)\n37|7.3 (4.2)\n38|1.9 (4.3)\n39|3.0 (4.3)\n40|-2.2 (5.9)\n41|12 (4.5)\n42|6.0 (4.6)\n43|10 (4.7)\n44| HOMA2-%B\n45|36 (2.6)##**\n46|24 (2.7)#**\n47|15 (2.6)**\n48|0.93 (3.7)\n49|35 (2.6)##\n50|26 (2.7)##\n51|14 (2.8)\n52| HOMA2-%S\n53|-3.1 (2.9)\n54|1.2 (3.0)\n55|-1.6 (2.9)\n56|2.6 (4.1)\n57|-7.5 (2.9)\n58|-5.5 (3.0)\n59|-3.8 (3.1)\n60|Lipid Parameters, mean \u00b1 SD (mmol/L)\n61|\n62| Cholesterol\n63|-0.15 \u00b1 0.82*\n64|-0.10 \u00b1 0.85\n65|-0.05 \u00b1 0.86*\n66|0.04 \u00b1 0.72\n67|-0.12 \u00b1 0.86\n68|-0.09 \u00b1 0.84\n69|-0.01 \u00b1 0.88\n70| LDL\n71|-0.11 \u00b1 0.66*\n72|-0.08 \u00b1 0.73\n73|-0.03 \u00b1 0.73*\n74|0.01 \u00b1 0.62\n75|-0.06 \u00b1 0.69\n76|-0.08 \u00b1 0.77\n77|-0.02 \u00b1 0.75\n78| HDL\n79|0.04 \u00b1 0.19\n80|0.02 \u00b1 0.19\n81|0.02 \u00b1 0.18\n82|0.01 \u00b1 0.22\n83|0.05 \u00b1 0.22\n84|0.00 \u00b1 0.20\n85|0.02 \u00b1 0.20\n86| Triglycerides\n87|-0.20 \u00b1 1.16#*\n88|-0.08 \u00b1 0.76\n89|-0.03 \u00b1 1.04\n90|0.11 \u00b1 1.56\n91|-0.26 \u00b1 1.23#\n92|0.04 \u00b1 0.95\n93|-0.03 \u00b1 1.13\n94|Pancreatic Enzymes, Median [Q1,Q3] (U/L)\n95|\n96|\n97|\n98| Lipase\n99|19 [-4, 44]#**\n100|8 [-11,36]**\n101|8 [-7, 29]**\n102|-6 [-22, 17]\n103|16 [-6, 40]\n104|5 [-14, 27]\n105|9 [-11, 37]\n106| Total Amylase\n107|7 [-1. 17]##**\n108|3 [-4,11]*\n109|3 [-4, 10]*\n110|-1 [-9, 8]\n111|5 [-2, 13]##\n112|2 [-7, 10]\n113|2 [-6, 9]\n114| p-Amylase\n115|4 [0, 11]##**\n116|3 [-1, 7]**\n117|2 [-1, 7]*\n118|0 [-3,5]\n119|4 [1, 10]##\n120|2 [-2, 8]\n121|2 [-2, 7]\n122| Patients with TE, abnormal, n (%)a\n123|\n124|\n125|\n126|\n127| Lipase\n128|46 (17)\n129|37 (13)\n130|29 (11)\n131|10 (7)\n132|85 (37)\n133|86 (37)\n134|74 (32)\n135| Total\n136| Amylase\n137|15 (6)\n138|14 (5)\n139|12 (4)\n140|8 (6)\n141|36 (14)\n142|35 (14)\n143|28 (11)\n144| p-Amylase\n145|24 (9)\n146|17 (6)\n147|17 (6)\n148|8 (6)\n149|51 (20)\n150|45 (18)\n151|41 (16)\n152|Pancreatic Enzymes, n (%) of patients with \u22653x ULNb\n153|\n154|\n155|\n156| Lipase\n157|8 (3.0)\n158|6 (2.2)\n159|7 (2.7)\n160|2 (1.5)\n161|10 (4.0)\n162|6 (2.3)\n163|5 (2.1)\n164| p-Amylase\n165|2 (0.8)\n166|1 (0.4)\n167|0 (0)\n168|0 (0)\n169|1 (0.4)\n170|2 (0.8)\n171|0 (0)\n172|aCumulative number (%) of patients with at least one treatment emergent abnormality. bPatients with a value \u22653x ULN during the\n173|time period assessed.\n174|All data are LS mean \u00b1 SE unless otherwise noted. #,* P < 0.05 vs exenatide and placebo, respectively. ##,** P < 0.001 vs\n175|exenatide and placebo, respectively. Abbreviations: DU = dulaglutide; EX = exenatide; HOMA2-%B = updated homeostasis\n176|model beta cell function; HOMA2-%S = updated homestasis model insulin sensitivity; p-amylase = pancreatic amylase; PL =\n177|placebo; Q1 = first quartile; Q3 = third quartile.\n178|\n179|[Extracted table 1]\n180||26 weeks||||||52 weeks|||\n181||---|---|---|---|---|---|---|---|---|\n182|||DU 1.5 mg<br>(N=279)|DU 0.75 mg<br>(N=280)||EX<br>(N=276)|PL<br>(N=141)|DU 1.5 mg<br>(N=279)|DU 0.75 mg<br>(N=280)|EX<br>(N=276)|\n183||Insulin and HOMA Parameters|||||||||\n184||Fasting<br>Insulin<br>(pmol/L)|7.3 (4.2)|1.9 (4.3)||3.0 (4.3)|-2.2 (5.9)|12 (4.5)|6.0 (4.6)|10 (4.7)|\n185||HOMA2-%B|36 (2.6)##**|24 (2.7)#**||15 (2.6)**|0.93 (3.7)|35 (2.6)##|26 (2.7)##|14 (2.8)|\n186||HOMA2-%S|-3.1 (2.9)|1.2 (3.0)||-1.6 (2.9)|2.6 (4.1)|-7.5 (2.9)|-5.5 (3.0)|-3.8 (3.1)|\n187||Lipid Parameters, mean \u00b1 SD (mmol/L)|||||||||\n188||Cholesterol|-0.15 \u00b1 0.82*|-0.10 \u00b1 0.85||-0.05 \u00b1 0.86*|0.04 \u00b1 0.72|-0.12 \u00b1 0.86|-0.09 \u00b1 0.84|-0.01 \u00b1 0.88|\n189||LDL|-0.11 \u00b1 0.66*|-0.08 \u00b1 0.73||-0.03 \u00b1 0.73*|0.01 \u00b1 0.62|-0.06 \u00b1 0.69|-0.08 \u00b1 0.77|-0.02 \u00b1 0.75|\n190||HDL|0.04 \u00b1 0.19|0.02 \u00b1 0.19||0.02 \u00b1 0.18|0.01 \u00b1 0.22|0.05 \u00b1 0.22|0.00 \u00b1 0.20|0.02 \u00b1 0.20|\n191||Triglycerides|-0.20 \u00b1 1.16#*|-0.08 \u00b1 0.76||-0.03 \u00b1 1.04|0.11 \u00b1 1.56|-0.26 \u00b1 1.23#|0.04 \u00b1 0.95|-0.03 \u00b1 1.13|\n192||Pancreatic Enzymes, Median [Q1,Q3] (U/L)|||||||||\n193||Lipase|19 [-4, 44]#**|8 [-11,36]**||8 [-7, 29]**|-6 [-22, 17]|16 [-6, 40]|5 [-14, 27]|9 [-11, 37]|\n194||Total Amylase|7 [-1. 17]##**|3 [-4,11]*||3 [-4, 10]*|-1 [-9, 8]|5 [-2, 13]##|2 [-7, 10]|2 [-6, 9]|\n195||p-Amylase|4 [0, 11]##**|3 [-1, 7]**||2 [-1, 7]*|0 [-3,5]|4 [1, 10]##|2 [-2, 8]|2 [-2, 7]|\n196||Patients with TE, abnormal, n (%)a|||||||||\n197||Lipase|46 (17)|37 (13)||29 (11)|10 (7)|85 (37)|86 (37)|74 (32)|\n198||Total<br>Amylase|15 (6)|14 (5)||12 (4)|8 (6)|36 (14)|35 (14)|28 (11)|\n199||p-Amylase|24 (9)|17 (6)||17 (6)|8 (6)|51 (20)|45 (18)|41 (16)|\n200||Pancreatic Enzymes, n (%) of patients with \u22653x ULNb|||||||||\n201||Lipase|8 (3.0)|6 (2.2)||7 (2.7)|2 (1.5)|10 (4.0)|6 (2.3)|5 (2.1)|\n202||p-Amylase|2 (0.8)|1 (0.4)||0 (0)|0 (0)|1 (0.4)|2 (0.8)|0 (0)|"
+        },
+        {
+          "page": 2,
+          "start_line": 4,
+          "end_line": 28,
+          "numbered_text": "4|Special Treatment Considerations for Management of Patients Who Did Not Attain\n5|HbA1c Target and Patients with Severe, Persistent Hyperglycemia during the Treatment\n6|Period\n7|\n8|An additional therapeutic intervention was considered in patients with a follow-up\n9|shorter than 6 months who developed persistent, severe hyperglycemia despite full compliance\n10|with the assigned therapeutic regimen. Persistent, severe hyperglycemia was defined as (a)\n11|average fasting blood glucose over at least a 2-week period (at least 4 values/week must be\n12|available) above 270 mg/dL at any time during the first 6 weeks after randomization, or above\n13|240 mg/dL over at least a 2-week period (at least 4 values/week must be available) any time\n14|after the first 6 weeks postrandomization, or above 200 mg/dL at any time after the first 26\n15|weeks; and (b) in the absence of any acute condition that raises blood glucose. If a patient\n16|develops persistent, severe hyperglycemia, but his most recent HbA1c measurements indicate\n17|a significant improvement in glycemic control (HbA1c change \u22650.3%) compared to the previous\n18|value, the investigator will decide if a new intervention is warranted.\n19|\n20|Patients with persistent postrandomization HbA1c values \u22658% (64 mmol/mol) (on 2 or\n21|more occasions at least 12 weeks apart) during the second 26 weeks of the treatment period\n22|should be considered for further therapeutic intervention.\n23|\n24|Intervention was based on standards of care (17, 18), and was determined by the\n25|investigator, but the patients should have continued administering their allocated LY2189265\n26|dose. The use of other incretin mimetics (for example, liraglutide or exenatide) was not\n27|permitted (other than study drug or those already randomized to exenatide).\n28|"
+        }
+      ]
+    }
+  ],
+  "result": {
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "Dulaglutide 1.5 mg once weekly with metformin and pioglitazone",
+          "id": "dulaglutide_1_5_mg"
+        },
+        {
+          "assignment": "Placebo once weekly with metformin and pioglitazone",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Mean difference",
+      "measurement": {
+        "method": "Change in HbA1c from baseline",
+        "metric": "Change in HbA1c from baseline"
+      },
+      "outcome_definition": "Change in HbA1c from baseline",
+      "time_point_or_window": {
+        "description": "26 weeks from randomization",
+        "kind": "quantified",
+        "unit": "weeks",
+        "value": "26"
+      }
+    },
+    "reported": {
+      "analysis_population": "Intent-to-treat population of randomized patients who received at least one dose (976 of 978 randomized); efficacy data after rescue medication were excluded. ANCOVA with LOCF for missing data.",
+      "endpoint": {
+        "definition": null,
+        "name": "Change in HbA1c from baseline"
+      },
+      "form": "group_bound_values",
+      "group_values": [
+        {
+          "group_id": "dulaglutide_1_5_mg",
+          "statistic": "LS mean",
+          "unit": "%",
+          "value": "-1.51"
+        },
+        {
+          "group_id": "placebo",
+          "statistic": "LS mean",
+          "unit": "%",
+          "value": "-0.46"
+        }
+      ]
+    },
+    "relation": "exact",
+    "relation_rationale": "The requested primary result is change in HbA1c from baseline at 26 weeks comparing randomized dulaglutide 1.5 mg with placebo. Outcome, measurement, time and comparison match; the figure reports ANCOVA LOCF values and methods define the efficacy analysis population."
+  },
+  "primary_cochrane_guidance": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/cochrane-2019-guidance-correction.pdf",
+    "sha256": "a9e9c4fdc4be2d29b5c0a1a6b828e09f2014a34f6d5c302a532f6153ea0fd670",
+    "locators": [
+      "section 6.1, p39: missing measurements versus available outcomes excluded from analysis",
+      "preliminary considerations p8: specify result and assignment/adherence effect",
+      "Box6 pp28-29: assignment effect and analysis appropriateness"
+    ],
+    "summary": "Exclusion of available outcomes is assessed in D2; genuinely missing measurements and their imputation in D3. Define the specific result and effect of interest before domain assessment."
+  },
+  "observed_post_rescue_measurement_collection": "not established by restored article/supplement",
+  "non_observation_after_rescue": "not established by analysis exclusion",
+  "formal_reported_estimand": "not explicitly established; pre-rescue-only handling may differ from the all-randomized assignment target, without proving a formal hypothetical estimand",
+  "original_result_and_judgment_unchanged": true,
+  "inference_invocations_today": 0
+}
