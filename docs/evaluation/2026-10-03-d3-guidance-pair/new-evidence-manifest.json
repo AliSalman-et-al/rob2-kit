@@ -1,0 +1,38 @@
+{
+  "research_question": "Does replacing D3.1 operational wording improve appraisal of informative but imprecise outcome follow-up evidence without overinterpreting it?",
+  "input_sha256": "e1becb855b7c8d5401b2ca69bc35139dac5b3dcf2f14764f557895c426c1272e",
+  "required_windows": [
+    {
+      "source_identity": "synthetic:sha256:c4dbc6649c4e6aa8fdda9a2a320587963a97e6dfc802eb8c49163ee761c3cebf",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 6
+    },
+    {
+      "source_identity": "synthetic:sha256:999f1b5fc4d44feb95e36610e6ef0ab480f43e9c8760125c5090e3dae89f2596",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 6
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "synthetic:sha256:c4dbc6649c4e6aa8fdda9a2a320587963a97e6dfc802eb8c49163ee761c3cebf",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 6,
+      "input_start_byte": 491,
+      "input_end_byte": 1588,
+      "text_sha256": "c4dbc6649c4e6aa8fdda9a2a320587963a97e6dfc802eb8c49163ee761c3cebf"
+    },
+    {
+      "source_identity": "synthetic:sha256:999f1b5fc4d44feb95e36610e6ef0ab480f43e9c8760125c5090e3dae89f2596",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 6,
+      "input_start_byte": 1590,
+      "input_end_byte": 2584,
+      "text_sha256": "999f1b5fc4d44feb95e36610e6ef0ab480f43e9c8760125c5090e3dae89f2596"
+    }
+  ]
+}

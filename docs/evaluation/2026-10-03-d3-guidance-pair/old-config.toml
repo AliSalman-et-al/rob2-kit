@@ -1,0 +1,17 @@
+model = "gpt-6-luna"
+model_reasoning_effort = "medium"
+approval_policy = "never"
+sandbox_mode = "read-only"
+model_instructions_file = "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/old/instructions.md"
+web_search = "disabled"
+[features]
+shell_tool = false
+unified_exec = false
+view_image = false
+apps = false
+browser_use = false
+computer_use = false
+sleep_tool = false
+tool_suggest = false
+multi_agent = false
+code_mode = false

@@ -1,0 +1,17 @@
+{
+  "research_question": "Does replacing D3.1 operational wording improve appraisal of informative but imprecise outcome follow-up evidence without overinterpreting it?",
+  "criteria": [
+    "Partial endpoint-specific temporal evidence is weighed, not dismissed solely because exact observed-participant counts are absent.",
+    "Person-time is not converted to participant completeness; vital status does not recover nonfatal components.",
+    "No universal threshold or formal HR-bound requirement.",
+    "ITT membership and censoring labels do not establish absent composite availability, and no missing facts are invented.",
+    "Justified NI remains permissible; evaluate warrants rather than prescribed answers."
+  ],
+  "classification": [
+    "correction",
+    "regression",
+    "inconclusive"
+  ],
+  "no_full_domain_inference": true,
+  "not_benchmark_accuracy": true
+}

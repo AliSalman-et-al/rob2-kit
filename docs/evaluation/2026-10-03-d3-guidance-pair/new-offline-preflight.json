@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "manifest_sha256": "72de63fdaa5e5aa5b7719f0c8882df6269a9c9415d85bc3ced787b8ccf2c5e4e",
+  "input_sha256": "e1becb855b7c8d5401b2ca69bc35139dac5b3dcf2f14764f557895c426c1272e",
+  "required_window_count": 2,
+  "supplied_window_count": 2,
+  "required_image_count": 0,
+  "supplied_image_count": 0,
+  "scope": "declared research-design coverage only; no semantic sufficiency claim"
+}
