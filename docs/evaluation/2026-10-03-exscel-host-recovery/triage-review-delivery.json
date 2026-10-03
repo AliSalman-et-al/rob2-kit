@@ -1,0 +1,202 @@
+[
+  {
+    "id": "item_35",
+    "arguments": {
+      "trial_id": "exscel",
+      "expected_revision": 9
+    },
+    "review_page": {
+      "mode": "summary",
+      "complete": false,
+      "snapshot_digest": "sha256:2cf406a5d17c1a281b4d76bf8a798683777f2eb1619b1a6d78622eab28c0963c",
+      "selector": null,
+      "target": "full_receipt",
+      "counts": {
+        "domains": 5,
+        "answers": 16,
+        "drivers": 2,
+        "review_facts": 0,
+        "review_reason_characters": 0,
+        "premise_records": 0,
+        "investigations": 5,
+        "missing_data_rows": 0,
+        "missing_data_conflicts": 0,
+        "facts": 28,
+        "warrants": 16,
+        "justifications": 16,
+        "unknowns": 12,
+        "counterevidence": 0,
+        "limitations": 7,
+        "conflicts": 0,
+        "uninvestigated_routes": 0,
+        "evidence": 21,
+        "bases": 28,
+        "evidence_expansions": 21
+      },
+      "deferred_fields": [
+        "bases",
+        "evidence_expansions",
+        "facts",
+        "investigation",
+        "justification",
+        "limitations",
+        "unknowns",
+        "warrant"
+      ],
+      "offset": null,
+      "total": null,
+      "offset_unit": null,
+      "next_cursor": null,
+      "stable_recovery": {
+        "operation": "review_trial",
+        "trial_id": "exscel",
+        "cursor": "rv1.e59ce8ce43ec4de7afcd98307bf72718.0"
+      }
+    },
+    "missing_evidence_unbiased": {
+      "question_id": "sq:missing:evidence-unbiased",
+      "question": "If N/PN/NI to 3.1: Is there evidence that the result was not biased by missing outcome data?",
+      "driver": false,
+      "answer": "no",
+      "facts": [],
+      "warrant": null,
+      "justification": null,
+      "unknowns": [],
+      "counterevidence": [],
+      "limitations": [],
+      "conflicts": [],
+      "uninvestigated_routes": [],
+      "evidence": [
+        {
+          "handle": "eh_62c0318d013b0813",
+          "identity": "sha256:62c0318d013b08130bee408ae08ce2e49751afdd2222fdfa21052264f7d86d07"
+        }
+      ],
+      "bases": [],
+      "evidence_expansions": [],
+      "detail_projection": {
+        "mode": "summary",
+        "counts": {
+          "missing_data_rows": 0,
+          "missing_data_conflicts": 0,
+          "facts": 2,
+          "warrant": 1,
+          "justification": 1,
+          "unknowns": 1,
+          "counterevidence": 0,
+          "limitations": 1,
+          "conflicts": 0,
+          "uninvestigated_routes": 0,
+          "evidence": 1,
+          "bases": 2,
+          "evidence_expansions": 1
+        },
+        "deferred_fields": [
+          "bases",
+          "evidence_expansions",
+          "facts",
+          "justification",
+          "limitations",
+          "unknowns",
+          "warrant"
+        ]
+      }
+    }
+  },
+  {
+    "id": "item_36",
+    "arguments": {
+      "trial_id": "exscel",
+      "expected_revision": 10,
+      "domain_id": "domain:missing",
+      "question_id": "sq:missing:likely-dependent"
+    },
+    "review_page": {
+      "mode": "complete",
+      "complete": true,
+      "snapshot_digest": "sha256:30d4b0c545e4d07a7aaf4fd37275afe809676dd624114284080d3b9cce3bbf02",
+      "selector": {
+        "domain_id": "domain:missing",
+        "question_id": "sq:missing:likely-dependent"
+      },
+      "target": "answer_finding",
+      "counts": {
+        "domains": 1,
+        "answers": 1,
+        "drivers": 1,
+        "review_facts": 0,
+        "review_reason_characters": 0,
+        "premise_records": 0,
+        "investigations": 1,
+        "missing_data_rows": 0,
+        "missing_data_conflicts": 0,
+        "facts": 2,
+        "warrants": 1,
+        "justifications": 1,
+        "unknowns": 1,
+        "counterevidence": 0,
+        "limitations": 1,
+        "conflicts": 0,
+        "uninvestigated_routes": 0,
+        "evidence": 1,
+        "bases": 2,
+        "evidence_expansions": 1
+      },
+      "deferred_fields": [],
+      "offset": null,
+      "total": null,
+      "offset_unit": null,
+      "next_cursor": null,
+      "stable_recovery": null
+    },
+    "missing_evidence_unbiased": null
+  },
+  {
+    "id": "item_37",
+    "arguments": {
+      "trial_id": "exscel",
+      "expected_revision": 10,
+      "domain_id": "domain:selection",
+      "question_id": "sq:selection:prespecified-analysis"
+    },
+    "review_page": {
+      "mode": "fragment",
+      "complete": false,
+      "snapshot_digest": "sha256:e2e03f2b45c9af0a0742e5f864c95395dce4746a8270ccb57ee4ad15bd3b6e64",
+      "selector": {
+        "domain_id": "domain:selection",
+        "question_id": "sq:selection:prespecified-analysis"
+      },
+      "target": "answer_finding",
+      "counts": {
+        "domains": 1,
+        "answers": 1,
+        "drivers": 1,
+        "review_facts": 0,
+        "review_reason_characters": 0,
+        "premise_records": 0,
+        "investigations": 0,
+        "missing_data_rows": 0,
+        "missing_data_conflicts": 0,
+        "facts": 4,
+        "warrants": 1,
+        "justifications": 1,
+        "unknowns": 1,
+        "counterevidence": 0,
+        "limitations": 1,
+        "conflicts": 0,
+        "uninvestigated_routes": 0,
+        "evidence": 3,
+        "bases": 4,
+        "evidence_expansions": 3
+      },
+      "deferred_fields": [],
+      "offset": 0,
+      "total": 13844,
+      "offset_unit": "unicode_codepoints",
+      "next_cursor": null,
+      "stable_recovery": null
+    },
+    "missing_evidence_unbiased": null
+  }
+]
