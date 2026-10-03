@@ -85,6 +85,8 @@ class GetDomainContextAction(PublicModel):
     authority: Literal["host"]
     trial_id: TrialId
     domain_id: DomainId
+    cursor: str | None = Field(default=None, min_length=1)
+    max_response_bytes: StrictInt | None = Field(default=None, ge=4096, le=131_072)
 
 
 class SaveDomainJudgmentAction(PublicModel):
@@ -2082,6 +2084,12 @@ class DomainContextPage(PublicModel):
     )
     index: NonNegativeInt
     count: PositiveInt
+    delivery_status: Literal["incomplete", "complete"] = Field(
+        description=(
+            "Whether this ordered context sequence has remaining pages; "
+            "not an assessment completion status."
+        )
+    )
     section: Literal["complete", "primary_report", "questions", "comparison_cards", "evidence"]
     item_start: NonNegativeInt = 0
     item_count: NonNegativeInt = 0
@@ -2945,6 +2953,8 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
                         "expected_revision",
                         "trial_id",
                         "domain_id",
+                        "cursor",
+                        "max_response_bytes",
                         "review_reference",
                         "caller_inputs",
                         "supersedes",

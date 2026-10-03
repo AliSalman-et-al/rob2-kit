@@ -124,9 +124,19 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     page = first["data"]["context_page"]
     assert page["index"] == 0
     assert page["next_cursor"]
+    assert page["delivery_status"] == "incomplete"
     assert first["head"]["next_action"]["operation"] == "get_domain_context"
+    assert first["head"]["next_action"]["cursor"] == page["next_cursor"]
+    assert first["head"]["next_action"]["max_response_bytes"] == page["max_response_bytes"]
     assert transport_bytes <= 32_768
     first_cursor = page["next_cursor"]
+
+    status = _call(workspace, "get_status", {})
+    assert status["head"]["next_action"]["cursor"] == first_cursor
+    premature = _call(workspace, "finalize_batch", {"expected_revision": revision})
+    assert premature["outcome"] == "condition"
+    assert premature["head"]["next_action"]["domain_id"] == "domain:randomization"
+    assert premature["head"]["next_action"]["cursor"] == first_cursor
 
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         row = connection.execute(
@@ -141,6 +151,7 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     )
     assert blocked["outcome"] == "condition"
     assert blocked["condition"]["code"] == "domain_context_delivery_pending"
+    assert blocked["head"]["next_action"]["cursor"] == first_cursor
     recovery = blocked["condition"]["recovery"]
     assert recovery["operation"] == "get_domain_context"
     assert recovery["arguments"]["cursor"] == first_cursor
@@ -187,6 +198,13 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
     while cursor is not None:
         next_page, _transport_bytes = _wire_context(workspace, {"cursor": cursor}, drain=False)
         cursor = next_page["data"]["context_page"]["next_cursor"]
+        assert next_page["data"]["context_page"]["delivery_status"] == (
+            "incomplete" if cursor is not None else "complete"
+        )
+        if cursor is not None:
+            assert next_page["head"]["next_action"]["cursor"] == cursor
+        else:
+            assert next_page["head"]["next_action"]["operation"] == "save_domain_judgment"
     with sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3") as connection:
         assert connection.execute(
             "SELECT complete,next_cursor FROM domain_context_delivery"
@@ -215,6 +233,8 @@ def test_auto_domain_context_delivery_is_sequential_and_restartable(tmp_path: Pa
         _domain_draft("trial", "domain:randomization", revision, evidence),
     )
     assert saved["outcome"] == "success"
+    assert saved["head"]["next_action"]["domain_id"] == "domain:deviations"
+    assert saved["head"]["next_action"].get("cursor") is None
 
 
 def test_small_domain_context_receipt_remains_unpaged(

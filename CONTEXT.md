@@ -62,6 +62,13 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
    immutable and advances the Batch. `finalize_batch` packages only closed
    Trial records. Proposal Review remains the only researcher gate.
 
+For paginated Domain context, `head.next_action` carries the exact pending
+cursor and byte budget. `context_page.delivery_status` is `incomplete` until
+the last ordered page; `section: complete` names the header section only.
+Context delivery completion does not establish scientific sufficiency or
+Domain, Trial, or Batch completion. Status and rejected calls recover a pending
+page only while its Source, Result, pack, and Domain checkpoint basis remains current.
+
 An open Trial may have one replaceable **working checkpoint** containing
 source-located observations, interpretations, terminology, unread ranges, open
 questions, and unfinished drafts. It is bound to the Trial's captured Source

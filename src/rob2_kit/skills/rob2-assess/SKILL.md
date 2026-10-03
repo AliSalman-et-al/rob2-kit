@@ -265,7 +265,11 @@ while reassessing each passage's relevance to the current Result and question.
 `read_complete` establishes delivery, not comprehension or scientific sufficiency.
 
 If `data.context_page` is present, fetch ordered pages until `next_cursor` is
-null. Verify the same Trial, Domain, frozen page revision, page count, and
+null. While `delivery_status` is `incomplete`, `head.next_action` carries the
+exact pending cursor and byte budget. A page's `section: complete` identifies
+the header section; only `delivery_status: complete` means no context pages
+remain. Neither means the Domain or batch is assessed. Verify the same Trial,
+Domain, frozen page revision, page count, and
 contiguous page indexes across the sequence. The current `head.state_revision`
 may advance after unrelated workflow changes. Pass each cursor unchanged and
 do not assess while a cursor remains. Use [Receipt and continuation recovery]

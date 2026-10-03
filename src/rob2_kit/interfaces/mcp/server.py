@@ -43,6 +43,7 @@ from rob2_kit import __version__
 from rob2_kit.application._state import _db, _identity, _root, _state
 from rob2_kit.application.contracts import COUNTERS, TOOL_NAMES, WorkflowConflict
 from rob2_kit.application.domains import (
+    _domain_context_basis_identity,
     _domain_context_delivery,
     _domain_context_view,
     _record_domain_context_delivery,
@@ -1441,6 +1442,7 @@ def _paginate_domain_context_transport(
         "state_revision": state_revision,
         "index": page_index,
         "count": page_count,
+        "delivery_status": "incomplete" if next_cursor is not None else "complete",
         "section": section,
         "item_start": item_start,
         "item_count": len(items),
@@ -1466,6 +1468,8 @@ def _paginate_domain_context_transport(
                 "authority": "host",
                 "trial_id": trial_id,
                 "domain_id": domain_id,
+                "cursor": next_cursor,
+                "max_response_bytes": page_size,
             },
         }
     actual_bytes = _domain_context_transport_bytes(paged)
@@ -1618,6 +1622,30 @@ def _content(
                         "No checkpoint was saved."
                     ),
                 )
+    continuation = value.get("continuation")
+    if (
+        tool != "get_domain_context"
+        and isinstance(continuation, dict)
+        and continuation.get("operation") == "get_domain_context"
+    ):
+        trial_id = continuation.get("trial_id")
+        domain_id = continuation.get("domain_id")
+        if isinstance(trial_id, str) and isinstance(domain_id, str):
+            root = _root(_workspace())
+            delivery = _domain_context_delivery(root, trial_id, domain_id, None)
+            if (
+                delivery is not None
+                and not delivery.get("complete")
+                and isinstance(delivery.get("next_cursor"), str)
+                and delivery.get("preview_scope") is None
+                and delivery.get("basis_identity")
+                == _domain_context_basis_identity(_state(root), trial_id, domain_id, None)
+            ):
+                value["continuation"] = {
+                    **continuation,
+                    "cursor": delivery["next_cursor"],
+                    "max_response_bytes": delivery["page_size"],
+                }
     normalized = _validate_response(tool, normalize(tool, value))
     if tool == "get_domain_context":
         # Validate the compact public variant as well as the application
