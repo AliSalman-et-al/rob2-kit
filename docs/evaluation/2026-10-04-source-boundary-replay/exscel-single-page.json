@@ -1,0 +1,36 @@
+{
+  "tool": "read_pages",
+  "arguments": {
+    "trial_id": "exscel",
+    "source_id": "sh_08fbea6d1ed99fc0",
+    "pages": [
+      45
+    ]
+  },
+  "result": {
+    "outcome": "success",
+    "head": {
+      "phase": "finalized",
+      "state_revision": 12,
+      "next_action": null,
+      "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+    },
+    "data": {
+      "pages": [
+        {
+          "source_id": "sh_08fbea6d1ed99fc0",
+          "page": 45,
+          "numbered_text": "1|\n2|44\n3|\n4|Figure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint\n5|\n6|P values for non-inferiority (upper) and superiority (lower) are provided for the primary analysis.\n7|In time-to-event analyses in the Intention-to-Treat population, patients are censored at the earliest of: 1) date of last contact where all elements\n8|of the endpoint could be assessed, and 2) the right censoring date. Patients without any assessment of the endpoint were censored at\n9|randomization.\n10|Data analyzed in the Intention-to-Treat population using primary censoring scheme and using a Cox Proportional Hazards model that includes\n11|treatment as an explanatory factor and prior CV risk group at randomization based on CRF data as stratification variable. Patients without any\n12|assessment of the endpoint were censored at randomization.",
+          "line_count": 12,
+          "returned_start_line": 1,
+          "returned_end_line": 12,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_59b60ed5e7e87ba5"
+        }
+      ],
+      "remaining_windows": []
+    }
+  }
+}

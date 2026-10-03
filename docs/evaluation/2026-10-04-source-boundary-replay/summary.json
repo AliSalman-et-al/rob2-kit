@@ -1,0 +1,720 @@
+{
+  "scope": "No inference; actual public tools on disposable state/source copies",
+  "historical": {
+    "exscel-code-main-query": {
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "exscel",
+        "query": "primary outcome intention-to-treat hazard ratio 0.91",
+        "mode": "all",
+        "source_id": "sh_693e51915e5ffefc"
+      },
+      "response_bytes": 4498,
+      "hit_windows": [
+        {
+          "page": 6,
+          "start_line": 13,
+          "end_line": 23
+        },
+        {
+          "page": 6,
+          "start_line": 72,
+          "end_line": 126
+        },
+        {
+          "page": 1,
+          "start_line": 34,
+          "end_line": 39
+        }
+      ],
+      "page_windows": [],
+      "remaining_windows": null,
+      "truncated": false,
+      "matching_page_count": 2
+    },
+    "exscel-recovery-flow-query": {
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "exscel",
+        "source_id": "sh_08fbea6d1ed99fc0",
+        "query": "Figure S2 Enrollment Follow-up Vital Status",
+        "mode": "phrase"
+      },
+      "response_bytes": 7350,
+      "hit_windows": [],
+      "page_windows": [],
+      "remaining_windows": null,
+      "truncated": false,
+      "matching_page_count": 0
+    },
+    "exscel-recovery-plan-query": {
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "exscel",
+        "source_id": "sh_bcf70e5423c2d8ef",
+        "query": "Primary endpoint CV death nonfatal myocardial infarction stroke analysis plan",
+        "mode": "any"
+      },
+      "response_bytes": 10630,
+      "hit_windows": [
+        {
+          "page": 184,
+          "start_line": 1,
+          "end_line": 16
+        },
+        {
+          "page": 184,
+          "start_line": 1,
+          "end_line": 16
+        },
+        {
+          "page": 184,
+          "start_line": 3,
+          "end_line": 19
+        },
+        {
+          "page": 184,
+          "start_line": 4,
+          "end_line": 21
+        },
+        {
+          "page": 184,
+          "start_line": 7,
+          "end_line": 24
+        },
+        {
+          "page": 184,
+          "start_line": 8,
+          "end_line": 25
+        },
+        {
+          "page": 184,
+          "start_line": 12,
+          "end_line": 27
+        },
+        {
+          "page": 184,
+          "start_line": 23,
+          "end_line": 29
+        },
+        {
+          "page": 184,
+          "start_line": 28,
+          "end_line": 35
+        },
+        {
+          "page": 184,
+          "start_line": 30,
+          "end_line": 38
+        }
+      ],
+      "page_windows": [],
+      "remaining_windows": null,
+      "truncated": true,
+      "matching_page_count": 162
+    },
+    "exscel-recovery-plan-read": {
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "exscel",
+        "source_id": "sh_bcf70e5423c2d8ef",
+        "pages": [
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193
+        ]
+      },
+      "response_bytes": 23245,
+      "hit_windows": [],
+      "page_windows": [
+        {
+          "page": 184,
+          "returned_start_line": 1,
+          "returned_end_line": 53,
+          "line_count": 53,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_fde74827d5046c06"
+        },
+        {
+          "page": 185,
+          "returned_start_line": 1,
+          "returned_end_line": 49,
+          "line_count": 49,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_41ca3dde61bd581f"
+        },
+        {
+          "page": 186,
+          "returned_start_line": 1,
+          "returned_end_line": 45,
+          "line_count": 45,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_8267e15ca9759ec4"
+        },
+        {
+          "page": 187,
+          "returned_start_line": 1,
+          "returned_end_line": 45,
+          "line_count": 45,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_776250d728c5dc52"
+        },
+        {
+          "page": 188,
+          "returned_start_line": 1,
+          "returned_end_line": 43,
+          "line_count": 43,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_f3ad502fa6c18431"
+        },
+        {
+          "page": 189,
+          "returned_start_line": 1,
+          "returned_end_line": 64,
+          "line_count": 64,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_e4d3d4ce01d57ae7"
+        },
+        {
+          "page": 190,
+          "returned_start_line": 1,
+          "returned_end_line": 56,
+          "line_count": 56,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_9ed2c6ae0f510679"
+        },
+        {
+          "page": 191,
+          "returned_start_line": 1,
+          "returned_end_line": 27,
+          "line_count": 48,
+          "truncated": true,
+          "page_remainder": {
+            "source_id": "sh_bcf70e5423c2d8ef",
+            "page": 191,
+            "start_line": 28,
+            "end_line": 48
+          },
+          "passage_ref": "eh_20fea8861e2dd44c"
+        }
+      ],
+      "remaining_windows": [
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 191,
+          "start_line": 28,
+          "end_line": 48
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 192,
+          "start_line": 1,
+          "end_line": 43
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 193,
+          "start_line": 1,
+          "end_line": 43
+        }
+      ],
+      "truncated": null,
+      "matching_page_count": null
+    },
+    "dapa-correct-source-control": {
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "dapa-hf",
+        "windows": [
+          {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 161,
+            "start_line": 15,
+            "end_line": 31
+          },
+          {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 233,
+            "start_line": 1,
+            "end_line": 80
+          },
+          {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 234,
+            "start_line": 1,
+            "end_line": 80
+          },
+          {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 240,
+            "start_line": 1,
+            "end_line": 33
+          }
+        ]
+      },
+      "response_bytes": 8308,
+      "hit_windows": [],
+      "page_windows": [
+        {
+          "page": 161,
+          "returned_start_line": 15,
+          "returned_end_line": 31,
+          "line_count": 47,
+          "truncated": false,
+          "page_remainder": {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 161,
+            "start_line": 32,
+            "end_line": 47
+          },
+          "passage_ref": "eh_46f1f3ea94d95cc1"
+        },
+        {
+          "page": 233,
+          "returned_start_line": 1,
+          "returned_end_line": 57,
+          "line_count": 57,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_37f8e32ae9d78801"
+        },
+        {
+          "page": 234,
+          "returned_start_line": 1,
+          "returned_end_line": 50,
+          "line_count": 50,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_4623d840086cc3f7"
+        },
+        {
+          "page": 240,
+          "returned_start_line": 1,
+          "returned_end_line": 33,
+          "line_count": 42,
+          "truncated": false,
+          "page_remainder": {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 240,
+            "start_line": 34,
+            "end_line": 42
+          },
+          "passage_ref": "eh_3db1f12acb317bde"
+        }
+      ],
+      "remaining_windows": [],
+      "truncated": null,
+      "matching_page_count": null
+    }
+  },
+  "current": {
+    "exscel-code-main-query": {
+      "response_bytes": 4452,
+      "hit_windows": [
+        {
+          "page": 6,
+          "start_line": 13,
+          "end_line": 23
+        },
+        {
+          "page": 6,
+          "start_line": 72,
+          "end_line": 126
+        },
+        {
+          "page": 1,
+          "start_line": 34,
+          "end_line": 39
+        }
+      ],
+      "page_windows": [],
+      "remaining_windows": null,
+      "truncated": false,
+      "matching_page_count": 2
+    },
+    "exscel-recovery-flow-query": {
+      "response_bytes": 7123,
+      "hit_windows": [],
+      "page_windows": [],
+      "remaining_windows": null,
+      "truncated": false,
+      "matching_page_count": 0
+    },
+    "exscel-recovery-plan-query": {
+      "response_bytes": 10401,
+      "hit_windows": [
+        {
+          "page": 184,
+          "start_line": 1,
+          "end_line": 16
+        },
+        {
+          "page": 184,
+          "start_line": 1,
+          "end_line": 16
+        },
+        {
+          "page": 184,
+          "start_line": 3,
+          "end_line": 19
+        },
+        {
+          "page": 184,
+          "start_line": 4,
+          "end_line": 21
+        },
+        {
+          "page": 184,
+          "start_line": 7,
+          "end_line": 24
+        },
+        {
+          "page": 184,
+          "start_line": 8,
+          "end_line": 25
+        },
+        {
+          "page": 184,
+          "start_line": 12,
+          "end_line": 27
+        },
+        {
+          "page": 184,
+          "start_line": 23,
+          "end_line": 29
+        },
+        {
+          "page": 184,
+          "start_line": 28,
+          "end_line": 35
+        },
+        {
+          "page": 184,
+          "start_line": 30,
+          "end_line": 38
+        }
+      ],
+      "page_windows": [],
+      "remaining_windows": null,
+      "truncated": true,
+      "matching_page_count": 162
+    },
+    "exscel-recovery-plan-read": {
+      "response_bytes": 23252,
+      "hit_windows": [],
+      "page_windows": [
+        {
+          "page": 184,
+          "returned_start_line": 1,
+          "returned_end_line": 53,
+          "line_count": 53,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_fde74827d5046c06"
+        },
+        {
+          "page": 185,
+          "returned_start_line": 1,
+          "returned_end_line": 49,
+          "line_count": 49,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_41ca3dde61bd581f"
+        },
+        {
+          "page": 186,
+          "returned_start_line": 1,
+          "returned_end_line": 45,
+          "line_count": 45,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_8267e15ca9759ec4"
+        },
+        {
+          "page": 187,
+          "returned_start_line": 1,
+          "returned_end_line": 45,
+          "line_count": 45,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_776250d728c5dc52"
+        },
+        {
+          "page": 188,
+          "returned_start_line": 1,
+          "returned_end_line": 43,
+          "line_count": 43,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_f3ad502fa6c18431"
+        },
+        {
+          "page": 189,
+          "returned_start_line": 1,
+          "returned_end_line": 64,
+          "line_count": 64,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_e4d3d4ce01d57ae7"
+        },
+        {
+          "page": 190,
+          "returned_start_line": 1,
+          "returned_end_line": 56,
+          "line_count": 56,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_9ed2c6ae0f510679"
+        },
+        {
+          "page": 191,
+          "returned_start_line": 1,
+          "returned_end_line": 31,
+          "line_count": 48,
+          "truncated": true,
+          "page_remainder": {
+            "source_id": "sh_bcf70e5423c2d8ef",
+            "page": 191,
+            "start_line": 32,
+            "end_line": 48
+          },
+          "passage_ref": "eh_185680088850d635"
+        }
+      ],
+      "remaining_windows": [
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 191,
+          "start_line": 32,
+          "end_line": 48
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 192,
+          "start_line": 1,
+          "end_line": 43
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 193,
+          "start_line": 1,
+          "end_line": 43
+        }
+      ],
+      "truncated": null,
+      "matching_page_count": null
+    },
+    "figure-reference-following": {
+      "historical_query": false,
+      "query_provenance": "Delivered main physical8 points to Figure S9",
+      "hit_windows": [
+        {
+          "page": 45,
+          "start_line": 1,
+          "end_line": 9
+        },
+        {
+          "page": 2,
+          "start_line": 23,
+          "end_line": 26
+        }
+      ],
+      "response_bytes": 2795
+    },
+    "dapa-correct-source-control": {
+      "response_bytes": 8118,
+      "hit_windows": [],
+      "page_windows": [
+        {
+          "page": 161,
+          "returned_start_line": 15,
+          "returned_end_line": 31,
+          "line_count": 47,
+          "truncated": false,
+          "page_remainder": {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 161,
+            "start_line": 32,
+            "end_line": 47
+          },
+          "passage_ref": "eh_46f1f3ea94d95cc1"
+        },
+        {
+          "page": 233,
+          "returned_start_line": 1,
+          "returned_end_line": 57,
+          "line_count": 57,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_37f8e32ae9d78801"
+        },
+        {
+          "page": 234,
+          "returned_start_line": 1,
+          "returned_end_line": 50,
+          "line_count": 50,
+          "truncated": false,
+          "page_remainder": null,
+          "passage_ref": "eh_4623d840086cc3f7"
+        },
+        {
+          "page": 240,
+          "returned_start_line": 1,
+          "returned_end_line": 33,
+          "line_count": 42,
+          "truncated": false,
+          "page_remainder": {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 240,
+            "start_line": 34,
+            "end_line": 42
+          },
+          "passage_ref": "eh_3db1f12acb317bde"
+        }
+      ],
+      "remaining_windows": [],
+      "truncated": null,
+      "matching_page_count": null
+    }
+  },
+  "adjacent_page_measurements": {
+    "exscel": {
+      "single_response_bytes": 1377,
+      "two_page_response_bytes": 2977,
+      "additional_bytes": 1600,
+      "initial_call_count_single": 1,
+      "initial_call_count_two_pages": 1,
+      "additional_calls_if_requested_together": 0,
+      "additional_calls_after_single_page_already_read": 1,
+      "same_page_text_preserved": true,
+      "second_page_explicit_provenance": true,
+      "remaining_windows": [],
+      "second_page": 46
+    },
+    "dapa-hf": {
+      "single_response_bytes": 3374,
+      "two_page_response_bytes": 5704,
+      "additional_bytes": 2330,
+      "initial_call_count_single": 1,
+      "initial_call_count_two_pages": 1,
+      "additional_calls_if_requested_together": 0,
+      "additional_calls_after_single_page_already_read": 1,
+      "same_page_text_preserved": true,
+      "second_page_explicit_provenance": true,
+      "remaining_windows": [],
+      "second_page": 162
+    }
+  },
+  "navigation": {
+    "exscel": [
+      {
+        "text": "44",
+        "page": 45,
+        "start_line": 2,
+        "end_line": 2,
+        "kind": "heading_candidate",
+        "logical_section": "44"
+      },
+      {
+        "text": "44 Figure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint P values for non-inferiority (upper) and superiority (lower) are provided for the primary analysis.",
+        "page": 45,
+        "start_line": 2,
+        "end_line": 6,
+        "kind": "page_excerpt",
+        "logical_section": "44"
+      },
+      {
+        "text": "Figure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint",
+        "page": 45,
+        "start_line": 4,
+        "end_line": 4,
+        "kind": "heading_candidate",
+        "logical_section": "Figure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint"
+      },
+      {
+        "text": "45",
+        "page": 46,
+        "start_line": 2,
+        "end_line": 2,
+        "kind": "heading_candidate",
+        "logical_section": "45"
+      },
+      {
+        "text": "45 Data analyzed in the Intention-to-Treat population using cut-off date censoring scheme, where patients censored at the earliest of: 1) date of last contact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut-off date (5 December 2016), using the same Cox Proportional Hazards model as in the primary safety and efficacy analysis. Patients without any assessment of the endpoint were censored",
+        "page": 46,
+        "start_line": 2,
+        "end_line": 6,
+        "kind": "page_excerpt",
+        "logical_section": "45"
+      },
+      {
+        "text": "last contact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut-off date (5 December 2016), using the same",
+        "page": 46,
+        "start_line": 5,
+        "end_line": 5,
+        "kind": "date_lead",
+        "date_kind": "cutoff",
+        "logical_section": "45"
+      }
+    ],
+    "dapa-hf": [
+      {
+        "text": "Version 2.0 Date 26 October 2017 75 (102) 7.8 Post Study Access to Study Treatment",
+        "page": 161,
+        "start_line": 4,
+        "end_line": 8,
+        "kind": "page_excerpt",
+        "logical_section": "8.5.6 Interim analysis"
+      },
+      {
+        "text": "Version 2.0",
+        "page": 161,
+        "start_line": 4,
+        "end_line": 4,
+        "kind": "version_lead",
+        "logical_section": "8.5.6 Interim analysis",
+        "embedded_version": "Version 2.0"
+      },
+      {
+        "text": "Version 2.0 Date 26 October 2017 76 (102) 8.3.2 Safety analysis set",
+        "page": 162,
+        "start_line": 4,
+        "end_line": 8,
+        "kind": "page_excerpt",
+        "logical_section": "8.5.6 Interim analysis"
+      },
+      {
+        "text": "Version 2.0",
+        "page": 162,
+        "start_line": 4,
+        "end_line": 4,
+        "kind": "version_lead",
+        "logical_section": "8.5.6 Interim analysis",
+        "embedded_version": "Version 2.0"
+      }
+    ]
+  },
+  "original_database_hashes": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-bd92ec8/workspace/.rob2-kit/working.sqlite3": "e03284b9b1f517e8d674ac83b6ec047e5dc34621e845e036b25ad51b37ed7df7",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-bd92ec8/workspace/.rob2-kit/canonical.sqlite3": "be4342b65a3bf26bc50c907481208c2da05adca7ed701d49e9dad769ae2295af",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-bd92ec8/workspace/.rob2-kit/derivative.sqlite3": "5364528e4a421c4c9eb6230d4000fba59b8763da9c24a2b8a1e63a0c0a0ba985",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/dapa-hf/.rob2-kit/working.sqlite3": "ca83eac1fe797ba6d576ee527f6df66df2a05cdf45e75415ab10097401cc7efd",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/dapa-hf/.rob2-kit/canonical.sqlite3": "f471f2d8e732a042bbab155d190b0eeddb87c6cdf646dcd663edddc4b8d86be8",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/dapa-hf/.rob2-kit/derivative.sqlite3": "24d56140e7259e1ad1bb546ba27bff2bbf1ec8da16bdc42ceb34a7a7a6a7d7c9"
+  },
+  "original_databases_unchanged": true
+}

@@ -1,0 +1,51 @@
+[
+  {
+    "text": "44",
+    "page": 45,
+    "start_line": 2,
+    "end_line": 2,
+    "kind": "heading_candidate",
+    "logical_section": "44"
+  },
+  {
+    "text": "44 Figure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint P values for non-inferiority (upper) and superiority (lower) are provided for the primary analysis.",
+    "page": 45,
+    "start_line": 2,
+    "end_line": 6,
+    "kind": "page_excerpt",
+    "logical_section": "44"
+  },
+  {
+    "text": "Figure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint",
+    "page": 45,
+    "start_line": 4,
+    "end_line": 4,
+    "kind": "heading_candidate",
+    "logical_section": "Figure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint"
+  },
+  {
+    "text": "45",
+    "page": 46,
+    "start_line": 2,
+    "end_line": 2,
+    "kind": "heading_candidate",
+    "logical_section": "45"
+  },
+  {
+    "text": "45 Data analyzed in the Intention-to-Treat population using cut-off date censoring scheme, where patients censored at the earliest of: 1) date of last contact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut-off date (5 December 2016), using the same Cox Proportional Hazards model as in the primary safety and efficacy analysis. Patients without any assessment of the endpoint were censored",
+    "page": 46,
+    "start_line": 2,
+    "end_line": 6,
+    "kind": "page_excerpt",
+    "logical_section": "45"
+  },
+  {
+    "text": "last contact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut-off date (5 December 2016), using the same",
+    "page": 46,
+    "start_line": 5,
+    "end_line": 5,
+    "kind": "date_lead",
+    "date_kind": "cutoff",
+    "logical_section": "45"
+  }
+]

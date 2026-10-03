@@ -1,0 +1,297 @@
+{
+  "tool": "search_sources",
+  "arguments": {
+    "trial_id": "exscel",
+    "source_id": "sh_bcf70e5423c2d8ef",
+    "query": "Primary endpoint CV death nonfatal myocardial infarction stroke analysis plan",
+    "mode": "any"
+  },
+  "result": {
+    "outcome": "success",
+    "head": {
+      "phase": "finalized",
+      "state_revision": 12,
+      "next_action": null,
+      "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+    },
+    "data": {
+      "hits": [
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 1,
+          "end_line": 16,
+          "preview": "Statistical Analysis Plan\nStudy Code D5551C00003(BCB109)\nEdition Number 4\nFebruary 23rd 2017\n17\nIf there are multiple MI's and there is a death due to MI, then the MI closest and within 30\ndays prior to the death is a fatal MI; all others are non-fatal;\nSimilar logic is used for stroke events.\n3.1.2\nSecondary Efficacy Endpoints\nThe secondary efficacy endpoints are the time from randomization to first occurrence of\nconfirmed:\n\nall-cause mortality (defined as death due to any cause)\n\nCV-related death",
+          "passage_ref": "eh_265ac5bf183bfc83",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 1,
+          "within_source_rank": 1,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 1,
+          "end_line": 16,
+          "preview": "Statistical Analysis Plan\nStudy Code D5551C00003(BCB109)\nEdition Number 4\nFebruary 23rd 2017\n17\nIf there are multiple MI's and there is a death due to MI, then the MI closest and within 30\ndays prior to the death is a fatal MI; all others are non-fatal;\nSimilar logic is used for stroke events.\n3.1.2\nSecondary Efficacy Endpoints\nThe secondary efficacy endpoints are the time from randomization to first occurrence of\nconfirmed:\n\nall-cause mortality (defined as death due to any cause)\n\nCV-related death",
+          "passage_ref": "eh_265ac5bf183bfc83",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 2,
+          "within_source_rank": 2,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 3,
+          "end_line": 19,
+          "preview": "Edition Number 4\nFebruary 23rd 2017\n17\nIf there are multiple MI's and there is a death due to MI, then the MI closest and within 30\ndays prior to the death is a fatal MI; all others are non-fatal;\nSimilar logic is used for stroke events.\n3.1.2\nSecondary Efficacy Endpoints\nThe secondary efficacy endpoints are the time from randomization to first occurrence of\nconfirmed:\n\nall-cause mortality (defined as death due to any cause)\n\nCV-related death\n\nfatal or nonfatal MI (MI)\n",
+          "passage_ref": "eh_b397cc22086163ac",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 3,
+          "within_source_rank": 3,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 4,
+          "end_line": 21,
+          "preview": "February 23rd 2017\n17\nIf there are multiple MI's and there is a death due to MI, then the MI closest and within 30\ndays prior to the death is a fatal MI; all others are non-fatal;\nSimilar logic is used for stroke events.\n3.1.2\nSecondary Efficacy Endpoints\nThe secondary efficacy endpoints are the time from randomization to first occurrence of\nconfirmed:\n\nall-cause mortality (defined as death due to any cause)\n\nCV-related death\n\nfatal or nonfatal MI (MI)\n\nfatal or nonfatal stroke (stroke)\n",
+          "passage_ref": "eh_39f479c687d3e2de",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 4,
+          "within_source_rank": 4,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 7,
+          "end_line": 24,
+          "preview": "days prior to the death is a fatal MI; all others are non-fatal;\nSimilar logic is used for stroke events.\n3.1.2\nSecondary Efficacy Endpoints\nThe secondary efficacy endpoints are the time from randomization to first occurrence of\nconfirmed:\n\nall-cause mortality (defined as death due to any cause)\n\nCV-related death\n\nfatal or nonfatal MI (MI)\n\nfatal or nonfatal stroke (stroke)\n\nhospitalization for acute coronary syndrome\n\nhospitalization for heart failure",
+          "passage_ref": "eh_8fe2c296828f113f",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 5,
+          "within_source_rank": 5,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 8,
+          "end_line": 25,
+          "preview": "Similar logic is used for stroke events.\n3.1.2\nSecondary Efficacy Endpoints\nThe secondary efficacy endpoints are the time from randomization to first occurrence of\nconfirmed:\n\nall-cause mortality (defined as death due to any cause)\n\nCV-related death\n\nfatal or nonfatal MI (MI)\n\nfatal or nonfatal stroke (stroke)\n\nhospitalization for acute coronary syndrome\n\nhospitalization for heart failure\nHospitalization for acute coronary syndrome is defined as a confirmed myocardial infarction",
+          "passage_ref": "eh_0bb448aecf797c98",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 6,
+          "within_source_rank": 6,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 12,
+          "end_line": 27,
+          "preview": "confirmed:\n\nall-cause mortality (defined as death due to any cause)\n\nCV-related death\n\nfatal or nonfatal MI (MI)\n\nfatal or nonfatal stroke (stroke)\n\nhospitalization for acute coronary syndrome\n\nhospitalization for heart failure\nHospitalization for acute coronary syndrome is defined as a confirmed myocardial infarction\nor hospital admission for unstable angina. Myocardial infarction includes ST-elevation\nmyocardial infarction, non-ST-elevation myocardial infarction or ST-elevation unknown.",
+          "passage_ref": "eh_4b1f69d661e47b99",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 7,
+          "within_source_rank": 7,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 23,
+          "end_line": 29,
+          "preview": "\nhospitalization for heart failure\nHospitalization for acute coronary syndrome is defined as a confirmed myocardial infarction\nor hospital admission for unstable angina. Myocardial infarction includes ST-elevation\nmyocardial infarction, non-ST-elevation myocardial infarction or ST-elevation unknown.\nHospitalization for congestive heart failure is defined as a confirmed hospital admission for\ncongestive heart failure requiring treatment with increased oral or intravenous diuretics,",
+          "passage_ref": "eh_fe0c6b7e212dfaa0",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 8,
+          "within_source_rank": 8,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 28,
+          "end_line": 35,
+          "preview": "Hospitalization for congestive heart failure is defined as a confirmed hospital admission for\ncongestive heart failure requiring treatment with increased oral or intravenous diuretics,\ninotropes, or vasodilator therapy.\n3.1.3\nAdditional Efficacy Endpoints\n\nTime to composite of CV-related death or hospitalization for congestive heart failure,\ndefined as time from randomization to time of first CV-related death or hospitalization for",
+          "passage_ref": "eh_0f254b83c747831f",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 9,
+          "within_source_rank": 9,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_protocol.pdf",
+          "page": 184,
+          "start_line": 30,
+          "end_line": 38,
+          "preview": "inotropes, or vasodilator therapy.\n3.1.3\nAdditional Efficacy Endpoints\n\nTime to composite of CV-related death or hospitalization for congestive heart failure,\ndefined as time from randomization to time of first CV-related death or hospitalization for\ncongestive heart failure, in overall and in patients with prior history of CHF at baseline.\n\nTime to revascularization procedure, defined as time from randomization to time of first",
+          "passage_ref": "eh_377e9439da3de8c5",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 10,
+          "within_source_rank": 10,
+          "range": {
+            "start": 1,
+            "end": 10
+          }
+        }
+      ],
+      "query": "Primary endpoint CV death nonfatal myocardial infarction stroke analysis plan",
+      "mode": "any",
+      "profile": "porter-unicode61-v1",
+      "total_matches": 162,
+      "truncated": true,
+      "condition": null,
+      "search_receipt": "sr_40c34394111dc47a",
+      "session_id": "sha256:2d1cb0a46834707bcb849f3c057e6e9990b5ddf54a4691b371588d0f5e288579",
+      "session_handle": "ss_2d1cb0a46834707b",
+      "matching_page_count": 162,
+      "candidate_count": 881,
+      "distinct_passage_count": 881,
+      "distinct_page_count": 162,
+      "distinct_source_count": 1,
+      "ranking_complete": true,
+      "returned_rank_start": 1,
+      "returned_rank_end": 10,
+      "next_cursor": "sc_2d1cb0a46834707b_10",
+      "exhausted": false,
+      "term_feedback": [
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page_count": 208,
+          "query_matching_page_count": 162,
+          "term_page_counts": [
+            {
+              "term": "primary",
+              "matching_page_count": 97
+            },
+            {
+              "term": "endpoint",
+              "matching_page_count": 90
+            },
+            {
+              "term": "cv",
+              "matching_page_count": 79
+            },
+            {
+              "term": "death",
+              "matching_page_count": 58
+            },
+            {
+              "term": "nonfatal",
+              "matching_page_count": 29
+            },
+            {
+              "term": "myocardial",
+              "matching_page_count": 25
+            },
+            {
+              "term": "infarction",
+              "matching_page_count": 25
+            },
+            {
+              "term": "stroke",
+              "matching_page_count": 40
+            },
+            {
+              "term": "analysis",
+              "matching_page_count": 95
+            },
+            {
+              "term": "plan",
+              "matching_page_count": 86
+            }
+          ]
+        }
+      ],
+      "term_feedback_truncated": false,
+      "term_feedback_sources_truncated": false,
+      "diagnostic": {
+        "code": "broad_any_truncated",
+        "mode": "any",
+        "profile": "porter-unicode61-v1",
+        "normalized_term_count": 10,
+        "total_matches": 162,
+        "candidate_count": 881,
+        "returned_count": 10,
+        "detail": "This any search matched the reported pages and its ranking is truncated. Continue this same query and mode if more ranked passages could resolve the current question, then inspect the passages.",
+        "next_action": {
+          "kind": "continue",
+          "operation": "search_sources",
+          "trial_id": "exscel",
+          "query": "primary endpoint cv death nonfatal myocardial infarction stroke analysis plan",
+          "mode": "any",
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "limit": 10,
+          "cursor": "sc_2d1cb0a46834707b_10"
+        },
+        "navigation": null
+      },
+      "spelling_suggestions": [],
+      "spelling_suggestions_incomplete": false,
+      "purpose_domain_id": null,
+      "purpose_question_id": null
+    }
+  }
+}

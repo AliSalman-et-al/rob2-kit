@@ -1,0 +1,153 @@
+{
+  "tool": "read_pages",
+  "arguments": {
+    "trial_id": "exscel",
+    "source_id": "sh_bcf70e5423c2d8ef",
+    "pages": [
+      184,
+      185,
+      186,
+      187,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193
+    ]
+  },
+  "result": {
+    "outcome": "success",
+    "head": {
+      "phase": "finalized",
+      "state_revision": 12,
+      "next_action": null,
+      "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+    },
+    "data": {
+      "pages": [
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 184,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|17\n6|If there are multiple MI's and there is a death due to MI, then the MI closest and within 30\n7|days prior to the death is a fatal MI; all others are non-fatal;\n8|Similar logic is used for stroke events.\n9|3.1.2\n10|Secondary Efficacy Endpoints\n11|The secondary efficacy endpoints are the time from randomization to first occurrence of\n12|confirmed:\n13|\n14|all-cause mortality (defined as death due to any cause)\n15|\n16|CV-related death\n17|\n18|fatal or nonfatal MI (MI)\n19|\n20|fatal or nonfatal stroke (stroke)\n21|\n22|hospitalization for acute coronary syndrome\n23|\n24|hospitalization for heart failure\n25|Hospitalization for acute coronary syndrome is defined as a confirmed myocardial infarction\n26|or hospital admission for unstable angina. Myocardial infarction includes ST-elevation\n27|myocardial infarction, non-ST-elevation myocardial infarction or ST-elevation unknown.\n28|Hospitalization for congestive heart failure is defined as a confirmed hospital admission for\n29|congestive heart failure requiring treatment with increased oral or intravenous diuretics,\n30|inotropes, or vasodilator therapy.\n31|3.1.3\n32|Additional Efficacy Endpoints\n33|\n34|Time to composite of CV-related death or hospitalization for congestive heart failure,\n35|defined as time from randomization to time of first CV-related death or hospitalization for\n36|congestive heart failure, in overall and in patients with prior history of CHF at baseline.\n37|\n38|Time to revascularization procedure, defined as time from randomization to time of first\n39|cardiovascular or peripheral revascularization procedure. This will include percutaneous\n40|coronary intervention with or without stenting, coronary artery bypass grafting,\n41|revascularization and/or stenting for peripheral arterial disease, carotid endarterectomy, or\n42|carotid stenting.\n43|\n44|Time to initiation of first co-interventional agent, defined as the time from randomization\n45|to the start date of one or both of the below agents\n46|\n47|Additional AHA\n48|\n49|Chronic insulin therapy (only applies to patients not on chronic insulin therapy at\n50|randomization)\n51|Chronic insulin therapy is defined as a continuous period of insulin use of more than 6\n52|months.\n53|183",
+          "line_count": 53,
+          "returned_start_line": 1,
+          "returned_end_line": 53,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_fde74827d5046c06"
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 185,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|18\n6|\n7|Absolute values and change from baseline in HbA1c, body weight, blood pressure, heart\n8|rate and lipid profile (HDL, LDL, triglycerides, total cholesterol) at the protocol defined\n9|measurement time points (see Appendix).\n10|\n11|Quality of life assessed by the EQ-5D (EuroQol 5 Dimension) questionnaire. Mobility,\n12|self-care, usual activities, pain and discomfort, and anxiety and depression dimensions will\n13|be converted into health state utilities using the United Kingdom tariff for all patients. This\n14|analysis will described in a separate analysis plan document.\n15|\n16|Medical resource use and total direct medical costs. This analysis will described in a\n17|separate analysis plan document.\n18|\n19|Incremental cost-effectiveness analysis of EQW as part of usual care compared with usual\n20|care without EQW. This analysis will described in a separate analysis plan document.\n21|3.2\n22|Other Safety Endpoints\n23|Other safety endpoints include selected adverse events (AEs), serious adverse events (SAEs),\n24|and certain laboratory parameters (serum creatinine and calcitonin; see Section 4.6.3) and vital\n25|signs (see Section 4.6.4). Adverse events will be monitored over the course of the trial,\n26|starting from the time of randomization and through the duration of the patient's participation,\n27|including the 70 day post treatment follow-up period. Adverse events reported by the patient\n28|will be evaluated by the investigator to determine if a given event meets the criteria for a\n29|serious event. An adverse event that does not meet the definition of a serious event will be\n30|considered non-serious and will not be collected, with the exception of potential clinical\n31|events (non-serious AEs) and expected events of diabetic complication (for details see\n32|protocol Section 10.3).\n33|4.\n34|ANALYSIS METHODS\n35|4.1\n36|General Principles\n37|In addition to specific analyses and presentations that are detailed in the following sections,\n38|results will be summarized for continuous measures using descriptive statistics, including the\n39|number of patients, mean, standard deviation, median and range as appropriate. For natural\n40|logarithm transformed data, geometric mean, standard error of the geometric mean will also\n41|be provided. For categorical variables counts and percentage per treatment group will be\n42|presented.\n43|For all time-to event analyses, the treatment groups will be analyzed using a Cox proportional\n44|hazards model that includes treatment as an explanatory factor unless specified otherwise.\n45|Prior CV event group at randomization from the IVRS randomization strata (prior CV event\n46|or no prior CV event, refer to \"Prior CV event at randomization based on IVRS\" in short) will\n47|be included as a stratification factor. The Efron method1 will be used for handling ties. P-value\n48|\n49|184",
+          "line_count": 49,
+          "returned_start_line": 1,
+          "returned_end_line": 49,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_41ca3dde61bd581f"
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 186,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|19\n6|and confidence intervals for the HR will be based on the Wald statistic. In addition, the\n7|summary tables of these analyses will include the number of patients with the event and\n8|Kaplan-Meier estimates of the event rate per treatment group presented annually through the\n9|last time point where the 90th percentile of events are collected. Kaplan-Meier failure rates\n10|along with respective 95% CI will also be calculated and plotted by treatment group and prior\n11|CV risk at randomization based on IVRS, with number of patients at risk indicated below the\n12|plot at specific times. The median and total person-years of follow-up for the entire study will\n13|also be reported.\n14|An on-treatment analysis using the ITT population will be performed for the primary and\n15|some secondary endpoints as sensitivity analyses. This analysis will include those events that\n16|occurred from randomization through the last dose of study medication or the Trial\n17|Termination Visit, whichever occurs first. The patients will be analyzed according to the\n18|treatment group to which they were randomized.\n19|An on-treatment censoring scheme, as\n20|described later in the text, will also be applied for analysis for on-treatment + n days, where\n21|n=7, 30, and 70.\n22|For all time to event analysis of composite endpoints including mortality, if the death occurred\n23|after 6 months from the last visit where all components of the endpoint could be assessed, the\n24|death will not be counted towards any composite endpoint where death is a component.\n25|Instead, such patients will be censored in accordance with the relevant censoring scheme. For\n26|analysis of mortality as an endpoint, such deaths will be counted as events. Unless otherwise\n27|specified all hypothesis testing will be performed using two-sided tests at the 0.05 level of\n28|significance. Statistical analyses will be performed using Version 9.2 (or newer) of SASon\n29|Unix operating system.\n30|Selected analyses described here will be summarized separately for the US and the China\n31|population respectively.\n32|4.1.1\n33|Control of Type I Error\n34|Type I error will be controlled at a one-sided 0.025 level for multiplicity across primary and\n35|secondary objectives and in consideration of planned interim analyses. The alpha of 0.02495\n36|represents the final one-sided significance level to be used when the study has been completed\n37|in entirety. At an interim analysis, testing for superiority of primary efficacy endpoint will\n38|occur, and the significance level for superiority will be replaced by one-sided 0.00005 at the\n39|first and one-sided 0.0005 at the second interim (see Section 4.7). Statistical testing will\n40|proceed sequentially and statistical significance will be assessed in the following hierarchical\n41|order. When a test is found to be statistically significant, testing will proceed to the next test.\n42|If a test is not statistically significant, the subsequent one will not be assessed for statistical\n43|significance although nominal p-values will be provided.\n44|Hierarchical Testing Order:\n45|185",
+          "line_count": 45,
+          "returned_start_line": 1,
+          "returned_end_line": 45,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_8267e15ca9759ec4"
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 187,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|20\n6|1. Non-inferiority test for the primary composite CV endpoint (alpha= 0.02495 1-sided)\n7|2. Superiority test for the primary composite CV endpoint (alpha= 0.02495 1-sided)\n8|3. Superiority test for secondary efficacy endpoint of all-cause death (alpha= 0.02495 1-\n9|sided)\n10|4. Superiority test for secondary efficacy endpoints: CV-related death, MI, and stroke\n11|(alpha= 0.02495 1-side): The hypothesis for these three secondary efficacy endpoints\n12|(null hypothesis is denoted as H0[41], H0[42], H0[43],) will be tested at one-sided 0.02495\n13|level by using the Hochberg procedure2, which proceeds as follows:\n14|\n15|Ordering the raw p-values (one-sided) such that p(1)≤ p(2) ≤ p(3)\n16|\n17|Step 1. If p(3) < 0.02495, reject H0[4i], i = 1,2,3 and stop; otherwise go to Step 2.\n18|\n19|Step 2. If p(2) < 0.02495/2, reject H0[4i], i = 1,2 and stop; otherwise go to Step 3.\n20|\n21|Step 3. If p(1) < 0.02495/3 reject H0[4i], i = 1.\n22|5. If superiority tests for all three secondary efficacy endpoints in number 4 are met,\n23|proceed with superiority test for secondary endpoints: hospitalization for acute\n24|coronary syndrome and hospitalization for heart failure. The hypothesis for these two\n25|secondary efficacy endpoints (null hypothesis is denoted as H0[51], H0[52],) will be tested\n26|at one-sided 0.02495 level by using the same Hochberg procedure as described above.\n27|Non-inferiority will be tested only at the completion of the study. Secondary endpoints will\n28|only be tested once, at the completion of the trial or if the decision is made to terminate the\n29|trial early. If the study terminates early for superiority, the key secondary endpoints of CV\n30|death, MI, stroke and all-cause mortality will be tested at the same significance level as the\n31|primary endpoint in the interim analysis using the hierarchical test strategy. Additional\n32|efficacy endpoints will be tested at the 2-sided 0.05 level.\n33|4.1.2\n34|Censoring\n35|4.1.2.1\n36|Censoring Scheme\n37|Primary Censoring Scheme: in time-to-event analyses in the ITT population, patients will be\n38|censored at the earliest of: 1) date of last contact where all elements of the endpoint could be\n39|assessed, and 2) the right censoring date. The conclusions regarding non-inferiority or\n40|superiority will be based on the analyses using this censoring scheme. Patients without any\n41|assessment of the endpoint will be censored at randomization.\n42|On-treatment Censoring Scheme: in the on-treatment time-to-event analyses, patients will be\n43|censored at the earliest of: 1) date of last contact where all elements of the endpoint could be\n44|\n45|186",
+          "line_count": 45,
+          "returned_start_line": 1,
+          "returned_end_line": 45,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_776250d728c5dc52"
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 188,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|21\n6|assessed, and 2) the date of last dose of study medication, and 3) the right censoring date.\n7|Patients who never start the study drug will be censored at randomization.\n8|On-treatment + n days Censoring Scheme (where n=7, 30, and 70): patients will be censored\n9|at the earliest of: 1) date of last contact where all elements of the endpoint could be assessed,\n10|2) the date of last dose of study medication + n days, and 3) the right censoring date. Patients\n11|who never start the study drug will be censored at randomization.\n12|Cut-off Date Censoring Scheme: patients will be censored at the earliest of: 1) date of last\n13|contact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut\n14|off date. The primary endpoint cut off date will be determined by the Executive Committee as\n15|the date when the sites will start bringing patients back for the Trial Termination visit. Patients\n16|without any assessment of the endpoint will be censored at randomization.\n17|Right censoring date is defined as the last known alive date as collected at the trial termination\n18|visit (TTV form) except for deceased patients where it is the adjudicated date of the death.\n19|4.1.2.2\n20|Assumption on Non-informative Censoring\n21|The time to event analysis (Cox regression) relies on the assumption of non-informative\n22|censoring. To examine this assumption, variables that may be related to censoring, for\n23|example, the most frequent major protocol deviation, certain SAEs, will be explored. Rates\n24|per 100 patient-years will be calculated per treatment group and compared between patients\n25|censored early without complete follow-up, and those with complete follow-up.\n26|To assess possible effects of informative censoring on the primary efficacy endpoint,\n27|sensitivity analyses will be done as follows. First, the tipping point analysis will be performed\n28|where in patients who prematurely discontinued the study without having a primary endpoint\n29|event prior to discontinuation, events will be imputed during their missing follow up time (i.e.\n30|time from censoring to trial termination visit) under various scenarios for the hazard rates for\n31|non-completers in each arm. For each scenario, 2000 imputations will be performed and the\n32|results will be combined across 2000 combined datasets (actual events in completers +\n33|imputed events in non-completers) using SAS PROC MIANALYZE. Specifically, log-hazard\n34|ratio estimate of treatment effect will be calculated as an average and its associated variance\n35|will be obtained using Rubin's8 (1987) formula, which combines within-imputation and\n36|between-imputation variances. Hazard ratios, Wald's 95% CIs and Wald's test p-values will\n37|also be calculated. The goal of this analysis is to find scenarios where the primary analysis\n38|results will be \"tipped\", i.e. the conclusion will change.\n39|4.2\n40|Study Conduct\n41|Major protocol deviations will be identified for all patients who are randomized (see Section\n42|2.2).\n43|187",
+          "line_count": 43,
+          "returned_start_line": 1,
+          "returned_end_line": 43,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_f3ad502fa6c18431"
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 189,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|22\n6|4.3\n7|Study Population\n8|4.3.1\n9|Patient Disposition\n10|The number of patients included in each study population (i.e., Intent-to-Treat, Per-Protocol\n11|and Safety) will be summarized by treatment group. The number and percentage of patients\n12|who completed and patients who discontinued from treatment and who withdrew from study\n13|will be presented for each treatment group and overall for the ITT Population. Reasons for\n14|discontinuation from treatment and discontinuation from the study will be summarized\n15|(number and percentage) overall and by treatment group for the ITT Population.\n16|4.3.2\n17|Demographics and Other Baseline Characteristics\n18|Demographics and baseline characteristics will be summarized by treatment group for the ITT\n19|Population, Per Protocol Population and Safety Population.\n20|The following demographics and baseline characteristics will be summarized:\n21|\n22|Prior CV event at randomization based on IVRS (yes, no)\n23|\n24|Prior CV event at randomization based on CRF (yes, no)\n25|\n26|Geographic region: North America, Latin America, Europe and Asia Pacific\n27|\n28|Country\n29|\n30|Age: calculated as ((date of randomization- date of birth) +1)/365.25\n31|\n32|Age group (<65, >=65 years, >=75 years)\n33|\n34|Gender\n35|\n36|Race:\n37|o\n38|Indian (American) or Alaska Native\n39|o\n40|Asian: Asian (Oriental), Asian (Other)\n41|o\n42|Black\n43|o\n44|Native Hawaiian or Other Pacific Islander, includes Maori (New Zealand) and\n45|Aboriginal (Australian)\n46|o\n47|White: Caucasian or White\n48|o\n49|Hispanic\n50|\n51|Ethnicity: Latino, non-Latino\n52|\n53|Weight\n54|\n55|Height\n56|\n57|BMI\n58|\n59|BMI group: <30, >=30 kg/m2\n60|\n61|Baseline antihyperglycemic agents therapy\n62|o\n63|None\n64|188",
+          "line_count": 64,
+          "returned_start_line": 1,
+          "returned_end_line": 64,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_e4d3d4ce01d57ae7"
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 190,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|23\n6|o\n7|Oral agent use (oral defined as all but insulin or pramlinitide; including \"other\")\n8|o Oral agent monotherapy\n9|o Oral agent dual combo therapy\n10|o >/= 3 oral agents\n11|o\n12|Insulin use\n13|o Insulin alone\n14|o Insulin + 1 oral agent\n15|o Insulin + >1 oral agent\n16|o\n17|DPP-4i use\n18|\n19|Baseline laboratory results HbA1c\n20|\n21|HbA1c group: <8.0%, >=8.0%\n22|\n23|Duration of diabetes: calculated as (year of randomization - year of diagnosis) +1\n24|\n25|Duration of diabetes group: <5, 5-14, >=15 years\n26|\n27|eGFR: according to the Modification of Diet in Renal Disease (MDRD) formula3\n28|\n29|eGFR groups (ml/min/1.73m2):\n30|o\n31|<60, >=60\n32|o\n33|Stage 1: 90+, Stage 2: 60-89, Stage 3: 30-59, Stage 3a: 45-59, Stage 3b: 30-44,\n34|Stage 4: 15-29, Stage 5: <15\n35|Differences in the countries that have historically comprised Eastern vs. Western Europe will\n36|also be explored. Medical complications at baseline (amputation, foot ulcer, retinopathy,\n37|blindness, albuminuria and diabetic neuropathy) and other medical history (coronary artery\n38|stenosis >=50% by coronary catheterization, MI etc.) will also be summarized by treatment\n39|group.\n40|4.4\n41|Extent of Exposure\n42|4.4.1\n43|Study Medication\n44|Exposure to study medication for the ITT and Safety Population during the study period will\n45|be summarized in terms of treatment duration, which is calculated as the number of days from\n46|the date of first medication taken to the date of last dose taken, inclusively ((date of last dose\n47|taken - date of first medication taken)+7). This duration will not be adjusted for any period\n48|the patient may have been off of study drug temporarily. Descriptive statistics (n, mean,\n49|standard deviation, minimum, median, and maximum) will be presented by treatment group.\n50|4.4.2\n51|Measurement of Treatment Compliance\n52|Number of patients who had more than 4 consecutive missing doses and percent of\n53|injections missed will be summarized by treatment group (Data for patients with less than 4\n54|missing dose is not collected in CRF given the long half-life of the study drug).\n55|\n56|189",
+          "line_count": 56,
+          "returned_start_line": 1,
+          "returned_end_line": 56,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_9ed2c6ae0f510679"
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 191,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|24\n6|Percent of injections missed are not directly recorded, as compliance is not recorded\n7|in the study database, but will be calculated for those patients who have recorded temporary\n8|discontinuation periods by:\n9|( 1- (total number of known missed injections for temporary discontinuation periods /\n10|number of planned injections based on first and last dose date))*100%\n11|Kaplan Meier estimates of time to permanent study drug discontinuation will be summarized\n12|by treatment.\n13|Treatment compliance will also be summarized in terms of percent of time on study drug,\n14|which is calculated as actual time on study drug (not adjusting for temporary discontinuations)\n15|divided by the study duration, defined as time to last known alive date if patient is alive or at\n16|withdrawn consent status, study cut-off date if patient is lost to follow up, and death date if\n17|status is deceased.\n18|4.4.3\n19|Concomitant Medication\n20|A baseline concomitant medication is defined as a medication which was reported to have\n21|been taken on the concomitant medication eCRF form at the Screening/Randomization visit.\n22|A baseline diabetes medication is a diabetes medication that is reported to have been taken on\n23|the medical history eCRF form. A new diabetes/concomitant medication is defined as no\n24|indication of usage at baseline as well as indication of usage during at least one post-\n25|randomization visit.\n26|Patients taking baseline diabetes/concomitant medications will be summarized by treatment\n27|group in the ITT and Safety populations. Similar summaries will be presented for patients\n28|taking new diabetes/concomitant medications and for patients taking a diabetes/concomitant\n29|medication at any visit (i.e. at baseline or at any time during a post-randomization visit).\n30|4.5\n31|Primary Safety and All Efficacy",
+          "line_count": 48,
+          "returned_start_line": 1,
+          "returned_end_line": 31,
+          "page_remainder": {
+            "source_id": "sh_bcf70e5423c2d8ef",
+            "page": 191,
+            "start_line": 32,
+            "end_line": 48
+          },
+          "truncated": true,
+          "next_start_line": 32,
+          "passage_ref": "eh_185680088850d635"
+        }
+      ],
+      "remaining_windows": [
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 191,
+          "start_line": 32,
+          "end_line": 48
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 192,
+          "start_line": 1,
+          "end_line": 43
+        },
+        {
+          "source_id": "sh_bcf70e5423c2d8ef",
+          "page": 193,
+          "start_line": 1,
+          "end_line": 43
+        }
+      ]
+    }
+  }
+}

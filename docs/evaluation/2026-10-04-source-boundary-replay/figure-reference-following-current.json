@@ -1,0 +1,101 @@
+{
+  "tool": "search_sources",
+  "arguments": {
+    "trial_id": "exscel",
+    "source_id": "sh_08fbea6d1ed99fc0",
+    "query": "Figure S9",
+    "mode": "phrase"
+  },
+  "result": {
+    "outcome": "success",
+    "head": {
+      "phase": "finalized",
+      "state_revision": 12,
+      "next_action": null,
+      "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+    },
+    "data": {
+      "hits": [
+        {
+          "source_id": "sh_08fbea6d1ed99fc0",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_appendix.pdf",
+          "page": 45,
+          "start_line": 1,
+          "end_line": 9,
+          "preview": "\n44\n\nFigure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint\n\nP values for non-inferiority (upper) and superiority (lower) are provided for the primary analysis.\nIn time-to-event analyses in the Intention-to-Treat population, patients are censored at the earliest of: 1) date of last contact where all elements\nof the endpoint could be assessed, and 2) the right censoring date. Patients without any assessment of the endpoint were censored at\nrandomization.",
+          "passage_ref": "eh_545a1cdba2a3579b",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 1,
+          "within_source_rank": 1,
+          "range": {
+            "start": 1,
+            "end": 2
+          }
+        },
+        {
+          "source_id": "sh_08fbea6d1ed99fc0",
+          "source_role": "supplement",
+          "source_label": "nejmoa1612917_appendix.pdf",
+          "page": 2,
+          "start_line": 23,
+          "end_line": 26,
+          "preview": "Population) .................................................................................................................................................. 42\nFigure S8: Time to First Adjudicated Stroke [Fatal and Non-Fatal] (Intention-to-Treat Population) ......... 43\nFigure S9: Prespecified Sensitivity Analyses for the Primary Efficacy Endpoint ......................................... 44\nTable S5: New Antihyperglycemic Medication Usage During Follow-Up (Intention-to-Treat Population) 46",
+          "passage_ref": "eh_6fa61148543b341d",
+          "candidate_truncated": false,
+          "candidate_recovery": null,
+          "rank": 2,
+          "within_source_rank": 2,
+          "range": {
+            "start": 1,
+            "end": 2
+          }
+        }
+      ],
+      "query": "Figure S9",
+      "mode": "phrase",
+      "profile": "porter-unicode61-v1",
+      "total_matches": 2,
+      "truncated": false,
+      "condition": null,
+      "search_receipt": "sr_82cf3979319999c2",
+      "session_id": "sha256:adecd92049f5590d06ab9abc8a91cc573a4f751ec26a3be1b2cbcd9138f481e1",
+      "session_handle": "ss_adecd92049f5590d",
+      "matching_page_count": 2,
+      "candidate_count": 2,
+      "distinct_passage_count": 2,
+      "distinct_page_count": 2,
+      "distinct_source_count": 1,
+      "ranking_complete": true,
+      "returned_rank_start": 1,
+      "returned_rank_end": 2,
+      "next_cursor": null,
+      "exhausted": true,
+      "term_feedback": [
+        {
+          "source_id": "sh_08fbea6d1ed99fc0",
+          "page_count": 52,
+          "query_matching_page_count": 2,
+          "term_page_counts": [
+            {
+              "term": "figure",
+              "matching_page_count": 10
+            },
+            {
+              "term": "s9",
+              "matching_page_count": 2
+            }
+          ]
+        }
+      ],
+      "term_feedback_truncated": false,
+      "term_feedback_sources_truncated": false,
+      "diagnostic": null,
+      "spelling_suggestions": [],
+      "spelling_suggestions_incomplete": false,
+      "purpose_domain_id": null,
+      "purpose_question_id": null
+    }
+  }
+}

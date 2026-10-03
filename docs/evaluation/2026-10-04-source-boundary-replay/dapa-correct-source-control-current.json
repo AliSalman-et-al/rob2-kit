@@ -1,0 +1,104 @@
+{
+  "tool": "read_pages",
+  "arguments": {
+    "trial_id": "dapa-hf",
+    "windows": [
+      {
+        "source_id": "sh_62c074c3ab8e1f2f",
+        "page": 161,
+        "start_line": 15,
+        "end_line": 31
+      },
+      {
+        "source_id": "sh_62c074c3ab8e1f2f",
+        "page": 233,
+        "start_line": 1,
+        "end_line": 80
+      },
+      {
+        "source_id": "sh_62c074c3ab8e1f2f",
+        "page": 234,
+        "start_line": 1,
+        "end_line": 80
+      },
+      {
+        "source_id": "sh_62c074c3ab8e1f2f",
+        "page": 240,
+        "start_line": 1,
+        "end_line": 33
+      }
+    ]
+  },
+  "result": {
+    "outcome": "success",
+    "head": {
+      "phase": "finalized",
+      "state_revision": 12,
+      "next_action": null,
+      "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+    },
+    "data": {
+      "pages": [
+        {
+          "source_id": "sh_62c074c3ab8e1f2f",
+          "page": 161,
+          "numbered_text": "15|and protocol violations have been identified and documented.\n16|A comprehensive Statistical Analysis Plan (SAP) will be developed prior to first patient\n17|randomised and any subsequent amendments will be documented, with final amendments\n18|completed prior to unblinding of the data.\n19|The results of the key study outcome will be independently validated by an external statistical\n20|team.\n21|8.2\n22|Sample size estimate\n23|The primary objective of the study is to determine the superiority of dapagliflozin versus\n24|placebo in reducing the incidence of the primary composite endpoint. Assuming a true hazard\n25|ratio (HR) of 0.80 between dapagliflozin and placebo, using a one-sided alpha of 2.5%, 844\n26|primary endpoint events will provide a statistical power of 90% for the test of the primary\n27|composite endpoint. This is based on an overall 1:1 allocation between dapagliflozin and\n28|placebo. The study is event-driven. The assumed HR of 0.80 is considered as clinically\n29|relevant and has taken into account the HF outcomes in the EMPA-REG trial.\n30|With an annual event rate of 11% in the placebo treatment group, 4500 patients are estimated\n31|to provide the required number of primary events, based on an anticipated recruitment period",
+          "line_count": 47,
+          "returned_start_line": 15,
+          "returned_end_line": 31,
+          "page_remainder": {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 161,
+            "start_line": 32,
+            "end_line": 47
+          },
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_46f1f3ea94d95cc1"
+        },
+        {
+          "source_id": "sh_62c074c3ab8e1f2f",
+          "page": 233,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D1699C00001\n3|Edition Number 3.0\n4|Date 23/July/2019\n5|11\n6|1.\n7|STUDY DETAILS\n8|1.1\n9|Study objectives\n10|1.1.1\n11|Primary objective\n12|Primary Objective:\n13|Outcome Measure:\n14|To determine whether dapagliflozin is superior\n15|to placebo, when added to standard of care, in\n16|reducing the incidence of CV death or a HF\n17|event (hospitalization for HF or equivalent HF\n18|event, ie an urgent HF visit).\n19|Time to the first occurrence of any of the components\n20|of this composite:\n21|1.\n22|CV death\n23|2.\n24|Hospitalization for HF\n25|3.\n26|An urgent HF visit\n27|1.1.2\n28|Secondary objectives\n29|Secondary Objective:\n30|Outcome Measure :\n31|To compare the effect of dapagliflozin versus\n32|placebo on CV death or hospitalization for HF.\n33|Time to the first occurrence of either of the\n34|components of this composite:\n35|1.\n36|CV death\n37|2.\n38|Hospitalization for HF\n39|To compare the effect of dapagliflozin versus\n40|placebo on total number of recurrent HF\n41|hospitalizations and CV death.\n42|Total number of (first and recurrent) HF\n43|hospitalizations and CV death.\n44|To compare the effect of treatment with\n45|dapagliflozin versus placebo on the Kansas\n46|City Cardiomyopathy Questionnaire (KCCQ)\n47|total symptom score for HF symptoms.\n48|Change from baseline measured at 8 months in the\n49|total symptom score of the KCCQ, a specific HF\n50|patient reported outcome questionnaire.\n51|\n52|[Extracted table 2]\n53||Secondary Objective:|Outcome Measure :|\n54||---|---|\n55||To compare the effect of dapagliflozin versus<br>placebo on CV death or hospitalization for HF.|Time to the first occurrence of either of the<br>components of this composite:<br>1. CV death<br>2. Hospitalization for HF|\n56||To compare the effect of dapagliflozin versus<br>placebo on total number of recurrent HF<br>hospitalizations and CV death.|Total number of (first and recurrent) HF<br>hospitalizations and CV death.|\n57||To compare the effect of treatment with<br>dapagliflozin versus placebo on the Kansas<br>City Cardiomyopathy Questionnaire (KCCQ)<br>total symptom score for HF symptoms.|Change from baseline measured at 8 months in the<br>total symptom score of the KCCQ, a specific HF<br>patient reported outcome questionnaire.|",
+          "line_count": 57,
+          "returned_start_line": 1,
+          "returned_end_line": 57,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_37f8e32ae9d78801"
+        },
+        {
+          "source_id": "sh_62c074c3ab8e1f2f",
+          "page": 234,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D1699C00001\n3|Edition Number 3.0\n4|Date 23/July/2019\n5|12\n6|To determine if dapagliflozin compared with\n7|placebo reduces the incidence of a composite\n8|endpoint of worsening renal function.\n9|Time to the first occurrence of any of the components\n10|of this composite:\n11|1.\n12|≥50% sustained decline in eGFR\n13|2.\n14|Reaching End Stage Renal Disease\n15|(ESRD)\n16|\n17|Sustained eGFR\n18|<15 ml/min/1.73m2 or,\n19|\n20|Chronic dialysis treatment or,\n21|\n22|Receiving a renal transplant\n23|3.\n24|Renal death\n25|To determine whether dapagliflozin, compared\n26|with placebo, reduces the incidence of all-\n27|cause mortality.\n28|Time to death from any cause.\n29|1.1.3\n30|Safety objectives\n31|Safety Objective:\n32|Outcome Measure :\n33|To evaluate the safety and tolerability of\n34|dapagliflozin in this patient population.\n35|1.\n36|Serious Adverse Events (SAEs)\n37|2.\n38|Discontinuation of IP due to Adverse\n39|Events (DAEs)\n40|3.\n41|Changes in clinical\n42|chemistry/haematology parameters\n43|4.\n44|Adverse events of interest (volume\n45|depletion, renal events, major\n46|hypoglycaemic events, fractures, diabetic\n47|ketoacidosis (DKA), AEs leading to\n48|amputation and AEs leading to a risk for\n49|lower limb amputations [\"preceding\n50|events\"])",
+          "line_count": 50,
+          "returned_start_line": 1,
+          "returned_end_line": 50,
+          "page_remainder": null,
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_4623d840086cc3f7"
+        },
+        {
+          "source_id": "sh_62c074c3ab8e1f2f",
+          "page": 240,
+          "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D1699C00001\n3|Edition Number 3.0\n4|Date 23/July/2019\n5|18\n6|randomized treatment. Patients who got only the incorrect treatment will be analyzed\n7|according to that treatment.\n8|The safety analysis set will be considered the primary analysis set for all safety variables.\n9|2.2\n10|Violations and deviations\n11|The important protocol deviations listed below will be summarised by randomized treatment\n12|group\n13|\n14|Patients who were randomised but did not meet inclusion and exclusion criteria\n15|\n16|Patients who received the wrong study treatment at any time during the study.\n17|\n18|Patients who received prohibited concomitant medication, which for this study is\n19|limited to open label SGLT2 inhibitors taken in combination with IP.\n20|As the primary analysis is intention-to-treat analysis, protocol deviation will not imply\n21|exclusion from the primary analysis.\n22|3.\n23|PRIMARY AND SECONDARY VARIABLES\n24|Potential endpoint events and event dates will be adjudicated by an independent clinical event\n25|adjudication (CEA) committee. The committee members will not have access to the treatment\n26|codes for any patient. The CEA procedures and event definitions will be described in the CEA\n27|charter.\n28|The primary and secondary efficacy variables and their components will only include HF\n29|events confirmed by the CEA. Deaths adjudicated as 'cause undetermined' with regard to CV\n30|death or non-CV death will be included as CV death in the primary efficacy analyses.\n31|All adjudicated events from randomization until WoC or PACD will be included in the\n32|analysis of primary and secondary endpoints, except for the analysis of all-cause death as a\n33|sole outcome, which also will include deaths (not adjudicated) after WoC, but on or before",
+          "line_count": 42,
+          "returned_start_line": 1,
+          "returned_end_line": 33,
+          "page_remainder": {
+            "source_id": "sh_62c074c3ab8e1f2f",
+            "page": 240,
+            "start_line": 34,
+            "end_line": 42
+          },
+          "truncated": false,
+          "next_start_line": null,
+          "passage_ref": "eh_3db1f12acb317bde"
+        }
+      ],
+      "remaining_windows": []
+    }
+  }
+}
