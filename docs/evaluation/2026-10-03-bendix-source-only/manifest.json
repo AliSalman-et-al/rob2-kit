@@ -1,0 +1,18 @@
+{
+  "code_sha": "b7c50ac4f46ead3ffd05ecc5836ed899a08c9f2d",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "prompt_sha256": "c120b93e3e63eeda4f0aacd4e6b074ad9063d4a274b43641b2c01ac47e6ae2e0",
+  "materials_sha256": "23080cfcc253d2dc90ac7de97e59eb3b753408876463d61110edea2015ba4a60",
+  "guards": {
+    "wall_seconds": 300,
+    "idle_seconds": 120,
+    "output_tokens": 5000,
+    "input_tokens": null,
+    "tools": 0
+  },
+  "one_response_only": true,
+  "no_retry": true,
+  "classification": "Final known-case source-only mechanism appraisal; paired diagnostic, not causal or generalization evidence",
+  "prompt_bytes": 52488
+}

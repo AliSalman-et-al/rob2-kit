@@ -1,0 +1,15 @@
+{
+  "model_settings": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "turn_id": "01a10132-103f-7932-8c33-c08b20802f9f"
+    }
+  ],
+  "actual_response_generations": 1,
+  "tool_calls": 0,
+  "exact_final_text_matches_durable_assistant_text": true,
+  "response_sha256": "74efe8f2595de4d959c85c703f397fb2d10d65474785f95e0d01427a3e860c69",
+  "prompt_sha256": "c120b93e3e63eeda4f0aacd4e6b074ad9063d4a274b43641b2c01ac47e6ae2e0",
+  "no_retry_or_repair": true
+}
