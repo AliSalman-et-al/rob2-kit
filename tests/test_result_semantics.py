@@ -499,6 +499,7 @@ def test_applicability_evidence_must_be_selected_from_the_same_trial(tmp_path: P
             "path": "/assessments/0/evidence_basis/0",
             "code": "cross_trial_evidence",
             "detail": "Reasoning Evidence must resolve to selected material from this Trial.",
+            "answer_path": None,
         }
     ]
 
@@ -572,7 +573,10 @@ def test_result_and_applicability_evidence_survive_review_replacement_and_deriva
         initial["review"]["candidate"]["proposal"]["results"][0]["reported"]["analysis_population"]
         == result["reported"]["analysis_population"]
     )
-    assert [item["handle"] for item in initial_result["evidence"]] == [result_evidence["handle"]]
+    assert {item["handle"] for item in initial_result["evidence"]} == {
+        result_evidence["handle"],
+        design_evidence["handle"],
+    }
     assert initial_result["applicability"]["evidence"] == [design_evidence["handle"]]
     assert "passage_refs" not in initial_result
     assert {item["handle"] for item in initial["proposal"]["evidence"].values()} == {
@@ -588,7 +592,10 @@ def test_result_and_applicability_evidence_survive_review_replacement_and_deriva
     assert replaced["outcome"] == "review_required", replaced
     revised = _state(workspace)
     revised_result = revised["proposal"]["payload"]["results"][0]
-    assert [item["handle"] for item in revised_result["evidence"]] == [result_evidence["handle"]]
+    assert {item["handle"] for item in revised_result["evidence"]} == {
+        result_evidence["handle"],
+        design_evidence["handle"],
+    }
     assert revised_result["applicability"]["evidence"] == [design_evidence["handle"]]
     assert revised["review"]["candidate"]["proposal"] == revised["proposal"]["payload"]
     assert revised["review"]["identity"] != initial["review"]["identity"]

@@ -209,6 +209,7 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
             "path": "/trial_id",
             "code": "trial_out_of_sequence",
             "detail": "complete Trial 'trial-a' before Trial 'trial-b'",
+            "answer_path": None,
         }
     ]
 
@@ -305,6 +306,8 @@ def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
         "authority": "host",
         "trial_id": "trial-b",
         "domain_id": SCIENTIFIC_PACK.domains[0].id,
+        "cursor": None,
+        "max_response_bytes": None,
     }
     next_context = _call(tmp_path, "get_domain_context", {})
     assert next_context["outcome"] == "success"

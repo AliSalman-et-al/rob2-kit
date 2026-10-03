@@ -235,6 +235,12 @@ summary statistic.
 
 Include the passages supporting the population summary in `source_passages`,
 including separate passages for eligibility criteria and analyzed denominators.
+Trial eligibility defines who entered this Trial. With no baseline subgroup, the
+target is all participants randomized in that Trial, not everyone in an external
+disease population. Eligibility alone does not make its all-randomized analysis
+`narrower`. Compare analysis restrictions against the specified target; discuss
+transport beyond trial eligibility separately. A genuinely broader external
+target must be independently specified, not inferred from a disease label.
 
 The reported object records the Source endpoint and quantities. Keep its
 endpoint distinct from the captured requested outcome. The server supplies the
@@ -249,12 +255,20 @@ and cannot establish exactness. For a non-exact Result, identify which facets
 remain unclear, unavailable, or conflicting. For other assessable Results:
 
 - `broader`: the reported event, population, or time scope is a superset;
-- `narrower`: it is a subset or adds restrictions;
+- `narrower`: it is a subset or adds restrictions relative to the specified target;
 - `component`: it is one constituent of the requested composite or category;
 - `related`: the constructs overlap without one of those ordered relations.
 
 Keep Source-owned endpoint names and quantities bound to exact selected Evidence
-even when their scientific scope is equivalent.
+even when their scientific scope is equivalent. `candidate.reported_outcome`
+already holds the raw quantitative-anchor endpoint label; it is not a normalized
+interpretation field. Explain equivalent wording and separately sourced event
+criteria in `scope_rationale` with their citations. `candidate.precision` holds
+the verbatim interval expression (including stated confidence level and units),
+not a reformatted explanation. Target measurement/window, analysis-population
+summary and scope/population reasoning remain interpreted, evidence-grounded
+prose; they need not imitate source wording. Literal binding failure by itself
+does not establish scientifically incorrect meaning.
 
 ## Preserve the Source-owned quantities
 

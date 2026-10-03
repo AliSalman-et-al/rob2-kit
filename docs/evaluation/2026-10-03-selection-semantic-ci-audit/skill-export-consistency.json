@@ -1,0 +1,28 @@
+{
+  "same_files_and_bytes": true,
+  "source_hashes": {
+    "SKILL.md": "e6d6a480429ed9e875ecefd9d7ce32008d141fcf395d7e8e47aa8f4ebe2b1237",
+    "references/missing.md": "dd6822405627cd51d6f5ad712b0b9b25ced3ca2be7c46dcab33e2bfac090a4e2",
+    "references/selection.md": "cf29382934fb0620d5111aa1f478bedccf986c9bda8015e9c5fc5b62c20901ac",
+    "references/evidence.md": "53c80ce2f75b8175daf2673e57c3413bdc7770d05bff7708c952fb11d09049b3",
+    "references/codex.md": "2e79c28653d03f597d9aaab313a4731a6a46c6552fe75e465cb091ac0c66d019",
+    "references/deviations.md": "d6c48aca164e499decc2256cb227331acdbd73d00ca04d69a24e5eede28ee4d6",
+    "references/result.md": "39ee6194ebcb85b06033854372084b84b403dbb93a2a23ad26d0dae0ba120959",
+    "references/randomization.md": "a1b74f4caba7089c707a0f2233e41d57e8e154a974e216fb38e3979504a8956f",
+    "references/read-main-report.md": "0c4231261927f467b69c58ffa9557b58ca19cad4d78d57fb4c9665a990eb4435",
+    "references/measurement.md": "a5a17fe38ffabd5a2dcac61e262fd8f5cd43e96db429de4996e4c6e446cb8afc"
+  },
+  "export_hashes": {
+    "SKILL.md": "e6d6a480429ed9e875ecefd9d7ce32008d141fcf395d7e8e47aa8f4ebe2b1237",
+    "references/missing.md": "dd6822405627cd51d6f5ad712b0b9b25ced3ca2be7c46dcab33e2bfac090a4e2",
+    "references/selection.md": "cf29382934fb0620d5111aa1f478bedccf986c9bda8015e9c5fc5b62c20901ac",
+    "references/evidence.md": "53c80ce2f75b8175daf2673e57c3413bdc7770d05bff7708c952fb11d09049b3",
+    "references/codex.md": "2e79c28653d03f597d9aaab313a4731a6a46c6552fe75e465cb091ac0c66d019",
+    "references/deviations.md": "d6c48aca164e499decc2256cb227331acdbd73d00ca04d69a24e5eede28ee4d6",
+    "references/result.md": "39ee6194ebcb85b06033854372084b84b403dbb93a2a23ad26d0dae0ba120959",
+    "references/randomization.md": "a1b74f4caba7089c707a0f2233e41d57e8e154a974e216fb38e3979504a8956f",
+    "references/read-main-report.md": "0c4231261927f467b69c58ffa9557b58ca19cad4d78d57fb4c9665a990eb4435",
+    "references/measurement.md": "a5a17fe38ffabd5a2dcac61e262fd8f5cd43e96db429de4996e4c6e446cb8afc"
+  },
+  "model_calls": 0
+}

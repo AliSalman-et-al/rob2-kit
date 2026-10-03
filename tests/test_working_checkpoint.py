@@ -1051,6 +1051,7 @@ def test_trial_review_retains_source_observations_after_domain_commits(
         ]
 
     _review(workspace)
+    _read_required_main_reports(workspace)
     revision = int(
         _call(
             workspace,

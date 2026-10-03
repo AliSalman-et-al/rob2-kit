@@ -1071,10 +1071,17 @@ def _derive_bindings(
                     "code": "result_value_not_supported",
                     "detail": (
                         f"leaf {leaf_path} value {value!r} is not supported: no selected "
-                        "Evidence contains it after normalization; copy the source wording "
-                        "exactly or select Evidence containing it"
+                        "Evidence contains that source expression after normalization; this "
+                        "literal-binding failure does not establish incorrect scientific meaning. "
+                        "Copy the source expression or select Evidence containing it; put "
+                        "interpretation in scope_rationale, not the source-owned reported field"
                     ),
                 }
+                if leaf_path == "/reported/precision":
+                    defect["detail"] += (
+                        " Correct candidate.precision, preserving the source confidence level "
+                        "and units when stated."
+                    )
                 if leaf_path.startswith("/reported/categories/"):
                     defect["value"] = str(value)
                     category_binding_defects.append(defect)
@@ -1179,13 +1186,16 @@ def _bind_result(
         )
     ):
         detail = (
-            "no single selected Evidence item supports the endpoint name and any "
-            "provided definition together with one complete quantitative Result tuple. "
+            "no single selected Evidence item anchors the source endpoint label to one "
+            "complete quantitative Result tuple. Any provided source definition also needs "
+            "explicit joint support for that label. "
             "Do not resubmit the "
             "same cross-passage combination: either use the endpoint identifier exactly "
             "as it appears in the quantitative Evidence, or select one complete table "
             "block or figure containing the endpoint, headers, values, units, and "
-            "applicable footnotes"
+            "applicable footnotes. In the public selection, candidate.reported_outcome "
+            "holds this raw quantitative-anchor label; scope_rationale can explain "
+            "equivalent wording or separately sourced endpoint criteria"
         )
         gap = _closest_evidence_gap(result, catalog)
         if gap is not None:

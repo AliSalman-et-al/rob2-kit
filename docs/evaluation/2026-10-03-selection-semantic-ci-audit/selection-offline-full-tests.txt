@@ -1,0 +1,3271 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [  5%]
+........................................................................ [ 10%]
+.......s.............................................................s.. [ 16%]
+........................................................................ [ 21%]
+.........F..F........................................................... [ 27%]
+....................................................F................... [ 32%]
+...................................ss.FF.F.........F....F............... [ 38%]
+.........FF.FFFF................................F..F.....F....F......... [ 43%]
+........................................................................ [ 49%]
+......F.F...F.......................
+=================================== FAILURES ===================================
+_ test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss[context] _
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_domain_context_recovers_p1')
+counter_kind = 'context'
+
+    @pytest.mark.parametrize("counter_kind", ["direct_support", "context"])
+    def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
+        tmp_path: Path,
+        counter_kind: str,
+    ) -> None:
+        workspace = _workspace(tmp_path)
+        main = workspace / "input" / "trial" / "main.txt"
+        main.write_text(
+            main.read_text(encoding="utf-8") + "Domain-specific participant flow.\n",
+            encoding="utf-8",
+        )
+        proposal_evidence = _prepared_evidence(workspace)
+        _call(
+            workspace,
+            "save_proposal",
+            _proposal_args(workspace, [_result(proposal_evidence)]),
+        )
+        _review(workspace)
+        _read_required_main_reports(workspace)
+        domain_evidence = _call(
+            workspace,
+            "select_text_evidence",
+            {
+                "trial_id": "trial",
+                "source_id": proposal_evidence["source_id"],
+                "page": 1,
+                "start_line": 2,
+                "end_line": 2,
+            },
+        )["data"]["evidence"]
+        revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+        draft = _domain_draft("trial", "domain:randomization", revision, evidence=domain_evidence)
+        counter_index = 1 if counter_kind == "context" else 0
+        for answer in draft["answers"]:
+            if counter_kind == "context":
+                answer["bases"].append({"kind": counter_kind, "evidence": domain_evidence["handle"]})
+            answer["counterevidence"] = [
+                {
+                    "basis_index": counter_index,
+                    "implication": "This passage limits certainty in the answer.",
+                }
+            ]
+        saved = _call(workspace, "save_domain_judgment", draft)
+        assert saved["outcome"] == "success", saved
+        (workspace / ".rob2-kit" / "derivative.sqlite3").unlink()
+    
+        active_context = _call(workspace, "get_domain_context", {})["data"]
+        assert domain_evidence["identity"] not in {
+            item["identity"] for item in active_context["evidence"]
+        }
+        context = _call(
+            workspace,
+            "get_domain_context",
+            {"domain_id": "domain:randomization"},
+        )["data"]
+    
+        recovered = {item["identity"]: item for item in context["evidence"]}
+        assert recovered[domain_evidence["identity"]]["handle"] == domain_evidence["handle"]
+        assert recovered[domain_evidence["identity"]]["quote"] == domain_evidence["quote"]
+    
+        for answer in context["answers"]:
+>           assert answer["counterevidence"] == [
+                {
+                    "basis_index": counter_index,
+                    "implication": "This passage limits certainty in the answer.",
+                }
+            ]
+E           AssertionError: assert [{'basis_inde...the answer.'}] == [{'basis_inde...the answer.'}]
+E             
+E             At index 0 diff: {'basis_index': 0, 'implication': 'This passage limits certainty in the answer.'} != {'basis_index': 1, 'implication': 'This passage limits certainty in the answer.'}
+E             Left contains one more item: {'basis_index': 1, 'implication': 'This passage limits certainty in the answer.'}
+E             Use -v to get more diff
+
+tests/test_domain_boundary_repairs.py:702: AssertionError
+_______________ test_batch_domains_cannot_advance_a_later_trial ________________
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_batch_domains_cannot_adva0')
+
+    def test_batch_domains_cannot_advance_a_later_trial(tmp_path: Path) -> None:
+        source_text = (
+            "The requested outcome was measured in the analyzed population. "
+            "death ascertainment; end of follow-up; assigned to intervention; "
+            "assigned to control; randomized population; risk ratio; risk; 1; events; 2.\n"
+        )
+        for label in ("trial-a", "trial-b"):
+            trial = tmp_path / "input" / label
+            trial.mkdir(parents=True)
+            (trial / "main.txt").write_text(source_text, encoding="utf-8")
+            (trial / "sources.toml").write_text(
+                'roles = { "main.txt" = "main_article" }\n', encoding="utf-8"
+            )
+    
+        prepared = _call(
+            tmp_path,
+            "prepare_batch",
+            {"requested_outcome": "requested outcome", "expected_revision": 0},
+        )
+        assert {trial["requested_outcome"] for trial in prepared["data"]["trials"]} == {
+            "requested outcome"
+        }
+        _read_required_main_reports(tmp_path)
+    
+        evidence_by_trial: dict[str, dict[str, Any]] = {}
+        for trial_id in ("trial-a", "trial-b"):
+            source = _call(tmp_path, "list_sources", {"trial_id": trial_id})["data"]["sources"][0]
+            evidence_by_trial[trial_id] = _call(
+                tmp_path,
+                "select_text_evidence",
+                {
+                    "trial_id": trial_id,
+                    "source_id": source["id"],
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 1,
+                },
+            )["data"]["evidence"]
+        proposal = _call(
+            tmp_path,
+            "save_proposal",
+            _proposal_args(
+                tmp_path,
+                [
+                    _result_for_trial(evidence_by_trial["trial-a"], "trial-a"),
+                    _result_for_trial(evidence_by_trial["trial-b"], "trial-b"),
+                ],
+            ),
+        )
+        assert proposal["outcome"] == "review_required", proposal
+        _review(tmp_path)
+        _read_required_main_reports(tmp_path)
+        context = _call(tmp_path, "get_domain_context", {})
+        domain_id = SCIENTIFIC_PACK.domains[0].id
+        assert context["data"]["trial_id"] == "trial-a"
+    
+        skipped = _call(
+            tmp_path,
+            "save_domain_judgment",
+            _domain_draft(
+                "trial-b",
+                domain_id,
+                int(context["head"]["state_revision"]),
+                evidence_by_trial["trial-b"],
+            ),
+        )
+    
+        assert skipped["outcome"] == "repair"
+>       assert skipped["repairs"] == [
+            {
+                "path": "/trial_id",
+                "code": "trial_out_of_sequence",
+                "detail": "complete Trial 'trial-a' before Trial 'trial-b'",
+            }
+        ]
+E       assert [{'path': '/t..._path': None}] == [{'path': '/t...l 'trial-b'"}]
+E         
+E         At index 0 diff: {'path': '/trial_id', 'code': 'trial_out_of_sequence', 'detail': "complete Trial 'trial-a' before Trial 'trial-b'", 'answer_path': None} != {'path': '/trial_id', 'code': 'trial_out_of_sequence', 'detail': "complete Trial 'trial-a' before Trial 'trial-b'"}
+E         Use -v to get more diff
+
+tests/test_assessment_lifecycle.py:207: AssertionError
+________ test_domain_context_result_projection_omits_canonical_bindings ________
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_domain_context_result_pro0')
+
+    def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Path) -> None:
+        workspace = _workspace(tmp_path)
+        evidence = _prepared_evidence(workspace)
+        saved = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+        assert saved["outcome"] == "review_required"
+        _review(workspace)
+        _read_required_main_reports(workspace)
+    
+        context = _call(workspace, "get_domain_context", {})
+        data = context["data"]
+        result = data["result"]
+        assert "bindings" not in result
+        assert set(result["evidence"][0]) == {"kind", "handle", "identity"}
+        assert "alternatives" not in result
+>       assert (
+            "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
+            "discovery" in data["completion_rule"]
+        )
+E       AssertionError: assert 'Ground each active proposition and its uncertainty in inspected Evidence or bounded discovery' in 'Ground each active proposition and uncertainty in inspected Evidence, scoped search receipts, or an explicit scientif...indows before claiming information is unreported, or retain a bounded stopping rationale. Inactive extras are ignored.'
+
+tests/test_domain_boundary_repairs.py:1291: AssertionError
+_________________ test_domain_rejects_unknown_answer_question __________________
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_domain_rejects_unknown_an0')
+
+    def test_domain_rejects_unknown_answer_question(tmp_path: Path) -> None:
+        workspace, _evidence, revision = _assessment_workspace(tmp_path)
+        draft = _domain_draft("trial", "domain:randomization", revision)
+        draft["answers"][0]["bases"][0]["search_receipt"] = _call(
+            workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+        )["data"]["search_receipt"]
+        draft["answers"][0]["question_id"] = "sq:randomization:not-active"
+        receipt = _call_raw(workspace, draft)
+>       _assert_repairs(receipt)
+
+tests/test_domain_boundary_repairs.py:1359: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 4, 'next_action': {'operation': 'get_domain_co...d bases. Later answers can activate further questions; follow any subsequent path repair. No checkpoint was saved.'}}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(set(item) == {"path", "code", "detail"} for item in receipt["repairs"])
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b95a8e190>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+____________ test_tools_list_preflight_checks_schemas_and_metadata _____________
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x783159a45c50>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_tools_list_preflight_chec0')
+
+    def test_tools_list_preflight_checks_schemas_and_metadata(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+>       contract, inventory, process = _probe_inventory(tmp_path, monkeypatch)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:1709: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_tools_list_preflight_chec0/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_tools_list_preflight_chec0/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+____ test_continuation_requires_matching_server_preflight_not_a_jsonl_event ____
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7831597606e0>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_requires_mat0')
+
+    def test_continuation_requires_matching_server_preflight_not_a_jsonl_event(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:1746: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_requires_mat0/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_requires_mat0/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+________ test_continuation_requires_hash_bound_same_session_typed_calls ________
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x783159ca0360>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_requires_has0')
+
+    def test_continuation_requires_hash_bound_same_session_typed_calls(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:1778: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_requires_has0/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_requires_has0/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_continuation_accepts_null_initial_session_argument_when_session_is_bound _
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x783158f83d90>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_null0')
+
+    def test_continuation_accepts_null_initial_session_argument_when_session_is_bound(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:1809: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_null0/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_null0/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event0] _
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x783159206890>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar0')
+session_event = {'type': 'thread.started', 'thread_id': 'session-1'}
+
+    @pytest.mark.parametrize(
+        "session_event",
+        [
+            {"type": "thread.started", "thread_id": "session-1"},
+            {"type": "session.started", "session_id": "session-1"},
+            {"type": "session_id", "session_id": "session-1"},
+            {"type": "session.created", "thread": {"id": "session-1"}},
+            {"session_id": "session-1"},
+            {"item": {"type": "thread.started", "thread_id": "session-1"}},
+        ],
+    )
+    def test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        session_event: dict[str, object],
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:2542: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar0/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar0/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event1] _
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7831598d7a80>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar1')
+session_event = {'type': 'session.started', 'session_id': 'session-1'}
+
+    @pytest.mark.parametrize(
+        "session_event",
+        [
+            {"type": "thread.started", "thread_id": "session-1"},
+            {"type": "session.started", "session_id": "session-1"},
+            {"type": "session_id", "session_id": "session-1"},
+            {"type": "session.created", "thread": {"id": "session-1"}},
+            {"session_id": "session-1"},
+            {"item": {"type": "thread.started", "thread_id": "session-1"}},
+        ],
+    )
+    def test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        session_event: dict[str, object],
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:2542: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar1/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar1/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event2] _
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7831598d7d20>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar2')
+session_event = {'type': 'session_id', 'session_id': 'session-1'}
+
+    @pytest.mark.parametrize(
+        "session_event",
+        [
+            {"type": "thread.started", "thread_id": "session-1"},
+            {"type": "session.started", "session_id": "session-1"},
+            {"type": "session_id", "session_id": "session-1"},
+            {"type": "session.created", "thread": {"id": "session-1"}},
+            {"session_id": "session-1"},
+            {"item": {"type": "thread.started", "thread_id": "session-1"}},
+        ],
+    )
+    def test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        session_event: dict[str, object],
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:2542: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar2/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar2/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event3] _
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x783159207700>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar3')
+session_event = {'type': 'session.created', 'thread': {'id': 'session-1'}}
+
+    @pytest.mark.parametrize(
+        "session_event",
+        [
+            {"type": "thread.started", "thread_id": "session-1"},
+            {"type": "session.started", "session_id": "session-1"},
+            {"type": "session_id", "session_id": "session-1"},
+            {"type": "session.created", "thread": {"id": "session-1"}},
+            {"session_id": "session-1"},
+            {"item": {"type": "thread.started", "thread_id": "session-1"}},
+        ],
+    )
+    def test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        session_event: dict[str, object],
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:2542: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar3/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar3/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event4] _
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78315962e120>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar4')
+session_event = {'session_id': 'session-1'}
+
+    @pytest.mark.parametrize(
+        "session_event",
+        [
+            {"type": "thread.started", "thread_id": "session-1"},
+            {"type": "session.started", "session_id": "session-1"},
+            {"type": "session_id", "session_id": "session-1"},
+            {"type": "session.created", "thread": {"id": "session-1"}},
+            {"session_id": "session-1"},
+            {"item": {"type": "thread.started", "thread_id": "session-1"}},
+        ],
+    )
+    def test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        session_event: dict[str, object],
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:2542: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar4/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar4/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event5] _
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78315962fd20>
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar5')
+session_event = {'item': {'type': 'thread.started', 'thread_id': 'session-1'}}
+
+    @pytest.mark.parametrize(
+        "session_event",
+        [
+            {"type": "thread.started", "thread_id": "session-1"},
+            {"type": "session.started", "session_id": "session-1"},
+            {"type": "session_id", "session_id": "session-1"},
+            {"type": "session.created", "thread": {"id": "session-1"}},
+            {"session_id": "session-1"},
+            {"item": {"type": "thread.started", "thread_id": "session-1"}},
+        ],
+    )
+    def test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        session_event: dict[str, object],
+    ) -> None:
+        phase_runner = runpy.run_path(str(SCRIPTS / "run_benchmark_phase.py"))
+        runner = _runner()
+>       _contract, inventory, _process = _probe_inventory(tmp_path, monkeypatch)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_execution_authority.py:2542: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_execution_authority.py:813: in _probe_inventory
+    inventory = contract["probe_server_advertised_inventory"](command, workspace)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar5/rob2')
+workspace = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw1/test_continuation_accepts_shar5/workspace')
+
+    def probe_server_advertised_inventory(command: Path, workspace: Path) -> dict[str, object]:
+        """Verify the configured rob2 process advertises the complete frozen MCP surface."""
+    
+        command = command.resolve(strict=True)
+        workspace = workspace.resolve(strict=True)
+        initialize_request = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-03-26",
+                "capabilities": {},
+                "clientInfo": {"name": "rob2-rsi-preflight", "version": "1"},
+            },
+        }
+        initialized_notification = {"jsonrpc": "2.0", "method": "notifications/initialized"}
+        tools_request = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+        environment = os.environ.copy()
+        environment["ROB2_WORKSPACE"] = str(workspace)
+        process: subprocess.Popen[str] | None = None
+        stdout_thread: threading.Thread | None = None
+        stderr_thread: threading.Thread | None = None
+        stderr_lines: list[str] = []
+        stdout_lines: queue.Queue[str | None] = queue.Queue()
+        handshake_deadline = 0.0
+        shutdown_grace_seconds = 5
+        cleanup_status = "graceful_exit"
+        preflight_error: OSError | subprocess.TimeoutExpired | None = None
+    
+        def drain_stdout() -> None:
+            assert process is not None and process.stdout is not None
+            try:
+                for line in process.stdout:
+                    stdout_lines.put(line)
+            except (OSError, ValueError):
+                pass
+            finally:
+                stdout_lines.put(None)
+    
+        def drain_stderr() -> None:
+            assert process is not None and process.stderr is not None
+            try:
+                stderr_lines.extend(process.stderr)
+            except (OSError, ValueError):
+                pass
+    
+        def response_for(request_id: int) -> dict[str, object]:
+            while True:
+                remaining = handshake_deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30)
+                try:
+                    line = stdout_lines.get(timeout=remaining)
+                except queue.Empty as error:
+                    raise subprocess.TimeoutExpired([str(command), "mcp"], 30) from error
+                if line is None:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight exited before its response"
+                        + (f": {detail}" if detail else "")
+                    )
+                try:
+                    message = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(message, dict) and message.get("id") == request_id:
+                    return message
+    
+        try:
+            process = subprocess.Popen(
+                [str(command), "mcp"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+            )
+            handshake_deadline = time.monotonic() + 30
+            stdout_thread = threading.Thread(target=drain_stdout, daemon=True)
+            stderr_thread = threading.Thread(target=drain_stderr, daemon=True)
+            stdout_thread.start()
+            stderr_thread.start()
+    
+            if process.stdin is None:
+                raise ValueError("rob2 MCP tools/list preflight has no stdin pipe")
+            process.stdin.write(json.dumps(initialize_request) + "\n")
+            process.stdin.flush()
+            initialize_response = response_for(1)
+            initialize_value = initialize_response.get("result")
+            initialize_result = initialize_value if isinstance(initialize_value, dict) else None
+    
+            process.stdin.write(
+                "\n".join(
+                    json.dumps(item) for item in (initialized_notification, tools_request)
+                )
+                + "\n"
+            )
+            process.stdin.flush()
+            response = response_for(2)
+            process.stdin.close()
+            try:
+                returncode = process.wait(timeout=shutdown_grace_seconds)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired as error:
+                    raise ValueError(
+                        "rob2 MCP tools/list response was valid, but its probe process "
+                        "could not be reaped after termination"
+                    ) from error
+                cleanup_status = "forced_kill"
+            else:
+                if returncode != 0:
+                    detail = "".join(stderr_lines).strip()[-1000:]
+                    raise ValueError(
+                        "rob2 MCP tools/list preflight failed"
+                        + (f": {detail}" if detail else f" (exit {returncode})")
+                    )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            preflight_error = error
+        finally:
+            if process is not None:
+                if process.stdin is not None and not process.stdin.closed:
+                    try:
+                        process.stdin.close()
+                    except (OSError, ValueError):
+                        pass
+                if process.poll() is None:
+                    try:
+                        process.kill()
+                    except OSError:
+                        pass
+                    try:
+                        process.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        cleanup_status = "kill_timeout"
+                for stream in (process.stdin, process.stdout, process.stderr):
+                    if stream is not None and not stream.closed:
+                        try:
+                            stream.close()
+                        except (OSError, ValueError):
+                            pass
+            for thread in (stdout_thread, stderr_thread):
+                if thread is not None:
+                    thread.join(timeout=1)
+    
+        if preflight_error is not None:
+            detail = "".join(stderr_lines).strip()[-1000:]
+            raise ValueError(
+                f"rob2 MCP tools/list preflight failed: {preflight_error}"
+                + (f"; {detail}" if detail else "")
+            ) from preflight_error
+        if cleanup_status == "kill_timeout":
+            raise ValueError(
+                "rob2 MCP tools/list preflight could not reap its terminated probe process"
+            )
+    
+        result = response.get("result") if isinstance(response, dict) else None
+        tools = result.get("tools") if isinstance(result, dict) else None
+        if not isinstance(tools, list):
+            raise ValueError("rob2 MCP tools/list preflight returned no complete tool catalog")
+    
+        contract = _load_public_contract()
+        expected_tools = contract.get("tools")
+        if not isinstance(expected_tools, list):
+            raise RuntimeError(f"public MCP contract has no tool inventory: {PUBLIC_CONTRACT}")
+    
+        def normalized(tool: object) -> dict[str, object]:
+            if not isinstance(tool, dict):
+                raise ValueError("rob2 MCP tools/list returned a malformed tool entry")
+            annotations = tool.get("annotations")
+            annotations = annotations if isinstance(annotations, dict) else {}
+            input_schema = tool.get("inputSchema")
+            output_schema = tool.get("outputSchema")
+            if not isinstance(input_schema, dict) or not isinstance(output_schema, dict):
+                raise ValueError(
+                    f"rob2 MCP tool {tool.get('name')!r} is missing an input or output schema"
+                )
+            name = tool.get("name")
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError("rob2 MCP tools/list returned a tool without a name")
+            description = tool.get("description")
+            title = tool.get("title")
+            return {
+                "name": name,
+                "title": title.strip() if isinstance(title, str) else "",
+                "description": description.strip() if isinstance(description, str) else "",
+                "read_only": bool(annotations.get("readOnlyHint", False)),
+                "destructive": bool(annotations.get("destructiveHint", False)),
+                "idempotent": bool(annotations.get("idempotentHint", False)),
+                "open_world": annotations.get("openWorldHint"),
+                "schema_sha256": _schema_sha256(input_schema),
+                "output_schema_sha256": _schema_sha256(output_schema),
+            }
+    
+        actual_entries = [normalized(tool) for tool in tools]
+        expected_entries = [dict(item) for item in expected_tools if isinstance(item, dict)]
+        if len(expected_entries) != len(expected_tools):
+            raise RuntimeError(f"public MCP contract contains a malformed tool: {PUBLIC_CONTRACT}")
+        actual_names = [
+            name for item in actual_entries if isinstance((name := item.get("name")), str)
+        ]
+        if len(set(actual_names)) != len(actual_names):
+            raise ValueError("rob2 MCP tools/list returned duplicate tool names")
+        expected_by_name: dict[str, dict[str, object]] = {
+            name: item for item in expected_entries if isinstance((name := item.get("name")), str)
+        }
+        actual_by_name: dict[str, dict[str, object]] = {
+            name: item for item in actual_entries if isinstance((name := item.get("name")), str)
+        }
+        differences: list[str] = []
+        for name in sorted(set(expected_by_name) | set(actual_by_name)):
+            if name not in expected_by_name:
+                differences.append(f"unexpected tool {name}")
+            elif name not in actual_by_name:
+                differences.append(f"missing tool {name}")
+            else:
+                for field in expected_by_name[name]:
+                    if actual_by_name[name].get(field) != expected_by_name[name].get(field):
+                        differences.append(f"{name}.{field}")
+        if differences:
+>           raise ValueError(
+                "rob2 MCP tools/list differs from the frozen public contract: "
+                + ", ".join(differences[:24])
+            )
+E           ValueError: rob2 MCP tools/list differs from the frozen public contract: validate_proposal.schema_sha256
+
+scripts/benchmark_contract.py:867: ValueError
+_ test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[yes-probably_yes-The sequence was described as apparently random, but the report did not provide enough detail for a definitive judgment.] _
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_probable_answers_accept_l0')
+probable_answer = 'probably_yes'
+circumstance = 'The sequence was described as apparently random, but the report did not provide enough detail for a definitive judgment.'
+firm_answer = 'yes'
+
+    @pytest.mark.parametrize(
+        ("probable_answer", "circumstance"),
+        [
+            (
+                "probably_yes",
+                "The sequence was described as apparently random, but the report did not "
+                "provide enough detail for a definitive judgment.",
+            ),
+            (
+                "probably_no",
+                "The sequence was described as apparently predictable rather than random, "
+                "but the report did not provide enough detail for a definitive judgment.",
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("firm_answer", ["yes", "no"])
+    def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence(
+        tmp_path: Path,
+        probable_answer: str,
+        circumstance: str,
+        firm_answer: str,
+    ) -> None:
+        workspace, _evidence, revision = _assessment_workspace(tmp_path)
+        receipt = _call(
+            workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+        )["data"]["search_receipt"]
+        probable = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
+        probable["answers"][0]["answer"] = _answer_value("sq:randomization:sequence", probable_answer)
+        probable["answers"][0]["bases"] = [
+            {
+                "kind": "limitation",
+                "unresolved_premise": circumstance,
+                "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
+                "search_receipt": receipt,
+            }
+        ]
+        accepted = _call(workspace, "save_domain_judgment", probable)
+        assert accepted["outcome"] == "success", accepted
+    
+        firm = _domain_draft(
+            "trial",
+            "domain:deviations",
+            accepted["head"]["state_revision"],
+            search_receipt=receipt,
+        )
+        firm["answers"][0]["answer"] = _answer_value("sq:deviations:participants-aware", firm_answer)
+        repaired = _call_raw(workspace, firm)
+>       _assert_repairs(repaired)
+
+tests/test_domain_boundary_repairs.py:1430: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 5, 'next_action': {'operation': 'get_domain_co...while a required premise is unresolved; use a probable answer or resolve the limitation first.', 'answer_path': None}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(set(item) == {"path", "code", "detail"} for item in receipt["repairs"])
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b96798040>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+_ test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[yes-probably_no-The sequence was described as apparently predictable rather than random, but the report did not provide enough detail for a definitive judgment.] _
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_probable_answers_accept_l1')
+probable_answer = 'probably_no'
+circumstance = 'The sequence was described as apparently predictable rather than random, but the report did not provide enough detail for a definitive judgment.'
+firm_answer = 'yes'
+
+    @pytest.mark.parametrize(
+        ("probable_answer", "circumstance"),
+        [
+            (
+                "probably_yes",
+                "The sequence was described as apparently random, but the report did not "
+                "provide enough detail for a definitive judgment.",
+            ),
+            (
+                "probably_no",
+                "The sequence was described as apparently predictable rather than random, "
+                "but the report did not provide enough detail for a definitive judgment.",
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("firm_answer", ["yes", "no"])
+    def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence(
+        tmp_path: Path,
+        probable_answer: str,
+        circumstance: str,
+        firm_answer: str,
+    ) -> None:
+        workspace, _evidence, revision = _assessment_workspace(tmp_path)
+        receipt = _call(
+            workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+        )["data"]["search_receipt"]
+        probable = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
+        probable["answers"][0]["answer"] = _answer_value("sq:randomization:sequence", probable_answer)
+        probable["answers"][0]["bases"] = [
+            {
+                "kind": "limitation",
+                "unresolved_premise": circumstance,
+                "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
+                "search_receipt": receipt,
+            }
+        ]
+        accepted = _call(workspace, "save_domain_judgment", probable)
+        assert accepted["outcome"] == "success", accepted
+    
+        firm = _domain_draft(
+            "trial",
+            "domain:deviations",
+            accepted["head"]["state_revision"],
+            search_receipt=receipt,
+        )
+        firm["answers"][0]["answer"] = _answer_value("sq:deviations:participants-aware", firm_answer)
+        repaired = _call_raw(workspace, firm)
+>       _assert_repairs(repaired)
+
+tests/test_domain_boundary_repairs.py:1430: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 5, 'next_action': {'operation': 'get_domain_co...while a required premise is unresolved; use a probable answer or resolve the limitation first.', 'answer_path': None}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(set(item) == {"path", "code", "detail"} for item in receipt["repairs"])
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b964b0790>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+_ test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[no-probably_yes-The sequence was described as apparently random, but the report did not provide enough detail for a definitive judgment.] _
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_probable_answers_accept_l2')
+probable_answer = 'probably_yes'
+circumstance = 'The sequence was described as apparently random, but the report did not provide enough detail for a definitive judgment.'
+firm_answer = 'no'
+
+    @pytest.mark.parametrize(
+        ("probable_answer", "circumstance"),
+        [
+            (
+                "probably_yes",
+                "The sequence was described as apparently random, but the report did not "
+                "provide enough detail for a definitive judgment.",
+            ),
+            (
+                "probably_no",
+                "The sequence was described as apparently predictable rather than random, "
+                "but the report did not provide enough detail for a definitive judgment.",
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("firm_answer", ["yes", "no"])
+    def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence(
+        tmp_path: Path,
+        probable_answer: str,
+        circumstance: str,
+        firm_answer: str,
+    ) -> None:
+        workspace, _evidence, revision = _assessment_workspace(tmp_path)
+        receipt = _call(
+            workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+        )["data"]["search_receipt"]
+        probable = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
+        probable["answers"][0]["answer"] = _answer_value("sq:randomization:sequence", probable_answer)
+        probable["answers"][0]["bases"] = [
+            {
+                "kind": "limitation",
+                "unresolved_premise": circumstance,
+                "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
+                "search_receipt": receipt,
+            }
+        ]
+        accepted = _call(workspace, "save_domain_judgment", probable)
+        assert accepted["outcome"] == "success", accepted
+    
+        firm = _domain_draft(
+            "trial",
+            "domain:deviations",
+            accepted["head"]["state_revision"],
+            search_receipt=receipt,
+        )
+        firm["answers"][0]["answer"] = _answer_value("sq:deviations:participants-aware", firm_answer)
+        repaired = _call_raw(workspace, firm)
+>       _assert_repairs(repaired)
+
+tests/test_domain_boundary_repairs.py:1430: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 5, 'next_action': {'operation': 'get_domain_co...while a required premise is unresolved; use a probable answer or resolve the limitation first.', 'answer_path': None}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(set(item) == {"path", "code", "detail"} for item in receipt["repairs"])
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b978185f0>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+_ test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[no-probably_no-The sequence was described as apparently predictable rather than random, but the report did not provide enough detail for a definitive judgment.] _
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_probable_answers_accept_l3')
+probable_answer = 'probably_no'
+circumstance = 'The sequence was described as apparently predictable rather than random, but the report did not provide enough detail for a definitive judgment.'
+firm_answer = 'no'
+
+    @pytest.mark.parametrize(
+        ("probable_answer", "circumstance"),
+        [
+            (
+                "probably_yes",
+                "The sequence was described as apparently random, but the report did not "
+                "provide enough detail for a definitive judgment.",
+            ),
+            (
+                "probably_no",
+                "The sequence was described as apparently predictable rather than random, "
+                "but the report did not provide enough detail for a definitive judgment.",
+            ),
+        ],
+    )
+    @pytest.mark.parametrize("firm_answer", ["yes", "no"])
+    def test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence(
+        tmp_path: Path,
+        probable_answer: str,
+        circumstance: str,
+        firm_answer: str,
+    ) -> None:
+        workspace, _evidence, revision = _assessment_workspace(tmp_path)
+        receipt = _call(
+            workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+        )["data"]["search_receipt"]
+        probable = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
+        probable["answers"][0]["answer"] = _answer_value("sq:randomization:sequence", probable_answer)
+        probable["answers"][0]["bases"] = [
+            {
+                "kind": "limitation",
+                "unresolved_premise": circumstance,
+                "stopping_rationale": "The relevant retrieved material does not resolve this premise.",
+                "search_receipt": receipt,
+            }
+        ]
+        accepted = _call(workspace, "save_domain_judgment", probable)
+        assert accepted["outcome"] == "success", accepted
+    
+        firm = _domain_draft(
+            "trial",
+            "domain:deviations",
+            accepted["head"]["state_revision"],
+            search_receipt=receipt,
+        )
+        firm["answers"][0]["answer"] = _answer_value("sq:deviations:participants-aware", firm_answer)
+        repaired = _call_raw(workspace, firm)
+>       _assert_repairs(repaired)
+
+tests/test_domain_boundary_repairs.py:1430: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 5, 'next_action': {'operation': 'get_domain_co...while a required premise is unresolved; use a probable answer or resolve the limitation first.', 'answer_path': None}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(set(item) == {"path", "code", "detail"} for item in receipt["repairs"])
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b95dd5490>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+______________ test_copied_search_receipt_typo_gets_scoped_repair ______________
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_copied_search_receipt_typ0')
+
+>   ???
+
+tests/test_domain_boundary_repairs.py:1738: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 4, 'next_action': {'operation': 'get_domain_co...e returned by the scoped search for this question; do not reuse a stale or mismatched receipt.", 'answer_path': None}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(
+            set(item) == {"path", "code", "detail", "answer_path"} for item in receipt["repairs"]
+        )
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b95a8cc70>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+____________ test_domain_rejects_truncated_search_as_absence_basis _____________
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_domain_rejects_truncated_0')
+
+        assert "exact search_receipt handle" in repair["detail"]
+    
+    
+    def test_domain_rejects_truncated_search_as_absence_basis(tmp_path: Path) -> None:
+        workspace = _workspace(tmp_path)
+        pdf = pymupdf.open()
+        for _ in range(2):
+            page = pdf.new_page()
+            page.insert_text((72, 72), "rare absence candidate")
+        (workspace / "input" / "trial" / "repeated.pdf").write_bytes(pdf.tobytes())
+        pdf.close()
+    
+        evidence = _prepared_evidence(workspace)
+        _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+        _review(workspace)
+        _read_required_main_reports(workspace)
+        revision = int(_call(workspace, "get_domain_context", {})["head"]["state_revision"])
+        search = _call(
+            workspace,
+            "search_sources",
+            {"trial_id": "trial", "query": "rare absence candidate", "mode": "any", "limit": 1},
+        )
+        assert search["data"]["truncated"] is True
+        draft = _domain_draft(
+            "trial", "domain:randomization", revision, search_receipt=search["data"]["search_receipt"]
+        )
+        draft["answers"][0]["bases"] = [
+>           {"kind": "absence", "search_receipt": search["data"]["search_receipt"]}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+        ]
+
+tests/test_domain_boundary_repairs.py:1771: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 4, 'next_action': {'operation': 'get_domain_co...e returned by the scoped search for this question; do not reuse a stale or mismatched receipt.", 'answer_path': None}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(
+            set(item) == {"path", "code", "detail", "answer_path"} for item in receipt["repairs"]
+        )
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b95993e00>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+____ test_domain_duplicate_nested_basis_is_repaired_without_mutating_state _____
+[gw0] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-60/popen-gw0/test_domain_duplicate_nested_b0')
+
+        assert accepted["outcome"] == "success", accepted
+    
+    
+    def test_domain_duplicate_nested_basis_is_repaired_without_mutating_state(tmp_path: Path) -> None:
+        workspace, evidence, revision = _assessment_workspace(tmp_path)
+        receipt = _call(
+            workspace, "search_sources", {"trial_id": "trial", "query": "not-in-source", "mode": "any"}
+        )["data"]["search_receipt"]
+        draft = _domain_draft("trial", "domain:randomization", revision, search_receipt=receipt)
+        use = {
+            "kind": "direct_support",
+            "evidence": evidence["handle"],
+>       }
+
+tests/test_domain_boundary_repairs.py:1808: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receipt = {'outcome': 'repair', 'head': {'phase': 'assessment', 'state_revision': 4, 'next_action': {'operation': 'get_domain_co...icate_answer_basis', 'detail': 'each answer basis must be unique within its question response.', 'answer_path': None}]}
+
+    def _assert_repairs(receipt: dict[str, Any]) -> None:
+        assert receipt["outcome"] == "repair"
+>       assert all(
+            set(item) == {"path", "code", "detail", "answer_path"} for item in receipt["repairs"]
+        )
+E       assert False
+E        +  where False = all(<generator object _assert_repairs.<locals>.<genexpr> at 0x7d6b976f9490>)
+
+tests/test_domain_boundary_repairs.py:279: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_domain_boundary_repairs.py::test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss[context]
+FAILED tests/test_assessment_lifecycle.py::test_batch_domains_cannot_advance_a_later_trial
+FAILED tests/test_domain_boundary_repairs.py::test_domain_context_result_projection_omits_canonical_bindings
+FAILED tests/test_domain_boundary_repairs.py::test_domain_rejects_unknown_answer_question
+FAILED tests/test_execution_authority.py::test_tools_list_preflight_checks_schemas_and_metadata
+FAILED tests/test_execution_authority.py::test_continuation_requires_matching_server_preflight_not_a_jsonl_event
+FAILED tests/test_execution_authority.py::test_continuation_requires_hash_bound_same_session_typed_calls
+FAILED tests/test_execution_authority.py::test_continuation_accepts_null_initial_session_argument_when_session_is_bound
+FAILED tests/test_execution_authority.py::test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event0]
+FAILED tests/test_execution_authority.py::test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event1]
+FAILED tests/test_execution_authority.py::test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event2]
+FAILED tests/test_execution_authority.py::test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event3]
+FAILED tests/test_execution_authority.py::test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event4]
+FAILED tests/test_execution_authority.py::test_continuation_accepts_shared_legacy_session_envelopes_with_typed_calls[session_event5]
+FAILED tests/test_domain_boundary_repairs.py::test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[yes-probably_yes-The sequence was described as apparently random, but the report did not provide enough detail for a definitive judgment.]
+FAILED tests/test_domain_boundary_repairs.py::test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[yes-probably_no-The sequence was described as apparently predictable rather than random, but the report did not provide enough detail for a definitive judgment.]
+FAILED tests/test_domain_boundary_repairs.py::test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[no-probably_yes-The sequence was described as apparently random, but the report did not provide enough detail for a definitive judgment.]
+FAILED tests/test_domain_boundary_repairs.py::test_probable_answers_accept_limitation_but_firm_answers_require_direct_evidence[no-probably_no-The sequence was described as apparently predictable rather than random, but the report did not provide enough detail for a definitive judgment.]
+FAILED tests/test_domain_boundary_repairs.py::test_copied_search_receipt_typo_gets_scoped_repair
+FAILED tests/test_domain_boundary_repairs.py::test_domain_rejects_truncated_search_as_absence_basis
+FAILED tests/test_domain_boundary_repairs.py::test_domain_duplicate_nested_basis_is_repaired_without_mutating_state
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/ali/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/threading.py:363: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+21 failed, 659 passed, 4 skipped in 907.66s (0:15:07)

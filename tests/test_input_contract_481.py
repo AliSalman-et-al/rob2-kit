@@ -29,7 +29,9 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
     assert public_tool.input_schema == local_tool.parameters
 
     schema = public_tool.input_schema
-    counterevidence_shape = schema["$defs"]["DomainCounterpoint"]
+    counterevidence_shape = schema["properties"]["answers"]["items"]["properties"][
+        "counterevidence"
+    ]["items"]
     assert set(counterevidence_shape["required"]) == {"evidence", "implication"}
     assert counterevidence_shape["properties"]["evidence"]["items"]["type"] == "string"
     assert counterevidence_shape["properties"]["implication"]["type"] == "string"
@@ -61,11 +63,11 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
 @pytest.mark.parametrize(
     ("shape", "expected_error"),
     [
-        ("obsolete_kind", "literal_error"),
-        ("scalar_counterevidence", "DomainCounterpoint"),
-        ("identity_as_handle", "string_pattern_mismatch"),
-        ("array_evidence", "string_type"),
-        ("array_revision_evidence", "revision_basis.new_evidence.evidence"),
+        ("obsolete_kind", "/answers/0/bases/0/evidence"),
+        ("scalar_counterevidence", "/answers/0/counterevidence/0"),
+        ("identity_as_handle", "/answers/0/bases/0/evidence"),
+        ("array_evidence", "/answers/0/bases/0/evidence"),
+        ("array_revision_evidence", "/revision_basis/new_evidence/evidence"),
     ],
 )
 def test_observed_domain_shapes_fail_at_public_boundary_without_state_change(
@@ -140,5 +142,5 @@ def test_obsolete_proposal_discriminator_fails_at_public_boundary_without_state_
     error = result.content[0].text
     assert result.is_error is True
     assert result.structured_content is None
-    assert "union_tag_invalid" in error
+    assert "invalid_proposal_arguments" in error
     assert _state(workspace) == before

@@ -276,7 +276,9 @@ def _stored_checkpoint(workspace: Path, domain_id: str = "domain:randomization")
 
 def _assert_repairs(receipt: dict[str, Any]) -> None:
     assert receipt["outcome"] == "repair"
-    assert all(set(item) == {"path", "code", "detail"} for item in receipt["repairs"])
+    assert all(
+        set(item) == {"path", "code", "detail", "answer_path"} for item in receipt["repairs"]
+    )
 
 
 def test_domain_public_shape_is_flat_and_closed() -> None:
@@ -701,9 +703,10 @@ def test_domain_context_recovers_prior_checkpoint_evidence_after_cache_loss(
     for answer in context["answers"]:
         assert answer["counterevidence"] == [
             {
-                "basis_index": counter_index,
+                "basis_index": index,
                 "implication": "This passage limits certainty in the answer.",
             }
+            for index in range(counter_index + 1)
         ]
         assert answer["bases"][counter_index]["kind"] == counter_kind
         assert answer["bases"][counter_index]["evidence"] == domain_evidence["identity"]
@@ -1289,8 +1292,8 @@ def test_domain_context_result_projection_omits_canonical_bindings(tmp_path: Pat
     assert set(result["evidence"][0]) == {"kind", "handle", "identity"}
     assert "alternatives" not in result
     assert (
-        "Ground each active proposition and its uncertainty in inspected Evidence or bounded "
-        "discovery" in data["completion_rule"]
+        "Ground each active proposition and uncertainty in inspected Evidence, scoped search "
+        "receipts, or an explicit scientific limitation" in data["completion_rule"]
     )
     assert any("protocol or SAP" in item for item in data["guidance"])
     assert any("does not by itself prove" in item for item in data["traps"])

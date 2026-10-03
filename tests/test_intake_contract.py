@@ -798,7 +798,8 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert "Draft every active question in the dependency-closed path" in instructions
     assert "Include an inactive answer when it is already available" in instructions
     assert "For 5.3, identify both the eligible alternatives" in instructions
-    assert '"kind": "quantified"' in instructions
+    assert '"target_time_value": "15"' in instructions
+    assert '"target_time_unit": "days"' in instructions
     assert '"15 days after randomization"' in instructions
     assert "Trial ready for review" in instructions
     assert "`ready_to_finalize` is not completion" in instructions

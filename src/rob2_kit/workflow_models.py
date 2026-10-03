@@ -1733,13 +1733,15 @@ class ProposedReportedResult(StrictModel):
         min_length=2, description="Complete target randomized-arm identifiers and assignments."
     )
     baseline_subgroup: NonBlankText | None = Field(
-        description="Baseline-defined target subgroup, or null for all randomized participants."
+        description="Baseline-defined target subgroup, or null for all randomized participants "
+        "in this Trial; enrollment eligibility alone does not narrow that Trial target."
     )
     intended_effect_measure: NonBlankText = Field(
         description="Target effect measure, which can differ from the selected reported measure."
     )
     reported_outcome: NonBlankText = Field(
-        description="Literal source endpoint label for this reported candidate."
+        description="Literal endpoint label from this candidate's quantitative source anchor; "
+        "put interpreted equivalence or separately sourced endpoint criteria in scope_rationale."
     )
     reported_definition: NonBlankText | None = Field(
         default=None,
@@ -1759,7 +1761,8 @@ class ProposedReportedResult(StrictModel):
     )
     precision: NonBlankText | None = Field(
         default=None,
-        description="Optional source-reported interval or precision string for this same estimate.",
+        description="Optional verbatim source interval expression for this estimate, preserving "
+        "confidence level and units when stated; interpreted meaning belongs in scope_rationale.",
     )
     group_values: tuple[GroupResultValue, ...] = Field(
         default=(),

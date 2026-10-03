@@ -3533,6 +3533,8 @@ def select_visual_evidence(
         "selection. Compare outcome definition, reported model window, estimand and population "
         "separately; numeric correspondence does not establish exactness. Preserve the target "
         "window and distinguish eligibility from analysis exclusions or missing observations. "
+        "Enrollment eligibility alone does not narrow an all-randomized target in this Trial; "
+        "external generalizability is separate. "
         "Candidate estimate/precision are source strings. Group values require group_id, value "
         "and unit; statistic is optional and unresolved when omitted. Timing value/unit must "
         "be supplied together. Exact requires all eight clarity facets explicitly specified; "

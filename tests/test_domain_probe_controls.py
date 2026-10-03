@@ -149,7 +149,7 @@ def test_probe_uses_direct_mcp_without_changing_model_or_access(controls, tmp_pa
 
 
 def test_recorded_context_replays_losslessly_with_bounded_pages(controls) -> None:
-    from replay_domain_probe_delivery import replay
+    replay = importlib.import_module("replay_domain_probe_delivery").replay
 
     path = (
         Path(__file__).parents[1]

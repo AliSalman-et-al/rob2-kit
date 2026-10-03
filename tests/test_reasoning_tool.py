@@ -10,6 +10,7 @@ from typing import Any
 
 import pytest
 from fastmcp import Client
+from fastmcp.exceptions import ToolError
 from pydantic import ValidationError
 from support.rob2 import (
     _assessment_workspace,
@@ -100,6 +101,7 @@ def test_proposal_reasoning_reports_unknown_evidence_handle(tmp_path: Path) -> N
             "path": "/assessments/0/evidence_basis/0",
             "code": "unknown_evidence_handle",
             "detail": "Reasoning Evidence handle must resolve to selected material.",
+            "answer_path": None,
         }
     ]
 
@@ -160,6 +162,7 @@ def test_proposal_reasoning_reports_cross_trial_evidence_handle(tmp_path: Path) 
             "path": "/assessments/0/evidence_basis/0",
             "code": "cross_trial_evidence",
             "detail": "Reasoning Evidence must resolve to selected material from this Trial.",
+            "answer_path": None,
         }
     ]
 
@@ -186,6 +189,7 @@ def test_proposal_reasoning_reports_unknown_counterevidence_handle(tmp_path: Pat
             "path": "/assessments/0/counterevidence/0/evidence",
             "code": "unknown_counterevidence_handle",
             "detail": "Counterevidence handle must resolve to selected material.",
+            "answer_path": None,
         }
     ]
 
@@ -263,10 +267,8 @@ def test_invalid_domain_reasoning_repairs_without_canonical_mutation(tmp_path: P
     draft = _reasoning_draft_for_evidence(revision, evidence)
     del draft["answers"][0]["unknowns"]
 
-    result = _call(workspace, "save_domain_judgment", draft)
-
-    assert result["outcome"] == "repair", result
-    assert any(item["code"] == "unknowns_required" for item in result["repairs"])
+    with pytest.raises(ToolError, match="/answers/0/unknowns"):
+        _call(workspace, "save_domain_judgment", draft)
     after = _state(workspace)
     assert after["revision"] == before["revision"]
     assert after.get("domain_records", {}) == before.get("domain_records", {})

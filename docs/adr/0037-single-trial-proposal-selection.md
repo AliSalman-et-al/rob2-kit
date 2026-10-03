@@ -21,3 +21,9 @@ Hosts construct one scientific choice rather than coordinate duplicate record co
 This reduces input obligations and branch-placement ambiguity, not model calls or guaranteed accuracy. The declaration includes fuller field descriptions and is slightly larger than the prior declaration; schema bytes are not inference usage. Existing hosts must use the new shape. Canonical historical verification does not require keeping old public input contracts alive.
 
 This amends the proposal input portion of ADR0031; ADR0030's researcher gate and ADR0036's atomic Domain submission and separate proposal validation/save remain in force.
+
+## Source labels and population correspondence
+
+`candidate.reported_outcome` is the existing raw quantitative-anchor endpoint label and `candidate.precision` preserves the source interval expression. Interpreted equivalence and separately sourced endpoint criteria belong in scope rationale, not a second raw-label field. Target measurement/window and analysis-population reasoning remain interpreted prose. Binding failure establishes a missing literal proof, not incorrect scientific meaning. Repair details name the public fields while canonical paths remain unchanged.
+
+With no baseline subgroup the target is all randomized participants in the Trial. Enrollment eligibility alone does not make an all-randomized analysis narrower than that Trial target. External generalizability is separate; a broader population target must be explicitly established. The server does not infer the scope relation.
