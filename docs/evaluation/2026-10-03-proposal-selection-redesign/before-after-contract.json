@@ -1,0 +1,19 @@
+{
+  "before_public_contract": "0.10.0",
+  "after_public_contract": "0.11.0",
+  "before_required_arguments": [
+    "results",
+    "assessments",
+    "expected_revision"
+  ],
+  "after_required_arguments": [
+    "selections",
+    "expected_revision"
+  ],
+  "before_declaration_bytes": 34721,
+  "after_declaration_bytes": 35455,
+  "source_only_model_calls": 0,
+  "scope_inference_added": false,
+  "canonical_or_verifier_format_changed": false,
+  "historical_public_aliases_added": false
+}

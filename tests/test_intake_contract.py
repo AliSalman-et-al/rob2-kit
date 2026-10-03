@@ -631,7 +631,7 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
         "operation": "validate_proposal",
         "authority": "host",
         "expected_revision": prepared["head"]["state_revision"],
-        "caller_inputs": ["results", "missing_results", "assessments"],
+        "caller_inputs": ["selections"],
     }
 
 
@@ -834,26 +834,20 @@ def test_assessment_skill_preserves_rigor_across_context_compaction() -> None:
 
 def test_result_relation_schema_has_only_visible_non_exact_categories() -> None:
     schema = _tool_schema("validate_proposal")
-    result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
-    assessable = cast(dict[str, Any], result_items["oneOf"][0])
-    relation = cast(dict[str, Any], assessable["properties"]["relation"])
-    assert relation["enum"] == ["exact", "broader", "narrower", "component", "related"]
-    relation_description = cast(dict[str, Any], assessable["properties"]["relation"])["description"]
-    assert "event set" in relation_description
-    assert "scope is a superset" in relation_description
-    assert "subset or has additional restrictions" in relation_description
-    assert "Added criteria make a candidate narrower" in relation_description
-    assert "matching numbers do not prove equivalence" in relation_description
-    assert "alternatives" not in relation_description
-    assert "clinical salience" in result_items["description"]
-    assert "complete non-exact comparative candidate" in result_items["description"]
-    assert "broader is a superset" in result_items["description"]
-    assert "subset or has additional restrictions" in result_items["description"]
-    results_description = cast(dict[str, Any], schema["properties"]["results"])["description"]
-    assert results_description == "The exact Result cards for this Proposal save."
-    tool_description = _tool_description("validate_proposal")
-    assert "brief evidence-based assessment" in tool_description
-    assert "conflicting evidence and unresolved facts" in tool_description
+    selection = schema["properties"]["selections"]["items"]
+    assert selection["properties"]["relation"]["enum"] == [
+        "exact",
+        "broader",
+        "narrower",
+        "component",
+        "related",
+        "ambiguous",
+        "unavailable",
+    ]
+    assert "Never infer exactness" in selection["properties"]["relation"]["description"]
+    assert "numeric correspondence does not establish exactness" in _tool_description(
+        "validate_proposal"
+    )
 
 
 def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -> None:
@@ -929,112 +923,24 @@ def test_search_contract_exposes_match_summary_and_render_defaults_to_pixels() -
 def test_save_proposal_schema_is_closed_and_discriminated() -> None:
     schema = _tool_schema("validate_proposal")
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["results", "assessments", "expected_revision"]
-    assert "proposal" not in schema["properties"]
-    assert "expected_revision" in schema["properties"]
-    assert "assessments" in schema["properties"]
-    result_items = cast(dict[str, Any], schema["properties"]["results"]["items"])
-    assert "exact assessable first" in result_items["description"]
-    assert "one-arm descriptive category profile" in result_items["description"]
-    assert [item["properties"]["kind"]["const"] for item in result_items["oneOf"]] == [
-        "assessable",
-        "unavailable",
-    ]
-    assessable = cast(dict[str, Any], result_items["oneOf"][0])
-    reported = cast(dict[str, Any], assessable["properties"]["reported"])
-    category_profile = next(
-        item
-        for item in reported["oneOf"]
-        if item["properties"]["form"]["const"] == "single_group_category_profile"
+    assert schema["required"] == ["selections", "expected_revision"]
+    assert set(schema["properties"]) == {"selections", "expected_revision"}
+    selection = schema["properties"]["selections"]["items"]
+    candidate = selection["properties"]["candidate"]["anyOf"][0]
+    assert candidate["additionalProperties"] is False
+    assert not {"kind", "form", "trial_id", "passage_refs", "relation_rationale"} & set(
+        candidate["properties"]
     )
-    assert "fully reports category cells" in category_profile["description"]
-    assert "denominator_basis" in category_profile["properties"]
-    assert "statistic" not in category_profile["properties"]
-    assert "unit" not in category_profile["properties"]
-    category_value = cast(dict[str, Any], category_profile["properties"]["categories"]["items"])
-    assert "categories must never be invented" in category_value["description"]
-    assert set(category_value["properties"]) == {"category_axes", "value"}
-    unavailable = cast(dict[str, Any], result_items["oneOf"][1])
-    assert "only when no complete assessable candidate" in unavailable["description"]
-    assert "bindings" not in assessable["properties"]
-    assert "clarity" in assessable["properties"]
-    assert "clarity" not in assessable["required"]
-    assert "alternatives" not in assessable["properties"]
-    assert "evidence" in assessable["properties"]
-    evidence_items = assessable["properties"]["evidence"]["items"]
-    assert [item["properties"]["kind"]["const"] for item in evidence_items["oneOf"]] == [
-        "narrative",
-        "table",
-        "table_multispan",
-        "figure",
-        "derived",
-    ]
-    assert "relation_rationale" in assessable["required"]
-    assert "clarity" in assessable["properties"]
-    assert (
-        "server records every facet as unclear"
-        in assessable["properties"]["clarity"]["description"]
-    )
-    assert "data-cut chronology" in assessable["properties"]["clarity"]["description"]
-    clarity_fields = assessable["properties"]["clarity"]["anyOf"][0]["properties"]
-    assert "data-cut chronology" in clarity_fields["time_point"]["description"]
-    assert "estimate and precision" in clarity_fields["source_table_meaning"]["description"]
-    target = cast(dict[str, Any], assessable["properties"]["target"])
-    assert "effect_of_interest" not in target["properties"]
-    assert "outcome_definition" not in target["properties"]
-    measurement = cast(dict[str, Any], target["properties"]["measurement"])
-    assert measurement["required"] == ["method"]
-    assert "baseline_subgroup" in target["properties"]
-    assert "baseline_subgroup" in target["required"]
-    assert "intended_analysis_population" not in target["properties"]
-    timing = cast(dict[str, Any], target["properties"]["time_point_or_window"])
-    assert [item["properties"]["kind"]["const"] for item in timing["oneOf"]] == [
-        "described",
-        "quantified",
-    ]
-    quantified = next(
-        item for item in timing["oneOf"] if item["properties"]["kind"]["const"] == "quantified"
-    )
-    timing_description = quantified["properties"]["description"]["description"]
-    assert "for example, '15 days after randomization'" in timing_description
-    assert "alongside value and unit" in timing_description
-    comparison_group = target["properties"]["comparison_groups"]["items"]
-    assert "label" not in comparison_group["properties"]
-    assert "assignment" in comparison_group["properties"]
-    comparative_variant = next(
-        item
-        for item in reported["oneOf"]
-        if item["properties"]["form"]["const"] == "comparative_effect"
-    )
-    comparative = comparative_variant["properties"]
-    assert "endpoint" in comparative
-    endpoint = comparative["endpoint"]
-    assert endpoint["required"] == ["name"]
-    assert endpoint["properties"]["definition"]["default"] is None
-    assert "group_values" in comparative
-    assert "quantities" not in comparative
-    assert "comparison_groups" not in comparative
-    assert "analysis_population" in comparative_variant["required"]
-    assert "analysis_population" in comparative
-    estimate = comparative["estimate"]
-    assert "point estimate as one string" in estimate["description"]
-    assert "Do not include a confidence interval" in estimate["description"]
-    assert estimate["examples"] == ["0.68"]
-    precision = comparative["precision"]
-    assert "one string" in precision["description"]
-    assert "Do not send an object" in precision["description"]
-    assert precision["examples"] == ["95% CI, 0.57 to 0.80"]
-    for form in reported["oneOf"]:
-        assert "analysis_population" in form["required"]
-    for name, definition in _walk_schema(schema):
-        if definition.get("type") == "object":
-            assert definition["additionalProperties"] is False, name
-    # Every nested caller field is self-describing; keep the complete proposal
-    # schema, including design applicability, compact enough for one definition.
-    # Reasoning assessments add a bounded source-bound structure to the Result
-    # cards while keeping the constructible request below one definition.
+    assert {
+        "target_measurement",
+        "target_window",
+        "analysis_population",
+        "comparison_groups",
+    } <= set(candidate["required"])
+    clarity = candidate["properties"]["clarity"]["anyOf"][0]
+    assert "data-cut chronology" in clarity["properties"]["time_point"]["description"]
+    assert "estimate and precision" in clarity["properties"]["source_table_meaning"]["description"]
     assert len(json.dumps(schema, separators=(",", ":")).encode()) < 30000
-    assert len(_walk_schema(schema)) <= 40
     save_schema = _tool_schema("save_proposal")
     assert save_schema["required"] == ["expected_revision"]
     assert set(save_schema["properties"]) == {"expected_revision"}

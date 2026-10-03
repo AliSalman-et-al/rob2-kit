@@ -93,7 +93,6 @@ from rob2_kit.application.trials import review_trial as _review_trial
 from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
-    ComparisonGroup,
     DomainId,
     DomainRevisionBasis,
     DomainSaveAnswer,
@@ -101,21 +100,18 @@ from rob2_kit.workflow_models import (
     GroupResultValue,
     Identity,
     MissingDataRow,
-    MissingResultProposal,
     NormalizedCoordinate,
     PageNumber,
     ProposalDraft,
-    ProposalReasoningAssessment,
+    ProposalSelection,
     QuestionId,
     ResultClarity,
-    ResultProposal,
     SourceHandle,
     StrictModel,
     TerminalRequest,
     TrialClosureRequest,
     TrialId,
     TrialReviewRequest,
-    UnavailableMissingFactDraft,
     VisualTranscription,
     WorkingCheckpointDraft,
 )
@@ -176,11 +172,7 @@ def _construction_schema(
 def _proposal_argument_feedback(error: ValidationError) -> str:
     """Bounded grammar repair for the chosen typed records, without input echo."""
     errors = error.errors(include_url=False, include_input=False)
-    models = {
-        "results": ResultProposal,
-        "missing_results": MissingResultProposal,
-        "assessments": ProposalReasoningAssessment,
-    }
+    models = {"selections": ProposalSelection}
     roots = {item["loc"][0] for item in errors if item["loc"]}
     required = {
         name: list(model.model_json_schema().get("required", []))
@@ -208,45 +200,22 @@ def _proposal_argument_feedback(error: ValidationError) -> str:
                 defect["missing_fields"].append(field)
     defects = list(grouped.values())[:8]
     syntax = {}
-    if "results" in roots:
+    if "selections" in roots:
         syntax = {
-            "comparison_groups[]": _construction_schema(ComparisonGroup),
-            "clarity": {
+            "source_passages[]": "selected handle string",
+            "candidate.group_values[]": _construction_schema(GroupResultValue),
+            "candidate.clarity": {
                 "required": list(ResultClarity.model_fields),
-                "each_value": _construction_schema(ResultClarity)["properties"][
-                    "outcome_definition"
-                ]["enum"],
+                "each_value": ["specified", "unclear", "unavailable", "conflicting"],
             },
-            "group_values[]": _construction_schema(GroupResultValue),
-            "passage_refs[]": "selected handle string",
-            "design_evidence[]": "selected handle string",
-            "evidence[]": "Advanced table/derived proof objects only; selected narrative/figure "
-            "handles belong in passage_refs, not evidence.",
-            "estimate/precision/effect_measure": "source strings; not numeric objects",
         }
-    if "assessments" in roots:
-        syntax["assessments[].evidence_basis[]"] = "selected handle string"
-        syntax["assessments[].counterevidence"] = "array, including [] when none; not null"
-    requirements = []
-    if "results" in roots:
-        requirements.append(
-            "Comparative effect_measure and estimate must be supplied together; "
-            "known design requires design_evidence. Exact requires specified scope facets. "
-            "Supply target_time_value and target_time_unit together or omit both. "
-            "Each group value requires its source statistic, value and unit. "
-            "Missing Result records belong in missing_results; unresolved facts about an "
-            "assessable Result belong in assessments[].unknowns."
-        )
-    if "missing_results" in roots:
-        syntax["missing_results[].missing_facts[]"] = _construction_schema(
-            UnavailableMissingFactDraft
-        )
-        requirements.append(
-            "Missing facts require same-Trial source premises; no_supported_sources "
-            "is valid only for the exact captured zero-source condition."
-        )
-    if "assessments" in roots:
-        requirements.append("Supply one source-bound assessment per submitted Trial.")
+    requirements = [
+        "One selection per Trial: candidate or source-grounded missing facts, "
+        "not both. Candidate estimates/precision are source strings; handles go in "
+        "source_passages, advanced table/derived proofs in candidate.evidence. "
+        "Unknowns and counterevidence are arrays. Exact still requires explicit "
+        "specified clarity, source support and completed reading."
+    ]
     payload = {
         "code": "invalid_proposal_arguments",
         "saved": False,
@@ -3554,66 +3523,44 @@ def select_visual_evidence(
 
 @mcp.tool(
     name="validate_proposal",
-    title="Validate Proposal draft",
+    title="Validate Trial Result selections",
     description=(
-        "Before saving a Proposal, put complete Result cards in results and missing cards in "
-        "missing_results, with a brief evidence-based assessment "
-        "for each submitted Trial. Explain why the reported result supports the target relation "
-        "and chosen time point or window. Compare outcome definition, reported model window, "
-        "estimand and population separately. Known target fields or matching numbers do not "
-        "prove exactness; preserve scope differences or unknowns and use a supported non-exact "
-        "relation when exact scope is not established. Distinguish baseline eligibility from "
-        "exclusions or "
-        "missing observations in the reported analysis. Identify material conflicting evidence "
-        "and unresolved facts; do not infer unavailable facts. The server validates structure, "
-        "Evidence references and workflow requirements, not scientific correctness. Construct "
-        "the complete typed request before calling. Arm objects require id and assignment. "
-        "Estimate and precision are source strings. For exact relation, clarity is an object "
-        "with outcome_definition, measurement, time_point, analysis_population, comparison_groups, "
-        "effect_measure, source_table_meaning and eligible_result_choice; each is specified, "
-        "unclear, unavailable or conflicting. Exact requires all specified; do not infer clarity. "
-        "Optional group_values items require group_id, value and unit; statistic is a source "
-        "label when identified, otherwise omit it or use null to retain unresolved meaning. "
-        "These are source strings, not combined statistic/value prose. Timing value and unit "
-        "must be supplied together or omitted. Assessment evidence_basis is a handle array; "
-        "unknowns is a string array; counterevidence is an object array or []. "
-        "Use passage_refs for selected narrative/figure handles; the server supplies Evidence "
-        "record kinds and identity metadata. A comparative estimate requires effect_measure and "
-        "estimate together, with optional precision. Known designs require design_evidence. "
-        "Placeholders, partial nested objects, and "
-        "guessed enum values are invalid. Save using the returned revision; the server retains "
-        "the validated draft."
+        "Submit one selection per Trial, with candidate, explicit relation, scope_rationale, "
+        "population_rationale, source_passages, unknowns and counterevidence together. "
+        "No separate assessment or evidence-basis list is required. Use candidate=null and "
+        "source-grounded missing_facts only when no complete comparative candidate can proceed. "
+        "Unknown scope facts about an existing candidate belong in unknowns, not another Trial "
+        "selection. Compare outcome definition, reported model window, estimand and population "
+        "separately; numeric correspondence does not establish exactness. Preserve the target "
+        "window and distinguish eligibility from analysis exclusions or missing observations. "
+        "Candidate estimate/precision are source strings. Group values require group_id, value "
+        "and unit; statistic is optional and unresolved when omitted. Timing value/unit must "
+        "be supplied together. Exact requires all eight clarity facets explicitly specified; "
+        "do not infer clarity. Design-specific evidence remains explicit. Narrative/figure "
+        "handles go in source_passages; candidate.evidence is only for advanced typed proofs. "
+        "The server derives record tags, source identity and duplicate canonical citations, "
+        "not scientific correctness. Construct the complete typed request before calling; "
+        "do not submit placeholders or partial nested objects. "
+        "Save with the returned revision; the server retains the validated draft."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("validate_proposal"),
 )
 def validate_proposal(
-    results: Annotated[
-        list[ResultProposal],
-        Field(
-            description="Complete comparative candidates only. Use [] when all cards are missing."
-        ),
-    ],
-    assessments: Annotated[
-        list[ProposalReasoningAssessment],
+    selections: Annotated[
+        list[ProposalSelection],
         Field(
             min_length=1,
-            description="One concise source-bound assessment for every submitted Trial card.",
+            description="One candidate or grounded missing selection with reasoning per Trial.",
         ),
     ],
     expected_revision: Annotated[
         ExpectedRevision, Field(description="Current revision from get_status.")
     ],
-    missing_results: Annotated[
-        tuple[MissingResultProposal, ...],
-        Field(description="Missing/ambiguous Result cards only; never put these in results."),
-    ] = (),
 ) -> ToolResult:
     draft = {
-        "results": [
-            item.to_draft().model_dump(mode="json") for item in (*results, *missing_results)
-        ],
-        "assessments": [item.model_dump(mode="json") for item in assessments],
+        "results": [item.to_result_draft().model_dump(mode="json") for item in selections],
+        "assessments": [item.to_assessment().model_dump(mode="json") for item in selections],
         "expected_revision": expected_revision,
     }
     return _invoke("validate_proposal", lambda: _validate_proposal(_workspace(), draft))
@@ -3625,7 +3572,7 @@ def validate_proposal(
     description=(
         "Commit the exact Result cards stored by validate_proposal using its returned revision; "
         "do not resend Result cards or copy an internal receipt identity. To change the draft, "
-        "repeat validate_proposal with complete replacement cards and matching assessments, "
+        "repeat validate_proposal with complete replacement Trial selections, "
         "then pass its returned revision here."
     ),
     annotations=_MUTATION,
@@ -3659,8 +3606,8 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Call get_status. If work remains active, submit complete replacement Result "
-                    "cards and matching assessments to validate_proposal, then save its returned "
+                    "Call get_status. If work remains active, submit complete replacement Trial "
+                    "selections to validate_proposal, then save its returned "
                     "receipt. Otherwise follow head.next_action."
                 ),
             },
@@ -3674,8 +3621,8 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Call get_status. If work remains active, submit complete replacement Result "
-                    "cards and matching assessments to validate_proposal, then save its returned "
+                    "Call get_status. If work remains active, submit complete replacement Trial "
+                    "selections to validate_proposal, then save its returned "
                     "receipt. Otherwise follow head.next_action."
                 ),
             },
@@ -3692,7 +3639,7 @@ def save_proposal(
                     "code": "reasoning_stale",
                     "condition": (
                         "Call get_status. If work remains active, submit complete replacement "
-                        "Result cards and matching assessments to validate_proposal, then save "
+                        "Trial selections to validate_proposal, then save "
                         "its returned receipt. Otherwise follow head.next_action."
                     ),
                 },
@@ -3712,8 +3659,8 @@ def save_proposal(
                 "outcome": "condition",
                 "code": "reasoning_stale",
                 "condition": (
-                    "Call get_status. If work remains active, submit complete replacement Result "
-                    "cards and matching assessments to validate_proposal, then save its returned "
+                    "Call get_status. If work remains active, submit complete replacement Trial "
+                    "selections to validate_proposal, then save its returned "
                     "receipt. Otherwise follow head.next_action."
                 ),
             },
@@ -3747,8 +3694,8 @@ class ProposalApprovalDecision(StrictModel):
         "record the approval through elicitation. Call get_status after the approval succeeds. "
         "This tool has no approval arguments: only a directly accepted elicitation with "
         "approved=true commits it. "
-        "For corrections, inspect Sources, submit complete replacement Result cards and matching "
-        "assessments to validate_proposal, then pass its returned revision to save_proposal "
+        "For corrections, inspect Sources, submit complete replacement Trial "
+        "selections to validate_proposal, then pass its returned revision to save_proposal "
         "before presenting the fresh Review."
     ),
     annotations=_MUTATION,

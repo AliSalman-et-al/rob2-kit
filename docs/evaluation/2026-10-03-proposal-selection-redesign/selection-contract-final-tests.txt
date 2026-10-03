@@ -1,0 +1,241 @@
+bringing up nodes...
+bringing up nodes...
+
+............F.....F..........                                            [100%]
+=================================== FAILURES ===================================
+_____ test_result_reference_contains_valid_reasoning_and_receipt_examples ______
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+    def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> None:
+        reference = Path("src/rob2_kit/skills/rob2-assess/references/result.md").read_text(
+            encoding="utf-8"
+        )
+        examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
+    
+        assert len(examples) >= 3
+        draft = ProposalSelection.model_validate(json.loads(examples[0])["selections"][0])
+        assert draft.counterevidence[0].evidence != draft.source_passages[0]
+        receipt = json.loads(examples[1])
+        assert receipt == {"expected_revision": 8}
+        described = re.search(r"`(\{\"kind\": \"described\".*?\})`", reference)
+>       assert described is not None
+E       assert None is not None
+
+tests/test_model_facing_assets.py:167: AssertionError
+_____________ test_release_contract_verifies_local_public_surface ______________
+[gw1] linux -- Python 3.13.15 /home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-46/popen-gw1/test_release_contract_verifies0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x700304044050>
+
+    def test_release_contract_verifies_local_public_surface(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # The repository may contain an ignored developer ledger from an older
+        # contract. Release verification must exercise a clean workspace and keep
+        # rejecting that old active state in production.
+        workspace = tmp_path / "workspace"
+        workspace.mkdir()
+        monkeypatch.setenv("ROB2_WORKSPACE", str(workspace))
+>       _verifier().verify()
+
+tests/release/test_release_manifest.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+docs/release/verify.py:820: in verify
+    asyncio.run(local_proposal())
+/home/ali/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py:196: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/home/ali/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/asyncio/runners.py:119: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/ali/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/asyncio/base_events.py:726: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+docs/release/verify.py:771: in local_proposal
+    await _verify_proposal(client)
+docs/release/verify.py:436: in _verify_proposal
+    reasoned = await _call(
+docs/release/verify.py:285: in _call
+    value = await one(arguments)
+            ^^^^^^^^^^^^^^^^^^^^
+docs/release/verify.py:277: in one
+    result = await client.call_tool(name, request)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../task/rob2-kit/.venv/lib/python3.13/site-packages/fastmcp/client/mixins/tools.py:336: in call_tool
+    return await self._parse_call_tool_result(
+../../task/rob2-kit/.venv/lib/python3.13/site-packages/fastmcp/client/mixins/tools.py:272: in _parse_call_tool_result
+    return await _parse_call_tool_result(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'validate_proposal'
+result = CallToolResult(meta={'io.modelcontextprotocol/serverInfo': {'name': 'rob2-kit', 'version': '0.11.0', 'websiteUrl': 'ht...t construction only."}', annotations=None, meta=None)], structured_content=None, is_error=True, result_type='complete')
+tool_output_schemas = {'prepare_batch': {'type': 'object', '$defs': {'CloseTrialAction': {'additionalProperties': False, 'properties': {'ope... 'oneOf': [{'$ref': '#/$defs/SuccessReceipt_SourcesData_'}, {'$ref': '#/$defs/ConditionReceipt_ConditionData_'}]}, ...}
+list_tools_fn = <bound method ClientSession.list_tools of <mcp.client.session.ClientSession object at 0x700304183750>>
+client_name = 'Client-f190', raise_on_error = True
+
+    async def _parse_call_tool_result(
+        name: str,
+        result: mcp_types.CallToolResult,
+        tool_output_schemas: dict[str, dict[str, Any] | None],
+        list_tools_fn: Any,  # Callable[[], Awaitable[None]]
+        client_name: str | None = None,
+        raise_on_error: bool = False,
+    ) -> CallToolResult:
+        """Parse an mcp_types.CallToolResult into our CallToolResult dataclass.
+    
+        Args:
+            name: Tool name (for schema lookup)
+            result: Raw MCP protocol result
+            tool_output_schemas: Dictionary mapping tool names to their output schemas
+            list_tools_fn: Async function to refresh tool schemas if needed
+            client_name: Optional client name for logging
+            raise_on_error: Whether to raise ToolError on errors
+    
+        Returns:
+            CallToolResult: Parsed result with structured data
+        """
+        # Local import: CallToolResult is under TYPE_CHECKING at module level to
+        # avoid a circular import (client.client -> mixins.tools -> client.client),
+        # but we need the concrete class here to construct the return value.
+        from fastmcp.client.client import CallToolResult
+    
+        data = None
+        if result.is_error and raise_on_error:
+            if result.content and isinstance(result.content[0], mcp_types.TextContent):
+                msg = result.content[0].text
+            else:
+                msg = f"Tool '{name}' returned an error"
+>           raise ToolError(msg)
+E           fastmcp.exceptions.ToolError: {"code":"invalid_proposal_arguments","saved":false,"defects":[{"path":"/selections","count":1,"details":["Missing required argument"],"missing_fields":[]},{"path":"/results","count":1,"details":["Unexpected keyword argument"],"missing_fields":[]},{"path":"/assessments","count":1,"details":["Unexpected keyword argument"],"missing_fields":[]}],"additional_defects":0,"required_fields":{"selections":["trial_id","relation","candidate","scope_rationale","source_passages","unknowns","counterevidence"]},"syntax":{"source_passages[]":"selected handle string","candidate.group_values[]":{"additionalProperties":false,"properties":{"group_id":{"minLength":1,"type":"string"},"statistic":{"anyOf":[{"minLength":1,"type":"string"},{"type":"null"}],"default":null},"value":{"minLength":1,"type":"string"},"unit":{"minLength":1,"type":"string"}},"required":["group_id","value","unit"],"type":"object"},"candidate.clarity":{"required":["outcome_definition","measurement","time_point","analysis_population","comparison_groups","effect_measure","source_table_meaning","eligible_result_choice"],"each_value":["specified","unclear","unavailable","conflicting"]}},"requirements":"One selection per Trial: candidate or source-grounded missing facts, not both. Candidate estimates/precision are source strings; handles go in source_passages, advanced table/derived proofs in candidate.evidence. Unknowns and counterevidence are arrays. Exact still requires explicit specified clarity, source support and completed reading.","instruction":"Preserve scientific facts, relation and uncertainty; correct construction only."}
+
+../../task/rob2-kit/.venv/lib/python3.13/site-packages/fastmcp/client/mixins/tools.py:373: ToolError
+----------------------------- Captured stderr call -----------------------------
+[10/03/26 15:46:08] WARNING  Invalid arguments for tool           server.py:1505
+                             'validate_proposal': [{'type':                     
+                             'missing_argument', 'loc':                         
+                             ('selections',), 'msg': 'Missing                   
+                             required argument', 'input':                       
+                             {'results': [{'kind': 'assessable',                
+                             'trial_id': 'trial', 'relation':                   
+                             'exact', 'relation_rationale': 'The                
+                             selected Evidence supports the                     
+                             requested endpoint correspondence.',               
+                             'applicability': {'design':                        
+                             'individual_parallel', 'rationale':                
+                             'The fixture represents an                         
+                             individually randomized parallel                   
+                             trial.', 'evidence':                               
+                             ['eh_6221811dfdbfcb71']}, 'target':                
+                             {'measurement': {'method':                         
+                             'requested outcome'},                              
+                             'time_point_or_window': {'kind':                   
+                             'described', 'description':                        
+                             'requested outcome'},                              
+                             'comparison_groups': [{'id': 'a',                  
+                             'assignment': 'requested outcome'},                
+                             {'id': 'b', 'assignment': 'requested               
+                             outcome'}], 'baseline_subgroup':                   
+                             None, 'intended_effect_measure':                   
+                             'requested outcome'}, 'reported':                  
+                             {'form': 'group_bound_values',                     
+                             'analysis_population': 'requested                  
+                             outcome', 'endpoint': {'name':                     
+                             'requested outcome', 'definition':                 
+                             'requested outcome'},                              
+                             'group_values': [{'group_id': 'a',                 
+                             'statistic': 'requested outcome',                  
+                             'value': 'requested outcome',                      
+                             'unit': 'requested outcome'},                      
+                             {'group_id': 'b', 'statistic':                     
+                             'requested outcome', 'value':                      
+                             'requested outcome', 'unit':                       
+                             'requested outcome'}]}, 'clarity':                 
+                             {'outcome_definition': 'specified',                
+                             'measurement': 'specified',                        
+                             'time_point': 'specified',                         
+                             'analysis_population': 'specified',                
+                             'comparison_groups': 'specified',                  
+                             'effect_measure': 'specified',                     
+                             'source_table_meaning': 'specified',               
+                             'eligible_result_choice':                          
+                             'specified'}}], 'assessments':                     
+                             [{'trial_id': 'trial',                             
+                             'evidence_basis':                                  
+                             ['eh_6221811dfdbfcb71'],                           
+                             'scope_justification': 'The reported               
+                             endpoint and time window match the                 
+                             target.',                                          
+                             'population_justification': 'The                   
+                             reported analysis population is                    
+                             distinguished from baseline                        
+                             eligibility.', 'unknowns': [],                     
+                             'counterevidence': []}],                           
+                             'expected_revision': 1}}, {'type':                 
+                             'unexpected_keyword_argument',                     
+                             'loc': ('results',), 'msg':                        
+                             'Unexpected keyword argument',                     
+                             'input': [{'kind': 'assessable',                   
+                             'trial_id': 'trial', 'relation':                   
+                             'exact', 'relation_rationale': 'The                
+                             selected Evidence supports the                     
+                             requested endpoint correspondence.',               
+                             'applicability': {'design':                        
+                             'individual_parallel', 'rationale':                
+                             'The fixture represents an                         
+                             individually randomized parallel                   
+                             trial.', 'evidence':                               
+                             ['eh_6221811dfdbfcb71']}, 'target':                
+                             {'measurement': {'method':                         
+                             'requested outcome'},                              
+                             'time_point_or_window': {'kind':                   
+                             'described', 'description':                        
+                             'requested outcome'},                              
+                             'comparison_groups': [{'id': 'a',                  
+                             'assignment': 'requested outcome'},                
+                             {'id': 'b', 'assignment': 'requested               
+                             outcome'}], 'baseline_subgroup':                   
+                             None, 'intended_effect_measure':                   
+                             'requested outcome'}, 'reported':                  
+                             {'form': 'group_bound_values',                     
+                             'analysis_population': 'requested                  
+                             outcome', 'endpoint': {'name':                     
+                             'requested outcome', 'definition':                 
+                             'requested outcome'},                              
+                             'group_values': [{'group_id': 'a',                 
+                             'statistic': 'requested outcome',                  
+                             'value': 'requested outcome',                      
+                             'unit': 'requested outcome'},                      
+                             {'group_id': 'b', 'statistic':                     
+                             'requested outcome', 'value':                      
+                             'requested outcome', 'unit':                       
+                             'requested outcome'}]}, 'clarity':                 
+                             {'outcome_definition': 'specified',                
+                             'measurement': 'specified',                        
+                             'time_point': 'specified',                         
+                             'analysis_population': 'specified',                
+                             'comparison_groups': 'specified',                  
+                             'effect_measure': 'specified',                     
+                             'source_table_meaning': 'specified',               
+                             'eligible_result_choice':                          
+                             'specified'}}]}, {'type':                          
+                             'unexpected_keyword_argument',                     
+                             'loc': ('assessments',), 'msg':                    
+                             'Unexpected keyword argument',                     
+                             'input': [{'trial_id': 'trial',                    
+                             'evidence_basis':                                  
+                             ['eh_6221811dfdbfcb71'],                           
+                             'scope_justification': 'The reported               
+                             endpoint and time window match the                 
+                             target.',                                          
+                             'population_justification': 'The                   
+                             reported analysis population is                    
+                             distinguished from baseline                        
+                             eligibility.', 'unknowns': [],                     
+                             'counterevidence': []}]}]                          
+------------------------------ Captured log call -------------------------------
+WARNING  fastmcp.server.server:server.py:1505 Invalid arguments for tool 'validate_proposal': [{'type': 'missing_argument', 'loc': ('selections',), 'msg': 'Missing required argument', 'input': {'results': [{'kind': 'assessable', 'trial_id': 'trial', 'relation': 'exact', 'relation_rationale': 'The selected Evidence supports the requested endpoint correspondence.', 'applicability': {'design': 'individual_parallel', 'rationale': 'The fixture represents an individually randomized parallel trial.', 'evidence': ['eh_6221811dfdbfcb71']}, 'target': {'measurement': {'method': 'requested outcome'}, 'time_point_or_window': {'kind': 'described', 'description': 'requested outcome'}, 'comparison_groups': [{'id': 'a', 'assignment': 'requested outcome'}, {'id': 'b', 'assignment': 'requested outcome'}], 'baseline_subgroup': None, 'intended_effect_measure': 'requested outcome'}, 'reported': {'form': 'group_bound_values', 'analysis_population': 'requested outcome', 'endpoint': {'name': 'requested outcome', 'definition': 'requested outcome'}, 'group_values': [{'group_id': 'a', 'statistic': 'requested outcome', 'value': 'requested outcome', 'unit': 'requested outcome'}, {'group_id': 'b', 'statistic': 'requested outcome', 'value': 'requested outcome', 'unit': 'requested outcome'}]}, 'clarity': {'outcome_definition': 'specified', 'measurement': 'specified', 'time_point': 'specified', 'analysis_population': 'specified', 'comparison_groups': 'specified', 'effect_measure': 'specified', 'source_table_meaning': 'specified', 'eligible_result_choice': 'specified'}}], 'assessments': [{'trial_id': 'trial', 'evidence_basis': ['eh_6221811dfdbfcb71'], 'scope_justification': 'The reported endpoint and time window match the target.', 'population_justification': 'The reported analysis population is distinguished from baseline eligibility.', 'unknowns': [], 'counterevidence': []}], 'expected_revision': 1}}, {'type': 'unexpected_keyword_argument', 'loc': ('results',), 'msg': 'Unexpected keyword argument', 'input': [{'kind': 'assessable', 'trial_id': 'trial', 'relation': 'exact', 'relation_rationale': 'The selected Evidence supports the requested endpoint correspondence.', 'applicability': {'design': 'individual_parallel', 'rationale': 'The fixture represents an individually randomized parallel trial.', 'evidence': ['eh_6221811dfdbfcb71']}, 'target': {'measurement': {'method': 'requested outcome'}, 'time_point_or_window': {'kind': 'described', 'description': 'requested outcome'}, 'comparison_groups': [{'id': 'a', 'assignment': 'requested outcome'}, {'id': 'b', 'assignment': 'requested outcome'}], 'baseline_subgroup': None, 'intended_effect_measure': 'requested outcome'}, 'reported': {'form': 'group_bound_values', 'analysis_population': 'requested outcome', 'endpoint': {'name': 'requested outcome', 'definition': 'requested outcome'}, 'group_values': [{'group_id': 'a', 'statistic': 'requested outcome', 'value': 'requested outcome', 'unit': 'requested outcome'}, {'group_id': 'b', 'statistic': 'requested outcome', 'value': 'requested outcome', 'unit': 'requested outcome'}]}, 'clarity': {'outcome_definition': 'specified', 'measurement': 'specified', 'time_point': 'specified', 'analysis_population': 'specified', 'comparison_groups': 'specified', 'effect_measure': 'specified', 'source_table_meaning': 'specified', 'eligible_result_choice': 'specified'}}]}, {'type': 'unexpected_keyword_argument', 'loc': ('assessments',), 'msg': 'Unexpected keyword argument', 'input': [{'trial_id': 'trial', 'evidence_basis': ['eh_6221811dfdbfcb71'], 'scope_justification': 'The reported endpoint and time window match the target.', 'population_justification': 'The reported analysis population is distinguished from baseline eligibility.', 'unknowns': [], 'counterevidence': []}]}]
+=========================== short test summary info ============================
+FAILED tests/test_model_facing_assets.py::test_result_reference_contains_valid_reasoning_and_receipt_examples
+FAILED tests/release/test_release_manifest.py::test_release_contract_verifies_local_public_surface
+2 failed, 27 passed in 34.83s

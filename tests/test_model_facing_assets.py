@@ -5,10 +5,9 @@ import re
 from pathlib import Path
 
 from rob2_kit.workflow_models import (
-    DescribedTiming,
     DomainInformationLimit,
     DomainSaveAnswer,
-    ProposalReasoningDraft,
+    ProposalSelection,
     TrialClosureRequest,
     TrialReviewRequest,
 )
@@ -159,23 +158,20 @@ def test_result_reference_contains_valid_reasoning_and_receipt_examples() -> Non
     examples = re.findall(r"```json\s*(.*?)\s*```", reference, flags=re.DOTALL)
 
     assert len(examples) >= 3
-    draft = ProposalReasoningDraft.model_validate_json(examples[0])
-    assert (
-        draft.assessments[0].counterevidence[0].evidence != draft.assessments[0].evidence_basis[0]
-    )
+    draft = ProposalSelection.model_validate(json.loads(examples[0])["selections"][0])
+    assert draft.counterevidence[0].evidence != draft.source_passages[0]
     receipt = json.loads(examples[1])
     assert receipt == {"expected_revision": 8}
-    described = re.search(r"`(\{\"kind\": \"described\".*?\})`", reference)
-    assert described is not None
-    DescribedTiming.model_validate_json(described.group(1))
+    assert draft.candidate is not None
+    assert draft.candidate.target_window == "15 days after randomization"
 
 
 def test_skill_requires_complete_proposal_construction_before_validation() -> None:
     skill = Path("src/rob2_kit/skills/rob2-assess/SKILL.md").read_text(encoding="utf-8")
 
-    assert "Construct the complete request before calling `validate_proposal`" in skill
-    assert "placeholder strings" in skill
-    assert "typed objects rather than prose shortcuts" in skill
+    assert "Construct the complete request before calling" in skill
+    assert "placeholders" in skill
+    assert "one complete Trial selection" in skill
 
 
 def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:

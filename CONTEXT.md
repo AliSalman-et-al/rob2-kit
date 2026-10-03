@@ -45,7 +45,8 @@ The closed workflow phases are `empty`, `proposal`, `assessment`,
 
 1. `prepare_batch` captures the Batch and advances to Proposal construction.
 2. The model completes the required bounded main-report text pass, selects
-   Evidence, submits complete cards and assessments through `validate_proposal`,
+   Evidence, submits one candidate with scope/population reasoning and citations per Trial
+   through `validate_proposal(selections, expected_revision)`,
    then saves the exact returned receipt for one complete Result proposal per Trial.
 3. **Proposal Review** is the only researcher gate. The researcher may approve,
    reject, or replace the chosen Result mapping.
@@ -438,7 +439,7 @@ records or scientific judgments.
 
 ## Public boundary
 
-The v0.10 FastMCP surface exposes exactly 18 strictly typed tools:
+The v0.11 FastMCP surface exposes exactly 18 strictly typed tools:
 
 `prepare_batch`, `get_status`, `save_working_checkpoint`, `list_sources`,
 `search_sources`, `search_sources_batch`, `read_pages`,

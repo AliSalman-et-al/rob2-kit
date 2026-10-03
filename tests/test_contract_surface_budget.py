@@ -196,7 +196,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "scientific correctness" in (domain_tool.description or "")
     assert "multiple_concerns" not in domain_tool.parameters["properties"]
     proposal_tool = by_name["validate_proposal"]
-    assert proposal_tool.title == "Validate Proposal draft"
+    assert proposal_tool.title == "Validate Trial Result selections"
     assert "complete typed request" in (proposal_tool.description or "")
     assert "partial nested objects" in (proposal_tool.description or "")
     visual_tool = by_name["select_visual_evidence"]
@@ -226,7 +226,7 @@ def test_server_and_resource_metadata_are_explicit() -> None:
     # exposing the initialize result through its in-process client.
     assert initialization is None
     assert mcp.name == "rob2-kit"
-    assert mcp.version == "0.10.0"
+    assert mcp.version == "0.11.0"
     assert mcp.website_url == "https://github.com/AliSalman-et-al/rob2-kit"
     assert len(resources) == 1
     resource = resources[0]

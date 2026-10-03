@@ -1790,7 +1790,7 @@ def validate_proposal(
                     "code": "reasoning_stale",
                     "detail": (
                         "The Proposal receipt is stale. Call get_status. If work remains active, "
-                        "submit complete replacement Result cards and matching assessments to "
+                        "submit complete replacement Trial selections to "
                         "validate_proposal, then save its returned receipt. Otherwise follow "
                         "head.next_action."
                     ),

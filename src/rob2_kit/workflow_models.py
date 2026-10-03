@@ -1699,54 +1699,87 @@ class UnavailableResultDraft(StrictModel):
     )
 
 
-class MissingResultProposal(StrictModel):
-    trial_id: TrialId
-    relation: Literal[TargetRelation.AMBIGUOUS, TargetRelation.UNAVAILABLE]
-    missing_facts: tuple[UnavailableMissingFactDraft, ...] = Field(min_length=1)
+class ProposedReportedResult(StrictModel):
+    """One source-reported candidate and the interpreted target facets."""
 
-    def to_draft(self) -> UnavailableResultDraft:
-        return UnavailableResultDraft(kind="unavailable", **self.model_dump())
-
-
-class ResultProposal(StrictModel):
-    """Scientific proposal inputs; canonical record tags are server-owned."""
-
-    trial_id: TrialId
-    relation: AssessableTargetRelation = Field(
-        description="Explicit scope relation: exact, broader, narrower, component, or related. "
-        "Compare outcome, model window, population and estimand; supports is not a relation."
+    clarity: ResultClarity | None = Field(
+        default=None,
+        description="Caller-declared scope facets; omission preserves unclear facets and cannot "
+        "establish exactness.",
     )
-    relation_rationale: NonBlankText
-    clarity: ResultClarity | None = None
-    design: Literal["individual_parallel", "cluster_randomized", "crossover", "unclear"]
-    design_rationale: NonBlankText
-    design_evidence: tuple[SubmittedEvidenceHandle, ...] = ()
-    target_measurement: NonBlankText
+    design: Literal["individual_parallel", "cluster_randomized", "crossover", "unclear"] = Field(
+        description="Source-supported randomization design; not inferred from the effect estimate."
+    )
+    design_rationale: NonBlankText = Field(
+        description="Why inspected source evidence establishes this design."
+    )
+    design_evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
+        default=(),
+        description="Selected handles specifically supporting design, distinct from general "
+        "selection citations.",
+    )
+    target_measurement: NonBlankText = Field(
+        description="Requested measurement or ascertainment, not a summary statistic."
+    )
     target_window: NonBlankText = Field(description="Preserve the requested target window.")
-    target_time_value: NonBlankText | None = None
-    target_time_unit: NonBlankText | None = None
-    comparison_groups: tuple[ComparisonGroup, ...] = Field(min_length=2)
-    baseline_subgroup: NonBlankText | None
-    intended_effect_measure: NonBlankText
-    reported_outcome: NonBlankText
+    target_time_value: NonBlankText | None = Field(
+        default=None,
+        description="Target time quantity when explicitly quantified; pair with target_time_unit.",
+    )
+    target_time_unit: NonBlankText | None = Field(
+        default=None, description="Target time unit paired with target_time_value."
+    )
+    comparison_groups: tuple[ComparisonGroup, ...] = Field(
+        min_length=2, description="Complete target randomized-arm identifiers and assignments."
+    )
+    baseline_subgroup: NonBlankText | None = Field(
+        description="Baseline-defined target subgroup, or null for all randomized participants."
+    )
+    intended_effect_measure: NonBlankText = Field(
+        description="Target effect measure, which can differ from the selected reported measure."
+    )
+    reported_outcome: NonBlankText = Field(
+        description="Literal source endpoint label for this reported candidate."
+    )
     reported_definition: NonBlankText | None = Field(
         default=None,
         description="Source-tied definition including reported model window and "
         "population when supported; do not borrow the target window.",
     )
-    analysis_population: NonBlankText
-    effect_measure: NonBlankText | None = None
-    estimate: NonBlankText | None = None
-    precision: NonBlankText | None = None
-    group_values: tuple[GroupResultValue, ...] = ()
-    category_group_id: NonBlankText | None = None
-    category_denominator: NonBlankText | None = None
-    category_axis_names: tuple[NonBlankText, ...] = ()
-    categories: tuple[CategoryValue, ...] = ()
-    passage_refs: tuple[SubmittedEvidenceHandle, ...] = Field(
+    analysis_population: NonBlankText = Field(
+        description="Source-supported participants and exclusions in the reported analysis; ITT "
+        "is not complete observation."
+    )
+    effect_measure: NonBlankText | None = Field(
+        default=None,
+        description="Source-reported comparative effect measure; supply together with estimate.",
+    )
+    estimate: NonBlankText | None = Field(
+        default=None, description="Source-reported estimate string, not a numeric object."
+    )
+    precision: NonBlankText | None = Field(
+        default=None,
+        description="Optional source-reported interval or precision string for this same estimate.",
+    )
+    group_values: tuple[GroupResultValue, ...] = Field(
         default=(),
-        description="Selected narrative/figure handles. Server derives record kind "
-        "and retained identity; do not copy Evidence objects for these passages.",
+        description="Complete paired source values when no comparative estimate is reported; "
+        "optional alongside an estimate.",
+    )
+    category_group_id: NonBlankText | None = Field(
+        default=None,
+        description="Descriptive profile group; one-arm descriptions cannot proceed to "
+        "comparative assessment.",
+    )
+    category_denominator: NonBlankText | None = Field(
+        default=None, description="Source-reported denominator basis for a category profile."
+    )
+    category_axis_names: tuple[NonBlankText, ...] = Field(
+        default=(), description="Explicit category dimensions in the source profile."
+    )
+    categories: tuple[CategoryValue, ...] = Field(
+        default=(),
+        description="Complete source-reported category cells; never infer omitted cells.",
     )
     evidence: tuple[
         Annotated[
@@ -1757,7 +1790,7 @@ class ResultProposal(StrictModel):
     ] = Field(
         default=(),
         description="Optional table/derived quantitative proof only. "
-        "Use passage_refs for narrative/figure Evidence already selected by handle.",
+        "Use selection.source_passages for narrative/figure handles.",
     )
 
     @field_validator("group_values", mode="before")
@@ -1772,13 +1805,13 @@ class ResultProposal(StrictModel):
             for group in value
         ]
 
-    @model_validator(mode="after")
-    def complete_result(self) -> ResultProposal:
-        # Constructing the existing strict scientific objects preserves their gates.
-        self.to_draft()
-        return self
-
-    def to_draft(self) -> AssessableResultDraft:
+    def to_draft(
+        self,
+        trial_id: TrialId,
+        relation: TargetRelation,
+        scope_rationale: str,
+        source_passages: tuple[SubmittedEvidenceHandle, ...],
+    ) -> AssessableResultDraft:
         if (self.target_time_value is None) != (self.target_time_unit is None):
             raise ValueError("target_time_value and target_time_unit must be supplied together")
         timing = {"kind": "described", "description": self.target_window}
@@ -1824,9 +1857,9 @@ class ResultProposal(StrictModel):
         return AssessableResultDraft.model_validate(
             {
                 "kind": "assessable",
-                "trial_id": self.trial_id,
-                "relation": self.relation,
-                "relation_rationale": self.relation_rationale,
+                "trial_id": trial_id,
+                "relation": relation,
+                "relation_rationale": scope_rationale,
                 "clarity": self.clarity,
                 "applicability": {
                     "design": self.design,
@@ -1841,7 +1874,7 @@ class ResultProposal(StrictModel):
                     "intended_effect_measure": self.intended_effect_measure,
                 },
                 "reported": reported,
-                "passage_refs": self.passage_refs,
+                "passage_refs": source_passages,
                 "evidence": self.evidence,
             }
         )
@@ -2463,6 +2496,90 @@ class ProposalReasoningAssessment(StrictModel):
         default=(),
         description="Same-Trial conflicting Evidence and its implication; use [] when none.",
     )
+
+
+class ProposalSelection(StrictModel):
+    """One Trial's choice, source citations and scientific reasoning together.
+
+    The public request does not mirror separate canonical Result and reasoning
+    records. Conversion duplicates the caller's explicit claims, never infers
+    a scientific relation, missing fact, design or source meaning.
+    """
+
+    trial_id: TrialId = Field(description="Server-issued Trial ID for this single selection.")
+    relation: TargetRelation = Field(
+        description="Explicit relation to the target. Exact, broader, "
+        "narrower, component or related requires a candidate; ambiguous or unavailable requires "
+        "candidate=null and source-grounded missing facts. Never infer exactness from numbers."
+    )
+    candidate: ProposedReportedResult | None = Field(
+        description="One complete comparative "
+        "candidate, or null only when no complete candidate can proceed."
+    )
+    scope_rationale: NonBlankText = Field(
+        description="Why this candidate supports the chosen "
+        "relation and time window, or why captured missing facts prevent a complete candidate."
+    )
+    population_rationale: NonBlankText | None = Field(
+        default=None,
+        description="For a candidate, "
+        "distinguish baseline eligibility from analysis exclusions and missing observations.",
+    )
+    source_passages: tuple[SubmittedEvidenceHandle, ...] = Field(
+        description="Inspected same-Trial "
+        "passage handles supporting the selection and reasoning. The server reuses these "
+        "citations in Result and reasoning records; it does not certify entailment. Use [] "
+        "only for a captured zero-source intake condition."
+    )
+    missing_facts: tuple[UnavailableMissingFactDraft, ...] = Field(
+        default=(),
+        description="Grounded missing inputs, only when candidate is null; candidate "
+        "uncertainties go in unknowns.",
+    )
+    unknowns: tuple[NonBlankText, ...] = Field(
+        description="Material unresolved facts about this "
+        "selection; explicitly use []. Unknowns about an existing candidate are not another "
+        "selection."
+    )
+    counterevidence: tuple[ProposalReasoningCounterevidence, ...] = Field(
+        description="Source-bound "
+        "counterclaims and implications; explicitly use [] when none are identified."
+    )
+
+    @model_validator(mode="after")
+    def one_choice(self) -> ProposalSelection:
+        self.to_result_draft()
+        return self
+
+    def to_result_draft(self) -> ResultChoiceDraft:
+        if self.candidate is not None:
+            if self.missing_facts:
+                raise ValueError(
+                    "A candidate cannot also contain missing_facts; use unknowns "
+                    "for unresolved facts about a complete candidate"
+                )
+            return self.candidate.to_draft(
+                self.trial_id, self.relation, self.scope_rationale, self.source_passages
+            )
+        return UnavailableResultDraft.model_validate(
+            {
+                "kind": "unavailable",
+                "trial_id": self.trial_id,
+                "relation": self.relation,
+                "missing_facts": self.missing_facts,
+            }
+        )
+
+    def to_assessment(self) -> ProposalReasoningAssessment:
+        return ProposalReasoningAssessment(
+            trial_id=self.trial_id,
+            evidence_basis=self.source_passages,
+            scope_justification=self.scope_rationale if self.candidate is not None else None,
+            population_justification=self.population_rationale,
+            missing_fact_justification=self.scope_rationale if self.candidate is None else None,
+            unknowns=self.unknowns,
+            counterevidence=self.counterevidence,
+        )
 
 
 class ProposalReasoningDraft(StrictModel):

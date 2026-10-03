@@ -34,7 +34,7 @@ def _load_contract() -> dict[str, Any]:
         "examples",
     }:
         raise ValueError("public contract shape differs")
-    if value["contract_version"] != "0.10.0":
+    if value["contract_version"] != "0.11.0":
         raise ValueError("public contract version differs")
     expected_order = [
         "prepare_batch",
@@ -312,50 +312,50 @@ async def _call(client: Client, name: str, arguments: dict[str, Any]) -> dict[st
     return flat
 
 
-def _acceptance_result(_evidence: dict[str, Any]) -> dict[str, Any]:
-    """Build a deliberately small, fully Evidence-bound acceptance Result."""
-
+def _acceptance_result(evidence: dict[str, Any]) -> dict[str, Any]:
     phrase = "requested outcome"
     return {
-        "kind": "assessable",
         "trial_id": "trial",
         "relation": "exact",
-        "relation_rationale": (
-            "The selected Evidence supports the requested endpoint correspondence."
+        "scope_rationale": "The selected Evidence supports endpoint and time correspondence.",
+        "population_rationale": (
+            "The reported population is distinguished from baseline eligibility."
         ),
-        "applicability": {
+        "source_passages": [evidence["handle"]],
+        "unknowns": [],
+        "counterevidence": [],
+        "candidate": {
+            "clarity": {
+                name: "specified"
+                for name in (
+                    "outcome_definition",
+                    "measurement",
+                    "time_point",
+                    "analysis_population",
+                    "comparison_groups",
+                    "effect_measure",
+                    "source_table_meaning",
+                    "eligible_result_choice",
+                )
+            },
             "design": "individual_parallel",
-            "rationale": "The fixture represents an individually randomized parallel trial.",
-            "evidence": [_evidence["handle"]],
-        },
-        "target": {
-            "measurement": {"method": phrase},
-            "time_point_or_window": {"kind": "described", "description": phrase},
+            "design_rationale": "The fixture is an individually randomized parallel trial.",
+            "design_evidence": [evidence["handle"]],
+            "target_measurement": phrase,
+            "target_window": phrase,
             "comparison_groups": [
                 {"id": "a", "assignment": phrase},
                 {"id": "b", "assignment": phrase},
             ],
             "baseline_subgroup": None,
             "intended_effect_measure": phrase,
-        },
-        "reported": {
-            "form": "group_bound_values",
+            "reported_outcome": phrase,
+            "reported_definition": phrase,
             "analysis_population": phrase,
-            "endpoint": {"name": phrase, "definition": phrase},
             "group_values": [
-                {"group_id": "a", "statistic": phrase, "value": phrase, "unit": phrase},
-                {"group_id": "b", "statistic": phrase, "value": phrase, "unit": phrase},
+                {"group_id": group, "statistic": phrase, "value": phrase, "unit": phrase}
+                for group in ("a", "b")
             ],
-        },
-        "clarity": {
-            "outcome_definition": "specified",
-            "measurement": "specified",
-            "time_point": "specified",
-            "analysis_population": "specified",
-            "comparison_groups": "specified",
-            "effect_measure": "specified",
-            "source_table_meaning": "specified",
-            "eligible_result_choice": "specified",
         },
     }
 
@@ -437,22 +437,7 @@ async def _verify_proposal(client: Client) -> None:
         client,
         "validate_proposal",
         {
-            "results": [result],
-            "assessments": [
-                {
-                    "trial_id": "trial",
-                    "evidence_basis": [evidence["handle"]],
-                    "scope_justification": (
-                        "The reported endpoint and time window match the target."
-                    ),
-                    "population_justification": (
-                        "The reported analysis population is distinguished from baseline "
-                        "eligibility."
-                    ),
-                    "unknowns": [],
-                    "counterevidence": [],
-                }
-            ],
+            "selections": [result],
             "expected_revision": prepared["state_revision"],
         },
     )

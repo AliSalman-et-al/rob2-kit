@@ -127,19 +127,46 @@ def _public_result(result: dict[str, Any]) -> dict[str, Any]:
     return value
 
 
-def _public_proposal_records(results: list[dict[str, Any]]) -> dict[str, Any]:
-    return {
-        "results": [
-            _public_result(item)
-            for item in results
-            if item.get("kind") != "unavailable" and "missing_facts" not in item
-        ],
-        "missing_results": [
-            _public_result(item)
-            for item in results
-            if item.get("kind") == "unavailable" or "missing_facts" in item
-        ],
-    }
+def _public_proposal_records(
+    results: list[dict[str, Any]], assessments: list[dict[str, Any]] | None = None
+) -> dict[str, Any]:
+    """Translate internal test fixtures, never live model requests."""
+    assessments = _proposal_assessments(results) if assessments is None else assessments
+    by_trial = {item["trial_id"]: item for item in assessments}
+    selections = []
+    for result in results:
+        public = _public_result(result)
+        assessment = by_trial.get(result["trial_id"], {})
+        candidate = None if "missing_facts" in public else public
+        scope = (
+            public.get("relation_rationale")
+            or assessment.get("scope_justification")
+            or assessment.get("missing_fact_justification")
+            or "Missing Result facts"
+        )
+        passages = list(
+            dict.fromkeys([*public.get("passage_refs", []), *assessment.get("evidence_basis", [])])
+        )
+        if candidate is not None:
+            candidate = {
+                key: value
+                for key, value in candidate.items()
+                if key not in {"trial_id", "relation", "relation_rationale", "passage_refs"}
+            }
+        selections.append(
+            {
+                "trial_id": result["trial_id"],
+                "relation": public["relation"],
+                "candidate": candidate,
+                "scope_rationale": scope,
+                "population_rationale": assessment.get("population_justification"),
+                "source_passages": passages,
+                "missing_facts": public.get("missing_facts", []),
+                "unknowns": assessment.get("unknowns", []),
+                "counterevidence": assessment.get("counterevidence", []),
+            }
+        )
+    return {"selections": selections}
 
 
 def _call(
@@ -168,7 +195,6 @@ def _call(
                         "validate_proposal",
                         {
                             **_public_proposal_records(request["results"]),
-                            "assessments": _proposal_assessments(request["results"]),
                             "expected_revision": request["expected_revision"],
                         },
                     )
@@ -179,7 +205,10 @@ def _call(
                     _PROPOSAL_RECEIPTS[cache_key] = cached
                 request = dict(cached)
             if tool == "validate_proposal" and "results" in request:
-                request.update(_public_proposal_records(request["results"]))
+                request = {
+                    **_public_proposal_records(request["results"], request.get("assessments")),
+                    "expected_revision": request["expected_revision"],
+                }
             result = await client.call_tool(tool, request)
             value = dict(result.structured_content or {})
             for _ in range(3):

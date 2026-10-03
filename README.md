@@ -6,10 +6,13 @@ model loop. The server captures trial sources, validates evidence selections
 against them, applies deterministic RoB 2 logic, records assessment history,
 and exports verifiable bundles.
 
-The v0.10 public contract submits each Domain in one atomic call. Existing
+The v0.11 public contract keeps each Trial's Result choice and reasoning in one
+selection; it replaces separate Result/MissingResult/assessment input collections.
+Each Domain still submits in one atomic call. Existing
 v0.9 workspaces keep their saved assessments. Use the current skill and tool
 contract to resume them. Historical bundles still verify under their recorded
-semantics. See the [v0.10 decision](docs/adr/0036-atomic-domain-submission.md).
+semantics. See the [proposal selection decision](docs/adr/0037-single-trial-proposal-selection.md)
+and [atomic Domain decision](docs/adr/0036-atomic-domain-submission.md).
 
 ## Use rob2-kit
 
@@ -36,7 +39,7 @@ server, and the portable `rob2-assess` skill.
 To install a wheel instead, use its path:
 
 ```powershell
-uv tool install --force dist/rob2_kit-0.10.0-py3-none-any.whl
+uv tool install --force dist/rob2_kit-0.11.0-py3-none-any.whl
 ```
 
 ### Prepare a workspace

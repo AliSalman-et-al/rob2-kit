@@ -72,7 +72,7 @@ class ValidateProposalAction(PublicModel):
     operation: Literal["validate_proposal"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["results", "missing_results", "assessments"], ...]
+    caller_inputs: tuple[Literal["selections"], ...]
 
 
 class PrepareBatchAction(PublicModel):

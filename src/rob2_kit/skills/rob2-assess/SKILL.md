@@ -137,70 +137,34 @@ inspected. Search hits and `read_pages` windows already provide reusable
 visual Evidence only with the `delivery_receipt` returned alongside an actual
 `ImageContent` block; metadata-only renders do not issue a receipt.
 
-Build Result cards for the live `validate_proposal` schema. The first validation call
-contains one card for every captured Trial across `results` (complete candidates)
-and `missing_results` (missing/ambiguous candidates). Keep the two typed
-collections separate; no Result record tags are needed. While Proposal Review is pending,
-submit only complete replacement cards for corrected Trials; the server preserves
-the rest.
+Build one complete Trial selection for the live `validate_proposal` schema. The
+first validation covers every captured Trial in `selections`. While Proposal
+Review is pending, submit only complete replacements for corrected Trials; the
+server preserves the rest.
 
-Construct the complete request before calling `validate_proposal`. Never call it
-with `{}`, placeholder strings, partial nested objects, or guessed enum values to
-discover the schema. Open and follow the complete assessable or unavailable
-example in [Specify the Result](references/result.md), replace every fictional
-value, and then make one validation call. The public card uses flat scientific fields: `design`, `target_window`,
-`reported_outcome`, `effect_measure`, `estimate`, and source handles. Do not copy
-stored `kind`, nested `target`/`reported`, or `form` tags into the proposal call.
-The server derives these tags and bookkeeping; relation remains your explicit
-scientific choice. `supports` is not a scope relation.
+Each selection keeps `trial_id`, explicit `relation`, `candidate`,
+`scope_rationale`, `population_rationale`, `source_passages`, `unknowns` and
+`counterevidence` together. The candidate holds the scientific target/report
+fields. The server reuses your scope rationale and source citations in separate
+canonical Result and reasoning records; do not construct those internal records,
+repeat an assessment array, or send an evidence-basis list. Design-specific
+citations and advanced quantitative proofs remain explicit in the candidate.
 
-For an assessable Result, classify `clarity` for the outcome definition,
-measurement, time point, analysis population, comparison groups, effect measure,
-source table meaning, and candidate choice. Use `time_point` for time-window and
-data-cut chronology, and `source_table_meaning` for whether the selected estimate
-and precision agree across the relevant source material. Use `specified`,
-`unclear`, `unavailable`, or `conflicting` to keep unknowns and disagreements
-visible.
-Omitted clarity is stored as `unclear`; use `exact` only when every facet is
-specified. Clarity is your report of the scope, not a server-verified scientific
-conclusion. The server reconstructs the captured outcome and closed effect of
-interest, then derives retained Evidence and bindings. Use `passage_refs` or typed `evidence` for source binding.
-Inspect `scope_review` in validation and pending Proposal status. It separates
-the target from represented reported fields and lists numeric/endpoint binding
-paths. Reported timing and estimand are not separately typed: null in this
-projection means inspect the selected passages, not that the source omits them.
-Compare the reported model window, not only the medication or follow-up window,
-and distinguish knowing both scopes from establishing their equivalence. Record
-material conflicts or unknowns in clarity and rationale; use a supported
-non-exact relation when exactness is not established. Compatible alternate
-wording can express the same scope; different wording alone is not a mismatch.
-Keep the requested target unchanged. Proposal approval displays this same
-comparison for researcher interpretation and does not certify exactness.
-Selected narrative Evidence in `get_status` is locator-only by default. Reuse
-familiar inspected passages; set `include_evidence_text:true` for bounded text
-when reorienting, or follow exact `read_pages` recovery for unfamiliar passages.
+Use `candidate: null` and typed source-grounded `missing_facts` only when no
+complete comparative candidate can proceed. Unknown scope facts about a complete
+candidate belong in `unknowns`, not a second selection. Give one selection per
+Trial. Explain the relation and chosen time window in `scope_rationale`, and
+separate baseline eligibility from exclusions or missing observations in
+`population_rationale`. Preserve conflicting evidence and material unknowns.
 
-Copy `reported_outcome`, `precision`, and other Source-owned
-quantities from the quantitative passage. Include `reported_definition`
-only when one selected passage explicitly joins that name and definition.
-For `analysis_population`, a supported summary may combine passages when it preserves
-the reported inclusion criteria and exclusions.
-
-For an unavailable Result, use `missing_results` and give each concrete missing
-fact its closed basis:
-selected missing-reporting Evidence, or `no_supported_sources` only for a
-captured Trial with zero Sources. Unavailable Results still enter Proposal Review.
-
-Before saving a Proposal, submit its Result cards and a brief evidence-based
-assessment for each submitted Trial with `validate_proposal`. For an assessable
-Result, provide separate `scope_justification` and `population_justification`;
-for an unavailable Result, provide `missing_fact_justification`. Explain why the
-reported result supports the target relation and chosen time point or window.
-Distinguish baseline eligibility from exclusions or missing observations in the
-reported analysis. Identify material conflicting evidence and unresolved facts;
-do not infer unavailable facts. The server validates structure, Evidence
-references and workflow requirements, not scientific correctness. Save using the
-returned revision; the server keeps the validated draft and its audit identity.
+Construct the complete request before calling. Follow the complete examples in
+[Specify the Result](references/result.md); replace every fictional value.
+Never use placeholders or partial objects to discover the schema. Estimate and
+precision remain source strings. Exact scope still requires all eight
+`candidate.clarity` facets explicitly specified; matching numbers do not prove
+outcome, model-window, population or estimand equivalence. The server validates
+structure, source support and workflow, not scientific entailment. Save with the
+returned revision; the server retains the exact validated draft.
 
 ### 4. Complete Proposal Review
 

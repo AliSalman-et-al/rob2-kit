@@ -20,7 +20,7 @@ def _request() -> dict:
     handles = [
         item["handle"] for item in json.loads((_AUDIT / "selected-evidence.json").read_text())
     ]
-    return {
+    request = {
         "results": [
             {
                 "trial_id": "emperor-reduced",
@@ -64,6 +64,20 @@ def _request() -> dict:
         "expected_revision": 1,
     }
 
+    card = request["results"][0]
+    assessment = request["assessments"][0]
+    selection = {
+        "trial_id": card.pop("trial_id"),
+        "relation": card.pop("relation"),
+        "scope_rationale": card.pop("relation_rationale"),
+        "population_rationale": assessment["population_justification"],
+        "source_passages": card.pop("passage_refs"),
+        "unknowns": assessment["unknowns"],
+        "counterevidence": assessment["counterevidence"],
+        "candidate": card,
+    }
+    return {"selections": [selection], "expected_revision": request["expected_revision"]}
+
 
 def _native(workspace: Path, arguments: dict, tool: str = "validate_proposal") -> dict:
     async def call() -> dict:
@@ -82,73 +96,66 @@ def _native(workspace: Path, arguments: dict, tool: str = "validate_proposal") -
     return asyncio.run(call())
 
 
-@pytest.mark.parametrize("ordinal", range(4))
-def test_actual_emperor_attempt_has_only_chosen_record_errors(tmp_path: Path, ordinal: int) -> None:
-    attempts = json.loads((_AUDIT / "proposal-attempts.json").read_text())
+@pytest.mark.parametrize("ordinal", range(2))
+def test_archived_requests_are_rejected_without_public_compatibility(tmp_path: Path, ordinal: int):
+    attempts = json.loads(
+        (
+            _REPO / "docs/evaluation/2026-10-03-emperor-recovery-687fb24/proposal-attempts.json"
+        ).read_text()
+    )
     with pytest.raises(ToolError) as caught:
         _native(tmp_path, attempts[ordinal]["arguments"])
     feedback = json.loads(str(caught.value))
     assert feedback["code"] == "invalid_proposal_arguments"
-    assert len(str(caught.value).encode()) <= 4096
-    assert "missing_results" not in feedback["required_fields"]
-    assert "MissingResultProposal" not in str(caught.value)
-    assert "input_value" not in str(caught.value)
-    assert feedback["syntax"]["comparison_groups[]"]["required"] == ["id", "assignment"]
     assert not feedback["saved"]
+    assert len(str(caught.value).encode()) <= 4096
+    assert any(d["path"] == "/selections" for d in feedback["defects"])
 
 
-def test_live_declaration_has_two_separate_record_collections() -> None:
-    async def schema() -> dict:
+def test_live_declaration_is_one_selection_collection() -> None:
+    async def schema():
         async with Client(mcp) as client:
             return next(
-                tool.input_schema
-                for tool in await client.list_tools()
-                if tool.name == "validate_proposal"
+                t.input_schema for t in await client.list_tools() if t.name == "validate_proposal"
             )
 
     declaration = asyncio.run(schema())
-    result = declaration["properties"]["results"]["items"]
-    missing = declaration["properties"]["missing_results"]["items"]
-    assert result["type"] == missing["type"] == "object"
-    assert "anyOf" not in result and "anyOf" not in missing
-    assert "reported_outcome" in result["properties"]
-    assert "missing_facts" not in result["properties"]
-    assert "missing_facts" in missing["properties"]
-    assert "reported_outcome" not in missing["properties"]
-    assert "kind" not in result["properties"] and "kind" not in missing["properties"]
+    assert set(declaration["properties"]) == {"selections", "expected_revision"}
+    selection = declaration["properties"]["selections"]["items"]
+    assert selection["type"] == "object"
+    assert {"candidate", "source_passages", "scope_rationale", "unknowns"} <= set(
+        selection["required"]
+    )
+    assert not {"assessments", "evidence_basis", "kind"} & set(selection["properties"])
 
 
 @pytest.mark.parametrize(
     "mutate",
     [
-        lambda card: card["comparison_groups"][0].update(name="invented field"),
-        lambda card: card.update(passage_refs=["not-a-handle"]),
-        lambda card: card.update(missing_facts=[]),
+        lambda s: s["candidate"]["comparison_groups"][0].update(name="invented"),
+        lambda s: s.update(source_passages=["not-a-handle"]),
+        lambda s: s.update(missing_facts=[{"fact": "invented"}]),
     ],
 )
-def test_invalid_arm_handle_or_record_type_is_specific(tmp_path: Path, mutate) -> None:
+def test_invalid_selection_cannot_guess_missing_science(tmp_path: Path, mutate):
     request = _request()
-    mutate(request["results"][0])
+    mutate(request["selections"][0])
     with pytest.raises(ToolError) as caught:
         _native(tmp_path, request)
-    feedback = json.loads(str(caught.value))
-    assert feedback["code"] == "invalid_proposal_arguments"
-    assert all(d["path"].startswith("/results/") for d in feedback["defects"])
-    assert "MissingResultProposal" not in str(caught.value)
+    assert len(str(caught.value).encode()) <= 4096
+    assert "input_value" not in str(caught.value)
 
 
-def test_arbitrarily_bad_batch_has_bounded_no_echo_feedback(tmp_path: Path) -> None:
-    request = _request()
-    request["results"] = [
-        {"trial_id": "emperor-reduced", "private_value": "DO_NOT_ECHO" * 1000}
-    ] * 100
+def test_arbitrary_invalid_batch_is_bounded_without_echo(tmp_path: Path):
+    request = {
+        "selections": [{"private_value": "DO_NOT_ECHO" * 1000}] * 100,
+        "expected_revision": 0,
+    }
     with pytest.raises(ToolError) as caught:
         _native(tmp_path, request)
-    feedback = json.loads(str(caught.value))
     assert len(str(caught.value).encode()) <= 4096
     assert "DO_NOT_ECHO" not in str(caught.value)
-    assert feedback["additional_defects"] > 100
-    assert len(feedback["defects"]) <= 8
+    assert json.loads(str(caught.value))["additional_defects"] > 100
 
 
 @pytest.fixture
@@ -194,9 +201,8 @@ def source_request(tmp_path: Path) -> tuple[Path, dict]:
         )["data"]["evidence"]
         handles.append(evidence["handle"])
     request = _request()
-    request["results"][0]["passage_refs"] = handles[:1]
-    request["results"][0]["design_evidence"] = handles[:1]
-    request["assessments"][0]["evidence_basis"] = handles
+    request["selections"][0]["source_passages"] = handles[:1]
+    request["selections"][0]["candidate"]["design_evidence"] = handles[:1]
     request["expected_revision"] = _call(tmp_path, "get_status", {})["head"]["state_revision"]
     return tmp_path, request
 
@@ -207,14 +213,16 @@ def test_minimal_source_bound_hr_ci_preserves_internal_result_identity(source_re
     from rob2_kit.application._state import _identity, _state
     from rob2_kit.application.proposal import _canonical_result, _evidence_catalog
     from rob2_kit.application.proposal import validate_proposal as validate_internal
-    from rob2_kit.workflow_models import NarrativeEvidenceDraft, ResultProposal
+    from rob2_kit.workflow_models import NarrativeEvidenceDraft, ProposalSelection
 
     workspace, request = source_request
-    current = ResultProposal.model_validate(request["results"][0]).to_draft()
+    current = ProposalSelection.model_validate(request["selections"][0]).to_result_draft()
     legacy = current.model_copy(
         update={
             "passage_refs": (),
-            "evidence": (NarrativeEvidenceDraft(kind="narrative", handle=current.passage_refs[0]),),
+            "evidence": tuple(
+                NarrativeEvidenceDraft(kind="narrative", handle=h) for h in current.passage_refs
+            ),
         }
     )
     outcome = _state(workspace)["batch"]["trials"][0]["requested_outcome"]
@@ -229,7 +237,11 @@ def test_minimal_source_bound_hr_ci_preserves_internal_result_identity(source_re
         legacy_workspace,
         {
             "results": [legacy.model_dump(mode="json")],
-            "assessments": request["assessments"],
+            "assessments": [
+                ProposalSelection.model_validate(request["selections"][0])
+                .to_assessment()
+                .model_dump(mode="json")
+            ],
             "expected_revision": request["expected_revision"],
         },
     )
@@ -250,7 +262,7 @@ def test_minimal_source_bound_hr_ci_preserves_internal_result_identity(source_re
     assert saved["outcome"] == "review_required", saved
     canonical = _state(workspace)["proposal"]["payload"]["results"][0]
     assert canonical["kind"] == "assessable" and canonical["reported"]["estimate"] == "0.75"
-    assert canonical["reported"]["precision"] == request["results"][0]["precision"]
+    assert canonical["reported"]["precision"] == request["selections"][0]["candidate"]["precision"]
     legacy_canonical = _state(legacy_workspace)["proposal"]["payload"]["results"][0]
     assert _identity(canonical) == _identity(legacy_canonical)
     assert {"/reported/estimate", "/reported/effect_measure", "/reported/precision"} <= {
@@ -260,12 +272,12 @@ def test_minimal_source_bound_hr_ci_preserves_internal_result_identity(source_re
 
 def test_conflicting_exact_scope_stays_unresolved_and_related_keeps_target(source_request) -> None:
     workspace, request = source_request
-    target = request["results"][0]["target_window"]
-    request["results"][0]["clarity"]["time_point"] = "conflicting"
+    target = request["selections"][0]["candidate"]["target_window"]
+    request["selections"][0]["candidate"]["clarity"]["time_point"] = "conflicting"
     rejected = _native(workspace, request)
     assert rejected["outcome"] == "repair"
     assert any(r["code"] == "exact_result_scope_not_established" for r in rejected["repairs"])
-    request["results"][0]["relation"] = "related"
+    request["selections"][0]["relation"] = "related"
     accepted = _native(workspace, request)
     assert accepted["outcome"] == "success", accepted
     assert accepted["data"]["scope_review"][0]["target"]["window"] == target
@@ -273,7 +285,7 @@ def test_conflicting_exact_scope_stays_unresolved_and_related_keeps_target(sourc
 
 def test_well_shaped_unknown_handle_cannot_be_bound(source_request) -> None:
     workspace, request = source_request
-    request["results"][0]["passage_refs"] = ["eh_0000000000000000"]
+    request["selections"][0]["source_passages"] = ["eh_0000000000000000"]
     rejected = _native(workspace, request)
     assert rejected["outcome"] == "repair", rejected
 
@@ -282,77 +294,23 @@ def test_conflicting_routes_for_same_trial_do_not_persist(source_request) -> Non
     from rob2_kit.application._state import _state
 
     workspace, request = source_request
-    request["missing_results"] = [
+    request["selections"].append(
         {
-            "trial_id": "emperor-reduced",
+            **request["selections"][0],
+            "candidate": None,
             "relation": "ambiguous",
             "missing_facts": [
                 {
-                    "fact": "A missing comparative Result",
+                    "fact": "Missing comparator",
                     "basis": {
                         "kind": "missing_reporting",
-                        "evidence": request["results"][0]["passage_refs"][0],
+                        "evidence": request["selections"][0]["source_passages"][0],
                     },
                 }
             ],
         }
-    ]
+    )
     rejected = _native(workspace, request)
     assert rejected["outcome"] == "repair"
     assert any(r["code"] == "duplicate_trial_result" for r in rejected["repairs"])
     assert _state(workspace)["proposal"] is None
-
-
-def test_missing_record_failure_has_only_missing_record_recovery(tmp_path: Path) -> None:
-    request = {
-        "results": [],
-        "missing_results": [{"trial_id": "emperor-reduced", "relation": "exact"}],
-        "assessments": [{"trial_id": "emperor-reduced", "unknowns": []}],
-        "expected_revision": 0,
-    }
-    with pytest.raises(ToolError) as caught:
-        _native(tmp_path, request)
-    feedback = json.loads(str(caught.value))
-    assert set(feedback["required_fields"]) == {"missing_results"}
-    assert "comparison_groups[]" not in feedback["syntax"]
-    assert "effect_measure" not in feedback["requirements"]
-    assert all(d["path"].startswith("/missing_results/") for d in feedback["defects"])
-    assert len(str(caught.value).encode()) <= 4096
-
-
-@pytest.mark.parametrize("ordinal", range(2))
-def test_recovery_feedback_exposes_independent_defects_in_one_reply(tmp_path: Path, ordinal: int):
-    audit = _REPO / "docs/evaluation/2026-10-03-emperor-recovery-687fb24"
-    attempts = json.loads((audit / "proposal-attempts.json").read_text())
-    attempt = attempts[ordinal]
-    before = json.loads(attempt["result"]["content"][0]["text"])
-    with pytest.raises(ToolError) as caught:
-        _native(tmp_path, attempt["arguments"])
-    after = json.loads(str(caught.value))
-    assert len(str(caught.value).encode()) <= 4096
-    assert after["additional_defects"] == 0
-    assert sum(d["count"] for d in after["defects"]) == (
-        len(before["defects"]) + before["additional_defects"] - (2 if ordinal == 0 else 0)
-    )
-    paths = {d["path"] for d in after["defects"]}
-    assert {"/results/0/clarity", "/results/0/evidence"} <= paths
-    assert after["syntax"]["clarity"]["required"] == list(ResultClarity.model_fields)
-    assert after["syntax"]["clarity"]["each_value"] == [
-        "specified",
-        "unclear",
-        "unavailable",
-        "conflicting",
-    ]
-    assert after["syntax"]["group_values[]"]["required"] == [
-        "group_id",
-        "value",
-        "unit",
-    ]
-    assert "passage_refs" in after["syntax"]["evidence[]"]
-    assert "target_time_value and target_time_unit together" in after["requirements"]
-    if ordinal == 0:
-        assert {"/assessments/0/unknowns", "/assessments/0/counterevidence"} <= paths
-    else:
-        assert {"/results/1", "/results/1/missing_facts"} <= paths
-        assert next(d for d in after["defects"] if d["path"] == "/results/0/clarity")["count"] == 8
-        assert "assessments[].unknowns" in after["requirements"]

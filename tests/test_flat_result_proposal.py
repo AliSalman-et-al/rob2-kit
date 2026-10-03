@@ -8,41 +8,21 @@ import pytest
 from pydantic import ValidationError
 
 from rob2_kit.application.proposal import _proposal_shape_repairs
-from rob2_kit.workflow_models import ProposalDraft, ResultProposal
+from rob2_kit.workflow_models import ProposalDraft, ProposalSelection
 from tests.test_result_scope_review import _allsop_result, _draft
 
 
 def flat_result() -> dict:
+    from support.rob2 import _public_proposal_records
+
     old = _draft(_allsop_result()).results[0].model_dump(mode="json")
-    target, reported, design = old["target"], old["reported"], old["applicability"]
-    return {
-        "trial_id": old["trial_id"],
-        "relation": old["relation"],
-        "relation_rationale": old["relation_rationale"],
-        "clarity": old["clarity"],
-        "design": design["design"],
-        "design_rationale": design["rationale"],
-        "design_evidence": design["evidence"],
-        "target_measurement": target["measurement"]["method"],
-        "target_window": target["time_point_or_window"]["description"],
-        "comparison_groups": target["comparison_groups"],
-        "baseline_subgroup": None,
-        "intended_effect_measure": target["intended_effect_measure"],
-        "reported_outcome": reported["endpoint"]["name"],
-        "reported_definition": reported["endpoint"]["definition"],
-        "analysis_population": reported["analysis_population"],
-        "effect_measure": reported["effect_measure"],
-        "estimate": reported["estimate"],
-        "precision": reported["precision"],
-        "group_values": reported["group_values"],
-        "passage_refs": [item["handle"] for item in old["evidence"]],
-    }
+    return _public_proposal_records([old])["selections"][0]
 
 
 def test_flat_route_preserves_canonical_draft_without_tags() -> None:
     flat = flat_result()
     assert not {"kind", "form", "target", "reported"} & flat.keys()
-    result = ResultProposal.model_validate(flat).to_draft()
+    result = ProposalSelection.model_validate(flat).to_result_draft()
     new = result.model_dump(mode="json")
     old = _draft(_allsop_result()).results[0].model_dump(mode="json")
     assert new.pop("passage_refs") == [item["handle"] for item in old["evidence"]]
@@ -57,7 +37,7 @@ def test_scientific_relation_is_not_guessed(relation: str) -> None:
     flat = flat_result()
     flat["relation"] = relation
     with pytest.raises(ValidationError):
-        ResultProposal.model_validate(flat)
+        ProposalSelection.model_validate(flat)
 
 
 def test_actual_invalid_attempts_still_require_explicit_scientific_choices() -> None:
@@ -69,23 +49,23 @@ def test_actual_invalid_attempts_still_require_explicit_scientific_choices() -> 
     )
     for attempt in attempts:
         with pytest.raises(ValidationError):
-            ResultProposal.model_validate(attempt["arguments"]["results"][0])
+            ProposalSelection.model_validate(attempt["arguments"]["results"][0])
 
 
 def test_uncertainty_cannot_be_laundered_into_exactness_or_rewrite_target() -> None:
     flat = flat_result()
     original = copy.deepcopy(flat)
-    flat["clarity"]["time_point"] = "conflicting"
-    flat["relation_rationale"] = "Target days 1–6; source model days 1–9."
-    result = ResultProposal.model_validate(flat).to_draft()
+    flat["candidate"]["clarity"]["time_point"] = "conflicting"
+    flat["scope_rationale"] = "Target days 1–6; source model days 1–9."
+    result = ProposalSelection.model_validate(flat).to_result_draft()
     draft = ProposalDraft(results=(result,), expected_revision=0)
     assert any(
         r["code"] == "exact_result_scope_not_established"
         for r in _proposal_shape_repairs(draft, {result.trial_id: "Cannabis withdrawal severity"})
     )
     flat["relation"] = "related"
-    result = ResultProposal.model_validate(flat).to_draft()
-    assert result.target.time_point_or_window.description == original["target_window"]
+    result = ProposalSelection.model_validate(flat).to_result_draft()
+    assert result.target.time_point_or_window.description == original["candidate"]["target_window"]
     assert not _proposal_shape_repairs(
         ProposalDraft(results=(result,), expected_revision=0),
         {result.trial_id: "Cannabis withdrawal severity"},
@@ -103,33 +83,31 @@ def test_uncertainty_cannot_be_laundered_into_exactness_or_rewrite_target() -> N
 )
 def test_incomplete_scientific_inputs_remain_rejected(changes: dict) -> None:
     flat = flat_result()
-    flat.update(changes)
+    flat["candidate"].update(changes)
     with pytest.raises(ValidationError):
-        ResultProposal.model_validate(flat)
+        ProposalSelection.model_validate(flat)
 
 
 def test_public_documented_examples_match_live_flat_input() -> None:
     import re
 
-    from rob2_kit.workflow_models import MissingResultProposal
-
     root = Path(__file__).resolve().parents[1]
     reference = root / "src/rob2_kit/skills/rob2-assess/references/result.md"
+    count = 0
     for block in re.findall(r"```json\n(.*?)\n```", reference.read_text(), flags=re.S):
         request = json.loads(block)
-        for result in [*request.get("results", []), *request.get("missing_results", [])]:
-            model = MissingResultProposal if result["relation"] == "unavailable" else ResultProposal
-            parsed = model.model_validate(result)
-            assert parsed.to_draft().trial_id == result["trial_id"]
-            assert "kind" not in model.model_json_schema()["properties"]
+        for selection in request.get("selections", []):
+            parsed = ProposalSelection.model_validate(selection)
+            assert parsed.to_result_draft().trial_id == selection["trial_id"]
+            count += 1
+    assert count == 2
 
 
 def test_flat_proposal_rejects_unsupported_estimate_without_persisting(tmp_path: Path) -> None:
     from support.rob2 import (
         _call,
         _proposal_args,
-        _proposal_assessments,
-        _public_result,
+        _public_proposal_records,
         _result,
         _workspace,
     )
@@ -151,8 +129,7 @@ def test_flat_proposal_rejects_unsupported_estimate_without_persisting(tmp_path:
         workspace,
         "validate_proposal",
         {
-            "results": [_public_result(internal)],
-            "assessments": _proposal_assessments([internal]),
+            **_public_proposal_records([internal]),
             "expected_revision": proposal["expected_revision"],
         },
         _raw=True,

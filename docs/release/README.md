@@ -1,4 +1,4 @@
-# v0.10 public release contract
+# v0.11 public release contract
 
 `public-contract.json` is generated from the typed application models exposed by
 the production FastMCP adapter. It records the ordered tool catalog, annotation
@@ -31,7 +31,12 @@ checks the local boundary or a supplied wheel. For a wheel it installs into a
 fresh virtual environment and queries the real stdio process, so a packaged
 catalog, schema, resource, or console-entry-point drift fails closed.
 
-The v0.10 workflow changes the live Domain submission API while retaining the
+The v0.11 proposal interface uses one Trial selection containing its candidate,
+shared source citations and scientific reasoning. It replaces the old public
+results/missing_results/assessments collections. Canonical Result and reasoning
+records and historical bundle verification retain their recorded semantics.
+
+The v0.10 workflow changed the live Domain submission API while retaining the
 v0.9 durable workspace state. The internal workspace database contract
 is `0.6.0`; v0.8 active workspaces cannot be migrated. Historical finalized
 v0.5 through v0.9 bundles remain verifiable.
@@ -51,7 +56,7 @@ The lower-level commands remain available for isolated contract work:
 ```powershell
 uv run python docs/release/verify.py
 uv build --wheel --out-dir dist
-uv run python docs/release/verify.py --wheel dist/rob2_kit-0.10.0-py3-none-any.whl
+uv run python docs/release/verify.py --wheel dist/rob2_kit-0.11.0-py3-none-any.whl
 ```
 
 See `docs/adr/0031-v0-4-evidence-first-interaction.md` for the public input
