@@ -35,7 +35,7 @@ def flat_result() -> dict:
         "estimate": reported["estimate"],
         "precision": reported["precision"],
         "group_values": reported["group_values"],
-        "evidence": old["evidence"],
+        "passage_refs": [item["handle"] for item in old["evidence"]],
     }
 
 
@@ -43,9 +43,13 @@ def test_flat_route_preserves_canonical_draft_without_tags() -> None:
     flat = flat_result()
     assert not {"kind", "form", "target", "reported"} & flat.keys()
     result = ResultProposal.model_validate(flat).to_draft()
-    assert result.model_dump(mode="json") == _draft(_allsop_result()).results[0].model_dump(
-        mode="json"
-    )
+    new = result.model_dump(mode="json")
+    old = _draft(_allsop_result()).results[0].model_dump(mode="json")
+    assert new.pop("passage_refs") == [item["handle"] for item in old["evidence"]]
+    new.pop("evidence")
+    old.pop("evidence")
+    old.pop("passage_refs")
+    assert new == old
 
 
 @pytest.mark.parametrize("relation", ["supports", "quantitative"])
@@ -113,7 +117,7 @@ def test_public_documented_examples_match_live_flat_input() -> None:
     reference = root / "src/rob2_kit/skills/rob2-assess/references/result.md"
     for block in re.findall(r"```json\n(.*?)\n```", reference.read_text(), flags=re.S):
         request = json.loads(block)
-        for result in request.get("results", []):
+        for result in [*request.get("results", []), *request.get("missing_results", [])]:
             model = MissingResultProposal if result["relation"] == "unavailable" else ResultProposal
             parsed = model.model_validate(result)
             assert parsed.to_draft().trial_id == result["trial_id"]

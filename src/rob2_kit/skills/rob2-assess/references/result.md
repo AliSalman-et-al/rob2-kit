@@ -1,7 +1,8 @@
 # Specify the Result
 
 Use this reference while choosing and constructing each Proposal Result. Use the
-live `validate_proposal` schema for field shapes; `save_proposal` consumes the
+live `validate_proposal` schema for field shapes. Put complete candidates in
+`results` and missing candidates in `missing_results`; `save_proposal` consumes the
 receipt returned by that call.
 
 ## Construct the request
@@ -111,13 +112,27 @@ scientific fields in the complete card; omit `effect_measure`, `estimate`, and
 }
 ```
 
-For an unavailable Result, provide a concrete missing fact and an assessment
+For an unavailable Result, use `missing_results` (and `results: []` when none
+are complete), with a concrete missing fact and an assessment
 with a missing-fact justification. Use an intake-condition basis only when the
 captured Trial has no supported Sources:
 
 ```json
 {
-  "results": [
+  "results": [],
+  "assessments": [
+    {
+      "trial_id": "fictional_quiz_trial",
+      "evidence_basis": [
+        "eh_0000000000000001"
+      ],
+      "missing_fact_justification": "The selected passage captures the missing report; it does not support an invented estimate.",
+      "unknowns": [],
+      "counterevidence": []
+    }
+  ],
+  "expected_revision": 7,
+  "missing_results": [
     {
       "trial_id": "fictional_quiz_trial",
       "relation": "unavailable",
@@ -131,19 +146,7 @@ captured Trial has no supported Sources:
         }
       ]
     }
-  ],
-  "assessments": [
-    {
-      "trial_id": "fictional_quiz_trial",
-      "evidence_basis": [
-        "eh_0000000000000001"
-      ],
-      "missing_fact_justification": "The selected passage captures the missing report; it does not support an invented estimate.",
-      "unknowns": [],
-      "counterevidence": []
-    }
-  ],
-  "expected_revision": 7
+  ]
 }
 ```
 

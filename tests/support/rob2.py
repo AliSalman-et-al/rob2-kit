@@ -101,9 +101,16 @@ def _public_result(result: dict[str, Any]) -> dict[str, Any]:
         "reported_definition": reported["endpoint"].get("definition"),
         "analysis_population": reported["analysis_population"],
     }
-    for key in ("clarity", "passage_refs", "evidence"):
+    for key in ("clarity", "passage_refs"):
         if key in result:
             value[key] = result[key]
+    evidence = result.get("evidence", [])
+    simple = [item["handle"] for item in evidence if item["kind"] in {"narrative", "figure"}]
+    if simple:
+        value["passage_refs"] = list(dict.fromkeys([*value.get("passage_refs", []), *simple]))
+    advanced = [item for item in evidence if item["kind"] not in {"narrative", "figure"}]
+    if advanced:
+        value["evidence"] = advanced
     for key in ("effect_measure", "estimate", "precision", "group_values"):
         if key in reported:
             value[key] = reported[key]
@@ -118,6 +125,21 @@ def _public_result(result: dict[str, Any]) -> dict[str, Any]:
         value["target_time_value"] = target["time_point_or_window"]["value"]
         value["target_time_unit"] = target["time_point_or_window"]["unit"]
     return value
+
+
+def _public_proposal_records(results: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "results": [
+            _public_result(item)
+            for item in results
+            if item.get("kind") != "unavailable" and "missing_facts" not in item
+        ],
+        "missing_results": [
+            _public_result(item)
+            for item in results
+            if item.get("kind") == "unavailable" or "missing_facts" in item
+        ],
+    }
 
 
 def _call(
@@ -145,7 +167,7 @@ def _call(
                     reasoned = await client.call_tool(
                         "validate_proposal",
                         {
-                            "results": [_public_result(item) for item in request["results"]],
+                            **_public_proposal_records(request["results"]),
                             "assessments": _proposal_assessments(request["results"]),
                             "expected_revision": request["expected_revision"],
                         },
@@ -157,7 +179,7 @@ def _call(
                     _PROPOSAL_RECEIPTS[cache_key] = cached
                 request = dict(cached)
             if tool == "validate_proposal" and "results" in request:
-                request["results"] = [_public_result(item) for item in request["results"]]
+                request.update(_public_proposal_records(request["results"]))
             result = await client.call_tool(tool, request)
             value = dict(result.structured_content or {})
             for _ in range(3):

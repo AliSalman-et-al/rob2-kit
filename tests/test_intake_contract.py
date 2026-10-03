@@ -631,7 +631,7 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
         "operation": "validate_proposal",
         "authority": "host",
         "expected_revision": prepared["head"]["state_revision"],
-        "caller_inputs": ["results", "assessments"],
+        "caller_inputs": ["results", "missing_results", "assessments"],
     }
 
 

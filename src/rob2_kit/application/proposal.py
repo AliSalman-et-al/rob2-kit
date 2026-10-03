@@ -340,7 +340,7 @@ def _canonical_result(
     # navigation list.
     raw.pop("passage_refs", None)
     evidence = raw.pop("evidence", [])
-    if not evidence:
+    if not evidence or result.passage_refs:
         selected_for_trial = sorted(
             (
                 item
@@ -352,8 +352,11 @@ def _canonical_result(
             ),
             key=lambda item: (str(item.get("identity", "")), str(item["handle"])),
         )
+        retained_handles = {item.get("handle") for item in evidence}
         for selected in selected_for_trial:
             handle = selected["handle"]
+            if handle in retained_handles:
+                continue
             if selected.get("kind") == "figure":
                 render = selected.get("render", {})
                 evidence.append(

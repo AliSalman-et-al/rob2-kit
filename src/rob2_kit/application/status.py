@@ -310,7 +310,7 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
             "operation": "validate_proposal",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["results", "assessments"],
+            "caller_inputs": ["results", "missing_results", "assessments"],
         }
     if phase == "assessment":
         trial_id, domain_id = _active_trial_and_domain(state)

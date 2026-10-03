@@ -1741,8 +1741,22 @@ class ResultProposal(StrictModel):
     category_denominator: NonBlankText | None = None
     category_axis_names: tuple[NonBlankText, ...] = ()
     categories: tuple[CategoryValue, ...] = ()
-    passage_refs: tuple[SubmittedEvidenceHandle, ...] = ()
-    evidence: tuple[ResultEvidenceDraft, ...] = ()
+    passage_refs: tuple[SubmittedEvidenceHandle, ...] = Field(
+        default=(),
+        description="Selected narrative/figure handles. Server derives record kind "
+        "and retained identity; do not copy Evidence objects for these passages.",
+    )
+    evidence: tuple[
+        Annotated[
+            TableEvidenceDraft | MultiSpanTableEvidenceDraft | DerivedEvidenceDraft,
+            Field(discriminator="kind"),
+        ],
+        ...,
+    ] = Field(
+        default=(),
+        description="Optional table/derived quantitative proof only. "
+        "Use passage_refs for narrative/figure Evidence already selected by handle.",
+    )
 
     @field_validator("group_values", mode="before")
     @classmethod

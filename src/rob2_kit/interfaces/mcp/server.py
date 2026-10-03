@@ -93,6 +93,7 @@ from rob2_kit.application.trials import review_trial as _review_trial
 from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
+    ComparisonGroup,
     DomainId,
     DomainRevisionBasis,
     DomainSaveAnswer,
@@ -112,6 +113,7 @@ from rob2_kit.workflow_models import (
     TrialClosureRequest,
     TrialId,
     TrialReviewRequest,
+    UnavailableMissingFactDraft,
     VisualTranscription,
     WorkingCheckpointDraft,
 )
@@ -169,6 +171,76 @@ def _construction_schema(
     return compact(schema)
 
 
+def _proposal_argument_feedback(error: ValidationError) -> str:
+    """Bounded grammar repair for the chosen typed records, without input echo."""
+    errors = error.errors(include_url=False, include_input=False)
+    models = {
+        "results": ResultProposal,
+        "missing_results": MissingResultProposal,
+        "assessments": ProposalReasoningAssessment,
+    }
+    roots = {item["loc"][0] for item in errors if item["loc"]}
+    required = {
+        name: list(model.model_json_schema().get("required", []))
+        for name, model in models.items()
+        if name in roots
+    }
+    defects = [
+        {
+            "path": "/"
+            + "/".join(
+                str(part) for part in item["loc"] if not str(part).startswith("function-after[")
+            ),
+            "detail": item["msg"][:240],
+        }
+        for item in errors[:8]
+    ]
+    syntax = {}
+    if "results" in roots:
+        syntax = {
+            "comparison_groups[]": _construction_schema(ComparisonGroup),
+            "passage_refs[]": "selected handle string",
+            "design_evidence[]": "selected handle string",
+            "estimate/precision/effect_measure": "source strings; not numeric objects",
+        }
+    if "assessments" in roots:
+        syntax["assessments[].evidence_basis[]"] = "selected handle string"
+        syntax["assessments[].counterevidence"] = "array, including [] when none; not null"
+    requirements = []
+    if "results" in roots:
+        requirements.append(
+            "Comparative effect_measure and estimate must be supplied together; "
+            "known design requires design_evidence. Exact requires specified scope facets."
+        )
+    if "missing_results" in roots:
+        syntax["missing_results[].missing_facts[]"] = _construction_schema(
+            UnavailableMissingFactDraft
+        )
+        requirements.append(
+            "Missing facts require same-Trial source premises; no_supported_sources "
+            "is valid only for the exact captured zero-source condition."
+        )
+    if "assessments" in roots:
+        requirements.append("Supply one source-bound assessment per submitted Trial.")
+    payload = {
+        "code": "invalid_proposal_arguments",
+        "saved": False,
+        "defects": defects,
+        "additional_defects": max(0, len(errors) - len(defects)),
+        "required_fields": required,
+        "syntax": syntax,
+        "requirements": " ".join(requirements),
+        "instruction": (
+            "Preserve scientific facts, relation and uncertainty; correct construction only."
+        ),
+    }
+    # A batch with arbitrarily many invalid fields still receives a bounded reply.
+    while len(json.dumps(payload, ensure_ascii=False).encode()) > 4096 and defects:
+        defects.pop()
+        payload["additional_defects"] += 1
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+
+
 class _InputSchemaDelivery(Middleware):
     async def on_list_tools(
         self,
@@ -189,10 +261,12 @@ class _InputSchemaDelivery(Middleware):
         try:
             return await call_next(context)
         except ToolArgumentValidationError as error:
-            if context.message.name != "save_domain_judgment":
-                raise
             cause = error.__cause__
             if not isinstance(cause, ValidationError):
+                raise
+            if context.message.name == "validate_proposal":
+                raise ToolError(_proposal_argument_feedback(cause)) from error
+            if context.message.name != "save_domain_judgment":
                 raise
             defects = [
                 {"path": "/" + "/".join(map(str, item["loc"])), "detail": item["msg"]}
@@ -3457,7 +3531,8 @@ def select_visual_evidence(
     name="validate_proposal",
     title="Validate Proposal draft",
     description=(
-        "Before saving a Proposal, submit its Result cards and a brief evidence-based assessment "
+        "Before saving a Proposal, put complete Result cards in results and missing cards in "
+        "missing_results, with a brief evidence-based assessment "
         "for each submitted Trial. Explain why the reported result supports the target relation "
         "and chosen time point or window. Compare outcome definition, reported model window, "
         "estimand and population separately. Known target fields or matching numbers do not "
@@ -3467,7 +3542,11 @@ def select_visual_evidence(
         "missing observations in the reported analysis. Identify material conflicting evidence "
         "and unresolved facts; do not infer unavailable facts. The server validates structure, "
         "Evidence references and workflow requirements, not scientific correctness. Construct "
-        "the complete typed request before calling: placeholders, partial nested objects, and "
+        "the complete typed request before calling. Arm objects require id and assignment. "
+        "Use passage_refs for selected narrative/figure handles; the server supplies Evidence "
+        "record kinds and identity metadata. A comparative estimate requires effect_measure and "
+        "estimate together, with optional precision. Known designs require design_evidence. "
+        "Placeholders, partial nested objects, and "
         "guessed enum values are invalid. Save using the returned revision; the server retains "
         "the validated draft."
     ),
@@ -3476,8 +3555,10 @@ def select_visual_evidence(
 )
 def validate_proposal(
     results: Annotated[
-        list[ResultProposal | MissingResultProposal],
-        Field(min_length=1, description="The exact Result cards for this Proposal save."),
+        list[ResultProposal],
+        Field(
+            description="Complete comparative candidates only. Use [] when all cards are missing."
+        ),
     ],
     assessments: Annotated[
         list[ProposalReasoningAssessment],
@@ -3489,9 +3570,15 @@ def validate_proposal(
     expected_revision: Annotated[
         ExpectedRevision, Field(description="Current revision from get_status.")
     ],
+    missing_results: Annotated[
+        tuple[MissingResultProposal, ...],
+        Field(description="Missing/ambiguous Result cards only; never put these in results."),
+    ] = (),
 ) -> ToolResult:
     draft = {
-        "results": [item.to_draft().model_dump(mode="json") for item in results],
+        "results": [
+            item.to_draft().model_dump(mode="json") for item in (*results, *missing_results)
+        ],
         "assessments": [item.model_dump(mode="json") for item in assessments],
         "expected_revision": expected_revision,
     }

@@ -138,7 +138,9 @@ visual Evidence only with the `delivery_receipt` returned alongside an actual
 `ImageContent` block; metadata-only renders do not issue a receipt.
 
 Build Result cards for the live `validate_proposal` schema. The first validation call
-contains one card for every captured Trial. While Proposal Review is pending,
+contains one card for every captured Trial across `results` (complete candidates)
+and `missing_results` (missing/ambiguous candidates). Keep the two typed
+collections separate; no Result record tags are needed. While Proposal Review is pending,
 submit only complete replacement cards for corrected Trials; the server preserves
 the rest.
 
@@ -184,7 +186,8 @@ only when one selected passage explicitly joins that name and definition.
 For `analysis_population`, a supported summary may combine passages when it preserves
 the reported inclusion criteria and exclusions.
 
-For an unavailable Result, give each concrete missing fact its closed basis:
+For an unavailable Result, use `missing_results` and give each concrete missing
+fact its closed basis:
 selected missing-reporting Evidence, or `no_supported_sources` only for a
 captured Trial with zero Sources. Unavailable Results still enter Proposal Review.
 
