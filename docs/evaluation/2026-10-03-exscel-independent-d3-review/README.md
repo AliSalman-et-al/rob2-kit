@@ -1,0 +1,5 @@
+# Independent EXSCEL D3 reviewer handoff
+
+`review-packet.md` is the standalone handoff: exact frozen final and archived active answers, complete warrants/unknowns/limitations, target, primary source facts and relevant SAP text, delivered-versus-cited distinction, and separate reference-scope ambiguity. It intentionally contains no reviewer verdict. `exact-records.json` preserves the full machine-readable target and both domain records, including complete cited source passages.
+
+Preparation used the original Code benchmark PDFs and preserved actual assessment receipts. Figure S2 and S9 were visually inspected from those PDFs; no model inference or benchmark was run. Exact target/domain equality against frozen-final-state and verbatim inclusion of all final warrants, unknowns and limitation premises/stopping rationales were checked. The three primary PDF hashes were recomputed. This documentation does not alter the frozen assessment or claim an accuracy gain. Independent methodological adjudication remains outstanding.
