@@ -1,0 +1,42 @@
+{
+  "example_canonical_equivalence": true,
+  "scope": "Typed syntax only, not citation ownership or scientific entailment. Expected Bendix missing-counterevidence rejection retained.",
+  "actual_submissions": [
+    {
+      "case": "host-exam-d5-production",
+      "item_id": "item_21",
+      "trace_status": "completed",
+      "current_schema_valid": true
+    },
+    {
+      "case": "recovery-d5-production",
+      "item_id": "item_20",
+      "trace_status": "completed",
+      "current_schema_valid": true
+    },
+    {
+      "case": "bendix-production-d2",
+      "item_id": "item_15",
+      "trace_status": "failed",
+      "current_schema_valid": false
+    },
+    {
+      "case": "bendix-production-d2",
+      "item_id": "item_16",
+      "trace_status": "completed",
+      "current_schema_valid": true
+    },
+    {
+      "case": "guitton-production-d2",
+      "item_id": "item_16",
+      "trace_status": "completed",
+      "current_schema_valid": true
+    },
+    {
+      "case": "award10-production-d3",
+      "item_id": "item_13",
+      "trace_status": "completed",
+      "current_schema_valid": true
+    }
+  ]
+}
