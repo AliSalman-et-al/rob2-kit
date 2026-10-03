@@ -1,0 +1,5 @@
+{
+  "error": "TypeError",
+  "detail": "_project_review_trial() missing 2 required keyword-only arguments: 'cursor' and 'selector'",
+  "qualification": "Preparation TypeError from initial transport-fixture call, resolved by supplying cursor and selector; not a current app/model failure."
+}

@@ -1,0 +1,721 @@
+{
+  "sq:deviations:appropriate-analysis": [
+    {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": null,
+        "authoritative_wording": "Presentation fixture only; no Trial review or approval performed."
+      },
+      "data": {
+        "review": {
+          "identity": "sha256:ff79bed24171b715c7e8f95e7d283aea226d3aa2ab33d7c5276a2dec09557be5",
+          "trial_id": "bendix-1996",
+          "result_identity": "sha256:a8d51141fea53904c630ef359f4c2a56ad5e64bd9f08b89500a7c3fb1b43471f",
+          "checkpoint_ids": [
+            "sha256:ef1f2cb8807c307b88eab003b0fb85a0f0810cc5756bb4c478198ebfec213c9e"
+          ],
+          "disposition": "assessed",
+          "reason": null,
+          "facts": [],
+          "domain_attribution": []
+        },
+        "result": null,
+        "domain_findings": [
+          {
+            "domain_id": "domain:deviations",
+            "checkpoint_identity": "sha256:ef1f2cb8807c307b88eab003b0fb85a0f0810cc5756bb4c478198ebfec213c9e",
+            "judgment": "high",
+            "answers": [
+              {
+                "question_id": "sq:deviations:appropriate-analysis",
+                "question": "Was an appropriate analysis used to estimate the effect of assignment to intervention?",
+                "driver": true,
+                "answer": "no",
+                "facts": [
+                  {
+                    "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nRandomized:\n106\nTreatment group:\n55\nNever started:\n2\nControl group:\n51\nDropped out:\n7\nStarted tr\n5\neatment:\nj J\nr r\nGradu\n4\nated:\n1\nCould not be reached\nat 4 months:\n1\nCould not be reached\nat 4 months:\n2\nIn program at 4 months:\n45\nFIGURE 1. Patient flow from randomization until the 4-month follow-up examination.\nor facet or both. Twelve patients (11%) had pre-\ndominantly diskogenic back pain, characterized\nmainly by pain on forward bending or sitting and\nalso by disk narrowing. Four of these patients had\ndark disks on magnetic resonance imaging at one\nlevel or more. None had undergone diskography.\nSeveral other patients also had such symptoms, but\nonly as a part of a mixed clinical picture.\nAnother eight patients (8%) had facet joint\nsymptoms as a predominant feature. Facet disease\nwas diagnosed by extension pattern: back pain when\nraising from a forward-bending posture, pain on hy-\nperextension in the standing posture, and a positive\nspringing test (pain on manual hyperextension of\neach spinal segment), in combination with con-\ntralateral back pain on rotation and corresponding\nradiographic features. Eighteen patients (17%) had\nundergone disk surgery, and three had more than\none operation. One pa-\ntient had grade-1 spondy-\nlolisthesis, but without\ndemonstrated instability\non flexion and extension\nradiography.\nSciatica accounted for 29\n(27%) of the patients, in\nmost of whom the cause was\nprobably an earlier hernia-\ntion. However, only some of\nthese patients had under-\ngone myelography, com-\nputed tomography, or mag-\nnetic resonance imaging to\nconfirm the\nherniation.\nThe other patients had a\nwide variety of muscular or\nligamental pain or sacroiliac\njoint symptoms. Moreover,\nmany\npatients\ndemon-\nstrated one or more nonor-\nganic signs, but we always\nconsidered such psychologi-\ncal aspects as supplemental\nto an organic problem.\nPatients with any of the\nfollowing were excluded:\ncurrent disk\nherniation\n(which might be amenable\nto surgery or bed rest),\nother surgically remediable\nlesions, inflammatory dis-\nease of the back, pregnancy, cancer, or clinically\nrelevant osteoporosis with or without fractures. Peo-\nple receiving social pensions were also excluded.\nAt baseline (Table 1), 12 (27%) of the 45 pa-\ntients in the treatment group who eventually fin-\nished the program and returned for the 4-month\nfollow-up were able to work (nine were working\nfull-time, two were in school, and one was laid off).\nIn the control group, eight of the 49 patients who\nreturned for the 4-month follow-up had been able\nto work at baseline (five were working full-time,\none was in school, and two were laid off). There\nwere no significant differences between the two\ngroups upon entering the project.\nFigure 1 illustrates the flow of patients through\nthe project. Two patients never started the treat-\nment: one had a disk herniation while waiting, and\none never appeared. Seven patients dropped out of\nIn program at 4 months:\n49\n6 4\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+                    "evidence": {
+                      "handle": "eh_77990c983762e6f6",
+                      "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+                    },
+                    "role": "context"
+                  },
+                  {
+                    "text": "Dropouts\nOf the two patients who\nnever started the treatment\nprogram and the seven who\ndropped\nout,\nonly\ntwo\ncould be contacted after 4\nmonths. Therefore, these\npatients are not included in\nthis analysis.",
+                    "evidence": {
+                      "handle": "eh_0ff2fe8a8c6cc218",
+                      "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+                    },
+                    "role": "support"
+                  },
+                  {
+                    "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nTABLE 3\nRESULTS AT 4-MONTH FOLLOW-UP\nValue\nTreated group (n = 45)\nControl group (n = 49)\nMedian\nIQR*\nRange\nMedian\nIQR\nRange\nP value\nContacts with health-care system\n1.6\n0.4-3.9\n0-26\n5.3\n1.8-11.5\n0-40\n< .001\nDays of sick leave\n10\n0-122\n0-123\n122\n24.5-122\n0-122\n.02\nBack pain (scale 0-10)\n5.7\n2.3-7.8\n0-10\n6.9\n4.8-7.8\n1-10\n.05\nLeg pain (scale 0-10)\n3.5\n0.3-7.0\n0-10\n5.4\n3.0-7.3\n0-10\n.17\nFunction (maximum score 30)\n12.1\n7.2-16.8\n0-23\n16.8\n13.1-20.1\n7-25\n<.001\nIsometric back-muscle\n38.0\n16.0-88.0\n0-260\n13.0\n2.8-33.0\n0-112\n< .001\nendurance (seconds)\n'interquartile range\nStatistical methods\nThe baseline and 4-month values were compared\nin separate analyses using Mann-Whitney tests. Be-\ncause more patients in the treated group were able\nto work at baseline, an additional Fisher-Irwin test\nwas done for this parameter. The level of signifi-\ncance was defined as 5%.\nThe results are based on data collected at a fol-\nlow-up examination at 4 months (the first Monday\nafter 122 days after graduation). Each patient in the\ncontrol group was matched at randomization with\none in the treated group, so that the interval be-\ntween the initial medical examination and the 4-\nmonth examination was identical.\nReturn to work\nOne of the major goals of the project was to\nprepare patients physically and psychologically to go\nback to work. \"Workability\" was defined as having a\njob, being in school, or seeking work.\nAt the 4-month follow-up, 29 (64%) of the 45\ntreated patients were able to work, compared with\n12 (27%) at baseline; in the control group, 14\n(28%) of the 49 patients were able to work at the\ntime of the 4-month follow-up, compared with 8\n(16%) at baseline. The difference between the two\ngroups was significant (P < .001); the differences in\nthe before and after values in the two groups were\nalso significant (P < .001 by Fisher-Irwin test). Of\nthe 29 patients able to work in the treated group, 17\nhad full-time jobs, seven were unemployed but seek-\ning work, and five were in school. Of the patients in\nthe treated group who could not work, six were\nreceiving social pensions and the rest were still on\nsick leave. In the control group, 10 of the 14 pa-\ntients able to work were working full-time, three\nwere unemployed but seeking work, and one was in\nschool. Eight persons in this group were receiving\nsocial pensions and the rest were on sick leave.\nHealth care, sick leave\nThe treated group contacted family doctors, spe-\ncialists, physical therapists, chiropractors, or hospi-\ntals significantly fewer times than the control group\ndid. They also used significantly fewer days of sick\nleave (Table 3).\nPain and function\nPatients used a scale of 0 (no pain) to 10 (worst\npossible pain) to rate pain in the back and in the\nlegs. After 4 months, the treated group had signifi-\ncantly less back pain than the controls, but they had\nno difference in leg pain (Table 3).\nWe assessed function with 15 questions about\nhow much the back problem interfered with activi-\nties of daily living.36 The possible answers were 0\n(\"no problem\"), 1 (\"might be a problem\"), or 2 (\"is\na problem\"). Thus, the maximum total score was 30.\nThis test indicated that the treated patients were\ndoing significantly better than the control patients\n(Table 3).\nIsometric back-muscle endurance\nWe measured isometric back-muscle endurance\nwith a test previously evaluated by Biering-S0ren-\nsen.38 Patients were asked to assume the position\nshown in Figure 2 and to hold it as long as possible,\nup to a maximum of 4 minutes and 30 seconds (the\nrecord in our program was 4 minutes and 20 sec-\nR E S U L T S\n6 6\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+                    "evidence": {
+                      "handle": "eh_6d7b002611d13358",
+                      "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+                    },
+                    "role": "context"
+                  }
+                ],
+                "warrant": "The approved assignment effect targets all randomized participants, while workability comparison uses only 45 treated and 49 control returnees; the report expressly excludes the two who never started and seven dropouts from analysis except that only two were contacted. These eligible randomized participants were omitted due to noncompletion/nonreturn, not merely missing outcomes in an assignment analysis. Thus this is not an appropriate analysis estimating the approved assignment effect. The returnees' comparison remains as reported; it is not reinterpreted as an all-randomized estimate.",
+                "justification": "The approved assignment effect targets all randomized participants, while workability comparison uses only 45 treated and 49 control returnees; the report expressly excludes the two who never started and seven dropouts from analysis except that only two were contacted. These eligible randomized participants were omitted due to noncompletion/nonreturn, not merely missing outcomes in an assignment analysis. Thus this is not an appropriate analysis estimating the approved assignment effect. The returnees' comparison remains as reported; it is not reinterpreted as an all-randomized estimate.",
+                "unknowns": [
+                  "Outcomes for omitted randomized participants are not reported."
+                ],
+                "counterevidence": [
+                  {
+                    "basis_index": 2,
+                    "implication": "The analyzed comparison preserves treatment/control groups and matched intervals among returnees, but remains restricted post-randomization."
+                  }
+                ],
+                "limitations": [],
+                "conflicts": [],
+                "uninvestigated_routes": [],
+                "evidence": [
+                  {
+                    "handle": "eh_77990c983762e6f6",
+                    "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+                  },
+                  {
+                    "handle": "eh_0ff2fe8a8c6cc218",
+                    "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+                  },
+                  {
+                    "handle": "eh_6d7b002611d13358",
+                    "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+                  }
+                ],
+                "bases": [
+                  {
+                    "kind": "context",
+                    "assertion": "host_asserted",
+                    "evidence": {
+                      "handle": "eh_77990c983762e6f6",
+                      "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+                    }
+                  },
+                  {
+                    "kind": "direct_support",
+                    "assertion": "host_asserted",
+                    "evidence": {
+                      "handle": "eh_0ff2fe8a8c6cc218",
+                      "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+                    }
+                  },
+                  {
+                    "kind": "context",
+                    "assertion": "host_asserted",
+                    "evidence": {
+                      "handle": "eh_6d7b002611d13358",
+                      "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+                    }
+                  }
+                ],
+                "evidence_expansions": [
+                  {
+                    "operation": "read_pages",
+                    "evidence": "eh_77990c983762e6f6",
+                    "trial_id": "bendix-1996",
+                    "windows": [
+                      {
+                        "source_id": "sh_36194f1aa06ed76f",
+                        "page": 3,
+                        "start_line": 1,
+                        "end_line": 109,
+                        "start_char": 0,
+                        "end_char": null
+                      }
+                    ]
+                  },
+                  {
+                    "operation": "read_pages",
+                    "evidence": "eh_0ff2fe8a8c6cc218",
+                    "trial_id": "bendix-1996",
+                    "windows": [
+                      {
+                        "source_id": "sh_36194f1aa06ed76f",
+                        "page": 6,
+                        "start_line": 83,
+                        "end_line": 94,
+                        "start_char": 0,
+                        "end_char": null
+                      }
+                    ]
+                  },
+                  {
+                    "operation": "read_pages",
+                    "evidence": "eh_6d7b002611d13358",
+                    "trial_id": "bendix-1996",
+                    "windows": [
+                      {
+                        "source_id": "sh_36194f1aa06ed76f",
+                        "page": 5,
+                        "start_line": 1,
+                        "end_line": 134,
+                        "start_char": 0,
+                        "end_char": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "premise_checkpoint_identity": null,
+            "premise_records": [],
+            "investigation": {
+              "proposition": "Were participants aware of their assigned intervention during the trial?",
+              "status": "not_established",
+              "sufficiency": {
+                "status": "not_established",
+                "attribution": "not_established"
+              },
+              "workflow_permission": {
+                "permitted": true,
+                "operation": "save_domain_judgment",
+                "authority": "host",
+                "detail": "Submit a changed Domain draft before refreshing Trial review; review itself is not semantic approval."
+              },
+              "coverage": {
+                "source_scope": [
+                  "sh_36194f1aa06ed76f"
+                ],
+                "state": "delivered",
+                "ranges": [
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 81,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 2,
+                    "start_line": 1,
+                    "end_line": 139,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 3,
+                    "start_line": 1,
+                    "end_line": 109,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 4,
+                    "start_line": 1,
+                    "end_line": 112,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 5,
+                    "start_line": 1,
+                    "end_line": 134,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 6,
+                    "start_line": 1,
+                    "end_line": 32,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 6,
+                    "start_line": 33,
+                    "end_line": 97,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 7,
+                    "start_line": 1,
+                    "end_line": 161,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 8,
+                    "start_line": 1,
+                    "end_line": 112,
+                    "phase": "assessment"
+                  }
+                ],
+                "range_count": 9,
+                "delivered_sources": [
+                  "sh_36194f1aa06ed76f"
+                ],
+                "sources_without_delivery": [],
+                "ranges_truncated": false
+              },
+              "host_notes": {
+                "referenced_sources": [],
+                "unread_ranges": [],
+                "observation_count": 0
+              },
+              "observations": [],
+              "support": [],
+              "counterevidence": [],
+              "premises": [],
+              "unresolved": "Were participants aware of their assigned intervention during the trial?",
+              "recovery_choices": [
+                {
+                  "operation": "save_working_checkpoint",
+                  "available": true,
+                  "rationale": "Save source-linked observations without committing an answer."
+                },
+                {
+                  "operation": "search_sources",
+                  "available": true,
+                  "rationale": "Search captured Sources for Evidence that discriminates the premise."
+                },
+                {
+                  "operation": "read_pages",
+                  "available": true,
+                  "rationale": "Read exact Source pages before relying on a passage as Evidence."
+                },
+                {
+                  "operation": "accept_limitation",
+                  "available": true,
+                  "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+                },
+                {
+                  "operation": "save_domain_judgment",
+                  "available": true,
+                  "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+                }
+              ],
+              "stopping_rationale": null,
+              "stale": [],
+              "checkpoint_identity": null,
+              "legacy": "supported"
+            }
+          }
+        ],
+        "retry": false,
+        "review_page": {
+          "mode": "complete",
+          "complete": true,
+          "snapshot_digest": "sha256:6e0a3d17b002261afd623b3613d30ef72105fd13ed75a936356bee279b8d3c8f",
+          "selector": {
+            "domain_id": "domain:deviations",
+            "question_id": "sq:deviations:appropriate-analysis"
+          },
+          "target": "answer_finding",
+          "counts": {
+            "domains": 1,
+            "answers": 1,
+            "drivers": 1,
+            "review_facts": 0,
+            "review_reason_characters": 0,
+            "premise_records": 0,
+            "investigations": 1,
+            "missing_data_rows": 0,
+            "missing_data_conflicts": 0,
+            "facts": 3,
+            "warrants": 1,
+            "justifications": 1,
+            "unknowns": 1,
+            "counterevidence": 1,
+            "limitations": 0,
+            "conflicts": 0,
+            "uninvestigated_routes": 0,
+            "evidence": 3,
+            "bases": 3,
+            "evidence_expansions": 3
+          },
+          "deferred_fields": [],
+          "fragment": null,
+          "offset": null,
+          "total": null,
+          "offset_unit": null,
+          "next_cursor": null,
+          "stable_recovery": null
+        }
+      }
+    }
+  ],
+  "sq:deviations:substantial-impact": [
+    {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 14,
+        "next_action": null,
+        "authoritative_wording": "Presentation fixture only; no Trial review or approval performed."
+      },
+      "data": {
+        "review": {
+          "identity": "sha256:ff79bed24171b715c7e8f95e7d283aea226d3aa2ab33d7c5276a2dec09557be5",
+          "trial_id": "bendix-1996",
+          "result_identity": "sha256:a8d51141fea53904c630ef359f4c2a56ad5e64bd9f08b89500a7c3fb1b43471f",
+          "checkpoint_ids": [
+            "sha256:ef1f2cb8807c307b88eab003b0fb85a0f0810cc5756bb4c478198ebfec213c9e"
+          ],
+          "disposition": "assessed",
+          "reason": null,
+          "facts": [],
+          "domain_attribution": []
+        },
+        "result": null,
+        "domain_findings": [
+          {
+            "domain_id": "domain:deviations",
+            "checkpoint_identity": "sha256:ef1f2cb8807c307b88eab003b0fb85a0f0810cc5756bb4c478198ebfec213c9e",
+            "judgment": "high",
+            "answers": [
+              {
+                "question_id": "sq:deviations:substantial-impact",
+                "question": "If N/PN/NI to 2.6: Was there potential for a substantial impact (on the result) of the failure to analyse participants in the group to which they were randomized?",
+                "driver": true,
+                "answer": "probably_yes",
+                "facts": [
+                  {
+                    "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nRandomized:\n106\nTreatment group:\n55\nNever started:\n2\nControl group:\n51\nDropped out:\n7\nStarted tr\n5\neatment:\nj J\nr r\nGradu\n4\nated:\n1\nCould not be reached\nat 4 months:\n1\nCould not be reached\nat 4 months:\n2\nIn program at 4 months:\n45\nFIGURE 1. Patient flow from randomization until the 4-month follow-up examination.\nor facet or both. Twelve patients (11%) had pre-\ndominantly diskogenic back pain, characterized\nmainly by pain on forward bending or sitting and\nalso by disk narrowing. Four of these patients had\ndark disks on magnetic resonance imaging at one\nlevel or more. None had undergone diskography.\nSeveral other patients also had such symptoms, but\nonly as a part of a mixed clinical picture.\nAnother eight patients (8%) had facet joint\nsymptoms as a predominant feature. Facet disease\nwas diagnosed by extension pattern: back pain when\nraising from a forward-bending posture, pain on hy-\nperextension in the standing posture, and a positive\nspringing test (pain on manual hyperextension of\neach spinal segment), in combination with con-\ntralateral back pain on rotation and corresponding\nradiographic features. Eighteen patients (17%) had\nundergone disk surgery, and three had more than\none operation. One pa-\ntient had grade-1 spondy-\nlolisthesis, but without\ndemonstrated instability\non flexion and extension\nradiography.\nSciatica accounted for 29\n(27%) of the patients, in\nmost of whom the cause was\nprobably an earlier hernia-\ntion. However, only some of\nthese patients had under-\ngone myelography, com-\nputed tomography, or mag-\nnetic resonance imaging to\nconfirm the\nherniation.\nThe other patients had a\nwide variety of muscular or\nligamental pain or sacroiliac\njoint symptoms. Moreover,\nmany\npatients\ndemon-\nstrated one or more nonor-\nganic signs, but we always\nconsidered such psychologi-\ncal aspects as supplemental\nto an organic problem.\nPatients with any of the\nfollowing were excluded:\ncurrent disk\nherniation\n(which might be amenable\nto surgery or bed rest),\nother surgically remediable\nlesions, inflammatory dis-\nease of the back, pregnancy, cancer, or clinically\nrelevant osteoporosis with or without fractures. Peo-\nple receiving social pensions were also excluded.\nAt baseline (Table 1), 12 (27%) of the 45 pa-\ntients in the treatment group who eventually fin-\nished the program and returned for the 4-month\nfollow-up were able to work (nine were working\nfull-time, two were in school, and one was laid off).\nIn the control group, eight of the 49 patients who\nreturned for the 4-month follow-up had been able\nto work at baseline (five were working full-time,\none was in school, and two were laid off). There\nwere no significant differences between the two\ngroups upon entering the project.\nFigure 1 illustrates the flow of patients through\nthe project. Two patients never started the treat-\nment: one had a disk herniation while waiting, and\none never appeared. Seven patients dropped out of\nIn program at 4 months:\n49\n6 4\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+                    "evidence": {
+                      "handle": "eh_77990c983762e6f6",
+                      "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+                    },
+                    "role": "context"
+                  },
+                  {
+                    "text": "the program: one was strongly addicted to mor-\nphine, one could not accept the restrictions on\nsmoking (which was only allowed outdoors), one\nfelt the program was too difficult, one was found to\nhave a neurologic disease, and three had increased\nback pain they could not accept. All the dropouts\nwere on sick leave when they entered the program\nand did not differ from the graduates in any of the\nmeasured characteristics.",
+                    "evidence": {
+                      "handle": "eh_e108107f5b664f63",
+                      "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+                    },
+                    "role": "support"
+                  },
+                  {
+                    "text": "Dropouts\nOf the two patients who\nnever started the treatment\nprogram and the seven who\ndropped\nout,\nonly\ntwo\ncould be contacted after 4\nmonths. Therefore, these\npatients are not included in\nthis analysis.",
+                    "evidence": {
+                      "handle": "eh_0ff2fe8a8c6cc218",
+                      "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+                    },
+                    "role": "context"
+                  },
+                  {
+                    "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nTABLE 3\nRESULTS AT 4-MONTH FOLLOW-UP\nValue\nTreated group (n = 45)\nControl group (n = 49)\nMedian\nIQR*\nRange\nMedian\nIQR\nRange\nP value\nContacts with health-care system\n1.6\n0.4-3.9\n0-26\n5.3\n1.8-11.5\n0-40\n< .001\nDays of sick leave\n10\n0-122\n0-123\n122\n24.5-122\n0-122\n.02\nBack pain (scale 0-10)\n5.7\n2.3-7.8\n0-10\n6.9\n4.8-7.8\n1-10\n.05\nLeg pain (scale 0-10)\n3.5\n0.3-7.0\n0-10\n5.4\n3.0-7.3\n0-10\n.17\nFunction (maximum score 30)\n12.1\n7.2-16.8\n0-23\n16.8\n13.1-20.1\n7-25\n<.001\nIsometric back-muscle\n38.0\n16.0-88.0\n0-260\n13.0\n2.8-33.0\n0-112\n< .001\nendurance (seconds)\n'interquartile range\nStatistical methods\nThe baseline and 4-month values were compared\nin separate analyses using Mann-Whitney tests. Be-\ncause more patients in the treated group were able\nto work at baseline, an additional Fisher-Irwin test\nwas done for this parameter. The level of signifi-\ncance was defined as 5%.\nThe results are based on data collected at a fol-\nlow-up examination at 4 months (the first Monday\nafter 122 days after graduation). Each patient in the\ncontrol group was matched at randomization with\none in the treated group, so that the interval be-\ntween the initial medical examination and the 4-\nmonth examination was identical.\nReturn to work\nOne of the major goals of the project was to\nprepare patients physically and psychologically to go\nback to work. \"Workability\" was defined as having a\njob, being in school, or seeking work.\nAt the 4-month follow-up, 29 (64%) of the 45\ntreated patients were able to work, compared with\n12 (27%) at baseline; in the control group, 14\n(28%) of the 49 patients were able to work at the\ntime of the 4-month follow-up, compared with 8\n(16%) at baseline. The difference between the two\ngroups was significant (P < .001); the differences in\nthe before and after values in the two groups were\nalso significant (P < .001 by Fisher-Irwin test). Of\nthe 29 patients able to work in the treated group, 17\nhad full-time jobs, seven were unemployed but seek-\ning work, and five were in school. Of the patients in\nthe treated group who could not work, six were\nreceiving social pensions and the rest were still on\nsick leave. In the control group, 10 of the 14 pa-\ntients able to work were working full-time, three\nwere unemployed but seeking work, and one was in\nschool. Eight persons in this group were receiving\nsocial pensions and the rest were on sick leave.\nHealth care, sick leave\nThe treated group contacted family doctors, spe-\ncialists, physical therapists, chiropractors, or hospi-\ntals significantly fewer times than the control group\ndid. They also used significantly fewer days of sick\nleave (Table 3).\nPain and function\nPatients used a scale of 0 (no pain) to 10 (worst\npossible pain) to rate pain in the back and in the\nlegs. After 4 months, the treated group had signifi-\ncantly less back pain than the controls, but they had\nno difference in leg pain (Table 3).\nWe assessed function with 15 questions about\nhow much the back problem interfered with activi-\nties of daily living.36 The possible answers were 0\n(\"no problem\"), 1 (\"might be a problem\"), or 2 (\"is\na problem\"). Thus, the maximum total score was 30.\nThis test indicated that the treated patients were\ndoing significantly better than the control patients\n(Table 3).\nIsometric back-muscle endurance\nWe measured isometric back-muscle endurance\nwith a test previously evaluated by Biering-S0ren-\nsen.38 Patients were asked to assume the position\nshown in Figure 2 and to hold it as long as possible,\nup to a maximum of 4 minutes and 30 seconds (the\nrecord in our program was 4 minutes and 20 sec-\nR E S U L T S\n6 6\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+                    "evidence": {
+                      "handle": "eh_6d7b002611d13358",
+                      "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+                    },
+                    "role": "context"
+                  }
+                ],
+                "warrant": "Nine of 106 randomized participants (including two never-started) were excluded; only two of those nine were reachable at four months. Workability was common among returnees (29/45 and 14/49), but excluded treatment participants included people who never appeared, had disk herniation, found the program too difficult, or could not accept increased pain. Their workability is unknown; exclusions plausibly relate to prognosis or ability to work, so the assignment contrast could be materially affected, though its magnitude is not determined.",
+                "justification": "Nine of 106 randomized participants (including two never-started) were excluded; only two of those nine were reachable at four months. Workability was common among returnees (29/45 and 14/49), but excluded treatment participants included people who never appeared, had disk herniation, found the program too difficult, or could not accept increased pain. Their workability is unknown; exclusions plausibly relate to prognosis or ability to work, so the assignment contrast could be materially affected, though its magnitude is not determined.",
+                "unknowns": [
+                  "Workability outcomes for excluded participants and resulting impact are unknown."
+                ],
+                "counterevidence": [
+                  {
+                    "basis_index": 3,
+                    "implication": "Outcome was common in returnees and nine participants are a minority of 106, though their outcomes are unknown and exclusion reasons may be prognostic."
+                  }
+                ],
+                "limitations": [],
+                "conflicts": [],
+                "uninvestigated_routes": [],
+                "evidence": [
+                  {
+                    "handle": "eh_77990c983762e6f6",
+                    "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+                  },
+                  {
+                    "handle": "eh_e108107f5b664f63",
+                    "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+                  },
+                  {
+                    "handle": "eh_0ff2fe8a8c6cc218",
+                    "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+                  },
+                  {
+                    "handle": "eh_6d7b002611d13358",
+                    "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+                  }
+                ],
+                "bases": [
+                  {
+                    "kind": "context",
+                    "assertion": "host_asserted",
+                    "evidence": {
+                      "handle": "eh_77990c983762e6f6",
+                      "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+                    }
+                  },
+                  {
+                    "kind": "indirect_support",
+                    "assertion": "host_asserted",
+                    "evidence": {
+                      "handle": "eh_e108107f5b664f63",
+                      "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+                    }
+                  },
+                  {
+                    "kind": "context",
+                    "assertion": "host_asserted",
+                    "evidence": {
+                      "handle": "eh_0ff2fe8a8c6cc218",
+                      "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+                    }
+                  },
+                  {
+                    "kind": "context",
+                    "assertion": "host_asserted",
+                    "evidence": {
+                      "handle": "eh_6d7b002611d13358",
+                      "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+                    }
+                  }
+                ],
+                "evidence_expansions": [
+                  {
+                    "operation": "read_pages",
+                    "evidence": "eh_77990c983762e6f6",
+                    "trial_id": "bendix-1996",
+                    "windows": [
+                      {
+                        "source_id": "sh_36194f1aa06ed76f",
+                        "page": 3,
+                        "start_line": 1,
+                        "end_line": 109,
+                        "start_char": 0,
+                        "end_char": null
+                      }
+                    ]
+                  },
+                  {
+                    "operation": "read_pages",
+                    "evidence": "eh_e108107f5b664f63",
+                    "trial_id": "bendix-1996",
+                    "windows": [
+                      {
+                        "source_id": "sh_36194f1aa06ed76f",
+                        "page": 4,
+                        "start_line": 4,
+                        "end_line": 12,
+                        "start_char": 0,
+                        "end_char": null
+                      }
+                    ]
+                  },
+                  {
+                    "operation": "read_pages",
+                    "evidence": "eh_0ff2fe8a8c6cc218",
+                    "trial_id": "bendix-1996",
+                    "windows": [
+                      {
+                        "source_id": "sh_36194f1aa06ed76f",
+                        "page": 6,
+                        "start_line": 83,
+                        "end_line": 94,
+                        "start_char": 0,
+                        "end_char": null
+                      }
+                    ]
+                  },
+                  {
+                    "operation": "read_pages",
+                    "evidence": "eh_6d7b002611d13358",
+                    "trial_id": "bendix-1996",
+                    "windows": [
+                      {
+                        "source_id": "sh_36194f1aa06ed76f",
+                        "page": 5,
+                        "start_line": 1,
+                        "end_line": 134,
+                        "start_char": 0,
+                        "end_char": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "premise_checkpoint_identity": null,
+            "premise_records": [],
+            "investigation": {
+              "proposition": "Were participants aware of their assigned intervention during the trial?",
+              "status": "not_established",
+              "sufficiency": {
+                "status": "not_established",
+                "attribution": "not_established"
+              },
+              "workflow_permission": {
+                "permitted": true,
+                "operation": "save_domain_judgment",
+                "authority": "host",
+                "detail": "Submit a changed Domain draft before refreshing Trial review; review itself is not semantic approval."
+              },
+              "coverage": {
+                "source_scope": [
+                  "sh_36194f1aa06ed76f"
+                ],
+                "state": "delivered",
+                "ranges": [
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 1,
+                    "start_line": 1,
+                    "end_line": 81,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 2,
+                    "start_line": 1,
+                    "end_line": 139,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 3,
+                    "start_line": 1,
+                    "end_line": 109,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 4,
+                    "start_line": 1,
+                    "end_line": 112,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 5,
+                    "start_line": 1,
+                    "end_line": 134,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 6,
+                    "start_line": 1,
+                    "end_line": 32,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 6,
+                    "start_line": 33,
+                    "end_line": 97,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 7,
+                    "start_line": 1,
+                    "end_line": 161,
+                    "phase": "assessment"
+                  },
+                  {
+                    "source_id": "sh_36194f1aa06ed76f",
+                    "page": 8,
+                    "start_line": 1,
+                    "end_line": 112,
+                    "phase": "assessment"
+                  }
+                ],
+                "range_count": 9,
+                "delivered_sources": [
+                  "sh_36194f1aa06ed76f"
+                ],
+                "sources_without_delivery": [],
+                "ranges_truncated": false
+              },
+              "host_notes": {
+                "referenced_sources": [],
+                "unread_ranges": [],
+                "observation_count": 0
+              },
+              "observations": [],
+              "support": [],
+              "counterevidence": [],
+              "premises": [],
+              "unresolved": "Were participants aware of their assigned intervention during the trial?",
+              "recovery_choices": [
+                {
+                  "operation": "save_working_checkpoint",
+                  "available": true,
+                  "rationale": "Save source-linked observations without committing an answer."
+                },
+                {
+                  "operation": "search_sources",
+                  "available": true,
+                  "rationale": "Search captured Sources for Evidence that discriminates the premise."
+                },
+                {
+                  "operation": "read_pages",
+                  "available": true,
+                  "rationale": "Read exact Source pages before relying on a passage as Evidence."
+                },
+                {
+                  "operation": "accept_limitation",
+                  "available": true,
+                  "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+                },
+                {
+                  "operation": "save_domain_judgment",
+                  "available": true,
+                  "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+                }
+              ],
+              "stopping_rationale": null,
+              "stale": [],
+              "checkpoint_identity": null,
+              "legacy": "supported"
+            }
+          }
+        ],
+        "retry": false,
+        "review_page": {
+          "mode": "complete",
+          "complete": true,
+          "snapshot_digest": "sha256:1a973b0923cb2e7835507198855e5ebd8ff208b234d9cdfe1264555dafdad837",
+          "selector": {
+            "domain_id": "domain:deviations",
+            "question_id": "sq:deviations:substantial-impact"
+          },
+          "target": "answer_finding",
+          "counts": {
+            "domains": 1,
+            "answers": 1,
+            "drivers": 1,
+            "review_facts": 0,
+            "review_reason_characters": 0,
+            "premise_records": 0,
+            "investigations": 1,
+            "missing_data_rows": 0,
+            "missing_data_conflicts": 0,
+            "facts": 4,
+            "warrants": 1,
+            "justifications": 1,
+            "unknowns": 1,
+            "counterevidence": 1,
+            "limitations": 0,
+            "conflicts": 0,
+            "uninvestigated_routes": 0,
+            "evidence": 4,
+            "bases": 4,
+            "evidence_expansions": 4
+          },
+          "deferred_fields": [],
+          "fragment": null,
+          "offset": null,
+          "total": null,
+          "offset_unit": null,
+          "next_cursor": null,
+          "stable_recovery": null
+        }
+      }
+    }
+  ]
+}

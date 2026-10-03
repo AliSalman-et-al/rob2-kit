@@ -1,0 +1,825 @@
+{
+  "domain_id": "domain:deviations",
+  "checkpoint_identity": "sha256:ef1f2cb8807c307b88eab003b0fb85a0f0810cc5756bb4c478198ebfec213c9e",
+  "judgment": "high",
+  "answers": [
+    {
+      "question_id": "sq:deviations:appropriate-analysis",
+      "question": "Was an appropriate analysis used to estimate the effect of assignment to intervention?",
+      "driver": true,
+      "answer": "no",
+      "facts": [
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nRandomized:\n106\nTreatment group:\n55\nNever started:\n2\nControl group:\n51\nDropped out:\n7\nStarted tr\n5\neatment:\nj J\nr r\nGradu\n4\nated:\n1\nCould not be reached\nat 4 months:\n1\nCould not be reached\nat 4 months:\n2\nIn program at 4 months:\n45\nFIGURE 1. Patient flow from randomization until the 4-month follow-up examination.\nor facet or both. Twelve patients (11%) had pre-\ndominantly diskogenic back pain, characterized\nmainly by pain on forward bending or sitting and\nalso by disk narrowing. Four of these patients had\ndark disks on magnetic resonance imaging at one\nlevel or more. None had undergone diskography.\nSeveral other patients also had such symptoms, but\nonly as a part of a mixed clinical picture.\nAnother eight patients (8%) had facet joint\nsymptoms as a predominant feature. Facet disease\nwas diagnosed by extension pattern: back pain when\nraising from a forward-bending posture, pain on hy-\nperextension in the standing posture, and a positive\nspringing test (pain on manual hyperextension of\neach spinal segment), in combination with con-\ntralateral back pain on rotation and corresponding\nradiographic features. Eighteen patients (17%) had\nundergone disk surgery, and three had more than\none operation. One pa-\ntient had grade-1 spondy-\nlolisthesis, but without\ndemonstrated instability\non flexion and extension\nradiography.\nSciatica accounted for 29\n(27%) of the patients, in\nmost of whom the cause was\nprobably an earlier hernia-\ntion. However, only some of\nthese patients had under-\ngone myelography, com-\nputed tomography, or mag-\nnetic resonance imaging to\nconfirm the\nherniation.\nThe other patients had a\nwide variety of muscular or\nligamental pain or sacroiliac\njoint symptoms. Moreover,\nmany\npatients\ndemon-\nstrated one or more nonor-\nganic signs, but we always\nconsidered such psychologi-\ncal aspects as supplemental\nto an organic problem.\nPatients with any of the\nfollowing were excluded:\ncurrent disk\nherniation\n(which might be amenable\nto surgery or bed rest),\nother surgically remediable\nlesions, inflammatory dis-\nease of the back, pregnancy, cancer, or clinically\nrelevant osteoporosis with or without fractures. Peo-\nple receiving social pensions were also excluded.\nAt baseline (Table 1), 12 (27%) of the 45 pa-\ntients in the treatment group who eventually fin-\nished the program and returned for the 4-month\nfollow-up were able to work (nine were working\nfull-time, two were in school, and one was laid off).\nIn the control group, eight of the 49 patients who\nreturned for the 4-month follow-up had been able\nto work at baseline (five were working full-time,\none was in school, and two were laid off). There\nwere no significant differences between the two\ngroups upon entering the project.\nFigure 1 illustrates the flow of patients through\nthe project. Two patients never started the treat-\nment: one had a disk herniation while waiting, and\none never appeared. Seven patients dropped out of\nIn program at 4 months:\n49\n6 4\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+          "evidence": {
+            "handle": "eh_77990c983762e6f6",
+            "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+          },
+          "role": "context"
+        },
+        {
+          "text": "Dropouts\nOf the two patients who\nnever started the treatment\nprogram and the seven who\ndropped\nout,\nonly\ntwo\ncould be contacted after 4\nmonths. Therefore, these\npatients are not included in\nthis analysis.",
+          "evidence": {
+            "handle": "eh_0ff2fe8a8c6cc218",
+            "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+          },
+          "role": "support"
+        },
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nTABLE 3\nRESULTS AT 4-MONTH FOLLOW-UP\nValue\nTreated group (n = 45)\nControl group (n = 49)\nMedian\nIQR*\nRange\nMedian\nIQR\nRange\nP value\nContacts with health-care system\n1.6\n0.4-3.9\n0-26\n5.3\n1.8-11.5\n0-40\n< .001\nDays of sick leave\n10\n0-122\n0-123\n122\n24.5-122\n0-122\n.02\nBack pain (scale 0-10)\n5.7\n2.3-7.8\n0-10\n6.9\n4.8-7.8\n1-10\n.05\nLeg pain (scale 0-10)\n3.5\n0.3-7.0\n0-10\n5.4\n3.0-7.3\n0-10\n.17\nFunction (maximum score 30)\n12.1\n7.2-16.8\n0-23\n16.8\n13.1-20.1\n7-25\n<.001\nIsometric back-muscle\n38.0\n16.0-88.0\n0-260\n13.0\n2.8-33.0\n0-112\n< .001\nendurance (seconds)\n'interquartile range\nStatistical methods\nThe baseline and 4-month values were compared\nin separate analyses using Mann-Whitney tests. Be-\ncause more patients in the treated group were able\nto work at baseline, an additional Fisher-Irwin test\nwas done for this parameter. The level of signifi-\ncance was defined as 5%.\nThe results are based on data collected at a fol-\nlow-up examination at 4 months (the first Monday\nafter 122 days after graduation). Each patient in the\ncontrol group was matched at randomization with\none in the treated group, so that the interval be-\ntween the initial medical examination and the 4-\nmonth examination was identical.\nReturn to work\nOne of the major goals of the project was to\nprepare patients physically and psychologically to go\nback to work. \"Workability\" was defined as having a\njob, being in school, or seeking work.\nAt the 4-month follow-up, 29 (64%) of the 45\ntreated patients were able to work, compared with\n12 (27%) at baseline; in the control group, 14\n(28%) of the 49 patients were able to work at the\ntime of the 4-month follow-up, compared with 8\n(16%) at baseline. The difference between the two\ngroups was significant (P < .001); the differences in\nthe before and after values in the two groups were\nalso significant (P < .001 by Fisher-Irwin test). Of\nthe 29 patients able to work in the treated group, 17\nhad full-time jobs, seven were unemployed but seek-\ning work, and five were in school. Of the patients in\nthe treated group who could not work, six were\nreceiving social pensions and the rest were still on\nsick leave. In the control group, 10 of the 14 pa-\ntients able to work were working full-time, three\nwere unemployed but seeking work, and one was in\nschool. Eight persons in this group were receiving\nsocial pensions and the rest were on sick leave.\nHealth care, sick leave\nThe treated group contacted family doctors, spe-\ncialists, physical therapists, chiropractors, or hospi-\ntals significantly fewer times than the control group\ndid. They also used significantly fewer days of sick\nleave (Table 3).\nPain and function\nPatients used a scale of 0 (no pain) to 10 (worst\npossible pain) to rate pain in the back and in the\nlegs. After 4 months, the treated group had signifi-\ncantly less back pain than the controls, but they had\nno difference in leg pain (Table 3).\nWe assessed function with 15 questions about\nhow much the back problem interfered with activi-\nties of daily living.36 The possible answers were 0\n(\"no problem\"), 1 (\"might be a problem\"), or 2 (\"is\na problem\"). Thus, the maximum total score was 30.\nThis test indicated that the treated patients were\ndoing significantly better than the control patients\n(Table 3).\nIsometric back-muscle endurance\nWe measured isometric back-muscle endurance\nwith a test previously evaluated by Biering-S0ren-\nsen.38 Patients were asked to assume the position\nshown in Figure 2 and to hold it as long as possible,\nup to a maximum of 4 minutes and 30 seconds (the\nrecord in our program was 4 minutes and 20 sec-\nR E S U L T S\n6 6\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+          "evidence": {
+            "handle": "eh_6d7b002611d13358",
+            "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+          },
+          "role": "context"
+        }
+      ],
+      "warrant": "The approved assignment effect targets all randomized participants, while workability comparison uses only 45 treated and 49 control returnees; the report expressly excludes the two who never started and seven dropouts from analysis except that only two were contacted. These eligible randomized participants were omitted due to noncompletion/nonreturn, not merely missing outcomes in an assignment analysis. Thus this is not an appropriate analysis estimating the approved assignment effect. The returnees' comparison remains as reported; it is not reinterpreted as an all-randomized estimate.",
+      "justification": "The approved assignment effect targets all randomized participants, while workability comparison uses only 45 treated and 49 control returnees; the report expressly excludes the two who never started and seven dropouts from analysis except that only two were contacted. These eligible randomized participants were omitted due to noncompletion/nonreturn, not merely missing outcomes in an assignment analysis. Thus this is not an appropriate analysis estimating the approved assignment effect. The returnees' comparison remains as reported; it is not reinterpreted as an all-randomized estimate.",
+      "unknowns": [
+        "Outcomes for omitted randomized participants are not reported."
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 2,
+          "implication": "The analyzed comparison preserves treatment/control groups and matched intervals among returnees, but remains restricted post-randomization."
+        }
+      ],
+      "limitations": [],
+      "conflicts": [],
+      "uninvestigated_routes": [],
+      "evidence": [
+        {
+          "handle": "eh_77990c983762e6f6",
+          "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+        },
+        {
+          "handle": "eh_0ff2fe8a8c6cc218",
+          "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+        },
+        {
+          "handle": "eh_6d7b002611d13358",
+          "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+        }
+      ],
+      "bases": [
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_77990c983762e6f6",
+            "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+          }
+        },
+        {
+          "kind": "direct_support",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_0ff2fe8a8c6cc218",
+            "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_6d7b002611d13358",
+            "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+          }
+        }
+      ],
+      "evidence_expansions": [
+        {
+          "operation": "read_pages",
+          "evidence": "eh_77990c983762e6f6",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 109
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_0ff2fe8a8c6cc218",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 6,
+              "start_line": 83,
+              "end_line": 94
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_6d7b002611d13358",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 134
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question_id": "sq:deviations:substantial-impact",
+      "question": "If N/PN/NI to 2.6: Was there potential for a substantial impact (on the result) of the failure to analyse participants in the group to which they were randomized?",
+      "driver": true,
+      "answer": "probably_yes",
+      "facts": [
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nRandomized:\n106\nTreatment group:\n55\nNever started:\n2\nControl group:\n51\nDropped out:\n7\nStarted tr\n5\neatment:\nj J\nr r\nGradu\n4\nated:\n1\nCould not be reached\nat 4 months:\n1\nCould not be reached\nat 4 months:\n2\nIn program at 4 months:\n45\nFIGURE 1. Patient flow from randomization until the 4-month follow-up examination.\nor facet or both. Twelve patients (11%) had pre-\ndominantly diskogenic back pain, characterized\nmainly by pain on forward bending or sitting and\nalso by disk narrowing. Four of these patients had\ndark disks on magnetic resonance imaging at one\nlevel or more. None had undergone diskography.\nSeveral other patients also had such symptoms, but\nonly as a part of a mixed clinical picture.\nAnother eight patients (8%) had facet joint\nsymptoms as a predominant feature. Facet disease\nwas diagnosed by extension pattern: back pain when\nraising from a forward-bending posture, pain on hy-\nperextension in the standing posture, and a positive\nspringing test (pain on manual hyperextension of\neach spinal segment), in combination with con-\ntralateral back pain on rotation and corresponding\nradiographic features. Eighteen patients (17%) had\nundergone disk surgery, and three had more than\none operation. One pa-\ntient had grade-1 spondy-\nlolisthesis, but without\ndemonstrated instability\non flexion and extension\nradiography.\nSciatica accounted for 29\n(27%) of the patients, in\nmost of whom the cause was\nprobably an earlier hernia-\ntion. However, only some of\nthese patients had under-\ngone myelography, com-\nputed tomography, or mag-\nnetic resonance imaging to\nconfirm the\nherniation.\nThe other patients had a\nwide variety of muscular or\nligamental pain or sacroiliac\njoint symptoms. Moreover,\nmany\npatients\ndemon-\nstrated one or more nonor-\nganic signs, but we always\nconsidered such psychologi-\ncal aspects as supplemental\nto an organic problem.\nPatients with any of the\nfollowing were excluded:\ncurrent disk\nherniation\n(which might be amenable\nto surgery or bed rest),\nother surgically remediable\nlesions, inflammatory dis-\nease of the back, pregnancy, cancer, or clinically\nrelevant osteoporosis with or without fractures. Peo-\nple receiving social pensions were also excluded.\nAt baseline (Table 1), 12 (27%) of the 45 pa-\ntients in the treatment group who eventually fin-\nished the program and returned for the 4-month\nfollow-up were able to work (nine were working\nfull-time, two were in school, and one was laid off).\nIn the control group, eight of the 49 patients who\nreturned for the 4-month follow-up had been able\nto work at baseline (five were working full-time,\none was in school, and two were laid off). There\nwere no significant differences between the two\ngroups upon entering the project.\nFigure 1 illustrates the flow of patients through\nthe project. Two patients never started the treat-\nment: one had a disk herniation while waiting, and\none never appeared. Seven patients dropped out of\nIn program at 4 months:\n49\n6 4\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+          "evidence": {
+            "handle": "eh_77990c983762e6f6",
+            "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+          },
+          "role": "context"
+        },
+        {
+          "text": "the program: one was strongly addicted to mor-\nphine, one could not accept the restrictions on\nsmoking (which was only allowed outdoors), one\nfelt the program was too difficult, one was found to\nhave a neurologic disease, and three had increased\nback pain they could not accept. All the dropouts\nwere on sick leave when they entered the program\nand did not differ from the graduates in any of the\nmeasured characteristics.",
+          "evidence": {
+            "handle": "eh_e108107f5b664f63",
+            "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+          },
+          "role": "support"
+        },
+        {
+          "text": "Dropouts\nOf the two patients who\nnever started the treatment\nprogram and the seven who\ndropped\nout,\nonly\ntwo\ncould be contacted after 4\nmonths. Therefore, these\npatients are not included in\nthis analysis.",
+          "evidence": {
+            "handle": "eh_0ff2fe8a8c6cc218",
+            "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+          },
+          "role": "context"
+        },
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nTABLE 3\nRESULTS AT 4-MONTH FOLLOW-UP\nValue\nTreated group (n = 45)\nControl group (n = 49)\nMedian\nIQR*\nRange\nMedian\nIQR\nRange\nP value\nContacts with health-care system\n1.6\n0.4-3.9\n0-26\n5.3\n1.8-11.5\n0-40\n< .001\nDays of sick leave\n10\n0-122\n0-123\n122\n24.5-122\n0-122\n.02\nBack pain (scale 0-10)\n5.7\n2.3-7.8\n0-10\n6.9\n4.8-7.8\n1-10\n.05\nLeg pain (scale 0-10)\n3.5\n0.3-7.0\n0-10\n5.4\n3.0-7.3\n0-10\n.17\nFunction (maximum score 30)\n12.1\n7.2-16.8\n0-23\n16.8\n13.1-20.1\n7-25\n<.001\nIsometric back-muscle\n38.0\n16.0-88.0\n0-260\n13.0\n2.8-33.0\n0-112\n< .001\nendurance (seconds)\n'interquartile range\nStatistical methods\nThe baseline and 4-month values were compared\nin separate analyses using Mann-Whitney tests. Be-\ncause more patients in the treated group were able\nto work at baseline, an additional Fisher-Irwin test\nwas done for this parameter. The level of signifi-\ncance was defined as 5%.\nThe results are based on data collected at a fol-\nlow-up examination at 4 months (the first Monday\nafter 122 days after graduation). Each patient in the\ncontrol group was matched at randomization with\none in the treated group, so that the interval be-\ntween the initial medical examination and the 4-\nmonth examination was identical.\nReturn to work\nOne of the major goals of the project was to\nprepare patients physically and psychologically to go\nback to work. \"Workability\" was defined as having a\njob, being in school, or seeking work.\nAt the 4-month follow-up, 29 (64%) of the 45\ntreated patients were able to work, compared with\n12 (27%) at baseline; in the control group, 14\n(28%) of the 49 patients were able to work at the\ntime of the 4-month follow-up, compared with 8\n(16%) at baseline. The difference between the two\ngroups was significant (P < .001); the differences in\nthe before and after values in the two groups were\nalso significant (P < .001 by Fisher-Irwin test). Of\nthe 29 patients able to work in the treated group, 17\nhad full-time jobs, seven were unemployed but seek-\ning work, and five were in school. Of the patients in\nthe treated group who could not work, six were\nreceiving social pensions and the rest were still on\nsick leave. In the control group, 10 of the 14 pa-\ntients able to work were working full-time, three\nwere unemployed but seeking work, and one was in\nschool. Eight persons in this group were receiving\nsocial pensions and the rest were on sick leave.\nHealth care, sick leave\nThe treated group contacted family doctors, spe-\ncialists, physical therapists, chiropractors, or hospi-\ntals significantly fewer times than the control group\ndid. They also used significantly fewer days of sick\nleave (Table 3).\nPain and function\nPatients used a scale of 0 (no pain) to 10 (worst\npossible pain) to rate pain in the back and in the\nlegs. After 4 months, the treated group had signifi-\ncantly less back pain than the controls, but they had\nno difference in leg pain (Table 3).\nWe assessed function with 15 questions about\nhow much the back problem interfered with activi-\nties of daily living.36 The possible answers were 0\n(\"no problem\"), 1 (\"might be a problem\"), or 2 (\"is\na problem\"). Thus, the maximum total score was 30.\nThis test indicated that the treated patients were\ndoing significantly better than the control patients\n(Table 3).\nIsometric back-muscle endurance\nWe measured isometric back-muscle endurance\nwith a test previously evaluated by Biering-S0ren-\nsen.38 Patients were asked to assume the position\nshown in Figure 2 and to hold it as long as possible,\nup to a maximum of 4 minutes and 30 seconds (the\nrecord in our program was 4 minutes and 20 sec-\nR E S U L T S\n6 6\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+          "evidence": {
+            "handle": "eh_6d7b002611d13358",
+            "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+          },
+          "role": "context"
+        }
+      ],
+      "warrant": "Nine of 106 randomized participants (including two never-started) were excluded; only two of those nine were reachable at four months. Workability was common among returnees (29/45 and 14/49), but excluded treatment participants included people who never appeared, had disk herniation, found the program too difficult, or could not accept increased pain. Their workability is unknown; exclusions plausibly relate to prognosis or ability to work, so the assignment contrast could be materially affected, though its magnitude is not determined.",
+      "justification": "Nine of 106 randomized participants (including two never-started) were excluded; only two of those nine were reachable at four months. Workability was common among returnees (29/45 and 14/49), but excluded treatment participants included people who never appeared, had disk herniation, found the program too difficult, or could not accept increased pain. Their workability is unknown; exclusions plausibly relate to prognosis or ability to work, so the assignment contrast could be materially affected, though its magnitude is not determined.",
+      "unknowns": [
+        "Workability outcomes for excluded participants and resulting impact are unknown."
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 3,
+          "implication": "Outcome was common in returnees and nine participants are a minority of 106, though their outcomes are unknown and exclusion reasons may be prognostic."
+        }
+      ],
+      "limitations": [],
+      "conflicts": [],
+      "uninvestigated_routes": [],
+      "evidence": [
+        {
+          "handle": "eh_77990c983762e6f6",
+          "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+        },
+        {
+          "handle": "eh_e108107f5b664f63",
+          "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+        },
+        {
+          "handle": "eh_0ff2fe8a8c6cc218",
+          "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+        },
+        {
+          "handle": "eh_6d7b002611d13358",
+          "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+        }
+      ],
+      "bases": [
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_77990c983762e6f6",
+            "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+          }
+        },
+        {
+          "kind": "indirect_support",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_e108107f5b664f63",
+            "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_0ff2fe8a8c6cc218",
+            "identity": "sha256:0ff2fe8a8c6cc218cb279634dc995b58904bb55e221cdf612745da403f976660"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_6d7b002611d13358",
+            "identity": "sha256:6d7b002611d1335845a7d8749bb1b9d601e3062391d4e42cc6ede354985a937f"
+          }
+        }
+      ],
+      "evidence_expansions": [
+        {
+          "operation": "read_pages",
+          "evidence": "eh_77990c983762e6f6",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 109
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_e108107f5b664f63",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 4,
+              "start_line": 4,
+              "end_line": 12
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_0ff2fe8a8c6cc218",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 6,
+              "start_line": 83,
+              "end_line": 94
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_6d7b002611d13358",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 134
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question_id": "sq:deviations:participants-aware",
+      "question": "Were participants aware of their assigned intervention during the trial?",
+      "driver": false,
+      "answer": "probably_yes",
+      "facts": [
+        {
+          "text": "M E T H O D S\nThis parallel-group study was prospective and ob-\nserver-blinded. After an initial medical examination,\npatients were randomly assigned to a treatment group\nor a control group according to the minimization prin-\nciple'5 (a means of achieving an even distribution ac-\ncording to sex, age, pain and function scores,36 days of\nsick leave, and smoking status in the two groups).",
+          "evidence": {
+            "handle": "eh_65c7f9a320a771bb",
+            "identity": "sha256:65c7f9a320a771bb1d0db91ec87c0ad7e932ddae95287819a10e34fea960d45c"
+          },
+          "role": "context"
+        },
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nthe program: one was strongly addicted to mor-\nphine, one could not accept the restrictions on\nsmoking (which was only allowed outdoors), one\nfelt the program was too difficult, one was found to\nhave a neurologic disease, and three had increased\nback pain they could not accept. All the dropouts\nwere on sick leave when they entered the program\nand did not differ from the graduates in any of the\nmeasured characteristics.\nThe project was blinded in that the physician\nwho saw the patients for the initial examination and\nthe 4-month follow-up did not know which group\neach patient was in. The same physician saw all the\npatients in both groups throughout the study. The\nblinding was broken in about 10% of the cases,\nequally distributed between the two groups, when\npatients disclosed this information during the fol-\nlow-up examination.\nTreatment\nOur program was a modification of the functional\nrestoration programs described earlier by Mayer31 and\nHazard.20 The concept is described in detail else-\nwhere.3' On the first day, the patients underwent\nvarious tests. Physical tests included dynamic and\nisometric endurance, lifting capacity, walking and\nrunning 400 meters, and standing and sitting toler-\nance. The psychological tests included the Millon\nBehavioral Health Inventory, the Million Pain Ana-\nlog Scale, the Symptom Check List 90-R, the Thera-\npeutic Alexithymia Scale (TAS), and the Vanderbilt\nCoping Questionnaire. A structured psychological\ninterview was also carried out the first day.\nEach patient participated for 39 hours per week\nfor 3 successive weeks. The daily schedule is shown\nin Table 2. The aerobics class included training in\ncardiovascular fitness, muscular endurance, coordi-\nnation, and stretching. This was followed by pro-\ngressive strength and endurance training for all ma-\njor muscle groups, using air-moderated machines\nand other training equipment. Occupational ther-\napy consisted of simulated work situations, includ-\ning lifting, pulling, pushing, sitting and standing\nworkplaces, garden work, and kitchen work. Bio-\nfeedback was used in some of the sitting work situ-\nations.\nThe psychological treatment had a behavioral\napproach; patients were urged to take greater re-\nsponsibility for coping with pain, set realistic per-\nsonal goals, change the negative sensation of pain\ninto a more positive way of living, and give them-\nTABLE 2\nPROGRAM SCHEDULE\nTime\nActivity\n08:00-09:00\nAerobics\n09:00-10:00\nWeight training\n10:00-11:30\nWork simulation, work hardening\n11:30-12:00\nLunch\n12:00-12:30\nRelaxation\n12:30-01:30\nPsychological group\n01:30-02:00\nStretching\n02:00-03:00\nTheoretical class\n03:00-04:00\nRecreation\nselves credit for their achievements. It included\ndaily group therapy and relaxation and an average of\none individual counseling session per week.\nIn the daily stretching classes, patients worked on\nall major muscle groups. Classes in spinal anatomy\nand pathology addressed each patient's condition\nand the topics of sexuality, pain, hobbies, nutrition,\nand medication. In a 3-hour job-analysis course, pa-\ntients learned how to write an application and re-\nsum\u00e9, find out about job possibilities, and evaluate\nadvertisements in light of their own abilities and\nskills. Recreation consisted of different games and\nphysical training, such as ball games, walking, run-\nning, and swimming.\nAll training was carried out in groups of seven\npatients. Every Monday, two or three new patients\nstarted the program, and every Friday two or three\npatients \"graduated.\" This group structure is essen-\ntial, as the program is especially difficult during the\nfirst week. Patients in their third week inspire the\n\"first-weekers\" to endure and encourage them to\ncontinue. This also gives the \"third-weekers\" a re-\nsponsibility and authority in relation to the begin-\nners, which in turn increases self-confidence.\nAfter graduating, patients unde \u2026 [excerpt; use evidence_expansions to inspect full Evidence]",
+          "evidence": {
+            "handle": "eh_477fb72f1b541dd0",
+            "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+          },
+          "role": "support"
+        },
+        {
+          "text": "The project was blinded in that the physician\nwho saw the patients for the initial examination and\nthe 4-month follow-up did not know which group\neach patient was in. The same physician saw all the\npatients in both groups throughout the study. The\nblinding was broken in about 10% of the cases,\nequally distributed between the two groups, when\npatients disclosed this information during the fol-\nlow-up examination.",
+          "evidence": {
+            "handle": "eh_9a30de85ea5dad7f",
+            "identity": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859"
+          },
+          "role": "context"
+        }
+      ],
+      "warrant": "The approved result is ability to work, comparing assignment to a 3-week intensive multidisciplinary program with untreated control, at four-month follow-up (4 months after graduation for treated participants, matched intervals for controls); reported figures are among returnees, not all randomized. Report says observer-blinded: examining physician did not know assignment, but does not say participants blinded. Participants received a conspicuous intensive program versus no treatment, making awareness probable though not directly established.",
+      "justification": "The approved result is ability to work, comparing assignment to a 3-week intensive multidisciplinary program with untreated control, at four-month follow-up (4 months after graduation for treated participants, matched intervals for controls); reported figures are among returnees, not all randomized. Report says observer-blinded: examining physician did not know assignment, but does not say participants blinded. Participants received a conspicuous intensive program versus no treatment, making awareness probable though not directly established.",
+      "unknowns": [
+        "No direct report establishes participant blinding or knowledge of allocation."
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 0,
+          "implication": "Only examiner blinding is expressly described, and that was sometimes broken by participant disclosure; this does not directly establish participant knowledge."
+        },
+        {
+          "basis_index": 2,
+          "implication": "Only examiner blinding is expressly described, and that was sometimes broken by participant disclosure; this does not directly establish participant knowledge."
+        }
+      ],
+      "limitations": [],
+      "conflicts": [],
+      "uninvestigated_routes": [],
+      "evidence": [
+        {
+          "handle": "eh_65c7f9a320a771bb",
+          "identity": "sha256:65c7f9a320a771bb1d0db91ec87c0ad7e932ddae95287819a10e34fea960d45c"
+        },
+        {
+          "handle": "eh_477fb72f1b541dd0",
+          "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+        },
+        {
+          "handle": "eh_9a30de85ea5dad7f",
+          "identity": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859"
+        }
+      ],
+      "bases": [
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_65c7f9a320a771bb",
+            "identity": "sha256:65c7f9a320a771bb1d0db91ec87c0ad7e932ddae95287819a10e34fea960d45c"
+          }
+        },
+        {
+          "kind": "indirect_support",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_477fb72f1b541dd0",
+            "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_9a30de85ea5dad7f",
+            "identity": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859"
+          }
+        }
+      ],
+      "evidence_expansions": [
+        {
+          "operation": "read_pages",
+          "evidence": "eh_65c7f9a320a771bb",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 2,
+              "start_line": 120,
+              "end_line": 127
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_477fb72f1b541dd0",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 112
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_9a30de85ea5dad7f",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 4,
+              "start_line": 13,
+              "end_line": 21
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question_id": "sq:deviations:personnel-aware",
+      "question": "Were carers and people delivering the interventions aware of participants' assigned intervention during the trial?",
+      "driver": false,
+      "answer": "probably_yes",
+      "facts": [
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nthe program: one was strongly addicted to mor-\nphine, one could not accept the restrictions on\nsmoking (which was only allowed outdoors), one\nfelt the program was too difficult, one was found to\nhave a neurologic disease, and three had increased\nback pain they could not accept. All the dropouts\nwere on sick leave when they entered the program\nand did not differ from the graduates in any of the\nmeasured characteristics.\nThe project was blinded in that the physician\nwho saw the patients for the initial examination and\nthe 4-month follow-up did not know which group\neach patient was in. The same physician saw all the\npatients in both groups throughout the study. The\nblinding was broken in about 10% of the cases,\nequally distributed between the two groups, when\npatients disclosed this information during the fol-\nlow-up examination.\nTreatment\nOur program was a modification of the functional\nrestoration programs described earlier by Mayer31 and\nHazard.20 The concept is described in detail else-\nwhere.3' On the first day, the patients underwent\nvarious tests. Physical tests included dynamic and\nisometric endurance, lifting capacity, walking and\nrunning 400 meters, and standing and sitting toler-\nance. The psychological tests included the Millon\nBehavioral Health Inventory, the Million Pain Ana-\nlog Scale, the Symptom Check List 90-R, the Thera-\npeutic Alexithymia Scale (TAS), and the Vanderbilt\nCoping Questionnaire. A structured psychological\ninterview was also carried out the first day.\nEach patient participated for 39 hours per week\nfor 3 successive weeks. The daily schedule is shown\nin Table 2. The aerobics class included training in\ncardiovascular fitness, muscular endurance, coordi-\nnation, and stretching. This was followed by pro-\ngressive strength and endurance training for all ma-\njor muscle groups, using air-moderated machines\nand other training equipment. Occupational ther-\napy consisted of simulated work situations, includ-\ning lifting, pulling, pushing, sitting and standing\nworkplaces, garden work, and kitchen work. Bio-\nfeedback was used in some of the sitting work situ-\nations.\nThe psychological treatment had a behavioral\napproach; patients were urged to take greater re-\nsponsibility for coping with pain, set realistic per-\nsonal goals, change the negative sensation of pain\ninto a more positive way of living, and give them-\nTABLE 2\nPROGRAM SCHEDULE\nTime\nActivity\n08:00-09:00\nAerobics\n09:00-10:00\nWeight training\n10:00-11:30\nWork simulation, work hardening\n11:30-12:00\nLunch\n12:00-12:30\nRelaxation\n12:30-01:30\nPsychological group\n01:30-02:00\nStretching\n02:00-03:00\nTheoretical class\n03:00-04:00\nRecreation\nselves credit for their achievements. It included\ndaily group therapy and relaxation and an average of\none individual counseling session per week.\nIn the daily stretching classes, patients worked on\nall major muscle groups. Classes in spinal anatomy\nand pathology addressed each patient's condition\nand the topics of sexuality, pain, hobbies, nutrition,\nand medication. In a 3-hour job-analysis course, pa-\ntients learned how to write an application and re-\nsum\u00e9, find out about job possibilities, and evaluate\nadvertisements in light of their own abilities and\nskills. Recreation consisted of different games and\nphysical training, such as ball games, walking, run-\nning, and swimming.\nAll training was carried out in groups of seven\npatients. Every Monday, two or three new patients\nstarted the program, and every Friday two or three\npatients \"graduated.\" This group structure is essen-\ntial, as the program is especially difficult during the\nfirst week. Patients in their third week inspire the\n\"first-weekers\" to endure and encourage them to\ncontinue. This also gives the \"third-weekers\" a re-\nsponsibility and authority in relation to the begin-\nners, which in turn increases self-confidence.\nAfter graduating, patients unde \u2026 [excerpt; use evidence_expansions to inspect full Evidence]",
+          "evidence": {
+            "handle": "eh_477fb72f1b541dd0",
+            "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+          },
+          "role": "support"
+        },
+        {
+          "text": "M E T H O D S\nThis parallel-group study was prospective and ob-\nserver-blinded. After an initial medical examination,\npatients were randomly assigned to a treatment group\nor a control group according to the minimization prin-\nciple'5 (a means of achieving an even distribution ac-\ncording to sex, age, pain and function scores,36 days of\nsick leave, and smoking status in the two groups).",
+          "evidence": {
+            "handle": "eh_65c7f9a320a771bb",
+            "identity": "sha256:65c7f9a320a771bb1d0db91ec87c0ad7e932ddae95287819a10e34fea960d45c"
+          },
+          "role": "context"
+        },
+        {
+          "text": "The project was blinded in that the physician\nwho saw the patients for the initial examination and\nthe 4-month follow-up did not know which group\neach patient was in. The same physician saw all the\npatients in both groups throughout the study. The\nblinding was broken in about 10% of the cases,\nequally distributed between the two groups, when\npatients disclosed this information during the fol-\nlow-up examination.",
+          "evidence": {
+            "handle": "eh_9a30de85ea5dad7f",
+            "identity": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859"
+          },
+          "role": "context"
+        }
+      ],
+      "warrant": "The intensive program and untreated control were visibly different; delivery involved a structured 39-hour-per-week program. This supports probable awareness by those delivering it, but the report does not directly state whether intervention personnel were blinded.",
+      "justification": "The intensive program and untreated control were visibly different; delivery involved a structured 39-hour-per-week program. This supports probable awareness by those delivering it, but the report does not directly state whether intervention personnel were blinded.",
+      "unknowns": [
+        "No explicit report of allocation concealment or blinding/awareness among intervention personnel."
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 2,
+          "implication": "The report specifically identifies follow-up physician blinding, not intervention providers; provider awareness is not directly documented."
+        }
+      ],
+      "limitations": [],
+      "conflicts": [],
+      "uninvestigated_routes": [],
+      "evidence": [
+        {
+          "handle": "eh_477fb72f1b541dd0",
+          "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+        },
+        {
+          "handle": "eh_65c7f9a320a771bb",
+          "identity": "sha256:65c7f9a320a771bb1d0db91ec87c0ad7e932ddae95287819a10e34fea960d45c"
+        },
+        {
+          "handle": "eh_9a30de85ea5dad7f",
+          "identity": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859"
+        }
+      ],
+      "bases": [
+        {
+          "kind": "indirect_support",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_477fb72f1b541dd0",
+            "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_65c7f9a320a771bb",
+            "identity": "sha256:65c7f9a320a771bb1d0db91ec87c0ad7e932ddae95287819a10e34fea960d45c"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_9a30de85ea5dad7f",
+            "identity": "sha256:9a30de85ea5dad7f33be601973a78d82a64841e1c1c715150aecf3261262c859"
+          }
+        }
+      ],
+      "evidence_expansions": [
+        {
+          "operation": "read_pages",
+          "evidence": "eh_477fb72f1b541dd0",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 112
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_65c7f9a320a771bb",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 2,
+              "start_line": 120,
+              "end_line": 127
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_9a30de85ea5dad7f",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 4,
+              "start_line": 13,
+              "end_line": 21
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "question_id": "sq:deviations:context-deviations",
+      "question": "If Y/PY/NI to 2.1 or 2.2: Were there deviations from the intended intervention that arose because of the trial context?",
+      "driver": false,
+      "answer": "no_information",
+      "facts": [
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nRandomized:\n106\nTreatment group:\n55\nNever started:\n2\nControl group:\n51\nDropped out:\n7\nStarted tr\n5\neatment:\nj J\nr r\nGradu\n4\nated:\n1\nCould not be reached\nat 4 months:\n1\nCould not be reached\nat 4 months:\n2\nIn program at 4 months:\n45\nFIGURE 1. Patient flow from randomization until the 4-month follow-up examination.\nor facet or both. Twelve patients (11%) had pre-\ndominantly diskogenic back pain, characterized\nmainly by pain on forward bending or sitting and\nalso by disk narrowing. Four of these patients had\ndark disks on magnetic resonance imaging at one\nlevel or more. None had undergone diskography.\nSeveral other patients also had such symptoms, but\nonly as a part of a mixed clinical picture.\nAnother eight patients (8%) had facet joint\nsymptoms as a predominant feature. Facet disease\nwas diagnosed by extension pattern: back pain when\nraising from a forward-bending posture, pain on hy-\nperextension in the standing posture, and a positive\nspringing test (pain on manual hyperextension of\neach spinal segment), in combination with con-\ntralateral back pain on rotation and corresponding\nradiographic features. Eighteen patients (17%) had\nundergone disk surgery, and three had more than\none operation. One pa-\ntient had grade-1 spondy-\nlolisthesis, but without\ndemonstrated instability\non flexion and extension\nradiography.\nSciatica accounted for 29\n(27%) of the patients, in\nmost of whom the cause was\nprobably an earlier hernia-\ntion. However, only some of\nthese patients had under-\ngone myelography, com-\nputed tomography, or mag-\nnetic resonance imaging to\nconfirm the\nherniation.\nThe other patients had a\nwide variety of muscular or\nligamental pain or sacroiliac\njoint symptoms. Moreover,\nmany\npatients\ndemon-\nstrated one or more nonor-\nganic signs, but we always\nconsidered such psychologi-\ncal aspects as supplemental\nto an organic problem.\nPatients with any of the\nfollowing were excluded:\ncurrent disk\nherniation\n(which might be amenable\nto surgery or bed rest),\nother surgically remediable\nlesions, inflammatory dis-\nease of the back, pregnancy, cancer, or clinically\nrelevant osteoporosis with or without fractures. Peo-\nple receiving social pensions were also excluded.\nAt baseline (Table 1), 12 (27%) of the 45 pa-\ntients in the treatment group who eventually fin-\nished the program and returned for the 4-month\nfollow-up were able to work (nine were working\nfull-time, two were in school, and one was laid off).\nIn the control group, eight of the 49 patients who\nreturned for the 4-month follow-up had been able\nto work at baseline (five were working full-time,\none was in school, and two were laid off). There\nwere no significant differences between the two\ngroups upon entering the project.\nFigure 1 illustrates the flow of patients through\nthe project. Two patients never started the treat-\nment: one had a disk herniation while waiting, and\none never appeared. Seven patients dropped out of\nIn program at 4 months:\n49\n6 4\nCLEVELAND CLINIC JOURNAL OF MEDICINE\nVOLUME 63 \u2022 NUMBER 1",
+          "evidence": {
+            "handle": "eh_77990c983762e6f6",
+            "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+          },
+          "role": "context"
+        },
+        {
+          "text": "the program: one was strongly addicted to mor-\nphine, one could not accept the restrictions on\nsmoking (which was only allowed outdoors), one\nfelt the program was too difficult, one was found to\nhave a neurologic disease, and three had increased\nback pain they could not accept. All the dropouts\nwere on sick leave when they entered the program\nand did not differ from the graduates in any of the\nmeasured characteristics.",
+          "evidence": {
+            "handle": "eh_e108107f5b664f63",
+            "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+          },
+          "role": "context"
+        },
+        {
+          "text": "B A C K P A I N \u2022\nB E N D I X A N D\nA S S O C I A T E S\nthe program: one was strongly addicted to mor-\nphine, one could not accept the restrictions on\nsmoking (which was only allowed outdoors), one\nfelt the program was too difficult, one was found to\nhave a neurologic disease, and three had increased\nback pain they could not accept. All the dropouts\nwere on sick leave when they entered the program\nand did not differ from the graduates in any of the\nmeasured characteristics.\nThe project was blinded in that the physician\nwho saw the patients for the initial examination and\nthe 4-month follow-up did not know which group\neach patient was in. The same physician saw all the\npatients in both groups throughout the study. The\nblinding was broken in about 10% of the cases,\nequally distributed between the two groups, when\npatients disclosed this information during the fol-\nlow-up examination.\nTreatment\nOur program was a modification of the functional\nrestoration programs described earlier by Mayer31 and\nHazard.20 The concept is described in detail else-\nwhere.3' On the first day, the patients underwent\nvarious tests. Physical tests included dynamic and\nisometric endurance, lifting capacity, walking and\nrunning 400 meters, and standing and sitting toler-\nance. The psychological tests included the Millon\nBehavioral Health Inventory, the Million Pain Ana-\nlog Scale, the Symptom Check List 90-R, the Thera-\npeutic Alexithymia Scale (TAS), and the Vanderbilt\nCoping Questionnaire. A structured psychological\ninterview was also carried out the first day.\nEach patient participated for 39 hours per week\nfor 3 successive weeks. The daily schedule is shown\nin Table 2. The aerobics class included training in\ncardiovascular fitness, muscular endurance, coordi-\nnation, and stretching. This was followed by pro-\ngressive strength and endurance training for all ma-\njor muscle groups, using air-moderated machines\nand other training equipment. Occupational ther-\napy consisted of simulated work situations, includ-\ning lifting, pulling, pushing, sitting and standing\nworkplaces, garden work, and kitchen work. Bio-\nfeedback was used in some of the sitting work situ-\nations.\nThe psychological treatment had a behavioral\napproach; patients were urged to take greater re-\nsponsibility for coping with pain, set realistic per-\nsonal goals, change the negative sensation of pain\ninto a more positive way of living, and give them-\nTABLE 2\nPROGRAM SCHEDULE\nTime\nActivity\n08:00-09:00\nAerobics\n09:00-10:00\nWeight training\n10:00-11:30\nWork simulation, work hardening\n11:30-12:00\nLunch\n12:00-12:30\nRelaxation\n12:30-01:30\nPsychological group\n01:30-02:00\nStretching\n02:00-03:00\nTheoretical class\n03:00-04:00\nRecreation\nselves credit for their achievements. It included\ndaily group therapy and relaxation and an average of\none individual counseling session per week.\nIn the daily stretching classes, patients worked on\nall major muscle groups. Classes in spinal anatomy\nand pathology addressed each patient's condition\nand the topics of sexuality, pain, hobbies, nutrition,\nand medication. In a 3-hour job-analysis course, pa-\ntients learned how to write an application and re-\nsum\u00e9, find out about job possibilities, and evaluate\nadvertisements in light of their own abilities and\nskills. Recreation consisted of different games and\nphysical training, such as ball games, walking, run-\nning, and swimming.\nAll training was carried out in groups of seven\npatients. Every Monday, two or three new patients\nstarted the program, and every Friday two or three\npatients \"graduated.\" This group structure is essen-\ntial, as the program is especially difficult during the\nfirst week. Patients in their third week inspire the\n\"first-weekers\" to endure and encourage them to\ncontinue. This also gives the \"third-weekers\" a re-\nsponsibility and authority in relation to the begin-\nners, which in turn increases self-confidence.\nAfter graduating, patients unde \u2026 [excerpt; use evidence_expansions to inspect full Evidence]",
+          "evidence": {
+            "handle": "eh_477fb72f1b541dd0",
+            "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+          },
+          "role": "context"
+        },
+        {
+          "text": "Whether non-initiation, discontinuation, or outside control-group treatment was protocol-inconsistent and caused by trial context remains unresolved.",
+          "role": "context"
+        }
+      ],
+      "warrant": "The report documents noncompletion: two assigned treatment participants never started (one developed disk herniation, one did not appear), and seven dropped out, citing treatment difficulty, increased pain and other reasons. But no protocol is given against which to classify these as inconsistent deviations, and no evidence indicates recruitment, research-only engagement, or trial personnel caused them beyond ordinary treatment circumstances. Controls could seek treatment elsewhere, but no prohibited crossovers or context-caused departures are reported. Neither protocol inconsistency nor trial-context causation is established.",
+      "justification": "The report documents noncompletion: two assigned treatment participants never started (one developed disk herniation, one did not appear), and seven dropped out, citing treatment difficulty, increased pain and other reasons. But no protocol is given against which to classify these as inconsistent deviations, and no evidence indicates recruitment, research-only engagement, or trial personnel caused them beyond ordinary treatment circumstances. Controls could seek treatment elsewhere, but no prohibited crossovers or context-caused departures are reported. Neither protocol inconsistency nor trial-context causation is established.",
+      "unknowns": [
+        "Protocol requirements and permissions concerning non-initiation, discontinuation, and outside treatment are not reported.",
+        "No documented reason links departures to trial-specific engagement or personnel decisions."
+      ],
+      "counterevidence": [],
+      "limitations": [
+        {
+          "unresolved_premise": "Whether non-initiation, discontinuation, or outside control-group treatment was protocol-inconsistent and caused by trial context remains unresolved.",
+          "stopping_rationale": "Complete captured main report was read. It describes conduct but gives neither protocol criteria nor evidence of trial-specific causes; no relevant protocol or SAP is available among captured Sources.",
+          "search_receipt": null
+        }
+      ],
+      "conflicts": [],
+      "uninvestigated_routes": [],
+      "evidence": [
+        {
+          "handle": "eh_77990c983762e6f6",
+          "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+        },
+        {
+          "handle": "eh_e108107f5b664f63",
+          "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+        },
+        {
+          "handle": "eh_477fb72f1b541dd0",
+          "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+        }
+      ],
+      "bases": [
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_77990c983762e6f6",
+            "identity": "sha256:77990c983762e6f6b60acd47848afa134be3affbc55a336f4bee368583517d0a"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_e108107f5b664f63",
+            "identity": "sha256:e108107f5b664f63587cb7ed25a12a1ba05ce7fca94b8a8abac098e824bc43a0"
+          }
+        },
+        {
+          "kind": "context",
+          "assertion": "host_asserted",
+          "evidence": {
+            "handle": "eh_477fb72f1b541dd0",
+            "identity": "sha256:477fb72f1b541dd0331c29f0154d30bd90803697c82d8ebd80667e23475f2a7d"
+          }
+        },
+        {
+          "kind": "limitation",
+          "assertion": "host_asserted",
+          "unresolved_premise": "Whether non-initiation, discontinuation, or outside control-group treatment was protocol-inconsistent and caused by trial context remains unresolved.",
+          "stopping_rationale": "Complete captured main report was read. It describes conduct but gives neither protocol criteria nor evidence of trial-specific causes; no relevant protocol or SAP is available among captured Sources."
+        }
+      ],
+      "evidence_expansions": [
+        {
+          "operation": "read_pages",
+          "evidence": "eh_77990c983762e6f6",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 109
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_e108107f5b664f63",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 4,
+              "start_line": 4,
+              "end_line": 12
+            }
+          ]
+        },
+        {
+          "operation": "read_pages",
+          "evidence": "eh_477fb72f1b541dd0",
+          "trial_id": "bendix-1996",
+          "windows": [
+            {
+              "source_id": "source_36194f1aa06ed76fc394d17936ca93eb47f7147cf2ba18f83ad0e9ca659dcb6a",
+              "page": 4,
+              "start_line": 1,
+              "end_line": 112
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "premise_checkpoint_identity": null,
+  "premise_records": [],
+  "investigation": {
+    "proposition": "Were participants aware of their assigned intervention during the trial?",
+    "status": "not_established",
+    "sufficiency": {
+      "status": "not_established",
+      "attribution": "not_established"
+    },
+    "workflow_permission": {
+      "permitted": true,
+      "operation": "save_domain_judgment",
+      "authority": "host",
+      "detail": "Submit a changed Domain draft before refreshing Trial review; review itself is not semantic approval."
+    },
+    "coverage": {
+      "source_scope": [
+        "sh_36194f1aa06ed76f"
+      ],
+      "state": "delivered",
+      "ranges": [
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 81,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 139,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 109,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 112,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 134,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 32,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 6,
+          "start_line": 33,
+          "end_line": 97,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 161,
+          "phase": "assessment"
+        },
+        {
+          "source_id": "sh_36194f1aa06ed76f",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 112,
+          "phase": "assessment"
+        }
+      ],
+      "range_count": 9,
+      "delivered_sources": [
+        "sh_36194f1aa06ed76f"
+      ],
+      "sources_without_delivery": [],
+      "ranges_truncated": false
+    },
+    "host_notes": {
+      "referenced_sources": [],
+      "unread_ranges": [],
+      "observation_count": 0
+    },
+    "observations": [],
+    "support": [],
+    "counterevidence": [],
+    "unresolved": "Were participants aware of their assigned intervention during the trial?",
+    "recovery_choices": [
+      {
+        "operation": "save_working_checkpoint",
+        "available": true,
+        "rationale": "Save source-linked observations without committing an answer."
+      },
+      {
+        "operation": "search_sources",
+        "available": true,
+        "rationale": "Search captured Sources for Evidence that discriminates the premise."
+      },
+      {
+        "operation": "read_pages",
+        "available": true,
+        "rationale": "Read exact Source pages before relying on a passage as Evidence."
+      },
+      {
+        "operation": "accept_limitation",
+        "available": true,
+        "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+      },
+      {
+        "operation": "save_domain_judgment",
+        "available": true,
+        "rationale": "Submit the complete Domain draft; workflow permission does not establish scientific sufficiency."
+      }
+    ],
+    "stopping_rationale": null,
+    "stale": [],
+    "checkpoint_identity": null,
+    "legacy": "supported",
+    "premises": []
+  }
+}
