@@ -749,9 +749,9 @@ def _comparison_cards(
         "domain:selection": (
             "reported_result",
             "analysis_plan",
-            "unblinded_access",
-            "amendment",
             "correspondence",
+            "amendment",
+            "unblinded_access",
         ),
     }
     if domain_id not in question_by_domain:
@@ -881,8 +881,14 @@ def _comparison_cards(
             (
                 "sq:selection:prespecified-analysis",
                 "plan_applicability",
-                "The plan applies to the exact comparison, cohort, endpoint, population, window, "
-                "analysis, and effect measure.",
+                "Compare the selected reported analysis with the applicable planned analysis "
+                "for the exact comparison, cohort, endpoint, population, window, and effect "
+                "measure. Keep their source citations together with any evidence about a "
+                "change's timing and reason. Matching endpoint or population and an early "
+                "plan do not resolve a material analysis difference. A documented change "
+                "before unblinded access or clearly unrelated to results may qualify; an "
+                "unknown amendment or a different method label alone establishes neither "
+                "correspondence nor noncorrespondence.",
                 ("sq:selection:prespecified-analysis",),
             ),
             (
@@ -1773,7 +1779,18 @@ def _comparison_cards(
             "prompt": (
                 "Compare result_scope (target), reported_result, and target_relation. Retain "
                 "scope differences; assess the reported Result. "
-                "target or analyzed populations do not establish observed outcomes. Classify "
+                + (
+                    "Read reported_result, analysis_plan, correspondence, amendment, and "
+                    "unblinded_access together: locate the selected and planned methods in "
+                    "their cited passages, then evidence about whether, when, and why a "
+                    "material change was made. Keep unresolved method correspondence "
+                    "explicit even when plan timing is well supported. Distinguish method "
+                    "content from labels; a discrepancy does not establish results-based "
+                    "selection. "
+                    if domain_id == "domain:selection"
+                    else ""
+                )
+                + "target or analyzed populations do not establish observed outcomes. Classify "
                 "remaining propositions; do not infer causation, availability, censoring, "
                 "measurement influence, plan correspondence, or risk from metadata, arithmetic, "
                 "or wording alone. An empty passage group is unopened; inspect "

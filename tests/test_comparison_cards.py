@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+import pytest
 from support.rob2 import _assessment_workspace, _call, _domain_draft
 
 from rob2_kit.application.domains import _comparison_cards, reconcile_missing_data
@@ -158,6 +160,75 @@ def test_selection_card_exposes_result_but_not_plan_correspondence(tmp_path: Pat
     assert "group_bound_values" in slots["reported_result"]["value"]
     assert slots["analysis_plan"]["status"] == "unknown"
     assert slots["correspondence"]["status"] == "unknown"
+
+
+@pytest.mark.parametrize(
+    "case",
+    json.loads(
+        Path("eval/d5-correspondence-presentation-controls.json").read_text(encoding="utf-8")
+    )["cases"],
+    ids=lambda case: case["id"],
+)
+def test_selection_comparison_preserves_neutral_method_change_evidence(
+    case: dict[str, Any],
+) -> None:
+    source_id = "source_" + "a" * 64
+    catalog = {
+        "sha256:" + str(index) * 64: {
+            "identity": "sha256:" + str(index) * 64,
+            "handle": "eh_" + str(index) * 16,
+            "kind": "narrative",
+            "source_id": source_id,
+            "page": index,
+            "start_line": 1,
+            "end_line": 3,
+            "quote": case[key],
+        }
+        for index, key in enumerate(("reported", "planned", "change"), start=1)
+    }
+    evidence = catalog["sha256:" + "1" * 64]
+    result = {
+        "kind": "assessable",
+        "target": {},
+        "reported": {
+            "form": "comparative_effect",
+            "endpoint": {"name": "Fixed endpoint"},
+            "analysis_population": "All randomized participants",
+            "effect_measure": "Ratio",
+            "estimate": "0.8",
+            "precision": "95% CI 0.6 to 1.1",
+            "group_values": [],
+        },
+        "evidence": [{"handle": evidence["handle"], "identity": evidence["identity"]}],
+        "bindings": [{"field": {"path": "/reported"}, "evidence_index": 0}],
+    }
+    checkpoint = [
+        {"question_id": "sq:selection:prespecified-analysis", "unknowns": case["unknowns"]}
+    ]
+    sources = [{"id": source_id, "role": "protocol", "label": "combined.pdf"}]
+    inputs = deepcopy((result, catalog, checkpoint, sources))
+    card = _comparison_cards("domain:selection", result, catalog, checkpoint, sources)[0]
+
+    assert (result, catalog, checkpoint, sources) == inputs
+    assert card["reported_result"] == result["reported"]
+    assert [slot["name"] for slot in card["slots"]] == [
+        "reported_result",
+        "analysis_plan",
+        "correspondence",
+        "amendment",
+        "unblinded_access",
+    ]
+    assert card["slots"][0]["passages"][0]["handle"] == evidence["handle"]
+    assert all(slot["status"] == "unknown" for slot in card["slots"][1:])
+    assert {ref["handle"] for ref in card["passage_groups"][0]["passages"]} == {
+        value["handle"] for value in catalog.values()
+    }
+    assert all(p["status"] == "unknown" for p in card["propositions"])
+    assert not {"answers", "judgment", "expected_answer", "expected_judgment"} & card.keys()
+    assert "unresolved method correspondence" in card["prompt"]
+    premise = next(p for p in card["propositions"] if p["name"] == "plan_applicability")
+    assert "timing and reason" in premise["proposition"]
+    assert "different method label alone" in premise["proposition"]
 
 
 def test_result_slot_uses_only_field_bound_passages() -> None:

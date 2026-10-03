@@ -1,0 +1,33 @@
+{
+  "purpose": "Offline presentation and information-preservation controls; no reference answers or judgments",
+  "cases": [
+    {
+      "id": "documented-pre-access-change",
+      "reported": "The selected estimate uses analysis B for the fixed endpoint, population and window.",
+      "planned": "The original plan specified analysis A; the signed amendment specifies analysis B for the same result.",
+      "change": "The analysis amendment was signed on June 1; investigators first accessed unblinded outcomes on July 1.",
+      "unknowns": []
+    },
+    {
+      "id": "documented-results-independent-change",
+      "reported": "The selected estimate uses analysis B for the fixed endpoint, population and window.",
+      "planned": "The applicable original plan specified analysis A.",
+      "change": "A dated repair record documents that a broken measuring device made the planned analysis impossible; the amendment explains the resulting analysis B. The documented reason is independent of trial results.",
+      "unknowns": ["The date investigators first accessed unblinded outcomes is not reported."]
+    },
+    {
+      "id": "unclear-amendment",
+      "reported": "The selected estimate uses analysis B for the fixed endpoint, population and window.",
+      "planned": "The applicable original plan specified analysis A and was signed before recruitment.",
+      "change": "The report mentions a revised plan but supplies neither its analysis content nor its change rationale or effective date.",
+      "unknowns": ["The revision content and chronology are unknown.", "The date investigators first accessed unblinded outcomes is not reported."]
+    },
+    {
+      "id": "label-difference-same-content",
+      "reported": "The report calls the method analysis B; it describes the same outcome, risk set, covariates, population and estimation procedure as the plan.",
+      "planned": "The plan calls the method analysis A and describes its outcome, risk set, covariates, population and estimation procedure.",
+      "change": "The report supplies a terminology cross-reference between labels A and B; no analysis-content amendment is documented.",
+      "unknowns": ["A label difference alone is not evidence that the analysis content changed."]
+    }
+  ]
+}
