@@ -32,6 +32,7 @@ from benchmark_contract import (
     trace_session_ids,
 )
 from prepare_rsi_workspace import approved_scope_record, prepare_workspace
+from workflow_completion import Turn, drive
 
 try:
     import fcntl
@@ -1759,6 +1760,13 @@ def main() -> None:
         type=float,
         help="Stop and record an expired infrastructure attempt after this many seconds",
     )
+    parser.add_argument(
+        "--completion-resumes",
+        type=int,
+        default=0,
+        help="Opt in to bounded SAME-session resumes after unfinished natural exits (default off)",
+    )
+    parser.add_argument("--completion-no-progress", type=int, default=2)
     parser.add_argument("--benchmark-index", type=Path)
     parser.add_argument("--benchmark-index-sha256")
     parser.add_argument("--attempt-number", type=int, default=1)
@@ -1820,6 +1828,10 @@ def main() -> None:
         parser.error("launching a phase requires --prompt and --phase")
     if args.timeout_seconds is not None and args.timeout_seconds <= 0:
         parser.error("--timeout-seconds must be positive")
+    if args.completion_resumes < 0 or args.completion_no_progress < 1:
+        parser.error("completion budgets must be nonnegative resumes and positive no-progress")
+    if args.completion_resumes and args.timeout_seconds is None:
+        parser.error("completion resumes require a shared --timeout-seconds wall budget")
     if args.attempt_number < 1:
         parser.error("--attempt-number must be positive")
     if args.phase == 1 and (
@@ -2011,7 +2023,9 @@ def main() -> None:
     try:
         server_inventory = probe_server_advertised_inventory(rob2_command, workspace)
         # Process cleanup is per-probe telemetry, not part of frozen server identity.
-        preflight["rob2"]["probe_cleanup"] = server_inventory.pop("probe_cleanup", "unknown")
+        preflight["rob2"]["probe_cleanup"] = _first_text(
+            server_inventory.pop("probe_cleanup", "unknown"), default="unknown"
+        )
         server_info = server_inventory.get("server_info")
         server_version = server_info.get("version") if isinstance(server_info, dict) else None
         preflight["rob2"]["version"] = (
@@ -2297,7 +2311,11 @@ def main() -> None:
         ),
         "budget": {
             "reasoning_effort": effort,
-            "phase": "single host invocation",
+            "phase": (
+                "bounded same-session workflow"
+                if args.completion_resumes
+                else "single host invocation"
+            ),
             "declared": "Codex CLI budget for the selected reasoning effort",
             "timeout_seconds": args.timeout_seconds,
         },
@@ -2373,6 +2391,13 @@ def main() -> None:
     }
     _atomic_json(run_dir / "execution.json", execution)
     metadata_path = run_dir / f"phase-{args.phase}.meta.json"
+    metadata["completion_policy"] = {
+        "max_same_session_resumes": args.completion_resumes,
+        "no_progress_limit": args.completion_no_progress,
+        "shared_wall_seconds": args.timeout_seconds,
+        "approval_automatic": False,
+        "selection": "one workflow; retain every turn; no answer-dependent retry",
+    }
     _atomic_json(metadata_path, metadata)
     environment = _codex_environment(
         codex_home,
@@ -2382,22 +2407,118 @@ def main() -> None:
     completed: subprocess.CompletedProcess[bytes] | None = None
     terminal_state: str | None = None
     terminal_reason: str | None = None
+    completion_record: dict[str, object] | None = None
     try:
         auth_copy.unlink(missing_ok=True)
         shutil.copyfile(auth_source, auth_copy)
         _mark_execution_running(run_dir, execution, args.phase)
-        completed = subprocess.CompletedProcess(
-            command,
-            _run_owned_codex(
+        if args.completion_resumes:
+
+            def read_workflow_status() -> dict[str, object]:
+                receipt = subprocess.run(
+                    [str(rob2_command), "status", "--workspace", str(workspace)],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                return json.loads(receipt.stdout)
+
+            def verify_workflow_artifact(status: dict[str, object]) -> bool:
+                artifact = status.get("artifact")
+                if status.get("phase") != "finalized" or not isinstance(artifact, dict):
+                    return False
+                path = artifact.get("path")
+                if not isinstance(path, str):
+                    return False
+                artifact_path = (workspace / path).resolve()
+                if not artifact_path.is_relative_to(workspace) or not artifact_path.is_file():
+                    return False
+                verifier = runpy.run_path(str(Path(__file__).with_name("verify_bundle.py")))
+                return bool(verifier["verify"](artifact_path)[0])
+
+            turn_paths: list[Path] = []
+
+            def invoke_turn(
+                session: str | None, message: str, remaining: float, index: int
+            ) -> Turn:
+                turn_trace = run_dir / f"phase-{args.phase}.turn-{index}.jsonl"
+                turn_errors = run_dir / f"phase-{args.phase}.turn-{index}.stderr.log"
+                turn_prompt = run_dir / f"phase-{args.phase}.turn-{index}.prompt.txt"
+                turn_prompt.write_text(message, encoding="utf-8")
+                turn_command = list(command)
+                if index:
+                    tail = turn_command[2:]
+                    if tail[:1] == ["resume"]:
+                        tail = tail[2:]
+                    turn_command = [turn_command[0], "exec", "resume", str(session), *tail]
+                    output_index = turn_command.index("--output-last-message") + 1
+                    turn_command[output_index] = str(
+                        run_dir / f"phase-{args.phase}.turn-{index}.last-message.txt"
+                    )
+                turn_paths.append(turn_trace)
+                _atomic_json(
+                    run_dir / f"phase-{args.phase}.turn-{index}.command.json",
+                    {
+                        "command": turn_command,
+                        "session": session,
+                        "remaining_wall_seconds": remaining,
+                    },
+                )
+                try:
+                    code = _run_owned_codex(
+                        turn_command,
+                        cwd=workspace,
+                        prompt=message.encode(),
+                        trace=turn_trace,
+                        stderr=turn_errors,
+                        environment=environment,
+                        timeout_seconds=remaining,
+                    )
+                except subprocess.TimeoutExpired:
+                    code = 124
+                finally:
+                    trace.write_bytes(
+                        b"".join(path.read_bytes() for path in turn_paths if path.exists())
+                    )
+                return Turn(code, turn_trace)
+
+            completion_record = drive(
+                invoke_turn,
+                read_workflow_status,
+                verify_workflow_artifact,
+                prompt=prompt_bytes.decode("utf-8"),
+                session=args.session,
+                max_resumes=args.completion_resumes,
+                no_progress_limit=args.completion_no_progress,
+                wall_seconds=args.timeout_seconds,
+            )
+            # Preserve each original turn and an aggregate trace for existing phase audits.
+            trace.write_bytes(b"".join(path.read_bytes() for path in turn_paths))
+            _atomic_json(run_dir / f"phase-{args.phase}.completion.json", completion_record)
+            terminal_reason = str(completion_record["reason"])
+            turns = completion_record["turns"]
+            code = turns[-1]["exit_code"] if isinstance(turns, list) and turns else 0
+            completed = subprocess.CompletedProcess(command, int(code))
+            if completion_record["boundary"] == "aborted":
+                terminal_state = "expired" if code == 124 else "failed_infrastructure"
+            elif completion_record["boundary"] == "blocked":
+                terminal_state = "failed_infrastructure"
+            elif completion_record["boundary"] == "waiting_for_user":
+                terminal_state = "waiting_for_user"
+        else:
+            completed = subprocess.CompletedProcess(
                 command,
-                cwd=workspace,
-                prompt=prompt_bytes,
-                trace=trace,
-                stderr=stderr,
-                environment=environment,
-                timeout_seconds=args.timeout_seconds,
-            ),
-        )
+                _run_owned_codex(
+                    command,
+                    cwd=workspace,
+                    prompt=prompt_bytes,
+                    trace=trace,
+                    stderr=stderr,
+                    environment=environment,
+                    timeout_seconds=args.timeout_seconds,
+                ),
+            )
+
     except subprocess.TimeoutExpired:
         terminal_state = "expired"
         terminal_reason = f"Codex phase exceeded {args.timeout_seconds} seconds."
@@ -2415,7 +2536,9 @@ def main() -> None:
         raise RuntimeError("Codex phase did not start")
     codex_exit_code = completed.returncode
     postcondition_exit, postcondition_state, postcondition_reason, delivery_diagnosis = (
-        _host_delivery_postcondition(codex_exit_code, trace, args.session)
+        (codex_exit_code, None, None, None)
+        if completion_record is not None and not completion_record["turns"]
+        else _host_delivery_postcondition(codex_exit_code, trace, args.session)
     )
     if postcondition_state is not None:
         terminal_state = postcondition_state
@@ -2465,6 +2588,7 @@ def main() -> None:
             "finished_at": datetime.now(UTC).isoformat(),
             "exit_code": completed.returncode,
             "codex_exit_code": codex_exit_code,
+            "completion_record": completion_record,
             **(
                 {"host_delivery_diagnosis": delivery_diagnosis}
                 if delivery_diagnosis is not None
