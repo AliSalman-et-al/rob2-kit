@@ -64,3 +64,9 @@ A real wheel build was not completed because this shared Python environment lack
 type checks passed (existing unrelated line-length findings in the benchmark
 script were excluded). Initial runner mock failures from the new explicit
 entrypoint argument were corrected and the affected suite passed.
+
+The missing wheel-build prerequisite was subsequently resolved through authorized
+isolated setup. See [actual wheel release verification](wheel-release/README.md):
+version 0.11.0 built and installed successfully, and all 20 installed entrypoint
+checks passed. This supersedes the earlier build limitation without altering the
+original smoke, expectations, or scientific limitations.
