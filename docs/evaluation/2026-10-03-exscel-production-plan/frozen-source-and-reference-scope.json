@@ -1,0 +1,247 @@
+{
+  "case": "exscel",
+  "classification": "development validation; originally benchmark-exposed; not heldout",
+  "source_manifest": [
+    {
+      "name": "NEJMoa1612917.pdf",
+      "bytes": 475908,
+      "sha256": "b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121",
+      "original": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/NEJMoa1612917.pdf",
+      "prepared": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/prepared-exscel-production-inputs/NEJMoa1612917.pdf"
+    },
+    {
+      "name": "nejmoa1612917_appendix.pdf",
+      "bytes": 1833884,
+      "sha256": "df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "original": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/nejmoa1612917_appendix.pdf",
+      "prepared": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/prepared-exscel-production-inputs/nejmoa1612917_appendix.pdf"
+    },
+    {
+      "name": "nejmoa1612917_disclosures.pdf",
+      "bytes": 318653,
+      "sha256": "8fbf51ed48eb5997b43ffcb719474279d0af6725fae0040441d8cd3647885699",
+      "original": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/nejmoa1612917_disclosures.pdf",
+      "prepared": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/prepared-exscel-production-inputs/nejmoa1612917_disclosures.pdf"
+    },
+    {
+      "name": "nejmoa1612917_protocol.pdf",
+      "bytes": 4092585,
+      "sha256": "d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "original": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/nejmoa1612917_protocol.pdf",
+      "prepared": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/prepared-exscel-production-inputs/nejmoa1612917_protocol.pdf"
+    },
+    {
+      "name": "sources.toml",
+      "bytes": 201,
+      "sha256": "8fe6b7773df4f76b31f9837f6fa50b93b19c873fd8130aa4bdcc52aac185d030",
+      "original": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/sources.toml",
+      "prepared": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/prepared-exscel-production-inputs/sources.toml"
+    }
+  ],
+  "original_outcome_row": {
+    "slug": "exscel",
+    "meta_id": "lde-glp1",
+    "primary_outcome": "Composite of cardiovascular death, nonfatal MI, or nonfatal stroke (time to first event; noninferiority for safety and superiority for efficacy)",
+    "primary_outcome_source": "Methods: The primary outcome was defined as the first occurrence of any component of the composite outcome of death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke (three-component MACE outcome), in a time-to-event analysis.",
+    "anchor_as_printed": "A primary composite outcome event occurred in 839 of 7356 patients (11.4%; 3.7 events per 100 person-years) in the exenatide group and in 905 of 7396 patients (12.2%; 4.0 events per 100 person-years) in the placebo group (hazard ratio, 0.91; 95% confidence interval [CI], 0.83 to 1.00)",
+    "anchor_source": "Abstract, Results",
+    "nct": "NCT01144338",
+    "registration_other": "",
+    "notes": "P<0.001 for noninferiority, P = 0.06 for superiority; NEJM 2017 primary report (identity corrected 2026-09-23)"
+  },
+  "archived_source_inventory": [
+    {
+      "declared_role": "main_article",
+      "id": "source_693e51915e5ffefc8e0a72e1e1e1c1c0a46956f46ef37bbef6371e357d284fff",
+      "label": "NEJMoa1612917.pdf",
+      "logical_path": "NEJMoa1612917.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 12,
+      "projection_hash": "sha256:a03f9f099d9c623493fd1845055f7dbeaa3b9bfc2b20a7de17aff28cd71c786d",
+      "role": "main_article",
+      "sha256": "sha256:b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121",
+      "trial_id": "exscel",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/NEJMoa1612917.pdf",
+      "verified_raw_identity": "sha256:b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_08fbea6d1ed99fc01df26c6632346a406a4ec2d8b4de18f0f96000d0b2c469f3",
+      "label": "nejmoa1612917_appendix.pdf",
+      "logical_path": "nejmoa1612917_appendix.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 52,
+      "projection_hash": "sha256:8d48f85669ce271b81b3c629a756da643141d6b5a4c8f5d00ffd3602f9a410ee",
+      "role": "supplement",
+      "sha256": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16",
+      "trial_id": "exscel",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/nejmoa1612917_appendix.pdf",
+      "verified_raw_identity": "sha256:df91cb4fa3fa0223497f3b828b3c2645f75a8a82d41b91b7e6f96b7e02f08a16"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_3651226b8ff5578d551f55fa8f13f72dff4032a3953925c3416dff4419324a0a",
+      "label": "nejmoa1612917_disclosures.pdf",
+      "logical_path": "nejmoa1612917_disclosures.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 63,
+      "projection_hash": "sha256:9ebabbff50021298bd7bd10a2e431e6fb575fff8eb1089b62ec825dfa86d39ba",
+      "role": "supplement",
+      "sha256": "sha256:8fbf51ed48eb5997b43ffcb719474279d0af6725fae0040441d8cd3647885699",
+      "trial_id": "exscel",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/nejmoa1612917_disclosures.pdf",
+      "verified_raw_identity": "sha256:8fbf51ed48eb5997b43ffcb719474279d0af6725fae0040441d8cd3647885699"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_bcf70e5423c2d8ef2945d2ae46b000829adb33d835f45df5802500b1c7192e0c",
+      "label": "nejmoa1612917_protocol.pdf",
+      "logical_path": "nejmoa1612917_protocol.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 208,
+      "projection_hash": "sha256:5482a03c26ec6529b9d8c7dc2e0f56abb6a3e60fa8ce83005223570c439276f9",
+      "role": "supplement",
+      "sha256": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+      "trial_id": "exscel",
+      "raw_available": true,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/nejmoa1612917_protocol.pdf",
+      "verified_raw_identity": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2"
+    },
+    {
+      "declared_role": null,
+      "id": "source_35e3bffd3cc39b7cc83789d56ce84a99c4a94ee8fd3c9594aad3e144d1cd973e",
+      "label": "ClinicalTrials.gov NCT01455896",
+      "logical_path": "registry/NCT01455896.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:26c4f572db1768056f6f8b9db24e06181835b9628a0cd886eddf68fc501f711e",
+      "role": "registry",
+      "sha256": "sha256:05c6e068b92a6fd9d4045867dda2c05f4be1eb76cd113920e1a5397e7a27e843",
+      "trial_id": "exscel",
+      "raw_available": false,
+      "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/exscel/registry/NCT01455896.json"
+    }
+  ],
+  "historical_approved_result": {
+    "applicability": {
+      "design": "individual_parallel",
+      "evidence": [
+        "eh_77958a24e9cff740"
+      ],
+      "rationale": "Patients were randomly assigned 1:1 by a computer-generated block system within each site to exenatide or matching placebo."
+    },
+    "bindings": [
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/effect_measure"
+        },
+        "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/estimate"
+        },
+        "value_digest": "sha256:0f0320ea614c29d03c308e16c253f97cc536a1b1e35c9b6f28455281a72141eb"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/precision"
+        },
+        "value_digest": "sha256:52d47ab8dcdbc6a20c955a970278e1d7988c18d65cb57bc9cb56a5e1ced05312"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/endpoint/name"
+        },
+        "value_digest": "sha256:e1da8eb931747e6087c5d03d97d2b341e3e4cdd0dadd8d1d360e9561b60abca0"
+      }
+    ],
+    "clarity": {
+      "analysis_population": "specified",
+      "comparison_groups": "specified",
+      "effect_measure": "specified",
+      "eligible_result_choice": "specified",
+      "measurement": "specified",
+      "outcome_definition": "specified",
+      "source_table_meaning": "specified",
+      "time_point": "specified"
+    },
+    "evidence": [
+      {
+        "handle": "eh_62c0318d013b0813",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_77958a24e9cff740",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_98e9e4d4c1cd7650",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_b0b89f5adfc821ed",
+        "kind": "narrative"
+      }
+    ],
+    "kind": "assessable",
+    "relation": "exact",
+    "relation_rationale": "The reported primary outcome is exactly the first occurrence of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke in a time-to-event analysis. It compares all randomized participants assigned to weekly exenatide 2 mg versus matching placebo, with follow-up through the event-driven trial (median 3.2 years); its Cox hazard ratio is the requested comparative effect.",
+    "reported": {
+      "analysis_population": "Intention-to-treat population; all 14,752 randomized patients (7,356 exenatide; 7,396 placebo).",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "definition": null,
+        "name": "Primary composite outcome"
+      },
+      "estimate": "0.91",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "0.83-1.00"
+    },
+    "requested_outcome": "Composite of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke (time to first event)",
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "Extended-release exenatide 2 mg subcutaneously once weekly plus usual care",
+          "id": "exenatide"
+        },
+        {
+          "assignment": "Matching placebo subcutaneously once weekly plus usual care",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "First occurrence of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke, with events adjudicated by an independent committee unaware of assignment.",
+        "metric": "Composite of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke (time to first event)"
+      },
+      "outcome_definition": "Composite of cardiovascular death, nonfatal myocardial infarction, or nonfatal stroke (time to first event)",
+      "time_point_or_window": {
+        "description": "From randomization during trial follow-up through trial closeout; median follow-up 3.2 years",
+        "kind": "described"
+      }
+    },
+    "trial_id": "exscel"
+  },
+  "reference_full_scope": "unknown; approved target/report relation is not independent human reference matching",
+  "registry_identity_conflict": {
+    "original_sources_toml": "NCT01455896",
+    "original_outcomes_row": "NCT01144338",
+    "resolution": "Unresolved metadata conflict. No live registry replacement or transfer of wrong-trial evidence. Published source identity and any captured registry applicability must be inspected independently."
+  }
+}

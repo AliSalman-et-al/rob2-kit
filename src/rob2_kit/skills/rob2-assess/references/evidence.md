@@ -119,7 +119,11 @@ selection on each page.
 Use `select_text_evidence` after inspecting the source text when the prepared
 passage needs different boundaries. Select one contiguous inclusive line range containing
 the complete premise and its needed header, list, cohort, denominator, unit, or
-footnote. A heading or list-introducing lead-in alone is incomplete.
+footnote. A heading or list-introducing lead-in alone is incomplete. If the text ends
+mid-sentence or mid-list, read the adjacent Source page before treating that
+premise as complete. Follow a named definition in the relevant supplement when
+its criteria are needed. Empty `remaining_windows` means the requested ranges
+were delivered; it does not establish that the definition is complete.
 
 ## Use visual Evidence for visual meaning
 

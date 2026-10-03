@@ -1,5 +1,5 @@
 {
-  "scope": "Required Code corpus and preserved October 1 campaign case turn logs. Inference-event presence establishes exposure; absence would require additional archive review, not prove never paid.",
+  "scope": "Required Code corpus and preserved October 1 campaign case turn logs. Inference-event presence establishes exposure; absence would require additional archive review, not prove never paid. This is ORIGINAL October 1 benchmark exposure only; it does not disqualify cases without a paid October 2 onward improvement invocation.",
   "cases": [
     {
       "case": "aarnoutse-2017",

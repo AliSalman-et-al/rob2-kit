@@ -24,11 +24,11 @@ The model's statement that objective evidence is required and its complete clari
 
 Full line-numbered pages and actual source/search/read delivery receipts are in `continuation-delivery-audit.json`.
 
-## Unexposed next-case preparation blocked by the required corpus
+## Original exposure versus improvement-campaign eligibility
 
-`exposure-inventory.json` inspects every directory in the required Code corpus against preserved October 1 case `turn-*.jsonl` logs. All 106/106 cases have actual inference events, not merely campaign registration. There are zero eligible cases with no paid campaign exposure in this corpus. No candidate was relabeled unexposed, no older main-repository evaluation was substituted, and no new run was prepared/launched. A distinct previously unprobed-by-this-cycle case would still be campaign-exposed. Preparing the requested qualifying case needs an additional Code case outside this exposed corpus or an explicit relaxation to campaign-exposed cases. This is the remaining blocker, not a reason to resume EMPEROR.
+Correction: the requested exclusion applies to paid invocations in this improvement campaign (October 2 onward), not the original October 1 benchmark. The original inventory correctly establishes 106/106 original benchmark exposures, but the earlier inference that this blocked preparation was incorrect. No new corpus or user data is required. `exposure-inventory.json` is retained as an **original benchmark** inventory only; it cannot establish current improvement-run exposure.
 
-The audit script uses read-only SQLite and reproduces these inventories. Presence of inference events establishes exposure in the preserved campaign; it is not a claim about dollar charges or an exhaustive inventory of every historical campaign elsewhere.
+EXSCEL is now selected as development validation, never heldout. No paid EXSCEL invocation was found in the retained improvement-run inventory; offline source/context audits are not paid model runs. The separate [production plan](../2026-10-03-exscel-production-plan/README.md) freezes the actual Code source manifest, original target, qualifications, current-run inventory and full assessment criteria. No run is launched.
 
 ## Consolidated limitations and current verification
 
