@@ -1,0 +1,51 @@
+{
+  "private_run_root": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/monaleesa-prospective-run",
+  "terminal_freeze_sha256": "4dda11e0ae30c219a0986784ef8feda4465994bcba3b197bf9f9d40eaecd8b26",
+  "frozen_files": 1070,
+  "runtime_code_unchanged": true,
+  "input_and_source_bytes_unchanged": true,
+  "private_auth_not_exported": true,
+  "raw_source_and_model_traces_kept_private": true,
+  "session": "01a108e1-d685-74e3-a3c1-5e910e39bc7f",
+  "technical_outcome": "accepted D5, no other domains/finalization; CLI post-checkpoint turn interrupted",
+  "review_operator_decision_sha256": "32ba5ad85f3aa29a957307e015965fbc6b7c19bab44dfcfd34c71436094b7dab",
+  "accepted_review_identity": "sha256:032b855f7aa7b3e097b7e48949017dcf0233bac9ba83b55a5b0faf6ff9dc2276",
+  "accepted_checkpoint_identity": "sha256:1788454301d7f6cdefd7e9e7a1537b8097f5a64b47e84ae198a4392f68ef1044",
+  "model_source_pages": {
+    "sh_4d540ec810479a32": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "sh_74c00962d992e3d4": [
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      43,
+      64,
+      66,
+      67,
+      68,
+      69
+    ],
+    "sh_6ec7ba77ca941a71": [
+      1
+    ],
+    "sh_e1a1bbdf5dfaa094": [
+      16,
+      65,
+      120,
+      136
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "interpretation": "Operational scope complete and genuine model use of augmented plans demonstrated; scientific warrants mixed, no accuracy or label-gain claim",
+  "five_one": {
+    "answer": "probably_yes",
+    "supported": [
+      "Embedded SAP cover page30 names trial/release11Oct2017",
+      "SAP43 includes sponsor assertion that final-analysis decisions preceded lock/unblinding",
+      "SAP64/66 local primary PFS and stratified HR correspond to the exact2018reported result",
+      "Current capture/upload metadata explicitly separated from historical availability"
+    ],
+    "material_limits": [
+      {
+        "claim": "Later protocol says investigators/patients remained blinded through final PFS analysis",
+        "source": "Protocol136 uses future planned wording: analyses will be performed and investigators/patients will remain blinded;65 likewise specifies intended blinding and future unblinding",
+        "issue": "Planning language is not observed actual conduct; later document date alone does not make this independent retrospective confirmation"
+      },
+      {
+        "claim": "These post-2017 revisions changed PFS methods",
+        "source": "SAP31\u201334 history entries described under amendment1 dated6June2017; July2018 interior headers establish a header timestamp, not those changes occurred after2017",
+        "issue": "Unsupported revision chronology; preserve ambiguity without dating changes from render/header timestamp"
+      },
+      {
+        "claim": "Analysis intentions preceded investigator access; investigator-unblinding date unknown",
+        "source": "Protocol136 says sponsor clinical team will perform PFS analyses while investigators/patients remain blinded",
+        "issue": "D5 timing concerns availability of unblinded outcome data for analysis, including responsible sponsor/analyst access, not only investigator/patient unblinding"
+      }
+    ],
+    "reviewer_warrant": "A detailed matching plan and pre-lock assertion support a possible ProbablyYes interpretation with explicit provenance uncertainty. The submitted corroboration overstates actual conduct and narrows the access question. Low is not made strongly defensible by acquisition/acceptance alone; source-fidelity review remains incomplete. No alternative answer is forced solely by missing timestamp."
+  },
+  "five_two": {
+    "answer": "probably_no",
+    "supported": "SAP64 distinguishes planned investigator/local primary, calculated-local sensitivity and BIRC supportive measurements; article names local primary and reports BIRCsupport. Multiple measurements alone do not establish result-driven selection.",
+    "counterevidence": "Calculated-local sensitivity estimate absent from full10-pagearticle; reason and external reporting unresolved.",
+    "reviewer_warrant": "Reasonably supported probable negative, conditional on applicability of inspected plan; no unwarranted claim of exhaustive reporting elsewhere."
+  },
+  "five_three": {
+    "answer": "probably_no",
+    "supported": "SAP66 specifies primarystratified logrank/Cox;66\u201369 list alternatives; article3\u20134 methods/HR match primary choice.",
+    "counterevidence": "Not all planned sensitivity outputs/conduct reported; cannot infer all analyses performed or why omitted.",
+    "reviewer_warrant": "Reasonably supported probable negative; analysis multiplicity and omitted sensitivity outputs alone do not demonstrate results-based choice. Historical plan applicability uncertainty still carries across."
+  },
+  "missed_or_partial_versions": [
+    "Model read embedded SAP30/31\u201335/43 and64/66\u201369, but did not read2023SAP cover1 or fullintroduction8\u20139 through read_pages; search hits may deliver snippets, counted separately rather than fullreading",
+    "SAP36history continuation, laterprotocol14\u201315/18\u201332fullamendmenthistory, protocol125primaryanalysis andappendixRECIST not fullyread; protocol16/65/120/136 andsourcesmetadata covered some relatedevidence",
+    "Registry fullrecord was listed/searchable but not read_pages; provenance capture was read",
+    "No model render_page call; six hostpreparation frames were available but not modelvisualreceipt evidence"
+  ],
+  "citation_integrity": "All citedbasis quotes andsourceprojection identities match nativepage/linetext. Semantic/timing interpretation defects remain; valid citations do not certify their implications.",
+  "repairs": "One invalid workingcheckpoint attempt with unsupported observationIDs; model removedIDs and saved successfully. First D5save accepted; no paidretest/sourcehints/operator answercorrection."
+}

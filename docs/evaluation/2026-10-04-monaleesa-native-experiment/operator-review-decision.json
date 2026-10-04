@@ -1,0 +1,11 @@
+{
+  "review_identity": "sha256:032b855f7aa7b3e097b7e48949017dcf0233bac9ba83b55a5b0faf6ff9dc2276",
+  "decision": "accept",
+  "operator": "Codex diagnostic operator",
+  "authority": "explicit delegated parent authorization for one source-verified exact-scope proposal",
+  "source_thread_id": "01a0fae8-209c-74b0-bd95-43be086b40e3",
+  "independent_human_adjudication": false,
+  "ali_manually_approved_this_proposal": false,
+  "verification": "Compared complete saved target against preregistered2018PFS scope and supporting native article/SAP passages; no material target change",
+  "decided_at": 1791150528.123664
+}
