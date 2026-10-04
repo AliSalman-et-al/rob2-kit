@@ -1,0 +1,301 @@
+{
+  "model_calls": 0,
+  "original_run_hashes_unchanged": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/budget-state.json": "ccb19eb76a4fb76257bc526817dfdf1d6d61d9a4f48cf3f5c05707499fe88fa8",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/controller-1.json": "0f0b709275008e76799216331c8ad42bb273b5669f790f0c38adaca3f8189374",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/actual-source-coverage.json": "25d3507566995b558b8ed39aaa5118aaca878a856199d3f7b809a5305c20114f",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/model-metadata.json": "a0a7ae6462ae7c4c6c10ddd8a8f76252b4370a30a13f05089473008f2395e280",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/final-status.json": "a884f6248bf5c693d3b0b0790282dca2787669d9a7264d11b3b2c9567d6ab192",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/submissions.json": "61fd4f5daf179d6cfac05c73d7290b1aac94deb62ac42038aa5c614daf0cb651",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/controller-2.json": "2800a025a83a1b88e0defd94dc74eb45c90ed0593b39ed8eadd11ada3b962825",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/proposal-state-before-approval.json": "b929ffda756688b731e93265f800b08cb102cb31fb174f995b207bc8e4098cf6",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/durable-token-usage-records.json": "9803a6c10fa1fa6e9348a09111088be7e4b705c02dc9e6e56ee1b267cd2453d6",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/output-freeze.json": "b388309eff23cbf8cb75cafc5d00fbbe45ba1ce8a35b4f325606568e20c3f944",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/usage.json": "d31284e2e628081e1409f214db2a45353fe15dfe8f9eae39a61d4acd1f98c5e0",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/verifiers.json": "5ea9c6746bb58b2318caf6fab3badab97e83d3f75b979d0957b4fcc47a32e0d7",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/effective-model.json": "46c6101d32855c30a795ca3f28038b3da0cd594ab932a1ab9be3994ff59b9841",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/native-evidence-manifest.json": "706c458bca5e101ac5b62c6916ca70a05c14819030f78bbd7eb8e36323d970c3",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/delegated-approval.json": "1f3c01153a03e57445ad1fbd1b7f3c26de27f534bb6d7229d12eff61536aac56",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/accepted-domain-records.json": "74b035a6981838e3633fb1b9299772490b6c47224dd4290e52e115bbbc64e7b2",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/manifest.json": "01e5cb27b7d475eddb62fceb8ef69c58cb194fed7f2555ca1532942f6392badb",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/validation.json": "1744472d09ba126f4f897291fc68927d3d0dc96f71ffc099879c7ab0a8b71e70",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/tool-call-inventory.json": "18f05a395105db2f35eac1a24c27e2158c566fe987e7f5a0e47edab6f3db7f09",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/preflight-turn-1.json": "44eb78d57e9204463d329c3543d1e1c7377e0458dd4fe86d17ac5dfcd7b43a2d",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/failure-inventory.json": "4534ae60d1e084878d040e540a628a82afb9552ada801039ec3ddd6821b7863a",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/preflight-turn-2.json": "44eb78d57e9204463d329c3543d1e1c7377e0458dd4fe86d17ac5dfcd7b43a2d",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/turn-2.jsonl": "d0465d1ff695de16c5c7cda522efb09835b10d85446d4d41441eac2c3ccea436",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/turn-1.jsonl": "8c26c8acc890e42c38f9421da598e846d92e739f5776c7d00ee82f21413b1bdb",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/working.sqlite3": "02e88ba83cba7cf02204e27f7ee6543bfd850fa6b8d30866636feab8f7f70472",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/canonical.sqlite3": "b2b96a259bb43d4a44e7f6da596406cd31927835cd312b7e24c27c962f3a36fa",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-03-gupta-full-validation/derivative.sqlite3": "966f443401c197f44b635ad09bda5ce1b0ebe1cbc5c54f4974be039e06bdd741",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/workspace/.rob2-kit/working.sqlite3": "3d26e3545421c809c1fbd46c3048756e0e24111ad6abac100d021597c300f6a3",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/workspace/.rob2-kit/canonical.sqlite3": "ab472b05c1360975592878aebefc9a6b7a754df7cde71596d01ffa148f0ed649",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/workspace/.rob2-kit/derivative.sqlite3": "f409b03b038517593f2139ff7745d11842e7169efed28f02a6d84b1e12f8ac98",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/home/sessions/2026/10/04/rollout-2026-10-04T01-09-12-01a10362-81a7-7152-b902-cb2149fe85b6.jsonl": "750f7521bef00a3569fe4abaf00b2deb1d8480b34f7e1f64aa9e8a02b3fa3bdb"
+  },
+  "revision": 8,
+  "phase": "assessment",
+  "approved_result": {
+    "applicability": {
+      "design": "individual_parallel",
+      "evidence": [
+        "eh_802cea64f3f2c544",
+        "eh_664cb2e87a63db02"
+      ],
+      "rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually."
+    },
+    "bindings": [
+      {
+        "evidence_index": 4,
+        "field": {
+          "path": "/reported/effect_measure"
+        },
+        "value_digest": "sha256:8c66f695300c5661a1c9ae1bc42b25f8d7e9a1104ce6214e1c48dec624f64eaf"
+      },
+      {
+        "evidence_index": 4,
+        "field": {
+          "path": "/reported/estimate"
+        },
+        "value_digest": "sha256:edb8215ecd5ee75f596058857e9479196822a9c51d25503731ca18ce9dc0340a"
+      },
+      {
+        "evidence_index": 2,
+        "field": {
+          "path": "/reported/precision"
+        },
+        "value_digest": "sha256:096b26fbfd6445310210040893c894bb5dfab04fec17447c41dd674e3003de6e"
+      },
+      {
+        "evidence_index": 4,
+        "field": {
+          "path": "/reported/endpoint/name"
+        },
+        "value_digest": "sha256:e2a5ee3ed1a73ed1202831d19c9603273d6dac0f3f6adc2b090d45557acebdcd"
+      }
+    ],
+    "clarity": {
+      "analysis_population": "unclear",
+      "comparison_groups": "unclear",
+      "effect_measure": "unclear",
+      "eligible_result_choice": "unclear",
+      "measurement": "unclear",
+      "outcome_definition": "unclear",
+      "source_table_meaning": "unclear",
+      "time_point": "unclear"
+    },
+    "evidence": [
+      {
+        "handle": "eh_49ac77da50b0bd19",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_664cb2e87a63db02",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_68123b0bf4654ecc",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_7266c0cb8d0368a8",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_d6d5b2bf301983ce",
+        "kind": "narrative"
+      }
+    ],
+    "kind": "assessable",
+    "relation": "narrower",
+    "relation_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+    "reported": {
+      "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+      "effect_measure": "Adjusted risk ratio",
+      "endpoint": {
+        "definition": null,
+        "name": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age"
+      },
+      "estimate": "1.09",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "0.98 to 1.20"
+    },
+    "requested_outcome": "death or moderate or severe bronchopulmonary dysplasia",
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "Ibuprofen",
+          "id": "ibuprofen"
+        },
+        {
+          "assignment": "Placebo",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Risk ratio",
+      "measurement": {
+        "method": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age",
+        "metric": "death or moderate or severe bronchopulmonary dysplasia"
+      },
+      "outcome_definition": "death or moderate or severe bronchopulmonary dysplasia",
+      "time_point_or_window": {
+        "description": "At 36 weeks of postmenstrual age",
+        "kind": "quantified",
+        "unit": "weeks",
+        "value": "36"
+      }
+    },
+    "trial_id": "gupta-2024"
+  },
+  "proposal_acknowledgment": {
+    "caller": "cli",
+    "identity": "sha256:94b458d34e5497d1078fae9f20c0bb7856e3dfd605013279f36856280af262f5",
+    "method": "cli",
+    "observed_at": "2026-10-03T20:12:28.461687Z",
+    "purpose": "proposal",
+    "review_identity": "sha256:6d1ff6e7599845d305b256e856c3570971ca743fb80ba7f49f12e927c4773b73",
+    "workflow_basis": 2
+  },
+  "saved_domain_identities": {
+    "gupta-2024:domain:deviations": "sha256:77c5f723514247d378ba80c37485a54cfaa3556520169a4a86322e8c3ef72b0c",
+    "gupta-2024:domain:measurement": "sha256:de47e3f965377d7f2e713d6e1172a4b322a21ce52c9906287019da8187974d00",
+    "gupta-2024:domain:missing": "sha256:a5823343516a8b5c7b627c384cb2ee98bb8923676adf18f2f593e604bf252855",
+    "gupta-2024:domain:randomization": "sha256:539648cdd9016275069a80b3d95321d7b7a15ed0349ea89b857610a9ff06dca0"
+  },
+  "continuation": {
+    "operation": "get_domain_context",
+    "authority": "host",
+    "trial_id": "gupta-2024",
+    "domain_id": "domain:selection"
+  },
+  "conditions": [],
+  "main_report_reading": {
+    "gupta-2024": {
+      "identity_status": "identified",
+      "identity_basis": "declared_role",
+      "identity_sources": [
+        "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510"
+      ],
+      "identity_observations": [],
+      "orientation_source_ids": [],
+      "orientation_reading": {
+        "source_ids": [],
+        "ranges": [],
+        "range_count": 0,
+        "ranges_truncated": false
+      },
+      "limitation": null,
+      "status": "complete",
+      "budget_bytes": 65536,
+      "covered_prefix_bytes": 52831,
+      "required_ranges": [],
+      "required_range_count": 0,
+      "unread_ranges": [],
+      "unread_range_count": 0
+    }
+  },
+  "working_checkpoint_status": {
+    "status": "stale",
+    "reason": "canonical_newer",
+    "checkpoint_identity": "sha256:35b9d8d5c72437690da3791c6ca74908d6dbd7adaadfdd41de9a42ee8562e5c4"
+  },
+  "sources_verified": [
+    {
+      "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+      "logical_path": "NEJMoa2305582.pdf",
+      "sha256_verified": "sha256:9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4",
+      "projection_hash": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169"
+    },
+    {
+      "source_id": "source_f5de7e58b7a415fc5cc82d9469fe4bbc371ac4f10f270b8d8e8156fbe328994a",
+      "logical_path": "nejmoa2305582_appendix.pdf",
+      "sha256_verified": "sha256:97e8259cc7e1e617ae2dd1c69f37f5908c94034d70966a0b7a2955ce32802771",
+      "projection_hash": "sha256:deba28941be66d40a9a2b5c686b31424eb751d41796e1fd47b619cc02c81def2"
+    },
+    {
+      "source_id": "source_4665b37b8242dc7521d264a9107e1c68cd0c989bd96472168970010fc0ff2f56",
+      "logical_path": "nejmoa2305582_data-sharing.pdf",
+      "sha256_verified": "sha256:18555d1ae2e199f89a68ebbcf03e5a55856726e9a93980947ad34e34a0e1cb38",
+      "projection_hash": "sha256:08ea3a424cb382d656ab6cdc223d633d5b036a2875fa7d38da08b24a2c2af123"
+    },
+    {
+      "source_id": "source_af0386b8458837c5a709e9768be4f6cdaece3efaa36cc82b0ee1c6dc1250ab23",
+      "logical_path": "nejmoa2305582_disclosures.pdf",
+      "sha256_verified": "sha256:a420e41c0133ef3b78e5d2309d3d4bbb5ea3335bb935dc14f4c5cdb6e919b91e",
+      "projection_hash": "sha256:aca5b01560f51e26333a29168b9532bd740612ed1f715fe16024ec68268d6df5"
+    },
+    {
+      "source_id": "source_cb7067006a91d4e53d09d8476b0d76a0ac6292b03d6db7ce32a4df4f5c2fbef8",
+      "logical_path": "nejmoa2305582_protocol.pdf",
+      "sha256_verified": "sha256:d2e5c181534c620be01520f334ccee80b685217233f3b0a5c99cc85b33ee76f7",
+      "projection_hash": "sha256:5054b0a70b155f8b278081f3afb37ce906ce450e4309444954b00c55aaeee122"
+    }
+  ],
+  "session_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/home/sessions/2026/10/04/rollout-2026-10-04T01-09-12-01a10362-81a7-7152-b902-cb2149fe85b6.jsonl",
+  "session_turn_status": [
+    {
+      "timestamp": "2026-10-03T20:09:15.579Z",
+      "type": "task_started",
+      "turn_id": "01a10362-9833-7811-8d40-e68dbfaff347"
+    },
+    {
+      "timestamp": "2026-10-03T20:11:29.176Z",
+      "type": "task_complete",
+      "turn_id": "01a10362-9833-7811-8d40-e68dbfaff347"
+    },
+    {
+      "timestamp": "2026-10-03T20:12:33.142Z",
+      "type": "task_started",
+      "turn_id": "01a10365-9be4-7110-bde3-69ace622b9b1"
+    }
+  ],
+  "model_context": [
+    {
+      "turn_id": "01a10362-9833-7811-8d40-e68dbfaff347",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/workspace"
+    },
+    {
+      "turn_id": "01a10365-9be4-7110-bde3-69ace622b9b1",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/workspace"
+    },
+    {
+      "turn_id": "01a10365-9be4-7110-bde3-69ace622b9b1",
+      "model": "gpt-6-luna",
+      "effort": "medium",
+      "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/gupta-validation-fcd83d7/workspace"
+    }
+  ],
+  "session_recovery_runtime_verified": false,
+  "D5_timestamp_boundary": "2026-10-03T20:16:07.535Z",
+  "D5_tail_per_response_count": 13,
+  "D5_tail_usage_request_telemetry_only": {
+    "input_tokens": 2873003,
+    "cached_input_tokens": 2809600,
+    "output_tokens": 5048,
+    "reasoning_output_tokens": 1527
+  },
+  "D5_tail_max_single_request_input": 246774,
+  "old_run_usage_unchanged": {
+    "usage": {
+      "input_tokens": 8358147,
+      "cached_input_tokens": 8077568,
+      "output_tokens": 16523,
+      "reasoning_output_tokens": 4927
+    },
+    "elapsed_seconds": 535.5084631443024,
+    "turns": 2,
+    "tool_calls": 56,
+    "stop": "cumulative output limit",
+    "output_overshoot": 1523,
+    "tool_overshoot": 0,
+    "reactive_guards": true,
+    "input_telemetry_only": true
+  }
+}
