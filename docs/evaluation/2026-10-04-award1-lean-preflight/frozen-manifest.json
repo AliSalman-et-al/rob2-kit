@@ -1,0 +1,98 @@
+{
+  "case": "award-1-2014",
+  "status": "preparation_only_parent_review_and_separate_inference_authorization_pending",
+  "exposure": "Paid development run and source-informed D3.4 tuning; not held out",
+  "baseline_sha": "247db8c805c34923e2cd086124b084d040121834",
+  "lean_checkpoint_sha": "55ccc7a3cdd8352c025aa15b9fc039dac6f9f58d",
+  "current_production_sha": "e6b13031ddfa72437f3e1f2f9ca3b38ea58a064c",
+  "sources": [
+    {
+      "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/award-1-d3-preflight/model-source-bundle/2159.pdf",
+      "sha256": "63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "kind": "original_Code_PDF"
+    },
+    {
+      "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/award-1-d3-preflight/model-source-bundle/NCT01064687.original-projection.txt",
+      "sha256": "9680cc92144bf1e3888e0826fbbe25931c25c2b938897ba04959ec714b62db8f",
+      "kind": "preserved_registry_projection_not_raw_JSON"
+    },
+    {
+      "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/award-1-d3-preflight/model-source-bundle/dc132760supplementarydata.pdf",
+      "sha256": "da0de5a1322d6eecaacc7413b471916a87d231a107ab3b6221b3b15d7d9b2886",
+      "kind": "original_Code_PDF"
+    },
+    {
+      "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/award-1-d3-preflight/model-source-bundle/sources.toml",
+      "sha256": "ee5b356ecfbf35f86d9e2934e62a3f09a10ec6e6d3761b6b04dad721f5a6db17",
+      "kind": "roles_only_no_network_lookup"
+    }
+  ],
+  "original_raw_registry_sha256_unrecovered": "35aba4f0e44689a81610e95b405de5795e7b673f994d6d303f70e12706123bb1",
+  "separate_new_registry_capture_excluded": true,
+  "result_file": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/award-1-d3-preflight/approved-offline-result.json",
+  "result_sha256": "415d889cdeb82974d3df22e1127b9797714c36e2bc5a01603f255ba865103af0",
+  "model_task_sha256": "82f36fee6751b962f0cc6ad7bd9e54925c00634f444f043ae9da2b12744c705c",
+  "full_source_access": true,
+  "excluded_from_model_input": [
+    "review-dossier.md",
+    "offline fixture answers/label",
+    "prior assessments/gold",
+    "cross-case premise inventory",
+    "private test criteria",
+    "new registry capture"
+  ],
+  "availability_check": {
+    "passed": true,
+    "manifest_sha256": "d3d5ab179dbd0faa8fc0b9e94d5ea41475092b4a7a4c05af74b3e68423463385",
+    "input_sha256": "535c60866418ef452db422112d6ec85f91258f321a043f96c5cfe6b7a866884f",
+    "required_window_count": 12,
+    "supplied_window_count": 12,
+    "required_image_count": 2,
+    "supplied_image_count": 2,
+    "scope": "declared research-design coverage only; no semantic sufficiency claim"
+  },
+  "availability_is_not_actual_model_delivery_or_scientific_sufficiency": true,
+  "identical_scientific_and_environment_file_hashes": {
+    "src/rob2_kit/packs/d3_authoritative.py": {
+      "247db8c805c34923e2cd086124b084d040121834": "82bff0cb361da0a175570db054723f60e2cc3236986b5fa05c8c791782306f1d",
+      "55ccc7a3cdd8352c025aa15b9fc039dac6f9f58d": "82bff0cb361da0a175570db054723f60e2cc3236986b5fa05c8c791782306f1d",
+      "e6b13031ddfa72437f3e1f2f9ca3b38ea58a064c": "82bff0cb361da0a175570db054723f60e2cc3236986b5fa05c8c791782306f1d"
+    },
+    "src/rob2_kit/packs/scientific.py": {
+      "247db8c805c34923e2cd086124b084d040121834": "47fe414a7f8fa1d06d00fd50ff42e69fbdf8f8b6860f90a52bc6658c6eaec9d9",
+      "55ccc7a3cdd8352c025aa15b9fc039dac6f9f58d": "47fe414a7f8fa1d06d00fd50ff42e69fbdf8f8b6860f90a52bc6658c6eaec9d9",
+      "e6b13031ddfa72437f3e1f2f9ca3b38ea58a064c": "47fe414a7f8fa1d06d00fd50ff42e69fbdf8f8b6860f90a52bc6658c6eaec9d9"
+    },
+    "src/rob2_kit/logic/evaluator.py": {
+      "247db8c805c34923e2cd086124b084d040121834": "c84208ca896bbd050787120650c81e700468de0d19fd42a08f113ab71c96574e",
+      "55ccc7a3cdd8352c025aa15b9fc039dac6f9f58d": "c84208ca896bbd050787120650c81e700468de0d19fd42a08f113ab71c96574e",
+      "e6b13031ddfa72437f3e1f2f9ca3b38ea58a064c": "c84208ca896bbd050787120650c81e700468de0d19fd42a08f113ab71c96574e"
+    },
+    "uv.lock": {
+      "247db8c805c34923e2cd086124b084d040121834": "bf7b59240c06de756b632031a8867150cf755e87265147a0d1b95d2b954736e0",
+      "55ccc7a3cdd8352c025aa15b9fc039dac6f9f58d": "bf7b59240c06de756b632031a8867150cf755e87265147a0d1b95d2b954736e0",
+      "e6b13031ddfa72437f3e1f2f9ca3b38ea58a064c": "bf7b59240c06de756b632031a8867150cf755e87265147a0d1b95d2b954736e0"
+    }
+  },
+  "settings": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "medium",
+    "launcher": "codex exec --strict-config --ignore-rules --skip-git-repo-check -s read-only -m gpt-6-luna",
+    "mcp": "mcp-codex direct namespace mcp__rob2",
+    "guidance_profile": "official_d3_prototype",
+    "shell_web_apps_delegation": "disabled",
+    "python": "/home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python",
+    "guards": {
+      "tool_count_stop": false,
+      "input_token_stop": false,
+      "output_review_threshold": 6000,
+      "wall_review_seconds": 480,
+      "idle_review_seconds": 90,
+      "identical_rejected_submissions_stop": 3,
+      "supervised": true
+    },
+    "invocations_authorized_now": 0,
+    "continuations_or_retries": 0
+  },
+  "next_launch_requirement": "Separate source review and explicit call count authorization, then launch_checked with exact staged input/manifest hashes; no launch in this preparation."
+}

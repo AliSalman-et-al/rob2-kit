@@ -86,11 +86,17 @@ The compact citation path preserves this distinction. Existing synthetic offline
 fixtures can demonstrate faithful resolution and rejection, not correction of
 the Freeman attribution error or measured agreement with human reviewers.
 
-## One next held-out test
+## Prospective test and subsequent exposure correction
+
+Correction after this audit: AWARD-1 had a prior paid development invocation
+and its source review informed D3.4 guidance. It is **not held out**. The
+proposal below is preserved as an earlier design, but its original native-holdout
+claim is superseded. See [the verified source dossier](../2026-10-04-award1-lean-preflight/review-dossier.md)
+for the disclosed development-case provenance test, exact evidence and exposure
+check. No inference was launched under the erroneous holdout designation.
 
 Use **AWARD-1 2014 D3** from the actual Code benchmark repository, including both
-`2159.pdf` and `dc132760supplementarydata.pdf`. It is a proposed holdout from these
-native diagnostic cases, not a claim of no historical benchmark exposure. Before
+`2159.pdf` and `dc132760supplementarydata.pdf`. Before
 launch, freeze the exact benchmark Result, verify its comparison and endpoint
 against both sources, and independently enumerate each arm's missing-outcome
 counts and reasons with page/line or figure locators. If this inventory lacks a
