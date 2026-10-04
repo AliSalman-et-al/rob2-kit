@@ -803,8 +803,10 @@ def test_assessment_skill_preserves_result_choice_and_completion_guards() -> Non
     assert '"15 days after randomization"' in instructions
     assert "Trial ready for review" in instructions
     assert "`ready_to_finalize` is not completion" in instructions
-    assert "`probably_no` or `no`" in instructions
-    assert "Do not fabricate direct support" in instructions
+    assert "For D3, use the complete official question elaborations" in instructions
+    assert "official_d3_prototype" in instructions
+    assert "official_guidance.sections" in instructions
+    assert "its bases support the claims attributed to them" in instructions
     assert "Choose the option whose literal meaning follows from those passages" in instructions
     assert "progress confirmation" in instructions
     assert "Was allocation concealed until participants were enrolled and assigned?" in instructions

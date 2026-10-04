@@ -9,5 +9,13 @@
   "retry": false,
   "native_commit": false,
   "full_benchmark": false,
-  "default_adoption": false
+  "default_adoption": false,
+  "test_changes": "Replace two stale skill-string assertions with existing official-context routing and evidence-entailment contract; no runtime/scientific rule change.",
+  "affected_test": "test_assessment_skill_preserves_result_choice_and_completion_guards: 1 passed in10.21s",
+  "ci_prior_prototype": {
+    "run": 37181804605,
+    "conclusion": "failure",
+    "matrix_summary": "1failed1390passed8skipped: stale removed probably_no/no wording; subsequent local run exposed second removed direct-support wording in same test. Both now assert preserved routing/entailment contract."
+  },
+  "lint": "ruff affected test and git diff --check passed"
 }
