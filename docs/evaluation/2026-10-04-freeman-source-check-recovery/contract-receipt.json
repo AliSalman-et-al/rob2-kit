@@ -1,0 +1,8 @@
+{
+  "accepted": false,
+  "exception": "ValueError",
+  "detail": "Finding quote must equal the complete exact line window",
+  "response_sha256": "0d467f967db14e2cf40a34ec3121cd33f9d82203fab7843c840e2a29a968fbb3",
+  "advisory_only": true,
+  "assessment_mutated": false
+}

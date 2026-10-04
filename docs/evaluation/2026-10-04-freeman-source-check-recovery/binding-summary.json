@@ -1,0 +1,15 @@
+{
+  "findings": 12,
+  "claim_ids_covered": 4,
+  "all_claims": 4,
+  "references": 27,
+  "complete_exact_quotes": 0,
+  "whitespace_normalized_verbatim_excerpts": 13,
+  "invalid_joined_saved_entries": [
+    2,
+    8,
+    11
+  ],
+  "visual_reference_objects": 0,
+  "quote_normalization_is_diagnostic_only": true
+}

@@ -1,0 +1,62 @@
+{
+  "exit_code": 0,
+  "stop": null,
+  "elapsed_seconds": 138.5269820280082,
+  "tool_calls": 4,
+  "calls": {
+    "item_1": {
+      "server": "rob2",
+      "tool": "list_sources",
+      "completed": true
+    },
+    "item_2": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_3": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_4": {
+      "server": "rob2",
+      "tool": "search_sources_batch",
+      "completed": true
+    }
+  },
+  "final_messages": 1,
+  "provider_responses": 5,
+  "usage": {
+    "input_tokens": 128527,
+    "cached_input_tokens": 96256,
+    "output_tokens": 6440,
+    "reasoning_output_tokens": 951
+  },
+  "uncached_input_tokens": 32271,
+  "effective_model": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "native_sessions": [
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/home/sessions/2026/10/04/rollout-2026-10-04T18-50-48-01a1072e-72b9-71d3-bce2-7093ca290b1c.jsonl"
+  ],
+  "alerts": [
+    {
+      "reason": "idle review",
+      "elapsed_seconds": 124.45057628498762,
+      "idle_seconds": 91.7253119579982,
+      "tool_calls": 4,
+      "usage": {
+        "input_tokens": 99500,
+        "cached_input_tokens": 70656,
+        "output_tokens": 855,
+        "reasoning_output_tokens": 522
+      }
+    }
+  ],
+  "no_retry": true,
+  "protected_hashes_unchanged": true
+}

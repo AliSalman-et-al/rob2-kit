@@ -1,0 +1,515 @@
+[
+  {
+    "finding": 1,
+    "question_id_for_parent_only": "sq:missing:data-available",
+    "field": "justification",
+    "classification": "supported_fact",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "All analyses were done on an intention-to-treat basis. Missing data were handled using Bayesian multiple imputation under the assumption of missing at random. The missing outcomes were automatically simulated from the Bayesian procedure",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 51
+        },
+        "reported_quote": "12 allocated to placebo; 11 completed treatment; 12 included in intention-to-treat interim analysis; 11 allocated to placebo; 10 completed treatment; 11 included in intention-to-treat analysis; 23 included in final intention-to-treat analysis",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits\n10 completed treatment\n11 included in intention-\nto-treat analysis\n23 included in final intention-\n\nto-treat analysis",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits\n46|10 completed treatment\n47|11 included in intention-\n48|to-treat analysis\n49|23 included in final intention-\n50|\n51|to-treat analysis",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 75,
+          "end_line": 103
+        },
+        "reported_quote": "12 allocated to cannabidiol 400 mg; 11 completed treatment and 12 included in intention-to-treat interim analysis; 12 allocated to cannabidiol 400 mg; 12 completed treatment and were included in intention-to-treat analysis; 24 included in final intention-to-treat analysis",
+        "exact_source_window": "12 allocated to cannabidiol\n\n400 mg\n1 did not receive\n allocated intervention\n (drop-out)\n 1 use of psychotropic\n\nmedication during\n\ntreatment\n12 allocated to cannabidiol\n\n400 mg\n11 completed treatment and\n\n12 included in intention-\n\nto-treat interim analysis\nAll received allocated\nintervention\n12 completed treatment and\n\nwere included in intention-\n\nto-treat analysis\n24 included in final intention-\n\nto-treat analysis",
+        "numbered_source_window": "75|12 allocated to cannabidiol\n76|\n77|400 mg\n78|1 did not receive\n79| allocated intervention\n80| (drop-out)\n81| 1 use of psychotropic\n82|\n83|medication during\n84|\n85|treatment\n86|12 allocated to cannabidiol\n87|\n88|400 mg\n89|11 completed treatment and\n90|\n91|12 included in intention-\n92|\n93|to-treat interim analysis\n94|All received allocated\n95|intervention\n96|12 completed treatment and\n97|\n98|were included in intention-\n99|\n100|to-treat analysis\n101|24 included in final intention-\n102|\n103|to-treat analysis",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 4,
+          "end_line": 5
+        },
+        "reported_quote": "THC-COOH:creatinine ratio and days per week with abstinence from cannabis during treatment weeks 1-4.",
+        "exact_source_window": "THC-COOH:creatinine ratio and days per week with\nabstinence from cannabis during treatment weeks 1-4.",
+        "numbered_source_window": "4|THC-COOH:creatinine ratio and days per week with\n5|abstinence from cannabis during treatment weeks 1-4.",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 2,
+    "question_id_for_parent_only": "sq:missing:data-available",
+    "field": "unknowns",
+    "classification": "supported_fact",
+    "exact_clause_in_single_saved_entry": false,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "Missing data were handled using Bayesian multiple imputation under the assumption of missing at random. The missing outcomes were automatically simulated from the Bayesian procedure",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 51
+        },
+        "reported_quote": "11 completed treatment; 12 included in intention-to-treat interim analysis ... 10 completed treatment; 11 included in intention-to-treat analysis; 23 included in final intention-to-treat analysis",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits\n10 completed treatment\n11 included in intention-\nto-treat analysis\n23 included in final intention-\n\nto-treat analysis",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits\n46|10 completed treatment\n47|11 included in intention-\n48|to-treat analysis\n49|23 included in final intention-\n50|\n51|to-treat analysis",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 3,
+    "question_id_for_parent_only": "sq:missing:data-available",
+    "field": "counterevidence",
+    "classification": "legitimate_inference",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 51
+        },
+        "reported_quote": "11 completed treatment ... 10 completed treatment ... 23 included in final intention-to-treat analysis",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits\n10 completed treatment\n11 included in intention-\nto-treat analysis\n23 included in final intention-\n\nto-treat analysis",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits\n46|10 completed treatment\n47|11 included in intention-\n48|to-treat analysis\n49|23 included in final intention-\n50|\n51|to-treat analysis",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "Missing data were handled using Bayesian multiple imputation ... The missing outcomes were automatically simulated",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 4,
+    "question_id_for_parent_only": "sq:missing:evidence-unbiased",
+    "field": "justification",
+    "classification": "legitimate_inference",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "Missing data were handled using Bayesian multiple imputation under the assumption of missing at random. The missing outcomes were automatically simulated",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 6,
+          "start_line": 7,
+          "end_line": 15
+        },
+        "reported_quote": "We did post-hoc sensitivity analyses adding age and sex to primary endpoint models.",
+        "exact_source_window": "generalised linear regression models assuming a gamma\ndistribution. We used logistic regression models for\nbinomial count outcomes (eg, the number of days with\nabstinence from cannabis in a week). We did post-hoc\nsensitivity analyses adding age and sex to primary\nendpoint models. Secondary endpoints were analysed at\nthe final analysis only. We analysed cannabis use (urinary\nTHC-COOH:creatinine and days per week with abstin\nence) up to the final follow-up as secondary endpoints.",
+        "numbered_source_window": "7|generalised linear regression models assuming a gamma\n8|distribution. We used logistic regression models for\n9|binomial count outcomes (eg, the number of days with\n10|abstinence from cannabis in a week). We did post-hoc\n11|sensitivity analyses adding age and sex to primary\n12|endpoint models. Secondary endpoints were analysed at\n13|the final analysis only. We analysed cannabis use (urinary\n14|THC-COOH:creatinine and days per week with abstin\n15|ence) up to the final follow-up as secondary endpoints.",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 7,
+          "start_line": 11,
+          "end_line": 20
+        },
+        "reported_quote": "Post-hoc sensitivity analyses including age and sex did not change the pattern of results.",
+        "exact_source_window": "cannabidiol 200 mg, 0·9354 for cannabidiol 400 mg,\nand 0·8660 for cannabidiol 800 mg (appendix p 6).\nTherefore, the cannabidiol 200 mg group was eliminated\nfrom the trial after the first stage and no additional\nparticipants were assigned to this group. Post-hoc\nsensitivity analyses including age and sex did not\nchange the pattern of results.\nIn the second stage of the trial, an additional\n34 participants were randomly assigned (1:1:1) to the\nremaining groups of placebo (n=11), cannabidiol",
+        "numbered_source_window": "11|cannabidiol 200 mg, 0·9354 for cannabidiol 400 mg,\n12|and 0·8660 for cannabidiol 800 mg (appendix p 6).\n13|Therefore, the cannabidiol 200 mg group was eliminated\n14|from the trial after the first stage and no additional\n15|participants were assigned to this group. Post-hoc\n16|sensitivity analyses including age and sex did not\n17|change the pattern of results.\n18|In the second stage of the trial, an additional\n19|34 participants were randomly assigned (1:1:1) to the\n20|remaining groups of placebo (n=11), cannabidiol",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 5,
+    "question_id_for_parent_only": "sq:missing:evidence-unbiased",
+    "field": "unknowns",
+    "classification": "unresolved",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "Missing data were handled using Bayesian multiple imputation under the assumption of missing at random.",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 6,
+          "start_line": 7,
+          "end_line": 15
+        },
+        "reported_quote": "We did post-hoc sensitivity analyses adding age and sex to primary endpoint models.",
+        "exact_source_window": "generalised linear regression models assuming a gamma\ndistribution. We used logistic regression models for\nbinomial count outcomes (eg, the number of days with\nabstinence from cannabis in a week). We did post-hoc\nsensitivity analyses adding age and sex to primary\nendpoint models. Secondary endpoints were analysed at\nthe final analysis only. We analysed cannabis use (urinary\nTHC-COOH:creatinine and days per week with abstin\nence) up to the final follow-up as secondary endpoints.",
+        "numbered_source_window": "7|generalised linear regression models assuming a gamma\n8|distribution. We used logistic regression models for\n9|binomial count outcomes (eg, the number of days with\n10|abstinence from cannabis in a week). We did post-hoc\n11|sensitivity analyses adding age and sex to primary\n12|endpoint models. Secondary endpoints were analysed at\n13|the final analysis only. We analysed cannabis use (urinary\n14|THC-COOH:creatinine and days per week with abstin\n15|ence) up to the final follow-up as secondary endpoints.",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 6,
+    "question_id_for_parent_only": "sq:missing:evidence-unbiased",
+    "field": "counterevidence",
+    "classification": "legitimate_inference",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "Missing data were handled using Bayesian multiple imputation under the assumption of missing at random. The missing outcomes were automatically simulated",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 7,
+    "question_id_for_parent_only": "sq:missing:true-value-dependent",
+    "field": "justification",
+    "classification": "legitimate_inference",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 1,
+          "start_line": 74,
+          "end_line": 82
+        },
+        "reported_quote": "4-week treatment ... during a cessation attempt ... The primary endpoints were lower urinary ... THC-COOH:creatinine ratio, increased days per week with abstinence from cannabis during treatment",
+        "exact_source_window": "cannabis use disorder criteria from DSM-5 were randomly assigned (1:1:1:1) in the first stage of the trial to\n4-week treatment with three different doses of oral cannabidiol (200 mg, 400 mg, or 800 mg) or with matched placebo\nduring a cessation attempt by use of a double-blinded block randomisation sequence. All participants received a brief\npsychological intervention of motivational interviewing. For the second stage of the trial, new participants were\nrandomly assigned to placebo or doses deemed efficacious in the interim analysis. The primary objective was\nto identify the most efficacious dose of cannabidiol for reducing cannabis use. The primary endpoints were lower\nurinary 11-nor-9-carboxy-δ-9-tetrahydrocannabinol (THC-COOH):creatinine ratio, increased days per week with\nabstinence from cannabis during treatment, or both, evidenced by posterior probabilities that cannabidiol is better\nthan placebo exceeding 0·9. All analyses were done on an intention-to-treat basis. This trial is registered with",
+        "numbered_source_window": "74|cannabis use disorder criteria from DSM-5 were randomly assigned (1:1:1:1) in the first stage of the trial to\n75|4-week treatment with three different doses of oral cannabidiol (200 mg, 400 mg, or 800 mg) or with matched placebo\n76|during a cessation attempt by use of a double-blinded block randomisation sequence. All participants received a brief\n77|psychological intervention of motivational interviewing. For the second stage of the trial, new participants were\n78|randomly assigned to placebo or doses deemed efficacious in the interim analysis. The primary objective was\n79|to identify the most efficacious dose of cannabidiol for reducing cannabis use. The primary endpoints were lower\n80|urinary 11-nor-9-carboxy-δ-9-tetrahydrocannabinol (THC-COOH):creatinine ratio, increased days per week with\n81|abstinence from cannabis during treatment, or both, evidenced by posterior probabilities that cannabidiol is better\n82|than placebo exceeding 0·9. All analyses were done on an intention-to-treat basis. This trial is registered with",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 45
+        },
+        "reported_quote": "1 did not receive allocated intervention (drop-out); 1 lost to follow-up ... 1 missed scheduled visits",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 107,
+          "end_line": 115
+        },
+        "reported_quote": "2 did not receive allocated intervention (drop-out); 1 missed scheduled visits; 1 poor medication adherence",
+        "exact_source_window": "2 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits\n 1 poor medication\n\nadherence",
+        "numbered_source_window": "107|2 did not receive\n108| allocated intervention\n109| (drop-out)\n110| 1 missed scheduled\n111|\n112|visits\n113| 1 poor medication\n114|\n115|adherence",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 8,
+    "question_id_for_parent_only": "sq:missing:true-value-dependent",
+    "field": "unknowns",
+    "classification": "unresolved",
+    "exact_clause_in_single_saved_entry": false,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 45
+        },
+        "reported_quote": "1 did not receive allocated intervention (drop-out); 1 lost to follow-up ... 1 missed scheduled visits",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "Missing data were handled using Bayesian multiple imputation under the assumption of missing at random.",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 9,
+    "question_id_for_parent_only": "sq:missing:true-value-dependent",
+    "field": "counterevidence",
+    "classification": "supported_fact",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 75,
+          "end_line": 85
+        },
+        "reported_quote": "1 use of psychotropic medication during treatment",
+        "exact_source_window": "12 allocated to cannabidiol\n\n400 mg\n1 did not receive\n allocated intervention\n (drop-out)\n 1 use of psychotropic\n\nmedication during\n\ntreatment",
+        "numbered_source_window": "75|12 allocated to cannabidiol\n76|\n77|400 mg\n78|1 did not receive\n79| allocated intervention\n80| (drop-out)\n81| 1 use of psychotropic\n82|\n83|medication during\n84|\n85|treatment",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 107,
+          "end_line": 115
+        },
+        "reported_quote": "1 poor medication adherence",
+        "exact_source_window": "2 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits\n 1 poor medication\n\nadherence",
+        "numbered_source_window": "107|2 did not receive\n108| allocated intervention\n109| (drop-out)\n110| 1 missed scheduled\n111|\n112|visits\n113| 1 poor medication\n114|\n115|adherence",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 10,
+    "question_id_for_parent_only": "sq:missing:likely-dependent",
+    "field": "justification",
+    "classification": "legitimate_inference",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 51
+        },
+        "reported_quote": "12 allocated to placebo ... 11 completed treatment ... 11 allocated to placebo ... 10 completed treatment ... 23 included in final intention-to-treat analysis",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits\n10 completed treatment\n11 included in intention-\nto-treat analysis\n23 included in final intention-\n\nto-treat analysis",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits\n46|10 completed treatment\n47|11 included in intention-\n48|to-treat analysis\n49|23 included in final intention-\n50|\n51|to-treat analysis",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 75,
+          "end_line": 103
+        },
+        "reported_quote": "12 allocated to cannabidiol 400 mg ... 11 completed treatment ... 12 allocated to cannabidiol 400 mg ... 12 completed treatment ... 24 included in final intention-to-treat analysis",
+        "exact_source_window": "12 allocated to cannabidiol\n\n400 mg\n1 did not receive\n allocated intervention\n (drop-out)\n 1 use of psychotropic\n\nmedication during\n\ntreatment\n12 allocated to cannabidiol\n\n400 mg\n11 completed treatment and\n\n12 included in intention-\n\nto-treat interim analysis\nAll received allocated\nintervention\n12 completed treatment and\n\nwere included in intention-\n\nto-treat analysis\n24 included in final intention-\n\nto-treat analysis",
+        "numbered_source_window": "75|12 allocated to cannabidiol\n76|\n77|400 mg\n78|1 did not receive\n79| allocated intervention\n80| (drop-out)\n81| 1 use of psychotropic\n82|\n83|medication during\n84|\n85|treatment\n86|12 allocated to cannabidiol\n87|\n88|400 mg\n89|11 completed treatment and\n90|\n91|12 included in intention-\n92|\n93|to-treat interim analysis\n94|All received allocated\n95|intervention\n96|12 completed treatment and\n97|\n98|were included in intention-\n99|\n100|to-treat analysis\n101|24 included in final intention-\n102|\n103|to-treat analysis",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 11,
+    "question_id_for_parent_only": "sq:missing:likely-dependent",
+    "field": "unknowns",
+    "classification": "unresolved",
+    "exact_clause_in_single_saved_entry": false,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 51
+        },
+        "reported_quote": "11 completed treatment ... 10 completed treatment ... 23 included in final intention-to-treat analysis",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits\n10 completed treatment\n11 included in intention-\nto-treat analysis\n23 included in final intention-\n\nto-treat analysis",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits\n46|10 completed treatment\n47|11 included in intention-\n48|to-treat analysis\n49|23 included in final intention-\n50|\n51|to-treat analysis",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 108,
+          "end_line": 113
+        },
+        "reported_quote": "Missing data were handled using Bayesian multiple imputation under the assumption of missing at random.",
+        "exact_source_window": "All analyses were done on an intention-to-treat basis.\nMissing data were handled using Bayesian multiple\nimputation under the assumption of missing at random.\nThe missing outcomes were automatically simulated\nfrom the Bayesian procedure, in accordance with the\nmodelling and distributional assumptions. The same",
+        "numbered_source_window": "108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": true,
+        "inside_own_original_narrative_citation": true,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  },
+  {
+    "finding": 12,
+    "question_id_for_parent_only": "sq:missing:likely-dependent",
+    "field": "counterevidence",
+    "classification": "legitimate_inference",
+    "exact_clause_in_single_saved_entry": true,
+    "references": [
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 1,
+          "start_line": 74,
+          "end_line": 82
+        },
+        "reported_quote": "during a cessation attempt ... primary endpoints were ... THC-COOH:creatinine ratio ... days per week with abstinence from cannabis during treatment",
+        "exact_source_window": "cannabis use disorder criteria from DSM-5 were randomly assigned (1:1:1:1) in the first stage of the trial to\n4-week treatment with three different doses of oral cannabidiol (200 mg, 400 mg, or 800 mg) or with matched placebo\nduring a cessation attempt by use of a double-blinded block randomisation sequence. All participants received a brief\npsychological intervention of motivational interviewing. For the second stage of the trial, new participants were\nrandomly assigned to placebo or doses deemed efficacious in the interim analysis. The primary objective was\nto identify the most efficacious dose of cannabidiol for reducing cannabis use. The primary endpoints were lower\nurinary 11-nor-9-carboxy-δ-9-tetrahydrocannabinol (THC-COOH):creatinine ratio, increased days per week with\nabstinence from cannabis during treatment, or both, evidenced by posterior probabilities that cannabidiol is better\nthan placebo exceeding 0·9. All analyses were done on an intention-to-treat basis. This trial is registered with",
+        "numbered_source_window": "74|cannabis use disorder criteria from DSM-5 were randomly assigned (1:1:1:1) in the first stage of the trial to\n75|4-week treatment with three different doses of oral cannabidiol (200 mg, 400 mg, or 800 mg) or with matched placebo\n76|during a cessation attempt by use of a double-blinded block randomisation sequence. All participants received a brief\n77|psychological intervention of motivational interviewing. For the second stage of the trial, new participants were\n78|randomly assigned to placebo or doses deemed efficacious in the interim analysis. The primary objective was\n79|to identify the most efficacious dose of cannabidiol for reducing cannabis use. The primary endpoints were lower\n80|urinary 11-nor-9-carboxy-δ-9-tetrahydrocannabinol (THC-COOH):creatinine ratio, increased days per week with\n81|abstinence from cannabis during treatment, or both, evidenced by posterior probabilities that cannabidiol is better\n82|than placebo exceeding 0·9. All analyses were done on an intention-to-treat basis. This trial is registered with",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      },
+      {
+        "location": {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 31,
+          "end_line": 45
+        },
+        "reported_quote": "1 lost to follow-up ... 1 missed scheduled visits",
+        "exact_source_window": "12 allocated to placebo\n1 did not receive\n allocated intervention\n (drop-out)\n 1 lost to follow-up\n11 allocated to placebo\n11 completed treatment\n12 included in intention-\nto-treat interim analysis\n1 did not receive\n allocated intervention\n (drop-out)\n 1 missed scheduled\n\nvisits",
+        "numbered_source_window": "31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits",
+        "quote_equals_complete_exact_window": false,
+        "quote_is_verbatim_after_whitespace_normalization": false,
+        "inside_own_original_narrative_citation": false,
+        "source_sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547"
+      }
+    ]
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "code_sha": "6308a672bba2da75cccf08541bce1e46b2827aef",
+  "workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-recovery-20261004/workspace",
+  "original_workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/workspace",
+  "code": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-recovery-20261004/code",
+  "home": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/home",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "allowed_tools": [
+    "list_sources",
+    "read_pages",
+    "search_sources",
+    "search_sources_batch",
+    "render_page"
+  ],
+  "source_check_snapshot": "sha256:ab4d3f0c9e8fd6a667f062e2aed31b7142003182bd11a97eb6bfcb21e1763e4d",
+  "prompt_sha256": "de92fa98a998229f1bf8097ad4fe77b3217311ffcc1198d3c470c4aabd7ce02d",
+  "request_sha256": "48952ca0cabbd7b55dd5ad3a5f746b880458d8b9370071592074aa998f65687e",
+  "command_sha256": "29cbee802f2300204a5e8f65bae6344ef5c4afb60d2eaa6d1718f3f7e54938b2",
+  "criteria_sha256": "b0c88e76db81bd6e6a4fdb45ee52ac6a413fc410929b444a72556e20d4b18ae1",
+  "runner_sha256": "73775e062e0f2fdd967f35318d4916ed0ecaff9065b6c546db7703faba6f2f0e",
+  "availability_manifest_sha256": "b3b0a9d57d7ac09c359dc0d0e0175a15366dd06761b3356a13cf5a1b53f0d654",
+  "availability_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-recovery-20261004/availability.bin",
+  "availability_not_model_input": true,
+  "home_config_sha256": "0c219c24b0a2c5591b67b58243905b3441eb788e6f285e53dda35aae1180dcb6",
+  "existing_rollouts": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/home/sessions/2026/10/04/rollout-2026-10-04T12-31-37-01a105d3-4d5a-7440-b37f-754a92d51626.jsonl": "027af75bd983c08ea39f73693f37576cb1d36ef9cb4a61a8c6f0efbf260dc262",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/home/sessions/2026/10/04/rollout-2026-10-04T18-28-22-01a10719-ec0e-7370-843e-5a09c608c5f9.jsonl": "27a74018d981f5e550fc38583e216c2409f171a671ad81745212fc8b3fca7e2e"
+  },
+  "protected_manifest_sha256": "5e123f8f9f8a4b1591fac14f9c2195bd6327c3ef70e275846b05915743490653",
+  "no_retry": true,
+  "limits": {
+    "invocations": 1,
+    "tool_input_cutoff": false,
+    "output_alert": 6000,
+    "wall_alert": 480,
+    "idle_alert": 90
+  },
+  "original_revision": 4,
+  "sources_match_Code_benchmark": true,
+  "credentials_read_or_copied": false,
+  "original_failed_attempt": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004",
+  "technical_recovery": true,
+  "no_further_paid_attempt_after_this": true,
+  "schema_sha256": "80005e3a8f84eae996db8923d4bd8061abf886fd7a5abb53e9b94d406e984f9b"
+}

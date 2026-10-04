@@ -1,0 +1,502 @@
+[
+  {
+    "tool": "list_sources",
+    "arguments": {
+      "trial_id": "freeman-2020"
+    },
+    "result": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 4,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "freeman-2020",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "sources": [
+          {
+            "id": "sh_08c08c63f9bf7b55",
+            "trial_id": "freeman-2020",
+            "role": "main_article",
+            "label": "S2215-0366-20-30290-X.pdf",
+            "logical_path": "S2215-0366-20-30290-X.pdf",
+            "sha256": "sha256:e69a856eff7ab383f807e3c0fe7d04f26de007264140786dffbdc325a6734547",
+            "media_type": "application/pdf",
+            "page_count": 10,
+            "projection_hash": "sha256:ef6a7927d9281d5fc248610d0b72da0d745880885dd09cb5e2cfcd3c53dbe774",
+            "origin": "local_dossier",
+            "declared_role": "main_article"
+          },
+          {
+            "id": "sh_c906a4d137a6dce2",
+            "trial_id": "freeman-2020",
+            "role": "supplement",
+            "label": "mmc1.pdf",
+            "logical_path": "mmc1.pdf",
+            "sha256": "sha256:98217ca1a8d5b792c760f97ed9c4169d3e6e084b3c86c6fca1e0417a3ae712de",
+            "media_type": "application/pdf",
+            "page_count": 18,
+            "projection_hash": "sha256:b4b9bd9a14e8e81a6b7e064c16c951d9066edc80a0d68c2cb507a313b984a31b",
+            "origin": "local_dossier",
+            "declared_role": "supplement"
+          },
+          {
+            "id": "sh_5cb1e1a668b039e0",
+            "trial_id": "freeman-2020",
+            "role": "supplement",
+            "label": "other-author-manuscript-PMC7116091.pdf",
+            "logical_path": "other-author-manuscript-PMC7116091.pdf",
+            "sha256": "sha256:a8787ee95d303dfbd3cb66893a34e010417fa89aec738cf431d26f720cc13752",
+            "media_type": "application/pdf",
+            "page_count": 20,
+            "projection_hash": "sha256:cffd640024000234125a93eb41d805b7e2d764dcefba3a45ef796556a2685c0c",
+            "origin": "local_dossier",
+            "declared_role": "supplement"
+          }
+        ],
+        "conditions": [],
+        "omissions": [],
+        "navigation": null
+      }
+    },
+    "returned_image_count": 0
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "freeman-2020",
+      "windows": [
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 105,
+          "end_line": 120
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 12
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 32,
+          "end_line": 55
+        },
+        {
+          "source_id": "sh_c906a4d137a6dce2",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 35
+        }
+      ]
+    },
+    "result": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 4,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "freeman-2020",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "pages": [
+          {
+            "source_id": "sh_08c08c63f9bf7b55",
+            "page": 4,
+            "numbered_text": "105|uncertainty in these estimates, we planned analyses with\n106|12 (interim analysis) and 24 participants per group (final\n107|analysis) in a two-stage adaptive design.\n108|All analyses were done on an intention-to-treat basis.\n109|Missing data were handled using Bayesian multiple\n110|imputation under the assumption of missing at random.\n111|The missing outcomes were automatically simulated\n112|from the Bayesian procedure, in accordance with the\n113|modelling and distributional assumptions. The same\n114|primary endpoints were analysed at interim analysis and\n115|final analysis. To test our primary endpoints, we analysed",
+            "line_count": 115,
+            "returned_start_line": 105,
+            "returned_end_line": 115,
+            "page_remainder": null,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_f4492217cc46f4e9"
+          },
+          {
+            "source_id": "sh_08c08c63f9bf7b55",
+            "page": 5,
+            "numbered_text": "1|Articles\n2|www.thelancet.com/psychiatry Published online July 28, 2020 https://doi.org/10.1016/S2215-0366(20)30290-X\n3|5\n4|THC-COOH:creatinine ratio and days per week with\n5|abstinence from cannabis during treatment weeks 1-4.\n6|We ran a Bayesian model for each dose of cannabidiol\n7|compared with placebo to compute the predictive\n8|distribution of the outcome given the evidence that had\n9|become available up to that point. On the basis of these\n10|joint posterior distributions (obtained using Markov\n11|chain Monte Carlo algorithms, with model convergence\n12|assessed using the Gelman-Rubin statistic), we computed",
+            "line_count": 143,
+            "returned_start_line": 1,
+            "returned_end_line": 12,
+            "page_remainder": {
+              "source_id": "sh_08c08c63f9bf7b55",
+              "page": 5,
+              "start_line": 13,
+              "end_line": 143
+            },
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_6e97c9612919c6e4"
+          },
+          {
+            "source_id": "sh_08c08c63f9bf7b55",
+            "page": 5,
+            "numbered_text": "32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits\n46|10 completed treatment\n47|11 included in intention-\n48|to-treat analysis\n49|23 included in final intention-\n50|\n51|to-treat analysis\n52|12 allocated to cannabidiol\n53|\n54|800 mg\n55|All received allocated",
+            "line_count": 143,
+            "returned_start_line": 32,
+            "returned_end_line": 55,
+            "page_remainder": {
+              "source_id": "sh_08c08c63f9bf7b55",
+              "page": 5,
+              "start_line": 56,
+              "end_line": 143
+            },
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_16c1eeefb29e2291"
+          },
+          {
+            "source_id": "sh_c906a4d137a6dce2",
+            "page": 1,
+            "numbered_text": "1|Supplementary appendix\n2|This appendix formed part of the original submission and has been peer reviewed.\n3|We post it as supplied by the authors.\n4|Supplement to: Freeman TP, Hindocha C, Baio G, et al. Cannabidiol for the\n5|treatment of cannabis use disorder: a phase 2a, double-blind, placebo-controlled,\n6|randomised, adaptive Bayesian trial. Lancet Psychiatry 2020; published online July 28.\n7|https://dx.doi.org/10.1016/S2215-0366(20)30290-X.",
+            "line_count": 7,
+            "returned_start_line": 1,
+            "returned_end_line": 7,
+            "page_remainder": null,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_36e6a62e1643bd61"
+          }
+        ],
+        "remaining_windows": []
+      }
+    },
+    "returned_image_count": 0
+  },
+  {
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "freeman-2020",
+      "source_id": "sh_08c08c63f9bf7b55",
+      "pages": [
+        5
+      ],
+      "start_line": 13
+    },
+    "result": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 4,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "freeman-2020",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "pages": [
+          {
+            "source_id": "sh_08c08c63f9bf7b55",
+            "page": 5,
+            "numbered_text": "13|the probability that each dose of cannabidiol was the\n14|most efficacious dose compared with placebo. This\n15|posterior probability was used to determine which doses\n16|were dropped or continued at the interim analysis, and\n17|which doses were most efficacious at final analysis. If\n18|this probability was lower than a prespecified lower\n19|threshold of 0·1, the dose was dropped. Similarly, if the\n20|probability was higher than a prespecified upper\n21|threshold of 0·9, then the dose was considered the most\n22|efficacious dose.43 All analyses included time as a fixed\n23|effect (treatment weeks 1-4) and were adjusted for\n24|107 participants assessed for eligibility in the first stage\n25|48 enrolled and randomly assigned\n26|59 excluded\n27|\n28|35 did not meet inclusion criteria\n29|\n30|24 declined to participate\n31|12 allocated to placebo\n32|1 did not receive\n33| allocated intervention\n34| (drop-out)\n35| 1 lost to follow-up\n36|11 allocated to placebo\n37|11 completed treatment\n38|12 included in intention-\n39|to-treat interim analysis\n40|1 did not receive\n41| allocated intervention\n42| (drop-out)\n43| 1 missed scheduled\n44|\n45|visits\n46|10 completed treatment\n47|11 included in intention-\n48|to-treat analysis\n49|23 included in final intention-\n50|\n51|to-treat analysis\n52|12 allocated to cannabidiol\n53|\n54|800 mg\n55|All received allocated\n56|intervention\n57|11 allocated to cannabidiol\n58|\n59|800 mg\n60|12 completed treatment and\n61|\n62|were included in intention-\n63|\n64|to-treat interim analysis\n65|All received allocated\n66| intervention\n67|11 completed treatment and\n68|\n69|were included in intention-\n70|\n71|to-treat analysis\n72|23 included in final intention-\n73|\n74|to-treat analysis\n75|12 allocated to cannabidiol\n76|\n77|400 mg\n78|1 did not receive\n79| allocated intervention\n80| (drop-out)\n81| 1 use of psychotropic\n82|\n83|medication during\n84|\n85|treatment\n86|12 allocated to cannabidiol\n87|\n88|400 mg\n89|11 completed treatment and\n90|\n91|12 included in intention-\n92|\n93|to-treat interim analysis\n94|All received allocated\n95|intervention\n96|12 completed treatment and\n97|\n98|were included in intention-\n99|\n100|to-treat analysis\n101|24 included in final intention-\n102|\n103|to-treat analysis\n104|12 allocated to cannabidiol\n105|\n106|200 mg\n107|2 did not receive\n108| allocated intervention\n109| (drop-out)\n110| 1 missed scheduled\n111|\n112|visits\n113| 1 poor medication\n114|\n115|adherence\n116|Ineffective dose eliminated\n117|from trial\n118|10 completed treatment\n119|\n120|12 included in intention-\n121|\n122|to-treat interim analysis\n123|80 participants assessed for\n124|\n125|eligibility in the second\n126|\n127|stage\n128|46 excluded\n129|\n130|28 did not meet\n131|\n132|\n133|inclusion criteria\n134|\n135|18 declined to\n136|\n137|\n138|participate\n139|34 enrolled and randomly\n140|\n141|assigned\n142|Figure 1: Trial profile\n143|CONSORT diagram showing enrolment, allocation, and the analysis populations at the interim and final stages of the trial.",
+            "line_count": 143,
+            "returned_start_line": 13,
+            "returned_end_line": 143,
+            "page_remainder": null,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_56c1a2566845a2e7"
+          }
+        ],
+        "remaining_windows": []
+      }
+    },
+    "returned_image_count": 0
+  },
+  {
+    "tool": "search_sources_batch",
+    "arguments": {
+      "requests": [
+        {
+          "trial_id": "freeman-2020",
+          "source_id": "sh_08c08c63f9bf7b55",
+          "query": "age sex sensitivity analyses",
+          "mode": "all"
+        },
+        {
+          "trial_id": "freeman-2020",
+          "source_id": "sh_5cb1e1a668b039e0",
+          "query": "age sex sensitivity analyses",
+          "mode": "all"
+        }
+      ]
+    },
+    "result": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 4,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "freeman-2020",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "results": [
+          {
+            "index": 0,
+            "query": "age sex sensitivity analyses",
+            "mode": "all",
+            "result": {
+              "outcome": "success",
+              "data": {
+                "hits": [
+                  {
+                    "source_id": "sh_08c08c63f9bf7b55",
+                    "source_role": "main_article",
+                    "source_label": "S2215-0366-20-30290-X.pdf",
+                    "page": 7,
+                    "start_line": 11,
+                    "end_line": 20,
+                    "preview": "cannabidiol 200 mg, 0·9354 for cannabidiol 400 mg,\nand 0·8660 for cannabidiol 800 mg (appendix p 6).\nTherefore, the cannabidiol 200 mg group was eliminated\nfrom the trial after the first stage and no additional\nparticipants were assigned to this group. Post-hoc\nsensitivity analyses including age and sex did not\nchange the pattern of results.\nIn the second stage of the trial, an additional\n34 participants were randomly assigned (1:1:1) to the\nremaining groups of placebo (n=11), cannabidiol",
+                    "passage_ref": "eh_0d1025bfba58b652",
+                    "candidate_truncated": false,
+                    "candidate_recovery": null,
+                    "rank": 1,
+                    "within_source_rank": 1,
+                    "range": {
+                      "start": 1,
+                      "end": 3
+                    }
+                  },
+                  {
+                    "source_id": "sh_08c08c63f9bf7b55",
+                    "source_role": "main_article",
+                    "source_label": "S2215-0366-20-30290-X.pdf",
+                    "page": 7,
+                    "start_line": 42,
+                    "end_line": 51,
+                    "preview": "week (0·15 to 0·82; table 3). Compared with placebo,\ncannabidiol 800 mg decreased THC-COOH:creatinine\nratio by 72·02 ng/mL (95% IE -135·47 to -19·52) and\nincreased abstinence from cannabis by 0·27 days per\nweek (-0·09 to 0·64). Post-hoc sensitivity analyses\nincluding age and sex did not change the pattern of\nresults.\nAt final analysis, we assessed secondary endpoints for\ncannabidiol 400 mg versus placebo and cannabidiol\n800 mg versus placebo (table 3, appendix pp 7-15). Anal",
+                    "passage_ref": "eh_5b46c9d47cd9e3f3",
+                    "candidate_truncated": false,
+                    "candidate_recovery": null,
+                    "rank": 2,
+                    "within_source_rank": 2,
+                    "range": {
+                      "start": 1,
+                      "end": 3
+                    }
+                  },
+                  {
+                    "source_id": "sh_08c08c63f9bf7b55",
+                    "source_role": "main_article",
+                    "source_label": "S2215-0366-20-30290-X.pdf",
+                    "page": 6,
+                    "start_line": 7,
+                    "end_line": 15,
+                    "preview": "generalised linear regression models assuming a gamma\ndistribution. We used logistic regression models for\nbinomial count outcomes (eg, the number of days with\nabstinence from cannabis in a week). We did post-hoc\nsensitivity analyses adding age and sex to primary\nendpoint models. Secondary endpoints were analysed at\nthe final analysis only. We analysed cannabis use (urinary\nTHC-COOH:creatinine and days per week with abstin\nence) up to the final follow-up as secondary endpoints.",
+                    "passage_ref": "eh_941e1ad976f01c12",
+                    "candidate_truncated": false,
+                    "candidate_recovery": null,
+                    "rank": 3,
+                    "within_source_rank": 3,
+                    "range": {
+                      "start": 1,
+                      "end": 3
+                    }
+                  }
+                ],
+                "query": "age sex sensitivity analyses",
+                "mode": "all",
+                "profile": "porter-unicode61-v1",
+                "total_matches": 2,
+                "truncated": false,
+                "condition": null,
+                "search_receipt": "sr_30f2be117a372653",
+                "session_id": "sha256:5d548efd4dc73ae1076b87f85e112df1c58ef4738d826f8149462a0f283b2e82",
+                "session_handle": "ss_5d548efd4dc73ae1",
+                "matching_page_count": 2,
+                "candidate_count": 3,
+                "distinct_passage_count": 3,
+                "distinct_page_count": 2,
+                "distinct_source_count": 1,
+                "ranking_complete": true,
+                "returned_rank_start": 1,
+                "returned_rank_end": 3,
+                "next_cursor": null,
+                "exhausted": true,
+                "term_feedback": [
+                  {
+                    "source_id": "sh_08c08c63f9bf7b55",
+                    "page_count": 10,
+                    "query_matching_page_count": 2,
+                    "term_page_counts": [
+                      {
+                        "term": "age",
+                        "matching_page_count": 3
+                      },
+                      {
+                        "term": "sex",
+                        "matching_page_count": 2
+                      },
+                      {
+                        "term": "sensitivity",
+                        "matching_page_count": 2
+                      },
+                      {
+                        "term": "analyses",
+                        "matching_page_count": 7
+                      }
+                    ]
+                  }
+                ],
+                "term_feedback_truncated": false,
+                "term_feedback_sources_truncated": false,
+                "diagnostic": null,
+                "spelling_suggestions": [],
+                "spelling_suggestions_incomplete": false,
+                "purpose_domain_id": null,
+                "purpose_question_id": null
+              }
+            }
+          },
+          {
+            "index": 1,
+            "query": "age sex sensitivity analyses",
+            "mode": "all",
+            "result": {
+              "outcome": "success",
+              "data": {
+                "hits": [
+                  {
+                    "source_id": "sh_5cb1e1a668b039e0",
+                    "source_role": "supplement",
+                    "source_label": "other-author-manuscript-PMC7116091.pdf",
+                    "page": 8,
+                    "start_line": 17,
+                    "end_line": 22,
+                    "preview": "dropped (Pr(200mg=MED | Data)=0.0082; Pr(400mg=MED | Data)=0.9354;\nPr(800mg=MED | Data)=0.8660), appendix p6. Therefore, the 200mg CBD arm was eliminated\nfrom the trial and no further participants were randomised to this arm. Post hoc sensitivity\nanalyses including age and sex did not change the pattern of results.\nBetween 24th May 2016 and 12th January 2017 an additional 34 participants were\nrandomised to the remaining arms of placebo, 400mg CBD and 800mg CBD (1:1:1). At",
+                    "passage_ref": "eh_bbdf72b70d55e2b2",
+                    "candidate_truncated": false,
+                    "candidate_recovery": null,
+                    "rank": 1,
+                    "within_source_rank": 1,
+                    "range": {
+                      "start": 1,
+                      "end": 3
+                    }
+                  },
+                  {
+                    "source_id": "sh_5cb1e1a668b039e0",
+                    "source_role": "supplement",
+                    "source_label": "other-author-manuscript-PMC7116091.pdf",
+                    "page": 8,
+                    "start_line": 30,
+                    "end_line": 35,
+                    "preview": "800mg CBD decreased THC-COOH:creatinine concentrations by -72.02 ng/ml (95%\nInterval Estimate= -135.47, -19.52) and increased abstinence from cannabis by 0.27 days per\nweek (95% Interval Estimate= -0.09, 0.64). Post hoc sensitivity analyses including age and\nsex did not change the pattern of results.\nAt final analysis, secondary endpoints were analysed for 400mg CBD versus placebo and\n800mg CBD versus placebo (Table 3, appendix pp 7-15). Analysis of cannabis use up to the",
+                    "passage_ref": "eh_b770cf5bbe2eee24",
+                    "candidate_truncated": false,
+                    "candidate_recovery": null,
+                    "rank": 2,
+                    "within_source_rank": 2,
+                    "range": {
+                      "start": 1,
+                      "end": 3
+                    }
+                  },
+                  {
+                    "source_id": "sh_5cb1e1a668b039e0",
+                    "source_role": "supplement",
+                    "source_label": "other-author-manuscript-PMC7116091.pdf",
+                    "page": 7,
+                    "start_line": 22,
+                    "end_line": 26,
+                    "preview": "COOH:creatinine concentrations), generalised linear regression models were used assuming\na Gamma distribution. Logistic regression models were used for binomial count outcomes\n(e.g. the number of days abstinent from cannabis in a week). Post hoc sensitivity analyses\nwere conducted adding age and sex to primary endpoint models. Cannabis use (urinary\nTHC-COOH:creatinine, days per week abstinent) were analysed up to the final follow up as",
+                    "passage_ref": "eh_7bffc049ea7cd0f2",
+                    "candidate_truncated": false,
+                    "candidate_recovery": null,
+                    "rank": 3,
+                    "within_source_rank": 3,
+                    "range": {
+                      "start": 1,
+                      "end": 3
+                    }
+                  }
+                ],
+                "query": "age sex sensitivity analyses",
+                "mode": "all",
+                "profile": "porter-unicode61-v1",
+                "total_matches": 2,
+                "truncated": false,
+                "condition": null,
+                "search_receipt": "sr_72bb3b77da2f279a",
+                "session_id": "sha256:b8f5ddd977055fe09315290b696de5e8772933cfcf89727725fc426968901254",
+                "session_handle": "ss_b8f5ddd977055fe0",
+                "matching_page_count": 2,
+                "candidate_count": 3,
+                "distinct_passage_count": 3,
+                "distinct_page_count": 2,
+                "distinct_source_count": 1,
+                "ranking_complete": true,
+                "returned_rank_start": 1,
+                "returned_rank_end": 3,
+                "next_cursor": null,
+                "exhausted": true,
+                "term_feedback": [
+                  {
+                    "source_id": "sh_5cb1e1a668b039e0",
+                    "page_count": 20,
+                    "query_matching_page_count": 2,
+                    "term_page_counts": [
+                      {
+                        "term": "age",
+                        "matching_page_count": 4
+                      },
+                      {
+                        "term": "sex",
+                        "matching_page_count": 3
+                      },
+                      {
+                        "term": "sensitivity",
+                        "matching_page_count": 2
+                      },
+                      {
+                        "term": "analyses",
+                        "matching_page_count": 6
+                      }
+                    ]
+                  }
+                ],
+                "term_feedback_truncated": false,
+                "term_feedback_sources_truncated": false,
+                "diagnostic": null,
+                "spelling_suggestions": [],
+                "spelling_suggestions_incomplete": false,
+                "purpose_domain_id": null,
+                "purpose_question_id": null
+              }
+            }
+          }
+        ]
+      }
+    },
+    "returned_image_count": 0
+  }
+]
