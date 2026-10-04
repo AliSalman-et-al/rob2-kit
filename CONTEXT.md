@@ -494,3 +494,5 @@ The successor interaction and field ownership are recorded in ADR 0031. Its
 historical sections are superseded by the live contract above. Actual
 host delivery is tracked separately in `docs/acceptance/v0-4-host-matrix.md`;
 unrun or unobservable checks remain explicitly incomplete.
+
+Working observations may carry host-asserted Result/group/stage/window/population/method scope. Evidence citations may link an unchanged observation from the source/Result-bound working checkpoint; the saved basis retains the snapshot when advisory notes change. Scope categories expose mismatch, partial overlap, unknown applicability, and shared trial context without deciding relevance or labels. Typing and checkpoint membership do not certify source entailment. Legacy notes/bases omit these fields.

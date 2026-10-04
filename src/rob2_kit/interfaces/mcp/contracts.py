@@ -675,7 +675,22 @@ class WorkingDomainBindingData(PublicModel):
     checkpoint_identity: Identity
 
 
+class WorkingObservationScopeData(PublicModel):
+    result_identity: Identity | None = None
+    relation: Literal["matched", "mismatch", "partial_overlap", "unknown", "shared_trial_context"]
+    groups: tuple[str, ...] = ()
+    stage: str | None = None
+    window: str | None = None
+    population: str | None = None
+    method: str | None = None
+    meaning: Literal["reported", "inferred", "uncertain"] = "uncertain"
+    uncertainty: str | None = None
+
+
 class WorkingNoteData(PublicModel):
+    scope: WorkingObservationScopeData | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     text: str = Field(min_length=1, max_length=4_000)
     sources: tuple[WorkingSourceRangeData, ...] = Field(min_length=1, max_length=8)
     domain_id: DomainId | None = None
@@ -2265,7 +2280,15 @@ class ComparisonCard(PublicModel):
     prompt: str = Field(min_length=1)
 
 
+class WorkingObservationLinkData(PublicModel):
+    checkpoint_identity: Identity
+    observation: WorkingNoteData
+
+
 class DirectCheckpointEvidenceUse(PublicModel):
+    working_observation: WorkingObservationLinkData | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"]
     evidence: Identity
     # The Domain projection can omit this duplicate of Evidence text; the

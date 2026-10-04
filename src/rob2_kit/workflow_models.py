@@ -117,7 +117,38 @@ class WorkingSourceRange(StrictModel):
         return self
 
 
+class WorkingObservationScope(StrictModel):
+    """Host interpretation of source scope, never a source-entailment certificate."""
+
+    result_identity: Identity | None = Field(
+        default=None, description="Result against which this observation's relation is assessed."
+    )
+    relation: Literal[
+        "matched", "mismatch", "partial_overlap", "unknown", "shared_trial_context"
+    ] = Field(
+        description="Host-asserted relation to the Result: mismatch is a known different scope; "
+        "partial_overlap covers some of it; unknown leaves applicability unresolved; "
+        "shared_trial_context can inform several Results indirectly. No category decides an answer."
+    )
+    groups: tuple[NonBlankText, ...] = Field(
+        default=(),
+        description="Groups actually described by this observation, including other arms.",
+    )
+    stage: NonBlankText | None = None
+    window: NonBlankText | None = None
+    population: NonBlankText | None = None
+    method: NonBlankText | None = None
+    meaning: Literal["reported", "inferred", "uncertain"] = Field(
+        default="uncertain", description="Whether the observation is reported or host inferred."
+    )
+    uncertainty: NonBlankText | None = None
+
+
 class WorkingNote(StrictModel):
+    scope: WorkingObservationScope | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+
     text: NonBlankText = Field(
         max_length=4_000, description="Concise observation, interpretation, or open question."
     )
@@ -1959,7 +1990,21 @@ class DomainLimitationBasis(StrictModel):
         return value
 
 
+class WorkingObservationLink(StrictModel):
+    """Durable snapshot of an existing working observation used in a warrant."""
+
+    checkpoint_identity: Identity
+    observation: WorkingNote
+
+
 class DirectEvidenceUse(StrictModel):
+    working_observation: WorkingObservationLink | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional link to an existing working observation; its scope is host asserted. "
+        "The snapshot survives replacement of advisory notes. Evidence remains authoritative.",
+    )
+
     kind: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
         Field(description="How the selected Evidence bears on this question answer.")
     )
@@ -2184,6 +2229,13 @@ class EvidenceSufficiencySummary(StrictModel):
 
 
 class DomainEvidenceCitation(StrictModel):
+    working_observation: WorkingObservationLink | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional link: copy the existing checkpoint identity and unchanged "
+        "observation. The server checks membership and retains the snapshot; "
+        "scope remains a host interpretation.",
+    )
     evidence: SubmittedEvidenceHandle = Field(description="Current-Trial selected Evidence handle.")
     role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
         Field(description="Scientific relationship of the inspected Evidence to this question.")
@@ -2262,7 +2314,20 @@ class DomainSaveAnswer(StrictModel):
     def canonical_payload(self) -> dict[str, Any]:
         payload = self.model_dump(mode="json", exclude={"absence_searches", "limitations"})
         payload["bases"] = [
-            {"kind": citation.role, "evidence": citation.evidence} for citation in self.bases
+            {
+                "kind": citation.role,
+                "evidence": citation.evidence,
+                **(
+                    {
+                        "working_observation": citation.working_observation.model_dump(
+                            mode="json", exclude_none=True
+                        )
+                    }
+                    if citation.working_observation is not None
+                    else {}
+                ),
+            }
+            for citation in self.bases
         ]
         counterpoints = []
         for point in self.counterevidence:

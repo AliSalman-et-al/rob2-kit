@@ -2891,6 +2891,29 @@ def save_domain_judgment(
                         )
                     )
                 else:
+                    link = basis.get("working_observation")
+                    if isinstance(link, dict):
+                        working = working_checkpoint_status(root, state, parsed.trial_id)
+                        checkpoint = working.get("checkpoint") or {}
+                        notes = list(checkpoint.get("observations", ()))
+                        for premise in checkpoint.get("premise_records") or ():
+                            notes.extend(premise.get("observations", ()))
+                            notes.extend(premise.get("counterevidence", ()))
+                        if (
+                            working.get("reason") in {"result_changed", "source_changed"}
+                            or checkpoint.get("identity") != link["checkpoint_identity"]
+                            or link["observation"] not in notes
+                        ):
+                            repairs.append(
+                                _repair(
+                                    f"{path}/working_observation",
+                                    "working_observation_link_invalid",
+                                    "Link an unchanged observation from the current "
+                                    "source/Result-bound "
+                                    "working checkpoint. Scope is advisory "
+                                    "and does not determine answers.",
+                                )
+                            )
                     basis["evidence"] = evidence["identity"]
                     material = str(evidence.get("quote", evidence.get("transcription", "")))
                     basis["source"] = material

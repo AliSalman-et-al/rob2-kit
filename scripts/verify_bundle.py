@@ -1496,6 +1496,96 @@ def _valid_reasoning_annotations(answer: dict[str, Any]) -> bool:
     )
 
 
+def _valid_working_observation_link(value: object) -> bool:
+    if not isinstance(value, dict) or set(value) != {"checkpoint_identity", "observation"}:
+        return False
+    if not isinstance(value["checkpoint_identity"], str) or not re.fullmatch(
+        r"sha256:[0-9a-f]{64}", value["checkpoint_identity"]
+    ):
+        return False
+    note = value["observation"]
+    if not isinstance(note, dict) or not {"text", "sources"} <= set(note) <= {
+        "text",
+        "sources",
+        "domain_id",
+        "question_id",
+        "scope",
+    }:
+        return False
+    if not isinstance(note["text"], str) or not note["text"].strip() or len(note["text"]) > 4000:
+        return False
+    if "domain_id" in note and (
+        not isinstance(note["domain_id"], str) or note["domain_id"] not in _EXPECTED_DOMAIN_IDS
+    ):
+        return False
+    if "question_id" in note and (
+        not isinstance(note["question_id"], str)
+        or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}", note["question_id"])
+    ):
+        return False
+    sources = note["sources"]
+    if not isinstance(sources, list) or not 1 <= len(sources) <= 8:
+        return False
+    for source in sources:
+        if not isinstance(source, dict) or set(source) != {
+            "source_id",
+            "page",
+            "start_line",
+            "end_line",
+        }:
+            return False
+        if not isinstance(source["source_id"], str) or not re.fullmatch(
+            r"sh_[0-9a-f]{16}", source["source_id"]
+        ):
+            return False
+        if any(type(source[key]) is not int for key in ("page", "start_line", "end_line")):
+            return False
+        if source["page"] < 1 or not 0 <= source["start_line"] <= source["end_line"]:
+            return False
+        if (source["start_line"] == 0) != (source["end_line"] == 0):
+            return False
+    scope = note.get("scope")
+    if scope is not None:
+        if not isinstance(scope, dict) or not {"relation"} <= set(scope) <= {
+            "result_identity",
+            "relation",
+            "groups",
+            "stage",
+            "window",
+            "population",
+            "method",
+            "meaning",
+            "uncertainty",
+        }:
+            return False
+        if not isinstance(scope["relation"], str) or scope["relation"] not in {
+            "matched",
+            "mismatch",
+            "partial_overlap",
+            "unknown",
+            "shared_trial_context",
+        }:
+            return False
+        if not isinstance(scope.get("meaning", "uncertain"), str) or scope.get(
+            "meaning", "uncertain"
+        ) not in {"reported", "inferred", "uncertain"}:
+            return False
+        if "result_identity" in scope and (
+            not isinstance(scope["result_identity"], str)
+            or not re.fullmatch(r"sha256:[0-9a-f]{64}", scope["result_identity"])
+        ):
+            return False
+        groups = scope.get("groups", [])
+        if not isinstance(groups, list) or any(
+            not isinstance(group, str) or not group.strip() for group in groups
+        ):
+            return False
+        for key in ("stage", "window", "population", "method", "uncertainty"):
+            if key in scope and (not isinstance(scope[key], str) or not scope[key].strip()):
+                return False
+    return True
+
+
 def _valid_limitation_basis(
     basis: object, accounts: dict[str, dict[str, object]], trial_id: str
 ) -> bool:
@@ -4787,7 +4877,17 @@ def verify(path: Path) -> tuple[bool, str]:
                             "contradiction",
                             "context",
                             "inference",
-                        } or set(use) != {"kind", "evidence", "source"}:
+                        } or (
+                            set(use)
+                            not in (
+                                {"kind", "evidence", "source"},
+                                {"kind", "evidence", "source", "working_observation"},
+                            )
+                            or (
+                                "working_observation" in use
+                                and not _valid_working_observation_link(use["working_observation"])
+                            )
+                        ):
                             return False, "direct Domain Evidence basis is malformed"
                         if use.get("kind") in {"context", "inference"}:
                             uncertainty_basis = True
@@ -5045,7 +5145,19 @@ def verify(path: Path) -> tuple[bool, str]:
                                 "contradiction",
                                 "context",
                                 "inference",
-                            } or set(use) != {"kind", "evidence", "source"}:
+                            } or (
+                                set(use)
+                                not in (
+                                    {"kind", "evidence", "source"},
+                                    {"kind", "evidence", "source", "working_observation"},
+                                )
+                                or (
+                                    "working_observation" in use
+                                    and not _valid_working_observation_link(
+                                        use["working_observation"]
+                                    )
+                                )
+                            ):
                                 return False, "Domain history Evidence basis is malformed"
                             if use.get("kind") in {"context", "inference"}:
                                 uncertainty_basis = True

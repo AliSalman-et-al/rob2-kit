@@ -27,6 +27,7 @@ from ..workflow_models import (
     ExpectedRevision,
     MissingDataRow,
     ResultApplicability,
+    WorkingObservationLink,
 )
 from ._state import (
     _canonical_evidence_records,
@@ -3701,6 +3702,14 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
     )
 
 
+def _valid_working_observation_link(value: object) -> bool:
+    try:
+        WorkingObservationLink.model_validate(value)
+    except ValueError:
+        return False
+    return True
+
+
 def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None) -> bool:
     """Independently check a finalized bundle without opening the workspace."""
 
@@ -4253,7 +4262,13 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                             return fail()
                         if use.get("kind") in {"context", "inference"}:
                             uncertainty_basis = True
-                        if set(use) != {"kind", "evidence", "source"}:
+                        if set(use) not in (
+                            {"kind", "evidence", "source"},
+                            {"kind", "evidence", "source", "working_observation"},
+                        ) or (
+                            "working_observation" in use
+                            and not _valid_working_observation_link(use["working_observation"])
+                        ):
                             return fail()
                         evidence = evidence_by_identity.get(use.get("evidence"))
                         if not isinstance(evidence, dict) or evidence.get("trial_id") != record.get(
@@ -4551,7 +4566,19 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                                 "contradiction",
                                 "context",
                                 "inference",
-                            } or set(use) != {"kind", "evidence", "source"}:
+                            } or (
+                                set(use)
+                                not in (
+                                    {"kind", "evidence", "source"},
+                                    {"kind", "evidence", "source", "working_observation"},
+                                )
+                                or (
+                                    "working_observation" in use
+                                    and not _valid_working_observation_link(
+                                        use["working_observation"]
+                                    )
+                                )
+                            ):
                                 return fail()
                             if use.get("kind") in {"context", "inference"}:
                                 uncertainty_basis = True
