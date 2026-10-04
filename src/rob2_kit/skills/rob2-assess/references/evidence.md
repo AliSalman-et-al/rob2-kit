@@ -216,11 +216,44 @@ State inferred conclusions in the answer's `justification`, with the source
 facts and any unresolved link. The server checks Evidence identity and structure;
 you judge whether those facts support the answer.
 
+## Opt-in lean Domain drafting
+
+Use the existing `save_domain_judgment` action. `bases` may contain selected
+Evidence handle strings or exact text ranges from numbered `read_pages` output:
+
+```json
+{
+  "question_id": "sq:selection:prespecified-analysis",
+  "answer": "probably_yes",
+  "bases": [
+    "eh_0123456789abcdef",
+    {"source_id": "sh_0123456789abcdef", "page": 2, "start_line": 5, "end_line": 9}
+  ],
+  "justification": "Explain the source-supported inference for this Result.",
+  "unknowns": ["State the material unresolved fact."],
+  "counterevidence": []
+}
+```
+
+This is syntax, not a recommended answer. Compact entries assert supporting facts;
+the server saves their scientific role as `indirect_support`, not proven direct
+entailment. It resolves text through the existing exact selector and reuses the
+Evidence content identity. No separate selection call, working observation or
+premise record is needed. Counterpoints may use the same handle/range references.
+Keep unknowns, limiting implications and any investigation stopping rationale
+explicit; all active questions and the normal validation rules still apply.
+
+For context, contradiction, an explicit support role or an annotation, retain the
+full `{evidence, role, working_observation?}` citation. Use already selected visual
+Evidence handles: a text range cannot supply a visual transcription or render
+receipt. The full official guidance and source reading/recovery workflow are
+unchanged. Neither a compact reference nor successful saving proves entailment.
+
 ## Preserve working observation scope
 
 Working observations are host interpretations, not a second Evidence ledger.
-Include a compact optional interpretation directly in an Evidence basis of
-`save_domain_judgment` when a scope distinction matters:
+For a reusable source-specific interpretation beyond the answer warrant, optionally
+annotate an Evidence basis of `save_domain_judgment`:
 
 ```json
 {

@@ -42,7 +42,10 @@ def test_d3_recovery_tracks_required_questions_and_branch_changes(tmp_path: Path
         assert set(schema["required"]) == set(DomainSaveAnswer.model_json_schema()["required"])
         assert schema["additionalProperties"] is False
         assert "default" not in schema["properties"]["answer"]
-        assert schema["properties"]["bases"]["items"]["required"] == ["evidence", "role"]
+        assert schema["properties"]["bases"]["items"]["anyOf"][0]["required"] == [
+            "evidence",
+            "role",
+        ]
         assert _state(workspace) == before
     # Changing an earlier response changes the active branch; no stale list is retained.
     rows = [{**items[q1], "answer": "probably_yes"}, {**items[q3], "answer": "no_information"}]

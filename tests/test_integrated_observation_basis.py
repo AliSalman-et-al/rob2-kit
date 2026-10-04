@@ -54,6 +54,7 @@ def test_basis_captures_interpretation_without_working_checkpoint_or_scope_infer
     assert set(link) == {"observation"}
     note = link["observation"]
     assert note["text"] == observation["text"] and note["text"] != basis["source"]
+    assert "domain_id" not in note and "question_id" not in note
     canonical = _canonical_evidence_records(workspace, {basis["evidence"]})[basis["evidence"]]
     assert canonical["quote"] == basis["source"]
     assert note["sources"] == [

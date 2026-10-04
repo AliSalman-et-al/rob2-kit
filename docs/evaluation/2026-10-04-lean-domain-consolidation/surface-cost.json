@@ -1,0 +1,32 @@
+{
+  "comparison": "Same Codex image adapter, self-contained inputs/shared outputs; f7bbe388 captured native baseline versus current",
+  "public_tools_before": 18,
+  "public_tools_after": 18,
+  "new_public_actions": 0,
+  "new_top_level_submission_fields": 0,
+  "new_required_answer_fields": 0,
+  "save_input_bytes_before": 19236,
+  "save_input_bytes_after": 20813,
+  "all_wire_input_output_before": 501505,
+  "all_wire_input_output_after": 503082,
+  "duplicate_inline_note_fields_removed": [
+    "domain_id",
+    "question_id"
+  ],
+  "old_explicit_citation_scalar_values": 2,
+  "new_selected_compact_citation_scalar_values": 1,
+  "old_unselected_text_reference_actions": [
+    "select_text_evidence",
+    "save_domain_judgment"
+  ],
+  "new_unselected_text_reference_actions": [
+    "save_domain_judgment"
+  ],
+  "old_unselected_single_citation_scalar_values": 7,
+  "new_unselected_single_citation_scalar_values": 4,
+  "count_excludes": "unchanged answer and top-level fields; old selector trial/source/page/start/end plus Evidence/role; new range source/page/start/end",
+  "canonical_and_legacy_representation": "unchanged",
+  "no_paid_measurement": true,
+  "all_wire_schema_delta": 1577,
+  "schema_size_excludes": "Descriptions/annotations/meta, including unchanged render receipt schema carried in meta"
+}

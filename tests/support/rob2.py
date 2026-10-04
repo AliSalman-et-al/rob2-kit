@@ -45,6 +45,9 @@ def _domain_submission(arguments: dict[str, Any]) -> dict[str, Any]:
         limitations = list(answer.get("limitations", []))
         searches = list(answer.get("absence_searches", []))
         for index, basis in enumerate(answer.get("bases", [])):
+            if not isinstance(basis, dict) or "source_id" in basis:
+                bases.append(basis)
+                continue
             if basis.get("kind") == "limitation":
                 limitations.append(
                     {

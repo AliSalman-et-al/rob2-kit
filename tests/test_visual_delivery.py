@@ -401,6 +401,7 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
                     },
                 }
             )
+            draft["answers"][0]["bases"].append(selected["handle"])
         receipt = _call(workspace, "save_domain_judgment", draft)
         assert receipt["outcome"] == "success", receipt
         revision = int(receipt["head"]["state_revision"])
@@ -426,9 +427,11 @@ def test_visual_delivery_receipt_survives_approved_result_and_bundle_verificatio
     assert result_record["delivery_receipt"] == selected_record["delivery_receipt"]
     assert result_record["handle"] == selected["handle"]
 
-    visual_basis = canonical["domain_records"]["trial:domain:randomization"]["answers"][0]["bases"][
-        -1
-    ]
+    visual_bases = canonical["domain_records"]["trial:domain:randomization"]["answers"][0]["bases"]
+    visual_basis = next(item for item in visual_bases if "working_observation" in item)
+    lean_basis = next(item for item in visual_bases if item["kind"] == "indirect_support")
+    assert lean_basis["source"] == selected["transcription"]
+    assert lean_basis["evidence"] == visual_basis["evidence"]
     note = visual_basis["working_observation"]["observation"]
     assert note["sources"] == [
         {"source_id": figure_source["id"], "page": 1, "start_line": 0, "end_line": 0}

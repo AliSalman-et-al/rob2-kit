@@ -52,6 +52,9 @@ from rob2_kit.application.domains import (
 from rob2_kit.application.domains import (
     get_domain_context as _get_domain_context,
 )
+from rob2_kit.application.domains import (
+    resolve_domain_sources as _resolve_domain_sources,
+)
 from rob2_kit.application.domains import save_domain_judgment as _save_domain_judgment
 from rob2_kit.application.evidence import (
     EvidenceIntegrityError,
@@ -263,7 +266,16 @@ class _InputSchemaDelivery(Middleware):
             if context.message.name != "save_domain_judgment":
                 raise
             defects = [
-                {"path": "/" + "/".join(map(str, item["loc"])), "detail": item["msg"]}
+                {
+                    "path": "/"
+                    + "/".join(
+                        str(step)
+                        for step in item["loc"]
+                        if step not in {"DomainEvidenceCitation", "constrained-str"}
+                        and not str(step).startswith("function-")
+                    ),
+                    "detail": item["msg"],
+                }
                 for item in cause.errors(include_url=False, include_input=False)
             ]
             recovery = {
@@ -4139,6 +4151,11 @@ def get_domain_context(
         "in limitations. The server derives the absence/limitation tags; do not put them in bases. "
         "Counterevidence objects give nonempty evidence handle lists and explain the cited "
         "Evidence's joint implication. "
+        "For opt-in lean drafting, bases may contain selected Evidence handle strings or exact "
+        "read_pages source ranges. These assert supporting facts and become indirect_support; "
+        "the server captures exact text and reuses its Evidence identity without a selection call. "
+        "Keep full citations for explicit context/contradiction roles and visual Evidence handles. "
+        "Counterpoints also accept text ranges. No observation or premise layer is required. "
         "Optional bases[].working_observation accepts {text, scope?}; the server captures "
         "the cited Evidence locator without a working checkpoint. Existing checkpoint links "
         "remain available for resumed notes. Scope is host asserted and cannot decide an answer. "
@@ -4197,17 +4214,21 @@ def save_domain_judgment(
         ),
     ] = None,
 ) -> ToolResult:
-    draft = {
-        "trial_id": trial_id,
-        "domain_id": domain_id,
-        "expected_revision": expected_revision,
-        "answers": [answer.canonical_payload() for answer in answers],
-        "supersedes": supersedes,
-        "revision_basis": (
-            revision_basis.model_dump(mode="json") if revision_basis is not None else None
-        ),
-    }
-    return _invoke("save_domain_judgment", lambda: _save_domain_judgment(_workspace(), draft))
+    def submit() -> dict[str, Any]:
+        resolved = _resolve_domain_sources(_workspace(), trial_id, answers)
+        draft = {
+            "trial_id": trial_id,
+            "domain_id": domain_id,
+            "expected_revision": expected_revision,
+            "answers": [answer.canonical_payload() for answer in resolved],
+            "supersedes": supersedes,
+            "revision_basis": (
+                revision_basis.model_dump(mode="json") if revision_basis is not None else None
+            ),
+        }
+        return _save_domain_judgment(_workspace(), draft)
+
+    return _invoke("save_domain_judgment", submit)
 
 
 @mcp.tool(

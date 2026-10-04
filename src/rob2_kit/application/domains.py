@@ -17,7 +17,14 @@ from ..packs.d3_authoritative import (
     FAQ_SOURCE_URL,
     OFFICIAL_SOURCE_URL,
 )
-from ..workflow_models import DomainDraft, WorkingNote
+from ..workflow_models import (
+    DomainCounterpoint,
+    DomainDraft,
+    DomainEvidenceCitation,
+    DomainSaveAnswer,
+    WorkingNote,
+    WorkingSourceRange,
+)
 from ._state import (
     _canonical_evidence_records,
     _commit_records,
@@ -45,10 +52,11 @@ from .evidence import (
     _unassigned_search_evidence,
     _verified_source_projections,
     main_report_reading_status,
+    select_text_evidence_by_lines,
     source_reading_status,
 )
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
-from .source_handles import source_handle
+from .source_handles import resolve_source_handle, source_handle
 from .status import _active_trial_and_domain, _continuation
 from .working import investigation_projection, working_checkpoint_status
 
@@ -2572,6 +2580,55 @@ def _canonical_observed_at(root: Path, identity: str) -> str | None:
     return observed_at
 
 
+def resolve_domain_sources(
+    workspace: str | Path, trial_id: str, answers: list[DomainSaveAnswer]
+) -> list[DomainSaveAnswer]:
+    """Normalize compact references through the existing exact Evidence selector.
+
+    Compact bases are a host assertion of supporting facts, not a server finding
+    of direct entailment. The unchanged canonical validator still checks the
+    active path, uncertainty, Trial ownership and every selected Evidence identity.
+    """
+    handles: dict[WorkingSourceRange, str] = {}
+
+    def resolve(reference: str | WorkingSourceRange) -> str:
+        if isinstance(reference, str):
+            return reference
+        if reference not in handles:
+            source_id = resolve_source_handle(workspace, trial_id, reference.source_id)
+            selected = select_text_evidence_by_lines(
+                workspace,
+                trial_id,
+                source_id,
+                reference.page,
+                reference.start_line,
+                reference.end_line,
+            )
+            handles[reference] = selected["evidence"]["handle"]
+        return handles[reference]
+
+    return [
+        answer.model_copy(
+            update={
+                "bases": tuple(
+                    citation
+                    if isinstance(citation, DomainEvidenceCitation)
+                    else DomainEvidenceCitation(evidence=resolve(citation), role="indirect_support")
+                    for citation in answer.bases
+                ),
+                "counterevidence": tuple(
+                    DomainCounterpoint(
+                        evidence=tuple(resolve(ref) for ref in point.evidence),
+                        implication=point.implication,
+                    )
+                    for point in answer.counterevidence
+                ),
+            }
+        )
+        for answer in answers
+    ]
+
+
 def save_domain_judgment(
     workspace: str | Path,
     draft: dict[str, Any] | DomainDraft,
@@ -2911,8 +2968,6 @@ def save_domain_judgment(
                                     "end_line": evidence.get("end_line", 0),
                                 },
                             ),
-                            domain_id=parsed.domain_id,
-                            question_id=answer_item.question_id,
                         )
                         basis["working_observation"] = {
                             "observation": note.model_dump(mode="json", exclude_none=True)

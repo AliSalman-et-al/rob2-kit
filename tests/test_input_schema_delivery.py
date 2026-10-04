@@ -12,7 +12,7 @@ from support.rob2 import _assessment_workspace, _domain_draft, _domain_submissio
 
 from rob2_kit.application._state import _state
 from rob2_kit.interfaces.mcp.server import mcp
-from rob2_kit.workflow_models import DomainSaveAnswer
+from rob2_kit.workflow_models import DomainEvidenceCitation, DomainSaveAnswer
 
 
 def _has_ref(value: Any) -> bool:
@@ -41,7 +41,9 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
         "counterevidence",
     }
     assert answer["additionalProperties"] is False
-    citation = answer["properties"]["bases"]["items"]
+    variants = answer["properties"]["bases"]["items"]["anyOf"]
+    assert variants[1]["type"] == "string"
+    citation = variants[0]
     assert set(citation["required"]) == {"evidence", "role"}
     assert citation["properties"]["evidence"]["type"] == "string"
     assert citation["additionalProperties"] is False
@@ -111,6 +113,7 @@ def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
     assert "errors.pydantic.dev" not in text
     example_text = text.split("real Evidence): ", 1)[1].split(" bases[].evidence", 1)[0]
     example = DomainSaveAnswer.model_validate(json.loads(example_text))
+    assert isinstance(example.bases[0], DomainEvidenceCitation)
     assert isinstance(example.bases[0].evidence, str)
     assert "counterevidence[].evidence is a nonempty handle list" in text
     assert _state(workspace) == before

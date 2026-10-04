@@ -2295,9 +2295,9 @@ class DomainInformationLimit(StrictModel):
 class DomainCounterpoint(StrictModel):
     """One scientific counterclaim citing inspected Evidence directly."""
 
-    evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
+    evidence: tuple[SubmittedEvidenceHandle | WorkingSourceRange, ...] = Field(
         min_length=1,
-        description="Distinct current-Trial Evidence handles supporting this counterclaim.",
+        description="Selected handles or exact text ranges for this counterclaim.",
     )
     implication: NonBlankText = Field(
         description="How the cited passages together limit or challenge the answer."
@@ -2323,9 +2323,13 @@ class DomainSaveAnswer(StrictModel):
     answer: Answer = Field(
         description="Submitted response; must be among this question card's permitted options."
     )
-    bases: tuple[DomainEvidenceCitation, ...] = Field(
-        default=(),
-        description="Selected Evidence and its explicit scientific role; no nested basis objects.",
+    bases: tuple[DomainEvidenceCitation | SubmittedEvidenceHandle | WorkingSourceRange, ...] = (
+        Field(
+            default=(),
+            description="Lean support: handles or exact text ranges assert supporting "
+            "facts, saved as indirect_support. Use full citations for other roles or annotations. "
+            "Source resolution does not establish entailment or change an answer.",
+        )
     )
     absence_searches: tuple[SubmittedSearchReceiptHandle, ...] = Field(
         default=(),
@@ -2352,6 +2356,8 @@ class DomainSaveAnswer(StrictModel):
 
     def canonical_payload(self) -> dict[str, Any]:
         payload = self.model_dump(mode="json", exclude={"absence_searches", "limitations"})
+        if any(not isinstance(citation, DomainEvidenceCitation) for citation in self.bases):
+            raise ValueError("resolve compact source references before canonical submission")
         payload["bases"] = [
             {
                 "kind": citation.role,
@@ -2367,10 +2373,15 @@ class DomainSaveAnswer(StrictModel):
                 ),
             }
             for citation in self.bases
+            if isinstance(citation, DomainEvidenceCitation)
         ]
         counterpoints = []
         for point in self.counterevidence:
             for handle in point.evidence:
+                if not isinstance(handle, str):
+                    raise ValueError(
+                        "resolve counterpoint source ranges before canonical submission"
+                    )
                 indexes = [
                     index
                     for index, basis in enumerate(payload["bases"])

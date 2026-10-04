@@ -285,12 +285,11 @@ source disagreements from the reported Result when investigating D2, D3, and D5.
 
 Review inspected passages against each active proposition and check material
 contradictions. Reuse adequate Evidence without another search.
-When source facts differ in group, stage, window, population, or method, preserve
-those scopes in optional Evidence-basis observations when combining them in a warrant. Use
-[Preserve working observation scope](references/evidence.md#preserve-working-observation-scope)
-for `scope` and optional `bases[].working_observation` links. Shared trial context,
-partial overlap, and unknown applicability remain usable with an explicit inference;
-the typed relation does not decide the answer or certify source entailment.
+Explain relevant group, stage, window, population and method distinctions in the
+source-bound warrant. For an optional compact submission format, use
+[Opt-in lean Domain drafting](references/evidence.md#opt-in-lean-domain-drafting).
+Source-specific interpretation annotations remain available when useful; they
+are not a prerequisite for combining facts or saving an answer.
 
 
 Before a new material discovery attempt, follow the
