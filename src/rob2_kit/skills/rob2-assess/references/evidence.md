@@ -218,39 +218,43 @@ you judge whether those facts support the answer.
 
 ## Preserve working observation scope
 
-Working observations are source-located host interpretations, not a second
-Evidence ledger. When facts have different scope or feed an inference across
-scopes, save them separately with `save_working_checkpoint`. A `WorkingNote`
-keeps its `text` and exact `sources` and may add `scope`:
+Working observations are host interpretations, not a second Evidence ledger.
+Include a compact optional interpretation directly in an Evidence basis of
+`save_domain_judgment` when a scope distinction matters:
 
-- `groups`, `stage`, `window`, `population`, and `method` describe what that
-  observation actually covers. Leave unknown fields unset; preserve contrary facts.
-- `relation` is `matched`, `mismatch`, `partial_overlap`, `unknown`, or
-  `shared_trial_context` relative to the approved Result. A known different scope
-  differs from unresolved applicability. Trial context may inform several Results
-  indirectly; it is not automatically excluded.
-- `meaning` is `reported`, `inferred`, or `uncertain`; state uncertainty in
-  `uncertainty`. Typing a reported interpretation does not prove its source support.
-- Optional `result_identity` names the Result used for that relation. Copy an
-  available server identity; do not invent one. The checkpoint already binds notes
-  to the current Result and Sources even when this field is omitted.
+```json
+{
+  "evidence": "eh_0123456789abcdef",
+  "role": "context",
+  "working_observation": {
+    "text": "This passage describes trial-wide procedures; applicability to the selected outcome is unresolved.",
+    "scope": {"relation": "unknown", "meaning": "uncertain"}
+  }
+}
+```
 
-After saving, call `get_status` and recover the checkpoint's `identity` and its
-unchanged observation. To use that observation in an answer, attach
-`working_observation: {checkpoint_identity: ..., observation: ...}` to the
-corresponding selected Evidence entry in `bases`. Copy the observation as returned;
-do not edit it inside the link. Observations may come from checkpoint
-`observations` or a premise record's `observations` or `counterevidence`. A
-changed observation needs a new working checkpoint first. This link is optional
-when it adds no useful scope distinction; selected Evidence is still required.
+The server captures the cited Evidence locator and retains the interpretation in
+the warrant. No working checkpoint or coordinate copying is needed. Exact quotes
+and visual transcriptions retain their separate source/render provenance and
+uncertainty. The server does not infer semantic scope from the Result.
 
-The server checks checkpoint membership and retains the observation snapshot in
-the saved warrant, so replacing advisory notes does not erase it. It does not
-check scientific entailment or choose relevance. Explain any cross-scope use in
-`justification` and any limiting implication in `counterevidence`. Do not merge
-unmatched arms, endpoints or periods silently, discard useful shared context,
-or force an answer from a scope category. Selected Evidence remains the exact
-quote or visual transcription with its original source/render provenance.
+Optional scope dimensions are `groups`, `stage`, `window`, `population`, and
+`method`; leave unknown dimensions unset. If providing scope, `relation` is
+`matched`, `mismatch`, `partial_overlap`, `unknown`, or `shared_trial_context`.
+Different scope is distinct from unresolved applicability. Shared trial context
+and cross-arm comparisons can legitimately inform a Result. `meaning` is
+`reported`, `inferred`, or `uncertain`; retain limits in `uncertainty`. Optional
+`result_identity` names a known Result; do not invent it. The saved Domain already
+binds its basis to a Result without filling this semantic field.
+
+Existing `{checkpoint_identity, observation}` links remain available for resumed
+work with unchanged source/Result-bound checkpoint notes. Their membership is
+checked and snapshots survive advisory-note replacement. Working checkpoints
+remain useful resumable memory, not a prerequisite for basis interpretations.
+
+Explain cross-scope reasoning in `justification` and limiting implications in
+`counterevidence`. Preserve contrary facts. Scope categories do not exclude
+Evidence, decide answers, or certify scientific entailment.
 
 ## Build a Domain answer
 

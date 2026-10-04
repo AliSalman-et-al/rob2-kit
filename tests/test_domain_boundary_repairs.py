@@ -309,7 +309,12 @@ def test_domain_public_shape_is_closed_with_optional_observation_link() -> None:
     direct = _resolve_local(draft, answer["properties"]["bases"]["items"])
     assert set(direct["properties"]) == {"role", "evidence", "working_observation"}
     assert set(direct["required"]) == {"role", "evidence"}
-    link = direct["properties"]["working_observation"]["anyOf"][0]
+    variants = direct["properties"]["working_observation"]["anyOf"]
+    compact = variants[0]
+    assert compact["additionalProperties"] is False
+    assert set(compact["properties"]) == {"text", "scope"}
+    assert compact["required"] == ["text"]
+    link = variants[1]
     assert link["additionalProperties"] is False
     assert set(link["properties"]) == {"checkpoint_identity", "observation"}
     assert "oneOf" not in answer["properties"]["bases"]["items"]

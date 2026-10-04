@@ -2006,22 +2006,39 @@ class DomainLimitationBasis(StrictModel):
         return value
 
 
+class WorkingObservationDraft(StrictModel):
+    """Host interpretation supplied with an Evidence basis, not a new source quote."""
+
+    text: NonBlankText = Field(
+        max_length=4_000,
+        description="Interpreted observation for this cited Evidence, not a quotation.",
+    )
+    scope: WorkingObservationScope | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional interpreted scope; leave unknown dimensions unset.",
+    )
+
+
 class WorkingObservationLink(StrictModel):
     """Durable snapshot of an existing working observation used in a warrant."""
 
-    checkpoint_identity: Identity = Field(
-        description="Identity of the existing source/Result-bound working checkpoint, not a Domain."
+    checkpoint_identity: Identity | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Existing working checkpoint identity for a resumed note; omitted for a "
+        "basis-local observation captured during judgment submission.",
     )
     observation: WorkingNote = Field(
-        description="Unchanged checkpoint observation retained as a warrant snapshot."
+        description="Source-located observation retained as a warrant snapshot."
     )
 
 
 class DirectEvidenceUse(StrictModel):
-    working_observation: WorkingObservationLink | None = Field(
+    working_observation: WorkingObservationDraft | WorkingObservationLink | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
-        description="Optional link to an existing working observation; its scope is host asserted. "
+        description="Optional compact or resumed interpretation; scope is host asserted. "
         "The snapshot survives replacement of advisory notes. Evidence remains authoritative.",
     )
 
@@ -2249,12 +2266,14 @@ class EvidenceSufficiencySummary(StrictModel):
 
 
 class DomainEvidenceCitation(StrictModel):
-    working_observation: WorkingObservationLink | None = Field(
+    working_observation: WorkingObservationDraft | WorkingObservationLink | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
-        description="Optional link: copy the existing checkpoint identity and unchanged "
-        "observation. The server checks membership and retains the snapshot; "
-        "scope remains a host interpretation.",
+        description="Optional observation: supply text and optional scope with this "
+        "Evidence "
+        "basis. The server retains a source-bound WorkingNote without a separate checkpoint. "
+        "Existing checkpoint-identity/observation links remain valid for resumed notes. "
+        "No scope, source entailment or answer is inferred by the server.",
     )
     evidence: SubmittedEvidenceHandle = Field(description="Current-Trial selected Evidence handle.")
     role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (

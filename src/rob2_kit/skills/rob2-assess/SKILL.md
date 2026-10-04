@@ -286,7 +286,7 @@ source disagreements from the reported Result when investigating D2, D3, and D5.
 Review inspected passages against each active proposition and check material
 contradictions. Reuse adequate Evidence without another search.
 When source facts differ in group, stage, window, population, or method, preserve
-those scopes in working observations before combining them in a warrant. Use
+those scopes in optional Evidence-basis observations when combining them in a warrant. Use
 [Preserve working observation scope](references/evidence.md#preserve-working-observation-scope)
 for `scope` and optional `bases[].working_observation` links. Shared trial context,
 partial overlap, and unknown applicability remain usable with an explicit inference;

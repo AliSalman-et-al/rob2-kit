@@ -2281,7 +2281,9 @@ class ComparisonCard(PublicModel):
 
 
 class WorkingObservationLinkData(PublicModel):
-    checkpoint_identity: Identity
+    checkpoint_identity: Identity | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     observation: WorkingNoteData
 
 

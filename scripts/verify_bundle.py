@@ -1497,10 +1497,14 @@ def _valid_reasoning_annotations(answer: dict[str, Any]) -> bool:
 
 
 def _valid_working_observation_link(value: object) -> bool:
-    if not isinstance(value, dict) or set(value) != {"checkpoint_identity", "observation"}:
+    if not isinstance(value, dict) or set(value) not in (
+        {"observation"},
+        {"checkpoint_identity", "observation"},
+    ):
         return False
-    if not isinstance(value["checkpoint_identity"], str) or not re.fullmatch(
-        r"sha256:[0-9a-f]{64}", value["checkpoint_identity"]
+    if "checkpoint_identity" in value and (
+        not isinstance(value["checkpoint_identity"], str)
+        or not re.fullmatch(r"sha256:[0-9a-f]{64}", value["checkpoint_identity"])
     ):
         return False
     note = value["observation"]

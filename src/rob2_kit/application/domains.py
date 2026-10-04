@@ -17,7 +17,7 @@ from ..packs.d3_authoritative import (
     FAQ_SOURCE_URL,
     OFFICIAL_SOURCE_URL,
 )
-from ..workflow_models import DomainDraft
+from ..workflow_models import DomainDraft, WorkingNote
 from ._state import (
     _canonical_evidence_records,
     _commit_records,
@@ -48,6 +48,7 @@ from .evidence import (
     source_reading_status,
 )
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
+from .source_handles import source_handle
 from .status import _active_trial_and_domain, _continuation
 from .working import investigation_projection, working_checkpoint_status
 
@@ -2892,7 +2893,31 @@ def save_domain_judgment(
                     )
                 else:
                     link = basis.get("working_observation")
-                    if isinstance(link, dict):
+                    if isinstance(link, dict) and "text" in link:
+                        # Copy the selected Evidence locator only. Semantic scope
+                        # stays exactly host supplied, independent of the Result.
+                        note = WorkingNote(
+                            text=link["text"],
+                            scope=link.get("scope"),
+                            sources=(
+                                {
+                                    "source_id": source_handle(evidence["source_id"]),
+                                    "page": (
+                                        evidence["render"]["page"]
+                                        if evidence["kind"] == "figure"
+                                        else evidence["page"]
+                                    ),
+                                    "start_line": evidence.get("start_line", 0),
+                                    "end_line": evidence.get("end_line", 0),
+                                },
+                            ),
+                            domain_id=parsed.domain_id,
+                            question_id=answer_item.question_id,
+                        )
+                        basis["working_observation"] = {
+                            "observation": note.model_dump(mode="json", exclude_none=True)
+                        }
+                    elif isinstance(link, dict):
                         working = working_checkpoint_status(root, state, parsed.trial_id)
                         checkpoint = working.get("checkpoint") or {}
                         notes = list(checkpoint.get("observations", ()))
@@ -2901,7 +2926,7 @@ def save_domain_judgment(
                             notes.extend(premise.get("counterevidence", ()))
                         if (
                             working.get("reason") in {"result_changed", "source_changed"}
-                            or checkpoint.get("identity") != link["checkpoint_identity"]
+                            or checkpoint.get("identity") != link.get("checkpoint_identity")
                             or link["observation"] not in notes
                         ):
                             repairs.append(
