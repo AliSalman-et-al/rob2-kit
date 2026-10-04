@@ -403,6 +403,16 @@ wait for a researcher decision.
 
 ### 7. Review and close every Trial
 
+An explicitly requested separate source check may use the existing opt-in factual
+exporter (`docs/source-checking.md` in the repository). This is advisory and is not
+part of the default assessment loop. Inspect any returned findings against their
+exact sources, distinguish source facts from legitimate inference, and accept or
+reject them yourself. A valid locator is not proof that a critique is correct.
+Use ordinary Domain edit/submission only for changes you judge warranted; retain
+uncertainty and official Cochrane authority. Do not change labels automatically or
+require direct proof of every inference, exact missing counts or MNAR methods.
+
+
 Save each Domain before moving on. The fifth accepted checkpoint makes the
 Trial ready for review and returns `data.trial_ready_for_review:true`; it remains
 correctable until closed. Call `review_trial` with the current Trial and

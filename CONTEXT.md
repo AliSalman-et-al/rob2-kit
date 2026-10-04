@@ -507,3 +507,12 @@ not OCR truth or entailment certification. Explicit-role citations accept these
 references too. Text ranges retain narrative provenance and never cover graphical
 cells by attaching a rendered page. Proposal construction still uses selected visual
 Evidence; reusable selected handles remain available for long repeated transcriptions.
+
+Opt-in source checking projects existing selected-Trial review into a fresh factual
+context through the existing exporter. It withholds answer/judgment metadata,
+preserves full claims and claim-specific source bindings, and validates advisory
+locators against current captured Sources and immutable checkpoint identities.
+It certifies provenance only, never semantic support or reviewer correctness.
+There is no automatic application, new canonical ledger or finalization gate; the
+original assessor accepts/rejects findings through ordinary Domain submission.
+See `docs/source-checking.md`. No default paid reviewer stage is enabled.

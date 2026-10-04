@@ -25,17 +25,13 @@ def test_all_domain_claims_and_only_existing_citations_are_exported_without_muta
     saved = canonical["domain_records"]["gupta-2024:domain:measurement"]["answers"]
     packet = export_packet(BUNDLE, "gupta-2024", "domain:measurement")
     assert packet == export_packet(BUNDLE, "gupta-2024", "domain:measurement")
-    assert [claim["question_id"] for claim in packet["claims"]] == [
-        answer["question_id"] for answer in saved
-    ]
+    assert len(packet["claims"]) == len(saved)
+    assert all("question_id" not in claim and "answer" not in claim for claim in packet["claims"])
     for claim, answer in zip(packet["claims"], saved, strict=True):
         assert claim["justification"] == answer["justification"]
         assert claim["unknowns"] == answer["unknowns"]
         assert claim["counterevidence"] == answer["counterevidence"]
-        assert claim["citations"] == [
-            {"evidence_identity": basis["evidence"], "asserted_role": basis["kind"]}
-            for basis in answer["bases"]
-        ]
+        assert claim["citations"] == answer["bases"]
     assert {span["evidence_identity"] for span in packet["cited_spans"]} == {
         basis["evidence"] for answer in saved for basis in answer["bases"]
     }
