@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import runpy
 import sys
 import tomllib
@@ -38,15 +39,13 @@ def test_runner_config_keeps_selected_binding(command, tmp_path):
 
 
 @pytest.mark.parametrize("command", ["mcp", "mcp-codex"])
-def test_actual_stdio_entrypoint_preflight_binds_original_schemas(command, tmp_path):
+def test_actual_stdio_entrypoint_preflight_binds_original_schemas(command, tmp_path, monkeypatch):
     from scripts.benchmark_contract import probe_server_advertised_inventory
 
-    executable = tmp_path / "rob2"
-    executable.write_text(
-        f"#!{sys.executable}\nfrom rob2_kit.interfaces.cli.app import main\n"
-        "raise SystemExit(main())\n"
-    )
-    executable.chmod(0o700)
+    # uv installs the platform-native console launcher, including rob2.exe on Windows.
+    executable = Path(sys.executable).parent / ("rob2.exe" if os.name == "nt" else "rob2")
+    assert executable.is_file()
+    monkeypatch.setenv("PYTHONPATH", str(Path(__file__).parents[1] / "src"))
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     result = probe_server_advertised_inventory(executable, workspace, mcp_command=command)

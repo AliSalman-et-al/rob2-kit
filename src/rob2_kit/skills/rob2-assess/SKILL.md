@@ -420,7 +420,11 @@ return `data.review_page.mode:"summary"`: all answer headers and actual driver
 flags remain visible, but named deferred fields and counts identify incomplete
 support. Use `review_trial` with `domain_id` and, when needed, `question_id` to
 inspect decisive answers and material unknowns or counterevidence. A complete
-selected detail has `mode:"complete"`; an oversized detail has `mode:"fragment"`.
+selected detail has `mode:"complete"`. An oversized selected summary preserves full
+saved claims, unknowns, counterevidence, and citation bindings when they fit; its
+source facts remain deferred and `complete:false`. Recover those sources through
+`stable_recovery` or exact Evidence expansions. When the full claim set itself is
+too large, the selected detail has `mode:"fragment"`.
 Follow `next_cursor`, concatenate `fragment` strings in Unicode codepoint offset
 order, and parse the JSON once complete. The summary's `stable_recovery` also
 recovers the exact full review. Use the current revision and returned recovery

@@ -1,0 +1,13 @@
+{
+  "ci_head": "d6bdae597e72d4ff6221bc2dc65aa1e44fc4ea2f",
+  "run": 37168075380,
+  "representative_job_read_once": 111335143960,
+  "failures": "Only Windows tests, Python3.11/3.12/3.13; 2 failed,1382 passed,8 skipped in representative3.12 job.",
+  "root_cause": "test_codex_integration created a POSIX shebang executable without a native Windows launcher; Popen raised WinError193. No observed production MCP protocol/schema failure.",
+  "fix": "Use installed rob2.exe on Windows / rob2 on POSIX beside active interpreter; explicitly bind test source PYTHONPATH. No skip or increased timeout.",
+  "focused_validation": "Native launcher probes mcp and mcp-codex passed locally; Windows rerun not awaited.",
+  "full_focused_run": "46 passed;1 release-description cache mismatch because synchronized description changed while that test process was running. Frozen failed output retained.",
+  "after_final_files": "Fresh contract/stdio process8passed; final packing11passed. No broad rerun loop.",
+  "preparation_note": "An attempted direct helper lookup in release verify.py used the wrong module and raised KeyError before the fresh tests; the actual generated contract check is exercised by the passing test.",
+  "log_sha256": "dbb22a74e8dbb5d3c8d1407c674add747f8942fb65bc9d305a14b3b1e250fa40"
+}

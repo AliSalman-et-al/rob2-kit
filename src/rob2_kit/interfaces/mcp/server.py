@@ -812,8 +812,10 @@ def _review_summary(
     keep_evidence: bool,
     keep_result: bool,
     preview_chars: int,
+    selector: dict[str, str] | None = None,
+    complete_claims: bool = False,
 ) -> dict[str, Any]:
-    data = snapshot.get("data")
+    data = _select_review_receipt(snapshot, selector).get("data")
     if not isinstance(data, dict):
         raise ValueError("review_summary_unrecoverable: review data is unavailable")
     deferred: set[str] = set()
@@ -856,7 +858,23 @@ def _review_summary(
             elif counts["evidence"]:
                 answer_deferred.add("evidence")
                 deferred.add("evidence")
-            if keep_previews:
+            if complete_claims:
+                # Keep the entire saved claim/binding set or fall back to lossless
+                # fragments. Only support/context source prose is deferred here.
+                counterfacts = [
+                    fact
+                    for fact in answer.get("facts", [])
+                    if fact.get("role") == "counterevidence"
+                ]
+                if counterfacts:
+                    summary_answer["facts"] = counterfacts
+                if len(counterfacts) < counts["facts"]:
+                    answer_deferred.add("facts")
+                    deferred.add("facts")
+                for field in (*_REVIEW_DETAIL_ARRAYS, "warrant", "justification"):
+                    if field != "facts" and field in answer:
+                        summary_answer[field] = answer[field]
+            elif keep_previews:
                 for field in _REVIEW_DETAIL_ARRAYS:
                     values = answer.get(field)
                     if not isinstance(values, list) or not values:
@@ -925,7 +943,8 @@ def _review_summary(
         "mode": "summary",
         "complete": False,
         "snapshot_digest": f"sha256:{digest}",
-        "target": "full_receipt",
+        "target": _review_target(snapshot, selector)[0],
+        **({"selector": selector} if selector else {}),
         "counts": _review_counts(data.get("domain_findings", []), data["review"]),
         "deferred_fields": sorted(deferred),
         "stable_recovery": recovery,
@@ -1113,6 +1132,28 @@ def _project_review_trial(
             raise ValueError("review_summary_unrecoverable: typed summary exceeds the byte limit")
         if persist:
             _record_review_view(root, view_id, trial_id, review_identity, digest, None, normalized)
+        return summary
+
+    summary = _validate_response(
+        "review_trial",
+        _review_summary(
+            normalized,
+            digest,
+            view_id,
+            keep_previews=False,
+            keep_missing=True,
+            keep_evidence=True,
+            keep_result=True,
+            preview_chars=80,
+            selector=selector,
+            complete_claims=True,
+        ),
+    )
+    if _review_transport_bytes(summary) <= _REVIEW_TRIAL_RESPONSE_BYTES:
+        if persist:
+            _record_review_view(
+                root, view_id, trial_id, review_identity, digest, selector, normalized
+            )
         return summary
 
     fragment = _review_fragment_response(normalized, normalized, selector, digest, view_id, 0)
@@ -4157,7 +4198,10 @@ def save_domain_judgment(
         "reference. Large reviews return every Domain and answer with driver flags, named counts, "
         "Evidence handles, and marked detail previews. Follow review_page.stable_recovery.cursor "
         "to reconstruct the exact full receipt, or select domain_id and question_id for one "
-        "answer. Fragment offsets count Unicode code points; concatenate fragments in cursor "
+        "answer. An oversized selected view may return a summary with full saved claims and "
+        "citation bindings while source facts remain deferred; complete=false does not mean "
+        "source inspection is complete. Use stable_recovery or evidence_expansions. "
+        "Fragment offsets count Unicode code points; concatenate fragments in cursor "
         "order and parse the resulting JSON."
     ),
     annotations=_MUTATION,

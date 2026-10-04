@@ -244,3 +244,105 @@ def test_compact_review_colocates_authored_claims_without_resolving_them(later_w
     assert answers[1]["evidence"] == later["answers"][0]["evidence"]
     assert "conflicts" not in answers[0]  # No invented semantic relationship.
     assert receipt == before
+
+
+@pytest.mark.parametrize(
+    ("case", "domain_id"), [("baby", "domain:measurement"), ("exscel", "domain:selection")]
+)
+def test_selected_summary_keeps_full_saved_claims_and_recovers_exact_sources(
+    tmp_path: Path, case: str, domain_id: str
+) -> None:
+    artifact = (
+        Path(__file__).parents[1]
+        / "docs/evaluation/2026-10-04-selected-review-packing"
+        / f"{case}-snapshot.json"
+    )
+    receipt = json.loads(artifact.read_text())
+    before = json.loads(json.dumps(receipt))
+    selector = {"domain_id": domain_id}
+    _, expected = server._review_target(receipt, selector)
+    assert expected is not None
+    root = server._root(tmp_path)
+    first = _project(receipt, root, selector=selector, persist=True)
+    page = first["data"]["review_page"]
+    assert page["mode"] == "summary"
+    assert page["complete"] is False
+    assert page["target"] == "domain_finding"
+    assert page["snapshot_digest"] == "sha256:" + server._review_view_digest(receipt, selector)
+    assert server._review_transport_bytes(first) <= _LIMIT
+    assert "facts" in page["deferred_fields"]
+    actual = first["data"]["domain_findings"][0]
+    assert actual["checkpoint_identity"] == expected["checkpoint_identity"]
+    assert actual["judgment"] == expected["judgment"]
+    assert first["data"]["result"] == receipt["data"]["result"]
+    for saved, shown in zip(expected["answers"], actual["answers"], strict=True):
+        for field in (
+            "question_id",
+            "answer",
+            "driver",
+            "warrant",
+            "justification",
+            "unknowns",
+            "counterevidence",
+            "limitations",
+            "conflicts",
+            "uninvestigated_routes",
+            "evidence",
+            "bases",
+        ):
+            assert shown.get(field) == saved.get(field)
+        assert shown["facts"] == [
+            fact for fact in saved["facts"] if fact["role"] == "counterevidence"
+        ]
+        assert shown["detail_projection"]["counts"]["facts"] == len(saved["facts"])
+        assert shown["detail_projection"]["deferred_fields"] == ["facts"]
+    recovered = _collect(receipt, root, cursor=page["stable_recovery"]["cursor"], selector=selector)
+    assert json.loads(recovered) == expected
+    assert receipt == before
+    # The original pre-change view text and digest stay stable for existing cursors.
+    view_id, _ = server._decode_review_cursor(page["stable_recovery"]["cursor"])
+    prefix_length = 20_041 if case == "baby" else 20_188
+    raw = json.dumps(expected, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    old_cursor = server._review_cursor(view_id, prefix_length)
+    resumed = _project(receipt, root, cursor=old_cursor, selector=selector)
+    assert resumed["data"]["review_page"]["offset"] == prefix_length
+    assert (
+        resumed["data"]["review_page"]["fragment"]
+        == raw[prefix_length : prefix_length + len(resumed["data"]["review_page"]["fragment"])]
+    )
+
+
+def test_selected_summary_does_not_defer_counterfacts_or_clip_oversized_saved_uncertainty(
+    tmp_path: Path,
+) -> None:
+    receipt = _review(justification="A qualified inference with contrary observations.")
+    answer = receipt["data"]["domain_findings"][0]["answers"][0]
+    answer.update(
+        unknowns=["Actual execution is unknown."],
+        facts=[
+            {"text": "long supporting quote " * 150, "role": "support"},
+            {"text": "contrary observation " * 100, "role": "counterevidence"},
+        ]
+        * 8,
+        counterevidence=[
+            {"basis_index": 0, "implication": "Contrary observations limit this claim."}
+        ],
+    )
+    receipt = server._validate_response("review_trial", receipt)
+    root = server._root(tmp_path)
+    summary = _project(receipt, root, selector=_SELECTOR, persist=True)
+    assert summary["data"]["review_page"]["mode"] == "summary"
+    shown = summary["data"]["domain_findings"][0]["answers"][0]
+    assert shown["unknowns"] == answer["unknowns"]
+    assert shown["counterevidence"] == answer["counterevidence"]
+    assert len(shown["facts"]) == 8
+    assert all(fact["role"] == "counterevidence" for fact in shown["facts"])
+    # The complete saved claim set cannot fit: preserve the old lossless fragment path.
+    huge = json.loads(json.dumps(receipt))
+    huge["data"]["domain_findings"][0]["answers"][0]["unknowns"] = ["Unresolved " * 3000]
+    fallback = _project(huge, root, selector=_SELECTOR, persist=True)
+    assert fallback["data"]["review_page"]["mode"] == "fragment"
+    assert (
+        json.loads(_collect(huge, root, first=fallback, selector=_SELECTOR))
+        == (huge["data"]["domain_findings"][0]["answers"][0])
+    )

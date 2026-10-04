@@ -1,0 +1,549 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "assessment",
+    "state_revision": 10,
+    "next_action": {
+      "operation": "close_trial",
+      "authority": "host",
+      "trial_id": "gupta-2024",
+      "expected_revision": 10,
+      "review_reference": "sha256:035efd5198cef3bb3782be504ed07019beaad8fea644528d72f626eb992e9b2f"
+    },
+    "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 0 pending; 1 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+  },
+  "data": {
+    "review": {
+      "identity": "sha256:035efd5198cef3bb3782be504ed07019beaad8fea644528d72f626eb992e9b2f",
+      "trial_id": "gupta-2024",
+      "result_identity": "sha256:c042f91e678e9d9aeaed2e48c72d0dc133420c83d8152b1a17930d63e17f0f0b",
+      "checkpoint_ids": [
+        "sha256:539648cdd9016275069a80b3d95321d7b7a15ed0349ea89b857610a9ff06dca0",
+        "sha256:77c5f723514247d378ba80c37485a54cfaa3556520169a4a86322e8c3ef72b0c",
+        "sha256:a5823343516a8b5c7b627c384cb2ee98bb8923676adf18f2f593e604bf252855",
+        "sha256:de47e3f965377d7f2e713d6e1172a4b322a21ce52c9906287019da8187974d00",
+        "sha256:f26123eafc6d36a8fc25f8e4011f2578542983490de822988c91017f324967d8"
+      ],
+      "disposition": "assessed",
+      "reason": null,
+      "facts": [],
+      "domain_attribution": [
+        {
+          "domain_id": "domain:randomization",
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:539648cdd9016275069a80b3d95321d7b7a15ed0349ea89b857610a9ff06dca0"
+        },
+        {
+          "domain_id": "domain:deviations",
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:77c5f723514247d378ba80c37485a54cfaa3556520169a4a86322e8c3ef72b0c"
+        },
+        {
+          "domain_id": "domain:missing",
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:a5823343516a8b5c7b627c384cb2ee98bb8923676adf18f2f593e604bf252855"
+        },
+        {
+          "domain_id": "domain:measurement",
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:de47e3f965377d7f2e713d6e1172a4b322a21ce52c9906287019da8187974d00"
+        },
+        {
+          "domain_id": "domain:selection",
+          "attribution": "unchanged",
+          "checkpoint_identity": "sha256:f26123eafc6d36a8fc25f8e4011f2578542983490de822988c91017f324967d8"
+        }
+      ]
+    },
+    "result": {
+      "applicability": {
+        "design": "individual_parallel",
+        "evidence": [
+          "eh_802cea64f3f2c544",
+          "eh_664cb2e87a63db02"
+        ],
+        "rationale": "Multicenter randomized, double-blind, placebo-controlled parallel groups; multiple-birth infants randomized individually."
+      },
+      "bindings": [
+        {
+          "evidence_index": 4,
+          "field": {
+            "path": "/reported/effect_measure"
+          },
+          "value_digest": "sha256:8c66f695300c5661a1c9ae1bc42b25f8d7e9a1104ce6214e1c48dec624f64eaf"
+        },
+        {
+          "evidence_index": 4,
+          "field": {
+            "path": "/reported/estimate"
+          },
+          "value_digest": "sha256:edb8215ecd5ee75f596058857e9479196822a9c51d25503731ca18ce9dc0340a"
+        },
+        {
+          "evidence_index": 2,
+          "field": {
+            "path": "/reported/precision"
+          },
+          "value_digest": "sha256:096b26fbfd6445310210040893c894bb5dfab04fec17447c41dd674e3003de6e"
+        },
+        {
+          "evidence_index": 4,
+          "field": {
+            "path": "/reported/endpoint/name"
+          },
+          "value_digest": "sha256:e2a5ee3ed1a73ed1202831d19c9603273d6dac0f3f6adc2b090d45557acebdcd"
+        }
+      ],
+      "clarity": {
+        "analysis_population": "unclear",
+        "comparison_groups": "unclear",
+        "effect_measure": "unclear",
+        "eligible_result_choice": "unclear",
+        "measurement": "unclear",
+        "outcome_definition": "unclear",
+        "source_table_meaning": "unclear",
+        "time_point": "unclear"
+      },
+      "evidence": [
+        {
+          "handle": "eh_49ac77da50b0bd19",
+          "kind": "narrative"
+        },
+        {
+          "handle": "eh_664cb2e87a63db02",
+          "kind": "narrative"
+        },
+        {
+          "handle": "eh_68123b0bf4654ecc",
+          "kind": "narrative"
+        },
+        {
+          "handle": "eh_7266c0cb8d0368a8",
+          "kind": "narrative"
+        },
+        {
+          "handle": "eh_d6d5b2bf301983ce",
+          "kind": "narrative"
+        }
+      ],
+      "kind": "assessable",
+      "relation": "narrower",
+      "relation_rationale": "This is the reported primary composite requested, at the matching 36-week postmenstrual-age time point, comparing all randomized ibuprofen and placebo groups. The estimate is adjusted RR 1.09 (95% CI 0.98 to 1.20). The analysis includes 318 per arm, fewer than randomized, because data were withdrawn or required primary-outcome data were unavailable, so the result is narrower than the randomized target.",
+      "reported": {
+        "analysis_population": "Infants with data available for outcome analyses; primary outcome assessed for 318 per group, excluding randomized infants with withdrawn data consent and infants without required primary-outcome data.",
+        "effect_measure": "Adjusted risk ratio",
+        "endpoint": {
+          "definition": null,
+          "name": "Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age"
+        },
+        "estimate": "1.09",
+        "form": "comparative_effect",
+        "group_values": [],
+        "precision": "0.98 to 1.20"
+      },
+      "requested_outcome": "death or moderate or severe bronchopulmonary dysplasia",
+      "target": {
+        "comparison_groups": [
+          {
+            "assignment": "Ibuprofen",
+            "id": "ibuprofen"
+          },
+          {
+            "assignment": "Placebo",
+            "id": "placebo"
+          }
+        ],
+        "effect_of_interest": "assignment",
+        "intended_analysis_population": "All randomized participants in the comparison groups",
+        "intended_effect_measure": "Risk ratio",
+        "measurement": {
+          "method": "Death or moderate/severe bronchopulmonary dysplasia, assessed at 36 weeks' postmenstrual age",
+          "metric": "death or moderate or severe bronchopulmonary dysplasia"
+        },
+        "outcome_definition": "death or moderate or severe bronchopulmonary dysplasia",
+        "time_point_or_window": {
+          "description": "At 36 weeks of postmenstrual age",
+          "kind": "quantified",
+          "unit": "weeks",
+          "value": "36"
+        }
+      },
+      "trial_id": "gupta-2024"
+    },
+    "domain_findings": [
+      {
+        "domain_id": "domain:measurement",
+        "checkpoint_identity": "sha256:de47e3f965377d7f2e713d6e1172a4b322a21ce52c9906287019da8187974d00",
+        "judgment": "low",
+        "answers": [
+          {
+            "question_id": "sq:measurement:method-inappropriate",
+            "question": "Was the method of measuring the outcome inappropriate?",
+            "driver": false,
+            "answer": "probably_no",
+            "facts": [],
+            "warrant": "The composite includes objectively recorded death and a protocol-defined BPD component at 36 weeks PMA. BPD criteria incorporate oxygen/respiratory-support thresholds after at least 28 days of support; where oxygen need is subjective, an oxygen-reduction test confirms dependency using an oxygen-saturation threshold. This is a structured, clinically relevant method for the outcome, though the BPD component requires some clinical judgment and the protocol does not establish external validation for this exact trial implementation. The evidence therefore supports probably not inappropriate.",
+            "justification": "The composite includes objectively recorded death and a protocol-defined BPD component at 36 weeks PMA. BPD criteria incorporate oxygen/respiratory-support thresholds after at least 28 days of support; where oxygen need is subjective, an oxygen-reduction test confirms dependency using an oxygen-saturation threshold. This is a structured, clinically relevant method for the outcome, though the BPD component requires some clinical judgment and the protocol does not establish external validation for this exact trial implementation. The evidence therefore supports probably not inappropriate.",
+            "unknowns": [
+              "The oxygen-reduction test flowchart was not visually inspectable in the tool response; the applicable textual criteria were inspected."
+            ],
+            "counterevidence": [],
+            "limitations": [],
+            "conflicts": [],
+            "uninvestigated_routes": [],
+            "evidence": [
+              {
+                "handle": "eh_324148091d5038f7",
+                "identity": "sha256:324148091d5038f798806f17708f29549d7fa2ff73ef552b39ecc62fb0443ee2"
+              },
+              {
+                "handle": "eh_9a06baf660397d1f",
+                "identity": "sha256:9a06baf660397d1f1b32786e6ede9d09e22153c45f41515535788cf7b1586a80"
+              },
+              {
+                "handle": "eh_664cb2e87a63db02",
+                "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a"
+              }
+            ],
+            "bases": [
+              {
+                "assertion": "host_asserted",
+                "evidence": {
+                  "handle": "eh_324148091d5038f7",
+                  "identity": "sha256:324148091d5038f798806f17708f29549d7fa2ff73ef552b39ecc62fb0443ee2"
+                },
+                "kind": "direct_support"
+              },
+              {
+                "assertion": "host_asserted",
+                "evidence": {
+                  "handle": "eh_9a06baf660397d1f",
+                  "identity": "sha256:9a06baf660397d1f1b32786e6ede9d09e22153c45f41515535788cf7b1586a80"
+                },
+                "kind": "context"
+              },
+              {
+                "assertion": "host_asserted",
+                "evidence": {
+                  "handle": "eh_664cb2e87a63db02",
+                  "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a"
+                },
+                "kind": "direct_support"
+              }
+            ],
+            "evidence_expansions": [
+              {
+                "operation": "read_pages",
+                "evidence": "eh_324148091d5038f7",
+                "trial_id": "gupta-2024",
+                "windows": [
+                  {
+                    "source_id": "sh_f5de7e58b7a415fc",
+                    "page": 14,
+                    "start_line": 20,
+                    "end_line": 45,
+                    "start_char": 0,
+                    "end_char": null
+                  }
+                ]
+              },
+              {
+                "operation": "read_pages",
+                "evidence": "eh_9a06baf660397d1f",
+                "trial_id": "gupta-2024",
+                "windows": [
+                  {
+                    "source_id": "sh_f5de7e58b7a415fc",
+                    "page": 15,
+                    "start_line": 1,
+                    "end_line": 48,
+                    "start_char": 0,
+                    "end_char": null
+                  }
+                ]
+              },
+              {
+                "operation": "read_pages",
+                "evidence": "eh_664cb2e87a63db02",
+                "trial_id": "gupta-2024",
+                "windows": [
+                  {
+                    "source_id": "sh_ec3fcba1a06e0ddc",
+                    "page": 3,
+                    "start_line": 1,
+                    "end_line": 102,
+                    "start_char": 0,
+                    "end_char": null
+                  }
+                ]
+              }
+            ],
+            "detail_projection": {
+              "mode": "summary",
+              "counts": {
+                "missing_data_rows": 0,
+                "missing_data_conflicts": 0,
+                "facts": 3,
+                "warrant": 1,
+                "justification": 1,
+                "unknowns": 1,
+                "counterevidence": 0,
+                "limitations": 0,
+                "conflicts": 0,
+                "uninvestigated_routes": 0,
+                "evidence": 3,
+                "bases": 3,
+                "evidence_expansions": 3
+              },
+              "deferred_fields": [
+                "facts"
+              ]
+            }
+          },
+          {
+            "question_id": "sq:measurement:differential",
+            "question": "Could measurement or ascertainment of the outcome have differed between intervention groups?",
+            "driver": false,
+            "answer": "probably_no",
+            "facts": [],
+            "warrant": "The same 36-week assessment point, BPD criteria, and oxygen-reduction approach apply to both randomized groups; trial personnel and outcome assessors were blinded. For eligible infants, oxygen-reduction testing was not performed in similar proportions (13/86 vs 13/94). No group-specific threshold or assessment method is reported. This supports probably no differential measurement; the exact assessment opportunity for every participant is not fully detailed.",
+            "justification": "The same 36-week assessment point, BPD criteria, and oxygen-reduction approach apply to both randomized groups; trial personnel and outcome assessors were blinded. For eligible infants, oxygen-reduction testing was not performed in similar proportions (13/86 vs 13/94). No group-specific threshold or assessment method is reported. This supports probably no differential measurement; the exact assessment opportunity for every participant is not fully detailed.",
+            "unknowns": [
+              "Outcome information was unavailable for some participants and reasons for all missing oxygen assessments are not fully reported; this relates chiefly to D3 availability rather than showing differential measurement."
+            ],
+            "counterevidence": [],
+            "limitations": [],
+            "conflicts": [],
+            "uninvestigated_routes": [],
+            "evidence": [
+              {
+                "handle": "eh_324148091d5038f7",
+                "identity": "sha256:324148091d5038f798806f17708f29549d7fa2ff73ef552b39ecc62fb0443ee2"
+              },
+              {
+                "handle": "eh_664cb2e87a63db02",
+                "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a"
+              },
+              {
+                "handle": "eh_d6d5b2bf301983ce",
+                "identity": "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b"
+              }
+            ],
+            "bases": [
+              {
+                "assertion": "host_asserted",
+                "evidence": {
+                  "handle": "eh_324148091d5038f7",
+                  "identity": "sha256:324148091d5038f798806f17708f29549d7fa2ff73ef552b39ecc62fb0443ee2"
+                },
+                "kind": "direct_support"
+              },
+              {
+                "assertion": "host_asserted",
+                "evidence": {
+                  "handle": "eh_664cb2e87a63db02",
+                  "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a"
+                },
+                "kind": "direct_support"
+              },
+              {
+                "assertion": "host_asserted",
+                "evidence": {
+                  "handle": "eh_d6d5b2bf301983ce",
+                  "identity": "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b"
+                },
+                "kind": "inference"
+              }
+            ],
+            "evidence_expansions": [
+              {
+                "operation": "read_pages",
+                "evidence": "eh_324148091d5038f7",
+                "trial_id": "gupta-2024",
+                "windows": [
+                  {
+                    "source_id": "sh_f5de7e58b7a415fc",
+                    "page": 14,
+                    "start_line": 20,
+                    "end_line": 45,
+                    "start_char": 0,
+                    "end_char": null
+                  }
+                ]
+              },
+              {
+                "operation": "read_pages",
+                "evidence": "eh_664cb2e87a63db02",
+                "trial_id": "gupta-2024",
+                "windows": [
+                  {
+                    "source_id": "sh_ec3fcba1a06e0ddc",
+                    "page": 3,
+                    "start_line": 1,
+                    "end_line": 102,
+                    "start_char": 0,
+                    "end_char": null
+                  }
+                ]
+              },
+              {
+                "operation": "read_pages",
+                "evidence": "eh_d6d5b2bf301983ce",
+                "trial_id": "gupta-2024",
+                "windows": [
+                  {
+                    "source_id": "sh_ec3fcba1a06e0ddc",
+                    "page": 6,
+                    "start_line": 1,
+                    "end_line": 125,
+                    "start_char": 0,
+                    "end_char": null
+                  }
+                ]
+              }
+            ],
+            "detail_projection": {
+              "mode": "summary",
+              "counts": {
+                "missing_data_rows": 0,
+                "missing_data_conflicts": 0,
+                "facts": 3,
+                "warrant": 1,
+                "justification": 1,
+                "unknowns": 1,
+                "counterevidence": 0,
+                "limitations": 0,
+                "conflicts": 0,
+                "uninvestigated_routes": 0,
+                "evidence": 3,
+                "bases": 3,
+                "evidence_expansions": 3
+              },
+              "deferred_fields": [
+                "facts"
+              ]
+            }
+          },
+          {
+            "question_id": "sq:measurement:assessor-aware",
+            "question": "If N/PN/NI to 4.1 and 4.2: Were outcome assessors aware of the intervention received by study participants?",
+            "driver": false,
+            "answer": "no",
+            "facts": [],
+            "warrant": "The report states that the persons assessing outcomes were unaware of randomization assignments. This addresses assessor awareness directly; it does not rely solely on the endpoint being objective.",
+            "justification": "The report states that the persons assessing outcomes were unaware of randomization assignments. This addresses assessor awareness directly; it does not rely solely on the endpoint being objective.",
+            "unknowns": [],
+            "counterevidence": [],
+            "limitations": [],
+            "conflicts": [],
+            "uninvestigated_routes": [],
+            "evidence": [
+              {
+                "handle": "eh_802cea64f3f2c544",
+                "identity": "sha256:802cea64f3f2c544562bcbebc29d6432b3f2a857cf9ab28ebe851d45511709c7"
+              }
+            ],
+            "bases": [
+              {
+                "assertion": "host_asserted",
+                "evidence": {
+                  "handle": "eh_802cea64f3f2c544",
+                  "identity": "sha256:802cea64f3f2c544562bcbebc29d6432b3f2a857cf9ab28ebe851d45511709c7"
+                },
+                "kind": "direct_support"
+              }
+            ],
+            "evidence_expansions": [
+              {
+                "operation": "read_pages",
+                "evidence": "eh_802cea64f3f2c544",
+                "trial_id": "gupta-2024",
+                "windows": [
+                  {
+                    "source_id": "sh_ec3fcba1a06e0ddc",
+                    "page": 2,
+                    "start_line": 1,
+                    "end_line": 102,
+                    "start_char": 0,
+                    "end_char": null
+                  }
+                ]
+              }
+            ],
+            "detail_projection": {
+              "mode": "summary",
+              "counts": {
+                "missing_data_rows": 0,
+                "missing_data_conflicts": 0,
+                "facts": 1,
+                "warrant": 1,
+                "justification": 1,
+                "unknowns": 0,
+                "counterevidence": 0,
+                "limitations": 0,
+                "conflicts": 0,
+                "uninvestigated_routes": 0,
+                "evidence": 1,
+                "bases": 1,
+                "evidence_expansions": 1
+              },
+              "deferred_fields": [
+                "facts"
+              ]
+            }
+          }
+        ],
+        "premise_checkpoint_identity": "sha256:35b9d8d5c72437690da3791c6ca74908d6dbd7adaadfdd41de9a42ee8562e5c4",
+        "premise_records": [],
+        "investigation": null
+      }
+    ],
+    "retry": true,
+    "review_page": {
+      "mode": "summary",
+      "complete": false,
+      "snapshot_digest": "sha256:26dc91a79a978295c368afde423fc66c0a3d926db6ad5b99e46a30b9d291caa6",
+      "selector": {
+        "domain_id": "domain:measurement",
+        "question_id": null
+      },
+      "target": "domain_finding",
+      "counts": {
+        "domains": 1,
+        "answers": 3,
+        "drivers": 0,
+        "review_facts": 0,
+        "review_reason_characters": 0,
+        "premise_records": 0,
+        "investigations": 1,
+        "missing_data_rows": 0,
+        "missing_data_conflicts": 0,
+        "facts": 7,
+        "warrants": 3,
+        "justifications": 3,
+        "unknowns": 2,
+        "counterevidence": 0,
+        "limitations": 0,
+        "conflicts": 0,
+        "uninvestigated_routes": 0,
+        "evidence": 7,
+        "bases": 7,
+        "evidence_expansions": 7
+      },
+      "deferred_fields": [
+        "facts",
+        "investigation"
+      ],
+      "fragment": null,
+      "offset": null,
+      "total": null,
+      "offset_unit": null,
+      "next_cursor": null,
+      "stable_recovery": {
+        "operation": "review_trial",
+        "trial_id": "gupta-2024",
+        "cursor": "rv1.7a858b92269645099fa385326e280489.0"
+      }
+    }
+  }
+}

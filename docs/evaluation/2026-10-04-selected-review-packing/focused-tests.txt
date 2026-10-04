@@ -1,0 +1,38 @@
+.........................................F.....                          [100%]
+=================================== FAILURES ===================================
+_____________ test_release_contract_verifies_local_public_surface ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-ali/pytest-126/test_release_contract_verifies0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70395381de50>
+
+    def test_release_contract_verifies_local_public_surface(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # The repository may contain an ignored developer ledger from an older
+        # contract. Release verification must exercise a clean workspace and keep
+        # rejecting that old active state in production.
+        workspace = tmp_path / "workspace"
+        workspace.mkdir()
+        monkeypatch.setenv("ROB2_WORKSPACE", str(workspace))
+>       _verifier().verify()
+
+tests/release/test_release_manifest.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+docs/release/verify.py:752: in verify
+    _assert_generated(contract)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+contract = {'contract_version': '0.11.0', 'tools': [{'name': 'prepare_batch', 'title': 'Prepare batch', 'description': 'Use reque...escriptions': {'rob2://current-batch': 'Read current batch status. Returns the authoritative workflow snapshot.'}, ...}
+
+    def _assert_generated(contract: dict[str, Any]) -> None:
+        from rob2_kit.contract_manifest import _manifest
+    
+        generated = asyncio.run(_manifest())
+        if generated != contract:
+>           raise ValueError("checked public contract differs from generated runtime contract")
+E           ValueError: checked public contract differs from generated runtime contract
+
+docs/release/verify.py:98: ValueError
+=========================== short test summary info ============================
+FAILED tests/release/test_release_manifest.py::test_release_contract_verifies_local_public_surface
+1 failed, 46 passed in 152.14s (0:02:32)
