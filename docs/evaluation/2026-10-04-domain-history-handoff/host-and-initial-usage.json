@@ -1,0 +1,70 @@
+{
+  "source": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-full-bd92ec8/durable-token-usage-records.json",
+  "sha256": "7936c33edfd26643e816539e27efe3e18bb3bfdde5f4c70490bdcb56ceb6010f",
+  "response_count": 7,
+  "per_response_usage": [
+    {
+      "input_tokens": 32021,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 17,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 32038
+    },
+    {
+      "input_tokens": 35593,
+      "cached_input_tokens": 31488,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 33,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 35626
+    },
+    {
+      "input_tokens": 43141,
+      "cached_input_tokens": 34560,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 398,
+      "reasoning_output_tokens": 20,
+      "total_tokens": 43539
+    },
+    {
+      "input_tokens": 50204,
+      "cached_input_tokens": 42752,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 286,
+      "reasoning_output_tokens": 31,
+      "total_tokens": 50490
+    },
+    {
+      "input_tokens": 51022,
+      "cached_input_tokens": 49920,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 305,
+      "reasoning_output_tokens": 43,
+      "total_tokens": 51327
+    },
+    {
+      "input_tokens": 60695,
+      "cached_input_tokens": 49920,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 79,
+      "reasoning_output_tokens": 32,
+      "total_tokens": 60774
+    },
+    {
+      "input_tokens": 62256,
+      "cached_input_tokens": 60160,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 159,
+      "reasoning_output_tokens": 70,
+      "total_tokens": 62415
+    }
+  ],
+  "min_input": 32021,
+  "max_input": 62256,
+  "summed_input_not_context_length": 334932,
+  "host_version": "codex-cli 0.159.0",
+  "schema_generation_started_session": false,
+  "public_compaction_markers_observed": false,
+  "actual_automatic_compaction_unknown": true
+}
