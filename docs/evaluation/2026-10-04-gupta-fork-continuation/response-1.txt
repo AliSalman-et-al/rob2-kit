@@ -1,0 +1,7 @@
+The `gupta-2024` assessment is complete and finalized for **death or moderate/severe bronchopulmonary dysplasia at 36 weeks’ postmenstrual age** (ibuprofen vs placebo; adjusted RR 1.09, 95% CI 0.98–1.20).
+
+All five domains were rated **Low risk**; the deterministic overall judgment is **Low risk**. I reviewed the Trial findings and source support, found no basis for an ordinary revision, then closed the Trial and finalized the Batch.
+
+Artifact: `.rob2-kit/finalized/caf5f259a9f5eef456a05a6543fac933aa9bcbc55a99ba4b03430da8b760ab2d.rob2.zip`
+
+No workflow blocker remains. The measurement review retained limited uncertainty about possible assessment methods beyond the SAP’s specified composite definition.

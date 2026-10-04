@@ -1,0 +1,71 @@
+{
+  "output_freeze_verified": true,
+  "original_protected_hashes_unchanged": true,
+  "original_saved_domain_identities_unchanged": {
+    "gupta-2024:domain:deviations": "sha256:77c5f723514247d378ba80c37485a54cfaa3556520169a4a86322e8c3ef72b0c",
+    "gupta-2024:domain:measurement": "sha256:de47e3f965377d7f2e713d6e1172a4b322a21ce52c9906287019da8187974d00",
+    "gupta-2024:domain:missing": "sha256:a5823343516a8b5c7b627c384cb2ee98bb8923676adf18f2f593e604bf252855",
+    "gupta-2024:domain:randomization": "sha256:539648cdd9016275069a80b3d95321d7b7a15ed0349ea89b857610a9ff06dca0"
+  },
+  "approval_identity_unchanged": "sha256:94b458d34e5497d1078fae9f20c0bb7856e3dfd605013279f36856280af262f5",
+  "target_relation_preserved": "narrower",
+  "finalized_revision": 12,
+  "bundle": {
+    "name": "caf5f259a9f5eef456a05a6543fac933aa9bcbc55a99ba4b03430da8b760ab2d.rob2.zip",
+    "sha256": "d9fcea6ca0a34498b0c05191b07455df381597d8e6213db181b646b060ebe70f",
+    "bytes": 136152
+  },
+  "measurement_count_citation": {
+    "outcome": "Known citation defect persists after native optional review",
+    "selected": [
+      {
+        "handle": "eh_324148091d5038f7",
+        "source_id": "source_f5de7e58b7a415fc5cc82d9469fe4bbc371ac4f10f270b8d8e8156fbe328994a",
+        "page": 14,
+        "start_line": 20,
+        "end_line": 45
+      },
+      {
+        "handle": "eh_664cb2e87a63db02",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "page": 3,
+        "start_line": 1,
+        "end_line": 102
+      },
+      {
+        "handle": "eh_d6d5b2bf301983ce",
+        "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+        "page": 6,
+        "start_line": 1,
+        "end_line": 125
+      }
+    ],
+    "actual_support": {
+      "handle": "eh_49ac77da50b0bd19",
+      "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 125
+    },
+    "distinction": "Counts correct in main report; similar non-testing proportions are an inference. Existing selected sources do not establish the numerical clause. This is not proof that D4 Low is wrong."
+  },
+  "image_delivery": {
+    "new_render_calls": 0,
+    "outcome": "Not tested in this continuation; original visual uncertainty retained, not repaired."
+  },
+  "plan_vs_result": {
+    "outcome": "D5 separates SAP adjusted primary inference and actual Table 2 adjusted RR; actual restricted estimates read in appendix Table S9. SAP document history says Not yet unblinded, rather than a mere requirement."
+  },
+  "review_changes": {
+    "new_domain_records": [
+      "domain:selection"
+    ],
+    "revisions_to_original_domains": 0,
+    "outcome": "Model chose no ordinary revisions despite receiving measurement findings and cited text."
+  },
+  "verifiers": {
+    "producer": "passed",
+    "independent": "passed",
+    "limitation": "Structural integrity is not scientific entailment verification."
+  }
+}

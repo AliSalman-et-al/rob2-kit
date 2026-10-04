@@ -1,0 +1,64 @@
+{
+  "head": {
+    "phase": "finalized",
+    "state_revision": 12,
+    "next_action": {}
+  },
+  "data": {
+    "outcome": "success",
+    "state_revision": 12,
+    "phase": "finalized",
+    "trial_dispositions": {
+      "gupta-2024": "assessed"
+    },
+    "terminal_counts": {
+      "assessed": 1,
+      "needs_input": 0,
+      "unsupported_design": 0,
+      "failed": 0,
+      "pending": 0,
+      "reviewable": 0
+    },
+    "continuation": null,
+    "working_checkpoint": {
+      "status": "absent",
+      "reason": "no_active_trial",
+      "trial_id": null,
+      "checkpoint_identity": null,
+      "checkpoint": null,
+      "recovery": "reorient_from_sources"
+    },
+    "investigation": null,
+    "trial_review": null,
+    "selected_evidence": [],
+    "main_report_reading": {},
+    "scope_review": [],
+    "conditions": [],
+    "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed.",
+    "counters": {
+      "extraction_calls": 0,
+      "derivative_rebuilds": 0,
+      "source_projection_verifications": 0,
+      "database_queries": 62,
+      "serialized_bytes": 0,
+      "render_bytes": 0,
+      "search_ranking_validations": 0,
+      "elapsed_ms": 151.04646803229116,
+      "source_bytes_hashed": 0,
+      "projection_rows_read": 0,
+      "fts_rows_read": 0,
+      "search_fts_rows_built": 0,
+      "candidate_reconstructions": 0,
+      "response_bytes": 0,
+      "search_ranking_builds": 0,
+      "search_ranking_cache_writes": 0,
+      "search_cache_writes": 0,
+      "search_ranking_cache_hits": 0,
+      "search_ranking_recomputations": 0,
+      "search_fts_corpus_builds": 0,
+      "search_fts_corpus_cache_hits": 0,
+      "search_spelling_catalogue_builds": 0,
+      "search_spelling_catalogue_cache_hits": 0
+    }
+  }
+}
