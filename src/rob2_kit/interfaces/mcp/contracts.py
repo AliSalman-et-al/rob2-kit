@@ -52,6 +52,7 @@ from rob2_kit.workflow_models import (
     TrialId,
     UnavailableResult,
     WorkingPremiseStatus,
+    WorkingResultStep,
 )
 
 
@@ -733,6 +734,7 @@ class WorkingPremiseRecordData(PublicModel):
 
 
 class WorkingCheckpointData(PublicModel):
+    result_account: tuple[WorkingResultStep, ...] | None = None
     identity: Identity
     batch_id: Identity
     trial_id: TrialId
@@ -751,7 +753,16 @@ class WorkingCheckpointData(PublicModel):
     next_action: str | None = None
 
 
+class AccountReconsideration(PublicModel):
+    domain_id: DomainId
+    question_id: QuestionId
+    step_id: str
+    step_identity: Identity
+    reason: Literal["changed", "removed"]
+
+
 class WorkingCheckpointStatus(PublicModel):
+    reconsideration: tuple[AccountReconsideration, ...] = ()
     status: Literal["absent", "current", "stale"]
     reason: (
         Literal[
@@ -867,40 +878,6 @@ class InvestigationView(PublicModel):
     stale: tuple[InvestigationStaleMaterial, ...] = ()
     checkpoint_identity: Identity | None = None
     legacy: Literal["supported", "reorientation_required"] = "supported"
-
-
-class DomainPremiseCheckpoint(PublicModel):
-    """Small Domain-context projection of the reusable premise checkpoint."""
-
-    identity: Identity
-    result_identity: Identity | None = None
-    source_scope: tuple[WorkingSourceBindingData, ...]
-    premise_records: tuple[WorkingPremiseRecordData, ...] = ()
-
-
-class DomainPremiseCheckpointStatus(PublicModel):
-    """Compatibility-safe status and recovery metadata for premise reuse."""
-
-    status: Literal["absent", "current", "stale"]
-    reason: (
-        Literal[
-            "no_active_trial",
-            "no_active_batch",
-            "not_saved",
-            "result_changed",
-            "source_changed",
-            "canonical_newer",
-        ]
-        | None
-    )
-    trial_id: TrialId | None = None
-    checkpoint_identity: Identity | None = None
-    checkpoint: DomainPremiseCheckpoint | None = None
-    recovery: Literal[
-        "reorient_from_sources",
-        "resume_from_checkpoint",
-        "resume_from_canonical_checkpoint",
-    ]
 
 
 class TrialDomainAttribution(PublicModel):
@@ -2281,6 +2258,10 @@ class ComparisonCard(PublicModel):
 
 
 class WorkingObservationLinkData(PublicModel):
+    result_step: WorkingResultStep | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    transfer: str | None = Field(default=None, exclude_if=lambda value: value is None)
     checkpoint_identity: Identity | None = Field(
         default=None, exclude_if=lambda value: value is None
     )

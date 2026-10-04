@@ -1756,7 +1756,7 @@ def _content(
                 and isinstance(delivery.get("next_cursor"), str)
                 and delivery.get("preview_scope") is None
                 and delivery.get("basis_identity")
-                == _domain_context_basis_identity(_state(root), trial_id, domain_id, None)
+                == _domain_context_basis_identity(_state(root), trial_id, domain_id, None, root)
             ):
                 value["continuation"] = {
                     **continuation,
@@ -2468,7 +2468,12 @@ def get_status(
         "main-report identity, set main_report_source_id to a Source handle cited by an "
         "observation, "
         "or set it to 'missing' with a source-backed explanation. Saving replaces the prior "
-        "checkpoint for this Trial."
+        "checkpoint for this Trial. Experimental result_account replaces overlapping notes, "
+        "premises and drafts with source-linked steps in producing the selected Result. It feeds "
+        "optional existing count rows into Domain flow context before judgments. Recover returned "
+        "step identities with get_status. Facts, counterevidence and unknowns remain "
+        "host assertions; "
+        "step edits flag depended-on answers for reconsideration without changing labels."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_working_checkpoint"),
@@ -4171,6 +4176,9 @@ def get_domain_context(
         "Optional bases[].working_observation accepts {text, scope?}; the server captures "
         "the cited Evidence locator without a working checkpoint. Existing checkpoint links "
         "remain available for resumed notes. Scope is host asserted and cannot decide an answer. "
+        "For an experimental upstream result_account, working_observation may reference "
+        "{step_identity, transfer?}; the server snapshots that unchanged factual step. A known "
+        "different source scope requires an inference role and explicit transfer. "
         "Submit only the active answer path. "
         "For a correction, supply the exact "
         "prior checkpoint identity and a new_evidence, self_correction, or mechanical_repair "

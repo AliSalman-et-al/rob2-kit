@@ -201,7 +201,34 @@ required bounded reading, and save useful notes against the approved Result.
 Discard Result-dependent drafts after a Result change. Researcher messages
 after approval do not set or revise signalling answers.
 
-### 5. Assess a Domain
+### 5. Reconstruct the selected Result, then assess a Domain
+
+Before drafting answers, reconstruct how the selected Result was produced. Use
+[Selected Result reconstruction](references/result-account.md). Keep a connected,
+source-linked account of assignment and intervention course, outcome collection,
+analysis, and the plan-to-report history. Follow the actual participants and
+measurements across these steps. Unknown transitions remain unknown. Establish
+this account before the first Domain; refine it when a discriminating source
+changes the account, rather than reconstructing facts separately for each question.
+
+This is a reasoning procedure, not a requirement to complete a fact inventory,
+read every document, or justify a risk label in advance. Existing notes remain
+usable. The typed upstream account is an experimental route, not the default:
+use it only when explicitly requested for a diagnostic. It replaces overlapping
+notes/premises rather than adding another ledger. Do not migrate frozen assessments.
+
+For each active official proposition, identify which step bears on it and the
+mechanism connecting those facts to material bias in this Result. Ask what the
+facts distinguish: a reported event, a possibility, a probable mechanism, or
+reassuring evidence. Explain any transfer from a different arm, period, population
+or method as an inference while retaining the original source scope. Read the
+relevant original passage/image alongside the step if its meaning is uncertain.
+A known fact can be irrelevant to this question. A method label can be true while
+its claimed protection is unsupported. Do not inherit another answer's certainty
+or polarity from the shared account: apply each question independently, including
+its activation and permitted probably responses. Record a concise public warrant,
+not a private reasoning transcript or a repeated account for every answer.
+
 
 Call `get_domain_context` for the active Trial and Domain in `head.next_action`,
 or pass an explicit `domain_id` to inspect or assess another Domain before

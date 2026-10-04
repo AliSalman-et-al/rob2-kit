@@ -308,7 +308,46 @@ class WorkingPremiseRecord(StrictModel):
 WorkingPremise = WorkingPremiseRecord
 
 
+class WorkingResultStep(StrictModel):
+    """A source-linked step in producing the selected Result, before answering questions."""
+
+    id: NonBlankText = Field(description="Stable host name for this editable factual step.")
+    identity: Identity | None = Field(
+        default=None,
+        description="Content identity returned by the server; omit for a changed step.",
+    )
+    aspect: Literal["assignment_course", "outcome_ascertainment", "analysis", "plan_report"] = (
+        Field(description="Part of producing the selected Result that this step describes.")
+    )
+    observation: WorkingNote = Field(
+        description="Original source-located factual observation; preserve its actual scope."
+    )
+    inference: NonBlankText | None = Field(
+        default=None, description="Explicit connection to the selected Result; not a source fact."
+    )
+    counterevidence: tuple[WorkingNote, ...] = Field(
+        default=(), description="Source-located qualifications or counterpoints to this step."
+    )
+    unknowns: tuple[NonBlankText, ...] = Field(
+        default=(), description="Unresolved facts or transitions; not evidence of absence."
+    )
+    counts: tuple[MissingDataRow, ...] = Field(
+        default=(), description="Optional existing participant-flow rows; explicit Evidence bases."
+    )
+
+    @model_validator(mode="after")
+    def identity_matches(self) -> WorkingResultStep:
+        return _identity(self, self.identity)
+
+
 class WorkingCheckpointDraft(StrictModel):
+    result_account: tuple[WorkingResultStep, ...] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Experimental selected-Result reconstruction. Replaces overlapping notes, "
+        "premises and drafts; source-linked steps are shared across Domains, "
+        "not signalling answers.",
+    )
     trial_id: TrialId = Field(description="Current open Trial that owns these notes.")
     main_report_source_id: SourceHandle | Literal["missing"] | None = Field(
         default=None,
@@ -349,6 +388,27 @@ class WorkingCheckpointDraft(StrictModel):
         default=None, max_length=2_000, description="Next source-review step, when useful."
     )
 
+    @model_validator(mode="after")
+    def account_replaces_fragmented_notes(self) -> WorkingCheckpointDraft:
+        if self.result_account is not None:
+            if any(
+                (
+                    self.observations,
+                    self.interpretations,
+                    self.premise_records,
+                    self.drafts,
+                    self.open_questions,
+                    self.terminology,
+                )
+            ):
+                raise ValueError(
+                    "result_account replaces notes/premises/drafts; do not duplicate them"
+                )
+            ids = [step.id for step in self.result_account]
+            if len(ids) != len(set(ids)):
+                raise ValueError("Result account step IDs must be unique")
+        return self
+
 
 class WorkingSourceBinding(StrictModel):
     source_id: SourceId
@@ -363,6 +423,7 @@ class WorkingDomainBinding(StrictModel):
 
 
 class WorkingCheckpoint(StrictModel):
+    result_account: tuple[WorkingResultStep, ...] | None = None
     identity: Identity | None = None
     batch_id: Identity
     trial_id: TrialId
@@ -2051,6 +2112,15 @@ class WorkingObservationDraft(StrictModel):
     )
 
 
+class WorkingResultStepReference(StrictModel):
+    step_identity: Identity = Field(
+        description="Exact identity of an unchanged current account step."
+    )
+    transfer: NonBlankText | None = Field(
+        default=None, description="Explicit inference for transfer from a known different scope."
+    )
+
+
 class WorkingObservationLink(StrictModel):
     """Durable snapshot of an existing working observation used in a warrant."""
 
@@ -2060,13 +2130,34 @@ class WorkingObservationLink(StrictModel):
         description="Existing working checkpoint identity for a resumed note; omitted for a "
         "basis-local observation captured during judgment submission.",
     )
+    result_step: WorkingResultStep | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Original step snapshot resolved by the server; "
+        "reference step_identity when drafting.",
+    )
+    transfer: NonBlankText | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Explicit scientific inference transferring a different source scope.",
+    )
     observation: WorkingNote = Field(
         description="Source-located observation retained as a warrant snapshot."
     )
 
+    @model_validator(mode="after")
+    def step_retains_original_observation(self) -> WorkingObservationLink:
+        if self.result_step is not None and self.result_step.observation != self.observation:
+            raise ValueError("Result step snapshot must retain its original observation")
+        if self.transfer is not None and self.result_step is None:
+            raise ValueError("Transfer requires a Result step snapshot")
+        return self
+
 
 class DirectEvidenceUse(StrictModel):
-    working_observation: WorkingObservationDraft | WorkingObservationLink | None = Field(
+    working_observation: (
+        WorkingObservationDraft | WorkingObservationLink | WorkingResultStepReference | None
+    ) = Field(
         default=None,
         exclude_if=lambda value: value is None,
         description="Optional compact or resumed interpretation; scope is host asserted. "
@@ -2297,7 +2388,9 @@ class EvidenceSufficiencySummary(StrictModel):
 
 
 class DomainEvidenceCitation(StrictModel):
-    working_observation: WorkingObservationDraft | WorkingObservationLink | None = Field(
+    working_observation: (
+        WorkingObservationDraft | WorkingObservationLink | WorkingResultStepReference | None
+    ) = Field(
         default=None,
         exclude_if=lambda value: value is None,
         description="Optional observation: supply text and optional scope with this "

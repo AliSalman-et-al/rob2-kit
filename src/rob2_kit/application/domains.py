@@ -2212,7 +2212,13 @@ def _domain_context_basis_identity(
     trial_id: str,
     domain_id: str,
     preview_missing_data: list[dict[str, Any]] | None,
+    root: Path | None = None,
 ) -> str:
+    account = None
+    if root is not None:
+        account = (working_checkpoint_status(root, state, trial_id).get("checkpoint") or {}).get(
+            "result_account"
+        )
     batch = state.get("batch")
     current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
     return _identity(
@@ -2223,10 +2229,11 @@ def _domain_context_basis_identity(
             "result_identity": _identity(_approved_result(state, trial_id)),
             "pack_identity": _pack_identity(),
             "checkpoint_identity": current.get("identity") if isinstance(current, dict) else None,
-            # Advisory note edits do not change this scientific cursor. The
-            # captured Batch/Source, approved Result, pack, Domain checkpoint,
-            # and preview remain the authority for invalidating the view.
+            # Legacy advisory note edits do not change this scientific cursor.
+            # Experimental accounts supply upstream flow facts, so their content
+            # joins the Source, Result, pack, Domain and caller-preview dependencies.
             "preview_identity": _identity(preview_missing_data or []),
+            **({"account_identity": _identity(account)} if account is not None else {}),
         }
     )
 
@@ -2241,22 +2248,43 @@ def _pack_identity() -> str:
     )
 
 
-def _domain_premise_status(status: dict[str, Any]) -> dict[str, Any]:
-    """Project only the reusable, source-grounded fields into Domain context."""
+def _step_source_intersects(note: dict[str, Any], evidence: dict[str, Any]) -> bool:
+    page = evidence.get("page", evidence.get("render", {}).get("page"))
+    return any(
+        item["source_id"] == source_handle(evidence["source_id"])
+        and item["page"] == page
+        and (
+            item["start_line"] == 0
+            or (
+                evidence.get("start_line", 0) <= item["end_line"]
+                and evidence.get("end_line", 0) >= item["start_line"]
+            )
+        )
+        for item in note["sources"]
+    )
 
-    result = {
+
+def _domain_working_context(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict) and checkpoint.get("result_account") is not None:
+        return status
+    # Keep the legacy compact projection; the experimental account replaces
+    # its fragmented notes instead of inflating every existing context header.
+    projected = {
         key: status.get(key)
         for key in ("status", "reason", "trial_id", "checkpoint_identity", "recovery")
     }
-    checkpoint = status.get("checkpoint")
-    if isinstance(checkpoint, dict):
-        result["checkpoint"] = {
+    projected["checkpoint"] = (
+        {
             key: checkpoint.get(key)
             for key in ("identity", "result_identity", "source_scope", "premise_records")
         }
-    else:
-        result["checkpoint"] = None
-    return result
+        if isinstance(checkpoint, dict)
+        else None
+    )
+    if status.get("reconsideration"):
+        projected["reconsideration"] = status["reconsideration"]
+    return projected
 
 
 def _domain_identity(record: dict[str, Any]) -> str:
@@ -2972,7 +3000,59 @@ def save_domain_judgment(
                     )
                 else:
                     link = basis.get("working_observation")
-                    if isinstance(link, dict) and "text" in link:
+                    if isinstance(link, dict) and "step_identity" in link:
+                        working = working_checkpoint_status(root, state, parsed.trial_id)
+                        checkpoint = working.get("checkpoint") or {}
+                        step = next(
+                            (
+                                item
+                                for item in checkpoint.get("result_account") or ()
+                                if item["identity"] == link["step_identity"]
+                            ),
+                            None,
+                        )
+                        if step is None or working.get("reason") in {
+                            "result_changed",
+                            "source_changed",
+                        }:
+                            repairs.append(
+                                _repair(
+                                    f"{path}/working_observation",
+                                    "result_step_stale",
+                                    "Recover the current selected-Result account step.",
+                                )
+                            )
+                        else:
+                            note = step["observation"]
+                            transfer = link.get("transfer")
+                            scope = note.get("scope") or {}
+                            if scope.get("relation") == "mismatch" and (
+                                basis["kind"] != "inference" or not transfer
+                            ):
+                                repairs.append(
+                                    _repair(
+                                        f"{path}/working_observation",
+                                        "result_step_transfer",
+                                        "A known different scope requires an inference basis "
+                                        "and explicit transfer; preserve the source scope.",
+                                    )
+                                )
+                            if not _step_source_intersects(note, evidence):
+                                repairs.append(
+                                    _repair(
+                                        f"{path}/working_observation",
+                                        "result_step_source",
+                                        "Cited Evidence must intersect this factual step's "
+                                        "Source location.",
+                                    )
+                                )
+                            basis["working_observation"] = {
+                                "checkpoint_identity": checkpoint["identity"],
+                                "observation": note,
+                                "result_step": step,
+                                **({"transfer": transfer} if transfer else {}),
+                            }
+                    elif isinstance(link, dict) and "text" in link:
                         # Copy the selected Evidence locator only. Semantic scope
                         # stays exactly host supplied, independent of the Result.
                         note = WorkingNote(
@@ -2997,7 +3077,28 @@ def save_domain_judgment(
                     elif isinstance(link, dict):
                         working = working_checkpoint_status(root, state, parsed.trial_id)
                         checkpoint = working.get("checkpoint") or {}
+                        step = link.get("result_step")
+                        if step is not None and (
+                            step not in (checkpoint.get("result_account") or ())
+                            or not _step_source_intersects(link["observation"], evidence)
+                            or (
+                                (link["observation"].get("scope") or {}).get("relation")
+                                == "mismatch"
+                                and (basis["kind"] != "inference" or not link.get("transfer"))
+                            )
+                        ):
+                            repairs.append(
+                                _repair(
+                                    f"{path}/working_observation",
+                                    "result_step_snapshot_invalid",
+                                    "Use an unchanged current factual step and preserve its Source "
+                                    "scope; known transfers require an explicit inference.",
+                                )
+                            )
                         notes = list(checkpoint.get("observations", ()))
+                        notes.extend(
+                            step["observation"] for step in checkpoint.get("result_account") or ()
+                        )
                         for premise in checkpoint.get("premise_records") or ():
                             notes.extend(premise.get("observations", ()))
                             notes.extend(premise.get("counterevidence", ()))
@@ -3273,6 +3374,7 @@ def save_domain_judgment(
             parsed.trial_id,
             parsed.domain_id,
             preview_scope if isinstance(preview_scope, list) else None,
+            root,
         )
         if delivery.get("basis_identity") != current_basis:
             return _result(
@@ -3543,6 +3645,7 @@ def get_domain_context(
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    requested_preview = preview_missing_data
     if state.get("phase") not in {"assessment", "ready_to_finalize"}:
         raise ValueError("Domain work is not active")
     active_trial, active_domain = _active_trial_and_domain(state)
@@ -3633,6 +3736,7 @@ def get_domain_context(
         and isinstance(basis.get("evidence"), str)
     )
     handles.update(result_handles)
+    handles.update(handle for row in preview_missing_data or () for handle in row.get("basis", ()))
     checkpoint_answers = [
         answer
         for answer in (existing.get("answers", []) if isinstance(existing, dict) else [])
@@ -3641,6 +3745,9 @@ def get_domain_context(
     current_result_identity = _identity(result)
     flow_answers: list[dict[str, Any]] = []
     flow_rows: list[dict[str, Any]] = []
+    account = (premise_status.get("checkpoint") or {}).get("result_account")
+    if preview_missing_data is None and account is not None:
+        preview_missing_data = [row for step in account for row in step.get("counts", ())]
     if preview_missing_data is None:
         all_domain_records = state.get("domain_records") or {}
         for flow_domain in ("domain:deviations", "domain:missing"):
@@ -4266,7 +4373,7 @@ def get_domain_context(
                 item.id for item in SCIENTIFIC_PACK.questions if item.id in active
             ),
         ),
-        "working_checkpoint": _domain_premise_status(premise_status),
+        "working_checkpoint": _domain_working_context(premise_status),
         "evidence_sufficiency": _host_asserted_sufficiency(
             existing.get("evidence_sufficiency") if isinstance(existing, dict) else None
         ),
@@ -4358,6 +4465,6 @@ def get_domain_context(
         _apply_authoritative_d3_guidance(context)
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(
-        state, trial_id, domain_id, preview_missing_data
+        state, trial_id, domain_id, requested_preview, root
     )
     return projected

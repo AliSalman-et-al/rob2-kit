@@ -1496,11 +1496,195 @@ def _valid_reasoning_annotations(answer: dict[str, Any]) -> bool:
     )
 
 
-def _valid_working_observation_link(value: object) -> bool:
-    if not isinstance(value, dict) or set(value) not in (
-        {"observation"},
-        {"checkpoint_identity", "observation"},
+def _valid_flow_semantics(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    allowed = {
+        "population_role",
+        "outcome_status",
+        "event_count",
+        "event_definition",
+        "post_randomization_exclusions",
+        "censoring",
+    }
+    if set(value) - allowed:
+        return False
+    if value.get("population_role") is not None and value.get("population_role") not in {
+        "randomized",
+        "safety",
+        "analyzed",
+        "per_protocol",
+        "follow_up",
+        "unknown",
+    }:
+        return False
+    if value.get("outcome_status") is not None and value.get("outcome_status") not in {
+        "observed",
+        "missing",
+        "imputed",
+        "unknown",
+        "not_reported",
+    }:
+        return False
+    event_count = value.get("event_count")
+    event_definition = value.get("event_definition")
+    if event_count is not None and (
+        isinstance(event_count, bool) or not isinstance(event_count, int) or event_count < 0
     ):
+        return False
+    if event_count is not None and not _nonblank(event_definition):
+        return False
+    if event_count is None and event_definition is not None:
+        return False
+    exclusions = value.get("post_randomization_exclusions", [])
+    if not isinstance(exclusions, list) or any(not _nonblank(item) for item in exclusions):
+        return False
+    censoring = value.get("censoring")
+    if censoring is not None:
+        if not isinstance(censoring, dict) or set(censoring) - {
+            "kind",
+            "count",
+            "timing",
+            "reason",
+        }:
+            return False
+        if censoring.get("kind") not in {
+            "administrative",
+            "loss_to_follow_up",
+            "withdrawal",
+            "treatment_change",
+            "unknown",
+        }:
+            return False
+        count = censoring.get("count")
+        if count is not None and (
+            isinstance(count, bool) or not isinstance(count, int) or count < 0
+        ):
+            return False
+        for key in ("timing", "reason"):
+            if censoring.get(key) is not None and not _nonblank(censoring[key]):
+                return False
+    return True
+
+
+def _valid_result_step(step: object) -> bool:
+    if not isinstance(step, dict) or not {
+        "id",
+        "identity",
+        "aspect",
+        "observation",
+        "counterevidence",
+        "unknowns",
+        "counts",
+    } <= set(step) <= {
+        "id",
+        "identity",
+        "aspect",
+        "observation",
+        "inference",
+        "counterevidence",
+        "unknowns",
+        "counts",
+    }:
+        return False
+    if (
+        not _nonblank(step["id"])
+        or step["aspect"]
+        not in {"assignment_course", "outcome_ascertainment", "analysis", "plan_report"}
+        or step["identity"]
+        != identity({key: value for key, value in step.items() if key != "identity"})
+    ):
+        return False
+    if "inference" in step and not _nonblank(step["inference"]):
+        return False
+    if not _valid_working_observation_link({"observation": step["observation"]}):
+        return False
+    if (
+        not isinstance(step["counterevidence"], list)
+        or any(
+            not _valid_working_observation_link({"observation": note})
+            for note in step["counterevidence"]
+        )
+        or not isinstance(step["unknowns"], list)
+        or any(not _nonblank(item) for item in step["unknowns"])
+    ):
+        return False
+    if not isinstance(step["counts"], list):
+        return False
+    numeric = {
+        "randomized",
+        "eligible",
+        "treated",
+        "completed",
+        "observed",
+        "analyzed",
+        "imputed",
+        "excluded",
+        "event_count",
+    }
+    texts = {
+        "arm",
+        "population",
+        "unit",
+        "time_point",
+        "endpoint",
+        "severity",
+        "window",
+        "event_definition",
+    }
+    for row in step["counts"]:
+        if not isinstance(row, dict) or not {
+            "arm",
+            "population",
+            "unit",
+            "time_point",
+            "basis",
+            "exclusions",
+            "result_identity",
+        } <= set(row) <= numeric | texts | {"basis", "exclusions", "result_identity", "semantics"}:
+            return False
+        if any(not _nonblank(row[key]) for key in texts & set(row)):
+            return False
+        if any(type(row[key]) is not int or row[key] < 0 for key in numeric & set(row)):
+            return False
+        if (
+            not isinstance(row["basis"], list)
+            or not row["basis"]
+            or any(
+                not isinstance(item, str) or not re.fullmatch(r"eh_[0-9a-f]{8,64}", item)
+                for item in row["basis"]
+            )
+        ):
+            return False
+        if not isinstance(row["exclusions"], list) or any(
+            not _nonblank(item) for item in row["exclusions"]
+        ):
+            return False
+        if not isinstance(row["result_identity"], str) or not re.fullmatch(
+            r"sha256:[0-9a-f]{64}", row["result_identity"]
+        ):
+            return False
+        if "event_count" in row and "event_definition" not in row:
+            return False
+        if "semantics" in row and not _valid_flow_semantics(row["semantics"]):
+            return False
+    return True
+
+
+def _valid_working_observation_link(value: object) -> bool:
+    if not isinstance(value, dict) or not {"observation"} <= set(value) <= {
+        "checkpoint_identity",
+        "observation",
+        "result_step",
+        "transfer",
+    }:
+        return False
+    if "result_step" in value and (
+        not _valid_result_step(value["result_step"])
+        or value["result_step"]["observation"] != value["observation"]
+    ):
+        return False
+    if "transfer" in value and ("result_step" not in value or not _nonblank(value["transfer"])):
         return False
     if "checkpoint_identity" in value and (
         not isinstance(value["checkpoint_identity"], str)
@@ -1651,76 +1835,6 @@ def _valid_missing_data(
     ):
         return False
 
-    def valid_semantics(value: object) -> bool:
-        if not isinstance(value, dict):
-            return False
-        allowed = {
-            "population_role",
-            "outcome_status",
-            "event_count",
-            "event_definition",
-            "post_randomization_exclusions",
-            "censoring",
-        }
-        if set(value) - allowed:
-            return False
-        if value.get("population_role") is not None and value.get("population_role") not in {
-            "randomized",
-            "safety",
-            "analyzed",
-            "per_protocol",
-            "follow_up",
-            "unknown",
-        }:
-            return False
-        if value.get("outcome_status") is not None and value.get("outcome_status") not in {
-            "observed",
-            "missing",
-            "imputed",
-            "unknown",
-            "not_reported",
-        }:
-            return False
-        event_count = value.get("event_count")
-        event_definition = value.get("event_definition")
-        if event_count is not None and (
-            isinstance(event_count, bool) or not isinstance(event_count, int) or event_count < 0
-        ):
-            return False
-        if event_count is not None and not _nonblank(event_definition):
-            return False
-        if event_count is None and event_definition is not None:
-            return False
-        exclusions = value.get("post_randomization_exclusions", [])
-        if not isinstance(exclusions, list) or any(not _nonblank(item) for item in exclusions):
-            return False
-        censoring = value.get("censoring")
-        if censoring is not None:
-            if not isinstance(censoring, dict) or set(censoring) - {
-                "kind",
-                "count",
-                "timing",
-                "reason",
-            }:
-                return False
-            if censoring.get("kind") not in {
-                "administrative",
-                "loss_to_follow_up",
-                "withdrawal",
-                "treatment_change",
-                "unknown",
-            }:
-                return False
-            count = censoring.get("count")
-            if count is not None and (
-                isinstance(count, bool) or not isinstance(count, int) or count < 0
-            ):
-                return False
-            for key in ("timing", "reason"):
-                if censoring.get(key) is not None and not _nonblank(censoring[key]):
-                    return False
-        return True
-
     legacy_required = {
         "scope",
         "randomized",
@@ -1777,7 +1891,7 @@ def _valid_missing_data(
             _nonblank(item) for item in row["exclusions"]
         ):
             return False
-        if "semantics" in row and not valid_semantics(row["semantics"]):
+        if "semantics" in row and not _valid_flow_semantics(row["semantics"]):
             return False
         if (
             not isinstance(row["basis"], list)

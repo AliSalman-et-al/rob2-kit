@@ -516,3 +516,17 @@ It certifies provenance only, never semantic support or reviewer correctness.
 There is no automatic application, new canonical ledger or finalization gate; the
 original assessor accepts/rejects findings through ordinary Domain submission.
 See `docs/source-checking.md`. No default paid reviewer stage is enabled.
+
+## Experimental selected-Result reconstruction
+
+An open Trial's existing working checkpoint may use `result_account` instead of
+its overlapping observation/interpretation/premise/draft collections. Source-linked
+factual steps describe how the selected Result was produced, with counterevidence,
+uncertainty and optional existing participant-flow rows. These rows feed Domain
+context before judgments. Existing Evidence warrants can reference a step identity;
+its original observation and full step are snapshotted without changing source
+scope. Known scope transfers require explicit inference. Changed relied-on steps
+flag affected answers for reconsideration, never change labels. Historical
+checkpoints and bundles retain their original identities. The route is experimental;
+behavioral scientific improvement has not been demonstrated. See ADR0038 and the
+skill's selected-Result reconstruction reference for the host procedure.
