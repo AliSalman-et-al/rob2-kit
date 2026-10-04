@@ -1,0 +1,17 @@
+{
+  "production_head_tested": "e6b13031ddfa72437f3e1f2f9ca3b38ea58a064c",
+  "production_behavior_changed": false,
+  "paid_calls": 0,
+  "test_command": "PYTHONPATH=src:scripts:.:tests python -m pytest -q tests/test_lean_domain_submission.py",
+  "passed": 9,
+  "duration_seconds": 44.28,
+  "cases": {
+    "complete_d2_d3_d5_supported_or_uncertain_canonical_submission": 2,
+    "fabricated_handle_source_page_lines_or_caller_quote_rejected": 5,
+    "missing_active_answer_or_unresolved_definitive_claim_rejected": 2
+  },
+  "measurement_reproduced": true,
+  "measured_before_after_payload_change_bytes": 0,
+  "accuracy_gain_demonstrated": false,
+  "full_benchmark_run": false
+}
