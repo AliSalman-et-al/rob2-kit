@@ -27,3 +27,5 @@ The frozen prompt/monitor included 30 tools, 480 seconds and 6,000 output tokens
 Setup failures were offline: proposal draft/server-derived field mismatch, evidence catalog lookup, required preproposal reading, unsupported read argument, and successful pending-review outcome handling. Failed setup scripts and identities remain preserved privately. No paid setup retry occurred.
 
 Focused post-run verification: `tests/test_missing_data_semantics.py`, 17 passed in 3.30s. Offline audit verified the frozen output hashes, one fresh Luna Medium context, exact frozen skill, 21 native receipts, 16 delivered source windows and one delivered figure. No runtime change was justified solely from this case; adding a case-specific gate or forcing a label would overfit. Earlier representation validation remains documented in `../2026-10-04-completion-vs-observation/`.
+
+Follow-up: [warrant-review.md](warrant-review.md) corrects the initial overstatement about unread material and inferred zero imputation, and documents a reproducible visual-basis projection defect and its neutral fix. Original diagnostic artifacts remain unchanged.

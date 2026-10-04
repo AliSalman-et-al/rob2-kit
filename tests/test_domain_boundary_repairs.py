@@ -1811,3 +1811,84 @@ def test_domain_duplicate_nested_basis_is_repaired_without_mutating_state(tmp_pa
     _assert_repairs(receipt)
     assert any(item["code"] == "duplicate_answer_basis" for item in receipt["repairs"])
     assert receipt["head"]["state_revision"] == revision
+
+
+def test_native_flow_preview_and_saved_context_preserve_visual_provenance(tmp_path: Path) -> None:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    with pymupdf.open() as document:
+        page = document.new_page()
+        page.insert_text((48, 48), "Completed follow-up: 90. Outcome availability not specified.")
+        document.save(trial / "flow.pdf")
+    workspace, _evidence, revision = _assessment_workspace(tmp_path)
+    source = next(
+        source
+        for source in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if source["label"] == "flow.pdf"
+    )
+    rendered = _call(
+        workspace,
+        "render_page",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "page": 1,
+        },
+    )["data"]
+    visual = _call(
+        workspace,
+        "select_visual_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "delivery_receipt": rendered["delivery_receipt"],
+            "region": [0.0, 0.0, 1.0, 1.0],
+            "transcription": "Completion is reported as 90; endpoint observation is unspecified.",
+            "uncertainty": "Completion does not establish endpoint ascertainment.",
+        },
+    )["data"]["evidence"]
+    row = {
+        "arm": "A",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "final follow-up",
+        "completed": 90,
+        "basis": [visual["handle"]],
+    }
+    preview = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+            "missing_data": [row],
+        },
+    )
+    assert preview["outcome"] == "success", preview
+    draft = _domain_draft("trial", "domain:missing", revision, visual)
+    draft["answers"][0]["missing_data"] = [row]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    restored = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:missing",
+        },
+    )
+    for response in (preview, restored):
+        flow = response["data"]["comparison_cards"][0]["participant_flow"]
+        completed = next(item for item in flow if item["kind"] == "completed")
+        figure = completed["figures"][0]
+        assert completed["passages"] == []
+        assert figure["handle"] == visual["handle"]
+        assert figure["render"] == visual["render"]
+        assert figure["source_id"] == visual["source_id"]
+        assert figure["delivery_receipt"] == visual["delivery_receipt"]
+        assert figure["region"] == visual["region"]
+        assert figure["provenance"] == "host_visual"
+        assert figure["uncertainty"] == visual["uncertainty"]
+        observed = next(item for item in flow if item["kind"] == "observed")
+        assert observed["value"] is None
+        assert observed["status"] == "unknown"

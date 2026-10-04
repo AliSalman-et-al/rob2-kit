@@ -1,0 +1,29 @@
+{
+  "original_answer_freeze_unchanged": true,
+  "paid_calls": 0,
+  "tests": [
+    {
+      "scope": "test_comparison_cards.py and test_missing_data_semantics.py",
+      "passed": 35,
+      "seconds": 25.95
+    },
+    {
+      "scope": "existing source-flow boundary test",
+      "passed": 1,
+      "seconds": 16.67
+    },
+    {
+      "scope": "native visual flow preview/save/read",
+      "passed": 1,
+      "seconds": 17.03
+    }
+  ],
+  "checks": {
+    "ruff": "passed",
+    "format": "170 files passed",
+    "ty_ci_scope": "passed",
+    "release_contract_verify": "passed",
+    "diff_check": "passed"
+  },
+  "model_behavior_after_fix": "not tested"
+}

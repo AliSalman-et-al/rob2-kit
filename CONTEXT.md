@@ -373,6 +373,9 @@ from endpoint observation, analysis inclusion and imputation. Completion never
 enters missing-outcome arithmetic. Comparison projections retain the row's
 outcome-status and censoring semantics together with Result scope and source
 coordinates; they do not infer overlap or a signaling answer.
+Visual row bases retain their Source, render identity, image region, delivery
+receipt, host provenance and uncertainty in `figures`; extracted-text bases
+remain in `passages`. Neither projection verifies the host's interpretation.
 
 For Domain 4, the host's audit starts from the approved event and ascertainment
 method, then checks method suitability, between-group detection opportunities,

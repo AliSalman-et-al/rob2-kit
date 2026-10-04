@@ -124,7 +124,7 @@
 "idempotent":true,
 "open_world":false,
 "schema_sha256":"sha256:2c3c6292185747601c0f22ee1a4f02d8ebd14f0490233910e2e4054f58db4f49",
-"output_schema_sha256":"sha256:3b53bddaaaae27942d7c1a2c7c8f61b47aa1917123591698c4f9bccc07300326"},
+"output_schema_sha256":"sha256:0594bd9e735113d058f52c6b19755a652f7db9f0c6a856adf17e929471296ba0"},
 {"name":"save_domain_judgment",
 "title":"Save Domain judgment",
 "description":"Submit the complete Domain draft once with its expected revision. For every active answer, explain why its cited bases support the option for the approved Result, list unknowns (use [] when none). Put selected Evidence with its role in bases, zero-hit search receipts in absence_searches, and unresolved premises plus stopping rationales in limitations. The server derives the absence/limitation tags; do not put them in bases. Counterevidence objects give nonempty evidence handle lists and explain the cited Evidence's joint implication. Submit only the active answer path. For a correction, supply the exact prior checkpoint identity and a new_evidence, self_correction, or mechanical_repair revision basis. The server checks structure, references, activation, and workflow rules; success does not establish scientific correctness. If a repair is returned, correct the draft and submit it again. Complete the post-approval bounded main-report text pass and every Domain context page before submission. The fifth accepted Domain makes the Trial ready for review; it remains correctable until close_trial commits the exact current review.",

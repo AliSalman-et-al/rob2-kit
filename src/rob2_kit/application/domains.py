@@ -1726,6 +1726,25 @@ def _comparison_cards(
                     for key in ("handle", "source_id", "page", "start_line", "end_line")
                 )
             ]
+            # Visual counts have no extracted line coordinates. Keep their
+            # source/render provenance rather than silently dropping the basis.
+            basis_figures = [
+                {
+                    key: evidence.get(key)
+                    for key in (
+                        "handle",
+                        "source_id",
+                        "render",
+                        "delivery_receipt",
+                        "region",
+                        "provenance",
+                        "uncertainty",
+                    )
+                }
+                for identity in row.get("basis", [])
+                for evidence in (catalog.get(identity),)
+                if isinstance(evidence, dict) and evidence.get("kind") == "figure"
+            ]
             for kind, field in flow_fields:
                 if kind == "completed" and field not in row:
                     continue
@@ -1750,6 +1769,7 @@ def _comparison_cards(
                         "event_definition": row.get("event_definition"),
                         "scope": scope,
                         "passages": basis_passages,
+                        **({"figures": basis_figures} if basis_figures else {}),
                         **({"semantics": row["semantics"]} if "semantics" in row else {}),
                     }
                 )

@@ -2317,6 +2317,23 @@ class MissingDataScope(PublicModel):
     )
 
 
+class ComparisonFigureRef(PublicModel):
+    """Source-bound visual basis; transcription remains in selected Evidence."""
+
+    handle: EvidenceHandle
+    source_id: SourceHandle
+    render: RenderProjection
+    delivery_receipt: Identity
+    region: tuple[
+        NormalizedCoordinate,
+        NormalizedCoordinate,
+        NormalizedCoordinate,
+        NormalizedCoordinate,
+    ]
+    provenance: Literal["text_corroborated", "host_visual"]
+    uncertainty: str | None = Field(default=None, min_length=1, max_length=2_000)
+
+
 class ParticipantFlowProjection(PublicModel):
     """A source-bound participant transition or event numerator."""
 
@@ -2332,6 +2349,7 @@ class ParticipantFlowProjection(PublicModel):
     )
     scope: MissingDataScope
     passages: tuple[ComparisonPassageRef, ...] = ()
+    figures: tuple[ComparisonFigureRef, ...] = Field(default=(), exclude_if=lambda value: not value)
     semantics: MissingDataSemantics | None = Field(
         default=None, exclude_if=lambda value: value is None
     )

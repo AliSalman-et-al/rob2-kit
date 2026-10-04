@@ -591,3 +591,69 @@ def test_native_completion_preview_and_save_preserve_unknown_observation(tmp_pat
     persisted = restored["data"]["comparison_cards"][0]["missing_data"]["rows"][0]
     assert persisted["completed"] == 95 and persisted["observed"] is None
     assert persisted["result_identity"] == card["result_identity"]
+
+
+@pytest.mark.parametrize("domain_id", ["domain:deviations", "domain:missing"])
+def test_flow_card_retains_visual_basis_and_uncertainty(domain_id: str) -> None:
+    from rob2_kit.interfaces.mcp.contracts import ParticipantFlowProjection
+
+    identity = "sha256:" + "a" * 64
+    figure = {
+        "kind": "figure",
+        "identity": identity,
+        "handle": "eh_" + "a" * 16,
+        "source_id": "sh_" + "b" * 16,
+        "render": {
+            "identity": "sha256:" + "c" * 64,
+            "source_id": "sh_" + "b" * 16,
+            "page": 2,
+            "png_sha256": "sha256:" + "d" * 64,
+            "recipe": "pymupdf-1.5",
+        },
+        "delivery_receipt": "sha256:" + "e" * 64,
+        "region": [0.1, 0.2, 0.8, 0.9],
+        "provenance": "host_visual",
+        "uncertainty": "The completion label is legible; endpoint ascertainment is unresolved.",
+        "transcription": "Completed follow-up: 90.",
+    }
+    flow = reconcile_missing_data(
+        [
+            {
+                "arm": "A",
+                "population": "randomized participants",
+                "unit": "participants",
+                "time_point": "final follow-up",
+                "randomized": 100,
+                "completed": 90,
+                "basis": [identity],
+            }
+        ]
+    )
+    card = _comparison_cards(domain_id, {}, {identity: figure}, [], [], participant_flow_data=flow)[
+        0
+    ]
+    completed = next(row for row in card["participant_flow"] if row["kind"] == "completed")
+    projected = ParticipantFlowProjection.model_validate(completed).model_dump(mode="json")
+    assert projected["passages"] == []
+    assert projected["figures"] == [
+        {
+            key: value
+            for key, value in figure.items()
+            if key
+            in {
+                "handle",
+                "source_id",
+                "render",
+                "delivery_receipt",
+                "region",
+                "provenance",
+                "uncertainty",
+            }
+        }
+    ]
+    assert projected["value"] == 90
+    observed = next(row for row in card["participant_flow"] if row["kind"] == "observed")
+    assert observed["value"] is None
+    assert observed["status"] == "unknown"
+    assert flow["rows"][0]["missing"] is None
+    assert flow["rows"][0]["imputed"] is None
