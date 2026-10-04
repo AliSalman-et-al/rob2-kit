@@ -3,6 +3,7 @@
 import hashlib
 import json
 import runpy
+import socket
 from pathlib import Path
 
 import httpx
@@ -15,6 +16,19 @@ from rob2_kit.application.evidence import list_sources, read_pages, search_sourc
 from rob2_kit.application.finalization import _valid_batch
 from rob2_kit.application.registry_documents import acquire_documents
 from rob2_kit.workflow_models import TrialDeclaration
+
+
+def _mock_http(monkeypatch, get):
+    original = httpx.Client
+    monkeypatch.setattr(intake.httpx, "get", get)
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: [(2, 1, 6, "", ("8.8.8.8", 443))])
+
+    def handler(request):
+        return get(str(request.url), follow_redirects=False, timeout=20)
+
+    monkeypatch.setattr(
+        httpx, "Client", lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs)
+    )
 
 
 def _record(nct, docs):
@@ -71,7 +85,7 @@ def test_combined_and_separate_official_document_structures(monkeypatch, nct, ro
         assert kwargs["follow_redirects"] is False
         return httpx.Response(200, content=content, request=httpx.Request("GET", url))
 
-    monkeypatch.setattr(intake.httpx, "get", get)
+    _mock_http(monkeypatch, get)
     documents, report = acquire_documents(nct, _record(nct, rows))
     assert [doc.role for doc in documents] == roles
     assert all(
@@ -125,9 +139,8 @@ def test_missing_ambiguous_mismatched_links_do_not_fetch(monkeypatch, nct, rows,
 
 @pytest.mark.parametrize("response", [b"<html>Unavailable</html>", b"%PDF-invalid"])
 def test_failed_or_invalid_pdf_fetch_is_an_explicit_unknown(monkeypatch, response):
-    monkeypatch.setattr(
-        intake.httpx,
-        "get",
+    _mock_http(
+        monkeypatch,
         lambda url, **k: httpx.Response(200, content=response, request=httpx.Request("GET", url)),
     )
     documents, report = acquire_documents(
@@ -149,7 +162,7 @@ def test_acquisition_enters_inventory_search_reading_and_both_batch_verifiers(
             200, content=record if "/api/" in url else content, request=httpx.Request("GET", url)
         )
 
-    monkeypatch.setattr(intake.httpx, "get", get)
+    _mock_http(monkeypatch, get)
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)
     (trial / "main.txt").write_text("Study report NCT00000001")
@@ -204,7 +217,7 @@ def test_opted_in_replay_keeps_archive_and_uses_new_official_metadata(tmp_path, 
             200, content=current if "/api/" in url else pdf, request=httpx.Request("GET", url)
         )
 
-    monkeypatch.setattr(intake.httpx, "get", get)
+    _mock_http(monkeypatch, get)
     source_ids = []
     for name in ("first", "second"):
         workspace = tmp_path / name
@@ -241,7 +254,7 @@ def test_http_document_failure_keeps_useful_report_sources(tmp_path, monkeypatch
             200 if "/api/" in url else 404, content=record, request=httpx.Request("GET", url)
         )
 
-    monkeypatch.setattr(intake.httpx, "get", get)
+    _mock_http(monkeypatch, get)
     trial = tmp_path / "input" / "trial"
     trial.mkdir(parents=True)
     (trial / "main.txt").write_text("Useful original study report")
@@ -296,7 +309,7 @@ def test_official_document_redirect_is_not_followed(monkeypatch):
             302, headers={"Location": "http://127.0.0.1/private"}, request=httpx.Request("GET", url)
         )
 
-    monkeypatch.setattr(intake.httpx, "get", get)
+    _mock_http(monkeypatch, get)
     documents, report = acquire_documents(
         "NCT00000001",
         _record(
@@ -313,3 +326,41 @@ def test_official_document_redirect_is_not_followed(monkeypatch):
     assert len(calls) == 1
     assert calls[0] == "https://cdn.clinicaltrials.gov/large-docs/01/NCT00000001/SAP_000.pdf"
     assert not documents and report["documents"][0]["status"] == "fetch_unavailable"
+
+
+@pytest.mark.parametrize("failure", ["size", "encoding", "private_dns"])
+def test_registry_pdf_shares_bounded_no_proxy_transport(monkeypatch, failure):
+    from rob2_kit.application import registry_documents
+
+    original = httpx.Client
+    calls = []
+
+    def handler(request):
+        calls.append(str(request.url))
+        assert request.headers["accept-encoding"] == "identity"
+        return httpx.Response(
+            200,
+            stream=httpx.ByteStream(_pdf()),
+            headers={"content-encoding": "br"} if failure == "encoding" else {},
+        )
+
+    def client(**kwargs):
+        assert kwargs["trust_env"] is False and kwargs["follow_redirects"] is False
+        return original(transport=httpx.MockTransport(handler), **kwargs)
+
+    monkeypatch.setattr(httpx, "Client", client)
+    monkeypatch.setattr(
+        socket,
+        "getaddrinfo",
+        lambda *a, **k: [
+            (2, 1, 6, "", ("127.0.0.1" if failure == "private_dns" else "8.8.8.8", 443))
+        ],
+    )
+    if failure == "size":
+        monkeypatch.setattr(registry_documents, "MAX_DOCUMENT_BYTES", 10)
+    documents, report = acquire_documents(
+        "NCT00000001", _record("NCT00000001", [{"filename": "Prot_000.pdf", "typeAbbrev": "Prot"}])
+    )
+    assert not documents and report["documents"][0]["status"] == "fetch_unavailable"
+    assert report["document_transport"]["environment_proxies"] is False
+    assert len(calls) == (0 if failure == "private_dns" else 1)

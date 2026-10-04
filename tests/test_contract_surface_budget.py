@@ -38,6 +38,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "prepare_batch",
         "get_status",
         "save_working_checkpoint",
+        "request_companion_source",
         "list_sources",
         "search_sources",
         "search_sources_batch",

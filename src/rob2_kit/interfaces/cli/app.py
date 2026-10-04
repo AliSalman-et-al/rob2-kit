@@ -60,14 +60,27 @@ def main(argv: list[str] | None = None) -> int:
         help="destination for archive-sources, export-skill, or a fresh companion workspace",
     )
     parser.add_argument("--reference", help="JSON CompanionReference for stage-companion")
+    parser.add_argument(
+        "--registry-policy",
+        choices=("require-offline-replay", "retain-input-settings"),
+        help="Explicit registry refresh policy for prospective staging",
+    )
     args = parser.parse_args(argv)
     if args.command == "stage-companion":
         from rob2_kit.application.companion_sources import CompanionReference, stage_companion
 
-        if not args.reference or not args.output:
-            parser.error("stage-companion requires --reference and --output (fresh workspace)")
+        if not args.reference or not args.output or not args.registry_policy:
+            parser.error(
+                "stage-companion requires --reference, --output (fresh workspace) "
+                "and --registry-policy"
+            )
         reference = CompanionReference.model_validate_json(Path(args.reference).read_text())
-        print(json.dumps(stage_companion(args.workspace, args.output, reference), sort_keys=True))
+        print(
+            json.dumps(
+                stage_companion(args.workspace, args.output, reference, args.registry_policy),
+                sort_keys=True,
+            )
+        )
         return 0
     if args.command == "mcp-codex":
         from rob2_kit.interfaces.mcp.codex import main as run_codex_mcp

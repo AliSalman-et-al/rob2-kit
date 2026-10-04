@@ -15,6 +15,14 @@ These instructions are separate from captured Trial Sources and Evidence.
 Drive the complete assessment through the public rob2-kit tools, not shell
 commands.
 
+For an explicit missing protocol/SAP reference found in a supplied Source, use
+`request_companion_source` to record an optional host acquisition handoff. This
+does not fetch, stage, admit or read the referenced document. A host may stage it
+in a fresh workspace and choose an explicit registry replay/refresh policy. The
+current assessment need not restart or pause for this optional reference; continue
+with existing Sources and honestly bounded unknowns. Missing optional documents
+do not determine NI or any judgment.
+
 The server owns workflow state, identities, and deterministic RoB 2 logic. You
 own source interpretation, Result selection, Evidence selection, and signalling
 answers. Proposal Review is the only researcher gate. After approval, continue

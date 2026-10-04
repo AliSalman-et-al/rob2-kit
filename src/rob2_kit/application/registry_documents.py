@@ -10,6 +10,8 @@ from typing import Any, Literal
 import httpx
 import pymupdf
 
+from .public_documents import MAX_DOCUMENT_BYTES, fetch_bounded
+
 
 @dataclass(frozen=True)
 class RegistryDocument:
@@ -36,6 +38,12 @@ def acquire_documents(nct: str, record: bytes) -> tuple[list[RegistryDocument], 
             "document contents still require independent reading."
         ),
         "documents": [],
+        "document_transport": {
+            "byte_limit": MAX_DOCUMENT_BYTES,
+            "content_encoding": "identity",
+            "redirects_followed": False,
+            "environment_proxies": False,
+        },
         "limitations": [
             "Registry roles and dates are metadata, not proof of prespecification "
             "or unblinded access timing.",
@@ -96,9 +104,17 @@ def acquire_documents(nct: str, record: bytes) -> tuple[list[RegistryDocument], 
             retrieved_at=datetime.now(UTC).isoformat(),
         )
         try:
-            response = httpx.get(url, follow_redirects=False, timeout=20.0)
-            response.raise_for_status()
-            content = response.content
+            entry["redirect_chain"] = []
+            entry["byte_limit"] = MAX_DOCUMENT_BYTES
+            with httpx.Client(timeout=20, follow_redirects=False, trust_env=False) as client:
+                content = fetch_bounded(
+                    client,
+                    url,
+                    frozenset({"cdn.clinicaltrials.gov"}),
+                    MAX_DOCUMENT_BYTES,
+                    entry["redirect_chain"],
+                    max_requests=1,
+                )
             if not content.startswith(b"%PDF-"):
                 raise ValueError("response is not a PDF")
             with pymupdf.open(stream=content, filetype="pdf") as pdf:
@@ -110,7 +126,7 @@ def acquire_documents(nct: str, record: bytes) -> tuple[list[RegistryDocument], 
                 byte_count=len(content),
             )
             documents.append(RegistryDocument(filename, "protocol" if protocol else "sap", content))
-        except (httpx.HTTPError, ValueError, pymupdf.FileDataError) as error:
+        except (httpx.HTTPError, ValueError, OSError, pymupdf.FileDataError) as error:
             entry.update(status="fetch_unavailable", reason=type(error).__name__)
     report["status"] = "captured" if documents else "no_documents_captured"
     return documents, report

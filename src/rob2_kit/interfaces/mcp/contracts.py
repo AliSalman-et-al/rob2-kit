@@ -21,6 +21,7 @@ from pydantic import (
 )
 from pydantic.types import PositiveInt
 
+from rob2_kit.application.companion_sources import CompanionReference
 from rob2_kit.application.contracts import TOOL_NAMES
 from rob2_kit.application.domains import _host_asserted_sufficiency
 from rob2_kit.application.source_handles import public_source_references
@@ -335,6 +336,7 @@ _RECEIPT_OPTIONS: Final = {
     "get_status": {},
     "read_guidance": {},
     "save_working_checkpoint": {},
+    "request_companion_source": {},
     "list_sources": {},
     "search_sources": {},
     "search_sources_batch": {},
@@ -2979,11 +2981,33 @@ class GuidanceData(PublicModel):
     links: tuple[str, ...]
 
 
+class PublicCompanionReference(CompanionReference):
+    source_id: SourceHandle = Field(
+        description="Exact native source_id handle from this Trial source inventory."
+    )
+
+
+class CompanionRequestData(PublicModel):
+    request_identity: Identity
+    reference: PublicCompanionReference
+    parent_source_sha256: Identity
+    reference_recorded: Literal[True]
+    document_staged: Literal[False]
+    admitted_to_active_batch: Literal[False]
+    document_read: Literal[False]
+    acquisition: Literal["host_handoff_required", "unsupported_locator"]
+    handoff_argv: tuple[str, ...]
+    lifecycle: str
+    source_text_is_untrusted_data: Literal[True]
+    input_transfer: dict[str, Any]
+
+
 DataByTool: Final = {
     "prepare_batch": PrepareData,
     "get_status": StatusData,
     "read_guidance": GuidanceData,
     "save_working_checkpoint": SaveWorkingCheckpointData,
+    "request_companion_source": CompanionRequestData,
     "list_sources": SourcesData,
     "search_sources": SearchData,
     "search_sources_batch": SearchBatchData,
