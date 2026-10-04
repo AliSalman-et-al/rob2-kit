@@ -1,0 +1,31 @@
+{
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "codex_version": "codex-cli 0.159.0",
+  "authorization": "Exactly one frozen-panel reviewer response; 2k output, 300s wall, 120s idle, zero tools, no retry; parent source thread 01a0fae8-209c-74b0-bd95-43be086b40e3",
+  "base_sha": "9217b12b18c222b6576d834a10068e782baec4dc",
+  "limits": {
+    "calls": 1,
+    "responses_per_arm": 1,
+    "tools": 0,
+    "output_tokens_per_arm": 2000,
+    "wall_seconds_per_arm": 300,
+    "idle_seconds_per_arm": 120,
+    "input_telemetry_only": true
+  },
+  "instructions_sha256": "e5bb5355b851696528d5bf67451a849754fee22a3f0808fd9a252b1e4089a297",
+  "private_criteria_sha256": "f353212b04c7e800cd075a3ff3e36130038bb069d91272a6f91ac495c56ca9c7",
+  "arms": {
+    "panel": {
+      "work": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new",
+      "config_sha256": "7ff32d942028fb0a9f6e11405c55f82d0a5cc3d8801da4d346c740381d345a3e",
+      "input_sha256": "79620dc2b2b3b20012bfe42d5d31f10c012c667f28d75379278d9542e93b6818",
+      "evidence_manifest_sha256": "744ce89f7c626ec16c9f056e9703b016cce99c4e375cd35481843b06cc94cdbe"
+    }
+  },
+  "existing_rollout_hashes": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T04-33-51-01a1041d-e522-7452-bc88-0d3a490aa0df.jsonl": "14365017c47602cd84858376f4c54a45328af1399f85ca6651228dac9e2bb786"
+  },
+  "credentials_read_or_copied": false,
+  "runner_sha256": "d8ef4a1a2d7f9b7fc88b27e3a40d36307c49108328f7ed9a073337bc1b7c8b65"
+}

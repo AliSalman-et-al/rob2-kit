@@ -1,0 +1,7 @@
+{
+  "raw_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/citation-fidelity-response-20261004/raw-stderr.log",
+  "raw_sha256": "ad1ffa004dbbb4772f3cf13a76136e7f656b53aa8c5bd8380fc25b649e52c00e",
+  "raw_bytes": 46894,
+  "contents_committed": false,
+  "reason": "Host stderr may contain account/session metadata; exact input/output/usage preserved separately"
+}

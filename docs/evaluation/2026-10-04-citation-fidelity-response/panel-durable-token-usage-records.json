@@ -1,0 +1,34 @@
+[
+  {
+    "timestamp": "2026-10-04T00:36:25.926Z",
+    "thread_id": "01a10456-ef2f-7d30-9c9b-3ef3a486d004",
+    "turn_id": "01a10456-f432-7330-bc9c-6785e02a9b2f",
+    "session_id": "01a10456-ef2f-7d30-9c9b-3ef3a486d004",
+    "root_turn_id": "01a10456-f432-7330-bc9c-6785e02a9b2f",
+    "response_id": "resp_0aca7e9cfa82e8cb016ac19f7bd25887d0a0fda9e738f91d1c",
+    "usage": {
+      "input_tokens": 16807,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 663,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 17470
+    },
+    "turn_token_usage": {
+      "input_tokens": 16807,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 663,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 17470
+    },
+    "thread_token_usage": {
+      "input_tokens": 16807,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 663,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 17470
+    }
+  }
+]
