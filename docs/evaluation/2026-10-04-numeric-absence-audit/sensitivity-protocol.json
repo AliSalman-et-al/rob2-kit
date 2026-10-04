@@ -1,0 +1,7 @@
+{
+ "status":"Exploratory after seeing frozen primary flags; not a replacement primary endpoint or claimed validation",
+ "question":"Does a generous numeric-value component comparison eliminate enough representational noise to make this absence aid worth prototyping?",
+ "rule":"Use existing numeric atom regex and presentation normalization to tokenize claim and exact cited quote/transcription. Allow comma thousands grouping and the common digit-middle-dot-digit decimal spelling, represented by standard-library Decimal without float rounding. Slash fractions are their numerical components, not an evaluated fraction. Pool exact numeric values only; no arithmetic, rounding tolerance, word-number conversion, units, source roles or clause semantics. No case-specific exemptions.",
+ "purpose":"Expose best-case cheap formatting/component gains and remaining derived-value noise; positive matches must not certify source support. Integer-only/written-number variants would further change scope and will not be iterated.",
+ "limits":"Same frozen 18 answers only; no source mutations, model calls, new search corpus, production API or annotation"
+}

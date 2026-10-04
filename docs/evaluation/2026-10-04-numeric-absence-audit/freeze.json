@@ -1,0 +1,23 @@
+{
+  "protocol_sha256": "bb602cb534ddc5273f581844791afca3f40098a7414543658e03e1605d944448",
+  "sample_sha256": "aaa2ae5e016e9f039c9fef2e7529d4ae2fb23ee4fd86320ce1bba7d0faaf0304",
+  "algorithm_sha256": "b5f970af1b526b6fafde24ba9707f9e4017bbeb58cbbba1e0c8948de4e54e126",
+  "bundles": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-04-gupta-fork-continuation/caf5f259a9f5eef456a05a6543fac933aa9bcbc55a99ba4b03430da8b760ab2d.rob2.zip": "d9fcea6ca0a34498b0c05191b07455df381597d8e6213db181b646b060ebe70f",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/albert-2013/.rob2-kit/finalized/1e449144d1bbc7d732f274f2ad7df0e53497972bd44db2bb2dc4855f4f9ad687.rob2.zip": "cee790c4cc3f6bcf1e292054d08d992e1e556eb99fa72ec2c0ffe859702329db",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/dapa-hf/.rob2-kit/finalized/cf82c987f84aad37506762f441b5099c01edc111f46b55a8fa07352a6e766c3b.rob2.zip": "d1774f77c85f2aeb6700222b9c56986d4a4cb5ebe8696610b91b394548f97570",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/canvas-program/.rob2-kit/finalized/8e0d016df3a793e14857a8ddb5106aed67321a51af1f34f457cdc8405815f8c1.rob2.zip": "1eadf5a997762e6c8c17586719cea9526b17e0b199a44dcfa3d1de2ea4045b77",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/exscel/.rob2-kit/finalized/a7dc7f3b779b7bdf14709feabfe2f0c964d2a8825fc7a7256463bc7716f5c68e.rob2.zip": "53faa4f43dc63df7706d86611ca3e56dc78cff305e1355504dbac49f69c506ac",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/sustain-6/.rob2-kit/finalized/f3009827bc7ba89f31c0985a4de883eacbf3669001552bf2b8af3c808ab07b1f.rob2.zip": "a71793f06c45e7a98e3932bfb9273ed65832db28a5b752afa79e739515adcf4a",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/leader/.rob2-kit/finalized/376b89a55914f7f1448865d39a9200cd1cac6a40c794414dbb06abcccfa57d95.rob2.zip": "bc12ae034901e613a60e876a869ce67395be8e338e55e0826d86934ab4a03cb1",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/declare-timi-58/.rob2-kit/finalized/19eada8ab66220f0be7bb1992a44002a60173697ef87f3f478f47966ead623d1.rob2.zip": "94114cb70b64d3c5e829dfffe24ba822844649b3f1b7385c38a29b86dbb322ff",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/pioneer-6/.rob2-kit/finalized/bdebf52b3d257ad54d1e73c7b257503f2c05ee3f8064bded9181dc3436f47618.rob2.zip": "4d5bc58fcf6097c48da0343cf2a6bb48f3a62cd748e4e5776235201176032cfe",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/monarch-2/.rob2-kit/finalized/5ce3c7345d997c5e19d1af05b61bfd1bc9ca7a00cf2607827ce10b91598d0666.rob2.zip": "91a292d1779a4d922a9c0b0854605f36acc0b02ffa609fcf20fbd490d74d46e7",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/getgood-2020/.rob2-kit/finalized/14fd3bbf79b9875f417576f849d632b51ce3651f9849d783d606cf74749d57cf.rob2.zip": "c6885d323c3d0bce512f38d98f88b267db725c71d8d45aa0475b34b49cd6e504",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/nefigard/.rob2-kit/finalized/2fb6694c4059a09fdee4f54bb9263afbb01b9a034319de26787d9108b53bd427.rob2.zip": "b8337aaa8962d1ace8fee025711dea52a0b66ec1886b604f41fe7a9a0f2a7c2f",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/award-1-2014/.rob2-kit/finalized/3e3d1e046e470b8848a77fd044680decd89b36dd60515b1a1f968f2cab8382fa.rob2.zip": "ec3e5ae2181eb654fba059db57a433075216b5698a1daa0312d74fc73d6ec0bd",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/finalized/35b7779d15b3c996582d9ec317be67b969e1770409cb8d46af936f5ed6346c59.rob2.zip": "734cba17c8a570027161e6aa1dbc2b48cc9f42adb196a115fe8be658c4ed3030"
+  },
+  "model_calls": 0,
+  "basis_evidence_verification": "independent bundle verifier passed all selected immutable archives"
+}

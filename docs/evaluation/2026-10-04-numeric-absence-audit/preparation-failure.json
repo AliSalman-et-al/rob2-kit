@@ -1,0 +1,5 @@
+{
+  "inference_calls": 0,
+  "lexical_results_produced": false,
+  "error": "Initial freezer assumed all cited evidence narrative; four control answers also cite five verified host_visual figures. Audit did not run because freeze.json absent. Preserve all controls, distinguish stored transcription comparison from actual image verification. No discarded sample or outcome-driven rule tuning."
+}
