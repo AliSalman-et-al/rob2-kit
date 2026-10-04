@@ -1,0 +1,62 @@
+{
+  "A": {
+    "answer_freeze": {
+      "events.jsonl": "283581010cba373844bcbd1de51b9d9ccf53a97bd668ee4562a4572b035900b0",
+      "run.json": "882e095db8aeabc440ba948243e1766e8ef972a44c1a861f3b47d6e237e4e6b2",
+      "durable-token-usage-records.json": "3fd41dddb3a29df6258f4bd17beee0e95ef26617211a43c5433c571d0c07ef5f"
+    },
+    "actual_model": [
+      {
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      }
+    ],
+    "launch_preflight": {
+      "passed": true,
+      "manifest_sha256": "43407ae066d3bf9f93f20e9c98c913b732d532b508134e62df126c0d08660903",
+      "input_sha256": "965b15f7fe1b58df61c6817ba49727b3985dc09ea9032a2059803f19001da760",
+      "required_window_count": 12,
+      "supplied_window_count": 12,
+      "required_image_count": 2,
+      "supplied_image_count": 2,
+      "scope": "declared research-design coverage only; no semantic sufficiency claim"
+    },
+    "stderr_sha256": "02cca01ceac0bcad20c1ab346f7fd69d46cf905cc7b5a579b991787cd6aa452d",
+    "stderr_bytes": 515260,
+    "canonical_domain_sha256": "f1990a4ee278f7e9a51fb7a58b95c72d976d61a9571602352bffef6210f5790d",
+    "canonical_evidence_sha256": "f988a8e2c935c6fa647e7669877d1b8986f550871795c98b1af69e3f12d92bf5",
+    "protected_staging_hashes_reverified": true,
+    "paid_invocations": 1,
+    "retry": false
+  },
+  "B": {
+    "answer_freeze": {
+      "events.jsonl": "30af5b8b13314b6ce4040603d6affa465e2fd9aef07e3a09310d015436e32de0",
+      "run.json": "69ebab018083bd6678f7a00482567abf73e174f17ae8793a9ef075e262fa595b",
+      "durable-token-usage-records.json": "11bfe468b542afdd5a7c70616be563ea56c9a0225afa51a67ff10cfee85754e0"
+    },
+    "actual_model": [
+      {
+        "model": "gpt-6-luna",
+        "effort": "medium"
+      }
+    ],
+    "launch_preflight": {
+      "passed": true,
+      "manifest_sha256": "43407ae066d3bf9f93f20e9c98c913b732d532b508134e62df126c0d08660903",
+      "input_sha256": "965b15f7fe1b58df61c6817ba49727b3985dc09ea9032a2059803f19001da760",
+      "required_window_count": 12,
+      "supplied_window_count": 12,
+      "required_image_count": 2,
+      "supplied_image_count": 2,
+      "scope": "declared research-design coverage only; no semantic sufficiency claim"
+    },
+    "stderr_sha256": "aeef301664bdab5a6d11e18fedd983752a61f63a3e61ba7dbc7b92c9d14ad691",
+    "stderr_bytes": 364510,
+    "canonical_domain_sha256": "9b7d792c99c724cd831fab61502e6a44e24e926387787ac733ea7ab16cf9d191",
+    "canonical_evidence_sha256": "32e9d2e9f859f75a56c00c965a9e4b70357047ce4eec6d938332631ea36d920e",
+    "protected_staging_hashes_reverified": true,
+    "paid_invocations": 1,
+    "retry": false
+  }
+}

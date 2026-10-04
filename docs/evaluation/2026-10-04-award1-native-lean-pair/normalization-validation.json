@@ -1,0 +1,14 @@
+{
+  "Review-X": {
+    "verbatim_warrants_unknowns_counterclaims": true,
+    "active_answers_complete": true,
+    "references_resolved_without_fabricated_invalid_quote": true
+  },
+  "Review-Y": {
+    "verbatim_warrants_unknowns_counterclaims": true,
+    "active_answers_complete": true,
+    "references_resolved_without_fabricated_invalid_quote": true
+  },
+  "private_originals": true,
+  "production_src_changes": false
+}

@@ -1,0 +1,609 @@
+{
+  "review_id": "Review-X",
+  "trial": "AWARD-1",
+  "result_identity": "sha256:ee6ba47857cd93475de561ab58008fa85d8f8248c5db2d4ce81c014f2b1d0ae5",
+  "active_questions": [
+    "sq:missing:data-available",
+    "sq:missing:evidence-unbiased",
+    "sq:missing:true-value-dependent",
+    "sq:missing:likely-dependent"
+  ],
+  "final_answers": [
+    {
+      "question_id": "sq:missing:data-available",
+      "answer": "probably_no",
+      "justification": "The selected endpoint is 26-week HbA1c change for dulaglutide 1.5 mg versus placebo, with randomized counts 279 and 141 (figure 1B), while the registry reports evaluable HbA1c analysis counts of 271 and 119. Study discontinuation by 26 weeks was 19/279 (6.8%) and 17/141 (12.1%), and efficacy used LOCF for missing values; registry explicitly says if there were no data after randomization the endpoint was missing. Thus evidence indicates a nontrivial missing/imputed component, especially in placebo, rather than all/nearly all randomized participants having observed outcome data. The completion and analysis counts do not establish exact observed-outcome counts; LOCF-imputed values are missing for this question. Registry text is a preserved projection, not authentication of unavailable original raw JSON.",
+      "unknowns": [
+        "Exact randomized-participant counts with observed HbA1c at 26 weeks by arm are not reported in inspected text; analyzed/evaluable counts and study-completion counts cannot be substituted for observed outcome counts.",
+        "The exact number of LOCF-imputed values in the selected 26-week comparison is not specified.",
+        "The registry source is an October 1 captured text projection; original raw registry JSON bytes are unavailable and the projection does not authenticate those bytes."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C01"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C02"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C03"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C04"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C05"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C06"
+        },
+        {
+          "role": "context",
+          "citation": "C07"
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C07"
+          ],
+          "implication": "The supplement discusses supplementary efficacy/safety measures but supplies no participant-level HbA1c ascertainment counts; this limits claims about the precise missing fraction."
+        }
+      ],
+      "participant_flow": [
+        {
+          "analyzed": 271,
+          "basis": [
+            "C08",
+            "C09"
+          ],
+          "eligible": null,
+          "event_count": null,
+          "excluded": null,
+          "exclusions": [],
+          "imputed": null,
+          "missing": null,
+          "missing_bounds": {
+            "kind": "bound",
+            "lower": 0,
+            "upper": 279
+          },
+          "missing_fraction": null,
+          "observed": null,
+          "randomized": 279,
+          "result_identity": "sha256:ee6ba47857cd93475de561ab58008fa85d8f8248c5db2d4ce81c014f2b1d0ae5",
+          "scope": {
+            "arm": "Dulaglutide 1.5 mg",
+            "population": "randomized participants, selected 26-week HbA1c comparison",
+            "time_point": "26 weeks",
+            "unit": "participants"
+          },
+          "semantics": {
+            "event_definition": "26-week HbA1c change from baseline",
+            "outcome_status": "unknown",
+            "population_role": "analyzed",
+            "post_randomization_exclusions": []
+          },
+          "treated": null
+        },
+        {
+          "analyzed": 119,
+          "basis": [
+            "C08",
+            "C09"
+          ],
+          "eligible": null,
+          "event_count": null,
+          "excluded": null,
+          "exclusions": [],
+          "imputed": null,
+          "missing": null,
+          "missing_bounds": {
+            "kind": "bound",
+            "lower": 0,
+            "upper": 141
+          },
+          "missing_fraction": null,
+          "observed": null,
+          "randomized": 141,
+          "result_identity": "sha256:ee6ba47857cd93475de561ab58008fa85d8f8248c5db2d4ce81c014f2b1d0ae5",
+          "scope": {
+            "arm": "Placebo",
+            "population": "randomized participants, selected 26-week HbA1c comparison",
+            "time_point": "26 weeks",
+            "unit": "participants"
+          },
+          "semantics": {
+            "event_definition": "26-week HbA1c change from baseline",
+            "outcome_status": "unknown",
+            "population_role": "analyzed",
+            "post_randomization_exclusions": []
+          },
+          "treated": null
+        }
+      ],
+      "participant_flow_conflicts": []
+    },
+    {
+      "question_id": "sq:missing:evidence-unbiased",
+      "answer": "no",
+      "justification": "The report says LOCF was used for missing data and efficacy used only pre-rescue observations. The official guidance states LOCF alone should not be assumed to correct bias due to missing outcomes; no reported analysis here demonstrates robustness under plausible missingness assumptions or otherwise establishes an unbiased result. Pre-rescue restriction is separate from correcting missing outcome data.",
+      "unknowns": [
+        "No missing-data sensitivity analysis or method correcting bias is reported in the inspected main report; the captured supplement contains no such analysis, but a separately located SAP was not present in the Source inventory."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C10"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C11"
+        },
+        {
+          "role": "context",
+          "citation": "C07"
+        },
+        {
+          "role": "information_limit",
+          "unresolved_premise": "Whether another uncaptured plan or analysis document specified additional missing-data robustness analyses remains unresolved.",
+          "stopping_rationale": "The complete captured Source inventory contains the article, its two-page supplement and registry text projection; the available supplement pages were inspected and no SAP is captured. The registry's original raw bytes are unavailable."
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C07"
+          ],
+          "implication": "The supplement contains other endpoint tables, but it does not report a missing-outcome sensitivity analysis for the selected HbA1c contrast."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:missing:true-value-dependent",
+      "answer": "probably_yes",
+      "justification": "The study reports discontinuations for adverse events and patient decision, and adverse events caused discontinuations; participant-level withdrawal can plausibly relate to health status and hence the true HbA1c value. Rescue was given for severe persistent hyperglycemia and efficacy only used pre-rescue measurements, but rescue itself is not equivalent to loss of outcome ascertainment. Because the report does not tie discontinuation reasons to 26-week HbA1c missingness, this supports possibility rather than certainty.",
+      "unknowns": [
+        "The report does not give arm-specific reasons for loss of endpoint data or establish whether participants who discontinued study drug continued 26-week HbA1c ascertainment.",
+        "It is unknown whether missingness in this continuous HbA1c outcome was actually related to participants' true 26-week values."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C12"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C13"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C14"
+        },
+        {
+          "role": "context",
+          "citation": "C15"
+        },
+        {
+          "role": "information_limit",
+          "unresolved_premise": "The mechanism linking study discontinuation to missing 26-week HbA1c and participants' underlying true HbA1c is not reported.",
+          "stopping_rationale": "The full main report and available supplement were inspected. The captured registry projection is not authenticated raw data and offers no distinct HbA1c missingness mechanism."
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C15"
+          ],
+          "implication": "Patients who discontinued study drug due to adverse events were allowed to remain for safety follow-up, so study-drug discontinuation did not necessarily mean all follow-up stopped; this does not establish HbA1c outcome ascertainment."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:missing:likely-dependent",
+      "answer": "probably_yes",
+      "justification": "Reported 26-week discontinuation proportions differ, with placebo 12.1% compared with dulaglutide 1.5 mg 6.8%, and common reasons included adverse events and participant decision. This pattern makes dependence on participants' health/status and true glycemic outcome plausible, but the report does not establish that those withdrawals correspond to missing HbA1c values or show their arm-specific reasons; accordingly the answer is only probable, not definitive.",
+      "unknowns": [
+        "The report does not specify whether differing study-discontinuation proportions produced differing missing HbA1c proportions, nor give reasons for missing HbA1c by arm.",
+        "No information establishes whether investigators adjusted for participant characteristics explaining any outcome-related missingness."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C12"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C16"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C13"
+        },
+        {
+          "role": "context",
+          "citation": "C15"
+        },
+        {
+          "role": "information_limit",
+          "unresolved_premise": "Differential discontinuation may not equate to differential missing HbA1c, and dependence on the true HbA1c value is not directly documented.",
+          "stopping_rationale": "Inspected the complete main-report flow narrative and figure and both captured supplement pages; no source gives outcome-specific missingness reasons or observed 26-week counts by arm. Exact outcome availability remains unresolved."
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C15"
+          ],
+          "implication": "The study allowed patients who stopped study drug because of an adverse event to remain for safety follow-up, which limits inference from treatment discontinuation alone about missing outcome measurements."
+        }
+      ]
+    }
+  ],
+  "derived_domain_judgment": "high",
+  "first_rejected_answers": [
+    {
+      "question_id": "sq:missing:data-available",
+      "answer": "probably_no",
+      "justification": "The selected endpoint is 26-week HbA1c change for dulaglutide 1.5 mg versus placebo, with randomized counts 279 and 141 (figure 1B), while the registry reports evaluable HbA1c analysis counts of 271 and 119. Study discontinuation by 26 weeks was 19/279 (6.8%) and 17/141 (12.1%), and efficacy used LOCF for missing values; registry explicitly says if there were no data after randomization the endpoint was missing. Thus the available evidence indicates a nontrivial missing/imputed component, especially in placebo, rather than all/nearly all randomized participants having observed outcome data. The completion and analysis counts do not establish exact observed-outcome counts; LOCF-imputed values are missing for this question. Registry text is a preserved projection, not authentication of unavailable original raw JSON.",
+      "unknowns": [
+        "Exact randomized-participant counts with observed HbA1c at 26 weeks by arm are not reported in inspected text; analyzed/evaluable counts and study-completion counts cannot be substituted for observed outcome counts.",
+        "The exact number of LOCF-imputed values in the selected 26-week comparison is not specified.",
+        "The registry source is an October 1 captured text projection; original raw registry JSON bytes are unavailable and the projection does not authenticate those bytes."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C01"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C02"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C03"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C04"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C05"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C06"
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C07"
+          ],
+          "implication": "The supplement discusses supplementary efficacy/safety measures but supplies no participant-level HbA1c ascertainment counts; this limits claims about the precise missing fraction."
+        }
+      ],
+      "participant_flow": [
+        {
+          "arm": "Dulaglutide 1.5 mg",
+          "population": "randomized participants, selected 26-week HbA1c comparison",
+          "unit": "participants",
+          "time_point": "26 weeks",
+          "randomized": 279,
+          "analyzed": 271,
+          "basis": [
+            "C08",
+            "C09"
+          ],
+          "semantics": {
+            "population_role": "analyzed",
+            "outcome_status": "unknown",
+            "event_definition": "26-week HbA1c change from baseline"
+          }
+        },
+        {
+          "arm": "Placebo",
+          "population": "randomized participants, selected 26-week HbA1c comparison",
+          "unit": "participants",
+          "time_point": "26 weeks",
+          "randomized": 141,
+          "analyzed": 119,
+          "basis": [
+            "C08",
+            "C09"
+          ],
+          "semantics": {
+            "population_role": "analyzed",
+            "outcome_status": "unknown",
+            "event_definition": "26-week HbA1c change from baseline"
+          }
+        }
+      ]
+    },
+    {
+      "question_id": "sq:missing:evidence-unbiased",
+      "answer": "no",
+      "justification": "The report says LOCF was used for missing data and efficacy used only pre-rescue observations. The official guidance states LOCF alone should not be assumed to correct bias due to missing outcomes; no reported analysis here demonstrates robustness under plausible missingness assumptions or otherwise establishes an unbiased result. Pre-rescue restriction is separate from correcting missing outcome data.",
+      "unknowns": [
+        "No missing-data sensitivity analysis or method correcting bias is reported in the inspected main report; the captured supplement contains no such analysis, but a separately located SAP was not present in the Source inventory."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C10"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C11"
+        },
+        {
+          "role": "information_limit",
+          "unresolved_premise": "Whether another uncaptured plan or analysis document specified additional missing-data robustness analyses remains unresolved.",
+          "stopping_rationale": "The complete captured Source inventory contains the article, its two-page supplement and registry text projection; the available supplement pages were inspected and no SAP is captured. The registry's original raw bytes are unavailable."
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C07"
+          ],
+          "implication": "The supplement contains other endpoint tables, but it does not report a missing-outcome sensitivity analysis for the selected HbA1c contrast."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:missing:true-value-dependent",
+      "answer": "probably_yes",
+      "justification": "The study reports discontinuations for adverse events and patient decision, and adverse events caused discontinuations; such participant-level withdrawal can plausibly relate to health status and hence the true HbA1c value. Rescue was given for severe persistent hyperglycemia and efficacy only used pre-rescue measurements, but rescue itself is not equivalent to loss of outcome ascertainment. Because the report does not tie discontinuation reasons to 26-week HbA1c missingness, this supports possibility rather than certainty.",
+      "unknowns": [
+        "The report does not give arm-specific reasons for loss of endpoint data or establish whether participants who discontinued study drug continued 26-week HbA1c ascertainment.",
+        "It is unknown whether missingness in this continuous HbA1c outcome was actually related to participants' true 26-week values."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C12"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C13"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C17"
+        },
+        {
+          "role": "information_limit",
+          "unresolved_premise": "The mechanism linking study discontinuation to missing 26-week HbA1c and participants' underlying true HbA1c is not reported.",
+          "stopping_rationale": "The full main report and available supplement were inspected. The captured registry projection is not authenticated raw data and offers no distinct HbA1c missingness mechanism."
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C15"
+          ],
+          "implication": "Patients who discontinued study drug due to adverse events were allowed to remain for safety follow-up, so study-drug discontinuation did not necessarily mean all follow-up stopped; this does not establish HbA1c outcome ascertainment."
+        }
+      ]
+    },
+    {
+      "question_id": "sq:missing:likely-dependent",
+      "answer": "probably_yes",
+      "justification": "Reported 26-week discontinuation proportions differ, with placebo 12.1% compared with dulaglutide 1.5 mg 6.8%, and common reasons included adverse events and participant decision. This pattern makes dependence on participants' health/status and true glycemic outcome plausible, but the report does not establish that those withdrawals correspond to missing HbA1c values or show their arm-specific reasons; accordingly the answer is only probable, not definitive.",
+      "unknowns": [
+        "The report does not specify whether differing study-discontinuation proportions produced differing missing HbA1c proportions, nor give reasons for missing HbA1c by arm.",
+        "No information establishes whether investigators adjusted for participant characteristics explaining any outcome-related missingness."
+      ],
+      "bases": [
+        {
+          "role": "indirect_support",
+          "citation": "C12"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C16"
+        },
+        {
+          "role": "indirect_support",
+          "citation": "C13"
+        },
+        {
+          "role": "information_limit",
+          "unresolved_premise": "Differential discontinuation may not equate to differential missing HbA1c, and dependence on the true HbA1c value is not directly documented.",
+          "stopping_rationale": "Inspected the complete main-report flow narrative and figure and both captured supplement pages; no source gives outcome-specific missingness reasons or observed 26-week counts by arm. Exact outcome availability remains unresolved."
+        }
+      ],
+      "counterevidence": [
+        {
+          "citations": [
+            "C15"
+          ],
+          "implication": "The study allowed patients who stopped study drug because of an adverse event to remain for safety follow-up, which limits inference from treatment discontinuation alone about missing outcome measurements."
+        }
+      ]
+    }
+  ],
+  "citations": {
+    "C01": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 2,
+      "start_line": 130,
+      "end_line": 132,
+      "exact_projection_quote": "The primary outcome measure was\nchange in HbA1c from baseline to 26\nweeks. Secondary efficacy measures"
+    },
+    "C02": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 13,
+      "end_line": 27,
+      "exact_projection_quote": "The analyses of efficacy and safety\nwere based on the intent-to-treat pop-\nulation comprising all randomized pa-\ntients who received at least one dose\nof study treatment. For the assessment\nof efficacy and hypoglycemia events,\nonly data collected before the initiation\nof rescue medication were used.\nThe change from baseline in HbA1c\nand weight at 26 and 52 weeks were\nanalyzed by ANCOVA, with factors for\ntreatment, country, and baseline value\nas covariates. The last observation car-\nried forward (LOCF) was used in the case\nof missing data. Secondary analysis"
+    },
+    "C03": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 55,
+      "end_line": 79,
+      "exact_projection_quote": "A total of 978 patients were randomized\nto dulaglutide 1.5 mg, dulaglutide 0.75\nmg, exenatide, and placebo. Two pa-\ntients assigned to exenatide did not re-\nceive thedrug;thus,theintention-to-treat\npopulation comprised 976 patients. De-\nmographic and baseline characteristics\nwere balanced across all arms (Table 1).\nAt randomization, 86% of patients were\nreceiving $2,500 mg/day of metformin\nand 45 mg/day of pioglitazone, and the\nmean doses were similar across arms. A\ntotal of 77 (7.9%) patients discontinued\nthe study at 26 weeks; the distribution\nof patients across treatment arms was\nas follows: dulaglutide 1.5 mg, 19\n(6.8%); dulaglutide 0.75 mg, 17 (6.1%);\nexenatide, 24 (8.7%); and placebo, 17\n(12.1%). The most common reasons\nfor study discontinuation at 26 weeks\nwere adverse events and patient deci-\nsion (Fig. 1B). Disposition, including\npatients receiving rescue therapy,\nthroughout the 52-week study period is\nshown in Fig. 1B."
+    },
+    "C04": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 100,
+      "end_line": 108,
+      "exact_projection_quote": "Figure 1-Study design (A) and patient disposition (B). All patients underwent a metformin\n(1,500-3,000 mg/day) and pioglitazone (30-45 mg/day) lead-in period that lasted up to 12\nweeks and was continued for the duration of the study; other OAMs were discontinued. Two\ndoses of dulaglutide (1.5 mg and 0.75 mg) were evaluated along with exenatide and placebo.\nPlacebo patients continued until week 26 and were then randomized to dulaglutide 1.5 mg or\ndulaglutide 0.75 mg. aNumber of patients rescued at week 26: dulaglutide 1.5 mg, 4 (1.4%);\ndulaglutide 0.75 mg, 12 (4.3%); exenatide, 11 (4.0%); placebo, 22 (15.6%). bNumber of patients\nrescued at week 52: dulaglutide 1.5 mg, 9 (3.2%); dulaglutide 0.75 mg, 25 (8.9%); exenatide, 24\n(8.7%); placebo to dulaglutide 1.5 mg, 1 (1.6%); placebo to dulaglutide 0.75 mg, 3 (4.8%)."
+    },
+    "C05": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 19,
+      "end_line": 20,
+      "exact_projection_quote": "only data collected before the initiation\nof rescue medication were used."
+    },
+    "C06": {
+      "source_file": "NCT01064687.original-projection.txt",
+      "captured_bytes_sha256": "sha256:9680cc92144bf1e3888e0826fbbe25931c25c2b938897ba04959ec714b62db8f",
+      "projection_version": "sha256:0e13ba693bdcbe7d448e315cc15f717c9332a3dff6ff9cf27adb7b29928bf6dd",
+      "kind": "narrative",
+      "page": 1,
+      "start_line": 5802,
+      "end_line": 5846,
+      "exact_projection_quote": "resultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].groupId: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].value: \"271\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].groupId: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].value: \"269\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[2].groupId: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[2].value: \"266\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[3].groupId: \"OG003\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[3].value: \"119\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].units: \"Participants\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].description: \"Least squares (LS) means were calculated using analysis of covariance (ANCOVA) with country and treatment as fixed effects and baseline HbA1c as a covariate.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].dispersionType: \"Standard Error\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"LY2189265 (Dulaglutide): 1.5 milligrams (mg), subcutaneous (SC), once weekly for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"Pioglitazone: at least 30 mg/day, oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].id: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].title: \"1.5 mg LY2189265\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"LY2189265 (Dulaglutide): 0.75 milligrams (mg), subcutaneous (SC), once weekly for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"Pioglitazone: at least 30 mg/day, oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].id: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].title: \"0.75 mg LY2189265\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"Exenatide: 5 micrograms (mcg), subcutaneous (SC), twice daily for 4 weeks, followed by 10 mcg, SC, twice daily for 48 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"Pioglitazone: at least 30 mg/day, oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].id: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].title: \"Exenatide\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"Placebo: subcutaneous (SC), once weekly for 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"Pioglitazone: at least 30 mg/day, oral, for 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].id: \"OG003\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].title: \"Placebo\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].paramType: \"LEAST_SQUARES_MEAN\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].populationDescription: \"Participants who were randomized and received at least 1 dose of LY2189265, Exenatide, or Placebo with evaluable HbA1c data. Only pre-rescue measurements were used. Last observation carried forward (LOCF) was used to impute missing postbaseline values. If there were no data after the date of randomization, the endpoint was considered missing.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].reportingStatus: \"POSTED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].timeFrame: \"Baseline, 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].title: \"Change From Baseline to 26 Weeks Endpoint in Glycosylated Hemoglobin (HbA1c)\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].type: \"PRIMARY\""
+    },
+    "C07": {
+      "source_file": "dc132760supplementarydata.pdf",
+      "captured_bytes_sha256": "sha256:da0de5a1322d6eecaacc7413b471916a87d231a107ab3b6221b3b15d7d9b2886",
+      "projection_version": "sha256:7f3b4d03e790910b7ed0d5b21f321a0014b4ea92a76fd216036a7ba543dac46f",
+      "kind": "narrative",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 202,
+      "exact_projection_quote": "SUPPLEMENTARY DATA\n\n©2014 American Diabetes Association. Published online at http://care.diabetesjournals.org/lookup/suppl/doi:10.2337/dc13-2760/-/DC1\nSupplementary Table 1. Other end points of interest, change from baseline to 26 and 52 weeks\n\n26 weeks\n52 weeks\n\n\nDU 1.5 mg\n(N=279)\n\nDU 0.75 mg\n(N=280)\n\nEX\n(N=276)\n\nPL\n(N=141)\n\nDU 1.5 mg\n(N=279)\n\nDU 0.75 mg\n(N=280)\n\nEX\n(N=276)\nInsulin and HOMA Parameters\n\n\n\n Fasting\n Insulin\n (pmol/L)\n7.3 (4.2)\n1.9 (4.3)\n3.0 (4.3)\n-2.2 (5.9)\n12 (4.5)\n6.0 (4.6)\n10 (4.7)\n HOMA2-%B\n36 (2.6)##**\n24 (2.7)#**\n15 (2.6)**\n0.93 (3.7)\n35 (2.6)##\n26 (2.7)##\n14 (2.8)\n HOMA2-%S\n-3.1 (2.9)\n1.2 (3.0)\n-1.6 (2.9)\n2.6 (4.1)\n-7.5 (2.9)\n-5.5 (3.0)\n-3.8 (3.1)\nLipid Parameters, mean ± SD (mmol/L)\n\n Cholesterol\n-0.15 ± 0.82*\n-0.10 ± 0.85\n-0.05 ± 0.86*\n0.04 ± 0.72\n-0.12 ± 0.86\n-0.09 ± 0.84\n-0.01 ± 0.88\n LDL\n-0.11 ± 0.66*\n-0.08 ± 0.73\n-0.03 ± 0.73*\n0.01 ± 0.62\n-0.06 ± 0.69\n-0.08 ± 0.77\n-0.02 ± 0.75\n HDL\n0.04 ± 0.19\n0.02 ± 0.19\n0.02 ± 0.18\n0.01 ± 0.22\n0.05 ± 0.22\n0.00 ± 0.20\n0.02 ± 0.20\n Triglycerides\n-0.20 ± 1.16#*\n-0.08 ± 0.76\n-0.03 ± 1.04\n0.11 ± 1.56\n-0.26 ± 1.23#\n0.04 ± 0.95\n-0.03 ± 1.13\nPancreatic Enzymes, Median [Q1,Q3] (U/L)\n\n\n\n Lipase\n19 [-4, 44]#**\n8 [-11,36]**\n8 [-7, 29]**\n-6 [-22, 17]\n16 [-6, 40]\n5 [-14, 27]\n9 [-11, 37]\n Total Amylase\n7 [-1. 17]##**\n3 [-4,11]*\n3 [-4, 10]*\n-1 [-9, 8]\n5 [-2, 13]##\n2 [-7, 10]\n2 [-6, 9]\n p-Amylase\n4 [0, 11]##**\n3 [-1, 7]**\n2 [-1, 7]*\n0 [-3,5]\n4 [1, 10]##\n2 [-2, 8]\n2 [-2, 7]\n Patients with TE, abnormal, n (%)a\n\n\n\n\n Lipase\n46 (17)\n37 (13)\n29 (11)\n10 (7)\n85 (37)\n86 (37)\n74 (32)\n Total\n Amylase\n15 (6)\n14 (5)\n12 (4)\n8 (6)\n36 (14)\n35 (14)\n28 (11)\n p-Amylase\n24 (9)\n17 (6)\n17 (6)\n8 (6)\n51 (20)\n45 (18)\n41 (16)\nPancreatic Enzymes, n (%) of patients with ≥3x ULNb\n\n\n\n Lipase\n8 (3.0)\n6 (2.2)\n7 (2.7)\n2 (1.5)\n10 (4.0)\n6 (2.3)\n5 (2.1)\n p-Amylase\n2 (0.8)\n1 (0.4)\n0 (0)\n0 (0)\n1 (0.4)\n2 (0.8)\n0 (0)\naCumulative number (%) of patients with at least one treatment emergent abnormality. bPatients with a value ≥3x ULN during the\ntime period assessed.\nAll data are LS mean ± SE unless otherwise noted. #,* P < 0.05 vs exenatide and placebo, respectively. ##,** P < 0.001 vs\nexenatide and placebo, respectively. Abbreviations: DU = dulaglutide; EX = exenatide; HOMA2-%B = updated homeostasis\nmodel beta cell function; HOMA2-%S = updated homestasis model insulin sensitivity; p-amylase = pancreatic amylase; PL =\nplacebo; Q1 = first quartile; Q3 = third quartile.\n\n[Extracted table 1]\n|26 weeks||||||52 weeks|||\n|---|---|---|---|---|---|---|---|---|\n||DU 1.5 mg<br>(N=279)|DU 0.75 mg<br>(N=280)||EX<br>(N=276)|PL<br>(N=141)|DU 1.5 mg<br>(N=279)|DU 0.75 mg<br>(N=280)|EX<br>(N=276)|\n|Insulin and HOMA Parameters|||||||||\n|Fasting<br>Insulin<br>(pmol/L)|7.3 (4.2)|1.9 (4.3)||3.0 (4.3)|-2.2 (5.9)|12 (4.5)|6.0 (4.6)|10 (4.7)|\n|HOMA2-%B|36 (2.6)##**|24 (2.7)#**||15 (2.6)**|0.93 (3.7)|35 (2.6)##|26 (2.7)##|14 (2.8)|\n|HOMA2-%S|-3.1 (2.9)|1.2 (3.0)||-1.6 (2.9)|2.6 (4.1)|-7.5 (2.9)|-5.5 (3.0)|-3.8 (3.1)|\n|Lipid Parameters, mean ± SD (mmol/L)|||||||||\n|Cholesterol|-0.15 ± 0.82*|-0.10 ± 0.85||-0.05 ± 0.86*|0.04 ± 0.72|-0.12 ± 0.86|-0.09 ± 0.84|-0.01 ± 0.88|\n|LDL|-0.11 ± 0.66*|-0.08 ± 0.73||-0.03 ± 0.73*|0.01 ± 0.62|-0.06 ± 0.69|-0.08 ± 0.77|-0.02 ± 0.75|\n|HDL|0.04 ± 0.19|0.02 ± 0.19||0.02 ± 0.18|0.01 ± 0.22|0.05 ± 0.22|0.00 ± 0.20|0.02 ± 0.20|\n|Triglycerides|-0.20 ± 1.16#*|-0.08 ± 0.76||-0.03 ± 1.04|0.11 ± 1.56|-0.26 ± 1.23#|0.04 ± 0.95|-0.03 ± 1.13|\n|Pancreatic Enzymes, Median [Q1,Q3] (U/L)|||||||||\n|Lipase|19 [-4, 44]#**|8 [-11,36]**||8 [-7, 29]**|-6 [-22, 17]|16 [-6, 40]|5 [-14, 27]|9 [-11, 37]|\n|Total Amylase|7 [-1. 17]##**|3 [-4,11]*||3 [-4, 10]*|-1 [-9, 8]|5 [-2, 13]##|2 [-7, 10]|2 [-6, 9]|\n|p-Amylase|4 [0, 11]##**|3 [-1, 7]**||2 [-1, 7]*|0 [-3,5]|4 [1, 10]##|2 [-2, 8]|2 [-2, 7]|\n|Patients with TE, abnormal, n (%)a|||||||||\n|Lipase|46 (17)|37 (13)||29 (11)|10 (7)|85 (37)|86 (37)|74 (32)|\n|Total<br>Amylase|15 (6)|14 (5)||12 (4)|8 (6)|36 (14)|35 (14)|28 (11)|\n|p-Amylase|24 (9)|17 (6)||17 (6)|8 (6)|51 (20)|45 (18)|41 (16)|\n|Pancreatic Enzymes, n (%) of patients with ≥3x ULNb|||||||||\n|Lipase|8 (3.0)|6 (2.2)||7 (2.7)|2 (1.5)|10 (4.0)|6 (2.3)|5 (2.1)|\n|p-Amylase|2 (0.8)|1 (0.4)||0 (0)|0 (0)|1 (0.4)|2 (0.8)|0 (0)|"
+    },
+    "C08": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 112,
+      "exact_projection_quote": "noninferiority margin of 0.40%. This cor-\nresponds to 280 patients per active\ntreatment arm and 140 for placebo,\nwith an assumed dropout rate of 11%.\nThe type I error rate across all treatment\ncomparisons for change from baseline in\nHbA1c at 26 weeks was controlled at\n0.025 (one-sided) by tree gatekeeping\n(10). P values were adjusted so that\neach could be compared with 0.025 to\nassess significance while accounting for\nmultiplicity adjustments (11).\nThe analyses of efficacy and safety\nwere based on the intent-to-treat pop-\nulation comprising all randomized pa-\ntients who received at least one dose\nof study treatment. For the assessment\nof efficacy and hypoglycemia events,\nonly data collected before the initiation\nof rescue medication were used.\nThe change from baseline in HbA1c\nand weight at 26 and 52 weeks were\nanalyzed by ANCOVA, with factors for\ntreatment, country, and baseline value\nas covariates. The last observation car-\nried forward (LOCF) was used in the case\nof missing data. Secondary analysis\nmethods for HbA1c and weight and\nmethods for other continuous second-\nary end points over time included a\nmixed-effects,\nrepeated-measures\n(MMRM) analysis, with additional fac-\ntors for visit and treatment-by-visit in-\nteraction and the patient as a random\neffect. Least squares (LS) means and\nSEs are reported. The percentage of\npatients achieving HbA1c targets (LOCF)\nwas analyzed by using a logistic re-\ngression model, with treatment, coun-\ntry, and baseline as covariates. Total\nhypoglycemia included events that\nwere documented symptomatic, docu-\nmented asymptomatic, probable, and/\nor severe (9). The percentage of patients\nexperiencing adverse events was ana-\nlyzed by using a x2 test unless there\nwere no sufficient data to meet the as-\nsumptions of the analysis, in which\ncase a Fisher exact test was conducted.\nThe two-sided significance level was\n0.05 for secondary end points and\n0.10 for interactions.\nRESULTS\nA total of 978 patients were randomized\nto dulaglutide 1.5 mg, dulaglutide 0.75\nmg, exenatide, and placebo. Two pa-\ntients assigned to exenatide did not re-\nceive thedrug;thus,theintention-to-treat\npopulation comprised 976 patients. De-\nmographic and baseline characteristics\nwere balanced across all arms (Table 1).\nAt randomization, 86% of patients were\nreceiving $2,500 mg/day of metformin\nand 45 mg/day of pioglitazone, and the\nmean doses were similar across arms. A\ntotal of 77 (7.9%) patients discontinued\nthe study at 26 weeks; the distribution\nof patients across treatment arms was\nas follows: dulaglutide 1.5 mg, 19\n(6.8%); dulaglutide 0.75 mg, 17 (6.1%);\nexenatide, 24 (8.7%); and placebo, 17\n(12.1%). The most common reasons\nfor study discontinuation at 26 weeks\nwere adverse events and patient deci-\nsion (Fig. 1B). Disposition, including\npatients receiving rescue therapy,\nthroughout the 52-week study period is\nshown in Fig. 1B.\nEfficacy\nThe LS mean 6 SE HbA1c change from\nbaseline to the 26-week primary end\npoint was 21.51 6 0.06% (216.5 6\n0.7 mmol/mol) for dulaglutide 1.5 mg,\n21.30 6 0.06% (214.2 6 0.7 mmol/mol)\nfor dulaglutide 0.75 mg, 20.99 6 0.06%\n(210.8 6 0.7 mmol/mol) for exenatide,\nand 20.46 6 0.08% (25.0 6 0.9\nmmol/mol) for placebo (Fig. 2A). Dula-\nglutide 1.5 mg and dulaglutide 0.75 mg\nwere superior to placebo (LS mean\ndifference; nominal 95% CI: 21.05%\n[211.5 mmol/mol]; 21.22 to 20.88%\n[213.3\nto\n29.6\nmmol/mol]\nvs.\n20.84% [29.2 mmol/mol]; 21.01 to\nFigure 1-Study design (A) and patient disposition (B). All patients underwent a metformin\n(1,500-3,000 mg/day) and pioglitazone (30-45 mg/day) lead-in period that lasted up to 12\nweeks and was continued for the duration of the study; other OAMs were discontinued. Two\ndoses of dulaglutide (1.5 mg and 0.75 mg) were evaluated along with exenatide and placebo.\nPlacebo patients continued until week 26 and were then randomized to dulaglutide 1.5 mg or\ndulaglutide 0.75 mg. aNumber of patients rescued at week 26: dulaglutide 1.5 mg, 4 (1.4%);\ndulaglutide 0.75 mg, 12 (4.3%); exenatide, 11 (4.0%); placebo, 22 (15.6%). bNumber of patients\nrescued at week 52: dulaglutide 1.5 mg, 9 (3.2%); dulaglutide 0.75 mg, 25 (8.9%); exenatide, 24\n(8.7%); placebo to dulaglutide 1.5 mg, 1 (1.6%); placebo to dulaglutide 0.75 mg, 3 (4.8%).\ncare.diabetesjournals.org\nWysham and Associates\n2161\nDownloaded from diabetesjournals.org/care/article-pdf/37/8/2159/621522/2159.pdf by guest on 24 September 2026"
+    },
+    "C09": {
+      "source_file": "NCT01064687.original-projection.txt",
+      "captured_bytes_sha256": "sha256:9680cc92144bf1e3888e0826fbbe25931c25c2b938897ba04959ec714b62db8f",
+      "projection_version": "sha256:0e13ba693bdcbe7d448e315cc15f717c9332a3dff6ff9cf27adb7b29928bf6dd",
+      "kind": "narrative",
+      "page": 1,
+      "start_line": 5704,
+      "end_line": 5847,
+      "exact_projection_quote": "resultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciLowerLimit: \"-1.22\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].ciUpperLimit: \"-0.88\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].groupDescription: \"Superiority analysis.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].groupIds[0]: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].groupIds[1]: \"OG003\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].nonInferiorityType: \"SUPERIORITY_OR_OTHER\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].pValue: \"<0.001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].pValueComment: \"P-value is adjusted for multiplicity based on a tree-gatekeeping strategy. To determine significance, p-value is compared to the family-wise 1-sided Type I error of 0.025. The confidence interval is not adjusted for multiplicity.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].paramType: \"LS Mean Difference\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].paramValue: \"-1.05\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].statisticalMethod: \"ANCOVA\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[0].testedNonInferiority: false\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciLowerLimit: \"-0.66\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].ciUpperLimit: \"-0.39\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].groupDescription: \"Non-inferiority analysis.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].groupIds[0]: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].groupIds[1]: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].nonInferiorityComment: \"A non-inferiority margin of 0.4% was used.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].nonInferiorityType: \"NON_INFERIORITY_OR_EQUIVALENCE\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].pValue: \"<0.0001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].pValueComment: \"P-value is adjusted for multiplicity, based on tree-gatekeeping strategy. To determine significance, p-value is compared to the family-wise 1-sided Type I error of 0.025. The confidence interval is not adjusted for multiplicity.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].paramType: \"LS Mean Difference\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].paramValue: \"-0.52\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].statisticalMethod: \"ANCOVA\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[1].testedNonInferiority: true\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].ciLowerLimit: \"-1.01\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].ciUpperLimit: \"-0.67\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].groupDescription: \"Superiority analysis.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].groupIds[0]: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].groupIds[1]: \"OG003\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].nonInferiorityType: \"SUPERIORITY_OR_OTHER\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].pValue: \"<0.001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].pValueComment: \"P-value is adjusted for multiplicity based on a tree-gatekeeping strategy. To determine significance, p-value is compared to the family-wise 1-sided Type I error of 0.025. The confidence interval is not adjusted for multiplicity.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].paramType: \"LS Mean Difference\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].paramValue: \"-0.84\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].statisticalMethod: \"ANCOVA\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[2].testedNonInferiority: false\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].ciLowerLimit: \"-0.66\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].ciUpperLimit: \"-0.39\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].groupDescription: \"Superiority analysis.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].groupIds[0]: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].groupIds[1]: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].nonInferiorityType: \"SUPERIORITY_OR_OTHER\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].pValue: \"<0.001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].pValueComment: \"P-value is adjusted for multiplicity based on a tree-gatekeeping strategy. To determine significance, p-value is compared to the family-wise 1-sided Type I error of 0.025. The confidence interval is not adjusted for multiplicity.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].paramType: \"LS Mean Difference\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].paramValue: \"-0.52\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].statisticalMethod: \"ANCOVA\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[3].testedNonInferiority: false\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].ciLowerLimit: \"-0.44\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].ciUpperLimit: \"-0.18\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].groupDescription: \"Non-inferiority analysis.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].groupIds[0]: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].groupIds[1]: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].nonInferiorityComment: \"A non-inferiority margin of 0.4% was used.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].nonInferiorityType: \"NON_INFERIORITY_OR_EQUIVALENCE\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].pValue: \"<0.001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].pValueComment: \"P-value is adjusted for multiplicity, based on tree-gatekeeping strategy. To determine significance, p-value is compared to the family-wise 1-sided Type I error of 0.025. The confidence interval is not adjusted for multiplicity.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].paramType: \"LS Mean Difference\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].paramValue: \"-0.31\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].statisticalMethod: \"ANCOVA\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[4].testedNonInferiority: true\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].ciLowerLimit: \"-0.44\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].ciNumSides: \"TWO_SIDED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].ciPctValue: \"95\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].ciUpperLimit: \"-0.18\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].groupDescription: \"Superiority analysis.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].groupIds[0]: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].groupIds[1]: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].nonInferiorityType: \"SUPERIORITY_OR_OTHER\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].pValue: \"<0.001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].pValueComment: \"P-value is adjusted for multiplicity based on a tree-gatekeeping strategy. To determine significance, p-value is compared to the family-wise 1-sided Type I error of 0.025. The confidence interval is not adjusted for multiplicity.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].paramType: \"LS Mean Difference\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].paramValue: \"-0.31\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].statisticalMethod: \"ANCOVA\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].analyses[5].testedNonInferiority: false\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].groupId: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].spread: \"0.06\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[0].value: \"-1.51\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].groupId: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].spread: \"0.06\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[1].value: \"-1.30\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[2].groupId: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[2].spread: \"0.06\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[2].value: \"-0.99\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[3].groupId: \"OG003\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[3].spread: \"0.08\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].classes[0].categories[0].measurements[3].value: \"-0.46\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].groupId: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[0].value: \"271\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].groupId: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[1].value: \"269\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[2].groupId: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[2].value: \"266\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[3].groupId: \"OG003\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].counts[3].value: \"119\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].denoms[0].units: \"Participants\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].description: \"Least squares (LS) means were calculated using analysis of covariance (ANCOVA) with country and treatment as fixed effects and baseline HbA1c as a covariate.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].dispersionType: \"Standard Error\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"LY2189265 (Dulaglutide): 1.5 milligrams (mg), subcutaneous (SC), once weekly for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].description: \"Pioglitazone: at least 30 mg/day, oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].id: \"OG000\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[0].title: \"1.5 mg LY2189265\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"LY2189265 (Dulaglutide): 0.75 milligrams (mg), subcutaneous (SC), once weekly for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].description: \"Pioglitazone: at least 30 mg/day, oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].id: \"OG001\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[1].title: \"0.75 mg LY2189265\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"Exenatide: 5 micrograms (mcg), subcutaneous (SC), twice daily for 4 weeks, followed by 10 mcg, SC, twice daily for 48 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].description: \"Pioglitazone: at least 30 mg/day, oral, for 52 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].id: \"OG002\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[2].title: \"Exenatide\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"Placebo: subcutaneous (SC), once weekly for 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"Metformin: at least 1500 milligrams per day (mg/day), oral, for 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].description: \"Pioglitazone: at least 30 mg/day, oral, for 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].id: \"OG003\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].groups[3].title: \"Placebo\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].paramType: \"LEAST_SQUARES_MEAN\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].populationDescription: \"Participants who were randomized and received at least 1 dose of LY2189265, Exenatide, or Placebo with evaluable HbA1c data. Only pre-rescue measurements were used. Last observation carried forward (LOCF) was used to impute missing postbaseline values. If there were no data after the date of randomization, the endpoint was considered missing.\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].reportingStatus: \"POSTED\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].timeFrame: \"Baseline, 26 weeks\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].title: \"Change From Baseline to 26 Weeks Endpoint in Glycosylated Hemoglobin (HbA1c)\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].type: \"PRIMARY\"\nresultsSection.outcomeMeasuresModule.outcomeMeasures[0].unitOfMeasure: \"percentage of glycosylated hemoglobin\""
+    },
+    "C10": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 21,
+      "end_line": 27,
+      "exact_projection_quote": "The change from baseline in HbA1c\nand weight at 26 and 52 weeks were\nanalyzed by ANCOVA, with factors for\ntreatment, country, and baseline value\nas covariates. The last observation car-\nried forward (LOCF) was used in the case\nof missing data. Secondary analysis"
+    },
+    "C11": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 13,
+      "end_line": 20,
+      "exact_projection_quote": "The analyses of efficacy and safety\nwere based on the intent-to-treat pop-\nulation comprising all randomized pa-\ntients who received at least one dose\nof study treatment. For the assessment\nof efficacy and hypoglycemia events,\nonly data collected before the initiation\nof rescue medication were used."
+    },
+    "C12": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 67,
+      "end_line": 79,
+      "exact_projection_quote": "total of 77 (7.9%) patients discontinued\nthe study at 26 weeks; the distribution\nof patients across treatment arms was\nas follows: dulaglutide 1.5 mg, 19\n(6.8%); dulaglutide 0.75 mg, 17 (6.1%);\nexenatide, 24 (8.7%); and placebo, 17\n(12.1%). The most common reasons\nfor study discontinuation at 26 weeks\nwere adverse events and patient deci-\nsion (Fig. 1B). Disposition, including\npatients receiving rescue therapy,\nthroughout the 52-week study period is\nshown in Fig. 1B."
+    },
+    "C13": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 7,
+      "start_line": 9,
+      "end_line": 15,
+      "exact_projection_quote": "Discontinuations due to adverse\nevents were similar across treatment\narms at 26 and 52 weeks (Fig. 1B). The\nmost common adverse event leading to\ndiscontinuation was nausea (three for\ndulaglutide 1.5 mg, one for dulaglutide\n0.75 mg, and four for exenatide). One"
+    },
+    "C14": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 2,
+      "start_line": 125,
+      "end_line": 129,
+      "exact_projection_quote": "plementary Data. In addition, patients\nwho discontinued the study drug\nbecause of an adverse event were al-\nlowed to remain in the study for safety\nfollow-up."
+    },
+    "C15": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 184,
+      "exact_projection_quote": "Type 2 diabetes is characterized by pro-\ngressive b-cell failure and insulin resis-\ntance, and intensification of treatment\nis usually required over time. The Amer-\nican Diabetes Association and European\nAssociation for the Study of Diabetes\nrecommend metformin for initial drug\ntherapy (1). If alternative or combina-\ntion therapy is necessary, other oral\nagents such as a sulfonylurea, thiazolidi-\nnedione, and dipeptidyl peptidase-4\n(DPP-4) inhibitor may be used (1). Al-\nthough optimal second- and third-line\nagents have not been firmly established,\nwhen oral agents alone do not allow a\npatient to achieve glycemic control, in-\njectable agents such as a GLP-1 receptor\nagonist may be used. Among the avail-\nable GLP-1 receptor agonists, there are\ndifferences in duration of action, fre-\nquency of dosing, and efficacy and\nsafety profiles (2-5).\nDulaglutide is a long-acting human\nGLP-1 receptor agonist in development\nas a once-weekly treatment for type 2\ndiabetes (6,7). The molecule comprises\ntwo identical disulfide-linked chains,\neach containing an N-terminal GLP-1 an-\nalog sequence covalently linked to a\nmodified human IgG4 Fc fragment by a\nsmall peptide (6). In contrast to native\nGLP-1, dulaglutide is resistant to degra-\ndation by DPP-4 and is large in size,\nwhich slows absorption and reduces re-\nnal clearance. The molecular features\nresult in a soluble formulation and a pro-\nlonged half-life of ;5 days, making it\nsuitable for once-weekly subcutaneous\nadministration. Dulaglutide exhibits\nGLP-1-mediated\neffects,\nincluding\nglucose-dependent potentiation of in-\nsulin secretion, inhibition of glucagon\nsecretion, delay of gastric emptying,\nand weight loss.\nIt is important to understand the\nbenefits and risks of dulaglutide relative\nto other GLP-1 receptor agonists with\ndiffering pharmacological and clini-\ncal profiles. The purpose of AWARD-1\n(Assessment of Weekly AdministRation\nof LY2189265 [dulaglutide] in Diabetes-1)\nwas to compare once-weekly dulaglutide\nto placebo and exenatide twice daily\n(referred to hereafter as exenatide)\nin patients with type 2 diabetes treated\nwith maximally tolerated doses of\nmetformin and pioglitazone. This study\nallows a direct comparison of the effi-\ncacy and safety profiles of a short-acting\nGLP-1 receptor agonist and a long-acting\none with sustained GLP-1 activation.\nThis information should be useful in\nmaking treatment decisions for individ-\nual patients with type 2 diabetes.\nRESEARCH DESIGN AND METHODS\nEligible patients at screening were $18\nyears of age with a BMI between 23 and\n45 kg/m2 and glycosylated hemoglobin\nA1c (HbA1c) between 7.0% and 11.0%\n(53-97 mmol/mol) on oral antihypergly-\ncemic medication (OAM) monotherapy\nor between 7.0% and 10.0% (53-86\nmmol/mol) on combination OAM ther-\napy. Patients were excluded from the\nstudy if they were taking GLP-1 receptor\nagonists during the 3 months before\nscreening or were on long-term in-\nsulin therapy. The protocol was ap-\nproved by local institutional review\nboards, and all patients provided written\ninformed consent before participation\nin the trial. The study was conducted\nin accordance with the Declaration of\nHelsinki guidelines on good clinical\npractices (8).\nEligible patients entered a lead-in pe-\nriod that lasted up to 12 weeks (Fig. 1A).\nDuring this period, previous OAMs other\nthan metformin and pioglitazone were\ndiscontinued, and patients were upti-\ntrated on a dual-OAM regimen of maxi-\nmally tolerated metformin (1,500-3,000\nmg/day; .2,550 mg/day allowed only in\ncertain countries outside the U.S. per\ncountry label) and pioglitazone (30-45\nmg/day). Patients were then stabilized\nfor ;8 weeks before randomization, at\nwhich time a qualifying HbA1c .6.5%\nwas required for ongoing eligibility.\nPatients were then randomized to\none of four arms (2:2:2:1) of subcutane-\nous injections of once-weekly dulaglu-\ntide 1.5 mg or dulaglutide 0.75 mg,\nexenatide, or once-weekly placebo\n(Fig. 1A) according to a computer-\ngenerated random sequence using\nan interactive voice response system.\nExenatide-treated patients received\n5 mg BID for the first 4 weeks and\n10 mg BID for the remainder of the\nstudy. After 26 weeks, placebo-treated\npatients were switched in a blinded\nfashion (1:1) to dulaglutide 1.5 mg or\ndulaglutide 0.75 mg (52-week data for\nthese patients are included in separate\nanalyses not reported here). Randomi-\nzation was stratified by country. An\nadd-on rescue therapy was allowed for\npatients who met prespecified criteria\nfor severe, persistent hyperglycemia; a\ndetailed description of the criteria for\nrescue therapy is provided in the Sup-\nplementary Data. In addition, patients\nwho discontinued the study drug\nbecause of an adverse event were al-\nlowed to remain in the study for safety\nfollow-up.\nThe primary outcome measure was\nchange in HbA1c from baseline to 26\nweeks. Secondary efficacy measures\nwere change in HbA1c from baseline to\n52 weeks, percentage of patients with\nHbA1c ,7.0% (53 mmol/mol) or #6.5%\n(48 mmol/mol), changes in central lab-\noratory fasting serum glucose (FSG),\n8-point self-monitored plasma glucose\n(SMPG) profiles, change in body weight,\nand b-cell function and insulin sensitiv-\nity indices (updated HOMA2).\nSafety assessments included adverse\nevents, hypoglycemic episodes, vital\nsigns, electrocardiograms, serial collec-\ntion of laboratory parameters (hematol-\nogy, urinalysis, hepatobiliary analytes,\nrenal analytes, pancreatic enzymes,\nand calcitonin), injection site reactions,\nand dulaglutide antidrug antibodies\n(ADAs). Adjudication of pancreatic\nevents was performed by an indepen-\ndent clinical event classification group.\nThe following events were adjudicated\nto assess for possible development of\npancreatitis: investigator-reported pan-\ncreatitis, adverse events of serious\nor severe abdominal pain without\nknown cause, and confirmed cases of\nasymptomatic elevations (three or more\ntimes the upper limit of normal) in pan-\ncreatic enzymes. Laboratory analyses\nwere performed at a central laboratory\n(Quintiles). Immunogenicity testing was\nperformed by BioAgilytix (Durham, NC)\nand Millipore (St. Louis, MO).\nHypoglycemia was defined as plasma\nglucose (PG) #70 mg/dL (#3.9 mmol/L)\nand/or symptoms or signs attributable\nto hypoglycemia. Severe hypoglycemia\nwas defined as an episode requiring\nthe assistance of another person to ac-\ntively administer therapy (9).\nStatistical Analyses\nThe study was designed with 90% power\nto show superiority of dulaglutide\nversus placebo and 93% power for non-\ninferiority versus exenatide on the\nchange from baseline in HbA1c at the\n26-week primary end point with an SD\nof 1.3%, a one-sided a of 0.025, and a\n2160\nEfficacy/Safety of Dulaglutide Versus Exenatide\nDiabetes Care Volume 37, August 2014\nDownloaded from diabetesjournals.org/care/article-pdf/37/8/2159/621522/2159.pdf by guest on 24 September 2026"
+    },
+    "C16": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 73,
+      "end_line": 76,
+      "exact_projection_quote": "(12.1%). The most common reasons\nfor study discontinuation at 26 weeks\nwere adverse events and patient deci-\nsion (Fig. 1B). Disposition, including"
+    },
+    "C17": {
+      "source_file": "2159.pdf",
+      "captured_bytes_sha256": "sha256:63cd5a3ff8875b21943f71cba0ec58fef741549f962132786cc1bf4a3b77270f",
+      "projection_version": "sha256:96d13f4eb3546c537bd648083897e384742da34546c3cc0b5bca081d377252b5",
+      "kind": "narrative",
+      "page": 3,
+      "start_line": 120,
+      "end_line": 129,
+      "exact_projection_quote": null,
+      "resolution": "invalid line bounds",
+      "available_page_lines": 112
+    }
+  }
+}
