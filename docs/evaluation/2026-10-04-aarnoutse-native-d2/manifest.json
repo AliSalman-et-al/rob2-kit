@@ -1,0 +1,52 @@
+{
+  "authorization": "Exactly one fresh native Aarnoutse2017 D2 LunaMedium invocation; no paidretry/secondcase",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "home": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/aarnoutse-native-d2/home",
+  "config_sha256": "800106388fae67db5fa1b1e5b1638ceaf99e6a26ec2e050fd2ade3ce4083df10",
+  "skill_sha256": "e057f2fc7f9ec260c7abdc18fc8814e493c2d47ff9e047afa433e4344b747ba2",
+  "instruction_sha256": "0c639bb95181555ecec98f09def7e0eb90ea6d115e40ae447bb356d932f94552",
+  "prompt_sha256": "738455ea6afd79cbbe099ea7f7b1f6c381be7e9b5b5b1a806eff7e0a1bc611fa",
+  "private_criteria_sha256": "673e8c0d48f1469d0bf95a0335992bee792120918c2019c186fef6f94f22972e",
+  "independent_facts_sha256": "a66c2d57f0ec3a8b49f12ed06eaa1b58f2df602d64695c16039f6381100e8fa9",
+  "availability_manifest_sha256": "c84fb47e3967b0fa6cdb9e9ef82bc8c6211c0ac531535fa16708949694f0e5f7",
+  "availability_packet_sha256": "79775e525eb28ff22bb052b6a00736ca576f72db315ec18d426bcfef6d4d8bdb",
+  "availability_packet_not_model_input": true,
+  "source_provenance_sha256": "351f4ae049c6dce452231751afb5d17377a78f029322e4b589b564a04ce5eecd",
+  "initial_canonical_sha256": "11aba21f0a86539f5158613a3f54840f4179e57297c45e9ae1a24f0373156d86",
+  "runner_sha256": "0c863c75f9f9d4ba11a8f252fc07d8956de5a2fb23f659e67df86a8c5e4f99c8",
+  "allowed_tools": [
+    "get_status",
+    "get_domain_context",
+    "list_sources",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "select_visual_evidence",
+    "save_working_checkpoint",
+    "save_domain_judgment"
+  ],
+  "limits": {
+    "invocations": 1,
+    "tool_count_stop": false,
+    "input_token_stop": false,
+    "output_review_threshold": 6000,
+    "wall_review_seconds": 480,
+    "idle_review_seconds": 90,
+    "identical_rejected_submissions_stop": 3,
+    "supervised": true
+  },
+  "flags": [
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}"
+  ],
+  "implementation_sha": "22edcd74751595e865bcf615aa8fff6e0dc8507b",
+  "guidance_profile": "current",
+  "pack": "Original D2 rob2.parallel.assignment2019.1; no scientificpack/evaluator change",
+  "native_exposure_sha256": "add43630f42d915aae85c5dbd02ca9d41d2251686077e50cf388f515f42d4bb0",
+  "skill_delivery_sha256": "8b5d2d18aac9b1672f9421f784623e8b52ea52dd4effecb2f37ac375076a28e4"
+}

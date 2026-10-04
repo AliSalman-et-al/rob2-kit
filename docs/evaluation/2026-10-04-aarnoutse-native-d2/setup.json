@@ -1,0 +1,11 @@
+{
+  "workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/aarnoutse-native-d2/workspace",
+  "staging": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/aarnoutse-native-d2",
+  "code": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/aarnoutse-native-d2/code",
+  "skill": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/aarnoutse-native-d2/rob2-assess/SKILL.md",
+  "python": "/home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python",
+  "code_sha": "22edcd74751595e865bcf615aa8fff6e0dc8507b",
+  "operator_reading": "Preproposal only; no assessment-epoch source reads or seeded facts",
+  "exported_skill_verified": true,
+  "credentials_read_or_copied": false
+}

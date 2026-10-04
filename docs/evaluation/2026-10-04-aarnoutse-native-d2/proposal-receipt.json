@@ -1,0 +1,11 @@
+{
+  "outcome": "review_required",
+  "state_revision": 2,
+  "phase": "proposal",
+  "proposal_identity": "sha256:128e99f5940f0f4463f3685f0e5bba38d00c64d59aa88893fa3fa57f75f62f2a",
+  "review": {
+    "reference": "sha256:d110d36d5c919f5151c20c2c7376b0fff231695ee2f9fc28d7fc44d6b0646746",
+    "purpose": "proposal",
+    "authority": "researcher"
+  }
+}

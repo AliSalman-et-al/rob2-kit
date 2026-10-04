@@ -1,0 +1,284 @@
+{
+  "exit_code": 0,
+  "stop": "accepted D2 checkpoint",
+  "elapsed_seconds": 91.7469325120037,
+  "tool_calls": 15,
+  "calls": {
+    "item_1": {
+      "server": "rob2",
+      "tool": "get_status",
+      "completed": true
+    },
+    "item_2": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_3": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_4": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_5": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_6": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_7": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_8": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_9": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_10": {
+      "server": "rob2",
+      "tool": "get_status",
+      "completed": true
+    },
+    "item_11": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_12": {
+      "server": "rob2",
+      "tool": "search_sources_batch",
+      "completed": true
+    },
+    "item_13": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_14": {
+      "server": "rob2",
+      "tool": "save_domain_judgment",
+      "completed": true
+    },
+    "item_15": {
+      "server": "rob2",
+      "tool": "save_domain_judgment",
+      "completed": true
+    }
+  },
+  "agent_messages": 0,
+  "provider_response_count": 15,
+  "usage": {
+    "input_tokens": 840295,
+    "cached_input_tokens": 741888,
+    "output_tokens": 3285,
+    "reasoning_output_tokens": 350
+  },
+  "uncached_input_tokens": 98407,
+  "model_context": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "review_alerts": [],
+  "accepted_checkpoint": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 4,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "aarnoutse-2017",
+        "domain_id": "domain:randomization",
+        "cursor": null,
+        "max_response_bytes": null
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:418d8c4a1549e4ca7b7b9fb91c640557715fe7a9f194ff926f9b74febce4c5a8",
+        "trial_id": "aarnoutse-2017",
+        "domain_id": "domain:deviations",
+        "judgment": "low",
+        "driver_questions": [],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:deviations:participants-aware",
+              "status": "supported",
+              "evidence": [
+                "sha256:94834a706ea533412e8dce76b81f0c055ae76ae91a403c826dd18f6af5ec9057",
+                "sha256:ba58c3b8c62ca10b3b95c34a56b80b3c2098f3ab698b10ed03f25788af4072b7"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "host_asserted"
+            },
+            {
+              "question_id": "sq:deviations:personnel-aware",
+              "status": "supported",
+              "evidence": [
+                "sha256:94834a706ea533412e8dce76b81f0c055ae76ae91a403c826dd18f6af5ec9057"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "host_asserted"
+            },
+            {
+              "question_id": "sq:deviations:appropriate-analysis",
+              "status": "supported",
+              "evidence": [
+                "sha256:3256c0910324b0ea662ac4ac310906e48c526c8a7dbff3139ca07cb8a884afa4",
+                "sha256:b3b943f9215d879773cb008918e29b4bddfa910e7fb8a33b0914023187e3403b",
+                "sha256:ca9db64c501895439b2ff2290606437ad328bdb62a3ed18d614dcc4e2cbcc4a0"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [],
+              "support_attribution": "host_asserted"
+            }
+          ],
+          "identity": "sha256:99bf2d8209fc49c741725f2cb43f911a348560a9181a643b415bb89117658dce"
+        }
+      },
+      "trial_ready_for_review": false,
+      "retry": false
+    }
+  },
+  "submission_rejections": [
+    {
+      "item": {
+        "id": "item_14",
+        "type": "mcp_tool_call",
+        "server": "rob2",
+        "tool": "save_domain_judgment",
+        "arguments": {
+          "trial_id": "aarnoutse-2017",
+          "domain_id": "domain:deviations",
+          "expected_revision": 3,
+          "answers": [
+            {
+              "question_id": "sq:deviations:participants-aware",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "role": "direct_support",
+                  "evidence": "eh_94834a706ea53341"
+                },
+                {
+                  "role": "context",
+                  "evidence": "eh_ba58c3b8c62ca10b"
+                }
+              ],
+              "justification": "The report describes the trial as double-blind and placebo-controlled, and the regimen used matching placebo capsules in the 600- and 900-mg arms alongside dose-specific rifampin capsules. This supports that participants were probably blinded to dose assignment. The report does not separately state whether participants correctly guessed assignments, so I use a probable rather than definitive judgment.",
+              "unknowns": [
+                "Whether intervention-specific symptoms or other cues allowed some participants to infer their dose."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:deviations:personnel-aware",
+              "answer": "probably_no",
+              "bases": [
+                {
+                  "role": "direct_support",
+                  "evidence": "eh_94834a706ea53341"
+                },
+                {
+                  "role": "inference",
+                  "evidence": "eh_5291b9c9c6e1de16"
+                }
+              ],
+              "justification": "The double-blind, placebo-controlled design and use of placebo capsules support that participants and treatment staff were probably blinded to assigned dose. However, the report does not explicitly identify who was blinded or whether allocation concealment was maintained through treatment delivery, so this remains probable rather than definitive.",
+              "unknowns": [
+                "The report does not specify which study personnel were blinded or whether treatment personnel could infer dose from the capsule regimen."
+              ],
+              "counterevidence": []
+            },
+            {
+              "question_id": "sq:deviations:appropriate-analysis",
+              "answer": "yes",
+              "bases": [
+                {
+                  "role": "direct_support",
+                  "evidence": "eh_3256c0910324b0ea"
+                },
+                {
+                  "role": "direct_support",
+                  "evidence": "eh_b3b943f9215d8797"
+                },
+                {
+                  "role": "context",
+                  "evidence": "eh_ca9db64c50189543"
+                }
+              ],
+              "justification": "For this AUC0-24 Result, pharmacokinetic data were available for 23, 21, and 19 participants in the three randomized dose groups; the report states the full pharmacokinetic curve was recorded in hospitalized patients at week 6. Thus participants without an AUC result were not reported as having observed outcomes omitted from the assigned-group analysis; the described analysis uses available measured outcomes by dose group, consistent with a modified assignment-effect analysis excluding unavailable outcome data. The report does not provide the exact reason each randomized participant lacked PK data, but no evidence indicates reassignment or exclusion despite an observed AUC.",
+              "unknowns": [
+                "Exact participant-level reasons for absent week-6 pharmacokinetic measurements are not given."
+              ],
+              "counterevidence": [
+                {
+                  "evidence": [
+                    "eh_ca9db64c50189543",
+                    "eh_b3b943f9215d8797"
+                  ],
+                  "implication": "The available PK sample is a subset of the 150 randomized participants and recruitment into intensive sampling/hospitalization may have affected who had an observed AUC; the source does not give the exact participant-level missingness reasons."
+                }
+              ]
+            }
+          ]
+        },
+        "result": {
+          "content": [],
+          "structured_content": {
+            "outcome": "repair",
+            "head": {
+              "phase": "assessment",
+              "state_revision": 3,
+              "next_action": {
+                "operation": "get_domain_context",
+                "authority": "host",
+                "trial_id": "aarnoutse-2017",
+                "domain_id": "domain:randomization",
+                "cursor": null,
+                "max_response_bytes": null
+              },
+              "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+            },
+            "repairs": [
+              {
+                "path": "/answers/1/bases/1/evidence",
+                "code": "invalid_evidence",
+                "detail": "Evidence 'eh_5291b9c9c6e1de16' does not resolve to captured evidence for Trial 'aarnoutse-2017'.",
+                "answer_path": null
+              }
+            ]
+          }
+        },
+        "error": null,
+        "status": "completed"
+      },
+      "consecutive": 1
+    }
+  ],
+  "consecutive_submission_rejections": 0,
+  "guards": "No tool-count/input-token stop. Output/wall/idle thresholds are supervised review alerts. Only accepted D2, forbidden tool/scope/model, or three identical rejected submissions stop automatically; one exec, no retries",
+  "retry_or_continuation": false,
+  "scientific_original_and_staging_hashes_unchanged": true
+}

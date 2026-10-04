@@ -1,0 +1,36 @@
+{
+  "outcome": "success",
+  "state_revision": 1,
+  "phase": "proposal",
+  "batch_identity": "sha256:c6ec2c1348098124a23de764fd7acc107dc8969afddc78ffca97b289ebb350a1",
+  "conditions": [],
+  "trials": [
+    {
+      "id": "aarnoutse-2017",
+      "label": "aarnoutse-2017",
+      "requested_outcome": "Rifampin pharmacokinetics, plasma AUC0-24",
+      "sources": [
+        {
+          "id": "source_721304c7340d7a1d1c26232421b62b37f884d9edb9deccfba0622889c91886fe",
+          "trial_id": "aarnoutse-2017",
+          "role": "main_article",
+          "label": "aac.01054-17.pdf",
+          "logical_path": "aac.01054-17.pdf",
+          "sha256": "sha256:8e00d72fc3639fc420b622cd831a352b0cd66519e872668596c788322631b9e3",
+          "media_type": "application/pdf",
+          "page_count": 13,
+          "projection_hash": "sha256:26361cf4c498e711a829bef51243c6e2f0fa8759356f0d6676c3d0414281d875",
+          "origin": "local_dossier",
+          "declared_role": "main_article"
+        }
+      ],
+      "registry": {
+        "kind": "not_found",
+        "query": "undeclared",
+        "retrieved_at": "2026-10-04T08:33:55.174326Z"
+      },
+      "omissions": [],
+      "identity": "sha256:8ad099f585799705bde9dde4f695593583c8526e78e7ed5961ab7457e21dc7ce"
+    }
+  ]
+}
