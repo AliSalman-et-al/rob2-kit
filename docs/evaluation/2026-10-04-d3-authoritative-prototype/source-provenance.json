@@ -1,0 +1,12 @@
+{
+  "version": "22 August 2019",
+  "source_pdf_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+  "source_pdf_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+  "official_landing": "https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2",
+  "extraction": "pdftotext -layout; retain only complete elaboration column. Reflow whitespace only; preserve wording, examples and numbered reasons. SQ3.4 continues on p46.",
+  "faq_url": "https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2",
+  "faq_sha256": "060C4F0AA70573BB5D07257EB3D7B1DFFF07C4373DE1907E0C1055ADDBA4F8CD",
+  "faq_version": "Undated page; retrieved 4 October 2026",
+  "faq_private_capture": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-authoritative-prototype/faq.html",
+  "faq_scope": "SQ3.1 unknown extent and SQ3.2 method-list questions. Exact short quotations plus locators link to full answers. No FAQ sentence is transformed into a new scientific requirement."
+}

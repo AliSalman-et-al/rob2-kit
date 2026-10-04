@@ -14,37 +14,24 @@ counterpoint refers to the answer's zero-based basis index, for example:
 Inactive branch answers may be omitted or retained without fabricated reasoning;
 the server commits only the dependency-closed active path.
 
-## Availability audit
+## Scientific authority and source recovery
 
-For D3.1, support Yes or Probably Yes with actual outcome-availability
-evidence. Accept one or more of:
+Use the official question elaborations and shared response guidance delivered
+by `get_domain_context`, with the exact approved Result and activation path.
+The opt-in `official_d3_prototype` profile replaces operational rules with
+`official_guidance.sections`; cards identify the relevant source locator.
+Follow its question-specific permitted options. The official source version,
+hash and full-source URL accompany the text, including the distinction between
+available outcomes excluded from analysis and measurements not obtained.
 
-- comparable observed-outcome counts for the randomized population;
-- arm-specific loss-to-follow-up or censoring rates, reasons, and follow-up
-  accounting; or
-- an explicit statement that ascertainment was complete or nearly complete.
+Full sources: [RoB2 guidance, 22 August 2019](https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2)
+and [Cochrane FAQs, Domain 3](https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2).
+The FAQ's unknown-extent and method-list questions supplement the official
+elaborations. This reference introduces no additional answer thresholds,
+certainty requirements, method whitelist or mandatory sensitivity procedure.
 
-Support No or Probably No with evidence that availability was materially
-incomplete for this Result. If exact extent cannot be determined directly,
-weigh outcome-specific follow-up accounting and other source-supported
-information for a Probably Yes or Probably No judgment. Use No information
-when neither direct nor indirect evidence supports a reasonable availability
-inference after bounded retrieval. Failure to demonstrate complete availability
-is not evidence that availability was incomplete.
-
-The following do not establish affirmative availability on their own:
-
-- analysis denominators or ITT membership;
-- planned or scheduled follow-up;
-- treatment continuation or discontinuation; or
-- a generic censoring rule without actual rates or follow-up accounting.
-
-For mortality, recovery or discharge does not establish vital status at a later
-time point. A total combining completed follow-up, recovery, and death does not
-establish mortality availability. If availability remains unresolved, inspect
-outcome-status or missing-value tables, including supplements. Match their
-outcome and time window to the approved Result. Recovery may inform bias from
-missingness, but does not make unknown vital status observed.
+Use `read_pages` to inspect returned source windows; retain source/page/line
+coordinates and scoped retrieval limits in the draft.
 
 When the availability premise remains unresolved, use the active comparison
 card's full Source inventory to inspect unopened supplements or combined
@@ -74,34 +61,6 @@ Keep these quantities distinct for each arm and time point:
 An analyzed count is not necessarily an observed count. Imputed outcomes count
 as missing outcome data for RoB 2. Treatment discontinuation is not missing
 outcome data when follow-up and outcome ascertainment continued.
-
-If some outcomes are missing, assess whether data remain available for nearly
-all randomized participants. Keep the randomized denominator, outcome-observed
-count, analyzed count, imputed count, excluded count, and event count separate
-for the same arm, population, unit, and time point. Consider whether the
-missing outcomes could make an important difference to this Result. For
-dichotomous outcomes, compare the missing count with observed events, not only
-the randomized denominator. A count below the randomized total does not settle
-that question, and no universal percentage threshold replaces this impact
-judgment. Explain in the justification why residual unobserved outcomes plausibly
-could or could not materially affect the approved estimate, relating the reported
-extent to event scale or variability and known follow-up circumstances. For a
-time-to-event Result, event-count comparisons give context, not a mathematical
-bound on its hazard ratio or interval. Nearly complete follow-up may support a
-calibrated probable judgment without precise censoring times or a formal
-sensitivity analysis. Preserve unknown reasons or timing without automatically
-turning them into No information or an adverse judgment.
-
-Distinguish administrative censoring at a common data cutoff from censoring
-caused by missing follow-up before the outcome could be observed. Treatment
-discontinuation does not establish loss to follow-up: participants who stop
-assigned treatment may still have the approved outcome collected. Conversely,
-an analysis denominator does not establish that follow-up continued for those
-excluded before endpoint ascertainment. Last-known-alive status only supports
-mortality availability through that date. For time-to-event Results, censoring
-may still create missing outcome information; assess its timing, reason, actual
-follow-up pathway, and relation to treatment or prognosis instead of treating
-every censored participant as either fully observed or missing by default.
 
 Questions 2.3, 2.6, and 3.1 may include compact `missing_data` rows. Give each
 row a comparable arm, population, unit, and time point. Use a row-level `basis`
@@ -142,55 +101,11 @@ post-randomization exclusions as distinct facts. The server preserves these
 fields and only derives `randomized - observed`; it does not decide whether a
 censored participant is informative.
 
-## Assess bias from missingness
+## Draft and submit
 
-If data were not available for all or nearly all participants, ask in sequence:
-
-1. Does a bias-correcting method or informative sensitivity analysis show that
-   the Result was not biased?
-2. Could missingness depend on the true outcome, based on reasons, health
-   status, withdrawal, loss to follow-up, or censoring?
-3. If it could, is that dependence likely given arm differences, reasons,
-   prognostic factors, or trial circumstances?
-
-Simple imputation, including last observation carried forward or multiple
-imputation based only on intervention group, does not by itself show freedom from
-bias. A comparison that changes group attribution, such as ITT versus
-as-treated, does not test unobserved outcome values unless the source establishes
-that relationship. A reassuring sensitivity analysis must vary plausible
-unobserved outcomes under the missingness mechanism relevant to the approved
-Result. Documented reasons support reassurance only when they address the
-outcome relationship.
-
-Keep possible dependence in 3.3 separate from likely dependence in 3.4. For
-3.4, state which reasons, arm differences, prognostic factors, or trial
-circumstances support the likelihood judgment and why they make missing
-participants' true outcomes likely to differ. A documented reason for every
-missing outcome is not required; available rates, reasons, and circumstances
-may support the inference when their relation to the true outcome is explained.
-A sensitivity analysis that assumes particular unobserved outcomes shows their
-potential effect under that assumption, but does not by itself establish that
-missingness likely depended on the true outcome. Weigh contextual counterevidence,
-including comparable outcome follow-up and continued ascertainment after
-treatment stopping, without treating it as proof of non-informative censoring.
-Absence of precise reasons or timing alone does not require `no_information`;
-absent contrary evidence alone does not establish likely dependence. Preserve
-`no_information` when the card's uncertainty rule applies, even when that answer
-leads to High risk of bias.
-
-D3.2 does not allow `no_information`. When no bias-correcting evidence is found,
-use the question card to choose a permitted negative or probably-negative answer
-with the appropriate limitation or Evidence basis. Do not fabricate direct
-support for the absence of bias.
-
-## Paired premise check
-
-Use neutral pairs to keep the seams separate: after treatment stops, compare
-continued collection of the approved outcome with loss to follow-up before that
-outcome; compare a common administrative cutoff after the approved window with
-prognosis-related censoring before it. Keep the randomized, observed, analyzed,
-imputed, and event quantities tied to the same arm and time point. The changed
-premise is whether and why outcome information became unavailable, not a
-percentage threshold. The pair supplies no answer or risk label; ground each
-proposition in exact Evidence and retain No information or High where the
-official path requires it.
+Resolve the active question path from the official options and activation
+predicates. Explain the source-grounded reasoning, unresolved information and
+counterevidence for each active answer. Inspect relevant unopened Sources
+before describing report absence, or state a bounded stopping rationale.
+Use the official guidance to judge the evidence; the arithmetic preview and
+source-reading receipts do not choose an answer or risk label.

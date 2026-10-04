@@ -1,0 +1,54 @@
+6 Detailed guidance: bias due to missing outcome data
+
+6.1       Background
+Randomization provides a fair comparison between two or more intervention groups by balancing, on average,
+the distribution of known and unknown prognostic factors at baseline between the intervention groups. Missing
+measurements of the outcome, for example due to dropout during the study, may lead to bias in the intervention
+effect estimate.
+Possible reasons for missing outcome data include (83):
+      •    participants withdraw from the study or cannot be located (‘loss to follow-up’ or ‘dropout’);
+      •    participants do not attend a study visit at which outcomes should have been measured;
+      •    participants attend a study visit but do not provide relevant data;
+      •    data or records are lost or are unavailable for other reasons; and
+      •    participants can no longer experience the outcome, for example because they have died.
+This domain addresses risk of bias due to missing outcome data, including biases introduced by procedures used
+to impute, or otherwise account for, the missing outcome data.
+Some participants may be excluded from an analysis for reasons other than missing outcome data. In particular,
+a naïve ‘per protocol’ analysis is restricted to participants who received the intended intervention (see section
+1.3.1). Potential bias introduced by such analyses, or by other exclusions of eligible participants for whom
+outcome data are available, is addressed in the domain ‘Bias due to deviations from intended interventions’ (see
+section 5), in which the final signalling questions examine whether the analysis approach was appropriate. This
+is a notable change from the previous Cochrane RoB tool for randomized trials, in which the domain
+addressing bias due to incomplete outcome data addressed both genuinely missing data and data deliberately
+excluded by the trial investigators.
+
+6.1.1      Missing outcome data when estimating the effect of assignment to intervention
+The effect of assignment to intervention should be estimated using an intention-to-treat (ITT) analysis (8). As
+noted in section 1.3.1, the principles underlying ITT analyses are (9, 10):
+      (1) analyse participants in the intervention groups to which they were randomized, regardless of the
+          intervention they actually received; and
+      (2) include all randomized participants in the analysis, which requires measuring all participants’ outcomes.
+While the first and second principles can always be followed for participants for whom outcome data are
+available, measuring outcome data on all participants is frequently difficult or impossible to achieve in practice.
+Therefore, it can often only be followed by making assumptions about the missing values of the outcome.
+Even when an analysis is described as ITT, it may exclude participants with missing outcome data, and so be at
+risk of bias. Such analyses are sometimes described as ‘modified intention-to-treat’ (mITT) analyses, but others
+use this term in different ways (84). Therefore, assessments of risk of bias due to missing outcome data should
+be based on the issues addressed in the signalling questions for this domain, and not on the way that trial
+investigators described the analysis.
+
+6.1.2      Missing outcome data when estimating the effect of adhering to intervention
+As noted above, the potential for bias arising from exclusion of eligible trial participants who did not adhere to
+their assigned intervention is addressed in the domain ‘Bias due to deviations from intended interventions’ (see
+section 5). Such analyses may be additionally biased if participants are excluded due to missing outcome data.
+Appropriate methods to estimate the effect of adhering to intervention (for example, instrumental variable
+analyses to estimate the effect of a single intervention that is administered at baseline (5)) may nonetheless
+produce biased estimates if participants are excluded due to missing outcome data.
+The circumstances in which missing outcome data lead to bias are similar regardless of the effect of interest, so
+there is a single set of signalling questions for this domain.
+
+
+
+
+                                                          39
+

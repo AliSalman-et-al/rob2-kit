@@ -1,0 +1,20 @@
+{
+  "README.md": "195b89c7a0b5a3c05165ec33c34afb486c04ebc5a566ecf6f12c356b0bb7e05b",
+  "attal-2016-current-scientific-sections.json": "062c7cd0b923fb3a02685313c95cb492483b4d3df1c54c8325bacffe6ad20734",
+  "attal-2016-prototype-scientific-sections.json": "47409d52691b6fb3151f0c2e9c52a62c7b2e3d6cf84c3c3575615e767b90a344",
+  "context-comparison.json": "8eaac4686dc9a335a2ed46779cdc9ebe0dad8d3314c919a881507055d67307b9",
+  "evaluation-plan.md": "71638ea51eaf78ab5c2e31822cbc2fa6ff47ef44b85efbaaf35fdc0e1d38160e",
+  "export_contexts.py": "4b24de560b51366d47808c728542f1537526ddad18a87c83da77274993765b81",
+  "failed-offline-replays.json": "67dc0c56e78a67db5274bd0f178ced36cdde30c0defa4e08aa119b62767c9ef9",
+  "nefigard-current-scientific-sections.json": "571baba839e75504ae10bae2e9845345bfd174851162851aad2729af46517f28",
+  "nefigard-prototype-scientific-sections.json": "e7399875cb80e1c074c19d3f5bb81d5a31b64ee4b68dcc805a223f3ade8f47e0",
+  "official-box8-layout.txt": "a30ee183b679acd1f3576f8b7025d9ba20bfe3935259096522ba725efbab9ef5",
+  "official-judgment-layout.txt": "5913a43d3a197de73e954c10222b7837d9439928ef2900c9b5a39c7a82621a1c",
+  "official-response-options-layout.txt": "c83838be3cf4cccca7588f01f44786d3b865809e0b9ff7bceb2676b79187c829",
+  "official-scope-layout.txt": "8c6bbee7246188528b3f7915c2f3b15495f5f7956bd4ba622f7bcc8353dd6c04",
+  "removed-question-statements.json": "d0ab9f9bb51ce1bad6ff92fb3fb6d90f1f89e600e4577c219df19cf8b2cca29b",
+  "skill-before-after.json": "8ab2f491cded49d830bf272c529eee9cce3903871ae84a479977f14a1a0ba53c",
+  "source-provenance.json": "2018f8ba6f3b92b73cf2fdd4570bbcdb1b49d620edb0ce1a152b036de68a34ce",
+  "transcription.json": "0b7e911ed7c180778efce7241e3593bd3a25a9b8aafe9db64378edb55ef389d0",
+  "verification.json": "7d6a264f32608cacdc7b7cc9ed77769f7420b9422530733803bb019014c660d8"
+}

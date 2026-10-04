@@ -363,6 +363,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "answers",
             "guidance",
             "response_framework",
+            "guidance_profile",
             "traps",
             "completion_rule",
             "working_checkpoint",
@@ -4008,6 +4009,17 @@ def get_domain_context(
             )
         ),
     ] = False,
+    guidance_profile: Annotated[
+        Literal["current", "official_d3_prototype"] | None,
+        Field(
+            description=(
+                "Optional experimental D3 scientific context. official_d3_prototype replaces "
+                "maintainer decision rules with a single complete official guidance core. "
+                "Default current preserves established delivery; other Domains are unchanged. "
+                "A continuation inherits its frozen profile."
+            )
+        ),
+    ] = None,
     cursor: Annotated[
         StrictStr | None,
         Field(
@@ -4061,6 +4073,16 @@ def get_domain_context(
                 },
             )
     if cursor_scope is not None:
+        snapshot = cursor_scope.get("snapshot")
+        frozen_data = snapshot.get("data", {}) if isinstance(snapshot, dict) else {}
+        frozen_profile = frozen_data.get("guidance_profile", "current")
+        if cursor_scope.get("domain_id") != "domain:missing":
+            guidance_profile = "current"
+        if guidance_profile is not None and guidance_profile != frozen_profile:
+            raise ValueError("domain_context_cursor_stale: guidance profile changed")
+        if frozen_profile in {"current", "official_d3_prototype"}:
+            guidance_profile = frozen_profile
+    if cursor_scope is not None:
         trial_id = trial_id or cursor_scope["trial_id"]
         domain_id = domain_id or cursor_scope["domain_id"]
         if missing_data is None and isinstance(cursor_scope.get("missing_data"), list):
@@ -4092,6 +4114,7 @@ def get_domain_context(
             if missing_data is not None
             else None,
             include_candidates,
+            guidance_profile or "current",
         ),
         domain_cursor=cursor,
         domain_page_size=max_response_bytes,

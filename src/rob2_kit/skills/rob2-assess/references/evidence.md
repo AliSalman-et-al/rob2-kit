@@ -336,10 +336,9 @@ scientific absence claim.
 Completion: each Source-owned assessable Result leaf has exact support, and each
 active Domain answer has a valid basis for its stated premise and uncertainty.
 
-For D3.2, `no` means the inspected evidence does not establish protection from
-missing-outcome bias; it does not mean bias was proven. Preserve unknown
-missingness mechanisms and incomplete source coverage in `unknowns` and
-`limitations`. Cite the inspected reporting or a valid scoped no-hit receipt.
-An unsupported limitation alone is insufficient. A `yes` still needs affirmative
-reassuring evidence; do not transfer this negative-evidence exception to D3.1,
-D3.3 or D3.4.
+The parallel-assignment submission contract has no `no_information` option for
+D3.2. Its negative-answer Evidence-role exception allows inspected context or
+inference, or a scoped no-hit receipt, without fabricating affirmative Evidence.
+This is a structural submission rule, not a scientific determination of bias.
+Use the official question elaboration and response guidance for the answer's
+meaning, and retain source coverage limits and unknowns.

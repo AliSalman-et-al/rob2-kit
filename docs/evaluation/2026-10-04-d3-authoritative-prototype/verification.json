@@ -1,0 +1,14 @@
+{
+  "paid_calls_this_turn": 0,
+  "canonical_pack_source_unchanged": true,
+  "historical_bundles_verified": true,
+  "protected_originals_unchanged": true,
+  "initial_focused_run": "74 passed; one D2 header-overflow regression found",
+  "after_metadata_fix": "5 passed, including authoritative-source/native recovery controls and exact previously failing D2 page-budget test",
+  "ruff": "passed",
+  "ty": "passed",
+  "format": "passed",
+  "source_tree_release_verifier": "passed",
+  "decision": "Keep opt-in prototype; revise before default adoption pending matched behavior.",
+  "no_gain_claim": true
+}

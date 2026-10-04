@@ -104,135 +104,65 @@ def _schema_hash(schema: dict[str, Any]) -> str:
 
 
 def _verify_d3_projection(context: dict[str, Any]) -> None:
-    """Check the live structured D3.1 premise boundary and provenance split."""
-
-    if context.get("domain_id") != "domain:missing":
-        raise ValueError("D3 acceptance context has the wrong Domain")
+    """Check D3 identity and source coverage without enforcing maintainer science."""
     questions = context.get("questions")
     if not isinstance(questions, list):
-        raise ValueError("D3 acceptance context has no question cards")
-    card = next(
-        (
-            item
-            for item in questions
-            if isinstance(item, dict) and item.get("id") == "sq:missing:data-available"
-        ),
-        None,
-    )
-    if not isinstance(card, dict):
-        raise ValueError("D3.1 question card is missing")
-
-    if card.get("official_guidance") != (
-        "‘Nearly all’ should be interpreted as that the number of participants with missing "
-        "outcome data is sufficiently small that their outcomes, whatever they were, could "
-        "have made no important difference to the estimated effect of intervention. For "
-        "continuous outcomes, availability of data from 95% of the participants will often be "
-        "sufficient. Note that imputed data should be regarded as missing data."
-    ):
-        raise ValueError("D3.1 official guidance projection differs")
-    if card.get("source_locator") != "Full guidance p. 45, Box 8, signalling question 3.1":
-        raise ValueError("D3.1 official locator projection differs")
-
-    evidence_needed = card.get("evidence_needed")
-    invalid_shortcuts = card.get("invalid_shortcuts")
-    considerations = card.get("considerations")
-    if not all(
-        isinstance(value, list) for value in (evidence_needed, invalid_shortcuts, considerations)
-    ):
-        raise ValueError("D3.1 structured guidance fields are not lists")
-    evidence_text = " ".join(str(item) for item in evidence_needed).casefold()
-    if not all(
-        marker in evidence_text
-        for marker in (
-            "yes or probably yes",
-            "actual outcome-availability evidence",
-            "observed-outcome counts",
-            "loss-to-follow-up or censoring accounting",
-            "complete/nearly-complete ascertainment",
-        )
-    ):
-        raise ValueError("D3.1 affirmative availability evidence boundary is incomplete")
-    shortcuts = [str(item).casefold() for item in invalid_shortcuts]
-
-    def has_shortcut(*markers: str) -> bool:
-        return any(all(marker in item for marker in markers) for item in shortcuts)
-
-    if not all(
-        (
-            has_shortcut("analysis denominator", "itt membership"),
-            has_shortcut("planned or scheduled follow-up"),
-            has_shortcut("treatment continuation", "discontinuation"),
-            has_shortcut("generic censoring rule", "actual rates", "follow-up accounting"),
-        )
-    ):
-        raise ValueError("D3.1 non-entailing shortcut boundary is incomplete")
-    consideration_text = " ".join(str(item) for item in considerations).casefold()
-    if not all(
-        marker in consideration_text for marker in ("administrative censoring", "missing follow-up")
-    ):
-        raise ValueError("D3.1 censoring distinction is missing")
+        raise ValueError("D3 question cards are missing")
+    expected = {
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent",
+    }
+    if {q.get("id") for q in questions if isinstance(q, dict)} != expected:
+        raise ValueError("D3 question identity differs")
+    for question in questions:
+        options = {"yes", "probably_yes", "probably_no", "no"}
+        if question["id"] != "sq:missing:evidence-unbiased":
+            options.add("no_information")
+        if set(question.get("options", [])) != options:
+            raise ValueError("D3 official answer options differ")
+        if not question.get("activation") or not question.get("query_suggestions"):
+            raise ValueError("D3 dependencies or source navigation are missing")
+    core = context.get("official_guidance")
+    if not isinstance(core, dict) or not core.get("complete"):
+        raise ValueError("D3 official guidance is incomplete")
+    covered = {
+        q
+        for section in core.get("sections", [])
+        if section.get("source_version") == "22 August 2019"
+        and section.get("source_sha256")
+        == "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
+        and section.get("excerpt")
+        for q in section.get("question_ids", [])
+    }
+    if covered != expected:
+        raise ValueError("D3 official source coverage differs")
 
 
 def _verify_packaged_skill(skill: str, reference: str) -> None:
-    """Check the portable skill's compact audit and co-located detail."""
-
-    def section(text: str, heading: str, prefix: str) -> list[str]:
-        lines = text.splitlines()
-        start = lines.index(heading) + 1
-        end = next(
-            (index for index in range(start, len(lines)) if lines[index].startswith(prefix)),
-            len(lines),
-        )
-        return lines[start:end]
-
-    audit_lines = section(skill, "### 6. Audit and commit the Domain once", "### ")
-    audit = " ".join(line.strip() for line in audit_lines).casefold()
-    if audit.count("availability audit") != 1 or not all(
-        marker in audit
-        for marker in (
-            "yes/probably yes needs evidence of all or nearly-all availability",
-            "no/probably no needs evidence of materially incomplete availability",
-            "if the extent remains unknown, use no information",
-            "analysis membership",
-            "planned follow-up",
-            "treatment status",
-            "generic censoring rule alone establish neither direction",
-        )
-    ):
-        raise ValueError("packaged skill D3.1 availability audit is incomplete")
-
-    audit_lines = section(reference, "## Availability audit", "## ")
-    audit_text = " ".join(line.strip() for line in audit_lines).casefold()
-    bullets: list[str] = []
-    continuation = False
-    for line in audit_lines:
-        if line.startswith("- "):
-            bullets.append(line.removeprefix("- ").strip())
-            continuation = True
-        elif not line.strip():
-            continuation = False
-        elif continuation:
-            bullets[-1] = f"{bullets[-1]} {line.strip()}"
-    normalized = [item.casefold() for item in bullets]
+    """Check scientific-source routing and co-located interface instructions."""
+    for asset in (skill, reference):
+        if not all(
+            marker in asset
+            for marker in (
+                "official_guidance.sections",
+                "official_d3_prototype",
+                "counterevidence",
+                "missing_data",
+            )
+        ):
+            raise ValueError("packaged D3 source routing or submission instructions are missing")
     if not all(
-        any(all(marker in item for marker in markers) for item in normalized)
-        for markers in (
-            ("observed-outcome counts", "randomized"),
-            ("loss-to-follow-up", "censoring", "accounting"),
-            ("complete or nearly complete",),
-            ("analysis denominators", "itt membership"),
-            ("planned", "scheduled", "follow-up"),
-            ("treatment continuation", "discontinuation"),
-            ("generic censoring rule", "actual rates", "follow-up accounting"),
-        )
-    ) or not all(
-        marker in audit_text
+        marker in reference
         for marker in (
-            "materially incomplete",
-            "failure to demonstrate complete availability is not evidence",
+            "read_pages",
+            "basis",
+            "randomized - observed",
+            "scoped",
         )
     ):
-        raise ValueError("packaged missing-data reference availability audit is incomplete")
+        raise ValueError("packaged D3 source recovery or typed arithmetic is missing")
 
 
 async def _verify_client(client: Client, contract: dict[str, Any]) -> None:
@@ -676,6 +606,7 @@ async def _verify_domains(client: Client, evidence: dict[str, Any], domains: lis
 
 def _verify_wheel_archive(wheel: Path) -> None:
     skill_members = {
+        "rob2_kit/packs/d3_authoritative.py",
         "rob2_kit/skills/rob2-assess/SKILL.md",
         "rob2_kit/skills/rob2-assess/references/deviations.md",
         "rob2_kit/skills/rob2-assess/references/evidence.md",

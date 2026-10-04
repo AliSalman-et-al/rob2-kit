@@ -125,7 +125,6 @@ def test_issue_420_guidance_keeps_availability_quantities_and_mechanism_distinct
     )
     for term in (
         "randomized",
-        "outcome-observed",
         "analysed",
         "imputed",
         "excluded",
@@ -133,11 +132,8 @@ def test_issue_420_guidance_keeps_availability_quantities_and_mechanism_distinct
         "denominator",
         "administrative censoring",
         "treatment discontinuation",
-        "last-known-alive",
-        "group attribution",
         "unobserved outcome",
         "missingness mechanism",
-        "no universal percentage threshold",
     ):
         assert term in d3, term
 
@@ -408,7 +404,7 @@ def test_neutral_fixtures_cover_requested_d3_d4_d5_contrasts() -> None:
         assert all(term in facts_by_contrast[contrast] for term in terms), contrast
 
 
-def test_reference_assets_repeat_the_decision_seams() -> None:
+def test_other_domain_reference_assets_preserve_the_decision_seams() -> None:
     from pathlib import Path
 
     root = Path(__file__).parents[1] / "src" / "rob2_kit" / "skills" / "rob2-assess" / "references"
@@ -417,11 +413,7 @@ def test_reference_assets_repeat_the_decision_seams() -> None:
         for name in ("deviations.md", "missing.md", "measurement.md", "selection.md")
     }
     for term in (
-        "outcome-observed",
         "event count",
-        "no universal percentage threshold",
-        "last-known-alive",
-        "group attribution",
         "standardized instrument",
         "detection opportunity",
         "possible influence",
@@ -436,7 +428,6 @@ def test_reference_assets_repeat_the_decision_seams() -> None:
         "multiple eligible analyses",
         "excluded participants and reasons fixed",
         "does not become missing outcome data",
-        "treatment discontinuation does not establish loss to follow-up",
         "mortality-specific pathway",
         "median time to disease progression",
         "database lock",

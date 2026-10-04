@@ -319,17 +319,19 @@ refer only to the Evidence entries in `bases`; include an explicit implication.
 A direct read does not require a search receipt.
 
 Selected Evidence must contain the complete premise. A relationship kind adds
-no facts. Definitive `yes` or `no` requires direct,
-indirect, or contradictory Evidence. Probable answers may instead rest on a
-limitation, absence receipt, or exact context/inference premise when the card
-allows that answer. Apply `response_framework.no_information_rule`: consider
-`probably_yes` and `probably_no` from the available facts and trial circumstances
-before choosing `no_information`, subject to the card's rule. State any inference
-in `justification`. Missing explicit text alone does not establish
-`no_information`; silence alone does not establish `probably_no`. For D3.2,
-`no_information` is unavailable, but `probably_no` or `no` may express that the
-available evidence does not demonstrate freedom from missing-data bias; do not
-invent affirmative Evidence.
+no facts. Scientific response semantics come from the official guidance in
+`get_domain_context`; state the inference connecting Evidence to the answer in
+`justification`. For the experimental `official_d3_prototype` profile, the
+complete question elaborations and general response guidance are delivered once
+in `official_guidance.sections`; question cards identify their locator. Other
+profiles retain `response_framework` and question guidance. Follow the official
+allowed options and activation predicates, including D3.2's absence of
+`no_information`.
+
+Submission validation checks Evidence roles, ownership and provenance. Its
+role constraints do not establish scientific certainty or entailment. Repair a
+reported structural problem using inspected support or an honest permitted
+uncertainty; do not change scientific confidence merely to satisfy a validator.
 
 After a Domain is saved, use the returned `evidence_sufficiency` summary as an
 audit receipt. Its statuses distinguish supported, contradicted, indirect,
@@ -362,14 +364,10 @@ Follow `head.next_action`, `reading_recovery`, and any required Evidence reading
 before submitting the Domain; follow another continuation first when it is
 present.
 
-For D3.1, run the **availability audit** before saving. Yes/Probably Yes needs
-evidence of all or nearly-all availability; No/Probably No needs evidence of
-materially incomplete availability. If the extent remains unknown, use No
-information. Analysis membership, planned follow-up, treatment status, and a
-generic censoring rule alone establish neither direction. For mortality,
-recovery or discharge alone does not establish later vital status. Use
-[Missing outcome data](references/missing.md) to reconcile outcome-specific
-counts, follow-up, and censoring.
+For D3, use the complete official question elaborations and response guidance
+returned by the context. [Missing outcome data](references/missing.md) describes
+source recovery and typed-count submission; it does not supply additional
+scientific decision rules.
 
 When participant-count comparisons support 3.1, retain the source-supported
 `missing_data` rows with that answer. Name the arm, population, unit, and time

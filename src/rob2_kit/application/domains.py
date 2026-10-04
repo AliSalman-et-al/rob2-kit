@@ -9,6 +9,14 @@ from pydantic import ValidationError
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
 from ..models import ResponseFramework, canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
+from ..packs.d3_authoritative import (
+    D3_FAQ_GUIDANCE,
+    D3_GUIDANCE_PROFILE,
+    D3_QUESTION_GUIDANCE,
+    D3_SHARED_GUIDANCE,
+    FAQ_SOURCE_URL,
+    OFFICIAL_SOURCE_URL,
+)
 from ..workflow_models import DomainDraft
 from ._state import (
     _canonical_evidence_records,
@@ -3252,12 +3260,135 @@ def save_domain_judgment(
     )
 
 
+def _domain_question_cards(
+    domain_id: str,
+    active: set[str],
+    checkpoint_identity: str | None,
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": item.id,
+            "wording": item.wording,
+            "options": [answer.value for answer in item.allowed_answers],
+            "activation_status": (
+                "always_active"
+                if item.activation.kind == "always"
+                else "dependent_on_draft_answers"
+                if checkpoint_identity is None
+                else (
+                    "active_in_saved_checkpoint"
+                    if item.id in active
+                    else "inactive_in_saved_checkpoint"
+                )
+            ),
+            "activation": item.activation.model_dump(mode="json"),
+            "official_guidance": item.guidance.official.source_excerpt,
+            "source_locator": item.guidance.official.source_locator,
+            "bias_construct": item.guidance.operational.bias_construct,
+            "decision_rule": item.guidance.operational.decision_rule,
+            "evidence_needed": item.guidance.operational.evidence_needed,
+            "no_information_rule": item.guidance.operational.no_information_rule,
+            "answer_anchors": tuple(
+                anchor.model_dump(mode="json")
+                for anchor in item.guidance.operational.answer_anchors
+            ),
+            "considerations": item.guidance.operational.considerations,
+            "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
+            "query_suggestions": tuple(
+                suggestion.model_dump(mode="json")
+                for suggestion in item.guidance.operational.query_suggestions
+            ),
+        }
+        for item in SCIENTIFIC_PACK.questions
+        if item.domain_id == domain_id
+    ]
+
+
+def _apply_authoritative_d3_guidance(context: dict[str, Any]) -> None:
+    """Replace scientific guidance in place; preserve source and assessment data."""
+    question_ids = tuple(D3_QUESTION_GUIDANCE)
+    sections = [
+        {
+            "question_ids": question_ids,
+            "source_version": source.version,
+            "source_sha256": source.source_sha256,
+            "source_locator": source.source_locator,
+            "source_url": OFFICIAL_SOURCE_URL,
+            "excerpt": source.source_excerpt,
+        }
+        for source in D3_SHARED_GUIDANCE
+    ]
+    for question_id, source in D3_QUESTION_GUIDANCE.items():
+        sections.append(
+            {
+                "question_ids": (question_id,),
+                "source_version": source.version,
+                "source_sha256": source.source_sha256,
+                "source_locator": source.source_locator,
+                "source_url": OFFICIAL_SOURCE_URL,
+                "excerpt": source.source_excerpt,
+            }
+        )
+    for question_id, source in D3_FAQ_GUIDANCE.items():
+        sections.append(
+            {
+                "question_ids": (question_id,),
+                "source_version": source.version,
+                "source_sha256": source.source_sha256,
+                "source_locator": source.source_locator,
+                "source_url": FAQ_SOURCE_URL,
+                "excerpt": source.source_excerpt,
+            }
+        )
+    context["guidance_profile"] = D3_GUIDANCE_PROFILE
+    context["official_guidance"] = {
+        "pack": context["pack"],
+        "sections": sections,
+        "complete": True,
+        "next_cursor": None,
+    }
+    context["response_framework"] = None
+    questions_context: list[dict[str, Any]] = context["questions"]
+    context["questions"] = [
+        {
+            **{
+                key: question[key]
+                for key in (
+                    "id",
+                    "wording",
+                    "options",
+                    "activation_status",
+                    "activation",
+                    "query_suggestions",
+                )
+            },
+            "guidance_locator": D3_QUESTION_GUIDANCE[question["id"]].source_locator,
+        }
+        for question in questions_context
+    ]
+    # Interface instructions describe evidence handling, never add a scientific answer rule.
+    context["guidance"] = [
+        context["guidance"][0],
+        *[instruction for index, instruction in enumerate(_DOMAIN_GUIDANCE) if index != 4],
+    ]
+    context["traps"] = [context["traps"][0]]
+    for card in context["comparison_cards"]:
+        card["propositions"] = []
+        card["paired_examples"] = []
+        card["prompt"] = (
+            "Source and Result navigation only. Slots and typed quantities are descriptive; "
+            "scientific answer guidance is in official_guidance. Preserve the approved "
+            "Result scope and inspect source passages before using their information."
+        )
+
+
 def get_domain_context(
     workspace: str | Path,
     trial_id: str | None = None,
     domain_id: str | None = None,
     preview_missing_data: list[dict[str, Any]] | None = None,
     include_candidates: bool = False,
+    guidance_profile: Literal["current", "official_d3_prototype"] = "current",
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -4002,43 +4133,7 @@ def get_domain_context(
             "A no-hit search describes one lexical query, not scientific absence.",
             *_DOMAIN_TRAPS,
         ],
-        "questions": [
-            {
-                "id": item.id,
-                "wording": item.wording,
-                "options": [answer.value for answer in item.allowed_answers],
-                "activation_status": (
-                    "always_active"
-                    if item.activation.kind == "always"
-                    else "dependent_on_draft_answers"
-                    if checkpoint_identity is None
-                    else (
-                        "active_in_saved_checkpoint"
-                        if item.id in active
-                        else "inactive_in_saved_checkpoint"
-                    )
-                ),
-                "activation": item.activation.model_dump(mode="json"),
-                "official_guidance": item.guidance.official.source_excerpt,
-                "source_locator": item.guidance.official.source_locator,
-                "bias_construct": item.guidance.operational.bias_construct,
-                "decision_rule": item.guidance.operational.decision_rule,
-                "evidence_needed": item.guidance.operational.evidence_needed,
-                "no_information_rule": item.guidance.operational.no_information_rule,
-                "answer_anchors": tuple(
-                    anchor.model_dump(mode="json")
-                    for anchor in item.guidance.operational.answer_anchors
-                ),
-                "considerations": item.guidance.operational.considerations,
-                "invalid_shortcuts": item.guidance.operational.invalid_shortcuts,
-                "query_suggestions": tuple(
-                    suggestion.model_dump(mode="json")
-                    for suggestion in item.guidance.operational.query_suggestions
-                ),
-            }
-            for item in SCIENTIFIC_PACK.questions
-            if item.domain_id == domain_id
-        ],
+        "questions": _domain_question_cards(domain_id, active, checkpoint_identity),
         "completion_rule": (
             "Ground each active proposition and uncertainty in inspected Evidence, scoped "
             "search receipts, or an explicit scientific limitation. Complete reading_recovery "
@@ -4108,6 +4203,8 @@ def get_domain_context(
         "reading_recovery": _main_report_recovery(root, state, trial_id, include_budget=True),
         "continuation": continuation,
     }
+    if domain_id == "domain:missing" and guidance_profile == D3_GUIDANCE_PROFILE:
+        _apply_authoritative_d3_guidance(context)
     projected = _compact_domain_evidence(context)
     projected["_context_basis_identity"] = _domain_context_basis_identity(
         state, trial_id, domain_id, preview_missing_data

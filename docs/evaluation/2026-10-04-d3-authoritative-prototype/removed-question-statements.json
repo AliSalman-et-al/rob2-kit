@@ -1,0 +1,395 @@
+[
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "bias_construct",
+    "index": 0,
+    "removed_statement": "Whether outcome data were available for all or nearly all randomized participants."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "decision_rule",
+    "index": 0,
+    "removed_statement": "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When exact extent cannot be determined directly, weigh outcome-specific follow-up accounting and other source-supported information for a probably yes or probably no judgment. If the extent remains unknown because that evidence does not support a reasonable inference, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "evidence_needed",
+    "index": 0,
+    "removed_statement": "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement. Outcome-specific observed/expected follow-up time can inform a probable judgment, but is not a participant-observation fraction; vital status alone does not ascertain nonfatal components. Explain what the evidence implies about missing outcomes for the approved estimate."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "evidence_needed",
+    "index": 1,
+    "removed_statement": "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "evidence_needed",
+    "index": 2,
+    "removed_statement": "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "no_information_rule",
+    "index": 0,
+    "removed_statement": "Answer no_information when neither direct nor indirect evidence supports a reasonable judgment about availability after bounded retrieval. Imprecise quantification alone does not require no_information. Lack of evidence for complete availability is not evidence of materially incomplete availability."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "answer_anchors",
+    "index": 0,
+    "removed_statement": {
+      "answer": "yes",
+      "text": "Outcome data were available for all or nearly all randomized participants."
+    }
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "answer_anchors",
+    "index": 1,
+    "removed_statement": {
+      "answer": "no",
+      "text": "Outcome data were not available for all or nearly all randomized participants."
+    }
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "answer_anchors",
+    "index": 2,
+    "removed_statement": {
+      "answer": "no_information",
+      "text": "The report provides no information about the extent of missing outcome data."
+    }
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "considerations",
+    "index": 0,
+    "removed_statement": "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "considerations",
+    "index": 1,
+    "removed_statement": "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "considerations",
+    "index": 2,
+    "removed_statement": "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "considerations",
+    "index": 3,
+    "removed_statement": "Where follow-up is incomplete, explain why the unobserved outcomes plausibly could or could not make an important difference to the approved estimate, rather than citing a small percentage alone. Relate the reported extent to the outcome event scale or variability and any known follow-up timing or reasons; retain what is unknown. For time-to-event estimates, event counts contextualize scale but do not by themselves mathematically bound the hazard ratio or its interval. A calibrated probable judgment can rest on nearly complete outcome accounting without exact censoring times or a formal sensitivity analysis. Missing reasons or timing alone do not require no_information; judge whether available circumstances support a reasonable inference."
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 0,
+    "removed_statement": "a complete-case analysis label"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 1,
+    "removed_statement": "an ITT analysis"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 2,
+    "removed_statement": "analysis denominators or ITT membership alone"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 3,
+    "removed_statement": "planned or scheduled follow-up alone"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 4,
+    "removed_statement": "treatment continuation or discontinuation alone"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 5,
+    "removed_statement": "last-known-alive censoring alone"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 6,
+    "removed_statement": "an event count treated as an observed-outcome count"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 7,
+    "removed_statement": "an analysis denominator treated as an outcome denominator"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 8,
+    "removed_statement": "a generic censoring rule without actual rates or follow-up accounting"
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "field": "invalid_shortcuts",
+    "index": 9,
+    "removed_statement": "imputed data counted as observed outcomes"
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "bias_construct",
+    "index": 0,
+    "removed_statement": "Whether there is evidence that the result was not biased by missing outcome data."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "decision_rule",
+    "index": 0,
+    "removed_statement": "Evidence may come from methods correcting for bias or sensitivity analyses showing little change under plausible assumptions about missingness and true outcome. The assumptions must match the documented missingness mechanism and the approved Result. A comparison that changes group attribution, such as ITT versus as-treated, does not test unobserved outcome values unless the source explicitly establishes that relationship. Last-observation-carried-forward or multiple imputation based only on intervention group should not be assumed to correct bias."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "evidence_needed",
+    "index": 0,
+    "removed_statement": "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result, including the missingness mechanism it addresses."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "evidence_needed",
+    "index": 1,
+    "removed_statement": "If the source only changes intervention-group attribution or analysis membership, record that distinction; do not describe it as a test of unobserved outcome values without source support."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "no_information_rule",
+    "index": 0,
+    "removed_statement": "No_information is not an allowed response to this question in the parallel-assignment pack. Answer no/probably no when inspected evidence does not establish protection from missing-data bias. No does not assert that bias occurred: retain source coverage limits and unknown missingness mechanisms. Ground the scoped negative answer in inspected Evidence or a valid scoped no-hit receipt; an unsupported limitation alone is insufficient."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "answer_anchors",
+    "index": 0,
+    "removed_statement": {
+      "answer": "yes",
+      "text": "A bias-correcting or informative sensitivity analysis indicates the result was not biased."
+    }
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "answer_anchors",
+    "index": 1,
+    "removed_statement": {
+      "answer": "no",
+      "text": "The available evidence does not show that the result was free from missing-data bias."
+    }
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "considerations",
+    "index": 0,
+    "removed_statement": "Imputation alone is not evidence that missing outcome data did not bias the result."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "considerations",
+    "index": 1,
+    "removed_statement": "Availability and mitigation are separate premises: a familiar method name or numerically stable estimate is not enough; the sensitivity analysis must span plausible assumptions relevant to the documented missingness mechanism."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "considerations",
+    "index": 2,
+    "removed_statement": "This question permits complete ascertainment, mechanism-matched reassurance, and legitimate uncertainty. Do not apply a universal percentage threshold in place of a Result-specific impact judgment."
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "invalid_shortcuts",
+    "index": 0,
+    "removed_statement": "an ITT analysis"
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "invalid_shortcuts",
+    "index": 1,
+    "removed_statement": "last observation carried forward"
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "field": "invalid_shortcuts",
+    "index": 2,
+    "removed_statement": "multiple imputation based only on intervention group"
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "bias_construct",
+    "index": 0,
+    "removed_statement": "Whether missingness in the outcome could depend on its true value."
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "decision_rule",
+    "index": 0,
+    "removed_statement": "Answer yes or probably yes when loss to follow-up or withdrawal could relate to health status or outcome. Answer no or probably no when all missingness had documented reasons unrelated to outcome, such as a failed measuring device or interruption to routine data collection."
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "evidence_needed",
+    "index": 0,
+    "removed_statement": "Reasons for missingness and their relationship to participants' health status or true outcome, including censoring and treatment switching in time-to-event analyses."
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "no_information_rule",
+    "index": 0,
+    "removed_statement": "Use no_information when the reasons for missingness do not permit assessment of dependence on the true value."
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "answer_anchors",
+    "index": 0,
+    "removed_statement": {
+      "answer": "yes",
+      "text": "Missingness could depend on the true outcome value."
+    }
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "answer_anchors",
+    "index": 1,
+    "removed_statement": {
+      "answer": "no",
+      "text": "Documented missingness reasons are unrelated to the outcome."
+    }
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "considerations",
+    "index": 0,
+    "removed_statement": "For time-to-event outcomes, inspect censoring reasons and timing to identify missing follow-up. A common administrative cutoff does not by itself establish outcome-dependent missingness."
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "considerations",
+    "index": 1,
+    "removed_statement": "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. Treatment discontinuation is not loss to follow-up when outcome ascertainment continues; stopping treatment or an analysis label alone does not establish whether the outcome was observed. Last-known-alive censoring is not by itself evidence that observation stopped. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership."
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "considerations",
+    "index": 2,
+    "removed_statement": "Withdrawal or censoring after worsening health or symptoms can support possible dependence on the outcome value when the source links the reason to that participant's outcome; stopping treatment without that follow-up loss does not."
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "invalid_shortcuts",
+    "index": 0,
+    "removed_statement": "complete follow-up claims"
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "invalid_shortcuts",
+    "index": 1,
+    "removed_statement": "an ITT analysis"
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "field": "invalid_shortcuts",
+    "index": 2,
+    "removed_statement": "a reason for withdrawal without its relation to outcome"
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "bias_construct",
+    "index": 0,
+    "removed_statement": "Whether missingness that could depend on true value likely depended on it."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "decision_rule",
+    "index": 0,
+    "removed_statement": "Consider differences in missingness or censoring rates, reasons that depend on true value, reasons differing between groups, trial circumstances, and censoring after stopping or changing intervention. Answer no when analysis accounted for participant characteristics likely to explain the relationship."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "evidence_needed",
+    "index": 0,
+    "removed_statement": "Group-specific missingness or censoring, reasons for missingness, trial circumstances, and any analysis accounting for relevant participant characteristics."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "no_information_rule",
+    "index": 0,
+    "removed_statement": "Use no_information when likelihood of dependence on true value cannot be judged from the available evidence."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "answer_anchors",
+    "index": 0,
+    "removed_statement": {
+      "answer": "yes",
+      "text": "Missingness likely depended on the true outcome value."
+    }
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "answer_anchors",
+    "index": 1,
+    "removed_statement": {
+      "answer": "no",
+      "text": "The analysis accounted for characteristics explaining the relationship, or dependence was not likely."
+    }
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "considerations",
+    "index": 0,
+    "removed_statement": "Possible dependence in 3.3 does not establish likely dependence in 3.4. Weigh evidence for and against likelihood from missingness reasons and trial circumstances, including comparable outcome follow-up and continued ascertainment after treatment stopping. Such contextual counterevidence is not proof of non-informative censoring; absence of precise reasons or timing alone does not require no_information, and absent contrary evidence alone does not establish likelihood."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "considerations",
+    "index": 1,
+    "removed_statement": "Keep the stages distinct: observed outcome data and follow-up availability describe what was obtained; 3.3 asks whether missingness could depend on the true value; 3.4 asks whether that dependence was likely. Do not promote possible dependence to likely dependence without supporting evidence."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "considerations",
+    "index": 2,
+    "removed_statement": "Full guidance section 6.1, p. 39 distinguishes genuinely missing measurements (D3) from available outcomes deliberately excluded from analysis (D2). Outcome-driven rescue, switching, or post-change analysis exclusion does not by itself establish non-observation; scheduled collection does not establish observation either. Link the outcome-related reason to actual missing measurements or missing follow-up before treating it as a D3 mechanism. If that link is unknown, retain it as an unresolved premise rather than assigning analysis exclusions to missingness."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "considerations",
+    "index": 3,
+    "removed_statement": "Paired control: after the same outcome-driven treatment change, endpoint measurements collected but omitted from analysis raise an assignment-analysis concern in D2; measurements not obtained require D3 appraisal. If collection is only planned or unspecified, observed availability remains unknown. Differences in rescue rates alone are not differences in missing-outcome rates. Compare post-change handling with the approved assignment target; matching endpoint and time point alone does not establish the same estimand."
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "invalid_shortcuts",
+    "index": 0,
+    "removed_statement": "different group sizes alone"
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "invalid_shortcuts",
+    "index": 1,
+    "removed_statement": "an ITT analysis"
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "field": "invalid_shortcuts",
+    "index": 2,
+    "removed_statement": "a generic loss-to-follow-up statement"
+  }
+]

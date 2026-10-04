@@ -1604,8 +1604,8 @@ class AnswerAnchor(PublicModel):
     text: str = Field(min_length=1)
 
 
-class DomainQuestionCard(PublicModel):
-    """Compact model-facing card for one scientific-pack question."""
+class DomainQuestionIdentity(PublicModel):
+    """Question identity, official options and unchanged activation semantics."""
 
     id: QuestionId
     wording: str = Field(min_length=1)
@@ -1628,6 +1628,11 @@ class DomainQuestionCard(PublicModel):
     activation: QuestionActivation = Field(
         description="Evaluate against earlier draft answers to derive the complete active path.",
     )
+
+
+class DomainQuestionCard(DomainQuestionIdentity):
+    """Current model-facing scientific and operational guidance."""
+
     official_guidance: str = Field(min_length=1)
     source_locator: str = Field(min_length=1)
     bias_construct: str = Field(
@@ -1652,6 +1657,13 @@ class DomainQuestionCard(PublicModel):
         ),
     )
     invalid_shortcuts: tuple[str, ...] = Field(min_length=1)
+    query_suggestions: tuple[QuerySuggestion, ...] = Field(min_length=1, max_length=8)
+
+
+class AuthoritativeDomainQuestionCard(DomainQuestionIdentity):
+    """Prototype identity card referring to one complete official guidance core."""
+
+    guidance_locator: str = Field(min_length=1)
     query_suggestions: tuple[QuerySuggestion, ...] = Field(min_length=1, max_length=8)
 
 
@@ -1963,6 +1975,7 @@ class OfficialGuidanceSection(PublicModel):
     source_sha256: str = Field(pattern=r"^[A-F0-9]{64}$")
     source_locator: str = Field(min_length=1)
     excerpt: str = Field(min_length=1)
+    source_url: str | None = Field(default=None, min_length=1)
 
 
 class OfficialGuidanceRecovery(PublicModel):
@@ -1975,6 +1988,7 @@ class OfficialGuidanceRecovery(PublicModel):
 
 
 class DomainContextData(PublicModel):
+    guidance_profile: Literal["official_d3_prototype"] | None = None
     trial_id: TrialId | None = None
     domain_id: DomainId | None = None
     pack: DomainPack | None = Field(
@@ -2026,7 +2040,7 @@ class DomainContextData(PublicModel):
     guidance: tuple[str, ...] = ()
     response_framework: ResponseFramework | None = None
     traps: tuple[str, ...] = ()
-    questions: tuple[DomainQuestionCard, ...] = ()
+    questions: tuple[DomainQuestionCard | AuthoritativeDomainQuestionCard, ...] = ()
     completion_rule: str | None = Field(default=None, min_length=1)
     evidence_workspace: EvidenceWorkspace | None = None
     comparison_cards: tuple[ComparisonCard, ...] = ()
@@ -2051,11 +2065,21 @@ class DomainContextData(PublicModel):
             self.domain_id,
             self.pack,
             self.result,
-            self.response_framework,
             self.completion_rule,
             self.evidence_workspace,
         )
         if continuation and any(value is not None for value in stable):
+            raise ValueError("continuation pages must contain only context deltas")
+        if (
+            not continuation
+            and self.response_framework is None
+            and not (
+                self.guidance_profile == "official_d3_prototype"
+                and self.official_guidance is not None
+            )
+        ):
+            raise ValueError("the first context page requires response guidance")
+        if continuation and self.response_framework is not None:
             raise ValueError("continuation pages must contain only context deltas")
         if not continuation and any(value is None for value in stable):
             raise ValueError("the first context page requires the complete stable header")
@@ -3013,6 +3037,17 @@ def _clean_public(value: dict[str, Any]) -> dict[str, Any]:
         elif isinstance(node, list):
             for child in node:
                 clean_search_actions(child)
+
+    data = value.get("data")
+    if isinstance(data, dict):
+        # New prototype metadata must not enlarge unchanged legacy context pages.
+        if data.get("guidance_profile") is None:
+            data.pop("guidance_profile", None)
+        official = data.get("official_guidance")
+        if isinstance(official, dict):
+            for section in official.get("sections", []):
+                if isinstance(section, dict) and section.get("source_url") is None:
+                    section.pop("source_url", None)
 
     head = value.get("head")
     if isinstance(head, dict):

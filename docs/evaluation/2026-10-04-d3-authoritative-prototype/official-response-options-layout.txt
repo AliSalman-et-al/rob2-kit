@@ -1,0 +1,56 @@
+1.1       Signalling questions
+Inclusion of signalling questions within each domain of bias is a key feature of RoB 2. Signalling questions aim
+to elicit information relevant to an assessment of risk of bias. They seek to be reasonably factual in nature.
+Responses to these questions feed into algorithms we have developed to guide users of the tool to judgements
+about the risk of bias.
+The response options for the signalling questions are:
+        (1) Yes;
+        (2) Probably yes;
+        (3) Probably no;
+        (4) No;
+        (5) No information;
+To maximize the signalling questions’ simplicity and clarity, they are phrased such that a response of ‘Yes’ may
+be indicative of either a low or high risk of bias, depending on the most natural way to ask the question.
+Responses of ‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do responses of ‘No’ and
+‘Probably no’. The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence is available in
+relation to the signalling question; the ‘Probably’ versions would typically imply that a judgement has been made.
+If review authors calculate measures of agreement (e.g. kappa statistics) for the answers to the signalling
+questions, we recommend treating ‘Yes’ and ‘Probably yes’ as the same response and ‘No’ and ‘Probably no’ as
+the same response.
+The ‘No information’ response should be used only when both (i) insufficient details are reported to permit a
+response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these details it would be unreasonable to
+respond ‘Probably yes’ or ‘Probably no’ in the circumstances of the trial. For example, in the context of a large
+trial run by an experienced clinical trials unit, absence of specific information about generation of the
+randomization sequence, in a paper published in a journal with rigorously enforced word count limits, is likely
+to result in a response of ‘Probably yes’ rather than ‘No information’ to the signalling question about sequence
+generation. The implications for risk of bias judgements of a ‘No information’ response to a signalling question
+differ according to the purpose of the question. If the question seeks to identify evidence of a problem, then ‘No
+information’ corresponds to no evidence of that problem. If the question relates to an item that is expected to
+be reported (such as whether any participants were lost to follow up), then the absence of information leads to
+concerns about there being a problem.
+For signalling questions that are answered only if the response to a previous question implies that they are
+required, a response option ‘Not applicable’ is available. Signalling questions should be answered independently:
+the answer to one question should not affect answers to other questions in the same or other domains other
+than through determining which subsequent questions are answered.
+
+1.1.1      Free-text boxes alongside signalling questions
+The tool provides space for free text alongside the signalling question. In some instances, when the same
+information is likely to be used to answer more than one question, one text box covers more than one question.
+These boxes should be used to provide support for the answer to each signalling question. Brief direct
+quotations from the text of the study report should be used whenever possible.
+
+
+1.2       Risk-of-bias judgements
+
+1.2.1      Domain-level judgements about risk of bias
+RoB 2 is conceived hierarchically: responses to signalling questions elicit what happened and provide the basis
+for domain-level judgements about the risk of bias. In turn, these domain-level judgements provide the basis for
+an overall risk-of-bias judgement for the specific trial result being assessed.
+The tool includes algorithms that map responses to signalling questions onto a proposed risk-of-bias judgement
+for each domain. The possible risk-of-bias judgements are:
+        (1) Low risk of bias;
+        (2) Some concerns; and
+        (3) High risk of bias.
+
+                                                        3
+

@@ -1,0 +1,1049 @@
+{
+  "trial_id": "attal-2016",
+  "domain_id": "domain:missing",
+  "pack": {
+    "id": "rob2.parallel.assignment",
+    "version": "2019.1",
+    "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1"
+  },
+  "result": {
+    "applicability": {
+      "design": "individual_parallel",
+      "evidence": [
+        "eh_7b6975c856405d4b"
+      ],
+      "rationale": "Participants were individually randomized 1:1 to parallel botulinum toxin A or placebo groups using a centralized schedule."
+    },
+    "bindings": [
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/effect_measure"
+        },
+        "value_digest": "sha256:da200d8b85d9b4a128433bd47151cde2a07d43630c7ff0e2ef69dcba60df2dd8"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/estimate"
+        },
+        "value_digest": "sha256:c9f65102e06a8266499894939482495669486659da7351cb4e26916084726202"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/precision"
+        },
+        "value_digest": "sha256:81fe6bcfcf7cbb73c989ea41d366917e888c5ed3793d7668502181386af01b7a"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/endpoint/name"
+        },
+        "value_digest": "sha256:101c85c1f87ad507ea5a6cc3b8ab454d6f743f49ece8d5c27485b312172a9274"
+      }
+    ],
+    "clarity": {
+      "analysis_population": "specified",
+      "comparison_groups": "specified",
+      "effect_measure": "specified",
+      "eligible_result_choice": "specified",
+      "measurement": "specified",
+      "outcome_definition": "specified",
+      "source_table_meaning": "specified",
+      "time_point": "specified"
+    },
+    "evidence": [
+      {
+        "handle": "eh_7b6975c856405d4b",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_9970a94aaaa9714c",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_c8527753d308d766",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_c947e455e20997a5",
+        "kind": "narrative"
+      }
+    ],
+    "kind": "assessable",
+    "relation": "exact",
+    "relation_rationale": "The selected primary outcome matches the requested weekly self-reported pain-intensity change from baseline versus placebo over 24 weeks after the first administration.",
+    "reported": {
+      "analysis_population": "Intention-to-treat population: 34 participants assigned to botulinum toxin A and 32 assigned to placebo; primary outcome analyses used last-observation-carried-forward imputation for missing values.",
+      "effect_measure": "adjusted eff ect estimate",
+      "endpoint": {
+        "definition": null,
+        "name": "self-reported mean pain intensity over 24 weeks"
+      },
+      "estimate": "-0·77",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI -0·95 to -0·59; p<0·0001"
+    },
+    "requested_outcome": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks",
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "Two successive subcutaneous administrations of botulinum toxin A (up to 300 units), 12 weeks apart.",
+          "id": "botulinum_toxin_a"
+        },
+        {
+          "assignment": "Two successive subcutaneous placebo administrations, 12 weeks apart.",
+          "id": "placebo"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Between-group difference in mean change from baseline",
+      "measurement": {
+        "method": "Daily pain diary: mean pain over the past 24 hours recorded each morning on the Brief Pain Inventory 0–10 numerical rating scale; weekly mean.",
+        "metric": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks"
+      },
+      "outcome_definition": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks",
+      "time_point_or_window": {
+        "description": "From baseline (one week before randomization) over 24 weeks after the first administration",
+        "kind": "quantified",
+        "unit": "weeks",
+        "value": "24"
+      }
+    },
+    "trial_id": "attal-2016"
+  },
+  "evidence": {
+    "sha256:03df6d956eecbe61d038acac4151b1e5acdfaf2c7903f2e1fb44db3cb25964d3": {
+      "end": 2525,
+      "end_line": 49,
+      "handle": "eh_03df6d956eecbe61",
+      "identity": "sha256:03df6d956eecbe61d038acac4151b1e5acdfaf2c7903f2e1fb44db3cb25964d3",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "The effi cacy analyses for the primary outcome and for\nall but one secondary outcomes included all randomly\nassigned participants (intention-to-treat population)\nand used a last-observation-carried-forward (LOCF)\nimputation. Analysis of the therapeutic gain of the\nsecond injection (a secondary endpoint) included all\nrandomly assigned participants who received two\nadministrations of the treatment (as-treated analysis,\nbased on the actual treatment the participants received)\nand used a LOCF imputation for missing values.",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 2001,
+      "start_line": 40,
+      "trial_id": "attal-2016"
+    },
+    "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94": {
+      "end": 743,
+      "end_line": 15,
+      "handle": "eh_051d72e9745f8a81",
+      "identity": "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+      "kind": "narrative",
+      "page": 15,
+      "quote": "LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\nIn the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\nmore prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\nand more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\nMissing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\nNot at Random (MNAR) pattern.",
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "source_version": "sha256:13f190b35edd5feaae148d62150c47fe31db66e1b6d9f98160efe1bd73f1414e",
+      "start": 57,
+      "start_line": 9,
+      "trial_id": "attal-2016"
+    },
+    "sha256:246933faf9db47d590359711213eb1950d8ca54d286e065c0336607b6cca6adc": {
+      "end": 2095,
+      "end_line": 42,
+      "handle": "eh_246933faf9db47d5",
+      "identity": "sha256:246933faf9db47d590359711213eb1950d8ca54d286e065c0336607b6cca6adc",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "60 sites (12 mL, ie, 300 units). The injections of botulinum\ntoxin A or placebo were repeated 12 weeks later; thus,\nparticipants received either two successive botulinum\ntoxin A administrations or two successive placebo\nadministrations, regardless of their response to the fi rst\nadministration.",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 1800,
+      "start_line": 37,
+      "trial_id": "attal-2016"
+    },
+    "sha256:2d3e964edd503741b821520507676ac572ca733aafe32e01d519cb0ae6a453b0": {
+      "end": 13168,
+      "end_line": 140,
+      "handle": "eh_2d3e964edd503741",
+      "identity": "sha256:2d3e964edd503741b821520507676ac572ca733aafe32e01d519cb0ae6a453b0",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.outcomesModule.primaryOutcomes[0].description: \"Numerical scales (0-10)\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Average pain intensity on numerical scales in a self diary by the patient\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"every day from baseline for up to 6 months\"",
+      "source_id": "source_8060a6d9e451f076588fda27c64de39144bb5b443801b532a6a7639ce378aa3c",
+      "source_version": "sha256:aae0676df688f1a3cd4e2072a7b94581f8715aa4ef4bfd962d9eb1d4d8d1c7fd",
+      "start": 12839,
+      "start_line": 138,
+      "trial_id": "attal-2016"
+    },
+    "sha256:52b57da64036870daf49a0d739867bde03feb39b4395a86fec818ca05a6037a3": {
+      "end": 3241,
+      "end_line": 63,
+      "handle": "eh_52b57da64036870d",
+      "identity": "sha256:52b57da64036870daf49a0d739867bde03feb39b4395a86fec818ca05a6037a3",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "The effi cacy analyses for the primary outcome and for\nall but one secondary outcomes included all randomly\nassigned participants (intention-to-treat population)\nand used a last-observation-carried-forward (LOCF)\nimputation. Analysis of the therapeutic gain of the\nsecond injection (a secondary endpoint) included all\nrandomly assigned participants who received two\nadministrations of the treatment (as-treated analysis,\nbased on the actual treatment the participants received)\nand used a LOCF imputation for missing values.\nWe used a generalised linear mixed-model repeated-\nmeasures analysis to investigate the prespecifi ed primary\nendpoint. This model compared the mean change in\nweekly or daily pain ratings over time after two\nadministrations of botulinum toxin A with that after\nplacebo each week for 24 weeks, with baseline mean pain\nintensity as a covariate. We used the same models to\nassess the eff ects of botulinum toxin A on the secondary\noutcomes. In these models, treatment eff ect estimates\ncorrespond to a relative diff erence between botulinum\ntoxin A and placebo for daily pain ratings over 24 weeks,\non a mixed longitudinal model averaged across all\npatients and adjusted on all covariates of the model,\nincluding time.",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 2001,
+      "start_line": 40,
+      "trial_id": "attal-2016"
+    },
+    "sha256:7948dcfcc7d72e6bb31da62354c6cea3e34fe0d441b905a5d8cc2aafa19d0645": {
+      "end": 17686,
+      "end_line": 186,
+      "handle": "eh_7948dcfcc7d72e6b",
+      "identity": "sha256:7948dcfcc7d72e6bb31da62354c6cea3e34fe0d441b905a5d8cc2aafa19d0645",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.statusModule.startDateStruct.date: \"2010-10\"\nprotocolSection.statusModule.statusVerifiedDate: \"2016-03\"\nprotocolSection.statusModule.studyFirstPostDateStruct.date: \"2010-12-01\"\nprotocolSection.statusModule.studyFirstPostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.studyFirstSubmitDate: \"2010-11-30\"\nprotocolSection.statusModule.studyFirstSubmitQcDate: \"2010-11-30\"",
+      "source_id": "source_8060a6d9e451f076588fda27c64de39144bb5b443801b532a6a7639ce378aa3c",
+      "source_version": "sha256:aae0676df688f1a3cd4e2072a7b94581f8715aa4ef4bfd962d9eb1d4d8d1c7fd",
+      "start": 17292,
+      "start_line": 181,
+      "trial_id": "attal-2016"
+    },
+    "sha256:798ca7f93dad0eeed2d36b0a3aec17c9736ea4a4ef4afd478aab5111a44b4935": {
+      "end": 963,
+      "end_line": 20,
+      "handle": "eh_798ca7f93dad0eee",
+      "identity": "sha256:798ca7f93dad0eeed2d36b0a3aec17c9736ea4a4ef4afd478aab5111a44b4935",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "apart. An independent pharmacist (Ambroise Paré\nHospital, APHP), who had no other role in the study or\nin data analysis, prepared a concealed allocation schedule\nthat randomly assigned the treatments in blocks of four\nto a consecutive series of numbers. The treatment\nallocation code was kept in a sealed envelope until the\nend of the study. The syringes used for the injections of\nthe appropriate treatments were prepared by the\npharmacists at each site, who were not involved in any\nother aspect of the study, such that the physicians\nperforming the injections, who were not involved in\nsubsequent assessments, would not recognise the\ntreatment. The active treatment and placebo solutions\nwere transparent and indistinguishable. All patients and\ninvestigators were masked to treatment assignment.",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 165,
+      "start_line": 6,
+      "trial_id": "attal-2016"
+    },
+    "sha256:7b6975c856405d4baf1c5c825056c324e9e161e08ed43460497db8991af57c63": {
+      "end": 5917,
+      "end_line": 115,
+      "handle": "eh_7b6975c856405d4b",
+      "identity": "sha256:7b6975c856405d4baf1c5c825056c324e9e161e08ed43460497db8991af57c63",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Articles\nwww.thelancet.com/neurology Vol 15 May 2016\n557\nadministrations (comprising several injections) of\nbotulinum toxin A (up to 300 units) or placebo, 12 weeks\napart. An independent pharmacist (Ambroise Paré\nHospital, APHP), who had no other role in the study or\nin data analysis, prepared a concealed allocation schedule\nthat randomly assigned the treatments in blocks of four\nto a consecutive series of numbers. The treatment\nallocation code was kept in a sealed envelope until the\nend of the study. The syringes used for the injections of\nthe appropriate treatments were prepared by the\npharmacists at each site, who were not involved in any\nother aspect of the study, such that the physicians\nperforming the injections, who were not involved in\nsubsequent assessments, would not recognise the\ntreatment. The active treatment and placebo solutions\nwere transparent and indistinguishable. All patients and\ninvestigators were masked to treatment assignment.\nProcedures\nSix participant visits were scheduled: inclusion and\nbaseline assessment (ie, week -1), randomisation and\nfi rst administration (ie, week 0), and then four visits at 4,\n12, 16, and 24 weeks after the fi rst administration.\nVials of 100 units of botulinum toxin A (BOTOX;\nAllergan, Courbevoie, France, and São Paulo, Brazil) were\nrecon stituted with 4 mL non-preserved saline solution, as\nrecom mended by the supplier (concentration of\nbotulinum toxin A 25 units per mL). Placebo consisted of\nan equal volume of saline. The injection procedure was\nmostly as previously described;3 botulinum toxin A or\nplacebo was injected subcutaneously, at sites 1·5-2 cm\napart (0·2 mL, ie, 5 units of botulinum toxin A per site).\nThe total dose was determined by the size of the painful\narea on the day of administration, without exceeding\n60 sites (12 mL, ie, 300 units). The injections of botulinum\ntoxin A or placebo were repeated 12 weeks later; thus,\nparticipants received either two successive botulinum\ntoxin A administrations or two successive placebo\nadministrations, regardless of their response to the fi rst\nadministration.\nTo reduce pain related to the injections, participants\nwere given a cream formulation of lidocaine and\nprilocaine (EMLA; AstraZeneca, Rueil Malmaison,\nFrance, and Cotia, Brazil) to the painful area 60 min\nbefore the injections, and a nurse administered\n50% nitrous oxide and oxygen (conscious inhalation\nsedation; Kalinox; Air Liquide, Paris, France, and São\nPaulo, Brazil) via a nasal high-concentration mask 5 min\nbefore and throughout the procedure.\nParticipants who provided written consent under-\nwent two 3 mm skin punch biopsies, before random\nallocation and 4 weeks after the fi rst treatment\nadministration (appendix p 3).12 The specimens obtained\nwere analysed (masked to treatment allocation) in CS's\nlaboratory in Wurzburg, Germany. Each sample from\nbaseline and week 4 was divided into two. In half the\nsample, intra-epidermal nerve fi bre density (IENFD)\nwas measured according to an internationally accepted\nquantifi cation protocol.12 In the other half of the sample,\nwe quantifi ed protein concentrations of substance P and\ncalcitonin gene-related peptide (CGRP)13 using ELISA\n(appendix p 3). We assumed that the analgesic eff ects of\nbotulinum toxin A were mediated principally by a direct\naction on nociceptive fi bres and the inhibition of\nneurogenic infl ammation through a blockade of neuro-\ntransmitter release.14-16\nOutcomes\nThe primary outcome was the effi cacy of two successive\nadministrations of several injections of botulinum\ntoxin A, compared with placebo, measured as the change\nin weekly self-reported mean pain intensity (mean pain\nover the past 24 h recorded each morning in a diary)\non the 11-point numerical rating scale (0=no pain,\n10=maximum pain imaginable) of the Brief Pain\nInventory from baseline (1 week before randomisation)\nover 24 weeks after the fi rst administration.17\nAll secondary endpoints were assessed at 4, 12, and\n24 weeks, unless otherwise specifi ed. Secondary\noutcomes were the safety and tolerability of the treatment\nthroughout the study period; the therapeutic gain, in\nterms of relief of spontaneous pain, of the second\nadministration of botulinum toxin A, assessed on the\nbasis of mean weekly pain intensity recordings of the\nparticipants who received two administrations (ie, as-\ntreated population) on the 11-point numerical rating scale\nof the Brief Pain Inventory, from week 13 to week 24\n(after the fi rst administration; appendix p 4); the\nproportion of participants responding to botulinum\ntoxin A treatment at 24 weeks, in terms of a decrease of\n50% or more and 30% or more in self-reported pain\nintensity score, relative to placebo-treated participants;\nthe eff ects of botulinum toxin A on the intensity of\nbrush-induced allodynia, measured by a brush (Somedic,\nHörby, Sweden) on the Visual Analogue Scale, and on\nsensory defi cits, allodynia, and hyperalgesia in response\nto mechanical punctate and thermal stimuli measured by\nQuantitative Sensory Testing (QST), all assessed at\nbaseline and at 12 and 24 weeks (appendix p 5);18 the\neff ects of botulinum toxin A on neuropathic symptoms\n(ie, burning pain, deep pain, paroxysmal pain,\nparaesthesia or dysaesthesia, and allodynia), measured\nwith the Neuropathic Pain Symptom Inventory (NPSI;\nappendix p 8);19 identifi cation of factors predictive of\ntreatment response (on self-reported mean pain intensity\nover 24 weeks) based on the presence or absence of\nallodynia before treatment assessed by QST and by the\nNPSI (appendix p 8); identifi cation of factors predictive\nof treatment response (responders and non-responders\nbased on 50% pain relief 24 weeks after the fi rst\nadministration) based on the severity of allodynia and of\nsensory defi cits assessed by QST before treatment;\ncorrelations between self-reported mean pain intensity\non the numerical rating scale of the Brief Pain Inventory",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "attal-2016"
+    },
+    "sha256:7f107374de81139936ffab9ce141c5bfd6b433ac8f9136a411f40683c7a26f5d": {
+      "end": 3531,
+      "end_line": 73,
+      "handle": "eh_7f107374de811399",
+      "identity": "sha256:7f107374de81139936ffab9ce141c5bfd6b433ac8f9136a411f40683c7a26f5d",
+      "kind": "narrative",
+      "page": 8,
+      "quote": "13 (38%) of 34 participants in the botulinum toxin A\ngroup correctly identifi ed their treatment group at the\nlast visit of participation in the study (ie, week 24 or\nearlier) solely on the basis of the improvements\nexperienced, 15 (44%) thought they had received placebo\nbecause they felt no improvement, and six (18%) did not\nknow. 17 (53%) of 32 participants in the placebo group\nthought they had received placebo because of an absence\nof improvement, eight (25%) did not know, and seven\n(22%) thought they had received botulinum toxin A\nbecause of improvement. None of the participants who\ncorrectly identifi ed their active treatment stated that this\nwas because of skin modifi cations or injection pain.\nSimilarly, none of the investigators who did the\nassessments noticed any skin modifi cations after\nbotulinum toxin A.",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 2704,
+      "start_line": 58,
+      "trial_id": "attal-2016"
+    },
+    "sha256:9196a69f390ed31d68100e89b4b9b3a742d0d71b06f6e9047e11515ff49eab7c": {
+      "end": 2928,
+      "end_line": 58,
+      "handle": "eh_9196a69f390ed31d",
+      "identity": "sha256:9196a69f390ed31d68100e89b4b9b3a742d0d71b06f6e9047e11515ff49eab7c",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "Between Oct 2, 2010, and Aug 2, 2013, 152 participants\nwere enrolled in the study, of whom 68 were randomly\nassigned (34 per group; fi gure 1). One woman withdrew\non the day of the fi rst administration because she was\nafraid of the treatment and one man did not fi ll out any\npain assessment diaries and so he was not included in\nthe trial. We therefore included 66 participants in the\nintention-to-treat analysis: 34 in the botulinum toxin A\ngroup and 32 in the placebo group. 58 participants\nreceived a second treatment administration (32 in the\nbotulinum toxin A group and 26 in the placebo group)\nand 52 participants completed the study (29 and 23). Age,\nsex, pain intensity and duration, cause of pain, area of\npain, and level and type of concomitant drug did not\ndiff er between groups (table 1). The most common cause\nof neuropathic pain in participants was post-traumatic or",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 2045,
+      "start_line": 43,
+      "trial_id": "attal-2016"
+    },
+    "sha256:9970a94aaaa9714c12adf1e789d3b59f0f6966c2ee1c021c34e01857b7f4eb4e": {
+      "end": 4973,
+      "end_line": 156,
+      "handle": "eh_9970a94aaaa9714c",
+      "identity": "sha256:9970a94aaaa9714c12adf1e789d3b59f0f6966c2ee1c021c34e01857b7f4eb4e",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "the placebo group (0·6 [0·4]; -3·9 to 4·7). Compared\nwith placebo, two successive administrations of\nbotulinum toxin A signifi cantly decreased self-reported\nmean pain intensity over 24 weeks after the fi rst\ntreatment administration (adjusted eff ect estimate -0·77,\n95% CI -0·95 to -0·59; p<0·0001; fi gure 2). The\ndiff erence in reduction of pain intensity between groups\nwas signifi cant each week after the fi rst administration,\nstarting from week 1 after treatment (ie, at the onset of\nthe eff ect; adjusted eff ect estimate -0·79, 95% CI\n-1·43 to -0·16; p=0·013), and increased between week 15\n(ie, the beginning of the increase of eff ect; -0·85,\n-1·48 to -0·21; p=0·009) and week 24 (-1·45, -2·08 to\n-0·81; p<0·0001), that is, over the 3-12 weeks after the\nsecond administration.\nThe proportion of responders to botulinum toxin A\n(≥50% reduction in pain intensity) did not diff er from\nplacebo 24 weeks after the fi rst treatment administration\n(ten [29%] of 34 vs fi ve [16%] of 32; NNT 7·3, 95% CI -3·0\nto 16·6; p=0·2; appendix p 9). However, the proportion of\nresponders was higher in the botulinum toxin A group\nwhen a responder was considered to be a participant who\nexperienced at least 30% reduction in pain intensity\n(22 [65%] of 34 vs eight [25%] of 32; NNT 2·5, 95% CI 1·6\nto 5·6; p=0·001; appendix p 9). For the 32 treated patients\nwho received two administrations of botulinum toxin A,\nthere was a signifi cant therapeutic gain of the second\nadministration (least-squares mean adjusted for the week\nfor weeks 13-24 based on self-assessed weekly pain score\n0·91 [SE 0·13]; p<0·0001); for the 26 treated patients who\nreceived two administrations of placebo, there was no\ntherapeutic gain of the second administration (-0·77\n[0·50]; p=0·13). Seven participants (22%) who had less\nthan 30% pain relief after the fi rst treatment\nadministration became responders (≥50% pain relief)\nafter the second. No therapeutic gain was noted in\nparticipants who received two administrations of placebo.\nIn participants who received at least one administration\nof botulinum toxin A (n=34), the effi cacy of the treatment\non mean pain intensity over 24 weeks was greater in\nparticipants with allodynia (based on the NPSI) at baseline\n(n=15) than in those without allodynia (n=19; adjusted\neff ect estimate 0·56 [SE 0·14]; p=0·0003). We noted\nsimilar fi ndings when allodynia was defi ned on the basis\nof QST (n=59 [29 with allodynia and 30 without]; adjusted\neff ect estimate 0·59 [SE 0·14]; p=0·0002). The response to\nbotulinum toxin A at 24 weeks (≥50% pain relief) was also\npredicted by the severity of brush-induced allodynia (odds\nratio 4·6, 95% CI 1·5-13·7; p=0·007) and pressure\nhyperalgesia (3·5, 1·03-12·2; p=0·04) on QST. Finally, we\nnoted signifi cant positive or inverse correlations between\nthe effi cacy of botulinum toxin A at 24 weeks and baseline\nwarm detection thresholds (Rho -0·49; p=0·03), cold\ndetection thresholds (Rho 0·46; p=0·02), and mechanical\npain thresholds (Rho -0·42; p=0·02) on the painful side,\nshowing that less thermal defi cits and stronger mechanical\nallodynia were associated with greater effi cacy of\nbotulinum toxin A. No such relations were noted in the\nplacebo group.\n55 participants (29 in the botulinum toxin A group and\n26 in the placebo group) underwent skin punch biopsy on\nthe painful side at baseline. Two participants developed\nadverse eff ects to the skin punch biopsy (one transient\nknee oedema and one superfi cial wound). Responders to\nbotulinum toxin A (eight participants) had a higher\nbaseline mean IENFD (4·05 [SD 1·7]) than did non-\nresponders (21 participants; 1·5 [0·3]; p=0·04; fi gure 3).\nNo such diff erence was noted for the contralateral side or\nfor placebo (not shown). IENFD on skin punch biopsy on\n0\n2\n4\n6\n8\n10\n12\n14\n16\n18\n20\n22\n24\n0\n3\n4\n5\n6\n7\n8\nMean pain intensity\n*\n*\n*\n*\n* *\n*\n†\n† †\n† †\n† †\n†\n† † †\n† † † †\n‡\n‡\nTime (weeks)\nPlacebo\nBotulinum toxin A\nFigure 2: Eff ects of botulinum toxin A and placebo on the primary endpoint\nBars are SE. p values are for the diff erence between botulinum toxin A and\nplacebo at each timepoint. *p<0·05. †p<0·01. ‡p<0·001.\n0\n2\n4\n8\n6\nMean number of fibres per mm\nResponders to botulinum\ntoxin A (n=8)\nNon-responders to botulinum\ntoxin A (n=21)\np=0·04\nFigure 3: Intra-epidermal nerve fi bre density at baseline\nBars are SD.\nBotulinum toxin A\nPlacebo\nBaseline\n(week -1;\nn=28)\nWeek 4\n(n=23)\nBaseline\n(week -1;\nn=22)\nWeek 4\n(n=17)\np value\nCalcitonin gene-related\nprotein (pmol/L)\n23·8 (19·1)\n24·4 (25·8)\n21·1 (21·1)\n17·0 (15·0)\n0·9\nSubstance P (pmol/L)\n46·2 (14·0)\n48·2 (13·1)\n49·3 (18·0)\n43·6 (14·9)\n0·9\nData are mean (SD). Data are shown for all patients whose skin biopsy were analysed for protein concentrations.\np values are for the comparison between treatment groups for the change between baseline and week 4.\nTable 2: Eff ects of botulinum toxin A and placebo on protein concentrations in skin biopsies",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 57,
+      "start_line": 4,
+      "trial_id": "attal-2016"
+    },
+    "sha256:a28850514ad6d6918d2e911cbc9578bae1ab88d18aad0085c7747c41d87752bf": {
+      "end": 581,
+      "end_line": 10,
+      "handle": "eh_a28850514ad6d691",
+      "identity": "sha256:a28850514ad6d6918d2e911cbc9578bae1ab88d18aad0085c7747c41d87752bf",
+      "kind": "narrative",
+      "page": 13,
+      "quote": "A post-hoc sensitivity analysis of the primary outcome (see table further) showed that the LOCF results were\nsimilar to 3 other imputation methods: linear interpolation, maximum likelihood analysis (no case wise deletion\nby SAS Proc Mixed), and Markov chain Monte-Carlo (MCMC) multiply imputation that is suitable for arbitrary\nmissing patterns. This comparison showed that the BTX-A clinical efficacy was invariant whatever the method\nof imputation used.",
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "source_version": "sha256:13f190b35edd5feaae148d62150c47fe31db66e1b6d9f98160efe1bd73f1414e",
+      "start": 126,
+      "start_line": 6,
+      "trial_id": "attal-2016"
+    },
+    "sha256:c8527753d308d766632c4b6ccf98686e2e431a444b6c8196ce7ec2c0b039f32a": {
+      "end": 4117,
+      "end_line": 397,
+      "handle": "eh_c8527753d308d766",
+      "identity": "sha256:c8527753d308d766632c4b6ccf98686e2e431a444b6c8196ce7ec2c0b039f32a",
+      "kind": "narrative",
+      "page": 7,
+      "quote": "Articles\nwww.thelancet.com/neurology Vol 15 May 2016\n561\nthe painful side was predictive of botulinum toxin A\nresponse at 24 weeks (odds ratio 6·2, 95% CI 1·5-25·2;\np=0·01). Although IENFD could not be normalised to the\ncontralateral side, these results do not seem to be related\nto potential confounders (appendix p 10).\nNeuropeptide concentrations in skin punch biopsy\nspecimens were similar between groups at baseline.\nConcentrations were not modifi ed by botulinum toxin A\ncompared with placebo treatment (table 2) and were not\nassociated with the response to botulinum toxin A (p=0·5\nfor CGRP; p=0·8 for substance P).\nThe proportion of participants reporting deep pain at\nbaseline was lower in the botulinum toxin A group than\nin the placebo group (19 [56%] vs 23 [72%]), but this\ndiff erence was not signifi cant (p=0·19). The proportion\nof participants reporting other neuropathic symptoms\n(ie, all other symptoms from the NPSI) was similar\nbetween the botulinum toxin A and placebo groups (not\nshown). Botulinum toxin A relieved paroxysmal pain\n(p<0·0001) and allodynia (p=0·0002) as assessed by\nthe NPSI (table 3 and fi gure 4). We noted moderate\ndecreases in anxiety (p=0·02), SPL6 (p=0·02), and SPL9\n(p=0·03; table 3). Additionally, PGIC scores were much\nor very much improved in 23 (68%) patients in the\nbotulinum toxin group versus 13 (41%) of those in the\nplacebo group (p=0·04).\nBaseline heat and mechanical detection and heat pain\nthresholds were higher on the painful side than on the\nBotulinum toxin A (n=34)\nPlacebo (n=32)\np value\nBaseline\n(week -1)\nWeek 4\nWeek 12\nWeek 16*\nWeek 24†\nBaseline\n(week -1)\nWeek 4\nWeek 12\nWeek 16*\nWeek 24†\nNumerical rating scale (0-10) of the BPI over the past 24 h\nAverage pain\n6·3\n(1·6)\n5·3\n(2·3)\n5·2\n(2·3)‡\n5·3\n(2·4)‡\n4·8\n(2·6)§\n6·4\n(1·6)\n6·1\n(1·7)\n6·3\n(2·1)\n6·3\n(1·9)\n5·8\n(2·2)\n0·10\nPain at its worst\n7·3\n(1·5)\n6·7\n(2·0)\n6·9\n(1·9)\n6·2\n(2·4)‡\n6·5\n(2·4)‡\n7·2\n(1·7)\n7·2\n(1·4)\n6·7\n(2·3)\n6·9\n(1·8)\n6·7\n(2·2)\n0·15\nPain at its least\n4·4\n(1·7)\n3·8\n(2·4)\n4·3\n(2·6)\n3·4\n(2·7)‡\n3·1\n(2·7)‡\n3·6\n(2·1)\n5·0\n(2·1)\n4·9\n(2·4)\n4·7\n(2·6)\n4·6\n(2·4)\n0·05\nPercentage pain relief (0-100) over\nthe past 24 h on the VAS of the BPI¶\n··\n··\n··\n··\n24·4%\n(23·7)§\n··\n··\n··\n··\n10·6%\n(16·2)\n0·008\nBPI interference (0-70)\n32·6\n(15·7)\n29·2\n(19·3)\n28·8\n(18·5)\n27·7\n(19·2)\n27·9\n(18·7)\n33·2\n(16·0)\n30·3\n(18·3)\n32·1\n(19·3)\n30·6\n(19·4)\n32·2\n(18·9)\n0·37\nNeuropathic Pain Symptom Inventory (0-10)\nBurning pain\n5·1\n(3·4)\n5·1\n(3·3)\n4·7\n(3·2)\n3·8\n(3·5)‡\n3·6\n(3·4)‡\n4·9\n(3·6)\n4·5\n(3·5)\n4·6\n(3·6)\n4·4\n(3·6)\n4·3\n(3·5)\n0·61\nDeep pain\n3·4\n(3·0)\n3·6\n(3·1)\n3·5\n(3·5)\n3·3\n(3·3)\n3·6\n(3·3)\n4·3\n(3·5)\n3·7\n(2·9)\n3·8\n(3·2)\n3·8\n(3·2)\n3·4\n(3·1)\n0·19\nParoxysmal pain\n4·6\n(2·9)\n2·9\n(2·6)‡\n3·0\n(2·6)§\n2·6\n(2·6)||\n2·5\n(2·4)||\n4·6\n(2·7)\n4·4\n(3·1)\n4·1\n(3·2)\n4·0\n(3·2)\n4·0\n(2·9)\n<0·0001\nAllodynia\n4·0\n(3·3)\n3·0\n(3·0)\n3·3\n(3·1)\n2·7\n(2·6)‡\n3·0\n(2·7)\n4·1\n(2·8)\n4·2\n(3·1)\n4·1\n(2·9)\n4·1\n(2·9)\n3·9\n(2·9)\n0·0002\nParaesthesia or dysaesthesia\n3·8\n(3·1)\n3·9\n(3·3)\n3·9\n(3·0)\n3·1\n(3·3)\n3·5\n(3·1)\n4·4\n(2·7)\n3·9\n(2·7)\n4·4\n(2·9)\n4·1\n(2·7)\n4·1\n(2·9)\n0·68\nHospital Anxiety and Depression Scale (0-21)\nAnxiety\n8·7\n(5·0)\n8·0\n(4·4)\n8·4\n(4·9)\n7·7\n(4·5)\n7·4\n(5·3)\n7·8\n(4·4)\n8·2\n(4·7)\n8·5\n(4·9)\n8·3\n(4·9)\n8·5\n(4·6)\n0·02\nDepression\n6·5\n(4·9)\n6·8\n(5·1)\n6·5\n(4·7)\n6·1\n(4·5)\n6·2\n(4·9)\n6·1\n(4·2)\n6·1\n(3·7)\n5·9\n(4·4)\n5·7\n(4·2)\n5·9\n(4·3)\n0·54\nEQ5D VAS (0-100)\n58·6\n(19·2)\n53·1\n(22·7)\n56·4\n(24·1)\n57·8\n(19·6)\n56·8\n(22·3)\n56·4\n(22·1)\n54·4\n(22·5)\n54·8\n(23·5)\n53·5\n(21·1)\n57·0\n(21·1)\n0·63\nQuality of sleep index (0-100)\nSleep Problem Index I (six items)\n45·9\n(21·1)\n44·4\n(20·2)\n43·4\n(22·6)\n43·2\n(22·3)\n43·9\n(21·4)\n40·2\n(21·4)\n39·7\n(21·3)\n40·7\n(19·9)\n40·3\n(20·4)\n40·6\n(20·6)\n0·02\nSleep Problem Index 9 (nine\nitems)\n47·1\n(21·0)\n46·4\n(18·4)\n44·1\n(20·5)\n43·9\n(21·2)\n45·3\n(19·3)\n41·2\n(21·0)\n41·2\n(19·7)\n42·9\n(18·2)\n42·2\n(19·1)\n41·7\n(19·6)\n0·03\nHours of sleep\n5·9\n(1·8)\n5·7\n(2·1)\n5·9\n(1·7)\n5·7\n(1·9)\n6·1\n(1·7)\n6·2\n(1·8)\n6·0\n(1·5)\n6·1\n(1·3)\n6·0\n(1·5)\n6·1\n(1·5)\n0·99\nData are mean score (SD). p values are for the diff erences between the botulinum toxin A and placebo groups from baseline to week 24, in the fi xed-eff ects model. Signifi cant diff erences between botulinum",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "attal-2016"
+    },
+    "sha256:c947e455e20997a59ecb0ec372980c57f9d7e255bd3a68add3f2dfa7f3ad011a": {
+      "end": 5274,
+      "end_line": 122,
+      "handle": "eh_c947e455e20997a5",
+      "identity": "sha256:c947e455e20997a59ecb0ec372980c57f9d7e255bd3a68add3f2dfa7f3ad011a",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "and used a LOCF imputation for missing values.\nWe used a generalised linear mixed-model repeated-\nmeasures analysis to investigate the prespecifi ed primary\nendpoint. This model compared the mean change in\nweekly or daily pain ratings over time after two\nadministrations of botulinum toxin A with that after\nplacebo each week for 24 weeks, with baseline mean pain\nintensity as a covariate. We used the same models to\nassess the eff ects of botulinum toxin A on the secondary\noutcomes. In these models, treatment eff ect estimates\ncorrespond to a relative diff erence between botulinum\ntoxin A and placebo for daily pain ratings over 24 weeks,\non a mixed longitudinal model averaged across all\npatients and adjusted on all covariates of the model,\nincluding time.\nWe assessed the therapeutic gain associated with the\nsecond administration of botulinum toxin A or placebo in\nparticipants who received two administrations, by using\nseparate generalised linear mixed models for each\ntreatment group (botulinum toxin A or placebo; appendix\np 4) rather than a unique model comparing botulinum\ntoxin A with placebo, because a fi nding of a relative gain\nin effi cacy for botulinum toxin A versus placebo might be\nerroneously positive in the case of a relative deterioration\nof response in the placebo group. These models compared\nthe weekly means of daily pain ratings, on numerical\nscales, from the fi rst to the 12th week of the study with\nthose from the 13th to the 24th week of the study,\n34 received first administration\n32 received first administration\n34 assigned to botulinum toxin A\n68 randomly assigned\n152 patients screened\n34 assigned to placebo\n32 received second administration\n26 received second administration\n34 included in intention-to-treat\n\nanalysis\n32 included in intention-to-treat\n\nanalysis\n29 included in final safety\n\nassessment at week 24\n23 included in final safety\n\nassessment at week 24\n84 excluded\n\n22 declined to participate\n\n13 other ongoing protocol\n\n49 did not meet inclusion criteria*\n2 did not receive first administration\n 1 patient refusal\n 1 no baseline assessment of pain\n2 did not receive second administration\n 1 absence of efficacy\n 1 first administration too painful\n6 did not receive second administration\n 4 absence of efficacy\n 2 first administration too painful\n3 discontinued\n 2 absence of efficacy\n 1 died\n3 discontinued\n 3 absence of efficacy\nFigure 1: Trial profi le\n*Pain in the face or sole of the foot in seven patients, ongoing major depression in 11, an extensive painful area in\n19, contraindications to botulinum toxin A in two, weak pain (score less than four out of ten on the 11-point\nnumerical rating scale of the Brief Pain Inventory) or pain for shorter than 6 months in fi ve, and an inability to\nunderstand the questionnaires in fi ve.",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 2479,
+      "start_line": 49,
+      "trial_id": "attal-2016"
+    },
+    "sha256:d7740c4523593458d842ddcc26342b7804bf7edba8829b619f72c1fa8981581f": {
+      "end": 4865,
+      "end_line": 117,
+      "handle": "eh_d7740c4523593458",
+      "identity": "sha256:d7740c4523593458d842ddcc26342b7804bf7edba8829b619f72c1fa8981581f",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "2 did not receive first administration\n 1 patient refusal\n 1 no baseline assessment of pain\n2 did not receive second administration\n 1 absence of efficacy\n 1 first administration too painful\n6 did not receive second administration\n 4 absence of efficacy\n 2 first administration too painful\n3 discontinued\n 2 absence of efficacy\n 1 died\n3 discontinued\n 3 absence of efficacy",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 4492,
+      "start_line": 104,
+      "trial_id": "attal-2016"
+    },
+    "sha256:eb02f403c72fd474c665cb31859adaa970c49980d846075d2e6407caa65ba7eb": {
+      "end": 2646,
+      "end_line": 53,
+      "handle": "eh_eb02f403c72fd474",
+      "identity": "sha256:eb02f403c72fd474c665cb31859adaa970c49980d846075d2e6407caa65ba7eb",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "Between Oct 2, 2010, and Aug 2, 2013, 152 participants\nwere enrolled in the study, of whom 68 were randomly\nassigned (34 per group; fi gure 1). One woman withdrew\non the day of the fi rst administration because she was\nafraid of the treatment and one man did not fi ll out any\npain assessment diaries and so he was not included in\nthe trial. We therefore included 66 participants in the\nintention-to-treat analysis: 34 in the botulinum toxin A\ngroup and 32 in the placebo group. 58 participants\nreceived a second treatment administration (32 in the\nbotulinum toxin A group and 26 in the placebo group)",
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "source_version": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "start": 2045,
+      "start_line": 43,
+      "trial_id": "attal-2016"
+    }
+  },
+  "answers": [
+    {
+      "answer": "probably_no",
+      "bases": [
+        {
+          "evidence": "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+          "kind": "direct_support",
+          "source": "LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\nIn the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\nmore prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\nand more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\nMissing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\nNot at Random (MNAR) pattern."
+        },
+        {
+          "evidence": "sha256:eb02f403c72fd474c665cb31859adaa970c49980d846075d2e6407caa65ba7eb",
+          "kind": "direct_support",
+          "source": "Between Oct 2, 2010, and Aug 2, 2013, 152 participants\nwere enrolled in the study, of whom 68 were randomly\nassigned (34 per group; fi gure 1). One woman withdrew\non the day of the fi rst administration because she was\nafraid of the treatment and one man did not fi ll out any\npain assessment diaries and so he was not included in\nthe trial. We therefore included 66 participants in the\nintention-to-treat analysis: 34 in the botulinum toxin A\ngroup and 32 in the placebo group. 58 participants\nreceived a second treatment administration (32 in the\nbotulinum toxin A group and 26 in the placebo group)"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The primary analysis included 66 of 68 randomized participants, and LOCF-imputed values count as missing. In the 66-person dataset, 131/1,650 weekly pain records (7.9%) and 29/396 visit records (7.3%) were missing. Missing records were more common toward the end and in placebo. This is not clearly all or nearly all outcome data, particularly with a small trial and differential missingness.",
+      "question_id": "sq:missing:data-available",
+      "unknowns": [
+        "The supplement does not report how many individual participants had any missing record or arm-specific counts of observed and imputed values."
+      ]
+    },
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:a28850514ad6d6918d2e911cbc9578bae1ab88d18aad0085c7747c41d87752bf",
+          "kind": "direct_support",
+          "source": "A post-hoc sensitivity analysis of the primary outcome (see table further) showed that the LOCF results were\nsimilar to 3 other imputation methods: linear interpolation, maximum likelihood analysis (no case wise deletion\nby SAS Proc Mixed), and Markov chain Monte-Carlo (MCMC) multiply imputation that is suitable for arbitrary\nmissing patterns. This comparison showed that the BTX-A clinical efficacy was invariant whatever the method\nof imputation used."
+        },
+        {
+          "evidence": "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+          "kind": "context",
+          "source": "LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\nIn the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\nmore prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\nand more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\nMissing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\nNot at Random (MNAR) pattern."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "A post-hoc sensitivity analysis compared LOCF with linear interpolation, maximum likelihood mixed-model analysis, and MCMC multiple imputation and reported that clinical efficacy was invariant across methods. This supports probable robustness of the treatment effect, although the report does not show sensitivity to departures from the MAR assumption or plausible MNAR scenarios, and missingness was more common in placebo and late follow-up.",
+      "question_id": "sq:missing:evidence-unbiased",
+      "unknowns": [
+        "No sensitivity analysis under explicitly MNAR assumptions is reported."
+      ]
+    }
+  ],
+  "source_inventory": [
+    {
+      "declared_role": "supplement",
+      "id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "label": "mmc1.pdf",
+      "logical_path": "mmc1.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 16,
+      "projection_hash": "sha256:13f190b35edd5feaae148d62150c47fe31db66e1b6d9f98160efe1bd73f1414e",
+      "role": "supplement",
+      "sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "trial_id": "attal-2016"
+    },
+    {
+      "declared_role": "main_article",
+      "id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "label": "S1474-4422-16-00017-X.pdf",
+      "logical_path": "S1474-4422-16-00017-X.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 11,
+      "projection_hash": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "role": "main_article",
+      "sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "trial_id": "attal-2016"
+    },
+    {
+      "declared_role": null,
+      "id": "source_8060a6d9e451f076588fda27c64de39144bb5b443801b532a6a7639ce378aa3c",
+      "label": "ClinicalTrials.gov NCT01251211",
+      "logical_path": "registry/NCT01251211.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:aae0676df688f1a3cd4e2072a7b94581f8715aa4ef4bfd962d9eb1d4d8d1c7fd",
+      "role": "registry",
+      "sha256": "sha256:3da98d814a6717e32aba874ccff095b43dc88557b11e71b2b0b66e23f58d3725",
+      "trial_id": "attal-2016"
+    }
+  ],
+  "frozen_source_pages": [
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "page": 1,
+      "numbered_text": "1|www.thelancet.com/neurology Vol 15 May 2016\n2|555\n3|Articles\n4|Lancet Neurol 2016; 15: 555-65\n5|Published Online\n6|February 29, 2016\n7|http://dx.doi.org/10.1016/\n8|S1474-4422(16)00017-X\n9|See Comment page 534\n10|INSERM U-987, Boulogne-\n11|Billancourt, France (N Attal MD,\n12|F Adam MD, D Bouhassira MD);\n13|CHU Ambroise Paré, APHP,\n14|Boulogne-Billancourt, France\n15|(N Attal, F Adam, D Bouhassira);\n16|Université Versailles-Saint-\n17|Quentin, Versailles, France\n18|(N Attal, D Bouhassira); Pain\n19|Center, Department of\n20|Neurology (D C de Andrade MD,\n21|Prof M J Teixeira MD,\n22|R Galhardoni PhD, I Raicher MD),\n23|and Instituto do Câncer\n24|(D C de Andrade, I Raicher),\n25|University of São Paulo, São\n26|Paulo, Brazil; Department of\n27|Neurology, CHU Dupuytren,\n28|Limoges, France\n29|(D Ranoux MD); and\n30|Department of Neurology,\n31|University of Würzburg,\n32|Würzburg, Germany\n33|(N Üçeyler MD,\n34|Prof C Sommer MD)\n35|Correspondence to:\n36|Dr Nadine Attal, INSERM U 987,\n37|CHU Ambroise Paré,\n38|Boulogne-Billancourt F-92100,\n39|France\n40|nadine.attal@apr.aphp.fr\n41|Safety and effi cacy of repeated injections of botulinum\n42|toxin A in peripheral neuropathic pain (BOTNEP):\n43|a randomised, double-blind, placebo-controlled trial\n44|Nadine Attal, Daniel C de Andrade, Frédéric Adam, Danièle Ranoux, Manoel J Teixeira, Ricardo Galhardoni, Irina Raicher, Nurcan Üçeyler,\n45|Claudia Sommer, Didier Bouhassira\n46|Summary\n47|Background Data from previous studies suggest that botulinum toxin A has analgesic eff ects against peripheral\n48|neuropathic pain, but the quality of the evidence is low. We aimed to assess the safety and effi cacy of repeated\n49|administrations of botulinum toxin A in patients with neuropathic pain.\n50|Methods We did a randomised, double-blind, placebo-controlled trial at two outpatient clinics in France (Clinical Pain\n51|Centre, Ambroise Paré Hospital, APHP, Boulogne-Billancourt, and Neurological Centre, Hôpital Dupuytren,\n52|Limoges) and one in Brazil (Neurological Department, Hospital das Clínicas da FMUSP, São Paulo). Patients aged\n53|18-85 years with peripheral neuropathic pain were randomly assigned (1:1) by block randomisation, according to a\n54|centralised schedule, to receive two subcutaneous administrations of botulinum toxin A (up to 300 units) or placebo,\n55|12 weeks apart. All patients and investigators were masked to treatment assignment. The primary outcome was the\n56|effi cacy of botulinum toxin A versus placebo, measured as the change from baseline in self-reported mean weekly\n57|pain intensity over the course of 24 weeks from the fi rst administration. The primary effi cacy analysis was a mixed-\n58|model repeated-measures analysis in the intention-to-treat population. This trial is registered with ClinicalTrials.gov,\n59|NCT01251211.\n60|Findings Between Oct 2, 2010, and Aug 2, 2013, 152 patients were enrolled, of whom 68 were randomly assigned\n61|(34 per group), and 66 (37 [56%] men) were included in the primary analysis (34 in the botulinum toxin A group and\n62|32 in the placebo group). Botulinum toxin A reduced pain intensity over 24 weeks compared with placebo (adjusted\n63|eff ect estimate -0·77, 95% CI -0·95 to -0·59; p<0·0001). Pain on injection was the only adverse eff ect reported, and\n64|occurred in 19 (56%) participants in the botulinum toxin A group and 17 (53%) of those in the placebo group (p=1·0).\n65|Severe pain was experienced by ten (29%) participants in the botulinum toxin A group and 11 (34%) in the placebo\n66|group (p=0·8).\n67|Interpretation Two administrations of botulinum toxin A, each of which comprised several injections, have a sustained\n68|analgesic eff ect against peripheral neuropathic pain. Several factors, such as the presence of allodynia and a limited\n69|thermal defi cit, may be useful in predicting treatment response and should be investigated further.\n70|Funding Institut National de la Santé et de la Recherche Médicale (INSERM) and Fondation CNP (France).\n71|Introduction\n72|Botulinum toxin type A is widely used to treat muscle\n73|hyperactivity,1 on the basis of its ability to inhibit synaptic\n74|exocytosis and, therefore, to disable neural transmission.\n75|In the past decade, fi ndings from several experimental\n76|studies in animals and healthy people have suggested\n77|that botulinum toxin A might have analgesic activity\n78|independent of its eff ect on muscle tone,2,3 which has led\n79|to the suggestion of new indications for the drug in\n80|analgesia, particularly for chronic migraine.4 Findings\n81|from prospective studies on dystonia,5 bladder dys-\n82|function,6 and chronic migraine4 have shown repeated\n83|administrations of botulinum toxin A to be safe, but the\n84|safety and effi cacy of repeated administrations of this\n85|drug for neuropathic pain have not yet been investigated.\n86|Neuropathic pain is a debilitating chronic pain disorder\n87|and an unmet medical need.7 Most drugs used for the\n88|management of neuropathic pain have dose-limiting\n89|adverse eff ects,8 and eff ective drugs without systemic\n90|side-eff ects are urgently needed. Published data3,8 suggest\n91|that botulinum toxin A has analgesic eff ects against\n92|peripheral neuropathic pain. However, the quality of the\n93|evidence is low because it comes mostly from small pilot\n94|trials. Findings from one unpublished multicentre study\n95|of 117 patients with postherpetic neuralgia9 showed no\n96|eff ect of botulinum toxin A compared with placebo on\n97|pain intensity from pain diaries (primary outcome), but\n98|in view of the inclusion criteria (minimal duration of\n99|pain required for inclusion was only 3 months), some\n100|patients might have recovered spontaneously. No study\n101|has assessed the effi cacy of repeated administrations of\n102|botulinum toxin A for the treatment of neuropathic pain.\n103|Furthermore, the phenotypic profi les of the patients who\n104|respond to the drug have yet to be characterised.\n105|We did a double-blind, randomised, placebo-controlled\n106|trial to assess the safety and effi cacy of two subcutaneous",
+      "text_sha256": "f48664d0c30466924f36be887aac3d4ba8a8f2fb9b01464f779ad9754de0f776"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "page": 3,
+      "numbered_text": "1|Articles\n2|www.thelancet.com/neurology Vol 15 May 2016\n3|557\n4|administrations (comprising several injections) of\n5|botulinum toxin A (up to 300 units) or placebo, 12 weeks\n6|apart. An independent pharmacist (Ambroise Paré\n7|Hospital, APHP), who had no other role in the study or\n8|in data analysis, prepared a concealed allocation schedule\n9|that randomly assigned the treatments in blocks of four\n10|to a consecutive series of numbers. The treatment\n11|allocation code was kept in a sealed envelope until the\n12|end of the study. The syringes used for the injections of\n13|the appropriate treatments were prepared by the\n14|pharmacists at each site, who were not involved in any\n15|other aspect of the study, such that the physicians\n16|performing the injections, who were not involved in\n17|subsequent assessments, would not recognise the\n18|treatment. The active treatment and placebo solutions\n19|were transparent and indistinguishable. All patients and\n20|investigators were masked to treatment assignment.\n21|Procedures\n22|Six participant visits were scheduled: inclusion and\n23|baseline assessment (ie, week -1), randomisation and\n24|fi rst administration (ie, week 0), and then four visits at 4,\n25|12, 16, and 24 weeks after the fi rst administration.\n26|Vials of 100 units of botulinum toxin A (BOTOX;\n27|Allergan, Courbevoie, France, and São Paulo, Brazil) were\n28|recon stituted with 4 mL non-preserved saline solution, as\n29|recom mended by the supplier (concentration of\n30|botulinum toxin A 25 units per mL). Placebo consisted of\n31|an equal volume of saline. The injection procedure was\n32|mostly as previously described;3 botulinum toxin A or\n33|placebo was injected subcutaneously, at sites 1·5-2 cm\n34|apart (0·2 mL, ie, 5 units of botulinum toxin A per site).\n35|The total dose was determined by the size of the painful\n36|area on the day of administration, without exceeding\n37|60 sites (12 mL, ie, 300 units). The injections of botulinum\n38|toxin A or placebo were repeated 12 weeks later; thus,\n39|participants received either two successive botulinum\n40|toxin A administrations or two successive placebo\n41|administrations, regardless of their response to the fi rst\n42|administration.\n43|To reduce pain related to the injections, participants\n44|were given a cream formulation of lidocaine and\n45|prilocaine (EMLA; AstraZeneca, Rueil Malmaison,\n46|France, and Cotia, Brazil) to the painful area 60 min\n47|before the injections, and a nurse administered\n48|50% nitrous oxide and oxygen (conscious inhalation\n49|sedation; Kalinox; Air Liquide, Paris, France, and São\n50|Paulo, Brazil) via a nasal high-concentration mask 5 min\n51|before and throughout the procedure.\n52|Participants who provided written consent under-\n53|went two 3 mm skin punch biopsies, before random\n54|allocation and 4 weeks after the fi rst treatment\n55|administration (appendix p 3).12 The specimens obtained\n56|were analysed (masked to treatment allocation) in CS's\n57|laboratory in Wurzburg, Germany. Each sample from\n58|baseline and week 4 was divided into two. In half the\n59|sample, intra-epidermal nerve fi bre density (IENFD)\n60|was measured according to an internationally accepted\n61|quantifi cation protocol.12 In the other half of the sample,\n62|we quantifi ed protein concentrations of substance P and\n63|calcitonin gene-related peptide (CGRP)13 using ELISA\n64|(appendix p 3). We assumed that the analgesic eff ects of\n65|botulinum toxin A were mediated principally by a direct\n66|action on nociceptive fi bres and the inhibition of\n67|neurogenic infl ammation through a blockade of neuro-\n68|transmitter release.14-16\n69|Outcomes\n70|The primary outcome was the effi cacy of two successive\n71|administrations of several injections of botulinum\n72|toxin A, compared with placebo, measured as the change\n73|in weekly self-reported mean pain intensity (mean pain\n74|over the past 24 h recorded each morning in a diary)\n75|on the 11-point numerical rating scale (0=no pain,\n76|10=maximum pain imaginable) of the Brief Pain\n77|Inventory from baseline (1 week before randomisation)\n78|over 24 weeks after the fi rst administration.17\n79|All secondary endpoints were assessed at 4, 12, and\n80|24 weeks, unless otherwise specifi ed. Secondary\n81|outcomes were the safety and tolerability of the treatment\n82|throughout the study period; the therapeutic gain, in\n83|terms of relief of spontaneous pain, of the second\n84|administration of botulinum toxin A, assessed on the\n85|basis of mean weekly pain intensity recordings of the\n86|participants who received two administrations (ie, as-\n87|treated population) on the 11-point numerical rating scale\n88|of the Brief Pain Inventory, from week 13 to week 24\n89|(after the fi rst administration; appendix p 4); the\n90|proportion of participants responding to botulinum\n91|toxin A treatment at 24 weeks, in terms of a decrease of\n92|50% or more and 30% or more in self-reported pain\n93|intensity score, relative to placebo-treated participants;\n94|the eff ects of botulinum toxin A on the intensity of\n95|brush-induced allodynia, measured by a brush (Somedic,\n96|Hörby, Sweden) on the Visual Analogue Scale, and on\n97|sensory defi cits, allodynia, and hyperalgesia in response\n98|to mechanical punctate and thermal stimuli measured by\n99|Quantitative Sensory Testing (QST), all assessed at\n100|baseline and at 12 and 24 weeks (appendix p 5);18 the\n101|eff ects of botulinum toxin A on neuropathic symptoms\n102|(ie, burning pain, deep pain, paroxysmal pain,\n103|paraesthesia or dysaesthesia, and allodynia), measured\n104|with the Neuropathic Pain Symptom Inventory (NPSI;\n105|appendix p 8);19 identifi cation of factors predictive of\n106|treatment response (on self-reported mean pain intensity\n107|over 24 weeks) based on the presence or absence of\n108|allodynia before treatment assessed by QST and by the\n109|NPSI (appendix p 8); identifi cation of factors predictive\n110|of treatment response (responders and non-responders\n111|based on 50% pain relief 24 weeks after the fi rst\n112|administration) based on the severity of allodynia and of\n113|sensory defi cits assessed by QST before treatment;\n114|correlations between self-reported mean pain intensity\n115|on the numerical rating scale of the Brief Pain Inventory",
+      "text_sha256": "f0cdbea3a5f5de88fede08f914730b16b1fbbe9184e118e3938bd07fb427211a"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "page": 4,
+      "numbered_text": "1|Articles\n2|558\n3|www.thelancet.com/neurology Vol 15 May 2016\n4|at 24 weeks after the fi rst administration and the severity\n5|of allodynia or of sensory defi cits before treatment; the\n6|predictive value of IENFD and neurogenic infl ammation\n7|(concentrations of substance P and CGRP) for the\n8|response to botulinum toxin A at 24 weeks, assessed by\n9|skin biopsy at baseline; symptoms of anxiety and\n10|depression, assessed by the Hospital Anxiety and\n11|Depression Scale;20 quality of life on the Visual Analogue\n12|Scale of the EQ5D from 0 (imaginable health state) to 100\n13|(worst imaginable health state);21 quality of sleep\n14|according to the Quality of Sleep Index (Sleep Problems\n15|Index I [six items; SPL6] and Sleep Problems Index 9\n16|[nine items; SPL9]); sleep duration and interference with\n17|pain, measured on the Medical Outcomes Study sleep\n18|scale;22 the number needed to treat (NNT) for 50% and\n19|30% pain relief at 24 weeks, based on patient pain diaries;\n20|the percentage of pain relief on the Visual Analogue\n21|Scale of the Brief Pain Inventory at the last visit of\n22|participation (ie, 24 weeks or earlier); and Patients' Global\n23|Impression of Change (PGIC) on a seven-point scale\n24|(from very much improved to very much worse) at the\n25|last visit of participation (ie, 24 weeks or earlier).\n26|Statistical analysis\n27|In a pilot study with a similar endpoint,3 we noted a mean\n28|diff erence in pain intensity between botulinum toxin A\n29|and placebo of 1·5 units (SD 1·5). Since the selection of\n30|participants was less stringent in this study-ie, not as\n31|many exclusion criteria were used-we assumed that the\n32|mean diff erence in pain intensity between the two\n33|treatment groups in our study would be smaller (about\n34|1·0 unit). Assuming a similar SD, we calculated that a\n35|sample size of 30 participants per group would be needed\n36|for 80% power, to detect such a diff erence in a two-sample\n37|two-tailed t test with a type I error of 0·05. Taking into\n38|account a 10% dropout rate, we estimated that we would\n39|need to include 66 participants in total.\n40|The effi cacy analyses for the primary outcome and for\n41|all but one secondary outcomes included all randomly\n42|assigned participants (intention-to-treat population)\n43|and used a last-observation-carried-forward (LOCF)\n44|imputation. Analysis of the therapeutic gain of the\n45|second injection (a secondary endpoint) included all\n46|randomly assigned participants who received two\n47|administrations of the treatment (as-treated analysis,\n48|based on the actual treatment the participants received)\n49|and used a LOCF imputation for missing values.\n50|We used a generalised linear mixed-model repeated-\n51|measures analysis to investigate the prespecifi ed primary\n52|endpoint. This model compared the mean change in\n53|weekly or daily pain ratings over time after two\n54|administrations of botulinum toxin A with that after\n55|placebo each week for 24 weeks, with baseline mean pain\n56|intensity as a covariate. We used the same models to\n57|assess the eff ects of botulinum toxin A on the secondary\n58|outcomes. In these models, treatment eff ect estimates\n59|correspond to a relative diff erence between botulinum\n60|toxin A and placebo for daily pain ratings over 24 weeks,\n61|on a mixed longitudinal model averaged across all\n62|patients and adjusted on all covariates of the model,\n63|including time.\n64|We assessed the therapeutic gain associated with the\n65|second administration of botulinum toxin A or placebo in\n66|participants who received two administrations, by using\n67|separate generalised linear mixed models for each\n68|treatment group (botulinum toxin A or placebo; appendix\n69|p 4) rather than a unique model comparing botulinum\n70|toxin A with placebo, because a fi nding of a relative gain\n71|in effi cacy for botulinum toxin A versus placebo might be\n72|erroneously positive in the case of a relative deterioration\n73|of response in the placebo group. These models compared\n74|the weekly means of daily pain ratings, on numerical\n75|scales, from the fi rst to the 12th week of the study with\n76|those from the 13th to the 24th week of the study,\n77|34 received first administration\n78|32 received first administration\n79|34 assigned to botulinum toxin A\n80|68 randomly assigned\n81|152 patients screened\n82|34 assigned to placebo\n83|32 received second administration\n84|26 received second administration\n85|34 included in intention-to-treat\n86|\n87|analysis\n88|32 included in intention-to-treat\n89|\n90|analysis\n91|29 included in final safety\n92|\n93|assessment at week 24\n94|23 included in final safety\n95|\n96|assessment at week 24\n97|84 excluded\n98|\n99|22 declined to participate\n100|\n101|13 other ongoing protocol\n102|\n103|49 did not meet inclusion criteria*\n104|2 did not receive first administration\n105| 1 patient refusal\n106| 1 no baseline assessment of pain\n107|2 did not receive second administration\n108| 1 absence of efficacy\n109| 1 first administration too painful\n110|6 did not receive second administration\n111| 4 absence of efficacy\n112| 2 first administration too painful\n113|3 discontinued\n114| 2 absence of efficacy\n115| 1 died\n116|3 discontinued\n117| 3 absence of efficacy\n118|Figure 1: Trial profi le\n119|*Pain in the face or sole of the foot in seven patients, ongoing major depression in 11, an extensive painful area in\n120|19, contraindications to botulinum toxin A in two, weak pain (score less than four out of ten on the 11-point\n121|numerical rating scale of the Brief Pain Inventory) or pain for shorter than 6 months in fi ve, and an inability to\n122|understand the questionnaires in fi ve.",
+      "text_sha256": "8fae94d54009483ab8bacacc6c7afc068d3f80e7c7c09d59a07da838e5dac193"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "page": 5,
+      "numbered_text": "1|Articles\n2|www.thelancet.com/neurology Vol 15 May 2016\n3|559\n4|with baseline mean pain intensity as a covariate. We also\n5|used separate mixed models for each treatment group to\n6|assess the eff ect of the presence of allodynia at baseline\n7|on the effi cacy of treatment on the weekly means of the\n8|daily ratings of pain from the fi rst to the 24th week of the\n9|study, expressed as mean diff erences between baseline\n10|and post-administration values.\n11|We used Mantel-Haenszel tests to compare PGIC\n12|variables (classifi ed as very much improved or much\n13|improved vs weakly improved, not improved, unchanged,\n14|or worse). We used logistic regression analyses to\n15|identify predictors of the response to treatment, treating\n16|baseline variables as continuous (mechanical or thermal\n17|allodynia, mechanical or thermal thresholds, and\n18|IENFD) and the response to botulinum toxin A as a\n19|dichotomous variable (responders or non-responders\n20|based on pain ≥50% at week 24). We used Spearman's\n21|Rho to assess correlations between QST measures of\n22|allodynia, hyperalgesia, thermal defi cits (ie, warm and\n23|cold detection thresholds), and pain outcome (diff erence\n24|in pain intensity between baseline and week 24). We did\n25|analyses of variance with treatment as a factor to assess\n26|the eff ects of botulinum toxin A or placebo on CGRP and\n27|substance P concentrations in the skin biopsy after\n28|4 weeks, in all participants and in participants responding\n29|to botulinum toxin A. We compared baseline clinical and\n30|demographic variables using Fisher's exact tests or\n31|unpaired t tests. In all cases, p values less than 0·05 were\n32|deemed signifi cant. Statistical analyses were done by an\n33|independent statistician in SAS/STAT (version 9.3).\n34|The study is registered with ClinicalTrials.gov,\n35|NCT01251211.\n36|Role of the funding source\n37|The funders of the study had no role in study design,\n38|data collection, data analysis, data interpretation, or\n39|writing of the report. All authors had full access to all the\n40|data in the study and had fi nal responsibility for the\n41|decision to submit for publication.\n42|Results\n43|Between Oct 2, 2010, and Aug 2, 2013, 152 participants\n44|were enrolled in the study, of whom 68 were randomly\n45|assigned (34 per group; fi gure 1). One woman withdrew\n46|on the day of the fi rst administration because she was\n47|afraid of the treatment and one man did not fi ll out any\n48|pain assessment diaries and so he was not included in\n49|the trial. We therefore included 66 participants in the\n50|intention-to-treat analysis: 34 in the botulinum toxin A\n51|group and 32 in the placebo group. 58 participants\n52|received a second treatment administration (32 in the\n53|botulinum toxin A group and 26 in the placebo group)\n54|and 52 participants completed the study (29 and 23). Age,\n55|sex, pain intensity and duration, cause of pain, area of\n56|pain, and level and type of concomitant drug did not\n57|diff er between groups (table 1). The most common cause\n58|of neuropathic pain in participants was post-traumatic or\n59|postsurgical neuropathic pain (two-thirds of cases). No\n60|participants had altered sweating, trophic changes (eg,\n61|colour or temperature), or visible painful scars. Pain\n62|predominately aff ected the hand or forearm, or foot or\n63|ankle. The mean number of injection sites was similar\n64|between groups: 39·8 (SD 17·4) for the fi rst and\n65|37·1 (15·4) for the second administration of botulinum\n66|toxin A, versus 42 (21·1) for the fi rst and 37·1 (17·4) for\n67|the second administration of placebo. The mean total\n68|dose injected was also similar between groups:\n69|199·0 units (SD 86·0) for the fi rst and 176·8 (84·4) for\n70|the second administration of botulinum toxin A versus\n71|194·1 (78·0) for the fi rst and 187·5 (87·6) for the second\n72|administration of placebo. Doses decreased signifi cantly\n73|between the fi rst and second administrations of\n74|botulinum toxin A only (p<0·0001).\n75|Self-reported mean pain intensity was 6·5 (SD 0·3) at\n76|baseline and 4·6 (0·4) at 24 weeks in the botulinum\n77|toxin A group (mean change 1·9 [SD 0·4]; range -1·9 to\n78|8·8) and 6·4 (0·3) at baseline and 5·8 (0·4) at week 24 in\n79|Botulinum\n80|toxin A (n=34)\n81|Placebo (n=32)\n82|Age (years)\n83|51·6 (16·7)\n84|52·3 (15·8)\n85|Sex\n86|Male\n87|17 (50%)\n88|20 (63%)\n89|Female\n90|17 (50%)\n91|12 (38%)\n92|Pain duration (years)\n93|5·1 (4·7)\n94|6·3 (7·4)\n95|Mean pain intensity*\n96|6·5 (1·6)\n97|6·4 (1·6)\n98|Cause of pain\n99|Post-traumatic or postsurgical†\n100|25 (74%)\n101|21 (66%)\n102|Polyneuropathy‡\n103|5 (15%)\n104|9 (28%)\n105|Postherpetic neuralgia\n106|4 (12%)\n107|2 (6%)\n108|Area of maximum pain\n109|Hand or forearm\n110|14 (41%)\n111|16 (50%)\n112|Foot or ankle\n113|12 (35%)\n114|13 (41%)\n115|Thorax or abdomen\n116|6 (18%)\n117|3 (9%)\n118|Shoulder\n119|2 (6%)\n120|0\n121|Concomitant analgesics\n122|Antidepressants\n123|25 (74%)\n124|28 (88%)\n125|Gabapentin or pregabalin\n126|9 (26%)\n127|11 (34%)\n128|Opioids\n129|17 (50%)\n130|14 (44%)\n131|NSAIDs or paracetamol\n132|12 (35%)\n133|17 (53%)\n134|Other antiepileptics§\n135|6 (18%)\n136|6 (19%)\n137|Data are mean (SD) or number (%). Some percentages do not add up to 100\n138|because of rounding. NSAID=non-steroidal anti-infl ammatory drug. *On the\n139|numerical rating scale (range 0-10) of the Brief Pain Inventory from pain diaries at\n140|baseline. †25 (38%) participants had post-traumatic nerve lesions (14 in the\n141|botulinum toxin A group and 11 in the placebo group) and 21 (32%) had\n142|postsurgical nerve lesions (ten and 11). Post-traumatic nerve lesions corresponded\n143|to work or sports accidents (eg, crush, luxation, or fracture), but not to amputations\n144|or scars. ‡Causes were chronic infl ammatory demyelinating neuropathy in fi ve\n145|patients (two in the botulinum toxin A group and three in the placebo group),\n146|diabetes in two (both in the placebo group), idiopathic small fi bre neuropathy in\n147|four (two in each group), vasculitis in two (one in each group), and leprosy in one\n148|(botulinum toxin A group). §Clonazepam, carbamazepine, and lamotrigine.\n149|Table 1: Demographics and baseline clinical characteristics\n150|\n151|[Extracted table 3]\n152||Column 1|Column 2|Column 3|\n153||---|---|---|\n154||Area of maximum pain|||\n155||Hand or forearm|14 (41%)|16 (50%)|\n156||Foot or ankle|12 (35%)|13 (41%)|\n157||Thorax or abdomen|6 (18%)|3 (9%)|\n158||Shoulder|2 (6%)|0|",
+      "text_sha256": "b8de3d126a340a614115571a82ca9a6f884d1c7245d21071916a4fd09d662102"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "page": 6,
+      "numbered_text": "1|Articles\n2|560\n3|www.thelancet.com/neurology Vol 15 May 2016\n4|the placebo group (0·6 [0·4]; -3·9 to 4·7). Compared\n5|with placebo, two successive administrations of\n6|botulinum toxin A signifi cantly decreased self-reported\n7|mean pain intensity over 24 weeks after the fi rst\n8|treatment administration (adjusted eff ect estimate -0·77,\n9|95% CI -0·95 to -0·59; p<0·0001; fi gure 2). The\n10|diff erence in reduction of pain intensity between groups\n11|was signifi cant each week after the fi rst administration,\n12|starting from week 1 after treatment (ie, at the onset of\n13|the eff ect; adjusted eff ect estimate -0·79, 95% CI\n14|-1·43 to -0·16; p=0·013), and increased between week 15\n15|(ie, the beginning of the increase of eff ect; -0·85,\n16|-1·48 to -0·21; p=0·009) and week 24 (-1·45, -2·08 to\n17|-0·81; p<0·0001), that is, over the 3-12 weeks after the\n18|second administration.\n19|The proportion of responders to botulinum toxin A\n20|(≥50% reduction in pain intensity) did not diff er from\n21|placebo 24 weeks after the fi rst treatment administration\n22|(ten [29%] of 34 vs fi ve [16%] of 32; NNT 7·3, 95% CI -3·0\n23|to 16·6; p=0·2; appendix p 9). However, the proportion of\n24|responders was higher in the botulinum toxin A group\n25|when a responder was considered to be a participant who\n26|experienced at least 30% reduction in pain intensity\n27|(22 [65%] of 34 vs eight [25%] of 32; NNT 2·5, 95% CI 1·6\n28|to 5·6; p=0·001; appendix p 9). For the 32 treated patients\n29|who received two administrations of botulinum toxin A,\n30|there was a signifi cant therapeutic gain of the second\n31|administration (least-squares mean adjusted for the week\n32|for weeks 13-24 based on self-assessed weekly pain score\n33|0·91 [SE 0·13]; p<0·0001); for the 26 treated patients who\n34|received two administrations of placebo, there was no\n35|therapeutic gain of the second administration (-0·77\n36|[0·50]; p=0·13). Seven participants (22%) who had less\n37|than 30% pain relief after the fi rst treatment\n38|administration became responders (≥50% pain relief)\n39|after the second. No therapeutic gain was noted in\n40|participants who received two administrations of placebo.\n41|In participants who received at least one administration\n42|of botulinum toxin A (n=34), the effi cacy of the treatment\n43|on mean pain intensity over 24 weeks was greater in\n44|participants with allodynia (based on the NPSI) at baseline\n45|(n=15) than in those without allodynia (n=19; adjusted\n46|eff ect estimate 0·56 [SE 0·14]; p=0·0003). We noted\n47|similar fi ndings when allodynia was defi ned on the basis\n48|of QST (n=59 [29 with allodynia and 30 without]; adjusted\n49|eff ect estimate 0·59 [SE 0·14]; p=0·0002). The response to\n50|botulinum toxin A at 24 weeks (≥50% pain relief) was also\n51|predicted by the severity of brush-induced allodynia (odds\n52|ratio 4·6, 95% CI 1·5-13·7; p=0·007) and pressure\n53|hyperalgesia (3·5, 1·03-12·2; p=0·04) on QST. Finally, we\n54|noted signifi cant positive or inverse correlations between\n55|the effi cacy of botulinum toxin A at 24 weeks and baseline\n56|warm detection thresholds (Rho -0·49; p=0·03), cold\n57|detection thresholds (Rho 0·46; p=0·02), and mechanical\n58|pain thresholds (Rho -0·42; p=0·02) on the painful side,\n59|showing that less thermal defi cits and stronger mechanical\n60|allodynia were associated with greater effi cacy of\n61|botulinum toxin A. No such relations were noted in the\n62|placebo group.\n63|55 participants (29 in the botulinum toxin A group and\n64|26 in the placebo group) underwent skin punch biopsy on\n65|the painful side at baseline. Two participants developed\n66|adverse eff ects to the skin punch biopsy (one transient\n67|knee oedema and one superfi cial wound). Responders to\n68|botulinum toxin A (eight participants) had a higher\n69|baseline mean IENFD (4·05 [SD 1·7]) than did non-\n70|responders (21 participants; 1·5 [0·3]; p=0·04; fi gure 3).\n71|No such diff erence was noted for the contralateral side or\n72|for placebo (not shown). IENFD on skin punch biopsy on\n73|0\n74|2\n75|4\n76|6\n77|8\n78|10\n79|12\n80|14\n81|16\n82|18\n83|20\n84|22\n85|24\n86|0\n87|3\n88|4\n89|5\n90|6\n91|7\n92|8\n93|Mean pain intensity\n94|*\n95|*\n96|*\n97|*\n98|* *\n99|*\n100|†\n101|† †\n102|† †\n103|† †\n104|†\n105|† † †\n106|† † † †\n107|‡\n108|‡\n109|Time (weeks)\n110|Placebo\n111|Botulinum toxin A\n112|Figure 2: Eff ects of botulinum toxin A and placebo on the primary endpoint\n113|Bars are SE. p values are for the diff erence between botulinum toxin A and\n114|placebo at each timepoint. *p<0·05. †p<0·01. ‡p<0·001.\n115|0\n116|2\n117|4\n118|8\n119|6\n120|Mean number of fibres per mm\n121|Responders to botulinum\n122|toxin A (n=8)\n123|Non-responders to botulinum\n124|toxin A (n=21)\n125|p=0·04\n126|Figure 3: Intra-epidermal nerve fi bre density at baseline\n127|Bars are SD.\n128|Botulinum toxin A\n129|Placebo\n130|Baseline\n131|(week -1;\n132|n=28)\n133|Week 4\n134|(n=23)\n135|Baseline\n136|(week -1;\n137|n=22)\n138|Week 4\n139|(n=17)\n140|p value\n141|Calcitonin gene-related\n142|protein (pmol/L)\n143|23·8 (19·1)\n144|24·4 (25·8)\n145|21·1 (21·1)\n146|17·0 (15·0)\n147|0·9\n148|Substance P (pmol/L)\n149|46·2 (14·0)\n150|48·2 (13·1)\n151|49·3 (18·0)\n152|43·6 (14·9)\n153|0·9\n154|Data are mean (SD). Data are shown for all patients whose skin biopsy were analysed for protein concentrations.\n155|p values are for the comparison between treatment groups for the change between baseline and week 4.\n156|Table 2: Eff ects of botulinum toxin A and placebo on protein concentrations in skin biopsies",
+      "text_sha256": "c693793020141ac8d20e5adfb0fbbe770ec396bbc210ae82529499fca8720f06"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "page": 10,
+      "numbered_text": "1|Articles\n2|564\n3|www.thelancet.com/neurology Vol 15 May 2016\n4|favourably with systemic drugs because it did not have\n5|any systemic side-eff ects, although the application\n6|procedure is long and complex.8 Botulinum toxin A had\n7|only a moderate eff ect on sleep and anxiety; however,\n8|other topical drugs, such as lidocaine plasters and\n9|capsaicin patches, also have a low effi cacy for these\n10|outcomes in patients with peripheral neuropathic pain.8\n11|By contrast, systemic drugs, such as pregabalin and\n12|duloxetine, have a higher effi cacy for sleep and anxiety\n13|linked outcomes, and indeed might have a direct eff ect\n14|on them.8 Therefore, monotherapy with botulinum\n15|toxin A might be insuffi cient to relieve all dimensions of\n16|neuropathic pain experienced and this drug should be\n17|proposed mostly as an add-on treatment.\n18|Several potential limitations of our study need\n19|consideration. One is the moderate sample size; however,\n20|our sample met statistical expectations for the primary\n21|endpoint, we used several robust statistical models, and\n22|we obtained positive results for the primary outcome and\n23|several secondary outcomes. Our sample was also highly\n24|selected; therefore, the present data should be further\n25|investigated in larger settings with fewer exclusion\n26|criteria. We used the LOCF method to impute for missing\n27|data, which can overestimate effi cacy;31 however, this\n28|method is a widespread method of imputation, especially\n29|in neuro pathic pain clinical trials,8 and few data were\n30|missing in the present study (appendix p 14).\n31|Furthermore, fi ndings from a post-hoc sensitivity\n32|analysis showed that the LOCF results were similar to\n33|those of three other imputation methods. Finally, there\n34|was risk of unmasking during the study period because\n35|of the eff ects of subcutaneous botulinum toxin A on skin\n36|appearance, specifi cally wrinkles or colour. We did not\n37|photograph our participants' skin during the study, but\n38|photographs of a woman who participated in this trial\n39|and was treated after the trial with subcutaneous\n40|botulinum toxin A for peripheral neuro pathic pain with\n41|the same method and doses as in the present study show\n42|no skin modifi cation (appendix p 15). Patients with facial\n43|pain were excluded from our study, because the eff ects of\n44|botulinum toxin on fi ne facial features would probably\n45|contribute to unmasking; neither the patients nor the\n46|investigators reported recognising the treatment because\n47|of skin modifi cations.\n48|In summary, our study shows the safety and effi cacy of\n49|repeated administrations of botulinum toxin A in a group\n50|of patients with peripheral neuropathic pain of diff erent\n51|causes. The treatment was particularly effi cacious in\n52|participants with preserved nociceptive input, as shown\n53|by the presence of allodynia and minimal thermal defi cits.\n54|These results highlight the relevance of a therapeutic\n55|approach aiming to use treatments on the basis of clinical\n56|phenotypes rather than the cause of pain.23,24,32-34\n57|Contributors\n58|NA co-designed the study, wrote the draft of the manuscript, and\n59|generated the tables and fi gures. NA, DCdA, FA, DR, RG, IR, and\n60|DB included patients or did the injections and provided advice regarding\n61|the protocol. MJT recruited patients. NÜ and CS analysed skin punch\n62|biopsy samples. DB co-designed the study and supervised the writing of\n63|the manuscript. All authors contributed to writing of the manuscript and\n64|approved its content.\n65|Declaration of interests\n66|NA has received honoraria from Pfi zer, Eli Lilly, Johnson & Johnson,\n67|Astellas, Sanofi Pasteur MSD, Grünenthal, and Teva for advisory boards,\n68|speakers bureaus, or clinical trials. DCdA and MJT have served on\n69|advisory boards and as speakers for Pfi zer, Grünenthal, Medtronic,\n70|Saint Jude Medical, and Mundipharma. DR has received honoraria from\n71|Allergan for advisory boards. NÜ has received honoraria from Astellas,\n72|Baxter, Genzyme, Shire, and Pfi zer for speakers bureaus. CS has\n73|received personal fees from Pfi zer, CSL Behring, Baxter, Genzyme,\n74|Allergan, and Astellas, and grants from Genzyme and Kedrion for\n75|advisory boards or speakers bureau. DB has received honoraria from\n76|Pfi zer, Astellas, Grünenthal, and Indivior for advisory boards or speakers\n77|bureau. FA, RG, and IR declare no competing interests.\n78|Acknowledgments\n79|Botulinum toxin A was acquired through funding by Fondation CNP.\n80|We thank Françoise Morain, Valérie Gaudé Joindreau, François Caire,\n81|Paula Braz Mileno, and Daniella Cardoso Parravano for their help in\n82|undertaking the study; Christophe Fermanian for statistical analyses;\n83|and Jean-François Emile, Ricardo Macarenco, and Kathleen Stahl for\n84|technical help during skin biopsy processing.\n85|References\n86|1\n87|Baker JA, Pereira G. The effi cacy of botulinum toxin A for spasticity\n88|and pain in adults: a systematic review and meta-analysis using the\n89|Grades of Recommendation, Assessment, Development and\n90|Evaluation approach. Clin Rehabil 2013; 27: 1084-96.\n91|2\n92|Gazerani P, Pedersen NS, Staahl C, Drewes AM, Arendt-Nielsen L.\n93|Subcutaneous botulinum toxin type A reduces capsaicin-induced\n94|trigeminal pain and vasomotor reactions in human skin. Pain 2009;\n95|141: 60-69.\n96|3\n97|Ranoux D, Attal N, Morain F, Bouhassira D. Botulinum toxin type A\n98|induces direct analgesic eff ects in chronic neuropathic pain.\n99|Ann Neurol 2008; 64: 274-83.\n100|4\n101|Aurora SK, Winner P, Freeman MC, et al. Onabotulinumtoxin A for\n102|treatment of chronic migraine: pooled analyses of the 56-week\n103|PREEMPT clinical program. Headache 2011; 51: 1358-73.\n104|Duration of trial\n105|(weeks)\n106|Number needed to\n107|treat (95% CI)*\n108|Quality of\n109|evidence based\n110|on grade from\n111|all relevant\n112|studies\n113|Pregabalin\n114|4-13\n115|7·7 (6·5-9·4)\n116|High\n117|Gabapentin\n118|4-9\n119|6·3 (5·0-8·4)\n120|High\n121|Gabapentin extended release and\n122|gabapentin enacarbil\n123|4-13\n124|8·3 (6·2-13·0)\n125|High\n126|SNRI antidepressants\n127|3-13\n128|6·4 (5·2-8·4)\n129|High\n130|Tricyclic antidepressants\n131|3-9\n132|3·6 (3·0-4·4)\n133|Moderate\n134|Topical lidocaine\n135|2-4\n136|NA\n137|Low\n138|Topical capsaicin (8%)\n139|12 (4 in one study)\n140|10·6 (7·4-19)\n141|High\n142|Tramadol\n143|4-9\n144|4·7 (3·6-6·7)\n145|Low moderate\n146|Strong opioids\n147|4-12\n148|4·3 (3·4-5·8)\n149|Low moderate\n150|Botulinum toxin A (previous studies)\n151|4-24\n152|1·9 (1·5-2·4) in\n153|published studies†, but\n154|one unpublished study\n155|was negative\n156|Low\n157|Botulinum toxin A (this study)\n158|24\n159|7·3 (-3·0 to 16·6)\n160|NA\n161|Previous data from Finnerup and colleagues.8 NA=not applicable. SNRI=serotonin-norepinephrine reuptake inhibitor.\n162|*Calculated as the inverse of the absolute diff erence between the proportion of responders in the active and placebo\n163|treatment groups (based on a 50% decrease in pain). †Risk of bias, inconsistency, and imprecision were high.\n164|Table 5: Treatments for peripheral neuropathic pain and quality of the evidence",
+      "text_sha256": "3e44313611ca4c0ffa63f49aac84b227377c9572b6ab61e515d61f81b57261ce"
+    },
+    {
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "page": 13,
+      "numbered_text": "1|\n2|12\n3|Web Extra file 9\n4|Post-hoc sensitivity analysis of the primary outcome with various methods of imputation for\n5|missing data\n6|A post-hoc sensitivity analysis of the primary outcome (see table further) showed that the LOCF results were\n7|similar to 3 other imputation methods: linear interpolation, maximum likelihood analysis (no case wise deletion\n8|by SAS Proc Mixed), and Markov chain Monte-Carlo (MCMC) multiply imputation that is suitable for arbitrary\n9|missing patterns. This comparison showed that the BTX-A clinical efficacy was invariant whatever the method\n10|of imputation used.\n11|Self-reported pain, weekly records\n12|\n13|\n14|\n15|Beta\n16|95% CI low\n17|95% CI high\n18|p\n19|LOCF\n20|Treatment\n21|-0.768\n22|-0.948\n23|-0.588\n24|<.0001\n25|Baseline pain\n26|0.760\n27|0.703\n28|0.817\n29|<.0001\n30|Week1*\n31|-0.799\n32|-1.435\n33|-0.163\n34|0.0139\n35|Week15*\n36|-0.849\n37|-1.485\n38|-0.213\n39|0.009\n40|\n41|Week24*\n42|\n43|-1.449\n44|-2.085\n45|-0.814\n46|<.0001\n47|Interpolation using 2 adjacent points\n48|Treatment\n49|-0.723\n50|-0.906\n51|-0.540\n52|<.0001\n53|Baseline pain\n54|0.777\n55|0.720\n56|0.835\n57|<.0001\n58|Week1*\n59|-0.799\n60|-1.445\n61|-0.154\n62|0.0154\n63|Week15*\n64|-0.852\n65|-1.498\n66|-0.207\n67|0.0098\n68|\n69|Week24*\n70|\n71|-1.494\n72|-2.140\n73|-0.849\n74|<.0001\n75|Interpolation using 3 adjacent points\n76|Treatment\n77|-0.752\n78|-0.936\n79|-0.568\n80|<.0001\n81|Baseline pain\n82|0.755\n83|0.697\n84|0.813\n85|<.0001\n86|Week1*\n87|-0.799\n88|-1.448\n89|-0.150\n90|0.016\n91|Week15*\n92|-0.837\n93|-1.486\n94|-0.188\n95|0.0116\n96|\n97|Week24*\n98|\n99|-1.459\n100|-2.108\n101|-0.809\n102|<.0001\n103|PROC MIXED imputed\n104|Treatment\n105|-0.650\n106|-0.842\n107|-0.458\n108|<.0001\n109|Baseline pain\n110|0.730\n111|0.671\n112|0.790\n113|<.0001\n114|Week1*\n115|-0.799\n116|-1.446\n117|-0.152\n118|0.0156\n119|Week15*\n120|-1.037\n121|-1.713\n122|-0.362\n123|0.0026\n124|\n125|Week24*\n126|\n127|-1.821\n128|-2.503\n129|-1.139\n130|<.0001\n131|\n132|[Extracted table 1]\n133||Treatment -0.768 -0.948 -0.588<br>Baseline pain 0.760 0.703 0.817<br>Week1* -0.799 -1.435 -0.163<br>Week15* -0.849 -1.485 -0.213<br>Week24* -1.449 -2.085 -0.814||<.0001||\n134||---|---|---|---|\n135||||<.0001||\n136||||0.0139||\n137||||0.009||\n138||||<.0001||\n139|\n140|[Extracted table 2]\n141||Column 1|Column 2|Column 3|\n142||---|---|---|\n143|||0.760||\n144|||-0.799||\n145|||-0.849||\n146|||-1.449||\n147|\n148|[Extracted table 3]\n149||Treatment<br>Baseline pain<br>Week1*<br>Week15*<br>Week24*||-0.723||-0.906 -0.540 <.0001<br>0.720 0.835 <.0001<br>-1.445 -0.154 0.0154<br>-1.498 -0.207 0.0098<br>-2.140 -0.849 <.0001||<.0001||\n150||---|---|---|---|---|---|---|---|\n151||||0.777||||<.0001||\n152||||-0.799||||||\n153||||-0.852||||0.0098||\n154||||-1.494||||<.0001||\n155|\n156|[Extracted table 4]\n157||Treatment<br>Baseline pain<br>Week1*<br>Week15*<br>Week24*||-0.752||-0.936 -0.568<br>0.697 0.813<br>-1.448 -0.150<br>-1.486 -0.188<br>-2.108 -0.809||<.0001||\n158||---|---|---|---|---|---|---|---|\n159||||0.755||||<.0001||\n160||||-0.799||||0.016||\n161||||-0.837||||0.0116||\n162||||-1.459||||<.0001||\n163|\n164|[Extracted table 5]\n165||Treatment<br>Baseline pain<br>Week1*<br>Week15*<br>Week24*||-0.650||-0.842 -0.458<br>0.671 0.790<br>-1.446 -0.152<br>-1.713 -0.362<br>-2.503 -1.139||<.0001||\n166||---|---|---|---|---|---|---|---|\n167||||0.730||||<.0001||\n168||||-0.799||||0.0156||\n169||||-1.037||||0.0026||\n170||||-1.821||||<.0001||",
+      "text_sha256": "956349b2180916513a85c899ba91add75f7749b6b684292480d0f46b63c6e4d8"
+    },
+    {
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "page": 14,
+      "numbered_text": "1|\n2|13\n3|Multiply imputed†\n4|Treatment\n5|-0.662\n6|-0.849\n7|-0.475\n8|<.0001\n9|Baseline pain\n10|0.724\n11|0.665\n12|0.784\n13|<.0001\n14|Week1*\n15|-0.799\n16|-1.441\n17|-0.157\n18|0.0148\n19|Week15*\n20|-1.080\n21|-1.747\n22|-0.413\n23|0.0016\n24|\n25|Week24*\n26|\n27|-1.719\n28|-2.392\n29|-1.047\n30|<.0001\n31|* Reference = baseline pain\n32|† Markov chain Monte-Carlo (MCMC) method (Schafer, J.L. (1997), Analysis of Incomplete Multivariate\n33|Data, New York: Chapman and Hall) with 5 imputation datasets.\n34|\n35|[Extracted table 1]\n36|||-0.662|||-0.849|||-0.475|||<.0001||\n37||---|---|---|---|---|---|---|---|---|---|---|---|\n38|||0.724|||0.665|||0.784|||<.0001||\n39|||-0.799|||||||||||\n40|||-1.080|||-1.747|||-0.413|||||\n41|||-1.719|||-2.392|||-1.047|||<.0001||",
+      "text_sha256": "92614da2bd4b3a7f11ef21a5017a05c49e75405f49c24a17f7a8734493429377"
+    },
+    {
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "page": 15,
+      "numbered_text": "1|\n2|14\n3|\n4|\n5|Web Extra file 10\n6|\n7|LOCF as a method of imputation\n8|\n9|LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\n10|In the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n11|(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\n12|more prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\n13|and more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\n14|Missing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\n15|Not at Random (MNAR) pattern.",
+      "text_sha256": "7332521188ce8be8156fbd30cc3ec0d3b63c911ab70c86af2c63b05981c0fe69"
+    },
+    {
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "page": 16,
+      "numbered_text": "1|\n2|15\n3|\n4|\n5|Web Extra file 11\n6|Photographs of a patient treated with botulinum toxin A\n7|\n8|Photographs of a female participant in the study in the Sao Paulo Center (Brazil). This woman was treated after\n9|the study with subcutaneous injections of Botulinum toxin A for peripheral neuropathic pain of the left hand\n10|using exactly the same methods and dosages (300 units, 44 injection sites) as in the study.\n11|The photographs were taken immediately after the injection, then one hour, 24 hours and 1 week after the\n12|injection. No apparent modifications of the skin are noticeable.\n13|\n14|\n15|\n16|\n17|\n18|",
+      "text_sha256": "63b8497dc058b1b7343bb8d5c33130216c5386c81708da41ad70a0b2fda5d9eb"
+    }
+  ],
+  "questions": [
+    {
+      "id": "sq:missing:data-available",
+      "wording": "Were data for this outcome available for all, or nearly all, participants randomized?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation_status": "always_active",
+      "activation": {
+        "kind": "always"
+      },
+      "query_suggestions": [
+        {
+          "query": "missing outcome data",
+          "mode": "all",
+          "source_role": null,
+          "purpose": "outcome availability"
+        },
+        {
+          "query": "loss to follow-up",
+          "mode": "phrase",
+          "source_role": null,
+          "purpose": "follow-up completeness"
+        },
+        {
+          "query": "participant flow",
+          "mode": "phrase",
+          "source_role": null,
+          "purpose": "randomized follow-up accounting"
+        },
+        {
+          "query": "CONSORT",
+          "mode": "phrase",
+          "source_role": "supplement",
+          "purpose": "participant-flow diagram"
+        },
+        {
+          "query": "outcome data available",
+          "mode": "all",
+          "source_role": null,
+          "purpose": "observed outcome reporting"
+        },
+        {
+          "query": "mortality status unknown",
+          "mode": "all",
+          "source_role": "supplement",
+          "purpose": "unknown mortality status"
+        },
+        {
+          "query": "missing values",
+          "mode": "all",
+          "source_role": "supplement",
+          "purpose": "missing outcome counts"
+        }
+      ],
+      "guidance_locator": "Full guidance p. 45, Box 8, signalling question 3.1"
+    },
+    {
+      "id": "sq:missing:evidence-unbiased",
+      "wording": "If N/PN/NI to 3.1: Is there evidence that the result was not biased by missing outcome data?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no"
+      ],
+      "activation_status": "active_in_saved_checkpoint",
+      "activation": {
+        "kind": "rule",
+        "mode": "any",
+        "predicates": [
+          {
+            "question_id": "sq:missing:data-available",
+            "accepted_answers": [
+              "probably_no",
+              "no",
+              "no_information"
+            ]
+          }
+        ]
+      },
+      "query_suggestions": [
+        {
+          "query": "sensitivity analysis",
+          "mode": "phrase",
+          "source_role": "sap",
+          "purpose": "missing-data sensitivity analysis"
+        },
+        {
+          "query": "missing data bias",
+          "mode": "all",
+          "source_role": null,
+          "purpose": "bias from missing outcomes"
+        },
+        {
+          "query": "multiple imputation",
+          "mode": "phrase",
+          "source_role": "sap",
+          "purpose": "missing-data method"
+        }
+      ],
+      "guidance_locator": "Full guidance p. 45, Box 8, signalling question 3.2"
+    },
+    {
+      "id": "sq:missing:true-value-dependent",
+      "wording": "If N/PN to 3.2: Could missingness in the outcome depend on its true value?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation_status": "inactive_in_saved_checkpoint",
+      "activation": {
+        "kind": "rule",
+        "mode": "any",
+        "predicates": [
+          {
+            "question_id": "sq:missing:evidence-unbiased",
+            "accepted_answers": [
+              "probably_no",
+              "no"
+            ]
+          }
+        ]
+      },
+      "query_suggestions": [
+        {
+          "query": "reason for withdrawal",
+          "mode": "all",
+          "source_role": null,
+          "purpose": "missingness reason"
+        },
+        {
+          "query": "loss to follow-up",
+          "mode": "phrase",
+          "source_role": null,
+          "purpose": "health-related missingness"
+        }
+      ],
+      "guidance_locator": "Full guidance p. 45, Box 8, signalling question 3.3"
+    },
+    {
+      "id": "sq:missing:likely-dependent",
+      "wording": "If Y/PY/NI to 3.3: Is it likely that missingness in the outcome depended on its true value?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "activation_status": "inactive_in_saved_checkpoint",
+      "activation": {
+        "kind": "rule",
+        "mode": "any",
+        "predicates": [
+          {
+            "question_id": "sq:missing:true-value-dependent",
+            "accepted_answers": [
+              "yes",
+              "probably_yes",
+              "no_information"
+            ]
+          }
+        ]
+      },
+      "query_suggestions": [
+        {
+          "query": "censoring",
+          "mode": "any",
+          "source_role": null,
+          "purpose": "outcome-dependent missingness"
+        },
+        {
+          "query": "missing by treatment group",
+          "mode": "all",
+          "source_role": null,
+          "purpose": "differential missingness"
+        },
+        {
+          "query": "reason for missing outcome",
+          "mode": "all",
+          "source_role": null,
+          "purpose": "missingness mechanism"
+        }
+      ],
+      "guidance_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4"
+    }
+  ],
+  "official_guidance": {
+    "pack": {
+      "id": "rob2.parallel.assignment",
+      "version": "2019.1",
+      "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1"
+    },
+    "sections": [
+      {
+        "question_ids": [
+          "sq:missing:data-available",
+          "sq:missing:evidence-unbiased",
+          "sq:missing:true-value-dependent",
+          "sq:missing:likely-dependent"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance p. 3, sections 1.1 and 1.1.1",
+        "source_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+        "excerpt": "1.1 Signalling questions Inclusion of signalling questions within each domain of bias is a key feature of RoB 2. Signalling questions aim to elicit information relevant to an assessment of risk of bias. They seek to be reasonably factual in nature. Responses to these questions feed into algorithms we have developed to guide users of the tool to judgements about the risk of bias. The response options for the signalling questions are: (1) Yes; (2) Probably yes; (3) Probably no; (4) No; (5) No information; To maximize the signalling questions’ simplicity and clarity, they are phrased such that a response of ‘Yes’ may be indicative of either a low or high risk of bias, depending on the most natural way to ask the question. Responses of ‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do responses of ‘No’ and ‘Probably no’. The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence is available in relation to the signalling question; the ‘Probably’ versions would typically imply that a judgement has been made. If review authors calculate measures of agreement (e.g. kappa statistics) for the answers to the signalling questions, we recommend treating ‘Yes’ and ‘Probably yes’ as the same response and ‘No’ and ‘Probably no’ as the same response. The ‘No information’ response should be used only when both (i) insufficient details are reported to permit a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the circumstances of the trial. For example, in the context of a large trial run by an experienced clinical trials unit, absence of specific information about generation of the randomization sequence, in a paper published in a journal with rigorously enforced word count limits, is likely to result in a response of ‘Probably yes’ rather than ‘No information’ to the signalling question about sequence generation. The implications for risk of bias judgements of a ‘No information’ response to a signalling question differ according to the purpose of the question. If the question seeks to identify evidence of a problem, then ‘No information’ corresponds to no evidence of that problem. If the question relates to an item that is expected to be reported (such as whether any participants were lost to follow up), then the absence of information leads to concerns about there being a problem. For signalling questions that are answered only if the response to a previous question implies that they are required, a response option ‘Not applicable’ is available. Signalling questions should be answered independently: the answer to one question should not affect answers to other questions in the same or other domains other than through determining which subsequent questions are answered. 1.1.1 Free-text boxes alongside signalling questions The tool provides space for free text alongside the signalling question. In some instances, when the same information is likely to be used to answer more than one question, one text box covers more than one question. These boxes should be used to provide support for the answer to each signalling question. Brief direct quotations from the text of the study report should be used whenever possible."
+      },
+      {
+        "question_ids": [
+          "sq:missing:data-available",
+          "sq:missing:evidence-unbiased",
+          "sq:missing:true-value-dependent",
+          "sq:missing:likely-dependent"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance p. 39, section 6.1, Background",
+        "source_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+        "excerpt": "Randomization provides a fair comparison between two or more intervention groups by balancing, on average, the distribution of known and unknown prognostic factors at baseline between the intervention groups. Missing measurements of the outcome, for example due to dropout during the study, may lead to bias in the intervention effect estimate. Possible reasons for missing outcome data include (83): • participants withdraw from the study or cannot be located (‘loss to follow-up’ or ‘dropout’); • participants do not attend a study visit at which outcomes should have been measured; • participants attend a study visit but do not provide relevant data; • data or records are lost or are unavailable for other reasons; and • participants can no longer experience the outcome, for example because they have died. This domain addresses risk of bias due to missing outcome data, including biases introduced by procedures used to impute, or otherwise account for, the missing outcome data. Some participants may be excluded from an analysis for reasons other than missing outcome data. In particular, a naïve ‘per protocol’ analysis is restricted to participants who received the intended intervention (see section 1.3.1). Potential bias introduced by such analyses, or by other exclusions of eligible participants for whom outcome data are available, is addressed in the domain ‘Bias due to deviations from intended interventions’ (see section 5), in which the final signalling questions examine whether the analysis approach was appropriate. This is a notable change from the previous Cochrane RoB tool for randomized trials, in which the domain addressing bias due to incomplete outcome data addressed both genuinely missing data and data deliberately excluded by the trial investigators."
+      },
+      {
+        "question_ids": [
+          "sq:missing:data-available",
+          "sq:missing:evidence-unbiased",
+          "sq:missing:true-value-dependent",
+          "sq:missing:likely-dependent"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance p. 44, section 6.3",
+        "source_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+        "excerpt": "6.3 Using this domain of the tool (1) Risk of bias will be low if outcome data are available for all, or nearly all, randomized participants. The meaning of ‘nearly all’ in this context is that the number of participants with missing outcome data is so small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. If this is the case then no further signalling questions need be answered. Absence of information about the extent of missing outcome data (for example, when no CONSORT flow diagram was provided in the trial report) will usually lead to a judgement of high risk of bias for this domain. (2) Risk of bias will be low if sensitivity analyses, conducted by either the trial investigators or the review authors (see section 6.1.7), confirm that the finding is robust to plausible values of the missing outcome data. Such analyses are likely to be particularly useful when the amount of missing data is sufficiently large for the potential impact on the estimated effect of intervention to be substantial. If sensitivity analyses confirm that the result is robust, then the result may be regarded as at low risk of bias and no further signalling questions need be answered. (3) As explained in section 6.1.3, missing outcome data can only lead to bias if the chance that the outcome is missing depends on its true value. It may be possible to exclude this based on reported reasons for missing outcome data (for example, if outcome data are only missing because of failure of a measuring instrument or closure of a centre in a multicentre trial). However, if it is possible that missingness in the outcome could depend on its true value then review investigators will need to consider the proportions of and reasons for missing outcome data. (4) A difference between the experimental and comparator intervention groups in the proportions of missing outcome data may indicate a risk of bias (see section 6.1.4). For time-to-event-data, review authors should consider whether rates of censoring (loss to follow-up) differ between the intervention groups. (5) Either reasons for missing outcome data reported by trial investigators, or the circumstances of the trial, may lead review authors to conclude that it is likely that missingness in the outcome depended on its true value. (6) Differing reasons for missing outcome data in the experimental and comparator intervention groups may lead to substantial bias. For example, in a trial of an experimental intervention aimed at smoking cessation there would be serious bias if some comparator intervention participants left the study due to a lack of enthusiasm at receiving nothing novel (and continued to smoke) while some experimental intervention participants left the study due to successful cessation of smoking."
+      },
+      {
+        "question_ids": [
+          "sq:missing:data-available"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+        "source_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+        "excerpt": "The appropriate study population for an analysis of the intention to treat effect is all randomized participants. “Nearly all” should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. For dichotomous outcomes, the proportion required is directly linked to the risk of the event. If the observed number of events is much greater than the number of participants with missing outcome data, the bias would necessarily be small. Only answer ‘No information’ if the trial report provides no information about the extent of missing outcome data. This situation will usually lead to a judgement that there is a high risk of bias due to missing outcome data. Note that imputed data should be regarded as missing data, and not considered as ‘outcome data’ in the context of this question."
+      },
+      {
+        "question_ids": [
+          "sq:missing:evidence-unbiased"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+        "source_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+        "excerpt": "Evidence that the result was not biased by missing outcome data may come from: (1) analysis methods that correct for bias; or (2) sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data."
+      },
+      {
+        "question_ids": [
+          "sq:missing:true-value-dependent"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.3",
+        "source_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+        "excerpt": "If loss to follow up, or withdrawal from the study, could be related to participants’ health status, then it is possible that missingness in the outcome was influenced by its true value. However, if all missing outcome data occurred for documented reasons that are unrelated to the outcome then the risk of bias due to missing outcome data will be low (for example, failure of a measuring device or interruptions to routine data collection). In time-to-event analyses, participants censored during trial follow-up, for example because they withdrew from the study, should be regarded as having missing outcome data, even though some of their follow up is included in the analysis. Note that such participants may be shown as included in analyses in CONSORT flow diagrams."
+      },
+      {
+        "question_ids": [
+          "sq:missing:likely-dependent"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4",
+        "source_url": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+        "excerpt": "This question distinguishes between situations in which (i) missingness in the outcome could depend on its true value (assessed as ‘Some concerns’) from those in which (ii) it is likely that missingness in the outcome depended on its true value (assessed as ‘High risk of bias’). Five reasons for answering ‘Yes’ are: 1. Differences between intervention groups in the proportions of missing outcome data. If there is a difference between the effects of the experimental and comparator interventions on the outcome, and the missingness in the outcome is influenced by its true value, then the proportions of missing outcome data are likely to differ between intervention groups. Such a difference suggests a risk of bias due to missing outcome data, because the trial result will be sensitive to missingness in the outcome being related to its true value. For time-to-event-data, the analogue is that rates of censoring (loss to follow-up) differ between the intervention groups. 2. Reported reasons for missing outcome data provide evidence that missingness in the outcome depends on its true value; 3. Reported reasons for missing outcome data differ between the intervention groups; 4. The circumstances of the trial make it likely that missingness in the outcome depends on its true value. For example, in trials of interventions to treat schizophrenia it is widely understood that continuing symptoms make drop out more likely. 5. In time-to-event analyses, participants’ follow up is censored when they stop or change their assigned intervention, for example because of drug toxicity or, in cancer trials, when participants switch to second-line chemotherapy. Answer ‘No’ if the analysis accounted for participant characteristics that are likely to explain the relationship between missingness in the outcome and its true value."
+      },
+      {
+        "question_ids": [
+          "sq:missing:data-available"
+        ],
+        "source_version": "Undated page; retrieved 4 October 2026",
+        "source_sha256": "060C4F0AA70573BB5D07257EB3D7B1DFFF07C4373DE1907E0C1055ADDBA4F8CD",
+        "source_locator": "FAQs relating to Domain 3; SQ3.1: unknown extent of missing data",
+        "source_url": "https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2",
+        "excerpt": "A ‘Probably yes’ or ‘Probably no’ response may be the most appropriate."
+      },
+      {
+        "question_ids": [
+          "sq:missing:evidence-unbiased"
+        ],
+        "source_version": "Undated page; retrieved 4 October 2026",
+        "source_sha256": "060C4F0AA70573BB5D07257EB3D7B1DFFF07C4373DE1907E0C1055ADDBA4F8CD",
+        "source_locator": "FAQs relating to Domain 3; SQ3.2: lists of methods correcting bias",
+        "source_url": "https://www.cochrane.org/learn/courses-and-resources/cochrane-methodology/risk-bias/about-risk-bias-2-rob-2",
+        "excerpt": "It is not helpful to focus on methods per se."
+      }
+    ],
+    "complete": true,
+    "next_cursor": null
+  },
+  "response_framework": null,
+  "guidance": [
+    "Answer every activated question using the approved Result.",
+    "Evaluate activated questions in question order. Submit every activated question with a justification, unknowns, and counterevidence. Review the inspected passages against its exact proposition and check material contradictions. Reuse adequate Evidence. When a premise remains unresolved, state the unresolved premise and why you stopped, and use bounded discovery across relevant Sources, including a protocol or SAP when relevant. Inspect returned passages before using them. A limitation requires that explicit premise and stopping rationale; include a Trial-scoped search receipt when retrieval provenance is useful, but a direct read does not require a search receipt. Absence requires a scoped untruncated no-hit receipt.",
+    "Cite complete premises for the active question. One passage may support several facts. When an answer depends on separate passages, cite each with its own boundaries. A relationship kind describes the use of Evidence; it adds no scientific fact.",
+    "When inference, conflict, or uncertainty connects Evidence to an answer, include a concise question-specific justification. State what the passages establish, what remains unresolved, and why the selected option follows. Any support relationship is host-asserted: the server checks structure, ownership, and exact Evidence provenance but does not independently judge semantic entailment.",
+    "Working premise records are source-grounded resumable notes. Reuse them only when the working checkpoint is current for this exact approved Result and captured Source projection; a stale checkpoint requires the stated recovery action and never carries a prior Domain judgment into this assessment.",
+    "Evaluate activation against your draft answers. If validation reports missing active question IDs, add those questions with allowed answer values and supported bases, then resubmit the complete active set in one validation call. The server commits only active answers.",
+    "Apply every reported repair and retain other drafted answers. Add missing questions to the existing answer set. Resolve further activation from the repaired answers before resubmitting. The server ignores inactive answers."
+  ],
+  "traps": [
+    "A no-hit search describes one lexical query, not scientific absence."
+  ],
+  "comparison_cards": [
+    {
+      "card_id": "sha256:a66f354413c03d1f3f279f2f54b57b43547c8ee1e19a1a5e79c111a6615f8cb6",
+      "question_id": "sq:missing:data-available",
+      "result_identity": "sha256:f4a659126993b61a1487de8136960b59066acd72256331f095ce6de40b5dc77e",
+      "result_scope": {
+        "result_identity": "sha256:f4a659126993b61a1487de8136960b59066acd72256331f095ce6de40b5dc77e",
+        "scope_basis": "assessment_target",
+        "endpoint": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks",
+        "measurement": "Daily pain diary: mean pain over the past 24 hours recorded each morning on the Brief Pain Inventory 0–10 numerical rating scale; weekly mean.",
+        "time_window": "From baseline (one week before randomization) over 24 weeks after the first administration",
+        "population": "All randomized participants in the comparison groups",
+        "comparison_groups": [
+          "botulinum_toxin_a: Two successive subcutaneous administrations of botulinum toxin A (up to 300 units), 12 weeks apart.",
+          "placebo: Two successive subcutaneous placebo administrations, 12 weeks apart."
+        ],
+        "effect_measure": "Between-group difference in mean change from baseline"
+      },
+      "reported_result": {
+        "analysis_population": "Intention-to-treat population: 34 participants assigned to botulinum toxin A and 32 assigned to placebo; primary outcome analyses used last-observation-carried-forward imputation for missing values.",
+        "effect_measure": "adjusted eff ect estimate",
+        "endpoint": {
+          "definition": null,
+          "name": "self-reported mean pain intensity over 24 weeks"
+        },
+        "estimate": "-0·77",
+        "form": "comparative_effect",
+        "group_values": [],
+        "precision": "95% CI -0·95 to -0·59; p<0·0001"
+      },
+      "target_relation": "exact",
+      "passage_groups": [
+        {
+          "source_id": "source_8060a6d9e451f076588fda27c64de39144bb5b443801b532a6a7639ce378aa3c",
+          "source_role": "registry",
+          "source_label": "ClinicalTrials.gov NCT01251211",
+          "logical_path": "registry/NCT01251211.json",
+          "page_count": 1,
+          "sha256": "sha256:3da98d814a6717e32aba874ccff095b43dc88557b11e71b2b0b66e23f58d3725",
+          "source_origin": "registry",
+          "registry_url": null,
+          "registry_retrieved_at": null,
+          "registry_field_paths": [],
+          "registry_recovery": null,
+          "registry_window_count": 0,
+          "passages": [
+            {
+              "handle": "eh_2d3e964edd503741",
+              "source_id": "source_8060a6d9e451f076588fda27c64de39144bb5b443801b532a6a7639ce378aa3c",
+              "page": 1,
+              "start_line": 138,
+              "end_line": 140
+            },
+            {
+              "handle": "eh_7948dcfcc7d72e6b",
+              "source_id": "source_8060a6d9e451f076588fda27c64de39144bb5b443801b532a6a7639ce378aa3c",
+              "page": 1,
+              "start_line": 181,
+              "end_line": 186
+            }
+          ]
+        },
+        {
+          "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+          "source_role": "main_article",
+          "source_label": "S1474-4422-16-00017-X.pdf",
+          "logical_path": "S1474-4422-16-00017-X.pdf",
+          "page_count": 11,
+          "sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+          "source_origin": "local_dossier",
+          "registry_url": null,
+          "registry_retrieved_at": null,
+          "registry_field_paths": [],
+          "registry_recovery": null,
+          "registry_window_count": 0,
+          "passages": [
+            {
+              "handle": "eh_7b6975c856405d4b",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 115
+            },
+            {
+              "handle": "eh_798ca7f93dad0eee",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 3,
+              "start_line": 6,
+              "end_line": 20
+            },
+            {
+              "handle": "eh_246933faf9db47d5",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 3,
+              "start_line": 37,
+              "end_line": 42
+            },
+            {
+              "handle": "eh_03df6d956eecbe61",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 4,
+              "start_line": 40,
+              "end_line": 49
+            },
+            {
+              "handle": "eh_52b57da64036870d",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 4,
+              "start_line": 40,
+              "end_line": 63
+            },
+            {
+              "handle": "eh_c947e455e20997a5",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 4,
+              "start_line": 49,
+              "end_line": 122
+            },
+            {
+              "handle": "eh_d7740c4523593458",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 4,
+              "start_line": 104,
+              "end_line": 117
+            },
+            {
+              "handle": "eh_9196a69f390ed31d",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 5,
+              "start_line": 43,
+              "end_line": 58
+            },
+            {
+              "handle": "eh_eb02f403c72fd474",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 5,
+              "start_line": 43,
+              "end_line": 53
+            },
+            {
+              "handle": "eh_9970a94aaaa9714c",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 6,
+              "start_line": 4,
+              "end_line": 156
+            },
+            {
+              "handle": "eh_c8527753d308d766",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 397
+            },
+            {
+              "handle": "eh_7f107374de811399",
+              "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+              "page": 8,
+              "start_line": 58,
+              "end_line": 73
+            }
+          ]
+        },
+        {
+          "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+          "source_role": "supplement",
+          "source_label": "mmc1.pdf",
+          "logical_path": "mmc1.pdf",
+          "page_count": 16,
+          "sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+          "source_origin": "local_dossier",
+          "registry_url": null,
+          "registry_retrieved_at": null,
+          "registry_field_paths": [],
+          "registry_recovery": null,
+          "registry_window_count": 0,
+          "passages": [
+            {
+              "handle": "eh_a28850514ad6d691",
+              "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+              "page": 13,
+              "start_line": 6,
+              "end_line": 10
+            },
+            {
+              "handle": "eh_051d72e9745f8a81",
+              "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+              "page": 15,
+              "start_line": 9,
+              "end_line": 15
+            }
+          ]
+        }
+      ],
+      "slots": [
+        {
+          "name": "approved_outcome",
+          "status": "supported",
+          "value": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks | From baseline (one week before randomization) over 24 weeks after the first administration | All randomized participants in the comparison groups",
+          "passages": []
+        },
+        {
+          "name": "randomized",
+          "status": "unknown",
+          "value": null,
+          "passages": []
+        },
+        {
+          "name": "observed",
+          "status": "unknown",
+          "value": null,
+          "passages": []
+        },
+        {
+          "name": "follow_up_availability",
+          "status": "unknown",
+          "value": null,
+          "passages": []
+        },
+        {
+          "name": "censoring",
+          "status": "unknown",
+          "value": null,
+          "passages": []
+        },
+        {
+          "name": "missingness_reason",
+          "status": "unknown",
+          "value": null,
+          "passages": []
+        }
+      ],
+      "propositions": [],
+      "paired_examples": [],
+      "participant_flow": [],
+      "missing_data": null,
+      "prompt": "Source and Result navigation only. Slots and typed quantities are descriptive; scientific answer guidance is in official_guidance. Preserve the approved Result scope and inspect source passages before using their information."
+    }
+  ],
+  "guidance_profile": "official_d3_prototype"
+}
