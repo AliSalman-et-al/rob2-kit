@@ -1,0 +1,62 @@
+{
+  "events.jsonl": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/events.jsonl",
+    "sha256": "76759ef2eb2d6432d54f4e92aa7a8f21061df7e6a072b24f58f1b0e9bf47906d",
+    "bytes": 419312
+  },
+  "initial-canonical.sqlite3": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/initial-canonical.sqlite3",
+    "sha256": "a5c32d4a0e57977ca62d4f00863f5720688b733498f9ed980a74140f8662b2e8",
+    "bytes": 1728512
+  },
+  "availability-packet.bin": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/availability-packet.bin",
+    "sha256": "cf1d089342710983b6ccbbffafcddfed64462399784ee98f7430012f04264d80",
+    "bytes": 1074501
+  },
+  "availability-manifest.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/availability-manifest.json",
+    "sha256": "66cae2d2ba440d08276a8b24b5e1e472e5d3f3c1b7b069423bb94d999f1139fd",
+    "bytes": 162767
+  },
+  "protected-staging.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/protected-staging.json",
+    "sha256": "cc614456f405ccf654fbf346ad3f6f7c332a6d7a0219b4a342fe4d0bd5d1c130",
+    "bytes": 637841
+  },
+  "stderr.log": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/stderr.log",
+    "sha256": "bd57bebb9b128cef71748ec1b068d54fcaae1eb3a6a8fcd1e3dc1771f758d02a",
+    "bytes": 472583
+  },
+  "manifest-before-runner-review.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/manifest-before-runner-review.json",
+    "sha256": "79b7feedab9b3d4d31e3699657b115a58d2f39bf3344ba005b2c984037490d32",
+    "bytes": 1796
+  },
+  "finish_setup-read-args-failed.py": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/finish_setup-read-args-failed.py",
+    "sha256": "2d4d3f8d108075079f9b637788629c1a1f70019c2f7cc077791d3350e28c3e86",
+    "bytes": 3916
+  },
+  "prepare_native-first-failed.py": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/prepare_native-first-failed.py",
+    "sha256": "95de65f3a635724668310cfbbdeb0c5b55f232eaab9e5e0dcbb4bcb732d59734",
+    "bytes": 4502
+  },
+  "finish_setup-first-failed.py": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/finish_setup-first-failed.py",
+    "sha256": "8194f072b1475bf3a2e84a7384a5a5b2c63800d4ed46bce883bd4a261fdefdfa",
+    "bytes": 3725
+  },
+  "finish_setup-reading-blocked.py": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/finish_setup-reading-blocked.py",
+    "sha256": "35f19169445b9fdf3ea4019b0ea412c292b95fbc016e0e43d34cd778d4880566",
+    "bytes": 3618
+  },
+  "finish_setup-review-required.py": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/finish_setup-review-required.py",
+    "sha256": "a8667695678d5f58a2378704bac44ea2e0b37a26a42751ce5cf05317ebc1656c",
+    "bytes": 3889
+  }
+}

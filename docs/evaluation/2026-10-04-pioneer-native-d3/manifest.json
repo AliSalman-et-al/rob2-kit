@@ -1,0 +1,43 @@
+{
+  "authorization": "One bounded native PIONEER-6 D3 Luna Medium invocation; no paid retry/continuation or second case.",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "home": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/pioneer-native-d3/home",
+  "config_sha256": "d3385976bc773391e9a0425dfe93eedd33065a6abc3f07d5db38606ed00bf561",
+  "skill_sha256": "e9ce314205652d707e53719cce2924b278f3a7b75c8a9ef63006c62e94fc877d",
+  "prompt_sha256": "0cbcc7bef4d9eb834016ad90580a5993acd14a88f10cd41723db86ce50ef09e6",
+  "private_criteria_sha256": "7fa53baa75b757b220a09f51b660e20c33c7e622cf10638cfcc00a5bc11ca224",
+  "availability_manifest_sha256": "66cae2d2ba440d08276a8b24b5e1e472e5d3f3c1b7b069423bb94d999f1139fd",
+  "availability_packet_sha256": "cf1d089342710983b6ccbbffafcddfed64462399784ee98f7430012f04264d80",
+  "availability_packet_not_model_input": true,
+  "source_provenance_sha256": "5f22117a2fe453a701b0ae16d61d2ca9ea4c735e7fbce863922a609ad3de0594",
+  "initial_canonical_sha256": "a5c32d4a0e57977ca62d4f00863f5720688b733498f9ed980a74140f8662b2e8",
+  "runner_sha256": "64e1222cbd2251348031cc1e0f3e0b6b2e7a35bbee1c485e329026aacb4b0fac",
+  "allowed_tools": [
+    "get_status",
+    "get_domain_context",
+    "list_sources",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "select_visual_evidence",
+    "save_domain_judgment"
+  ],
+  "limits": {
+    "invocations": 1,
+    "tools": 30,
+    "output_tokens": 6000,
+    "wall_seconds": 480,
+    "genuine_idle_seconds": 90,
+    "consecutive_submission_rejections": 2,
+    "input_telemetry_only": true
+  },
+  "flags": [
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}"
+  ]
+}

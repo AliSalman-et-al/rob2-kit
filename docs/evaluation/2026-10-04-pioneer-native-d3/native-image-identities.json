@@ -1,0 +1,12 @@
+[
+  {
+    "tool": "render_page",
+    "arguments": {
+      "trial_id": "pioneer-6",
+      "source_id": "sh_3948b22b5f4feb62",
+      "page": 17
+    },
+    "sha256": "ea7bfd88a0d4d830910ce05b9a2547eb47a6dbcd9d72ffeb772a19151b0ddbdd",
+    "mime": "image/png"
+  }
+]
