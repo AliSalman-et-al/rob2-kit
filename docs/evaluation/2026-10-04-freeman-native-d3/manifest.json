@@ -1,0 +1,51 @@
+{
+  "authorization": "One supervised native Freeman2020 D3 Luna Medium invocation; no paid retry/continuation or second case",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "home": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/home",
+  "config_sha256": "0c219c24b0a2c5591b67b58243905b3441eb788e6f285e53dda35aae1180dcb6",
+  "skill_sha256": "e9ce314205652d707e53719cce2924b278f3a7b75c8a9ef63006c62e94fc877d",
+  "prompt_sha256": "d68489b4009509e41b3e400018ce6456448c0b833654c6982e2dff5eaab4b5ec",
+  "private_criteria_sha256": "555ddaa8e22fbd38b390cc363a808a820da176fa830aca7c8018ea823d3c2776",
+  "availability_manifest_sha256": "bb852451af5e4599e964dd0600e7364e0661979c1cb54161ffaf593de8ff53e3",
+  "availability_packet_sha256": "d7490b81acae500b553b111964177adf6537b240650ef9951621a45ffcaed644",
+  "availability_packet_not_model_input": true,
+  "source_provenance_sha256": "596d0fac6b2144e098ef8d0033fad786f405169f024d36168005077b3c62605d",
+  "initial_canonical_sha256": "b63c6c310a374b8ea64c8b77b4fdee02f4fe5ef936723ea5e778c9a5ccb98312",
+  "runner_sha256": "72b22794975d02385719a415f87126dad4278afd1891d16e42a0a3de6971464f",
+  "allowed_tools": [
+    "get_status",
+    "get_domain_context",
+    "list_sources",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "select_visual_evidence",
+    "save_domain_judgment"
+  ],
+  "limits": {
+    "invocations": 1,
+    "tool_count_stop": false,
+    "input_token_stop": false,
+    "output_review_threshold": 6000,
+    "wall_review_seconds": 480,
+    "idle_review_seconds": 90,
+    "identical_rejected_submissions_stop": 3,
+    "supervised": true
+  },
+  "flags": [
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}"
+  ],
+  "official_guidance": {
+    "version": "22August2019",
+    "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+    "FAQ": "undated,captured4Oct2026",
+    "FAQ_sha256": "060C4F0AA70573BB5D07257EB3D7B1DFFF07C4373DE1907E0C1055ADDBA4F8CD"
+  },
+  "independent_facts_sha256": "ae8a30a29e9ecb5bda03ee2247459c57b59d43e5b5772a5c3f77c54382bd1785"
+}

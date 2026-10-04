@@ -1,0 +1,12 @@
+[
+  {
+    "tool": "render_page",
+    "arguments": {
+      "trial_id": "freeman-2020",
+      "source_id": "sh_08c08c63f9bf7b55",
+      "page": 5
+    },
+    "sha256": "532fc9b387dead7a5804a524684f6e9abdf6cd0f2454c5fe42a83ee7f23d0b94",
+    "mime": "image/png"
+  }
+]

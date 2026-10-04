@@ -1,0 +1,213 @@
+{
+  "exit_code": 0,
+  "stop": "accepted D3 checkpoint",
+  "elapsed_seconds": 260.36363477099803,
+  "tool_calls": 19,
+  "calls": {
+    "item_1": {
+      "server": "rob2",
+      "tool": "get_status",
+      "completed": true
+    },
+    "item_2": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_3": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_4": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_5": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_6": {
+      "server": "rob2",
+      "tool": "list_sources",
+      "completed": true
+    },
+    "item_7": {
+      "server": "rob2",
+      "tool": "render_page",
+      "completed": true
+    },
+    "item_8": {
+      "server": "rob2",
+      "tool": "select_visual_evidence",
+      "completed": true
+    },
+    "item_9": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_10": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_11": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_12": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_13": {
+      "server": "rob2",
+      "tool": "get_domain_context",
+      "completed": true
+    },
+    "item_14": {
+      "server": "rob2",
+      "tool": "search_sources_batch",
+      "completed": true
+    },
+    "item_15": {
+      "server": "rob2",
+      "tool": "read_pages",
+      "completed": true
+    },
+    "item_16": {
+      "server": "rob2",
+      "tool": "select_text_evidence",
+      "completed": true
+    },
+    "item_17": {
+      "server": "rob2",
+      "tool": "select_text_evidence",
+      "completed": true
+    },
+    "item_18": {
+      "server": "rob2",
+      "tool": "get_status",
+      "completed": true
+    },
+    "item_19": {
+      "server": "rob2",
+      "tool": "save_domain_judgment",
+      "completed": true
+    }
+  },
+  "agent_messages": 0,
+  "provider_response_count": 19,
+  "usage": {
+    "input_tokens": 1170287,
+    "cached_input_tokens": 1064192,
+    "output_tokens": 6973,
+    "reasoning_output_tokens": 2600
+  },
+  "uncached_input_tokens": 106095,
+  "model_context": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "review_alerts": [],
+  "accepted_checkpoint": {
+    "outcome": "success",
+    "head": {
+      "phase": "assessment",
+      "state_revision": 4,
+      "next_action": {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "freeman-2020",
+        "domain_id": "domain:randomization",
+        "cursor": null,
+        "max_response_bytes": null
+      },
+      "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+    },
+    "data": {
+      "checkpoint": {
+        "identity": "sha256:2fdf8680f2a12cdd5e2ff1e32f4d1a125a51f02754ea1e96736916f71b971d09",
+        "trial_id": "freeman-2020",
+        "domain_id": "domain:missing",
+        "judgment": "some_concerns",
+        "driver_questions": [
+          "sq:missing:data-available",
+          "sq:missing:evidence-unbiased",
+          "sq:missing:true-value-dependent",
+          "sq:missing:likely-dependent"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "question_id": "sq:missing:data-available",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:3f9ceef9fbcf24f00ebed1a54e5ab89321d5fb0acfc2d04e94043173fa92ced6",
+                "sha256:8e6fbfe6fccf1e6d90255c8221673c4ec7aaa7e3f08915e72c56bb8299eb39e6"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Arm-specific number with observed or imputed primary outcome values is not reported in the inspected main-report statistical methods and flow diagram."
+              ],
+              "support_attribution": "host_asserted"
+            },
+            {
+              "question_id": "sq:missing:evidence-unbiased",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:8e6fbfe6fccf1e6d90255c8221673c4ec7aaa7e3f08915e72c56bb8299eb39e6",
+                "sha256:1b34ae16e5c2f0bcfd1c3a1211b05e8fe7d353f8a0ca2570027a82d12fef9bf1"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Whether the analysis corrected for missingness bias or remained robust to plausible non-random missingness."
+              ],
+              "support_attribution": "host_asserted"
+            },
+            {
+              "question_id": "sq:missing:true-value-dependent",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:3f9ceef9fbcf24f00ebed1a54e5ab89321d5fb0acfc2d04e94043173fa92ced6",
+                "sha256:08fa89e721055814c04fa0053da97605995a00761da980d464c93f6c603df7e2"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Whether missingness actually depended on each participant's true THC-COOH:creatinine outcome."
+              ],
+              "support_attribution": "host_asserted"
+            },
+            {
+              "question_id": "sq:missing:likely-dependent",
+              "status": "unresolved",
+              "evidence": [
+                "sha256:3f9ceef9fbcf24f00ebed1a54e5ab89321d5fb0acfc2d04e94043173fa92ced6",
+                "sha256:8e6fbfe6fccf1e6d90255c8221673c4ec7aaa7e3f08915e72c56bb8299eb39e6"
+              ],
+              "search_receipts": [],
+              "unresolved_premises": [
+                "Whether missingness was likely to depend on the true THC-COOH:creatinine value."
+              ],
+              "support_attribution": "host_asserted"
+            }
+          ],
+          "identity": "sha256:6db109c0aba8f60c244fa2340311335357ab8b530d41643f5f42ed50d6cd1d1d"
+        }
+      },
+      "trial_ready_for_review": false,
+      "retry": false
+    }
+  },
+  "submission_rejections": [],
+  "consecutive_submission_rejections": 0,
+  "guards": "No tool-count/input-token stop. Output/wall/idle thresholds are supervised review alerts. Only accepted D3, forbidden tool/scope/model, or three identical rejected submissions stop automatically; one exec, no retries",
+  "retry_or_continuation": false,
+  "scientific_original_and_staging_hashes_unchanged": true
+}

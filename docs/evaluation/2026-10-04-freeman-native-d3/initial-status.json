@@ -1,0 +1,299 @@
+{
+  "outcome": "success",
+  "state_revision": 3,
+  "phase": "assessment",
+  "trial_dispositions": {
+    "freeman-2020": "pending"
+  },
+  "terminal_counts": {
+    "assessed": 0,
+    "needs_input": 0,
+    "unsupported_design": 0,
+    "failed": 0,
+    "pending": 1,
+    "reviewable": 0
+  },
+  "continuation": {
+    "operation": "get_domain_context",
+    "authority": "host",
+    "trial_id": "freeman-2020",
+    "domain_id": "domain:randomization"
+  },
+  "working_checkpoint": {
+    "status": "absent",
+    "reason": "not_saved",
+    "trial_id": "freeman-2020",
+    "checkpoint_identity": null,
+    "checkpoint": null,
+    "recovery": "reorient_from_sources"
+  },
+  "investigation": {
+    "proposition": "Was the allocation sequence random?",
+    "status": "not_established",
+    "sufficiency": {
+      "status": "not_established",
+      "attribution": "not_established"
+    },
+    "workflow_permission": {
+      "permitted": true,
+      "operation": "save_working_checkpoint",
+      "authority": "host",
+      "detail": "Working notes are optional and may be saved without changing canonical assessment state."
+    },
+    "coverage": {
+      "source_scope": [
+        "sh_08c08c63f9bf7b55",
+        "sh_5cb1e1a668b039e0",
+        "sh_c906a4d137a6dce2"
+      ],
+      "state": "partial",
+      "ranges": [
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 115,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 117,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 123,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 31,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 4,
+          "start_line": 32,
+          "end_line": 115,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 143,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 177,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 172,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 14,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 8,
+          "start_line": 15,
+          "end_line": 142,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 154,
+          "phase": "proposal"
+        },
+        {
+          "source_id": "sh_08c08c63f9bf7b55",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 91,
+          "phase": "proposal"
+        }
+      ],
+      "range_count": 12,
+      "delivered_sources": [
+        "sh_08c08c63f9bf7b55"
+      ],
+      "sources_without_delivery": [
+        "sh_5cb1e1a668b039e0",
+        "sh_c906a4d137a6dce2"
+      ],
+      "ranges_truncated": false
+    },
+    "host_notes": {
+      "referenced_sources": [],
+      "unread_ranges": [],
+      "observation_count": 0
+    },
+    "observations": [],
+    "support": [],
+    "counterevidence": [],
+    "unresolved": "Was the allocation sequence random?",
+    "recovery_choices": [
+      {
+        "operation": "save_working_checkpoint",
+        "available": true,
+        "rationale": "Save source-linked observations without committing an answer."
+      },
+      {
+        "operation": "search_sources",
+        "available": true,
+        "rationale": "Search captured Sources for Evidence that discriminates the premise."
+      },
+      {
+        "operation": "read_pages",
+        "available": true,
+        "rationale": "Read exact Source pages before relying on a passage as Evidence."
+      },
+      {
+        "operation": "accept_limitation",
+        "available": true,
+        "rationale": "Record an honest limitation in the Domain draft when accessible investigation cannot resolve the premise."
+      }
+    ],
+    "stopping_rationale": null,
+    "stale": [],
+    "checkpoint_identity": null,
+    "legacy": "supported",
+    "premises": []
+  },
+  "trial_review": null,
+  "selected_evidence": [],
+  "main_report_reading": {
+    "freeman-2020": {
+      "identity_status": "identified",
+      "identity_basis": "declared_role",
+      "identity_sources": [
+        "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35"
+      ],
+      "identity_observations": [],
+      "orientation_source_ids": [],
+      "orientation_reading": {
+        "source_ids": [],
+        "ranges": [],
+        "range_count": 0,
+        "ranges_truncated": false
+      },
+      "limitation": null,
+      "status": "required",
+      "budget_bytes": 65536,
+      "covered_prefix_bytes": 0,
+      "required_ranges": [
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 115
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 117
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 123
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 115
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 143
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 177
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 172
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 142
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 154
+        },
+        {
+          "source_id": "source_08c08c63f9bf7b55ef3ed5be07508039391adb4bb66eeeab2f437998e5cffc35",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 91
+        }
+      ],
+      "required_range_count": 10,
+      "unread_ranges": [],
+      "unread_range_count": 0
+    }
+  },
+  "scope_review": [],
+  "conditions": [],
+  "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed.",
+  "counters": {
+    "extraction_calls": 0,
+    "derivative_rebuilds": 0,
+    "source_projection_verifications": 0,
+    "database_queries": 25,
+    "serialized_bytes": 0,
+    "render_bytes": 0,
+    "search_ranking_validations": 0,
+    "elapsed_ms": 34.93212509783916,
+    "source_bytes_hashed": 0,
+    "projection_rows_read": 0,
+    "fts_rows_read": 0,
+    "search_fts_rows_built": 0,
+    "candidate_reconstructions": 0,
+    "response_bytes": 0,
+    "search_ranking_builds": 0,
+    "search_ranking_cache_writes": 0,
+    "search_cache_writes": 0,
+    "search_ranking_cache_hits": 0,
+    "search_ranking_recomputations": 0,
+    "search_fts_corpus_builds": 0,
+    "search_fts_corpus_cache_hits": 0,
+    "search_spelling_catalogue_builds": 0,
+    "search_spelling_catalogue_cache_hits": 0
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "outcome": "repair",
+  "state_revision": 1,
+  "phase": "proposal",
+  "repairs": [
+    {
+      "path": "/results/0/reported",
+      "code": "incoherent_reported_result",
+      "detail": "no single selected Evidence item anchors the source endpoint label to one complete quantitative Result tuple. Any provided source definition also needs explicit joint support for that label. Do not resubmit the same cross-passage combination: either use the endpoint identifier exactly as it appears in the quantitative Evidence, or select one complete table block or figure containing the endpoint, headers, values, units, and applicable footnotes. In the public selection, candidate.reported_outcome holds this raw quantitative-anchor label; scope_rationale can explain equivalent wording or separately sourced endpoint criteria Closest selected Evidence handle 'eh_08fa89e721055814' is missing required exact value(s): 'THC-COOH:creatinine ratio (ng/mL)', 'Absolute difference'."
+    },
+    {
+      "path": "/results/0/reported/endpoint/name",
+      "code": "result_value_not_supported",
+      "detail": "leaf /reported/endpoint/name value 'THC-COOH:creatinine ratio (ng/mL)' is not supported: no selected Evidence contains that source expression after normalization; this literal-binding failure does not establish incorrect scientific meaning. Copy the source expression or select Evidence containing it; put interpretation in scope_rationale, not the source-owned reported field"
+    }
+  ]
+}
