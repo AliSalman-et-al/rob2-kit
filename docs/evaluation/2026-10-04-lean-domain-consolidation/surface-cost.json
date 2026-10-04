@@ -28,5 +28,5 @@
   "canonical_and_legacy_representation": "unchanged",
   "no_paid_measurement": true,
   "all_wire_schema_delta": 1577,
-  "schema_size_excludes": "Descriptions/annotations/meta, including unchanged render receipt schema carried in meta"
+  "schema_size_excludes": "Tool-level descriptions, annotations and meta; schema field descriptions included; unchanged render receipt schema in adapter meta"
 }

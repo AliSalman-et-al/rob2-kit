@@ -121,6 +121,11 @@ receipt/transcription/uncertainty. Public schema/recovery tests retain closed
 objects, scientific choices and untouched state on argument errors. Union branch
 implementation labels are removed from error paths so users receive field paths.
 
+The 43 distinct focused cases passed; lint, formatting, typing, release verification
+and diff checks passed. `validation.json` records the groups and timings.
+`offline-native-examples.json` contains the actual passed fixture canonical
+answers and source records, including both D5 timing answers.
+
 ## Next distinct-case comparison, only after authorization
 
 Use a new source-complete trial with materially relevant plan versions or analysis

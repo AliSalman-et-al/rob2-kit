@@ -1,0 +1,856 @@
+[
+  {
+    "origin": "passed native offline fixture; synthetic source facts, not benchmark gold or an LLM run",
+    "test_workspace": "/tmp/pytest-of-ali/pytest-170/popen-gw0/test_complete_lean_d2_d3_d5_pr0",
+    "canonical_records": {
+      "trial:domain:deviations": {
+        "active_questions": [
+          "sq:deviations:participants-aware",
+          "sq:deviations:personnel-aware",
+          "sq:deviations:context-deviations",
+          "sq:deviations:appropriate-analysis"
+        ],
+        "answers": [
+          {
+            "answer": "yes",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:participants-aware",
+            "unknowns": []
+          },
+          {
+            "answer": "yes",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:personnel-aware",
+            "unknowns": []
+          },
+          {
+            "answer": "no",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:context-deviations",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:appropriate-analysis",
+            "unknowns": [
+              "Unmeasured outcomes are not established."
+            ]
+          }
+        ],
+        "domain_id": "domain:deviations",
+        "driver_questions": [],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:participants-aware",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:personnel-aware",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:context-deviations",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:appropriate-analysis",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            }
+          ],
+          "identity": "sha256:12ef89e75d32bc3c3b1c570365d5dd26e74286382f8ae03a79d556844a546d7c"
+        },
+        "identity": "sha256:d76606a0194911b0bd23be895c52c90daec0cbede77cbc96b3179f84857d93f4",
+        "inactive_questions": [
+          "sq:deviations:affected-outcome",
+          "sq:deviations:balanced",
+          "sq:deviations:substantial-impact"
+        ],
+        "judgment": "low",
+        "observed_at": "2026-10-04T09:57:10.135086+00:00",
+        "result_identity": "sha256:9dcfc96e752b72789de9283b41fc189e8c8929969fd6a41ca3f2c024a39983a7",
+        "revision_basis": null,
+        "search_accounts": [],
+        "supersedes": null,
+        "trace": [
+          "deviations.low"
+        ],
+        "trial_id": "trial"
+      },
+      "trial:domain:missing": {
+        "active_questions": [
+          "sq:missing:data-available",
+          "sq:missing:evidence-unbiased",
+          "sq:missing:true-value-dependent",
+          "sq:missing:likely-dependent"
+        ],
+        "answers": [
+          {
+            "answer": "no",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:data-available",
+            "unknowns": []
+          },
+          {
+            "answer": "no",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:evidence-unbiased",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:true-value-dependent",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:likely-dependent",
+            "unknowns": [
+              "Exact unobserved outcomes and some withdrawal reasons remain unknown."
+            ]
+          }
+        ],
+        "domain_id": "domain:missing",
+        "driver_questions": [
+          "sq:missing:likely-dependent"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:data-available",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:evidence-unbiased",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:true-value-dependent",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:likely-dependent",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            }
+          ],
+          "identity": "sha256:1440fa153732aee0d251f85250d537a10559d8bfe72b1f574e48cef836300de3"
+        },
+        "identity": "sha256:c20127d2188e492c99c311a1f06c52045243176c788b044fead318a6ce650b45",
+        "inactive_questions": [],
+        "judgment": "high",
+        "observed_at": "2026-10-04T09:57:13.070333+00:00",
+        "result_identity": "sha256:9dcfc96e752b72789de9283b41fc189e8c8929969fd6a41ca3f2c024a39983a7",
+        "revision_basis": null,
+        "search_accounts": [],
+        "supersedes": null,
+        "trace": [
+          "missing.likely_dependent"
+        ],
+        "trial_id": "trial"
+      },
+      "trial:domain:selection": {
+        "active_questions": [
+          "sq:selection:prespecified-analysis",
+          "sq:selection:multiple-measurements",
+          "sq:selection:multiple-analyses"
+        ],
+        "answers": [
+          {
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "evidence": "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977",
+                "kind": "indirect_support",
+                "source": "The original plan predates unblinded access and specifies the requested outcome at end of follow-up and assigned-group analysis. The reported primary analysis matches it."
+              },
+              {
+                "evidence": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+                "kind": "context",
+                "source": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated."
+              }
+            ],
+            "counterevidence": [
+              {
+                "basis_index": 1,
+                "implication": "The later version's date is unknown despite matching earlier intent."
+              }
+            ],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:selection:prespecified-analysis",
+            "unknowns": [
+              "The later SAP finalization date is not reported."
+            ]
+          },
+          {
+            "answer": "probably_no",
+            "bases": [
+              {
+                "evidence": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+                "kind": "indirect_support",
+                "source": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:selection:multiple-measurements",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_no",
+            "bases": [
+              {
+                "evidence": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+                "kind": "indirect_support",
+                "source": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:selection:multiple-analyses",
+            "unknowns": []
+          }
+        ],
+        "domain_id": "domain:selection",
+        "driver_questions": [],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "evidence": [
+                "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977",
+                "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28"
+              ],
+              "question_id": "sq:selection:prespecified-analysis",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28"
+              ],
+              "question_id": "sq:selection:multiple-measurements",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28"
+              ],
+              "question_id": "sq:selection:multiple-analyses",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            }
+          ],
+          "identity": "sha256:d41180599033137795a13c50b98d4d9f1511c977bfc0e0af930db8c9929ff16c"
+        },
+        "identity": "sha256:83f5d601109588520c072bafade91d7bec7e177b8ef166ea94e15a8e292fe8ed",
+        "inactive_questions": [],
+        "judgment": "low",
+        "observed_at": "2026-10-04T09:57:15.288746+00:00",
+        "result_identity": "sha256:9dcfc96e752b72789de9283b41fc189e8c8929969fd6a41ca3f2c024a39983a7",
+        "revision_basis": null,
+        "search_accounts": [],
+        "supersedes": null,
+        "trace": [
+          "selection.low"
+        ],
+        "trial_id": "trial"
+      }
+    },
+    "exact_selected_sources": {
+      "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c": {
+        "end": 772,
+        "end_line": 3,
+        "handle": "eh_0133959d9d58c6df",
+        "identity": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 522,
+        "start_line": 3,
+        "trial_id": "trial"
+      },
+      "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977": {
+        "end": 943,
+        "end_line": 4,
+        "handle": "eh_788dfe4cc557a994",
+        "identity": "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "The original plan predates unblinded access and specifies the requested outcome at end of follow-up and assigned-group analysis. The reported primary analysis matches it.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 773,
+        "start_line": 4,
+        "trial_id": "trial"
+      },
+      "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b": {
+        "end": 521,
+        "end_line": 2,
+        "handle": "eh_b4abb165a56866c9",
+        "identity": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 350,
+        "start_line": 2,
+        "trial_id": "trial"
+      },
+      "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28": {
+        "end": 1119,
+        "end_line": 5,
+        "handle": "eh_e51f50075faa0578",
+        "identity": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 944,
+        "start_line": 5,
+        "trial_id": "trial"
+      }
+    }
+  },
+  {
+    "origin": "passed native offline fixture; synthetic source facts, not benchmark gold or an LLM run",
+    "test_workspace": "/tmp/pytest-of-ali/pytest-170/popen-gw0/test_complete_lean_d2_d3_d5_pr1",
+    "canonical_records": {
+      "trial:domain:deviations": {
+        "active_questions": [
+          "sq:deviations:participants-aware",
+          "sq:deviations:personnel-aware",
+          "sq:deviations:context-deviations",
+          "sq:deviations:appropriate-analysis"
+        ],
+        "answers": [
+          {
+            "answer": "yes",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:participants-aware",
+            "unknowns": []
+          },
+          {
+            "answer": "yes",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:personnel-aware",
+            "unknowns": []
+          },
+          {
+            "answer": "no",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:context-deviations",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "evidence": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+                "kind": "indirect_support",
+                "source": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:deviations:appropriate-analysis",
+            "unknowns": [
+              "Unmeasured outcomes are not established."
+            ]
+          }
+        ],
+        "domain_id": "domain:deviations",
+        "driver_questions": [],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:participants-aware",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:personnel-aware",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:context-deviations",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b"
+              ],
+              "question_id": "sq:deviations:appropriate-analysis",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            }
+          ],
+          "identity": "sha256:12ef89e75d32bc3c3b1c570365d5dd26e74286382f8ae03a79d556844a546d7c"
+        },
+        "identity": "sha256:d76606a0194911b0bd23be895c52c90daec0cbede77cbc96b3179f84857d93f4",
+        "inactive_questions": [
+          "sq:deviations:affected-outcome",
+          "sq:deviations:balanced",
+          "sq:deviations:substantial-impact"
+        ],
+        "judgment": "low",
+        "observed_at": "2026-10-04T09:57:34.802915+00:00",
+        "result_identity": "sha256:9dcfc96e752b72789de9283b41fc189e8c8929969fd6a41ca3f2c024a39983a7",
+        "revision_basis": null,
+        "search_accounts": [],
+        "supersedes": null,
+        "trace": [
+          "deviations.low"
+        ],
+        "trial_id": "trial"
+      },
+      "trial:domain:missing": {
+        "active_questions": [
+          "sq:missing:data-available",
+          "sq:missing:evidence-unbiased",
+          "sq:missing:true-value-dependent",
+          "sq:missing:likely-dependent"
+        ],
+        "answers": [
+          {
+            "answer": "no",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:data-available",
+            "unknowns": []
+          },
+          {
+            "answer": "no",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:evidence-unbiased",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:true-value-dependent",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_yes",
+            "bases": [
+              {
+                "evidence": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+                "kind": "indirect_support",
+                "source": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:missing:likely-dependent",
+            "unknowns": [
+              "Exact unobserved outcomes and some withdrawal reasons remain unknown."
+            ]
+          }
+        ],
+        "domain_id": "domain:missing",
+        "driver_questions": [
+          "sq:missing:likely-dependent"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:data-available",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:evidence-unbiased",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:true-value-dependent",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c"
+              ],
+              "question_id": "sq:missing:likely-dependent",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            }
+          ],
+          "identity": "sha256:1440fa153732aee0d251f85250d537a10559d8bfe72b1f574e48cef836300de3"
+        },
+        "identity": "sha256:c20127d2188e492c99c311a1f06c52045243176c788b044fead318a6ce650b45",
+        "inactive_questions": [],
+        "judgment": "high",
+        "observed_at": "2026-10-04T09:57:36.218280+00:00",
+        "result_identity": "sha256:9dcfc96e752b72789de9283b41fc189e8c8929969fd6a41ca3f2c024a39983a7",
+        "revision_basis": null,
+        "search_accounts": [],
+        "supersedes": null,
+        "trace": [
+          "missing.likely_dependent"
+        ],
+        "trial_id": "trial"
+      },
+      "trial:domain:selection": {
+        "active_questions": [
+          "sq:selection:prespecified-analysis",
+          "sq:selection:multiple-measurements",
+          "sq:selection:multiple-analyses"
+        ],
+        "answers": [
+          {
+            "answer": "no_information",
+            "bases": [
+              {
+                "evidence": "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977",
+                "kind": "indirect_support",
+                "source": "The original plan predates unblinded access and specifies the requested outcome at end of follow-up and assigned-group analysis. The reported primary analysis matches it."
+              },
+              {
+                "evidence": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+                "kind": "context",
+                "source": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated."
+              }
+            ],
+            "counterevidence": [
+              {
+                "basis_index": 1,
+                "implication": "The later version's date is unknown despite matching earlier intent."
+              }
+            ],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:selection:prespecified-analysis",
+            "unknowns": [
+              "The later SAP finalization date is not reported."
+            ]
+          },
+          {
+            "answer": "probably_no",
+            "bases": [
+              {
+                "evidence": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+                "kind": "indirect_support",
+                "source": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:selection:multiple-measurements",
+            "unknowns": []
+          },
+          {
+            "answer": "probably_no",
+            "bases": [
+              {
+                "evidence": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+                "kind": "indirect_support",
+                "source": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated."
+              }
+            ],
+            "counterevidence": [],
+            "justification": "The cited source facts support this response for the approved Result.",
+            "question_id": "sq:selection:multiple-analyses",
+            "unknowns": []
+          }
+        ],
+        "domain_id": "domain:selection",
+        "driver_questions": [
+          "sq:selection:prespecified-analysis"
+        ],
+        "evidence_sufficiency": {
+          "claims": [
+            {
+              "evidence": [
+                "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977",
+                "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28"
+              ],
+              "question_id": "sq:selection:prespecified-analysis",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28"
+              ],
+              "question_id": "sq:selection:multiple-measurements",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            },
+            {
+              "evidence": [
+                "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28"
+              ],
+              "question_id": "sq:selection:multiple-analyses",
+              "search_receipts": [],
+              "status": "indirect",
+              "unresolved_premises": []
+            }
+          ],
+          "identity": "sha256:d41180599033137795a13c50b98d4d9f1511c977bfc0e0af930db8c9929ff16c"
+        },
+        "identity": "sha256:7f53ca23ff44732e4f5f9a41a385dd5681044a98a43c54d082ec13d9dbb0420b",
+        "inactive_questions": [],
+        "judgment": "some_concerns",
+        "observed_at": "2026-10-04T09:57:37.214441+00:00",
+        "result_identity": "sha256:9dcfc96e752b72789de9283b41fc189e8c8929969fd6a41ca3f2c024a39983a7",
+        "revision_basis": null,
+        "search_accounts": [],
+        "supersedes": null,
+        "trace": [
+          "selection.some_concerns"
+        ],
+        "trial_id": "trial"
+      }
+    },
+    "exact_selected_sources": {
+      "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c": {
+        "end": 772,
+        "end_line": 3,
+        "handle": "eh_0133959d9d58c6df",
+        "identity": "sha256:0133959d9d58c6df9add1cdd47445d9ef5702a13b969fdcfff42a7fc4d8c970c",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "Requested outcomes were missing for many participants. No reassuring recovery or sensitivity analysis was reported. Missingness was strongly associated with worse requested outcomes; most withdrawals followed deterioration, with some reasons unknown.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 522,
+        "start_line": 3,
+        "trial_id": "trial"
+      },
+      "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977": {
+        "end": 943,
+        "end_line": 4,
+        "handle": "eh_788dfe4cc557a994",
+        "identity": "sha256:788dfe4cc557a99493adfa12f5eb12ca5beefbe6ae51cad6555353c0960be977",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "The original plan predates unblinded access and specifies the requested outcome at end of follow-up and assigned-group analysis. The reported primary analysis matches it.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 773,
+        "start_line": 4,
+        "trial_id": "trial"
+      },
+      "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b": {
+        "end": 521,
+        "end_line": 2,
+        "handle": "eh_b4abb165a56866c9",
+        "identity": "sha256:b4abb165a56866c92a0d59adfbcafc2af25bb7ac0c4b8b473f3d41dec9e2740b",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "Participants and providers knew assignments. Changes were ordinary clinical care, not caused by trial participation. Available outcomes were analysed by random assignment.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 350,
+        "start_line": 2,
+        "trial_id": "trial"
+      },
+      "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28": {
+        "end": 1119,
+        "end_line": 5,
+        "handle": "eh_e51f50075faa0578",
+        "identity": "sha256:e51f50075faa0578f4dc5a80dd4464e6ce3ddcd41c8ab04578d09347dd1ffe28",
+        "kind": "narrative",
+        "page": 1,
+        "quote": "The intended requested-outcome measurements and assigned-group analyses are reported, including the planned primary and sensitivity results. Later SAP finalization is undated.",
+        "source_id": "source_59382e9075f779dedf7769c4785178737cc4af3979fe9131ee4fb3194fee7f61",
+        "source_version": "sha256:16dbcdac4f1bcac7bb28df59adcd951ef0107ca6b042eefaa85587d52ab48c40",
+        "start": 944,
+        "start_line": 5,
+        "trial_id": "trial"
+      }
+    }
+  }
+]
