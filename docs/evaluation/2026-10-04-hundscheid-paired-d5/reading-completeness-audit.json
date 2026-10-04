@@ -1,0 +1,130 @@
+{
+  "direct": {
+    "main_report_before_first_search": {
+      "1": {
+        "line_count": 69,
+        "delivered_lines": 69,
+        "missing_lines": []
+      },
+      "2": {
+        "line_count": 111,
+        "delivered_lines": 111,
+        "missing_lines": []
+      },
+      "3": {
+        "line_count": 106,
+        "delivered_lines": 106,
+        "missing_lines": []
+      },
+      "4": {
+        "line_count": 129,
+        "delivered_lines": 129,
+        "missing_lines": []
+      },
+      "5": {
+        "line_count": 102,
+        "delivered_lines": 102,
+        "missing_lines": []
+      },
+      "6": {
+        "line_count": 174,
+        "delivered_lines": 174,
+        "missing_lines": []
+      },
+      "7": {
+        "line_count": 177,
+        "delivered_lines": 177,
+        "missing_lines": []
+      },
+      "8": {
+        "line_count": 200,
+        "delivered_lines": 200,
+        "missing_lines": []
+      },
+      "9": {
+        "line_count": 189,
+        "delivered_lines": 189,
+        "missing_lines": []
+      },
+      "10": {
+        "line_count": 113,
+        "delivered_lines": 113,
+        "missing_lines": []
+      },
+      "11": {
+        "line_count": 140,
+        "delivered_lines": 140,
+        "missing_lines": []
+      }
+    },
+    "all_context_sequences_completed": true,
+    "context_sequence_lengths": [
+      4
+    ]
+  },
+  "account": {
+    "main_report_before_first_search": {
+      "1": {
+        "line_count": 69,
+        "delivered_lines": 69,
+        "missing_lines": []
+      },
+      "2": {
+        "line_count": 111,
+        "delivered_lines": 111,
+        "missing_lines": []
+      },
+      "3": {
+        "line_count": 106,
+        "delivered_lines": 106,
+        "missing_lines": []
+      },
+      "4": {
+        "line_count": 129,
+        "delivered_lines": 129,
+        "missing_lines": []
+      },
+      "5": {
+        "line_count": 102,
+        "delivered_lines": 102,
+        "missing_lines": []
+      },
+      "6": {
+        "line_count": 174,
+        "delivered_lines": 174,
+        "missing_lines": []
+      },
+      "7": {
+        "line_count": 177,
+        "delivered_lines": 177,
+        "missing_lines": []
+      },
+      "8": {
+        "line_count": 200,
+        "delivered_lines": 200,
+        "missing_lines": []
+      },
+      "9": {
+        "line_count": 189,
+        "delivered_lines": 189,
+        "missing_lines": []
+      },
+      "10": {
+        "line_count": 113,
+        "delivered_lines": 113,
+        "missing_lines": []
+      },
+      "11": {
+        "line_count": 140,
+        "delivered_lines": 140,
+        "missing_lines": []
+      }
+    },
+    "all_context_sequences_completed": true,
+    "context_sequence_lengths": [
+      4,
+      4,
+      4
+    ]
+  }
+}

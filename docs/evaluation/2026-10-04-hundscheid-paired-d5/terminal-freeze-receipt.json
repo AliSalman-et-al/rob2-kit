@@ -1,0 +1,25 @@
+{
+  "private_root": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/hundscheid-account-pair",
+  "prelaunch_freeze_sha256": "4f9c96e9a466f859b9a9cf486fc8d2b27b084c2c938acef34e16b8545493d53e",
+  "postreview_freeze_sha256": "5d8724a1cd6e19ff6b530c6e22c21319e69100de637f28c4229d5655ae4911dc",
+  "terminals": {
+    "direct": {
+      "freeze_sha256": "6c36e4baa5d7f5e6298c29b289fb06f5081116221cb9f7c5637618b238299568",
+      "file_count": 53
+    },
+    "account": {
+      "freeze_sha256": "e2a3396af2b3d3105344f6a35001634a126260de5fd6944f7debf9b14c2c15c9",
+      "file_count": 53
+    }
+  },
+  "sessions": 2,
+  "paid_retests": 0,
+  "full_benchmark": false,
+  "all_exits_zero": true,
+  "default_route_changed": false,
+  "production_code_changed_by_this_pair": false,
+  "audit_host_parser_failure": "Initial quote check stripped leading spaces; failed check retained, corrected delimiter-only check matches31/31 bases",
+  "trace_audit_parser_failure": "Initial host audit assumed source_id in every read_pages request; corrected for native windows requests without changing any model transcript",
+  "scope": "D5 only; two sessions completed and frozen before comparison",
+  "no_next_paid_launch_authorized_by_this_result": true
+}

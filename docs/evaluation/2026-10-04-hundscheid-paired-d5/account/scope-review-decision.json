@@ -1,0 +1,9 @@
+{
+  "decision": "approve",
+  "operator": "Codex operator acting under delegated diagnostic authority; not Ali manual scientific adjudication",
+  "review_identity": "sha256:9dfc9ccb074d96a7934632094d76cdf6c55a717585adab1bc666bfeefc8a1bdc",
+  "verified_from_sources": "NEJM main report PDF3,5,7 and appendix PDF21: randomized primary composite36weeksPMA,136/137 assigned groups,ITT RD-17.2pp,one-sided95upper-7.4; PP and alternativeBPD rows distinct",
+  "scope": "Only this exact Result is approved; no signalling answers supplied",
+  "precision_note": "Table label Difference and numeric precision -7.4 faithfully quoted; selected source footnotes and relation rationale establish absolute RD and one-sided95CI upper bound",
+  "at_unix": 1791154857.984395
+}

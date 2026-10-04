@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+    "exec",
+    "--json",
+    "--skip-git-repo-check",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-C",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/hundscheid-account-pair/account/workspace",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/hundscheid-account-pair/account/turn-1-final.txt",
+    "-"
+  ],
+  "started_at": 1791154401.012487,
+  "code_commit": "31cb37b3f0ecd62569d09aba02b20ebb3dcf5a61",
+  "input_sha256": "86aa3558a8b0421502696e6cf35c7aaa5486c6311be7d59a1ecc657e415325c2",
+  "config_sha256": "dccd20f4fd9483a57d5087345b3879da9ebde73a3f304421762926b3f621ded1",
+  "session_policy": "two independent sessions only; generic continuations in same session",
+  "operator_authorization": "delegated paired diagnostic; normal exact ProposalReview only"
+}

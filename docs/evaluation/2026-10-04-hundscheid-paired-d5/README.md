@@ -19,7 +19,7 @@ Current registry metadata was captured once and shared; this is not an archived
 Oct 1 registry replay. Extra registry document acquisition is disabled.
 
 Selection used corpus files, source feasibility and exposure metadata, without
-reading prior answers or gold. MONALEESA, Chua and AWARD-1 were excluded; candidates
+reading prior Hundscheid answers or gold. MONALEESA, Chua and AWARD-1 were excluded; candidates
 with greater engineering or recovery exposure were rejected. Hundscheid had only
 an inventory-level filename hit and an original two-turn benchmark execution.
 The single-case design cannot establish general accuracy or benchmark gains.
@@ -31,7 +31,9 @@ diagnostic approval, not Ali's manual scientific adjudication. Preserve every
 attempt and stop only at accepted D5 or a reasoned genuine blocker. Full benchmark
 and default route adoption remain off. Both terminal outputs must be frozen before
 independent source-fidelity, applicability, attribution, uncertainty, justification
-and usage review. No outcome or benefit is claimed in this preflight checkpoint.
+and usage review. This paragraph describes the preflight checkpoint. The pair has now completed;
+[source-audit.md](source-audit.md) records the post-freeze review. No default
+adoption or accuracy gain is claimed.
 
 Private evidence, native state, complete tool schemas/receipts, isolated config,
 transcripts, original execution metadata and source projections are preserved at
