@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "sequence": 0,
+      "reassembled_all_scientific_fields_identical": true
+    },
+    {
+      "sequence": 1,
+      "reassembled_all_scientific_fields_identical": true
+    },
+    {
+      "sequence": 2,
+      "reassembled_all_scientific_fields_identical": true
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "focused_new_test": {
+    "passed": 1
+  },
+  "existing_working_checkpoint_tests": {
+    "passed": 27,
+    "note": "Initial run had one new-fixture initialization failure; corrected fixture then passed individually."
+  },
+  "cursor_and_snapshot_tests": {
+    "passed": 4,
+    "deselected": 29
+  },
+  "ruff": "passed",
+  "ty_changed_source_files": "passed",
+  "diff_check": "passed",
+  "paid_runs": 0
+}

@@ -793,7 +793,7 @@ class WorkingCheckpointStatus(PublicModel):
 
 
 class InvestigationReadRange(PublicModel):
-    """Text range actually returned by read_pages for the active Trial."""
+    """Union of text lines delivered for one Source/page/workflow phase."""
 
     source_id: SourceHandle
     page: PageNumber
@@ -808,7 +808,10 @@ class InvestigationCoverage(PublicModel):
     source_scope: tuple[SourceHandle, ...] = ()
     state: Literal["unobserved", "partial", "delivered"]
     ranges: tuple[InvestigationReadRange, ...] = ()
-    range_count: NonNegativeInt = 0
+    range_count: NonNegativeInt = Field(
+        default=0,
+        description="Number of disjoint delivered coverage intervals before preview truncation.",
+    )
     delivered_sources: tuple[SourceHandle, ...] = ()
     sources_without_delivery: tuple[SourceHandle, ...] = ()
     ranges_truncated: StrictBool = False

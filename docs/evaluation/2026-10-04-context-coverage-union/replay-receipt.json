@@ -1,0 +1,92 @@
+{
+  "method": "Actual frozen MCP cache snapshots and 32768-byte existing paginator; baseline per-page wire bytes reproduced exactly; coverage recomputed by changed application function on isolated receipt fixtures. No paid inference or clinical output mutation.",
+  "results": [
+    {
+      "sequence": 0,
+      "original_view_id": "040d86473d0e45a98ebe9db3bbf2c50b",
+      "source_snapshot_digest": "972b08c3430b81aaf2db6ada9b5e9e05adcb09e4c63236042280452784d18ba1",
+      "original_ranges": 14,
+      "union_ranges": 12,
+      "before_page_bytes": [
+        28761,
+        9574,
+        11640,
+        13736
+      ],
+      "after_page_bytes": [
+        28575,
+        9574,
+        11640,
+        13736
+      ],
+      "before_bytes": 63711,
+      "after_bytes": 63525,
+      "before_actions": 4,
+      "after_actions": 4,
+      "all_other_context_fields_identical": true,
+      "source_page_phase_line_union_identical": true,
+      "basis_identity_unchanged": "sha256:54b0d8ead895c18aec9185a5822a96840c6c7bc48364bbbf67079ae112bfd404",
+      "coverage_state_unchanged": "partial"
+    },
+    {
+      "sequence": 1,
+      "original_view_id": "bf57354da1a9415a8cdcba2a902b5515",
+      "source_snapshot_digest": "9ec373b3bd4226a1e54654461606b5f232cf11e7305db7549ff18113424f5283",
+      "original_ranges": 72,
+      "union_ranges": 46,
+      "before_page_bytes": [
+        29901,
+        15702,
+        16044,
+        13736
+      ],
+      "after_page_bytes": [
+        31792,
+        15702,
+        11640,
+        13736
+      ],
+      "before_bytes": 75383,
+      "after_bytes": 72870,
+      "before_actions": 4,
+      "after_actions": 4,
+      "all_other_context_fields_identical": true,
+      "source_page_phase_line_union_identical": true,
+      "basis_identity_unchanged": "sha256:432c930201c6d232be1df46b13ba4fe1f4baec4206d84a757040744720351636",
+      "coverage_state_unchanged": "partial"
+    },
+    {
+      "sequence": 2,
+      "original_view_id": "c632c3a84b704c5b80b2f0f08b18b598",
+      "source_snapshot_digest": "9ec373b3bd4226a1e54654461606b5f232cf11e7305db7549ff18113424f5283",
+      "original_ranges": 72,
+      "union_ranges": 46,
+      "before_page_bytes": [
+        29901,
+        15702,
+        16044,
+        13736
+      ],
+      "after_page_bytes": [
+        31792,
+        15702,
+        11640,
+        13736
+      ],
+      "before_bytes": 75383,
+      "after_bytes": 72870,
+      "before_actions": 4,
+      "after_actions": 4,
+      "all_other_context_fields_identical": true,
+      "source_page_phase_line_union_identical": true,
+      "basis_identity_unchanged": "sha256:432c930201c6d232be1df46b13ba4fe1f4baec4206d84a757040744720351636",
+      "coverage_state_unchanged": "partial"
+    }
+  ],
+  "before_bytes": 214477,
+  "after_bytes": 209265,
+  "before_actions": 12,
+  "after_actions": 12,
+  "no_accuracy_or_provider_token_claim": true,
+  "all_original_freezes_verified": true
+}

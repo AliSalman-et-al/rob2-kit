@@ -576,17 +576,31 @@ def _delivery_projection(
             source_ids,
         ).fetchall()
 
-    ranges = [
-        {
+    ranges: list[dict[str, Any]] = []
+    # Coverage is a union of delivered lines, not a history of read attempts.
+    # Keep phases separate and retain gaps and the empty-page sentinel. The
+    # original receipts remain in page_reads; compact before the preview limit.
+    for row in rows:
+        if str(row["source_id"]) not in handles:
+            continue
+        current = {
             "source_id": handles[str(row["source_id"])],
             "page": int(row["page"]),
             "start_line": int(row["start_line"]),
             "end_line": int(row["end_line"]),
             "phase": str(row["phase"]),
         }
-        for row in rows
-        if str(row["source_id"]) in handles
-    ]
+        previous = ranges[-1] if ranges else None
+        if (
+            previous is not None
+            and all(previous[key] == current[key] for key in ("source_id", "page", "phase"))
+            and previous["start_line"] > 0
+            and current["start_line"] > 0
+            and current["start_line"] <= previous["end_line"] + 1
+        ):
+            previous["end_line"] = max(previous["end_line"], current["end_line"])
+        else:
+            ranges.append(current)
     ranges_by_page: dict[tuple[str, int], list[tuple[int, int]]] = {}
     for row in rows:
         source_id = str(row["source_id"])

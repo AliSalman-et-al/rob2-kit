@@ -23,12 +23,63 @@ from support.rob2 import (
     _workspace,
 )
 
-from rob2_kit.application._state import _state
+from rob2_kit.application._state import _db, _ensure, _root, _state
 from rob2_kit.application.status import _active_trial_and_domain
+from rob2_kit.application.working import _delivery_projection
 from rob2_kit.interfaces.mcp.server import mcp
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.packs.scientific import SCIENTIFIC_PACK
-from rob2_kit.workflow_models import WorkingCheckpoint, WorkingPremiseRecord
+from rob2_kit.workflow_models import WorkingCheckpoint, WorkingPremiseRecord, WorkingSourceBinding
+
+
+def test_delivery_coverage_unions_overlaps_without_erasing_gaps_or_scope(tmp_path: Path) -> None:
+    _ensure(_root(tmp_path))
+    source, empty, older = ("source_" + c * 64 for c in "abc")
+    bindings = tuple(
+        WorkingSourceBinding(source_id=s, projection_hash="sha256:" + "d" * 64)
+        for s in (source, empty)
+    )
+    state = {"batch": {"identity": "batch"}}
+    rows = [("batch", "assessment", "trial", source, 1, n, n + 1) for n in range(1, 130)] + [
+        ("batch", "assessment", "trial", source, 1, 141, 200),
+        ("batch", "proposal", "trial", source, 1, 1, 5),
+        ("batch", "assessment", "trial", source, 2, 1, 3),
+        ("batch", "assessment", "trial", empty, 1, 0, 0),
+        ("batch", "assessment", "trial", older, 1, 1, 260),
+        ("other-batch", "assessment", "trial", source, 1, 1, 260),
+    ]
+    with _db(tmp_path, "derivative.sqlite3") as connection:
+        connection.executemany("INSERT INTO page_reads VALUES (?,?,?,?,?,?,?)", rows)
+        connection.executemany(
+            "INSERT INTO pages VALUES (?,?,?)",
+            [(source, 1, "line\n" * 260), (source, 2, "line\n" * 3), (empty, 1, "")],
+        )
+    coverage = _delivery_projection(tmp_path, state, "trial", bindings)
+    assert coverage["state"] == "partial"
+    assert not coverage["ranges_truncated"]
+    assert coverage["range_count"] == 5
+    assert [
+        (r["page"], r["phase"], r["start_line"], r["end_line"]) for r in coverage["ranges"]
+    ] == [
+        (1, "assessment", 1, 130),
+        (1, "assessment", 141, 200),
+        (1, "proposal", 1, 5),
+        (2, "assessment", 1, 3),
+        (1, "assessment", 0, 0),
+    ]
+    with _db(tmp_path, "derivative.sqlite3") as connection:
+        assert connection.execute("SELECT COUNT(*) FROM page_reads").fetchone()[0] == len(rows)
+        connection.executemany(
+            "INSERT INTO page_reads VALUES (?,?,?,?,?,?,?)",
+            [
+                ("batch", "assessment", "trial", source, 1, 131, 140),
+                ("batch", "assessment", "trial", source, 1, 201, 260),
+            ],
+        )
+    completed = _delivery_projection(tmp_path, state, "trial", bindings)
+    assert completed["state"] == "delivered"
+    assert completed["range_count"] == 4
+    assert completed["ranges"][0]["end_line"] == 260
 
 
 def _checkpoint(source_id: str, text: str = "Allocation concealment is not yet clear.") -> dict:
