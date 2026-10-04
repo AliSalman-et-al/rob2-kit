@@ -28,7 +28,7 @@ def test_rejected_draft_and_scientific_loss_are_visible_without_merge():
     repaired["result_account"] = repaired["result_account"]["steps"]
     unchanged = deepcopy(repaired)
     del repaired["result_account"][0]["unknowns"]
-    events = []
+    events: list[dict[str, Any]] = []
     for number, draft in enumerate((original, unchanged, repaired)):
         events.append(
             {

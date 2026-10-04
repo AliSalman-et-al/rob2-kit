@@ -18,7 +18,8 @@
   "limitations": [
     "No paid behavioral benefit test",
     "Diagnostic visibility uses existing native receipts offline, not automatic in-assessment warning",
-    "Initial new visual test assertions wrongly used proposal-only status and raw source/coordinate representations; corrected; failed test logs preserved"
+    "Initial new visual test assertions wrongly used proposal-only status and raw source/coordinate representations; corrected; failed test logs preserved",
+    "Final cross-Trial diagnostic assertion required an explicit JSON-event type annotation; corrected, final full check including the script passed."
   ],
   "private_check_logs": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/account-reference-ergonomics-20261004",
   "files": {
