@@ -112,3 +112,10 @@ The preceding visual-reference CI had one stale string-only schema assertion
 (1 failed / 1,433 passed / 8 skipped in representative macOS 3.13). Its test now
 checks the actual handle/text/visual union; that focused check passes. No runtime
 contract was weakened to satisfy the obsolete expectation.
+
+The first authorized native launch exposed an invalid native response schema
+before producing a review (see `docs/evaluation/2026-10-04-freeman-source-check`).
+Preparation now uses `native_review_schema()` rather than raw Pydantic schema:
+nullable values must be emitted and the four coordinates use a constrained
+homogeneous array. Local validation remains unchanged. Native acceptance of this
+repair has not been retested; no scientific reviewer benefit is established.

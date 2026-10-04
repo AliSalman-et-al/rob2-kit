@@ -1,0 +1,137 @@
+{
+  "assessor_routing_not_model_input": [
+    {
+      "claim_id": "sha256:af0d4524156cfcad63fd7930fc78fc50cd66f98bac56baac307002e09967ff4c",
+      "domain_id": "domain:missing",
+      "question_id": "sq:missing:data-available",
+      "checkpoint_identity": "sha256:2fdf8680f2a12cdd5e2ff1e32f4d1a125a51f02754ea1e96736916f71b971d09"
+    },
+    {
+      "claim_id": "sha256:c3ead7ff1790df0ba4607010efd0240e6b693dea3a66492cec7de802a72d1a91",
+      "domain_id": "domain:missing",
+      "question_id": "sq:missing:evidence-unbiased",
+      "checkpoint_identity": "sha256:2fdf8680f2a12cdd5e2ff1e32f4d1a125a51f02754ea1e96736916f71b971d09"
+    },
+    {
+      "claim_id": "sha256:07027e2ca90af7e7de2a081ada09f4fb6df7b38af4a9c4215154ac859ceeb0db",
+      "domain_id": "domain:missing",
+      "question_id": "sq:missing:true-value-dependent",
+      "checkpoint_identity": "sha256:2fdf8680f2a12cdd5e2ff1e32f4d1a125a51f02754ea1e96736916f71b971d09"
+    },
+    {
+      "claim_id": "sha256:a61d38e3c362f469acddb4de85276b8f483b0858673bb1066e000552d4ef161d",
+      "domain_id": "domain:missing",
+      "question_id": "sq:missing:likely-dependent",
+      "checkpoint_identity": "sha256:2fdf8680f2a12cdd5e2ff1e32f4d1a125a51f02754ea1e96736916f71b971d09"
+    }
+  ],
+  "snapshot_identity": "sha256:ab4d3f0c9e8fd6a667f062e2aed31b7142003182bd11a97eb6bfcb21e1763e4d",
+  "assessor": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "role": "scientific decision authority; declared provenance"
+  },
+  "reviewer": {
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "role": "advisory source checker; effective settings must be verified at launch"
+  },
+  "fresh_exec": true,
+  "resume": false,
+  "allowed_tools": [
+    "list_sources",
+    "read_pages",
+    "search_sources",
+    "search_sources_batch",
+    "render_page"
+  ],
+  "images": [
+    {
+      "evidence_identity": "sha256:3f9ceef9fbcf24f00ebed1a54e5ab89321d5fb0acfc2d04e94043173fa92ced6",
+      "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/request/532fc9b387dead7a5804a524684f6e9abdf6cd0f2454c5fe42a83ee7f23d0b94.png",
+      "png_sha256": "532fc9b387dead7a5804a524684f6e9abdf6cd0f2454c5fe42a83ee7f23d0b94",
+      "region": [
+        0.05,
+        0.28,
+        0.96,
+        0.98
+      ],
+      "transport": "native Codex --image; not a new MCP delivery receipt"
+    }
+  ],
+  "command": [
+    "codex",
+    "exec",
+    "--strict-config",
+    "--ignore-user-config",
+    "--ignore-rules",
+    "--skip-git-repo-check",
+    "-s",
+    "read-only",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "model_instructions_file=\"/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/request/instructions.md\"",
+    "-c",
+    "web_search=\"disabled\"",
+    "-c",
+    "features.shell_tool=false",
+    "-c",
+    "features.unified_exec=false",
+    "-c",
+    "features.view_image=false",
+    "-c",
+    "features.apps=false",
+    "-c",
+    "features.plugins=false",
+    "-c",
+    "features.skill_search=false",
+    "-c",
+    "features.skip_host_skill_discovery=true",
+    "-c",
+    "features.multi_agent=false",
+    "-c",
+    "features.multi_agent_v2=false",
+    "-c",
+    "features.browser_use=false",
+    "-c",
+    "features.computer_use=false",
+    "-c",
+    "features.code_mode.enabled=true",
+    "-c",
+    "features.code_mode.direct_only_tool_namespaces=[\"mcp__rob2\"]",
+    "-c",
+    "mcp_servers.rob2.command=\"/home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python\"",
+    "-c",
+    "mcp_servers.rob2.args=[\"-m\",\"rob2_kit.interfaces.cli.app\",\"mcp-codex\"]",
+    "-c",
+    "mcp_servers.rob2.required=true",
+    "-c",
+    "mcp_servers.rob2.default_tools_approval_mode=\"approve\"",
+    "-c",
+    "mcp_servers.rob2.enabled_tools=[\"list_sources\",\"read_pages\",\"search_sources\",\"search_sources_batch\",\"render_page\"]",
+    "-c",
+    "mcp_servers.rob2.env.ROB2_WORKSPACE=\"/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/workspace\"",
+    "-c",
+    "mcp_servers.rob2.env.PYTHONPATH=\"/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/src\"",
+    "--image",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/request/532fc9b387dead7a5804a524684f6e9abdf6cd0f2454c5fe42a83ee7f23d0b94.png",
+    "--output-schema",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/request/response-schema.json",
+    "--json",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/request/response.json",
+    "-"
+  ],
+  "files_sha256": {
+    "instructions.md": "b79ec577a20c485aaae183aa5d688e0e119a6c5c4749cce13d22655dc8f70ba4",
+    "532fc9b387dead7a5804a524684f6e9abdf6cd0f2454c5fe42a83ee7f23d0b94.png": "532fc9b387dead7a5804a524684f6e9abdf6cd0f2454c5fe42a83ee7f23d0b94",
+    "packet.json": "af8f89b77805a3fda13421719ead02fb8ff50873ac160bb83773492cdf5a664c",
+    "response-schema.json": "fa19bf0d0ce6a343fc77cc58bc621fe3c99ee33e02b3956b1f418f61bdef788d",
+    "prompt.txt": "de92fa98a998229f1bf8097ad4fe77b3217311ffcc1198d3c470c4aabd7ce02d"
+  },
+  "model_calls": 0,
+  "launch_protocol": "Explicit authorization only. Reuse diagnostic_evidence_preflight.launch_checked and run_rsi_case._run_owned_codex for bounded native execution; freeze research criteria/availability manifest first. Preserve events, effective model, usage, stderr and protected hashes. No retry or canonical tool is part of this request."
+}

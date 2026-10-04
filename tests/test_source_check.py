@@ -317,3 +317,35 @@ def test_captured_but_unrelated_trial_evidence_cannot_enter_packet(
     with pytest.raises(ValueError, match="current-Trial Evidence"):
         build_packet(_approved_result(state, "trial"), [record], evidence, sources, "trial")
     assert packet == export_current_packet(workspace, "trial", "domain:selection")
+
+
+def test_native_review_schema_requires_nullable_fields_and_preserves_visual_array_contract():
+    from scripts.export_factual_audit import native_review_schema
+
+    schema = native_review_schema()
+    local = SourceCheckReport.model_json_schema()
+    assert "quote" not in local["$defs"]["SourceCheckReference"]["required"]
+    assert "uncertainty" not in local["$defs"]["VisualEvidenceReference"]["required"]
+    assert "prefixItems" in local["$defs"]["VisualEvidenceReference"]["properties"]["region"]
+
+    def check(value: Any) -> None:
+        if isinstance(value, dict):
+            assert "default" not in value and "prefixItems" not in value
+            if value.get("type") == "object":
+                assert set(value["required"]) == set(value["properties"])
+                assert value["additionalProperties"] is False
+            for item in value.values():
+                check(item)
+        elif isinstance(value, list):
+            for item in value:
+                check(item)
+
+    check(schema)
+    coordinate = schema["$defs"]["VisualEvidenceReference"]["properties"]["region"]
+    assert coordinate["minItems"] == coordinate["maxItems"] == 4
+    assert coordinate["items"] == {"type": "number", "minimum": 0, "maximum": 1}
+    nullable_quote = schema["$defs"]["SourceCheckReference"]["properties"]["quote"]["anyOf"]
+    assert {"type": "null"} in nullable_quote
+    # These are locally accepted nullable observations, never mandatory OCR facts.
+    visual = schema["$defs"]["VisualEvidenceReference"]["properties"]["uncertainty"]
+    assert {"type": "null"} in visual["anyOf"]

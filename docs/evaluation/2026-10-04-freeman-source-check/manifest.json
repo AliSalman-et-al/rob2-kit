@@ -1,0 +1,41 @@
+{
+  "code_sha": "22e84f3fca0aba63639e35684446e7aa91098ca0",
+  "workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/workspace",
+  "original_workspace": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/workspace",
+  "code": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/code",
+  "home": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/home",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "allowed_tools": [
+    "list_sources",
+    "read_pages",
+    "search_sources",
+    "search_sources_batch",
+    "render_page"
+  ],
+  "source_check_snapshot": "sha256:ab4d3f0c9e8fd6a667f062e2aed31b7142003182bd11a97eb6bfcb21e1763e4d",
+  "prompt_sha256": "de92fa98a998229f1bf8097ad4fe77b3217311ffcc1198d3c470c4aabd7ce02d",
+  "request_sha256": "621123bfc04f7facc3fcc60140d844035b129fb43d8a3204313096911422294f",
+  "command_sha256": "5da74f31926254146633521b267c513746c3908955d7523dc957bf7483e3f8f1",
+  "criteria_sha256": "b0c88e76db81bd6e6a4fdb45ee52ac6a413fc410929b444a72556e20d4b18ae1",
+  "runner_sha256": "c7fef928f806c02465913e0e3ca5658fc6bf69ed90f7a35ce82f0fa1a36d46d2",
+  "availability_manifest_sha256": "b3b0a9d57d7ac09c359dc0d0e0175a15366dd06761b3356a13cf5a1b53f0d654",
+  "availability_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-source-check-20261004/availability.bin",
+  "availability_not_model_input": true,
+  "home_config_sha256": "0c219c24b0a2c5591b67b58243905b3441eb788e6f285e53dda35aae1180dcb6",
+  "existing_rollouts": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-native-d3/home/sessions/2026/10/04/rollout-2026-10-04T12-31-37-01a105d3-4d5a-7440-b37f-754a92d51626.jsonl": "027af75bd983c08ea39f73693f37576cb1d36ef9cb4a61a8c6f0efbf260dc262"
+  },
+  "protected_manifest_sha256": "ffe997d59e71f2638668422ba50ee64921ab8f263a5fa4bd0338316dc4e55921",
+  "no_retry": true,
+  "limits": {
+    "invocations": 1,
+    "tool_input_cutoff": false,
+    "output_alert": 6000,
+    "wall_alert": 480,
+    "idle_alert": 90
+  },
+  "original_revision": 4,
+  "sources_match_Code_benchmark": true,
+  "credentials_read_or_copied": false
+}

@@ -57,6 +57,36 @@ def export_packet(bundle: Path, trial_id: str, domain_id: str) -> dict[str, Any]
     return build_packet(result, [domain], evidence, sources, trial_id)
 
 
+def native_review_schema() -> dict[str, Any]:
+    """Project the local contract into native strict structured-output syntax.
+
+    Nullable fields stay nullable but must be emitted. The four equal coordinate
+    schemas become a homogeneous fixed-length array; local validation still owns
+    nonblank text, ordered geometry and scientific/advisory binding checks.
+    """
+    schema = SourceCheckReport.model_json_schema()
+
+    def normalize(value: Any) -> None:
+        if isinstance(value, list):
+            for child in value:
+                normalize(child)
+        elif isinstance(value, dict):
+            value.pop("default", None)
+            coordinates = value.pop("prefixItems", None)
+            if coordinates is not None:
+                if not coordinates or any(item != coordinates[0] for item in coordinates):
+                    raise ValueError("Native review requires homogeneous coordinate schemas")
+                value["items"] = coordinates[0]
+            if value.get("type") == "object":
+                value["required"] = list(value["properties"])
+                value["additionalProperties"] = False
+            for child in value.values():
+                normalize(child)
+
+    normalize(schema)
+    return schema
+
+
 def prepare_native_review(
     workspace: Path,
     trial_id: str,
@@ -76,7 +106,7 @@ def prepare_native_review(
     packet = export_current_packet(workspace, trial_id, domain_id)
     output.mkdir(parents=True, exist_ok=False)
     _write(output / "packet.json", packet)
-    _write(output / "response-schema.json", SourceCheckReport.model_json_schema())
+    _write(output / "response-schema.json", native_review_schema())
     (output / "instructions.md").write_text(INSTRUCTION, encoding="utf-8")
     images = []
     for span in packet["cited_spans"]:
