@@ -1,0 +1,12 @@
+{
+  "prototype": {
+    "all_frozen_files_unchanged": true,
+    "file_count": 3998,
+    "freeze_sha256": "f3d9d5b717bfdd002911b17e762b78aed9b91e59d9247c1d887d7c16b884021f"
+  },
+  "first_failed": {
+    "all_frozen_files_unchanged": true,
+    "file_count": 892,
+    "freeze_sha256": "1bf0a005ff9598eecb066093831839a98d8051ac4d8c4021516172d5ed748b5f"
+  }
+}

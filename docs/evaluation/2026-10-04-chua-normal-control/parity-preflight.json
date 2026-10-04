@@ -1,0 +1,20 @@
+{
+  "code_sha": "f46df3c04b794e52f6e11e0f54ae6c5af22bc4f9",
+  "code_tree_equal": true,
+  "guidance_bytes_and_transport_equal": true,
+  "native_tool_catalog_equal": true,
+  "normalized_config_equal": true,
+  "initial_canonical_equal": true,
+  "initial_canonical_sha256": "f72ee9d32e97bed07e077335982498c08c38ad0913f325ddd060d3a4f5cf51d9",
+  "initial_account_domain_answers": 0,
+  "source_bytes_equal": true,
+  "selected_result_equal": true,
+  "availability_packet_equal": true,
+  "generic_prompt_prefix_equal": true,
+  "only_prompt_difference": {
+    "prototype_last_paragraph": "This diagnostic explicitly activates the experimental selected-Result account route. Read references/result-account.md. Before submitting the first Domain answer, construct and save your own result_account through save_working_checkpoint from the available sources. No account has been supplied. Reuse the account appropriately across D2, D3 and D5; update it when reading changes its facts or qualifications. Link factual-step dependencies in answer bases where actually relied upon. Counts are optional; keep absent/unresolved facts unknown. Each official proposition still requires independent reasoning.",
+    "control_last_paragraph": "Use the current normal assessment route. Experimental result_account is not activated for this comparator. Existing working observations/interpretations, participant-flow previews and other normal tools remain available. No working facts have been supplied. Each official proposition requires independent source-grounded reasoning."
+  },
+  "prototype_terminal_freeze_sha256": "f3d9d5b717bfdd002911b17e762b78aed9b91e59d9247c1d887d7c16b884021f",
+  "design": "Sequential development-case feasibility control, criteria frozen after prospective prototype and before control output."
+}

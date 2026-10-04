@@ -1,0 +1,23 @@
+{
+  "exit_code": 0,
+  "stop": null,
+  "elapsed_seconds": 43.06658016599249,
+  "tool_calls": 7,
+  "provider_response_count": 8,
+  "usage": {
+    "input_tokens": 295944,
+    "cached_input_tokens": 232704,
+    "output_tokens": 852,
+    "reasoning_output_tokens": 89
+  },
+  "uncached_input_tokens": 63240,
+  "model_context": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "review_alerts": [],
+  "retry_or_continuation": false,
+  "scientific_original_and_staging_hashes_unchanged": true
+}
