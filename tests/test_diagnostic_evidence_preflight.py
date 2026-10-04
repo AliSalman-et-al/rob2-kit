@@ -173,3 +173,22 @@ def test_image_identity_pixel_and_geometry_drift_prevents_launch(tmp_path, chang
                 expected_manifest_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
             )
         child.assert_not_called()
+
+
+def test_local_reference_is_not_delivered_until_included_in_instructions(tmp_path: Path) -> None:
+    from diagnostic_evidence_preflight import check_instruction_delivery
+
+    skill = tmp_path / "SKILL.md"
+    reference = tmp_path / "procedure.md"
+    instructions = tmp_path / "instructions.md"
+    skill.write_text("Read procedure.md before drafting.\n")
+    reference.write_text("Source facts precede independent propositions.\n")
+    instructions.write_bytes(skill.read_bytes())
+    with pytest.raises(ValueError, match="not delivered: procedure.md"):
+        check_instruction_delivery(instructions, (skill, reference))
+    instructions.write_bytes(skill.read_bytes() + b"\n" + reference.read_bytes())
+    receipt = check_instruction_delivery(instructions, (skill, reference))
+    assert receipt["passed"] and len(receipt["required_documents"]) == 2
+    reference.write_text("Changed operational instructions.\n")
+    with pytest.raises(ValueError, match="not delivered"):
+        check_instruction_delivery(instructions, (skill, reference))

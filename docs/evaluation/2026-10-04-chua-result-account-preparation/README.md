@@ -1,7 +1,9 @@
-Chua native integration preparation — no inference launched
-==========================================================
+Chua native integration — one blocked invocation
+================================================
 
-One prospective feasibility/science test, not a human-label accuracy experiment. The experimental route asks the model to construct a factual Result account before its first answer and appropriately reuse/update it for independent D2, D3 and D5 judgments. Current normal-route inputs are also prepared for a possible later comparator; neither a pair nor a panel is authorized.
+One authorized prototype invocation subsequently stopped before account construction or Domain submission because its mandatory operational reference was inaccessible through the enabled tools. Native gpt-6-luna/medium receipt verified;49.795 seconds,5 tools,7 durable provider-response records,205942 input(154112 cached;51830 uncached),974 output(98 reasoning). No retry/continuation; normal comparator remains unlaunched. See pilot-review.json and pilot-report.md. This rejects pilot-readiness, without adjudicating scientific capability.
+
+The frozen preparation described below is a prospective feasibility/science design, not a human-label accuracy experiment. The experimental route asks the model to construct a factual Result account before its first answer and appropriately reuse/update it for independent D2, D3 and D5 judgments. Current normal-route inputs are also prepared for a possible later comparator; neither a pair nor a panel is authorized.
 
 Selection and exposure
 ----------------------
@@ -28,9 +30,9 @@ Both staged workspaces start from identical approved selected-Result canonical s
 
 Success requires actual upstream account construction before any answer, appropriate shared fact/dependency reuse across D2/D3/D5, enacted qualifiers and retained scopes/inferences/counterevidence/unknowns, independently defensible warrants and server-derived labels. Counts and timestamps are not mandatory. Inspect uncited material as well as citations, recovery, rejected submissions and canonical closure; valid JSON or accepted labels alone do not establish success. A wrong shared account may propagate errors. One case establishes feasibility at most, not accuracy or better-than-All-Low agreement.
 
-Availability preflight covers all 17 captured PDF text pages plus original p4/p8 frames. Its packet and private criteria are outside model input; passage availability is not model delivery/reading/entailment. Future launch must use `diagnostic_evidence_preflight.launch_checked` and separately verify prompt/config/code/source hashes. Explicit parent review closure and invocation authorization remain required. Stop after all three accepted Domains; no other Domains/finalization. Supervised output6000/wall480/idle90 review alerts, no arbitrary tool/input cap, no paid retry/continuation; preserve unchanged repeated errors and actual cached/uncached usage.
+Availability preflight covers all 17 captured PDF text pages plus original p4/p8 frames. Its packet and private criteria are outside model input; passage availability is not model delivery/reading/entailment. Future launch must use `diagnostic_evidence_preflight.launch_checked` and separately verify prompt/config/code/source hashes. At preparation freeze, parent review closure and invocation authorization were pending. The later explicit one-call authorization has now been consumed; further invocation remains unauthorized. Stop after all three accepted Domains; no other Domains/finalization. Supervised output6000/wall480/idle90 review alerts, no arbitrary tool/input cap, no paid retry/continuation; preserve unchanged repeated errors and actual cached/uncached usage.
 
 Preparation evidence and limits
 -------------------------------
 
-Native MCP schema discovery and initial-state checks passed without inference. One offline proposal was rejected because a CI-header prefix was not contiguous with its cells; the repaired input copies the interval expression, retaining the 95% CI header in selected Evidence and preserving the rejection. No scientific validation was relaxed. Public hashes/manifest and private staging paths are in preparation.json. Original source hashes are verified again before handoff. **Zero model invocations this turn.**
+Native MCP schema discovery and initial-state checks passed without inference. One offline proposal was rejected because a CI-header prefix was not contiguous with its cells; the repaired input copies the interval expression, retaining the 95% CI header in selected Evidence and preserving the rejection. No scientific validation was relaxed. Public hashes/manifest and private staging paths are in preparation.json. Original source hashes are verified again before handoff. Preparation had zero model invocations. The later one-call result and exact authorization are preserved in pilot artifacts.

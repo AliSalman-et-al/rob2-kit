@@ -1,0 +1,45 @@
+{
+  "outcome": "Blocked before account construction or Domain judgments",
+  "decision": "Revise native instruction delivery; reject pilot-readiness claim. Retain account architecture as experimental and scientifically untested by this invocation.",
+  "scientific_warrants": [],
+  "canonical_domain_count": 0,
+  "account_created": false,
+  "upstream_account_context_enactment": false,
+  "shared_step_reuse": false,
+  "cross_domain_propagation_observed": false,
+  "propagation_claim_limit": "No Domain answers were submitted; absence of propagation here is not reassurance.",
+  "input_source_code_unchanged": true,
+  "normal_comparator_launched": false,
+  "retry_or_continuation": false,
+  "terminal_artifact_freeze_sha256": "1bf0a005ff9598eecb066093831839a98d8051ac4d8c4021516172d5ed748b5f",
+  "private_events_sha256": "2e66cdec28b1439875ff0513ac9b80979f8fffe8323df276e3a39f3237e63c71",
+  "private_session_receipts_preserved": true,
+  "recorded_stop": null,
+  "terminal_exit_code": 0,
+  "effective_model": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "duration_seconds": 49.79517576500075,
+  "native_tool_calls": 5,
+  "provider_response_records": 7,
+  "usage": {
+    "input_tokens": 205942,
+    "cached_input_tokens": 154112,
+    "output_tokens": 974,
+    "reasoning_output_tokens": 98
+  },
+  "uncached_input_tokens": 51830,
+  "attempts": [
+    "get_status",
+    "get_domain_context D2/current",
+    "read_pages required main report;3 chunked calls",
+    "Agent final documents unavailable mandatory result-account reference"
+  ],
+  "rejected_domain_submissions": 0,
+  "source_reading": "Mainreport required12 physical pages read across3 bounded deliveries. No supplement/visual/account/Domain submission was reached.",
+  "scientific_findings": "No D2/D3/D5 judgments, comparisons or scientific accuracy conclusions can be adjudicated. The demonstrated defect is mandatory instruction access under native tools-only restrictions.",
+  "focused_postfreeze_change": "Generic explicit-document instruction-delivery check; no production judgment changes and no paid retest."
+}

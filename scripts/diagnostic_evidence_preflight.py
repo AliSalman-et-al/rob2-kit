@@ -144,3 +144,30 @@ def launch_checked(
     receipt = check_manifest(manifest_path, input_path)
     receipt_path.write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     return subprocess.Popen(command, **popen_options)
+
+
+def check_instruction_delivery(
+    instructions_path: Path, required_documents: tuple[Path, ...]
+) -> dict[str, Any]:
+    """Verify explicit required documents are in the actual model instruction file.
+
+    A local skill/reference file is not accessible merely because it exists.
+    Tools-only native diagnostics must deliver needed reference content through
+    their instruction file or another verified model-visible channel. This
+    check covers caller-declared requirements, not a complete dependency graph.
+    """
+    content = instructions_path.read_bytes()
+    if not required_documents:
+        raise ValueError("instruction check requires explicit documents")
+    documents = []
+    for path in required_documents:
+        body = path.read_bytes()
+        if not body or body not in content:
+            raise ValueError(f"required instruction document not delivered: {path.name}")
+        documents.append({"name": path.name, "sha256": hashlib.sha256(body).hexdigest()})
+    return {
+        "passed": True,
+        "instructions_sha256": hashlib.sha256(content).hexdigest(),
+        "required_documents": documents,
+        "scope": "explicit instruction delivery; no complete dependency or comprehension claim",
+    }

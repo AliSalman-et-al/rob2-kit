@@ -1,0 +1,10 @@
+{
+  "authorization": "Parent closed independent architecture/fairness review and authorized exactly one native Chua prototype invocation; normal comparator unlaunched.",
+  "invocations": 1,
+  "arm": "prototype",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "manifest_sha256": "11992011f24302407ff7831bbcdf8c1782f5e4cfdc4dc4ab854a6cc7c7896f07",
+  "runner_sha256": "cddc1345f463aca86c4cde6f6cf56f83c05307dd6dc4845cc5c7dda95e26011e",
+  "criteria_sha256": "761cf57c77625bcd128108e39c3a930c9499ca3fc8c8f561696633646b404968"
+}

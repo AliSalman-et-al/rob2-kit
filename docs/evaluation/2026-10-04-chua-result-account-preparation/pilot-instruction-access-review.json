@@ -1,0 +1,9 @@
+{
+  "frozen_setup_passed": false,
+  "reason": "required instruction document not delivered: result-account.md",
+  "local_reference_existed": true,
+  "reference_sha256": "89af7af4789c6512a686a99e5bffdef0b6141aaba2eb4035acbf5a7afdff09f4",
+  "instruction_file_sha256": "692bdbde2b13e16121a6a455a19bd0092c1e9b37e77e41e23b6966bf5b021f20",
+  "model_input_changed": false,
+  "paid_retest": false
+}
