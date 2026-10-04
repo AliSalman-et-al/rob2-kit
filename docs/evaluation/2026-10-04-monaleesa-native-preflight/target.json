@@ -1,0 +1,23 @@
+{
+  "benchmark_outcome_row": {
+    "slug": "monaleesa-3",
+    "meta_id": "loncol-cdk46",
+    "primary_outcome": "Locally (investigator) assessed progression-free survival",
+    "primary_outcome_source": "Methods: The primary end point was locally assessed PFS.",
+    "anchor_as_printed": "Median progression-free survival was significantly improved with ribociclib plus fulvestrant versus placebo plus fulvestrant: 20.5 months (95% CI, 18.5 to 23.5 months) versus 12.8 months (95% CI, 10.9 to 16.3 months), respectively (hazard ratio, 0.593; 95% CI, 0.480 to 0.732; P < .001)",
+    "anchor_source": "Abstract, Results",
+    "nct": "NCT02422615",
+    "registration_other": "",
+    "notes": "JCO 2018 primary report, downloaded by Zaid by hand; no supplement files on the publisher page"
+  },
+  "outcomes_csv_sha256": "5ac71b8cad741a4bf2a8dffa68c9385fba2e73d3d41c13d64730441b14388a77",
+  "effect_of_interest": "assignment; intended all-randomized comparison, not a claim that every participant has complete outcome data",
+  "analysis_population": "726 randomized postmenopausal women, 484 versus 242; full analysis set; 210 versus 151 PFS events",
+  "definition": "Time from randomization to first documented progression or death from any cause, local investigator/radiology RECIST 1.1 assessment; event-free censored at last adequate tumor assessment",
+  "time_window": "Primary PFS analysis, data cutoff 3 November 2017; median time randomization to cutoff 20.4 months; not a fixed 20.4-month outcome",
+  "report_version": "JCO primary report, online 3 June 2018, 36:2465\u20132472, DOI10.1200/JCO.2018.78.9909; 10-page Code PDF including end matter",
+  "estimate": "HR0.593,95%CI0.480\u20130.732; group medians20.5 vs12.8months",
+  "native_article_handle": "sh_4d540ec810479a32",
+  "article_sha256": "fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+  "source_pages": "Article1(abstractanchor),2(design),3(measurement/statisticalmethods),4\u20135(cutoff/result/central-supportinganalysis); full10pages retained"
+}

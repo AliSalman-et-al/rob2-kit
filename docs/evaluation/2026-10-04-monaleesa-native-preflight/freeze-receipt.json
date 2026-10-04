@@ -1,0 +1,12 @@
+{
+  "private_root": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/monaleesa-native-preflight-20261004",
+  "freeze_sha256": "b4716a5171bb28adfaca919d8e4e8d2bc54a7b4fec937d8e20e04942b362cb0e",
+  "file_count": 50,
+  "generic_model_input_sha256": "dd46a68f565a43fb604b5513fb9c0eb3becdfd23b4449502be4eb9052f0a5fc3",
+  "evidence_bundle_sha256": "56c637984e1b49483fc5e10ba776dae79194711b92d55456814f0a3eee6baa63",
+  "manifest_sha256": "761180b4e84e65fbde068d5887c02787fbeb820ebbcb03eca9a56c0b0f5d35e7",
+  "coverage_record_count": 303,
+  "rendered_frame_count": 6,
+  "claim": "Full native evidence availability; not future model reading/delivery/comprehension",
+  "paid_model_calls": 0
+}

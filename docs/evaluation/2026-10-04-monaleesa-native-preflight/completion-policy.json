@@ -1,0 +1,25 @@
+{
+  "completion": "Normal accepted Result proposal followed by a committed supported D5 checkpoint; other domains/whole-batch finalization outside this diagnostic scope",
+  "proposal_review": "Model validates/saves its own Result selection. Host inspects the exact returned ProposalReview; approve only if target/report/result scope matches preregistration. Respond through request_proposal_approval bound to that review; retain accepted review and acknowledgment. No fake host state mutation or auto-approval of incompatible selection. No review is accepted during preparation.",
+  "continuation": "Same original Codex session only, with generic continuation to canonical actionable next_action. No fresh model retries or operator scientific hints. Each continuation preserves all transcript, tool receipts and state.",
+  "generic_continuation": "Continue the assessment in this same session using get_status and its canonical next action, following the normal rob2-kit guidance.",
+  "no_progress_boundaries": [
+    "Terminal failure with no canonical actionable repair/continuation",
+    "Same canonical head and identical unrepaired error/action across two completed generic continuations, without new evidence/search results/coverage or corrected arguments",
+    "Internal integrity/output-contract error, corrupted or changed frozen source identity, or unusable transport after canonical recovery",
+    "Model declares completion while D5 checkpoint is absent and no supported continuation remains"
+  ],
+  "supervised_alerts": [
+    "Any proposal scope mismatch or requested acquisition outside frozen corpus",
+    "Session ends before D5 commit: inspect canonical state, preserve stop, supervise generic continuation only if actionable",
+    "Repeated tool failures or reads with unchanged cursors; do not treat missing receipt/truncation as absence evidence",
+    "Usage/time anomaly: alert parent for scope/budget decision rather than silently terminate at arbitrary tool count"
+  ],
+  "no_arbitrary_cutoffs": true,
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "launcher_reference": "/home/ali/Documents/Code/rob2-kit-benchmark/fixed_campaign_runner.py",
+  "launcher_sha256": "fcbb4e40b97602e211cc0109089c6f3d4581fd2e4a2c3c437c49a7f95f349a64",
+  "launch_authorized": false,
+  "paid_calls": 0
+}

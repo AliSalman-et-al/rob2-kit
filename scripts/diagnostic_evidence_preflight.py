@@ -47,6 +47,7 @@ class EvidenceManifest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     research_question: StrictStr = Field(min_length=1)
     input_sha256: StrictStr = Field(pattern=r"^[0-9a-f]{64}$")
+    evidence_bundle_sha256: StrictStr | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     required_windows: tuple[SourceWindow, ...] = ()
     supplied_windows: tuple[SuppliedWindow, ...] = ()
     required_images: tuple[ImageFrame, ...] = ()
@@ -59,21 +60,35 @@ class EvidenceManifest(BaseModel):
         return self
 
 
-def check_manifest(manifest_path: Path, input_path: Path) -> dict[str, Any]:
-    """Fail closed for omitted required ranges or changed frozen input/manifest data."""
+def check_manifest(
+    manifest_path: Path, input_path: Path, *, evidence_bundle_path: Path | None = None
+) -> dict[str, Any]:
+    """Check frozen prompt and evidence coverage, not model reading.
+
+    Native diagnostics may keep complete tool-readable evidence in a separately
+    hashed bundle rather than paste it into the generic prompt. The runner must
+    verify that the corresponding frozen Sources remain available through MCP.
+    """
     manifest_bytes = manifest_path.read_bytes()
     manifest = EvidenceManifest.model_validate_json(manifest_bytes)
     prompt = input_path.read_bytes()
     if hashlib.sha256(prompt).hexdigest() != manifest.input_sha256:
         raise ValueError("frozen diagnostic input hash mismatch")
+    evidence = prompt
+    if (evidence_bundle_path is None) != (manifest.evidence_bundle_sha256 is None):
+        raise ValueError("separate evidence bundle requires both path and declared hash")
+    if evidence_bundle_path is not None:
+        evidence = evidence_bundle_path.read_bytes()
+        if hashlib.sha256(evidence).hexdigest() != manifest.evidence_bundle_sha256:
+            raise ValueError("frozen evidence bundle hash mismatch")
     for window in (*manifest.required_windows, *manifest.supplied_windows):
         if window.end_line < window.start_line:
             raise ValueError("invalid source line range")
     for supplied in manifest.supplied_windows:
         start, end = supplied.input_start_byte, supplied.input_end_byte
-        if not start < end <= len(prompt):
+        if not start < end <= len(evidence):
             raise ValueError("supplied source bytes outside frozen input")
-        if hashlib.sha256(prompt[start:end]).hexdigest() != supplied.text_sha256:
+        if hashlib.sha256(evidence[start:end]).hexdigest() != supplied.text_sha256:
             raise ValueError("supplied passage hash mismatch")
     for required in manifest.required_windows:
         spans = sorted(
@@ -94,9 +109,9 @@ def check_manifest(manifest_path: Path, input_path: Path) -> dict[str, Any]:
             )
     for supplied in manifest.supplied_images:
         start, end = supplied.input_start_byte, supplied.input_end_byte
-        if not start < end <= len(prompt):
+        if not start < end <= len(evidence):
             raise ValueError("supplied image bytes outside frozen input")
-        png = prompt[start:end]
+        png = evidence[start:end]
         if hashlib.sha256(png).hexdigest() != supplied.png_sha256:
             raise ValueError("supplied image hash mismatch")
         if (
@@ -116,6 +131,7 @@ def check_manifest(manifest_path: Path, input_path: Path) -> dict[str, Any]:
         "passed": True,
         "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
         "input_sha256": manifest.input_sha256,
+        "evidence_bundle_sha256": manifest.evidence_bundle_sha256,
         "required_window_count": len(manifest.required_windows),
         "supplied_window_count": len(manifest.supplied_windows),
         "required_image_count": len(manifest.required_images),
@@ -131,6 +147,7 @@ def launch_checked(
     input_path: Path,
     receipt_path: Path,
     expected_manifest_sha256: str,
+    evidence_bundle_path: Path | None = None,
     **popen_options: Any,
 ) -> subprocess.Popen:
     """The only launch point: check frozen coverage before creating the child process.
@@ -141,7 +158,7 @@ def launch_checked(
     """
     if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != expected_manifest_sha256:
         raise ValueError("preregistered evidence manifest hash mismatch")
-    receipt = check_manifest(manifest_path, input_path)
+    receipt = check_manifest(manifest_path, input_path, evidence_bundle_path=evidence_bundle_path)
     receipt_path.write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     return subprocess.Popen(command, **popen_options)
 

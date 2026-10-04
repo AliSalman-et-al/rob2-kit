@@ -1,0 +1,15 @@
+model = "gpt-6-luna"
+model_reasoning_effort = "medium"
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+web_search = "disabled"
+[mcp_servers.rob2]
+command = "/home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python"
+args = ["-m", "rob2_kit.interfaces.mcp.codex"]
+required = true
+default_tools_approval_mode = "approve"
+startup_timeout_sec = 120
+tool_timeout_sec = 180
+[mcp_servers.rob2.env]
+ROB2_WORKSPACE = "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/monaleesa-prospective-run/workspace"
+PYTHONPATH = "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/src"

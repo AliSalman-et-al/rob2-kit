@@ -192,3 +192,39 @@ def test_local_reference_is_not_delivered_until_included_in_instructions(tmp_pat
     reference.write_text("Changed operational instructions.\n")
     with pytest.raises(ValueError, match="not delivered"):
         check_instruction_delivery(instructions, (skill, reference))
+
+
+def test_separate_native_bundle_keeps_generic_prompt_and_blocks_changed_sources(tmp_path):
+    path, prompt, manifest = fixture(tmp_path)
+    bundle = tmp_path / "evidence.txt"
+    bundle.write_bytes(prompt.read_bytes())
+    prompt.write_bytes(b"Assess the result through the normal MCP workflow.")
+    manifest["input_sha256"] = hashlib.sha256(prompt.read_bytes()).hexdigest()
+    manifest["evidence_bundle_sha256"] = hashlib.sha256(bundle.read_bytes()).hexdigest()
+    path.write_text(json.dumps(manifest))
+    with patch("scripts.diagnostic_evidence_preflight.subprocess.Popen") as child:
+        launch_checked(
+            ["native-launch"],
+            manifest_path=path,
+            input_path=prompt,
+            evidence_bundle_path=bundle,
+            receipt_path=tmp_path / "receipt.json",
+            expected_manifest_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+        )
+        child.assert_called_once_with(["native-launch"])
+    assert prompt.read_bytes() == b"Assess the result through the normal MCP workflow."
+    with pytest.raises(ValueError, match="requires both"):
+        check_manifest(path, prompt)
+    bundle.write_bytes(b"Changed source")
+    with patch("scripts.diagnostic_evidence_preflight.subprocess.Popen") as child:
+        with pytest.raises(ValueError, match="evidence bundle hash mismatch"):
+            launch_checked(
+                ["native-launch"],
+                manifest_path=path,
+                input_path=prompt,
+                evidence_bundle_path=bundle,
+                receipt_path=tmp_path / "changed-receipt.json",
+                expected_manifest_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+            )
+        child.assert_not_called()
+    assert not (tmp_path / "changed-receipt.json").exists()
