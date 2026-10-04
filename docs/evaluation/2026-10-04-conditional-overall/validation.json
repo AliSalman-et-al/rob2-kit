@@ -4,7 +4,7 @@
   "proposal_vectors": 243,
   "eligible_cumulative_vectors": 26,
   "host_conclusions": ["substantially_lowers_confidence", "no_escalation", "unresolved"],
-  "final_focused_tests_passed": 64,
+  "final_focused_tests_passed": 72,
   "installed_and_standalone_verifiers": "passed",
   "historical_fixture_unchanged_verification": "passed",
   "full_source_and_tests_type_check": "passed",

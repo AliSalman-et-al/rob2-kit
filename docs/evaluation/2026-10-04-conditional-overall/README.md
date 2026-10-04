@@ -40,7 +40,11 @@ A broader local run was interrupted after 62 passes and two failures: one read
 old in-memory producer code against the concurrently updated standalone verifier;
 the other synthetic v0.6 fixture still retained new aggregation metadata. The
 historical-schema helper was corrected and both failures passed in the final
-focused run. The final relevant focused suites passed 64 tests. Full source/test
+focused run. The final relevant focused suites passed 72 distinct tests. The previous checkpoint CI had one
+missing-nested-input-description failure with 1,496 tests passing. Descriptions
+were added for the affected account and cumulative-assessment fields; all nine
+contract-budget/release checks passed (one release check overlaps the earlier
+focused suites). Full source/test
 type checking, touched-code lint and diff checks passed. No full CI wait, paid
 model invocation, benchmark case, full benchmark or merge occurred. Historical
 assessment/source files and the frozen Chua control were not changed.

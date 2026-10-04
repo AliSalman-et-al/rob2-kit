@@ -350,9 +350,13 @@ class WorkingAccountNote(StrictModel):
         description="Same Evidence references as Domain bases: selected handle, exact text "
         "range, or delivered visual transcription. Resolves original source locations.",
     )
-    scope: WorkingObservationScope | None = None
-    domain_id: DomainId | None = None
-    question_id: QuestionId | None = None
+    scope: WorkingObservationScope | None = Field(
+        default=None, description="Scope actually observed in the source."
+    )
+    domain_id: DomainId | None = Field(default=None, description="Related Domain, when known.")
+    question_id: QuestionId | None = Field(
+        default=None, description="Related signalling question, when known."
+    )
 
 
 class WorkingResultStepDraft(StrictModel):
@@ -360,18 +364,26 @@ class WorkingResultStepDraft(StrictModel):
     identity: Identity | None = Field(
         default=None, description="Returned content identity; omit when editing."
     )
-    aspect: Literal["assignment_course", "outcome_ascertainment", "analysis", "plan_report"]
-    observation: WorkingAccountNote
+    aspect: Literal["assignment_course", "outcome_ascertainment", "analysis", "plan_report"] = (
+        Field(description="Part of producing the selected Result described by this step.")
+    )
+    observation: WorkingAccountNote = Field(
+        description="Original source-grounded factual observation."
+    )
     inference: NonBlankText | None = Field(
         default=None, description="Optional host inference, not a source fact."
     )
-    counterevidence: tuple[WorkingAccountNote, ...] = ()
+    counterevidence: tuple[WorkingAccountNote, ...] = Field(
+        default=(), description="Source-grounded qualifications and counterpoints."
+    )
     unknowns: tuple[NonBlankText, ...] = Field(
         default=(),
         description="Preserve unresolved facts and qualifiers during structural repair; "
         "empty is valid.",
     )
-    counts: tuple[MissingDataRow, ...] = ()
+    counts: tuple[MissingDataRow, ...] = Field(
+        default=(), description="Optional participant-flow rows with their Evidence bases."
+    )
 
 
 class WorkingCheckpointDraft(StrictModel):
@@ -2894,10 +2906,18 @@ class ProposalReasoningDraft(StrictModel):
 class CumulativeConcernsAssessment(StrictModel):
     """Optional host assessment of the combined impact for one exact Result."""
 
-    result_identity: Identity
-    checkpoints: tuple[Identity, ...] = Field(min_length=5, max_length=5)
-    conclusion: Literal["substantially_lowers_confidence", "no_escalation", "unresolved"]
-    rationale: NonBlankText
+    result_identity: Identity = Field(description="Exact approved Result identity being assessed.")
+    checkpoints: tuple[Identity, ...] = Field(
+        min_length=5,
+        max_length=5,
+        description="Exact five current Domain checkpoint identities in pack order.",
+    )
+    conclusion: Literal["substantially_lowers_confidence", "no_escalation", "unresolved"] = Field(
+        description="Host conclusion about the combined impact on confidence in this result."
+    )
+    rationale: NonBlankText = Field(
+        description="Result-specific combined-impact rationale; retain any unresolved limitation."
+    )
 
 
 class TrialReviewRequest(StrictModel):
