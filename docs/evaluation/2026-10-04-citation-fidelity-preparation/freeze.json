@@ -1,0 +1,17 @@
+{
+  "preparation_base_sha": "12cfdd0d80de221c171c78a5faa3261fa0c36e49",
+  "model_calls": 0,
+  "control_original_code_archive": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/dapa-hf/.rob2-kit/finalized/cf82c987f84aad37506762f441b5099c01edc111f46b55a8fa07352a6e766c3b.rob2.zip",
+  "control_archive_sha256_verified": "d1774f77c85f2aeb6700222b9c56986d4a4cb5ebe8696610b91b394548f97570",
+  "artifacts": {
+    "README.md": "b3156ce4479464e3afe389467e444fdef526c4de0ba558677a5650c378f31d8f",
+    "coverage-check.json": "375e70486f5a5797b504431f42a30da7fc62e1d835052c572e3664b6db6c8967",
+    "current-review-answer.json": "0500181f821d56b3e1a4ef91dbb8396c5498d67da08d97c8681c4cd87eba66fc",
+    "evidence-manifest.json": "744ce89f7c626ec16c9f056e9703b016cce99c4e375cd35481843b06cc94cdbe",
+    "input.txt": "79620dc2b2b3b20012bfe42d5d31f10c012c667f28d75379278d9542e93b6818",
+    "preparation.json": "7901e25ccff43522263893ed7323b1079a0ffa46972dbf4ec251c8757439c9a0",
+    "prepare.py": "f67567371bcda092237b16344aa13680560611852350e30a6dce75ba00e45f79",
+    "private-criteria.md": "f353212b04c7e800cd075a3ff3e36130038bb069d91272a6f91ac495c56ca9c7",
+    "source-provenance.json": "1d0a7f63bc5d1ee8b59d9f8beb1151c13ca7f85efa016bca2b75f5076c474f62"
+  }
+}

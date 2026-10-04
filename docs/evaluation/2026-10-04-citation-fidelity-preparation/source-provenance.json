@@ -1,0 +1,808 @@
+[
+  {
+    "item": "A",
+    "group": "cited",
+    "window": {
+      "source_identity": "sh_f5de7e58b7a415fc",
+      "page": 14,
+      "start_line": 20,
+      "end_line": 45
+    },
+    "original_link": {
+      "selected_handle": "eh_324148091d5038f7",
+      "selected_identity": null,
+      "unambiguous_source_page_span": [
+        "sh_f5de7e58b7a415fc",
+        14,
+        20,
+        45
+      ],
+      "selected_record": null,
+      "original_page_receipt": {
+        "source_id": "sh_f5de7e58b7a415fc",
+        "page": 14,
+        "numbered_text": "20|Severity-Based Diagnostic Criteria for BPD\n21|Time point of assessment:\n22|36 weeks of postmenstrual age\n23|Therapy with oxygen > 21% and/or respiratory support for ≥ 28 days and the following:\n24|Mild BPD;\n25|Baby is breathing room air\n26|Moderate BPD;\n27|Baby is in 22-29% oxygen, or 0.01-1.0 L/min\n28|Severe BPD;\n29|FiO2 ≥ 0.3, or low flow oxygen ≥ 1.1 L/min, or the baby is receiving\n30|any respiratory support (ventilation, CPAP, or high flow oxygen\n31|therapy) to achieve oxygen saturation ≥ 91%\n32|FiO2 denotes the fraction of inspired oxygen and CPAP continuous positive airway pressure.\n33|The need for oxygen is subjective and hence oxygen dependency will be confirmed using an 'oxygen\n34|reduction test'. This is based on the threshold at which the baby is able to maintain oxygen\n35|saturations ≥ 91% whilst breathing in air or at a given minimum FiO2. Babies unable to achieve this\n36|will be considered to be oxygen dependent. This test will only apply to those babies whose oxygen\n37|requirements are < 0.3, or low flow oxygen < 1.1 L/min, and who have not received any additional\n38|respiratory support in the previous 24 hours. Babies outside of this will not be tested, but their\n39|oxygen requirements will be collected.\n40|\n41|[Extracted table 2]\n42||Time point of assessment:|36 weeks of postmenstrual age|\n43||---|---|\n44||Therapy with oxygen > 21% and/or respiratory support for ≥ 28 days and the following:||\n45||Mild BPD;|Baby is breathing room air|",
+        "line_count": 47,
+        "returned_start_line": 20,
+        "returned_end_line": 45,
+        "page_remainder": {
+          "source_id": "sh_f5de7e58b7a415fc",
+          "page": 14,
+          "start_line": 46,
+          "end_line": 47
+        },
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_324148091d5038f7"
+      },
+      "handle_collision_observed": false,
+      "receipt_artifact": "raw-receipts/gupta-eh_324148091d5038f7.jsonl",
+      "receipt_bytes_sha256": "bf15936da11d59355c84c58307c311d789dbcfcb0c39835bc954af6122295e98",
+      "original_trace": "docs/evaluation/2026-10-03-gupta-full-validation/turn-2.jsonl",
+      "original_trace_line": 57,
+      "original_item_id": "item_27",
+      "original_request": {
+        "trial_id": "gupta-2024",
+        "windows": [
+          {
+            "source_id": "sh_f5de7e58b7a415fc",
+            "page": 14,
+            "start_line": 20,
+            "end_line": 45
+          },
+          {
+            "source_id": "sh_f5de7e58b7a415fc",
+            "page": 15,
+            "start_line": 1,
+            "end_line": 50
+          },
+          {
+            "source_id": "sh_f5de7e58b7a415fc",
+            "page": 18,
+            "start_line": 28,
+            "end_line": 54
+          }
+        ]
+      },
+      "individual_page_locator_inside_group": true,
+      "source_metadata": {
+        "id": "sh_f5de7e58b7a415fc",
+        "trial_id": "gupta-2024",
+        "role": "supplement",
+        "label": "nejmoa2305582_appendix.pdf",
+        "logical_path": "nejmoa2305582_appendix.pdf",
+        "sha256": "sha256:97e8259cc7e1e617ae2dd1c69f37f5908c94034d70966a0b7a2955ce32802771",
+        "media_type": "application/pdf",
+        "page_count": 30,
+        "projection_hash": "sha256:deba28941be66d40a9a2b5c686b31424eb751d41796e1fd47b619cc02c81def2",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      }
+    }
+  },
+  {
+    "item": "A",
+    "group": "cited",
+    "window": {
+      "source_identity": "sh_ec3fcba1a06e0ddc",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 102
+    },
+    "original_link": {
+      "selected_handle": "eh_664cb2e87a63db02",
+      "selected_identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a",
+      "unambiguous_source_page_span": [
+        "sh_ec3fcba1a06e0ddc",
+        3,
+        1,
+        102
+      ],
+      "selected_record": {
+        "kind": "narrative",
+        "handle": "eh_664cb2e87a63db02",
+        "identity": "sha256:664cb2e87a63db0225051f943aee171241fbdfcb7a95c402cf6bf0cf831b1d0a",
+        "trial_id": "gupta-2024",
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "source_version": null,
+        "page": 3,
+        "start_line": 1,
+        "end_line": 102,
+        "start": null,
+        "end": null,
+        "quote": null,
+        "inclusion_reason": null,
+        "domain_id": null,
+        "question_id": null,
+        "search_session": null,
+        "candidate_rank": null,
+        "returned_previously": null,
+        "text_status": "omitted",
+        "recovery": {
+          "operation": "read_pages",
+          "trial_id": "gupta-2024",
+          "windows": [
+            {
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 102
+            }
+          ]
+        }
+      },
+      "original_page_receipt": {
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "page": 3,
+        "numbered_text": "1|n engl j med 390;4 nejm.org January 25, 2024\n2|316\n3|The new engl and jour nal of medicine\n4|Randomization\n5|Dynamic randomization was performed with a\n6|secure Web-based system that was created and\n7|hosted by the NPEU Clinical Trials Unit with\n8|24/7 telephone backup, ensuring concealment of\n9|the group assignments. The randomization pro-\n10|gram used a probabilistic minimization algorithm\n11|and assigned patients in a 1:1 ratio to one of the\n12|two groups to ensure balance with respect to the\n13|size of the PDA, gestational age at birth, age, sex,\n14|trial site, whether the infant was from a multiple\n15|birth, mode of respiratory support, and whether\n16|inotropes were received. Infants in multiple births\n17|underwent randomization individually. Partici-\n18|pants were enrolled by the delegated clinician at\n19|the trial site.14\n20|Intervention and Trial Procedures\n21|The trial intervention was ibuprofen sodium,\n22|and the matched placebo was a clear sterile solu-\n23|tion of 0.9% sodium chloride. Each carton con-\n24|taining ibuprofen or placebo was labeled with a\n25|unique code in compliance with the guidance\n26|provided in annex 13 of the European Commis-\n27|sion guidelines for Good Manufacturing Prac-\n28|tice. Ibuprofen was administered parenterally as\n29|a loading dose of 10 mg per kilogram of body\n30|weight, followed by two doses of 5 mg per kilo-\n31|gram at least 24 hours apart. Placebo was ad-\n32|ministered as an equal volume of 0.9% sodium\n33|chloride (Table S2). Only one course of ibuprofen\n34|or placebo was given. Prespecified criteria for\n35|open-label medical or surgical treatment after\n36|enrollment are shown in Table S3.\n37|Transthoracic echocardiography was performed\n38|to assess eligibility within 72 hours after birth\n39|and at 3 weeks (18 to 24 days) of age to assess the\n40|patency of the PDA while minimizing open-label\n41|treatment. For quality control, a sample of echo-\n42|cardiograms from 65 infants was reviewed inde-\n43|pendently by a pediatric echocardiographer who\n44|was unaware of the treatment assignments.\n45|Outcomes\n46|The primary outcome was a composite of death\n47|or moderate or severe bronchopulmonary dyspla-\n48|sia assessed at 36 weeks of postmenstrual age15\n49|(Tables S4 and S5). A physiological challenge of\n50|supplemental oxygen reduction was used to test\n51|for oxygen need at 36 weeks of postmenstrual\n52|age16 to differentiate mild from moderate bron-\n53|chopulmonary dysplasia (Fig. S1). Secondary\n54|short-term outcomes up to the time of discharge\n55|included individual components of the primary\n56|outcome, the severity of bronchopulmonary dys-\n57|plasia, severe intraventricular hemorrhage, cystic\n58|periventricular leukomalacia, retinopathy of pre-\n59|maturity requiring treatment, clinically signifi-\n60|cant pulmonary hemorrhage, acute pulmonary\n61|hypertension, definitive necrotizing enterocoli-\n62|tis, closed or clinically nonsignificant PDA less\n63|than 1.5 mm in diameter with restricted flow at\n64|3 weeks age, open-label treatment of a PDA caus-\n65|ing symptoms, weight gain, and discharge home\n66|while receiving supplemental oxygen (Table\n67|S5).14 Other secondary short-term outcomes are\n68|listed in the Supplementary Appendix and in the\n69|statistical analysis plan (available with the pro-\n70|tocol).17 All outcome data were recorded rou-\n71|tinely, including demographic data and compli-\n72|cations of prematurity; these data were obtained\n73|from clinical notes or trial-related assessments\n74|(Table S6).\n75|A list of foreseeable serious adverse events\n76|that are common in this patient population was\n77|prespecified (see section 9.1.4 in the protocol);\n78|unforeseeable serious adverse events were de-\n79|fined as those that were not included on this\n80|list. A serious adverse reaction was defined as a\n81|serious adverse event that was considered to\n82|have been caused by the administration of the\n83|trial agent; if such an event was not consistent\n84|with the safety profile of the trial agent, it was\n85|classed as a suspected unexpected serious ad-\n86|verse reaction.14\n87|Statistical Analysis\n88|The incidence of the primary outcome was pre-\n89|dicted to be 60% in the placebo group (see Sup-\n90|plementary Methods). A sample of 730 infants was\n91|calculated to be required in order to detect a\n92|clinically important absolute risk reduction of 12\n93|percentage points (i.e., an incidence of 60% in\n94|the placebo group and an incidence of 48% in the\n95|ibuprofen group) with 90% power and a type I\n96|error of 5% under the assumption that 1% of in-\n97|fants would be lost to follow-up.14\n98|Analyses were performed according to the\n99|intention-to-treat principle, with infants exclud-\n100|ed from the analysis only if their data were miss-\n101|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\n102|Downloaded from nejm.org on September 23, 2026.",
+        "line_count": 102,
+        "returned_start_line": 1,
+        "returned_end_line": 102,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_664cb2e87a63db02"
+      },
+      "handle_collision_observed": false,
+      "receipt_artifact": "raw-receipts/gupta-eh_664cb2e87a63db02.jsonl",
+      "receipt_bytes_sha256": "a2c2743dc9a53fdf9627bcbba17df672f1f7ac12bc32f2435a3edd63a0d1726c",
+      "original_trace": "docs/evaluation/2026-10-03-gupta-full-validation/turn-1.jsonl",
+      "original_trace_line": 11,
+      "original_item_id": "item_4",
+      "original_request": {
+        "trial_id": "gupta-2024",
+        "windows": [
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 81
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 102
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 102
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 105
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 147
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 125
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 125
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 121
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 99
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 105
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 166
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 32
+          }
+        ]
+      },
+      "individual_page_locator_inside_group": true,
+      "source_metadata": {
+        "id": "sh_ec3fcba1a06e0ddc",
+        "trial_id": "gupta-2024",
+        "role": "main_article",
+        "label": "NEJMoa2305582.pdf",
+        "logical_path": "NEJMoa2305582.pdf",
+        "sha256": "sha256:9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4",
+        "media_type": "application/pdf",
+        "page_count": 12,
+        "projection_hash": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "origin": "local_dossier",
+        "declared_role": "main_article"
+      }
+    }
+  },
+  {
+    "item": "A",
+    "group": "cited",
+    "window": {
+      "source_identity": "sh_ec3fcba1a06e0ddc",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 125
+    },
+    "original_link": {
+      "selected_handle": "eh_d6d5b2bf301983ce",
+      "selected_identity": "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b",
+      "unambiguous_source_page_span": [
+        "sh_ec3fcba1a06e0ddc",
+        6,
+        1,
+        125
+      ],
+      "selected_record": {
+        "kind": "narrative",
+        "handle": "eh_d6d5b2bf301983ce",
+        "identity": "sha256:d6d5b2bf301983ceb56979492c656d6f80d3d2806a5edff73eca2ced2e363a6b",
+        "trial_id": "gupta-2024",
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "source_version": null,
+        "page": 6,
+        "start_line": 1,
+        "end_line": 125,
+        "start": null,
+        "end": null,
+        "quote": null,
+        "inclusion_reason": null,
+        "domain_id": null,
+        "question_id": null,
+        "search_session": null,
+        "candidate_rank": null,
+        "returned_previously": null,
+        "text_status": "omitted",
+        "recovery": {
+          "operation": "read_pages",
+          "trial_id": "gupta-2024",
+          "windows": [
+            {
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 125
+            }
+          ]
+        }
+      },
+      "original_page_receipt": {
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "page": 6,
+        "numbered_text": "1|n engl j med 390;4 nejm.org January 25, 2024\n2|319\n3|Early Treatment of PDA with Ibuprofen\n4|Table 2. Primary and Secondary Outcomes.\n5|Outcome\n6|Ibuprofen\n7|(N = 324)\n8|Placebo\n9|(N = 322)\n10|Unadjusted Risk Ratio\n11|(95% CI)\n12|Adjusted Risk Ratio\n13| (95% CI)*\n14|Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed\n15|at 36 wk of postmenstrual age - no./total no. (%)†\n16|220/318 (69.2)\n17|202/318 (63.5)\n18|1.09 (0.97-1.22)\n19|1.09 (0.98-1.20)‡\n20|Secondary outcomes\n21|Death by 36 wk of postmenstrual age - no./total no. (%)\n22|44/323 (13.6)\n23|33/321 (10.3)\n24|1.33 (0.87-2.02)\n25|1.32 (0.92-1.90)\n26|Survival to 36 wk of postmenstrual age - no. of infants\n27|280\n28|289\n29|Moderate or severe bronchopulmonary dysplasia at 36 wk of postmenstrual age -\n30|no./total no. (%)\n31|176/274 (64.2)\n32|169/285 (59.3)\n33|1.08 (0.95-1.23)\n34|1.09 (0.96-1.23)\n35|Any intraventricular hemorrhage - no. (%)\n36|137 (42.3)\n37|132 (41.0)\n38|Grade I or II without ventricular dilatation\n39|92 (28.4)\n40|98 (30.4)\n41|Grade III or IV with ventricular dilatation or intraparenchymal abnormality§\n42|45 (13.9)\n43|34 (10.6)\n44|1.32 (0.87-2.00)\n45|1.30 (0.93-1.82)\n46|Cystic periventricular leukomalacia - no. (%)\n47|15 (4.6)\n48|9 (2.8)\n49|1.66 (0.74-3.73)\n50|1.62 (0.69-3.83)\n51|Treatment for retinopathy of prematurity in at least one eye - no. (%)\n52|45 (13.9)\n53|45 (14.0)\n54|0.99 (0.68-1.46)\n55|0.98 (0.68-1.42)\n56|Clinically significant pulmonary hemorrhage - no./total no. (%)¶\n57|24/322 (7.5)\n58|18/322 (5.6)\n59|1.33 (0.74-2.41)\n60|1.39 (0.70-2.77)\n61|Treatment for acute pulmonary hypertension with pulmonary vasodilator - no. (%)\n62|17 (5.2)\n63|16 (5.0)\n64|1.05 (0.54-2.05)\n65|1.04 (0.51-2.13)\n66|Severe necrotizing enterocolitis - no./total no. (%)‖\n67|41/323 (12.7)\n68|41/322 (12.7)\n69|1.00 (0.67-1.49)\n70|1.01 (0.67-1.51)\n71|PDA closed or <1.5 mm at 3 wk of age, confirmed by echocardiography -\n72|no./total no. (%)**\n73|176/317 (55.5)\n74|117/316 (37.0)\n75|1.50 (1.26-1.79)\n76|1.50 (1.30-1.74)\n77|PDA ≥1.5 mm at 3 wk of age, not treated medically or by surgical closure -\n78|no./total no. (%)**\n79|74/321 (23.1)\n80|109/317 (34.4)\n81|0.67 (0.52-0.86)\n82|0.67 (0.53-0.85)\n83|Open-label surgical treatment of a symptomatic PDA - no. (%)\n84|9 (2.8)\n85|31 (9.6)\n86|0.29 (0.14-0.60)\n87|0.29 (0.18-0.47)\n88|Discharged home with supplemental oxygen - no. (%)\n89|130 (41.3)\n90|123 (39.2)\n91|1.05 (0.87-1.27)\n92|1.06 (0.92-1.22)\n93|Weight gain\n94|No. of infants with data\n95|257\n96|265\n97|Mean change in z score between birth and discharge\n98|-1.0±1.0\n99|-1.1±1.0\n100|0.1 (-0.1 to 0.2)††\n101|0.1 (-0.1 to 0.2)††\n102|* Adjusted for minimization factors (size of the PDA, gestational age at birth, age at randomization, sex, trial site, whether the infant was from a multiple birth, mode of respiratory sup-\n103|port at randomization, and whether inotropes were received at the time of randomization) and the correlation between siblings from multiple births, where technically possible. Trial\n104|site was treated as a random effect in the models, and all other factors as fixed effects.\n105|† In the placebo group, 1 infant was withdrawn before 36 weeks and 3 did not have information on oxygen requirement available at 36 weeks. In the ibuprofen group, 1 infant was lost\n106|to follow-up before 36 weeks and 5 did not have information on oxygen requirement available at approximately 36 weeks.\n107|‡ P = 0.10.\n108|§\n109| Severe intraventricular hemorrhage was defined as grade III or IV.\n110|¶ Fresh blood in endotracheal tube with increase in respiratory support.\n111|‖\n112| Severe necrotizing enterocolitis was defined as Bell's stage II or higher as confirmed by radiography, histopathological analysis, or both. Stages in the Bell classification system for\n113|necrotizing enterocolitis range from I to III, with higher stages indicating more severe illness.\n114|** Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA.\n115|†† Value is the mean difference (95% confidence interval).\n116|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\n117|Downloaded from nejm.org on September 23, 2026.\n118|\n119|[Extracted table 1]\n120||Table 2. Primary and Secondary Outcomes.|Ibuprofen Placebo Unadjusted Risk Ratio Adjusted Risk Ratio Outcome (N = 324) (N = 322) (95% CI) (95% CI)*|1.09 (0.98-1.20)‡|Secondary outcomes|1.32 (0.92-1.90)|Survival to 36 wk of postmenstrual age - no. of infants 280 289|1.09 (0.96-1.23)|Any intraventricular hemorrhage - no. (%) 137 (42.3) 132 (41.0)||Grade III or IV with ventricular dilatation or intraparenchymal abnormality§ 45 (13.9) 34 (10.6) 1.32 (0.87-2.00) 1.30 (0.93-1.82)|1.62 (0.69-3.83)|Treatment for retinopathy of prematurity in at least one eye - no. (%) 45 (13.9) 45 (14.0) 0.99 (0.68-1.46) 0.98 (0.68-1.42)|1.39 (0.70-2.77)|Treatment for acute pulmonary hypertension with pulmonary vasodilator - no. (%) 17 (5.2) 16 (5.0) 1.05 (0.54-2.05) 1.04 (0.51-2.13)|1.01 (0.67-1.51)|PDA closed or <1.5 mm at 3 wk of age, confirmed by echocardiography - 176/317 (55.5) 117/316 (37.0) 1.50 (1.26-1.79) 1.50 (1.30-1.74) no./total no. (%)**|0.67 (0.53-0.85)|Open-label surgical treatment of a symptomatic PDA - no. (%) 9 (2.8) 31 (9.6) 0.29 (0.14-0.60) 0.29 (0.18-0.47)|1.06 (0.92-1.22)|Weight gain||Mean change in z score between birth and discharge -1.0±1.0 -1.1±1.0 0.1 (-0.1 to 0.2)†† 0.1 (-0.1 to 0.2)††|\n121||---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n122||||1.09 (0.97-1.22)||1.33 (0.87-2.02)||1.08 (0.95-1.23)||||1.66 (0.74-3.73)||1.33 (0.74-2.41)||1.00 (0.67-1.49)||0.67 (0.52-0.86)||1.05 (0.87-1.27)||||\n123||||202/318 (63.5)||33/321 (10.3)||169/285 (59.3)||98 (30.4)||9 (2.8)||18/322 (5.6)||41/322 (12.7)||109/317 (34.4)||123 (39.2)||265||\n124||||220/318 (69.2)||44/323 (13.6)||176/274 (64.2)||92 (28.4)||15 (4.6)||24/322 (7.5)||41/323 (12.7)||74/321 (23.1)||130 (41.3)||257||\n125||||Primary outcome: death or moderate or severe bronchopulmonary dysplasia assessed at 36 wk of postmenstrual age - no./total no. (%)†||Death by 36 wk of postmenstrual age - no./total no. (%)||Moderate or severe bronchopulmonary dysplasia at 36 wk of postmenstrual age - no./total no. (%)||Grade I or II without ventricular dilatation||Cystic periventricular leukomalacia - no. (%)||Clinically significant pulmonary hemorrhage - no./total no. (%)¶||Severe necrotizing enterocolitis - no./total no. (%)‖||PDA ≥1.5 mm at 3 wk of age, not treated medically or by surgical closure - no./total no. (%)**||Discharged home with supplemental oxygen - no. (%)||No. of infants with data||",
+        "line_count": 125,
+        "returned_start_line": 1,
+        "returned_end_line": 125,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_d6d5b2bf301983ce"
+      },
+      "handle_collision_observed": false,
+      "receipt_artifact": "raw-receipts/gupta-eh_d6d5b2bf301983ce.jsonl",
+      "receipt_bytes_sha256": "9f409044e770aa87080af5b5299751e44835c8528aa20f528fba37187fbc7fa5",
+      "original_trace": "docs/evaluation/2026-10-03-gupta-full-validation/turn-1.jsonl",
+      "original_trace_line": 13,
+      "original_item_id": "item_5",
+      "original_request": {
+        "trial_id": "gupta-2024",
+        "windows": [
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 5,
+            "start_line": 104,
+            "end_line": 147
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 125
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 125
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 121
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 99
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 105
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 166
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 32
+          }
+        ]
+      },
+      "individual_page_locator_inside_group": true,
+      "source_metadata": {
+        "id": "sh_ec3fcba1a06e0ddc",
+        "trial_id": "gupta-2024",
+        "role": "main_article",
+        "label": "NEJMoa2305582.pdf",
+        "logical_path": "NEJMoa2305582.pdf",
+        "sha256": "sha256:9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4",
+        "media_type": "application/pdf",
+        "page_count": 12,
+        "projection_hash": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "origin": "local_dossier",
+        "declared_role": "main_article"
+      }
+    }
+  },
+  {
+    "item": "A",
+    "group": "other_available",
+    "window": {
+      "source_identity": "sh_ec3fcba1a06e0ddc",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 125
+    },
+    "original_link": {
+      "selected_handle": "eh_49ac77da50b0bd19",
+      "selected_identity": "sha256:49ac77da50b0bd19c43adc74202d1f068e9f3735229e69b8fc010288cca9c97b",
+      "unambiguous_source_page_span": [
+        "sh_ec3fcba1a06e0ddc",
+        7,
+        1,
+        125
+      ],
+      "selected_record": {
+        "kind": "narrative",
+        "handle": "eh_49ac77da50b0bd19",
+        "identity": "sha256:49ac77da50b0bd19c43adc74202d1f068e9f3735229e69b8fc010288cca9c97b",
+        "trial_id": "gupta-2024",
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "source_version": null,
+        "page": 7,
+        "start_line": 1,
+        "end_line": 125,
+        "start": null,
+        "end": null,
+        "quote": null,
+        "inclusion_reason": null,
+        "domain_id": null,
+        "question_id": null,
+        "search_session": null,
+        "candidate_rank": null,
+        "returned_previously": null,
+        "text_status": "omitted",
+        "recovery": {
+          "operation": "read_pages",
+          "trial_id": "gupta-2024",
+          "windows": [
+            {
+              "source_id": "sh_ec3fcba1a06e0ddc",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 125
+            }
+          ]
+        }
+      },
+      "original_page_receipt": {
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "page": 7,
+        "numbered_text": "1|n engl j med 390;4 nejm.org January 25, 2024\n2|320\n3|The new engl and jour nal of medicine\n4|(Fig. 1). Parental consent to use the data from\n5|7 infants was withdrawn, which left data from\n6|324 infants in the ibuprofen group and 322 in\n7|the placebo group available for outcome analy-\n8|ses (Fig. 1). Data that were required to assess the\n9|primary outcome were missing for an additional\n10|10 infants, and therefore assessment of the pri-\n11|mary outcome was possible for 318 infants (97.5%)\n12|in the ibuprofen group and 318 (97.2%) in the\n13|placebo group.\n14|Outcomes\n15|A primary-outcome event (death or moderate or\n16|severe bronchopulmonary dysplasia assessed at\n17|Table 3. Process Outcomes.\n18|Outcome\n19|Ibuprofen\n20|(N = 324)\n21|Placebo\n22|(N = 322)\n23|Did not receive assigned intervention - no. (%)\n24|7 (2.2)\n25|11 (3.4)\n26|Did not receive all doses of ibuprofen or placebo - no. (%)\n27|41 (12.7)\n28|34 (10.6)\n29|Doses received - no. (%)\n30|0\n31|7 (2.2)\n32|9 (2.8)\n33|1\n34|17 (5.2)\n35|11 (3.4)\n36|2\n37|17 (5.2)\n38|14 (4.3)\n39|3\n40|283 (87.3)\n41|288 (89.4)\n42|Reason for early discontinuation - no./total no. (%)*\n43|Clinical decision\n44|38/41 (92.7)\n45|26/34 (76.5)\n46|Parental request\n47|0\n48|1/34 (2.9)\n49|Infant death\n50|2/41 (4.9)\n51|2/34 (5.9)\n52|Missed dose or doses in error\n53|1/41 (2.4)\n54|2/34 (5.9)\n55|Intervention window outside of trial period\n56|0\n57|2/34 (5.9)\n58|Transfer out of recruiting site\n59|0\n60|1/34 (2.9)\n61|Median age at first dose (IQR) - hr†\n62|61 (47-68)\n63|61 (48-69)\n64|Distribution of median age at first dose - no. (%)\n65|0 to <24 hr\n66|14/316 (4.4)\n67|14/313 (4.5)\n68|24 to <48 hr\n69|68/316 (21.5)\n70|65/313 (20.8)\n71|48 to <72 hr\n72|220/316 (69.6)\n73|225/313 (71.9)\n74|≥72 hr\n75|14/316 (4.4)\n76|9/313 (2.9)\n77|Received second or third dose outside of dosing window -\n78|no./total no. (%)\n79|5/297 (1.7)\n80|4/301 (1.3)\n81|Echocardiography not performed at 3 wk of age - no./total no.\n82|(%)‡\n83|65/291 (22.3)\n84|60/301 (19.9)\n85|Oxygen reduction test not performed when infant was eligible\n86|- no./total no. (%)§\n87|13/86 (15.1)\n88|13/94 (13.8)\n89|* Early discontinuation was defined as discontinuation when fewer than three doses had been received.\n90|† The median was assessed among infants who had received at least one dose.\n91|‡ Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA;\n92|infants who died before the 3-week echocardiogram could be obtained were excluded (33 infants in the ibuprofen group\n93|and 21 in the placebo group).\n94|§ Denominators are the numbers of infants who were eligible for the test.\n95|The New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\n96|Downloaded from nejm.org on September 23, 2026.\n97|\n98|[Extracted table 1]\n99||Column 1|Column 2|Column 3|\n100||---|---|---|\n101||Table 3. Process Outcomes.|||\n102||Ibuprofen Placebo<br>Outcome (N = 324) (N = 322)|||\n103||Did not receive assigned intervention - no. (%)|7 (2.2)|11 (3.4)|\n104||Did not receive all doses of ibuprofen or placebo - no. (%) 41 (12.7) 34 (10.6)|||\n105||Doses received - no. (%)|||\n106||0 7 (2.2) 9 (2.8)|||\n107||1|17 (5.2)|11 (3.4)|\n108||2 17 (5.2) 14 (4.3)|||\n109||3|283 (87.3)|288 (89.4)|\n110||Reason for early discontinuation - no./total no. (%)*|||\n111||Clinical decision|38/41 (92.7)|26/34 (76.5)|\n112||Parental request 0 1/34 (2.9)|||\n113||Infant death|2/41 (4.9)|2/34 (5.9)|\n114||Missed dose or doses in error 1/41 (2.4) 2/34 (5.9)|||\n115||Intervention window outside of trial period|0|2/34 (5.9)|\n116||Transfer out of recruiting site 0 1/34 (2.9)|||\n117||Median age at first dose (IQR) - hr†|61 (47-68)|61 (48-69)|\n118||Distribution of median age at first dose - no. (%)|||\n119||0 to <24 hr|14/316 (4.4)|14/313 (4.5)|\n120||24 to <48 hr 68/316 (21.5) 65/313 (20.8)|||\n121||48 to <72 hr|220/316 (69.6)|225/313 (71.9)|\n122||≥72 hr 14/316 (4.4) 9/313 (2.9)|||\n123||Received second or third dose outside of dosing window -<br>no./total no. (%)|5/297 (1.7)|4/301 (1.3)|\n124||Echocardiography not performed at 3 wk of age - no./total no. 65/291 (22.3) 60/301 (19.9)<br>(%)‡|||\n125||Oxygen reduction test not performed when infant was eligible<br>- no./total no. (%)§|13/86 (15.1)|13/94 (13.8)|",
+        "line_count": 125,
+        "returned_start_line": 1,
+        "returned_end_line": 125,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_49ac77da50b0bd19"
+      },
+      "handle_collision_observed": false,
+      "receipt_artifact": "raw-receipts/gupta-correct-source-eh_49ac77da50b0bd19.jsonl",
+      "receipt_bytes_sha256": "9f409044e770aa87080af5b5299751e44835c8528aa20f528fba37187fbc7fa5",
+      "original_trace": "docs/evaluation/2026-10-03-gupta-full-validation/turn-1.jsonl",
+      "original_trace_line": 13,
+      "original_item_id": "item_5",
+      "original_request": {
+        "trial_id": "gupta-2024",
+        "windows": [
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 5,
+            "start_line": 104,
+            "end_line": 147
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 125
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 125
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 121
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 99
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 105
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 166
+          },
+          {
+            "source_id": "sh_ec3fcba1a06e0ddc",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 32
+          }
+        ]
+      },
+      "individual_page_locator_inside_group": true
+    }
+  },
+  {
+    "item": "B",
+    "group": "cited",
+    "window": {
+      "source_identity": "source_62c074c3ab8e1f2f6e7ce168bd43ca92a8947a93c5de8e0ca594938d9cef3ca6",
+      "page": 161,
+      "start_line": 16,
+      "end_line": 20
+    },
+    "original_link": {
+      "selected_handle": "eh_e8f90c585b8de93c",
+      "selected_identity": "sha256:e8f90c585b8de93cca01bf3c909836ff158f6aa2b20e30ff731feff11d001c5e",
+      "original_page_receipt": {
+        "source_id": "source_62c074c3ab8e1f2f6e7ce168bd43ca92a8947a93c5de8e0ca594938d9cef3ca6",
+        "page": 161,
+        "returned_start_line": 16,
+        "returned_end_line": 20,
+        "numbered_text": "16|A comprehensive Statistical Analysis Plan (SAP) will be developed prior to first patient\n17|randomised and any subsequent amendments will be documented, with final amendments\n18|completed prior to unblinding of the data.\n19|The results of the key study outcome will be independently validated by an external statistical\n20|team."
+      }
+    }
+  },
+  {
+    "item": "C",
+    "group": "cited",
+    "window": {
+      "source_identity": "sh_bcf70e5423c2d8ef",
+      "page": 192,
+      "start_line": 1,
+      "end_line": 43
+    },
+    "original_link": {
+      "selected_handle": "eh_ba952ae2a3f96ebd",
+      "selected_identity": null,
+      "unambiguous_source_page_span": [
+        "sh_bcf70e5423c2d8ef",
+        192,
+        1,
+        43
+      ],
+      "selected_record": null,
+      "original_page_receipt": {
+        "source_id": "sh_bcf70e5423c2d8ef",
+        "page": 192,
+        "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|25\n6|The contribution of each component of the primary composite safety/efficacy endpoint to the\n7|overall treatment effect will be examined.\n8|Event rates of the primary composite CV endpoint will be estimated and Kaplan-Meier curves\n9|will be plotted for the time from randomization to first occurrence of the primary composite\n10|CV endpoint, by treatment group and prior CV risk at randomization based on IVRS.\n11|Homogeneity of the effect of treatment on the components of the primary safety/efficacy CV\n12|composite endpoint will be assessed using the method proposed by Lunn and McNeil9 (1995).\n13|Briefly, this method requires augmenting the analysis dataset by including one observation per\n14|component of the CV composite per subject, with an additional variable indicating the type of\n15|the potential event (CV-related death, nonfatal MI, nonfatal stroke). If a patient experienced\n16|an event which counted as the first instance of the CV composite endpoint, the event status\n17|for that event will be one and it will be zero for the other two types of events, which will be\n18|censored at the time the first event occurred. If a patient did not have CV composite endpoint,\n19|event status will be zero for all three component types of events. For example, if a patient had\n20|nonfatal MI on day 270 which counted as his first occurrence of the CV composite, he would\n21|have three observations in the analysis dataset: 1) type=nonfatal MI, status=1, time=270; 2)\n22|type=nonfatal stroke, status=0, time=270; 3) type=CV death, status=0, time=270. The\n23|augmented dataset will be analyzed using Cox regression with (time, status) as response\n24|variables and event type, treatment and treatment by event type interaction as covariates. To\n25|account for the use of multiple observations per subject in the analysis, Lin-Wei robust\n26|sandwich variance3 will be used. The test of treatment by event type interaction will be the test\n27|of homogeneity of treatment effect on the components of the CV composite endpoint. Hazard\n28|ratios and 95% CIs for treatment effect on each component of the primary endpoint will be\n29|produced.\n30|4.5.1.1\n31|Primary Safety Analysis: Non-inferiority of EQW versus Placebo\n32|To determine whether EQW is non-inferior to placebo, a non-inferiority margin of 1.30 in\n33|terms of hazard ratio with respect to developing the primary composite CV endpoint will be\n34|used.\n35|The primary safety hypothesis (H1) is defined as:\n36|H0: HR ≥ 1.3 vs. H1: HR < 1.3\n37|The hypothesis of non-inferiority will be tested at a one-sided significance level of 0.02495 in\n38|the ITT population using a Cox Proportional Hazards model which includes treatment as\n39|explanatory factor with prior CV event at randomization based on IVRS as a stratification\n40|factor. The two-sided 95% confidence interval for the hazard ratio of EQW to placebo will be\n41|estimated. If the upper limit of the two-sided confidence interval for the estimated HR for the\n42|stratified Cox model is below the non-inferiority margin of 1.30 then non-inferiority of the\n43|191",
+        "line_count": 43,
+        "returned_start_line": 1,
+        "returned_end_line": 43,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_ba952ae2a3f96ebd"
+      },
+      "handle_collision_observed": false,
+      "receipt_artifact": "raw-receipts/exscel-eh_ba952ae2a3f96ebd.jsonl",
+      "receipt_bytes_sha256": "a429c4dea744e7c3289d1cb2eb8c80b883fc45698fe39ce4f25844fed319dbc8",
+      "original_trace": "docs/evaluation/2026-10-03-exscel-host-recovery/turn-0.events.jsonl",
+      "original_trace_line": 69,
+      "original_item_id": "item_33",
+      "original_request": {
+        "trial_id": "exscel",
+        "windows": [
+          {
+            "source_id": "sh_bcf70e5423c2d8ef",
+            "page": 191,
+            "start_line": 28,
+            "end_line": 48
+          },
+          {
+            "source_id": "sh_bcf70e5423c2d8ef",
+            "page": 192,
+            "start_line": 1,
+            "end_line": 43
+          },
+          {
+            "source_id": "sh_bcf70e5423c2d8ef",
+            "page": 193,
+            "start_line": 1,
+            "end_line": 43
+          }
+        ]
+      },
+      "individual_page_locator_inside_group": true,
+      "source_metadata": {
+        "id": "sh_bcf70e5423c2d8ef",
+        "trial_id": "exscel",
+        "role": "supplement",
+        "label": "nejmoa1612917_protocol.pdf",
+        "logical_path": "nejmoa1612917_protocol.pdf",
+        "sha256": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+        "media_type": "application/pdf",
+        "page_count": 208,
+        "projection_hash": "sha256:5482a03c26ec6529b9d8c7dc2e0f56abb6a3e60fa8ce83005223570c439276f9",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      }
+    }
+  },
+  {
+    "item": "C",
+    "group": "cited",
+    "window": {
+      "source_identity": "sh_bcf70e5423c2d8ef",
+      "page": 187,
+      "start_line": 1,
+      "end_line": 45
+    },
+    "original_link": {
+      "selected_handle": "eh_776250d728c5dc52",
+      "selected_identity": null,
+      "unambiguous_source_page_span": [
+        "sh_bcf70e5423c2d8ef",
+        187,
+        1,
+        45
+      ],
+      "selected_record": null,
+      "original_page_receipt": {
+        "source_id": "sh_bcf70e5423c2d8ef",
+        "page": 187,
+        "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|20\n6|1. Non-inferiority test for the primary composite CV endpoint (alpha= 0.02495 1-sided)\n7|2. Superiority test for the primary composite CV endpoint (alpha= 0.02495 1-sided)\n8|3. Superiority test for secondary efficacy endpoint of all-cause death (alpha= 0.02495 1-\n9|sided)\n10|4. Superiority test for secondary efficacy endpoints: CV-related death, MI, and stroke\n11|(alpha= 0.02495 1-side): The hypothesis for these three secondary efficacy endpoints\n12|(null hypothesis is denoted as H0[41], H0[42], H0[43],) will be tested at one-sided 0.02495\n13|level by using the Hochberg procedure2, which proceeds as follows:\n14|\n15|Ordering the raw p-values (one-sided) such that p(1)≤ p(2) ≤ p(3)\n16|\n17|Step 1. If p(3) < 0.02495, reject H0[4i], i = 1,2,3 and stop; otherwise go to Step 2.\n18|\n19|Step 2. If p(2) < 0.02495/2, reject H0[4i], i = 1,2 and stop; otherwise go to Step 3.\n20|\n21|Step 3. If p(1) < 0.02495/3 reject H0[4i], i = 1.\n22|5. If superiority tests for all three secondary efficacy endpoints in number 4 are met,\n23|proceed with superiority test for secondary endpoints: hospitalization for acute\n24|coronary syndrome and hospitalization for heart failure. The hypothesis for these two\n25|secondary efficacy endpoints (null hypothesis is denoted as H0[51], H0[52],) will be tested\n26|at one-sided 0.02495 level by using the same Hochberg procedure as described above.\n27|Non-inferiority will be tested only at the completion of the study. Secondary endpoints will\n28|only be tested once, at the completion of the trial or if the decision is made to terminate the\n29|trial early. If the study terminates early for superiority, the key secondary endpoints of CV\n30|death, MI, stroke and all-cause mortality will be tested at the same significance level as the\n31|primary endpoint in the interim analysis using the hierarchical test strategy. Additional\n32|efficacy endpoints will be tested at the 2-sided 0.05 level.\n33|4.1.2\n34|Censoring\n35|4.1.2.1\n36|Censoring Scheme\n37|Primary Censoring Scheme: in time-to-event analyses in the ITT population, patients will be\n38|censored at the earliest of: 1) date of last contact where all elements of the endpoint could be\n39|assessed, and 2) the right censoring date. The conclusions regarding non-inferiority or\n40|superiority will be based on the analyses using this censoring scheme. Patients without any\n41|assessment of the endpoint will be censored at randomization.\n42|On-treatment Censoring Scheme: in the on-treatment time-to-event analyses, patients will be\n43|censored at the earliest of: 1) date of last contact where all elements of the endpoint could be\n44|\n45|186",
+        "line_count": 45,
+        "returned_start_line": 1,
+        "returned_end_line": 45,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_776250d728c5dc52"
+      },
+      "handle_collision_observed": false,
+      "receipt_artifact": "raw-receipts/exscel-eh_776250d728c5dc52.jsonl",
+      "receipt_bytes_sha256": "d25e642f8d6a04977eb73295e39810160d330f165d64afe12e2f27c0a5f9803e",
+      "original_trace": "docs/evaluation/2026-10-03-exscel-host-recovery/turn-0.events.jsonl",
+      "original_trace_line": 67,
+      "original_item_id": "item_32",
+      "original_request": {
+        "trial_id": "exscel",
+        "source_id": "sh_bcf70e5423c2d8ef",
+        "pages": [
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193
+        ]
+      },
+      "individual_page_locator_inside_group": true,
+      "source_metadata": {
+        "id": "sh_bcf70e5423c2d8ef",
+        "trial_id": "exscel",
+        "role": "supplement",
+        "label": "nejmoa1612917_protocol.pdf",
+        "logical_path": "nejmoa1612917_protocol.pdf",
+        "sha256": "sha256:d3498516286f49f1d609124999be3d44a7a8ddac46eb70d4542395ffabcc96a2",
+        "media_type": "application/pdf",
+        "page_count": 208,
+        "projection_hash": "sha256:5482a03c26ec6529b9d8c7dc2e0f56abb6a3e60fa8ce83005223570c439276f9",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      }
+    }
+  },
+  {
+    "item": "C",
+    "group": "cited",
+    "window": {
+      "source_identity": "sh_693e51915e5ffefc",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 148
+    },
+    "original_link": {
+      "selected_handle": "eh_62c0318d013b0813",
+      "selected_identity": "sha256:62c0318d013b08130bee408ae08ce2e49751afdd2222fdfa21052264f7d86d07",
+      "unambiguous_source_page_span": [
+        "sh_693e51915e5ffefc",
+        6,
+        1,
+        148
+      ],
+      "selected_record": {
+        "candidate_rank": null,
+        "domain_id": null,
+        "end": 5402,
+        "end_line": 148,
+        "handle": "eh_62c0318d013b0813",
+        "identity": "sha256:62c0318d013b08130bee408ae08ce2e49751afdd2222fdfa21052264f7d86d07",
+        "inclusion_reason": "result",
+        "kind": "narrative",
+        "page": 6,
+        "question_id": null,
+        "quote": "n engl j med 377;13 nejm.org September 28, 2017\n1233\nExenatide and Cardiovascular Outcomes in Diabetes\nweight (difference of -1.27 kg), systolic blood\npressure (-1.57 mm Hg), low-density lipoprotein\ncholesterol (-1.5 mg per deciliter [-0.04 mmol\nper liter]), and triglycerides (-1.8 mg per deciliter\n[-0.02 mmol per liter]); values were higher in the\nexenatide group than in the placebo group with\nrespect to diastolic blood pressure (difference of\n0.25 mm Hg) and heart rate (difference of 2.51\nbeats per minute) (Fig. 1, and Figs. S3 through\nS5 in the Supplementary Appendix).\nPrimary and Secondary Cardiovascular\nOutcomes\nA primary composite outcome event occurred in\n839 of 7356 patients (11.4%; 3.7 events per 100\nperson-years) in the exenatide group and in 905 of\n7396 patients (12.2%; 4.0 events per 100 person-\nyears) in the placebo group (hazard ratio, 0.91;\n95% CI, 0.83 to 1.00), with the intention-to-treat\nanalysis indicating that exenatide, administered\nonce weekly, was noninferior to placebo with\nrespect to safety (P<0.001 for noninferiority) and\nwas not superior to placebo with respect to effi-\ncacy (P = 0.06 for superiority) (Table 1 and Fig. 2,\nand Fig. S6 in the Supplementary Appendix).\nThere was no evidence of heterogeneity among\nthe three components of the composite outcome\n(Table S3 in the Supplementary Appendix). The\nper-protocol primary analysis resulted in a hazard\nratio that was similar to that of the intention-to-\ntreat analysis (hazard ratio, 0.95; 95% CI, 0.85 to\n1.07; P<0.001 for noninferiority, P = 0.39 for supe-\nriority), also without evidence of heterogeneity\namong the composite components.\nThe risk of death from any cause was 6.9% in\nthe exenatide group and 7.9% in the placebo\ngroup (hazard ratio, 0.86; 95% CI, 0.77 to 0.97);\nthis difference was not considered to be statisti-\ncally significant on the basis of the hierarchical\nFigure 1 (facing page). Effects of Once-Weekly Exenatide.\nShown are the effects of once-weekly administration of\nexenatide on glycated hemoglobin levels, body weight,\nsystolic blood pressure, and heart rate. Overall least-\nsquares mean differences were estimated from the model\nthat included only the patients in whom a baseline value\nand at least one postbaseline value were obtained.\nOutcome\nExenatide (N = 7356)\nPlacebo (N = 7396)\nHazard Ratio (95% CI)†\nPatients\nwith Event\nIncidence Rate\nof First Event\nPatients\nwith Event\nIncidence Rate\nof First Event\nno. (%)\nno. of events/\n100 patient-yr\nno. (%)\nno. of events/\n100 patient-yr\nPrimary composite outcome\n839 (11.4)\n3.7\n905 (12.2)\n4.0\n0.91 (0.83-1.00)\nSecondary outcomes\nDeath from any cause\n507 (6.9)\n2.0\n584 (7.9)\n2.3\n0.86 (0.77-0.97)\nDeath from cardiovascular causes‡\n340 (4.6)\n1.4\n383 (5.2)\n1.5\n0.88 (0.76-1.02)\nFatal or nonfatal myocardial infarction\n483 (6.6)\n2.1\n493 (6.7)\n2.1\n0.97 (0.85-1.10)\nFatal myocardial infarction§\n17 (0.2)\n-\n13 (0.2)\n-\n1.29 (0.63-2.66)\nFatal or nonfatal stroke\n187 (2.5)\n0.8\n218 (2.9)\n0.9\n0.85 (0.70-1.03)\nFatal stroke§\n18 (0.2)\n-\n25 (0.3)\n-\n0.71 (0.39-1.30)\nHospitalization for heart failure\n219 (3.0)\n0.9\n231 (3.1)\n1.0\n0.94 (0.78-1.13)\nHospitalization for acute coronary\nsyndrome\n602 (8.2)\n2.6\n570 (7.7)\n2.5\n1.05 (0.94-1.18)\n* The primary outcome was the first occurrence of any component of the composite outcome of death from cardiovascular causes, nonfatal\nmyocardial infarction, or nonfatal stroke, in a time-to-event analysis. This analysis was conducted in the intention-to-treat population, which\nconsisted of all patients who underwent randomization.\n† Hazard ratios (exenatide vs. placebo) and confidence intervals were estimated with the use of a Cox proportional-hazards regression model,\nstratified according to history of cardiovascular disease, with trial regimen as the sole explanatory variable.\n‡ Death from cardiovascular causes includes death from unknown cause.\n§ The incidence rate was not calculated because this outcome was not prespecified in the statistical analysis plan as a trial outcome.\nTable 1. Rates of the Primary Composite Outcome and Key Secondary Outcomes.*\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 23, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|Column 5|Column 6|\n|---|---|---|---|---|---|\n|Table 1. Rates of the Primary Composite Outcome and Key Secondary Outcomes.*||||||\n|Outcome Exenatide (N = 7356) Placebo (N = 7396) Hazard Ratio (95% CI)†<br>Patients Incidence Rate Patients Incidence Rate<br>with Event of First Event with Event of First Event<br>no. of events/ no. of events/<br>no. (%) 100 patient-yr no. (%) 100 patient-yr||||||\n|Primary composite outcome|839 (11.4)|3.7|905 (12.2)|4.0|0.91 (0.83-1.00)|\n|Secondary outcomes||||||\n|Death from any cause|507 (6.9)|2.0|584 (7.9)|2.3|0.86 (0.77-0.97)|\n|Death from cardiovascular causes‡ 340 (4.6) 1.4 383 (5.2) 1.5 0.88 (0.76-1.02)||||||\n|Fatal or nonfatal myocardial infarction|483 (6.6)|2.1|493 (6.7)|2.1|0.97 (0.85-1.10)|\n|Fatal myocardial infarction§ 17 (0.2) - 13 (0.2) - 1.29 (0.63-2.66)||||||\n|Fatal or nonfatal stroke|187 (2.5)|0.8|218 (2.9)|0.9|0.85 (0.70-1.03)|\n|Fatal stroke§ 18 (0.2) - 25 (0.3) - 0.71 (0.39-1.30)||||||\n|Hospitalization for heart failure|219 (3.0)|0.9|231 (3.1)|1.0|0.94 (0.78-1.13)|\n|Hospitalization for acute coronary 602 (8.2) 2.6 570 (7.7) 2.5 1.05 (0.94-1.18)<br>syndrome||||||",
+        "recovery": null,
+        "returned_previously": null,
+        "search_session": null,
+        "source_id": "sh_693e51915e5ffefc",
+        "source_version": "sha256:a03f9f099d9c623493fd1845055f7dbeaa3b9bfc2b20a7de17aff28cd71c786d",
+        "start": 0,
+        "start_line": 1,
+        "text_status": "complete",
+        "trial_id": "exscel"
+      },
+      "original_page_receipt": null,
+      "handle_collision_observed": false,
+      "source_metadata": {
+        "id": "sh_693e51915e5ffefc",
+        "trial_id": "exscel",
+        "role": "main_article",
+        "label": "NEJMoa1612917.pdf",
+        "logical_path": "NEJMoa1612917.pdf",
+        "sha256": "sha256:b9b1adb69702e20d68d4d98dac57e07cfeb3b73ff014d69a62f8859b200f1121",
+        "media_type": "application/pdf",
+        "page_count": 12,
+        "projection_hash": "sha256:a03f9f099d9c623493fd1845055f7dbeaa3b9bfc2b20a7de17aff28cd71c786d",
+        "origin": "local_dossier",
+        "declared_role": "main_article"
+      }
+    }
+  },
+  {
+    "item": "C",
+    "group": "other_available",
+    "window": {
+      "source_identity": "sh_bcf70e5423c2d8ef",
+      "page": 188,
+      "start_line": 1,
+      "end_line": 43
+    },
+    "original_link": {
+      "selected_handle": "eh_f3ad502fa6c18431",
+      "selected_identity": "sha256:f3ad502fa6c18431f4fb153ca4c47dfe0bde59267bf4a4bdb364a685a94e03ee",
+      "unambiguous_source_page_span": [
+        "sh_bcf70e5423c2d8ef",
+        188,
+        1,
+        43
+      ],
+      "selected_record": null,
+      "original_page_receipt": {
+        "source_id": "sh_bcf70e5423c2d8ef",
+        "page": 188,
+        "numbered_text": "1|Statistical Analysis Plan\n2|Study Code D5551C00003(BCB109)\n3|Edition Number 4\n4|February 23rd 2017\n5|21\n6|assessed, and 2) the date of last dose of study medication, and 3) the right censoring date.\n7|Patients who never start the study drug will be censored at randomization.\n8|On-treatment + n days Censoring Scheme (where n=7, 30, and 70): patients will be censored\n9|at the earliest of: 1) date of last contact where all elements of the endpoint could be assessed,\n10|2) the date of last dose of study medication + n days, and 3) the right censoring date. Patients\n11|who never start the study drug will be censored at randomization.\n12|Cut-off Date Censoring Scheme: patients will be censored at the earliest of: 1) date of last\n13|contact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut\n14|off date. The primary endpoint cut off date will be determined by the Executive Committee as\n15|the date when the sites will start bringing patients back for the Trial Termination visit. Patients\n16|without any assessment of the endpoint will be censored at randomization.\n17|Right censoring date is defined as the last known alive date as collected at the trial termination\n18|visit (TTV form) except for deceased patients where it is the adjudicated date of the death.\n19|4.1.2.2\n20|Assumption on Non-informative Censoring\n21|The time to event analysis (Cox regression) relies on the assumption of non-informative\n22|censoring. To examine this assumption, variables that may be related to censoring, for\n23|example, the most frequent major protocol deviation, certain SAEs, will be explored. Rates\n24|per 100 patient-years will be calculated per treatment group and compared between patients\n25|censored early without complete follow-up, and those with complete follow-up.\n26|To assess possible effects of informative censoring on the primary efficacy endpoint,\n27|sensitivity analyses will be done as follows. First, the tipping point analysis will be performed\n28|where in patients who prematurely discontinued the study without having a primary endpoint\n29|event prior to discontinuation, events will be imputed during their missing follow up time (i.e.\n30|time from censoring to trial termination visit) under various scenarios for the hazard rates for\n31|non-completers in each arm. For each scenario, 2000 imputations will be performed and the\n32|results will be combined across 2000 combined datasets (actual events in completers +\n33|imputed events in non-completers) using SAS PROC MIANALYZE. Specifically, log-hazard\n34|ratio estimate of treatment effect will be calculated as an average and its associated variance\n35|will be obtained using Rubin's8 (1987) formula, which combines within-imputation and\n36|between-imputation variances. Hazard ratios, Wald's 95% CIs and Wald's test p-values will\n37|also be calculated. The goal of this analysis is to find scenarios where the primary analysis\n38|results will be \"tipped\", i.e. the conclusion will change.\n39|4.2\n40|Study Conduct\n41|Major protocol deviations will be identified for all patients who are randomized (see Section\n42|2.2).\n43|187",
+        "line_count": 43,
+        "returned_start_line": 1,
+        "returned_end_line": 43,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_f3ad502fa6c18431"
+      },
+      "handle_collision_observed": false,
+      "receipt_artifact": "raw-receipts/exscel-correct-source-eh_f3ad502fa6c18431.jsonl",
+      "receipt_bytes_sha256": "d25e642f8d6a04977eb73295e39810160d330f165d64afe12e2f27c0a5f9803e",
+      "original_trace": "docs/evaluation/2026-10-03-exscel-host-recovery/turn-0.events.jsonl",
+      "original_trace_line": 67,
+      "original_item_id": "item_32",
+      "original_request": {
+        "trial_id": "exscel",
+        "source_id": "sh_bcf70e5423c2d8ef",
+        "pages": [
+          184,
+          185,
+          186,
+          187,
+          188,
+          189,
+          190,
+          191,
+          192,
+          193
+        ]
+      },
+      "individual_page_locator_inside_group": true,
+      "registered_original_read_evidence": {
+        "end": 3019,
+        "end_line": 43,
+        "handle": "eh_f3ad502fa6c18431",
+        "identity": "sha256:f3ad502fa6c18431f4fb153ca4c47dfe0bde59267bf4a4bdb364a685a94e03ee",
+        "kind": "narrative",
+        "page": 188,
+        "quote": "Statistical Analysis Plan\nStudy Code D5551C00003(BCB109)\nEdition Number 4\nFebruary 23rd 2017\n21\nassessed, and 2) the date of last dose of study medication, and 3) the right censoring date.\nPatients who never start the study drug will be censored at randomization.\nOn-treatment + n days Censoring Scheme (where n=7, 30, and 70): patients will be censored\nat the earliest of: 1) date of last contact where all elements of the endpoint could be assessed,\n2) the date of last dose of study medication + n days, and 3) the right censoring date. Patients\nwho never start the study drug will be censored at randomization.\nCut-off Date Censoring Scheme: patients will be censored at the earliest of: 1) date of last\ncontact where all elements of the endpoint could be assessed, and 2) the primary endpoint cut\noff date. The primary endpoint cut off date will be determined by the Executive Committee as\nthe date when the sites will start bringing patients back for the Trial Termination visit. Patients\nwithout any assessment of the endpoint will be censored at randomization.\nRight censoring date is defined as the last known alive date as collected at the trial termination\nvisit (TTV form) except for deceased patients where it is the adjudicated date of the death.\n4.1.2.2\nAssumption on Non-informative Censoring\nThe time to event analysis (Cox regression) relies on the assumption of non-informative\ncensoring. To examine this assumption, variables that may be related to censoring, for\nexample, the most frequent major protocol deviation, certain SAEs, will be explored. Rates\nper 100 patient-years will be calculated per treatment group and compared between patients\ncensored early without complete follow-up, and those with complete follow-up.\nTo assess possible effects of informative censoring on the primary efficacy endpoint,\nsensitivity analyses will be done as follows. First, the tipping point analysis will be performed\nwhere in patients who prematurely discontinued the study without having a primary endpoint\nevent prior to discontinuation, events will be imputed during their missing follow up time (i.e.\ntime from censoring to trial termination visit) under various scenarios for the hazard rates for\nnon-completers in each arm. For each scenario, 2000 imputations will be performed and the\nresults will be combined across 2000 combined datasets (actual events in completers +\nimputed events in non-completers) using SAS PROC MIANALYZE. Specifically, log-hazard\nratio estimate of treatment effect will be calculated as an average and its associated variance\nwill be obtained using Rubin's8 (1987) formula, which combines within-imputation and\nbetween-imputation variances. Hazard ratios, Wald's 95% CIs and Wald's test p-values will\nalso be calculated. The goal of this analysis is to find scenarios where the primary analysis\nresults will be \"tipped\", i.e. the conclusion will change.\n4.2\nStudy Conduct\nMajor protocol deviations will be identified for all patients who are randomized (see Section\n2.2).\n187",
+        "source_id": "source_bcf70e5423c2d8ef2945d2ae46b000829adb33d835f45df5802500b1c7192e0c",
+        "source_version": "sha256:5482a03c26ec6529b9d8c7dc2e0f56abb6a3e60fa8ce83005223570c439276f9",
+        "start": 0,
+        "start_line": 1,
+        "trial_id": "exscel"
+      },
+      "full_identity_provenance": {
+        "cache_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/frozen-exscel-bd92ec8/workspace/.rob2-kit/derivative.sqlite3",
+        "read_mode": "ro+immutable",
+        "cache_sha256_before_and_after": "5364528e4a421c4c9eb6230d4000fba59b8763da9c24a2b8a1e63a0c0a0ba985",
+        "evidence_member_sha256": "ada58d6455955b34804fe30df31d4d9a05e829f591126ee70c91d39a98a2201e",
+        "note": "This is an already-issued read handle, not support selected in the final D5 basis."
+      }
+    }
+  }
+]
