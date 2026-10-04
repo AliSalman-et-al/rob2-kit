@@ -1,0 +1,5 @@
+{
+  "failure": "preparation.stdout changed after early freeze because completion message was written last",
+  "paid_inference_started": false,
+  "repair": "Freeze preparation logs after completed process, then reverify all bytes"
+}

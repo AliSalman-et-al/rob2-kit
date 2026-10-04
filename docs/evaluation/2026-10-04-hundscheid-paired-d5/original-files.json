@@ -1,0 +1,26 @@
+{
+  "NEJMoa2207418.pdf": {
+    "sha256": "fc84d8b3c6e1b11d9323d75e836f487c52cf159e85cdd163e7dad17ae2bb1126",
+    "bytes": 521362
+  },
+  "nejmoa2207418_protocol.pdf": {
+    "sha256": "a95a05d85da18945f32482051ab605164f852d34fab65bcab94e4670ec83b6fe",
+    "bytes": 3043064
+  },
+  "nejmoa2207418_data-sharing.pdf": {
+    "sha256": "b812b2826d7230be6795ecfc377e4e9cae4cf7a53aeb2e41f09317e1562617c6",
+    "bytes": 70346
+  },
+  "sources.toml": {
+    "sha256": "48ffbfddce54d9fa1084a0c1ee8caf62297c711ac1deb7298cd5962ac84614fd",
+    "bytes": 249
+  },
+  "nejmoa2207418_appendix.pdf": {
+    "sha256": "4f037eba166b0283f65a5d80f4dd0d32dd10946f9f8eff70a1c31152eaa56eb8",
+    "bytes": 438422
+  },
+  "nejmoa2207418_disclosures.pdf": {
+    "sha256": "b38e8ab4fd087ee48a301000c0ef4c844dec3e3fa9e3662172c0ab48d0dca76b",
+    "bytes": 346846
+  }
+}

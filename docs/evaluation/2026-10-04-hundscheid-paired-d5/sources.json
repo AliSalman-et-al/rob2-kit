@@ -1,0 +1,101 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "proposal",
+    "state_revision": 1,
+    "next_action": {
+      "operation": "validate_proposal",
+      "authority": "host",
+      "expected_revision": 1,
+      "caller_inputs": [
+        "selections"
+      ]
+    },
+    "authoritative_wording": "Proposal is being prepared or submitted; no Trial is assessable yet."
+  },
+  "data": {
+    "sources": [
+      {
+        "id": "sh_6842a2f7ce890e53",
+        "trial_id": "hundscheid-2022",
+        "role": "main_article",
+        "label": "NEJMoa2207418.pdf",
+        "logical_path": "NEJMoa2207418.pdf",
+        "sha256": "sha256:fc84d8b3c6e1b11d9323d75e836f487c52cf159e85cdd163e7dad17ae2bb1126",
+        "media_type": "application/pdf",
+        "page_count": 11,
+        "projection_hash": "sha256:92914a455462fa955dd4c62716e447d90ab90aabb17c3de3e485c3e75e0d5f27",
+        "origin": "local_dossier",
+        "declared_role": "main_article"
+      },
+      {
+        "id": "sh_5a4e4ebf95a83cd7",
+        "trial_id": "hundscheid-2022",
+        "role": "registry",
+        "label": "ClinicalTrials.gov NCT02884219",
+        "logical_path": "registry/NCT02884219.json",
+        "sha256": "sha256:cb8b215387c21b8a67af447dadbec621ef3444e69e79d81861e0f51b73d38a3e",
+        "media_type": "application/json",
+        "page_count": 1,
+        "projection_hash": "sha256:e8802ef1232123562363338d57cb2683be3673a60ef7783f92400bdfa6340af6",
+        "origin": "registry",
+        "declared_role": null
+      },
+      {
+        "id": "sh_07e107e313b1d7fd",
+        "trial_id": "hundscheid-2022",
+        "role": "supplement",
+        "label": "nejmoa2207418_appendix.pdf",
+        "logical_path": "nejmoa2207418_appendix.pdf",
+        "sha256": "sha256:4f037eba166b0283f65a5d80f4dd0d32dd10946f9f8eff70a1c31152eaa56eb8",
+        "media_type": "application/pdf",
+        "page_count": 22,
+        "projection_hash": "sha256:8186a93dd22fa179c43431e5f296e31622604a1092f84d7d24b3f042cce23bf1",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      },
+      {
+        "id": "sh_29f216711eb1bb14",
+        "trial_id": "hundscheid-2022",
+        "role": "supplement",
+        "label": "nejmoa2207418_data-sharing.pdf",
+        "logical_path": "nejmoa2207418_data-sharing.pdf",
+        "sha256": "sha256:b812b2826d7230be6795ecfc377e4e9cae4cf7a53aeb2e41f09317e1562617c6",
+        "media_type": "application/pdf",
+        "page_count": 1,
+        "projection_hash": "sha256:7fd3fd60d3c48dfc75cf781d376d00d425b9e43562fe7d3c3f5a58ca9289aa79",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      },
+      {
+        "id": "sh_e958dc858ee52530",
+        "trial_id": "hundscheid-2022",
+        "role": "supplement",
+        "label": "nejmoa2207418_disclosures.pdf",
+        "logical_path": "nejmoa2207418_disclosures.pdf",
+        "sha256": "sha256:b38e8ab4fd087ee48a301000c0ef4c844dec3e3fa9e3662172c0ab48d0dca76b",
+        "media_type": "application/pdf",
+        "page_count": 26,
+        "projection_hash": "sha256:5cfa9c3943d9e0935538cdf6926afef7127a35a2cf8f9135b637772aacba67e7",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      },
+      {
+        "id": "sh_c052c8ace3d14bdb",
+        "trial_id": "hundscheid-2022",
+        "role": "supplement",
+        "label": "nejmoa2207418_protocol.pdf",
+        "logical_path": "nejmoa2207418_protocol.pdf",
+        "sha256": "sha256:a95a05d85da18945f32482051ab605164f852d34fab65bcab94e4670ec83b6fe",
+        "media_type": "application/pdf",
+        "page_count": 107,
+        "projection_hash": "sha256:297981e3d6133e0b459f3f78e23788963a7284005333786b2e162f13876db5d2",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      }
+    ],
+    "conditions": [],
+    "omissions": [],
+    "navigation": null
+  }
+}

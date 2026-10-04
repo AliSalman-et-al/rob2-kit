@@ -1,0 +1,16 @@
+{
+  "private_root": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/hundscheid-account-pair",
+  "prelaunch_freeze_sha256": "4f9c96e9a466f859b9a9cf486fc8d2b27b084c2c938acef34e16b8545493d53e",
+  "file_count": 221,
+  "source_pages": 168,
+  "sessions": {
+    "direct": "01a1091e-d6bd-7402-9ad5-8eb611c032ff",
+    "account": "01a1091f-2ff8-7570-af85-0a03a86d21cd"
+  },
+  "code_commit": "31cb37b3f0ecd62569d09aba02b20ebb3dcf5a61",
+  "prepared_source_reading": "Separate host-source-audit copy; no model read coverage added to identical seeds",
+  "secrets": "Private auth and model cache excluded from receipts; configs bound by launch receipt hashes",
+  "coverage_claim": "Full declared native source availability; not proof of model reading or semantic support",
+  "prior_exposure": "One inventory filename hit and original benchmark execution metadata (two turns); prior answers/gold not read",
+  "status": "Two paid sessions launched; no completion or benefit claimed"
+}
