@@ -285,6 +285,13 @@ source disagreements from the reported Result when investigating D2, D3, and D5.
 
 Review inspected passages against each active proposition and check material
 contradictions. Reuse adequate Evidence without another search.
+When source facts differ in group, stage, window, population, or method, preserve
+those scopes in working observations before combining them in a warrant. Use
+[Preserve working observation scope](references/evidence.md#preserve-working-observation-scope)
+for `scope` and optional `bases[].working_observation` links. Shared trial context,
+partial overlap, and unknown applicability remain usable with an explicit inference;
+the typed relation does not decide the answer or certify source entailment.
+
 
 Before a new material discovery attempt, follow the
 [unresolved-premise loop](references/evidence.md#recover-an-unresolved-premise).
@@ -314,8 +321,8 @@ For each active answer, supply at least one premise in the live submission schem
   an optional current-Trial `search_receipt`.
 
 Do not put absence or limitation objects in `bases`. The server derives their
-canonical tags without choosing a scientific answer. Counterevidence indexes
-refer only to the Evidence entries in `bases`; include an explicit implication.
+canonical tags without choosing a scientific answer. Counterevidence objects
+name selected Evidence handles and their joint implication; no array indexes are needed.
 A direct read does not require a search receipt.
 
 Selected Evidence must contain the complete premise. A relationship kind adds

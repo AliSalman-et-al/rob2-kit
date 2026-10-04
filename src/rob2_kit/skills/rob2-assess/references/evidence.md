@@ -216,6 +216,42 @@ State inferred conclusions in the answer's `justification`, with the source
 facts and any unresolved link. The server checks Evidence identity and structure;
 you judge whether those facts support the answer.
 
+## Preserve working observation scope
+
+Working observations are source-located host interpretations, not a second
+Evidence ledger. When facts have different scope or feed an inference across
+scopes, save them separately with `save_working_checkpoint`. A `WorkingNote`
+keeps its `text` and exact `sources` and may add `scope`:
+
+- `groups`, `stage`, `window`, `population`, and `method` describe what that
+  observation actually covers. Leave unknown fields unset; preserve contrary facts.
+- `relation` is `matched`, `mismatch`, `partial_overlap`, `unknown`, or
+  `shared_trial_context` relative to the approved Result. A known different scope
+  differs from unresolved applicability. Trial context may inform several Results
+  indirectly; it is not automatically excluded.
+- `meaning` is `reported`, `inferred`, or `uncertain`; state uncertainty in
+  `uncertainty`. Typing a reported interpretation does not prove its source support.
+- Optional `result_identity` names the Result used for that relation. Copy an
+  available server identity; do not invent one. The checkpoint already binds notes
+  to the current Result and Sources even when this field is omitted.
+
+After saving, call `get_status` and recover the checkpoint's `identity` and its
+unchanged observation. To use that observation in an answer, attach
+`working_observation: {checkpoint_identity: ..., observation: ...}` to the
+corresponding selected Evidence entry in `bases`. Copy the observation as returned;
+do not edit it inside the link. Observations may come from checkpoint
+`observations` or a premise record's `observations` or `counterevidence`. A
+changed observation needs a new working checkpoint first. This link is optional
+when it adds no useful scope distinction; selected Evidence is still required.
+
+The server checks checkpoint membership and retains the observation snapshot in
+the saved warrant, so replacing advisory notes does not erase it. It does not
+check scientific entailment or choose relevance. Explain any cross-scope use in
+`justification` and any limiting implication in `counterevidence`. Do not merge
+unmatched arms, endpoints or periods silently, discard useful shared context,
+or force an answer from a scope category. Selected Evidence remains the exact
+quote or visual transcription with its original source/render provenance.
+
 ## Build a Domain answer
 
 Read this section before the first `save_domain_judgment` call. Submit
