@@ -1,0 +1,23 @@
+{
+  "original_protocol_sha256": "dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+  "delivered_protocol136_text_sha256": "e5ac2e79ee77b1ac175a5e9680a6cee4d493b03f87fe68d4e813746892f848a7",
+  "future_tense_and_sponsor_actor_preserved": true,
+  "selection_guidance_present_in_actual_developer_instructions": true,
+  "normal_instruction_sha256": "5015c9da0ce89eb32ff78e027ae98e54398cdfbff36b7048f90117a12ce1c77b",
+  "planning_conduct_guidance_already_present": true,
+  "probable_without_timestamps_already_permitted": true,
+  "responsible_investigator_vs_confidential_DMC_exception_already_present": true,
+  "date_association": "SAP31 starts June2017 amendment1; changes continue across32\u201335 before October2017 amendment2 starts35 and continues36. Text retains words but not column alignment or cross-page row continuity. Images available; zero model render calls.",
+  "offline_account_invariance": {
+    "canonical_state_unchanged": true,
+    "paid_calls": 0,
+    "operator_constructed_example_not_model_output": true,
+    "context_pages": 4,
+    "observations_inferences_unknowns_preserved": true,
+    "claim": "Existing experimental account retains distinct source observations/inferences/unknowns in native context; no evidence of model benefit or automatic semantic verification",
+    "native_recovery": "First example lacked required main-report anchor; corrected example includes it. Default context header exceeded response bound; explicit65536byte recovery succeeded.",
+    "audit_correction": "An initial audit assertion searched for an unnecessary literal tentative; corrected verification compares actual structured fields with the request. No source/workflow changes."
+  },
+  "production_changes": false,
+  "paid_calls": 0
+}

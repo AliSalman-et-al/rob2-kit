@@ -1,0 +1,9 @@
+{
+  "private_root": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/monaleesa-offline-understanding-20261004",
+  "freeze_sha256": "f9ca6545b74880a49e378160be2ae593ae151d2fdc2b72c8d729524f5c665a76",
+  "files": 32,
+  "original_diagnostic_not_modified": true,
+  "operator_example_not_model_output_or_future_model_input": true,
+  "production_changes": false,
+  "paid_calls": 0
+}
