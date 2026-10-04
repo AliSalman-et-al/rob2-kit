@@ -34,6 +34,7 @@ def _resolve(schema: dict[str, Any], node: dict[str, Any]) -> dict[str, Any]:
 def test_public_output_surface_is_closed_and_within_budget() -> None:
     tools = asyncio.run(mcp.list_tools())
     assert tuple(tool.name for tool in tools) == (
+        "read_guidance",
         "prepare_batch",
         "get_status",
         "save_working_checkpoint",

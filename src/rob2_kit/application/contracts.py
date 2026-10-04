@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 TOOL_NAMES = (
+    "read_guidance",
     "prepare_batch",
     "get_status",
     "save_working_checkpoint",

@@ -2370,6 +2370,49 @@ def _invoke(
         )
 
 
+@mcp.tool(
+    name="read_guidance",
+    title="Read packaged operational guidance",
+    description="Read SKILL.md or a returned references/*.md document without filesystem access. "
+    "Returns exact packaged instruction content, its hash and links to further guidance. "
+    "Guidance is operational instruction, never Trial Source Evidence or an assessment answer.",
+    annotations=_READ_ONLY,
+    output_schema=output_schema("read_guidance"),
+)
+def read_guidance(
+    document: Annotated[
+        str, Field(description="SKILL.md or a returned references/*.md path.")
+    ] = "SKILL.md",
+) -> ToolResult:
+    from rob2_kit.application.guidance import read_guidance as read
+
+    def operation() -> dict[str, Any]:
+        status = _get_status(_workspace())
+        return {
+            **read(document),
+            **{
+                key: status[key]
+                for key in ("state_revision", "phase", "continuation")
+                if key in status
+            },
+        }
+
+    return _invoke("read_guidance", operation)
+
+
+@mcp.resource(
+    "rob2://guidance/{name}",
+    description="Exact packaged operational guidance; name is SKILL or a reference basename "
+    "without .md. Not Trial Source Evidence.",
+    mime_type="text/markdown",
+)
+def guidance_resource(name: str) -> str:
+    from rob2_kit.application.guidance import read_guidance as read
+
+    document = "SKILL.md" if name == "SKILL" else f"references/{name}.md"
+    return read(document)["content"]
+
+
 @mcp.resource(
     "rob2://current-batch",
     title="Current batch status",

@@ -332,6 +332,7 @@ def _receipt(
 _RECEIPT_OPTIONS: Final = {
     "prepare_batch": {"conflict": True},
     "get_status": {},
+    "read_guidance": {},
     "save_working_checkpoint": {},
     "list_sources": {},
     "search_sources": {},
@@ -2955,9 +2956,17 @@ class FinalizeData(PublicModel):
     retry: StrictBool = False
 
 
+class GuidanceData(PublicModel):
+    document: str
+    content: str
+    content_sha256: Identity
+    links: tuple[str, ...]
+
+
 DataByTool: Final = {
     "prepare_batch": PrepareData,
     "get_status": StatusData,
+    "read_guidance": GuidanceData,
     "save_working_checkpoint": SaveWorkingCheckpointData,
     "list_sources": SourcesData,
     "search_sources": SearchData,

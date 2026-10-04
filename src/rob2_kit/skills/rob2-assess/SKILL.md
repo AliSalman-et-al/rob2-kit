@@ -5,6 +5,13 @@ description: Assess or resume RoB 2 for a requested outcome in one or more Trial
 
 # Assess a trial result
 
+Packaged reference links are available through `read_guidance(document="references/<name>.md")`
+when filesystem reading is unavailable. Start with `read_guidance(document="SKILL.md")`
+for exact instruction content and follow its returned `links`; linked documents
+return their own further links. Resource-capable clients can also read
+`rob2://guidance/SKILL` or `rob2://guidance/<reference basename>`.
+These instructions are separate from captured Trial Sources and Evidence.
+
 Drive the complete assessment through the public rob2-kit tools, not shell
 commands.
 
