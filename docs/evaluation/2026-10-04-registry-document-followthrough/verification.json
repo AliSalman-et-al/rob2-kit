@@ -1,0 +1,164 @@
+{
+  "cases": [
+    {
+      "nct": "NCT03036124",
+      "registry_outcome": {
+        "kind": "matched",
+        "registry_id": "NCT03036124",
+        "retrieved_at": "2026-10-04T19:08:25.751580Z",
+        "title": "Study to Evaluate the Effect of Dapagliflozin on the Incidence of Worsening Heart Failure or Cardiovascular Death in Patients With Chronic Heart Failure With Reduced Ejection Fraction",
+        "url": "https://clinicaltrials.gov/study/NCT03036124"
+      },
+      "acquisition_status": "captured",
+      "documents": [
+        {
+          "source_id": "source_cd0fdfa639c7767273e86e11fc60e858c21993ecb4552793f36973ad61b981d3",
+          "role": "sap",
+          "sha256": "sha256:1ede27af86fb4859ebd7b7f0f1b4cf9e406c618f5a60c2b43c43b6351bed83f0",
+          "page_count": 52,
+          "logical_path": "registry_documents/dffb6834b24c50ba/SAP_001.pdf",
+          "separately_visible": true,
+          "read_pages": [
+            {
+              "page": 1,
+              "characters": 0
+            },
+            {
+              "page": 2,
+              "characters": 306
+            },
+            {
+              "page": 3,
+              "characters": 0
+            }
+          ],
+          "search_query": "Statistical",
+          "matching_source_hits": 10,
+          "first_page_render_available": true,
+          "no_prespecification_certainty_field": true
+        },
+        {
+          "source_id": "source_aea064bc72b48a47e4238b08d1ca855892887cbe381d6b61c7ab69d0072409d3",
+          "role": "protocol",
+          "sha256": "sha256:f2cf95437aa48759484b4bea996d56e2640d23c8467c81c640a4839a26322f5e",
+          "page_count": 103,
+          "logical_path": "registry_documents/dffb6834b24c50ba/Prot_000.pdf",
+          "separately_visible": true,
+          "read_pages": [
+            {
+              "page": 1,
+              "characters": 965
+            },
+            {
+              "page": 2,
+              "characters": 2473
+            },
+            {
+              "page": 3,
+              "characters": 5301
+            }
+          ],
+          "search_query": "Clinical",
+          "matching_source_hits": 10,
+          "first_page_render_available": true,
+          "no_prespecification_certainty_field": true
+        }
+      ],
+      "provider_metadata_rows": 2,
+      "non_captured_rows": [],
+      "reading_is_delivery_not_comprehension": true,
+      "model_calls": 0,
+      "scientific_judgments": 0
+    },
+    {
+      "nct": "NCT04280705",
+      "registry_outcome": {
+        "kind": "matched",
+        "registry_id": "NCT04280705",
+        "retrieved_at": "2026-10-04T19:31:46.923997Z",
+        "title": "A Multicenter, Adaptive, Randomized Blinded Controlled Trial of the Safety and Efficacy of Investigational Therapeutics for the Treatment of COVID-19 in Hospitalized Adults",
+        "url": "https://clinicaltrials.gov/study/NCT04280705"
+      },
+      "acquisition_status": "captured",
+      "documents": [
+        {
+          "source_id": "source_8200edbc1b17687ea860bc4089ffab3e565a3c2fbb89cccb0e82364ac43934f0",
+          "role": "sap",
+          "sha256": "sha256:b27b2d6c693f9fefdf4ff90db523809544238cebaf4787359d24426e159bc543",
+          "page_count": 133,
+          "logical_path": "registry_documents/2bbe2c423a0a0544/SAP_002.pdf",
+          "separately_visible": true,
+          "read_pages": [
+            {
+              "page": 1,
+              "characters": 380
+            },
+            {
+              "page": 2,
+              "characters": 1761
+            },
+            {
+              "page": 3,
+              "characters": 3921
+            }
+          ],
+          "search_query": "CLINICAL",
+          "matching_source_hits": 10,
+          "first_page_render_available": true,
+          "no_prespecification_certainty_field": true
+        },
+        {
+          "source_id": "source_f17e83bc4a3d2efcba707737d532932c048041465a50e71bc6df2328ffc3d32c",
+          "role": "protocol",
+          "sha256": "sha256:99ccc83a958763aa2568591292d8489044f1e355f1d23f2d1977b1837b79f8c8",
+          "page_count": 65,
+          "logical_path": "registry_documents/2bbe2c423a0a0544/Prot_001.pdf",
+          "separately_visible": true,
+          "read_pages": [
+            {
+              "page": 1,
+              "characters": 455
+            },
+            {
+              "page": 2,
+              "characters": 1945
+            },
+            {
+              "page": 3,
+              "characters": 4732
+            }
+          ],
+          "search_query": "Multicenter",
+          "matching_source_hits": 5,
+          "first_page_render_available": true,
+          "no_prespecification_certainty_field": true
+        }
+      ],
+      "provider_metadata_rows": 3,
+      "non_captured_rows": [
+        {
+          "metadata": {
+            "date": "2020-03-04",
+            "filename": "ICF_000.pdf",
+            "hasIcf": true,
+            "hasProtocol": false,
+            "hasSap": false,
+            "label": "Informed Consent Form",
+            "size": 281581,
+            "typeAbbrev": "ICF",
+            "uploadDate": "2020-07-20T15:36"
+          },
+          "status": "unsupported_or_ambiguous_metadata"
+        }
+      ],
+      "reading_is_delivery_not_comprehension": true,
+      "model_calls": 0,
+      "scientific_judgments": 0
+    }
+  ],
+  "original_dapa_freeze_files_checked": 10,
+  "original_dapa_capture_unchanged": true,
+  "archived_replay_preservation_basis": "Existing neutral archived/current integration tests preserve archived byte hashes, current discovery response and distinct source-version IDs; no archived benchmark bytes changed.",
+  "historical_oct1_replay": false,
+  "PDF_bytes_published_to_git": false
+}

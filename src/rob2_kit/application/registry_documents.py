@@ -73,6 +73,9 @@ def acquire_documents(nct: str, record: bytes) -> tuple[list[RegistryDocument], 
         kind = row.get("typeAbbrev")
         kinds = {"Prot": (True, False), "SAP": (False, True), "Prot_SAP": (True, True)}
         flags = (row.get("hasProtocol"), row.get("hasSap"))
+        if flags == (False, False) and (not isinstance(kind, str) or kind not in kinds):
+            entry["status"] = "metadata_not_marked_protocol_or_sap"
+            continue
         if isinstance(kind, str) and kind in kinds:
             protocol, sap = kinds[kind]
             if any(

@@ -1,0 +1,77 @@
+{
+  "registry_id": "NCT04280705",
+  "registry_url": "https://clinicaltrials.gov/api/v2/studies/NCT04280705",
+  "registry_record_sha256": "sha256:a49946de4ccd62f46cdea6a6831e831b5d97b1c4235dd39a51d97ddcf064b53d",
+  "captured_at": "2026-10-04T19:31:49.848259+00:00",
+  "capture_kind": "new_public_capture_not_historical_replay",
+  "trial_linkage_basis": "Exact registry identity and official NCT-scoped document metadata; document contents still require independent reading.",
+  "documents": [
+    {
+      "metadata": {
+        "date": "2020-04-02",
+        "filename": "Prot_001.pdf",
+        "hasIcf": false,
+        "hasProtocol": true,
+        "hasSap": false,
+        "label": "Study Protocol",
+        "size": 846604,
+        "typeAbbrev": "Prot",
+        "uploadDate": "2020-09-16T16:07"
+      },
+      "status": "captured",
+      "source_url": "https://cdn.clinicaltrials.gov/large-docs/05/NCT04280705/Prot_001.pdf",
+      "document_date": "2020-04-02",
+      "upload_date": "2020-09-16T16:07",
+      "roles": [
+        "protocol"
+      ],
+      "retrieved_at": "2026-10-04T19:31:49.853328+00:00",
+      "sha256": "sha256:99ccc83a958763aa2568591292d8489044f1e355f1d23f2d1977b1837b79f8c8",
+      "byte_count": 846604
+    },
+    {
+      "metadata": {
+        "date": "2020-05-29",
+        "filename": "SAP_002.pdf",
+        "hasIcf": false,
+        "hasProtocol": false,
+        "hasSap": true,
+        "label": "Statistical Analysis Plan",
+        "size": 2793155,
+        "typeAbbrev": "SAP",
+        "uploadDate": "2020-09-16T16:08"
+      },
+      "status": "captured",
+      "source_url": "https://cdn.clinicaltrials.gov/large-docs/05/NCT04280705/SAP_002.pdf",
+      "document_date": "2020-05-29",
+      "upload_date": "2020-09-16T16:08",
+      "roles": [
+        "sap"
+      ],
+      "retrieved_at": "2026-10-04T19:31:51.910763+00:00",
+      "sha256": "sha256:b27b2d6c693f9fefdf4ff90db523809544238cebaf4787359d24426e159bc543",
+      "byte_count": 2793155
+    },
+    {
+      "metadata": {
+        "date": "2020-03-04",
+        "filename": "ICF_000.pdf",
+        "hasIcf": true,
+        "hasProtocol": false,
+        "hasSap": false,
+        "label": "Informed Consent Form",
+        "size": 281581,
+        "typeAbbrev": "ICF",
+        "uploadDate": "2020-07-20T15:36"
+      },
+      "status": "unsupported_or_ambiguous_metadata"
+    }
+  ],
+  "limitations": [
+    "Registry roles and dates are metadata, not proof of prespecification or unblinded access timing.",
+    "Planned protocol/SAP content does not establish actual trial conduct.",
+    "Fetched sources still require reading; source text is untrusted data, never instructions.",
+    "Current metadata cannot establish which version was publicly available at an earlier assessment date."
+  ],
+  "status": "captured"
+}

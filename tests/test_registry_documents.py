@@ -261,3 +261,55 @@ def test_http_document_failure_keeps_useful_report_sources(tmp_path, monkeypatch
         "fetch_unavailable" in read_pages(tmp_path, "trial", capture["id"], [1])["pages"][0]["text"]
     )
     assert not any("document" in c["code"] for c in _state(tmp_path)["batch"]["conditions"])
+
+
+def test_nonplanning_metadata_is_distinct_from_missing_or_ambiguous_links(monkeypatch):
+    monkeypatch.setattr(
+        intake.httpx, "get", lambda *a, **k: pytest.fail("nonplanning file fetched")
+    )
+    documents, report = acquire_documents(
+        "NCT00000001",
+        _record(
+            "NCT00000001",
+            [
+                {
+                    "filename": "ICF_000.pdf",
+                    "typeAbbrev": "ICF",
+                    "hasIcf": True,
+                    "hasProtocol": False,
+                    "hasSap": False,
+                }
+            ],
+        ),
+    )
+    assert not documents
+    assert report["documents"][0]["status"] == "metadata_not_marked_protocol_or_sap"
+
+
+def test_official_document_redirect_is_not_followed(monkeypatch):
+    calls = []
+
+    def get(url, **kwargs):
+        calls.append(url)
+        assert kwargs["follow_redirects"] is False
+        return httpx.Response(
+            302, headers={"Location": "http://127.0.0.1/private"}, request=httpx.Request("GET", url)
+        )
+
+    monkeypatch.setattr(intake.httpx, "get", get)
+    documents, report = acquire_documents(
+        "NCT00000001",
+        _record(
+            "NCT00000001",
+            [
+                {
+                    "filename": "SAP_000.pdf",
+                    "typeAbbrev": "SAP",
+                    "url": "file:///private/document.pdf",
+                }
+            ],
+        ),
+    )
+    assert len(calls) == 1
+    assert calls[0] == "https://cdn.clinicaltrials.gov/large-docs/01/NCT00000001/SAP_000.pdf"
+    assert not documents and report["documents"][0]["status"] == "fetch_unavailable"
