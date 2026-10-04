@@ -1,0 +1,29 @@
+[
+  {
+    "artifact": "main-p4-consort.png",
+    "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+    "raw_source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+    "physical_page": 4,
+    "png_sha256": "66b55d83c3a37a2b47a16d1fecb97902d66e6897bfbb6c0bfdd4967e6c06ac66",
+    "new_native_render": false,
+    "purpose": "Offline direct source layout inspection, not model diagnostic"
+  },
+  {
+    "artifact": "supp-p13-sensitivity.png",
+    "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+    "raw_source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+    "physical_page": 13,
+    "png_sha256": "bf0f6bc63db7d7217d8303c884b6c3b90cdd54712a8b6d739607ec98845dda30",
+    "new_native_render": false,
+    "purpose": "Offline direct source layout inspection, not model diagnostic"
+  },
+  {
+    "artifact": "supp-p14-mi.png",
+    "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+    "raw_source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+    "physical_page": 14,
+    "png_sha256": "933c4d5d3baf30808804a34226f4a54efe823858fd6dc1646d5c4c7cc54712a6",
+    "new_native_render": false,
+    "purpose": "Offline direct source layout inspection, not model diagnostic"
+  }
+]

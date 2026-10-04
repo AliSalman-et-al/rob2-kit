@@ -1065,19 +1065,26 @@ def _comparison_cards(
             {
                 "pair_id": "d3-mitigation-evidence",
                 "changed_premise": (
-                    "whether a credible analysis addresses bias from missing outcomes"
+                    "whether the examined assumptions address the documented missingness mechanism"
                 ),
                 "left_facts": (
-                    "A prespecified sensitivity analysis covers plausible missing outcomes and its "
-                    "estimate remains compatible with the primary result.",
+                    "Post-hoc sensitivity analyses estimate the same approved Result.",
+                    "Their estimates remain close to the primary estimate.",
+                    "Changed assumptions address the documented reasons for missing outcomes; "
+                    "retained assumptions are supported by relevant observed information.",
                 ),
                 "right_facts": (
-                    "The report gives no analysis or evidence addressing possible bias from "
-                    "missing outcomes.",
+                    "Post-hoc sensitivity analyses estimate the same approved Result.",
+                    "Their estimates remain close to the primary estimate.",
+                    "The analyses retain a missingness assumption whose plausibility for the "
+                    "documented reasons for missing outcomes remains unresolved.",
                 ),
                 "reasoning_focus": (
-                    "Assess evidence about mitigation separately from the number or proportion "
-                    "of observed outcomes."
+                    "Compare changed and retained assumptions with the documented mechanism. "
+                    "Numerical agreement is reassurance within those assumptions; post-hoc "
+                    "timing alone does not invalidate D3 evidence, and an explicit MNAR analysis "
+                    "is not universally required. Keep unresolved plausibility distinct from "
+                    "evidence that bias occurred."
                 ),
             },
             {

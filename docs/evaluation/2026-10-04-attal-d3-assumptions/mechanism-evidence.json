@@ -1,0 +1,94 @@
+{
+  "windows": [
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "physical_page": 4,
+      "start_line": 29,
+      "end_line": 62,
+      "numbered_text": "29|and placebo of 1·5 units (SD 1·5). Since the selection of\n30|participants was less stringent in this study-ie, not as\n31|many exclusion criteria were used-we assumed that the\n32|mean diff erence in pain intensity between the two\n33|treatment groups in our study would be smaller (about\n34|1·0 unit). Assuming a similar SD, we calculated that a\n35|sample size of 30 participants per group would be needed\n36|for 80% power, to detect such a diff erence in a two-sample\n37|two-tailed t test with a type I error of 0·05. Taking into\n38|account a 10% dropout rate, we estimated that we would\n39|need to include 66 participants in total.\n40|The effi cacy analyses for the primary outcome and for\n41|all but one secondary outcomes included all randomly\n42|assigned participants (intention-to-treat population)\n43|and used a last-observation-carried-forward (LOCF)\n44|imputation. Analysis of the therapeutic gain of the\n45|second injection (a secondary endpoint) included all\n46|randomly assigned participants who received two\n47|administrations of the treatment (as-treated analysis,\n48|based on the actual treatment the participants received)\n49|and used a LOCF imputation for missing values.\n50|We used a generalised linear mixed-model repeated-\n51|measures analysis to investigate the prespecifi ed primary\n52|endpoint. This model compared the mean change in\n53|weekly or daily pain ratings over time after two\n54|administrations of botulinum toxin A with that after\n55|placebo each week for 24 weeks, with baseline mean pain\n56|intensity as a covariate. We used the same models to\n57|assess the eff ects of botulinum toxin A on the secondary\n58|outcomes. In these models, treatment eff ect estimates\n59|correspond to a relative diff erence between botulinum\n60|toxin A and placebo for daily pain ratings over 24 weeks,\n61|on a mixed longitudinal model averaged across all\n62|patients and adjusted on all covariates of the model,",
+      "selection_status": "offline audit window, not a newly selected assessment Evidence"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "physical_page": 4,
+      "start_line": 78,
+      "end_line": 122,
+      "numbered_text": "78|32 received first administration\n79|34 assigned to botulinum toxin A\n80|68 randomly assigned\n81|152 patients screened\n82|34 assigned to placebo\n83|32 received second administration\n84|26 received second administration\n85|34 included in intention-to-treat\n86|\n87|analysis\n88|32 included in intention-to-treat\n89|\n90|analysis\n91|29 included in final safety\n92|\n93|assessment at week 24\n94|23 included in final safety\n95|\n96|assessment at week 24\n97|84 excluded\n98|\n99|22 declined to participate\n100|\n101|13 other ongoing protocol\n102|\n103|49 did not meet inclusion criteria*\n104|2 did not receive first administration\n105| 1 patient refusal\n106| 1 no baseline assessment of pain\n107|2 did not receive second administration\n108| 1 absence of efficacy\n109| 1 first administration too painful\n110|6 did not receive second administration\n111| 4 absence of efficacy\n112| 2 first administration too painful\n113|3 discontinued\n114| 2 absence of efficacy\n115| 1 died\n116|3 discontinued\n117| 3 absence of efficacy\n118|Figure 1: Trial profi le\n119|*Pain in the face or sole of the foot in seven patients, ongoing major depression in 11, an extensive painful area in\n120|19, contraindications to botulinum toxin A in two, weak pain (score less than four out of ten on the 11-point\n121|numerical rating scale of the Brief Pain Inventory) or pain for shorter than 6 months in fi ve, and an inability to\n122|understand the questionnaires in fi ve.",
+      "selection_status": "offline audit window, not a newly selected assessment Evidence"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "physical_page": 5,
+      "start_line": 43,
+      "end_line": 54,
+      "numbered_text": "43|Between Oct 2, 2010, and Aug 2, 2013, 152 participants\n44|were enrolled in the study, of whom 68 were randomly\n45|assigned (34 per group; fi gure 1). One woman withdrew\n46|on the day of the fi rst administration because she was\n47|afraid of the treatment and one man did not fi ll out any\n48|pain assessment diaries and so he was not included in\n49|the trial. We therefore included 66 participants in the\n50|intention-to-treat analysis: 34 in the botulinum toxin A\n51|group and 32 in the placebo group. 58 participants\n52|received a second treatment administration (32 in the\n53|botulinum toxin A group and 26 in the placebo group)\n54|and 52 participants completed the study (29 and 23). Age,",
+      "selection_status": "offline audit window, not a newly selected assessment Evidence"
+    },
+    {
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "physical_page": 13,
+      "start_line": 3,
+      "end_line": 10,
+      "numbered_text": "3|Web Extra file 9\n4|Post-hoc sensitivity analysis of the primary outcome with various methods of imputation for\n5|missing data\n6|A post-hoc sensitivity analysis of the primary outcome (see table further) showed that the LOCF results were\n7|similar to 3 other imputation methods: linear interpolation, maximum likelihood analysis (no case wise deletion\n8|by SAS Proc Mixed), and Markov chain Monte-Carlo (MCMC) multiply imputation that is suitable for arbitrary\n9|missing patterns. This comparison showed that the BTX-A clinical efficacy was invariant whatever the method\n10|of imputation used.",
+      "selection_status": "offline audit window, not a newly selected assessment Evidence"
+    },
+    {
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "physical_page": 14,
+      "start_line": 31,
+      "end_line": 33,
+      "numbered_text": "31|* Reference = baseline pain\n32|† Markov chain Monte-Carlo (MCMC) method (Schafer, J.L. (1997), Analysis of Incomplete Multivariate\n33|Data, New York: Chapman and Hall) with 5 imputation datasets.",
+      "selection_status": "offline audit window, not a newly selected assessment Evidence"
+    },
+    {
+      "source_id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "physical_page": 15,
+      "start_line": 7,
+      "end_line": 15,
+      "numbered_text": "7|LOCF as a method of imputation\n8|\n9|LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\n10|In the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n11|(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\n12|more prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\n13|and more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\n14|Missing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\n15|Not at Random (MNAR) pattern.",
+      "selection_status": "offline audit window, not a newly selected assessment Evidence"
+    },
+    {
+      "source_id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "physical_page": 10,
+      "start_line": 18,
+      "end_line": 33,
+      "numbered_text": "18|Several potential limitations of our study need\n19|consideration. One is the moderate sample size; however,\n20|our sample met statistical expectations for the primary\n21|endpoint, we used several robust statistical models, and\n22|we obtained positive results for the primary outcome and\n23|several secondary outcomes. Our sample was also highly\n24|selected; therefore, the present data should be further\n25|investigated in larger settings with fewer exclusion\n26|criteria. We used the LOCF method to impute for missing\n27|data, which can overestimate effi cacy;31 however, this\n28|method is a widespread method of imputation, especially\n29|in neuro pathic pain clinical trials,8 and few data were\n30|missing in the present study (appendix p 14).\n31|Furthermore, fi ndings from a post-hoc sensitivity\n32|analysis showed that the LOCF results were similar to\n33|those of three other imputation methods. Finally, there",
+      "selection_status": "offline audit window, not a newly selected assessment Evidence"
+    }
+  ],
+  "visual_consortraw": {
+    "all_randomized": [
+      34,
+      34
+    ],
+    "analysis_cohort": [
+      34,
+      32
+    ],
+    "not_first_administration_placebo": [
+      "one patient refusal",
+      "one no baseline assessment of pain"
+    ],
+    "not_second_administration_active": [
+      "one absence of efficacy",
+      "one first administration too painful"
+    ],
+    "not_second_administration_placebo": [
+      "four absence of efficacy",
+      "two first administration too painful"
+    ],
+    "later_discontinued_active": [
+      "two absence of efficacy",
+      "one died"
+    ],
+    "later_discontinued_placebo": [
+      "three absence of efficacy"
+    ],
+    "final_week24_safety_assessment": [
+      29,
+      23
+    ]
+  },
+  "qualification": "These categories are direct visual observations from main-p4-consort.png. Final safety assessment is not an observed primary-pain denominator. Missing second dose, study discontinuation and missing pain-record observations are related but not interchangeable; source does not link each category to particular missing records."
+}

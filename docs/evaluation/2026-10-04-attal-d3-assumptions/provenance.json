@@ -1,0 +1,57 @@
+{
+  "base_sha": "8f90c9a114e812777451ae1e860250d59a8aa9da",
+  "bundle": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/finalized/35b7779d15b3c996582d9ec317be67b969e1770409cb8d46af936f5ed6346c59.rob2.zip",
+  "bundle_sha256": "734cba17c8a570027161e6aa1dbc2b48cc9f42adb196a115fe8be658c4ed3030",
+  "original_files": {
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/finalized/35b7779d15b3c996582d9ec317be67b969e1770409cb8d46af936f5ed6346c59.rob2.zip": "734cba17c8a570027161e6aa1dbc2b48cc9f42adb196a115fe8be658c4ed3030",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/canonical.sqlite3": "61eb552bc83d9be85934f12e1f959d847083983f1ab773ae3b7bf58fce481899",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/working.sqlite3": "d6f499d48c35ed78baf1895abc7b29b4b52f6468968cac6946f981fb406eeddc",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/derivative.sqlite3": "83c1c0844b4da91c36b9217a1225bcf205c0eb9805b5209ba400f00b02e58527",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/attal-2016/mmc1.pdf": "e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/attal-2016/S1474-4422-16-00017-X.pdf": "cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6"
+  },
+  "source_inventory": [
+    {
+      "declared_role": "supplement",
+      "id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+      "label": "mmc1.pdf",
+      "logical_path": "mmc1.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 16,
+      "projection_hash": "sha256:13f190b35edd5feaae148d62150c47fe31db66e1b6d9f98160efe1bd73f1414e",
+      "role": "supplement",
+      "sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "trial_id": "attal-2016"
+    },
+    {
+      "declared_role": "main_article",
+      "id": "source_9892c963d307f34aa2f5bec6ed81c45f61f4a598d484df45aaf5d3240f5e2574",
+      "label": "S1474-4422-16-00017-X.pdf",
+      "logical_path": "S1474-4422-16-00017-X.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 11,
+      "projection_hash": "sha256:a9d9fc62cc636519a52faf5395f3445d7c4048eaa1619c84d53fe0d33d24393c",
+      "role": "main_article",
+      "sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "trial_id": "attal-2016"
+    },
+    {
+      "declared_role": null,
+      "id": "source_8060a6d9e451f076588fda27c64de39144bb5b443801b532a6a7639ce378aa3c",
+      "label": "ClinicalTrials.gov NCT01251211",
+      "logical_path": "registry/NCT01251211.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:aae0676df688f1a3cd4e2072a7b94581f8715aa4ef4bfd962d9eb1d4d8d1c7fd",
+      "role": "registry",
+      "sha256": "sha256:3da98d814a6717e32aba874ccff095b43dc88557b11e71b2b0b66e23f58d3725",
+      "trial_id": "attal-2016"
+    }
+  ],
+  "model_calls": 0,
+  "native_calls": 0,
+  "assessment_mutations": 0
+}

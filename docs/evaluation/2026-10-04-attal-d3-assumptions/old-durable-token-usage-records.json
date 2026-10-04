@@ -1,0 +1,34 @@
+[
+  {
+    "timestamp": "2026-10-04T05:19:51.625Z",
+    "thread_id": "01a1055a-4dc0-7010-8c97-22c3f8e4bfee",
+    "turn_id": "01a1055a-5713-78d0-be94-9add99f5b5a0",
+    "session_id": "01a1055a-4dc0-7010-8c97-22c3f8e4bfee",
+    "root_turn_id": "01a1055a-5713-78d0-be94-9add99f5b5a0",
+    "response_id": "resp_0e8a9a0379d73cc0016ac1e1e3bfb087d2a237e17cd8b845b2",
+    "usage": {
+      "input_tokens": 49960,
+      "cached_input_tokens": 1792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 467,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 50427
+    },
+    "turn_token_usage": {
+      "input_tokens": 49960,
+      "cached_input_tokens": 1792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 467,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 50427
+    },
+    "thread_token_usage": {
+      "input_tokens": 49960,
+      "cached_input_tokens": 1792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 467,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 50427
+    }
+  }
+]

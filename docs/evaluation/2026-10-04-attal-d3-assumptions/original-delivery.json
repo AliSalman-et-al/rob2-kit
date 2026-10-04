@@ -1,0 +1,489 @@
+{
+  "log": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/turn-2.jsonl",
+  "log_sha256": "011dd706389848b0da2d35afa78a7acabb01e47019f037e23d7dc593116d07f5",
+  "context": [
+    {
+      "item": "item_35",
+      "arguments": {
+        "trial_id": "attal-2016",
+        "domain_id": "domain:missing"
+      },
+      "questions": [
+        {
+          "id": "sq:missing:data-available",
+          "wording": "Were data for this outcome available for all, or nearly all, participants randomized?",
+          "options": [
+            "yes",
+            "probably_yes",
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "activation_status": "always_active",
+          "activation": {
+            "kind": "always"
+          },
+          "official_guidance": "‘Nearly all’ should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data.",
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+          "bias_construct": "Whether outcome data were available for all or nearly all randomized participants.",
+          "decision_rule": "Use the randomized population. Yes or probably yes requires evidence that outcome data were available for all or nearly all participants. No or probably no requires evidence of materially incomplete availability. When the extent remains unknown, use no_information. Judge whether the missing outcomes, whatever they were, could make an important difference to this Result; no universal percentage threshold applies. Imputed data count as missing.",
+          "evidence_needed": [
+            "For yes or probably yes, actual outcome-availability evidence can be comparable observed-outcome counts, arm-specific loss-to-follow-up or censoring accounting, or an explicit complete/nearly-complete ascertainment statement.",
+            "Compare the approved outcome/time point across participant-flow and outcome-data passages. For each comparable arm or unit distinguish the randomized denominator, outcome-observed count, analysed count, imputed count, post-randomization excluded count, and event count. An event count is a numerator, not an outcome-observed count; an analysis denominator is not necessarily an outcome-observed count. Calculate randomized minus observed only when population, arm, unit, and time point are the same. Imputed data count as missing.",
+            "Keep outcome availability separate from mitigation quality: a sensitivity analysis or imputation does not change the observed count, and observed cannot be inferred as analysed minus imputed unless the source establishes the same population, time window, and mutually exclusive counts."
+          ],
+          "no_information_rule": "Answer no_information when the extent of missing outcome data remains unknown after bounded retrieval. Lack of evidence for complete availability is not evidence of materially incomplete availability.",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "Outcome data were available for all or nearly all randomized participants."
+            },
+            {
+              "answer": "no",
+              "text": "Outcome data were not available for all or nearly all randomized participants."
+            },
+            {
+              "answer": "no_information",
+              "text": "The report provides no information about the extent of missing outcome data."
+            }
+          ],
+          "considerations": [
+            "The appropriate population is all randomized participants, not only participants included in a final analysis. Keep outcome availability distinct from exclusions for analysis or conduct; the same passage may inform both Domains for different scientific reasons.",
+            "Distinguish administrative censoring at a common data cutoff from censoring caused by missing follow-up; inspect actual rates and follow-up accounting rather than treating a generic censoring rule as outcome-availability evidence.",
+            "For time-to-event Results, treatment discontinuation or last-known-alive censoring does not by itself establish that outcome observation stopped; identify the actual observation endpoint, censoring reason, and follow-up pathway. For mortality, recovery or discharge does not establish vital status at a later time point. A total combining completed follow-up, recovery, and death does not establish mortality availability. If availability remains unresolved, inspect outcome-status or missing-value tables, including supplements. Match their outcome and time window to the approved Result. For dichotomous outcomes, compare unknown outcomes with observed events. Recovery may inform bias from missingness, but does not make unknown vital status observed.",
+            "Neutral paired control: complete ascertainment and an analysis denominator with unresolved ascertainment differ only in the availability premise; administrative censoring and worsening-related follow-up loss differ only in the missingness mechanism."
+          ],
+          "invalid_shortcuts": [
+            "a complete-case analysis label",
+            "an ITT analysis",
+            "analysis denominators or ITT membership alone",
+            "planned or scheduled follow-up alone",
+            "treatment continuation or discontinuation alone",
+            "last-known-alive censoring alone",
+            "an event count treated as an observed-outcome count",
+            "an analysis denominator treated as an outcome denominator",
+            "a generic censoring rule without actual rates or follow-up accounting",
+            "imputed data counted as observed outcomes"
+          ],
+          "query_suggestions": [
+            {
+              "query": "missing outcome data",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "outcome availability"
+            },
+            {
+              "query": "loss to follow-up",
+              "mode": "phrase",
+              "source_role": null,
+              "purpose": "follow-up completeness"
+            },
+            {
+              "query": "participant flow",
+              "mode": "phrase",
+              "source_role": null,
+              "purpose": "randomized follow-up accounting"
+            },
+            {
+              "query": "CONSORT",
+              "mode": "phrase",
+              "source_role": "supplement",
+              "purpose": "participant-flow diagram"
+            },
+            {
+              "query": "outcome data available",
+              "mode": "all",
+              "source_role": null,
+              "purpose": "observed outcome reporting"
+            },
+            {
+              "query": "mortality status unknown",
+              "mode": "all",
+              "source_role": "supplement",
+              "purpose": "unknown mortality status"
+            },
+            {
+              "query": "missing values",
+              "mode": "all",
+              "source_role": "supplement",
+              "purpose": "missing outcome counts"
+            }
+          ]
+        }
+      ],
+      "guidance": [
+        "Answer every initially active question plus each dependent question whose activation predicate is met by your earlier answers. Extra inactive branch answers are ignored and never committed. Preserve the approved Result target.",
+        "Evaluate activated questions in question order. Submit every activated question with a justification, unknowns, and counterevidence. Review the inspected passages against its exact proposition and check material contradictions. Reuse adequate Evidence. When a premise remains unresolved, state the unresolved premise and why you stopped, and use bounded discovery across relevant Sources, including a protocol or SAP when relevant. Inspect returned passages before using them. A limitation requires that explicit premise and stopping rationale; include a Trial-scoped search receipt when retrieval provenance is useful, but a direct read does not require a search receipt. Absence requires a scoped untruncated no-hit receipt.",
+        "Cite complete premises for the active question. One passage may support several facts. When an answer depends on separate passages, cite each with its own boundaries. A relationship kind describes the use of Evidence; it adds no scientific fact.",
+        "When inference, conflict, or uncertainty connects Evidence to an answer, include a concise question-specific justification. State what the passages establish, what remains unresolved, and why the selected option follows. Any support relationship is host-asserted: the server checks structure, ownership, and exact Evidence provenance but does not independently judge semantic entailment.",
+        "Working premise records are source-grounded resumable notes. Reuse them only when the working checkpoint is current for this exact approved Result and captured Source projection; a stale checkpoint requires the stated recovery action and never carries a prior Domain judgment into this assessment.",
+        "A definitive yes or no needs direct_support, indirect_support, or contradiction; a limitation or absence alone supports uncertainty, not a definitive answer.",
+        "Evaluate activation against your draft answers. If validation reports missing active question IDs, add those questions with allowed answer values and supported bases, then resubmit the complete active set in one validation call. The server commits only active answers.",
+        "Apply every reported repair and retain other drafted answers. Add missing questions to the existing answer set. Resolve further activation from the repaired answers before resubmitting. The server ignores inactive answers."
+      ],
+      "official_guidance": {
+        "pack": {
+          "id": "rob2.parallel.assignment",
+          "version": "2019.1",
+          "content_hash": "sha256:ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a"
+        },
+        "sections": [
+          {
+            "question_ids": [
+              "sq:missing:data-available"
+            ],
+            "source_version": "22 August 2019",
+            "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+            "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+            "excerpt": "‘Nearly all’ should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data."
+          },
+          {
+            "question_ids": [
+              "sq:missing:evidence-unbiased"
+            ],
+            "source_version": "22 August 2019",
+            "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+            "source_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+            "excerpt": "Evidence that the result was not biased by missing outcome data may come from analysis methods that correct for bias, or sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data."
+          },
+          {
+            "question_ids": [
+              "sq:missing:true-value-dependent"
+            ],
+            "source_version": "22 August 2019",
+            "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+            "source_locator": "Full guidance p. 45, Box 8, signalling question 3.3",
+            "excerpt": "If loss to follow up, or withdrawal from the study, could be related to participants’ health status, then it is possible that missingness in the outcome was influenced by its true value. However, if all missing outcome data occurred for documented reasons that are unrelated to the outcome then the risk of bias due to missing outcome data will be low."
+          },
+          {
+            "question_ids": [
+              "sq:missing:likely-dependent"
+            ],
+            "source_version": "22 August 2019",
+            "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+            "source_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4",
+            "excerpt": "This question distinguishes between situations in which (i) missingness could depend on its true value and (ii) it is likely that missingness depended on its true value. Five reasons for answering ‘Yes’ are differences between intervention groups in the proportions of missing outcome data; reported reasons that provide evidence that missingness depends on its true value; reasons that differ between intervention groups; trial circumstances; and censoring when participants stop or change their assigned intervention."
+          }
+        ],
+        "complete": true,
+        "next_cursor": null
+      },
+      "pack": {
+        "id": "rob2.parallel.assignment",
+        "version": "2019.1",
+        "content_hash": "sha256:ca45877b3d86d66ea84ee0f13bd17c51fcd7ca1e3cbb6f3e64c07c5b81925f9a"
+      }
+    },
+    {
+      "item": "item_36",
+      "arguments": {
+        "cursor": "dcp2.7e14b7c671d04527bee229b00c26eaf0.1"
+      },
+      "questions": [
+        {
+          "activation": {
+            "kind": "rule",
+            "mode": "any",
+            "predicates": [
+              {
+                "accepted_answers": [
+                  "probably_no",
+                  "no",
+                  "no_information"
+                ],
+                "question_id": "sq:missing:data-available"
+              }
+            ]
+          },
+          "activation_status": "dependent_on_draft_answers",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "A bias-correcting or informative sensitivity analysis indicates the result was not biased."
+            },
+            {
+              "answer": "no",
+              "text": "The available evidence does not show that the result was free from missing-data bias."
+            }
+          ],
+          "bias_construct": "Whether there is evidence that the result was not biased by missing outcome data.",
+          "considerations": [
+            "Imputation alone is not evidence that missing outcome data did not bias the result.",
+            "Availability and mitigation are separate premises: a familiar method name or numerically stable estimate is not enough; the sensitivity analysis must span plausible assumptions relevant to the documented missingness mechanism.",
+            "This question permits complete ascertainment, mechanism-matched reassurance, and legitimate uncertainty. Do not apply a universal percentage threshold in place of a Result-specific impact judgment."
+          ],
+          "decision_rule": "Evidence may come from methods correcting for bias or sensitivity analyses showing little change under plausible assumptions about missingness and true outcome. The assumptions must match the documented missingness mechanism and the approved Result. A comparison that changes group attribution, such as ITT versus as-treated, does not test unobserved outcome values unless the source explicitly establishes that relationship. Last-observation-carried-forward or multiple imputation based only on intervention group should not be assumed to correct bias.",
+          "evidence_needed": [
+            "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result, including the missingness mechanism it addresses.",
+            "If the source only changes intervention-group attribution or analysis membership, record that distinction; do not describe it as a test of unobserved outcome values without source support."
+          ],
+          "id": "sq:missing:evidence-unbiased",
+          "invalid_shortcuts": [
+            "an ITT analysis",
+            "last observation carried forward",
+            "multiple imputation based only on intervention group"
+          ],
+          "no_information_rule": "No_information is not an allowed response to this question in the parallel-assignment pack; provide direct evidence or answer no/probably no.",
+          "official_guidance": "Evidence that the result was not biased by missing outcome data may come from analysis methods that correct for bias, or sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data.",
+          "options": [
+            "yes",
+            "probably_yes",
+            "probably_no",
+            "no"
+          ],
+          "query_suggestions": [
+            {
+              "mode": "phrase",
+              "purpose": "missing-data sensitivity analysis",
+              "query": "sensitivity analysis",
+              "source_role": "sap"
+            },
+            {
+              "mode": "all",
+              "purpose": "bias from missing outcomes",
+              "query": "missing data bias",
+              "source_role": null
+            },
+            {
+              "mode": "phrase",
+              "purpose": "missing-data method",
+              "query": "multiple imputation",
+              "source_role": "sap"
+            }
+          ],
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+          "wording": "If N/PN/NI to 3.1: Is there evidence that the result was not biased by missing outcome data?"
+        },
+        {
+          "activation": {
+            "kind": "rule",
+            "mode": "any",
+            "predicates": [
+              {
+                "accepted_answers": [
+                  "probably_no",
+                  "no"
+                ],
+                "question_id": "sq:missing:evidence-unbiased"
+              }
+            ]
+          },
+          "activation_status": "dependent_on_draft_answers",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "Missingness could depend on the true outcome value."
+            },
+            {
+              "answer": "no",
+              "text": "Documented missingness reasons are unrelated to the outcome."
+            }
+          ],
+          "bias_construct": "Whether missingness in the outcome could depend on its true value.",
+          "considerations": [
+            "For time-to-event outcomes, inspect censoring reasons and timing to identify missing follow-up. A common administrative cutoff does not by itself establish outcome-dependent missingness.",
+            "Separate observed outcome data, analysed membership, follow-up availability, and the missingness mechanism. Treatment discontinuation is not loss to follow-up when outcome ascertainment continues; stopping treatment or an analysis label alone does not establish whether the outcome was observed. Last-known-alive censoring is not by itself evidence that observation stopped. This question asks whether the missingness mechanism could depend on the true value; it is not a question about analysis membership.",
+            "Withdrawal or censoring after worsening health or symptoms can support possible dependence on the outcome value when the source links the reason to that participant's outcome; stopping treatment without that follow-up loss does not."
+          ],
+          "decision_rule": "Answer yes or probably yes when loss to follow-up or withdrawal could relate to health status or outcome. Answer no or probably no when all missingness had documented reasons unrelated to outcome, such as a failed measuring device or interruption to routine data collection.",
+          "evidence_needed": [
+            "Reasons for missingness and their relationship to participants' health status or true outcome, including censoring and treatment switching in time-to-event analyses."
+          ],
+          "id": "sq:missing:true-value-dependent",
+          "invalid_shortcuts": [
+            "complete follow-up claims",
+            "an ITT analysis",
+            "a reason for withdrawal without its relation to outcome"
+          ],
+          "no_information_rule": "Use no_information when the reasons for missingness do not permit assessment of dependence on the true value.",
+          "official_guidance": "If loss to follow up, or withdrawal from the study, could be related to participants’ health status, then it is possible that missingness in the outcome was influenced by its true value. However, if all missing outcome data occurred for documented reasons that are unrelated to the outcome then the risk of bias due to missing outcome data will be low.",
+          "options": [
+            "yes",
+            "probably_yes",
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "query_suggestions": [
+            {
+              "mode": "all",
+              "purpose": "missingness reason",
+              "query": "reason for withdrawal",
+              "source_role": null
+            },
+            {
+              "mode": "phrase",
+              "purpose": "health-related missingness",
+              "query": "loss to follow-up",
+              "source_role": null
+            }
+          ],
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.3",
+          "wording": "If N/PN to 3.2: Could missingness in the outcome depend on its true value?"
+        },
+        {
+          "activation": {
+            "kind": "rule",
+            "mode": "any",
+            "predicates": [
+              {
+                "accepted_answers": [
+                  "yes",
+                  "probably_yes",
+                  "no_information"
+                ],
+                "question_id": "sq:missing:true-value-dependent"
+              }
+            ]
+          },
+          "activation_status": "dependent_on_draft_answers",
+          "answer_anchors": [
+            {
+              "answer": "yes",
+              "text": "Missingness likely depended on the true outcome value."
+            },
+            {
+              "answer": "no",
+              "text": "The analysis accounted for characteristics explaining the relationship, or dependence was not likely."
+            }
+          ],
+          "bias_construct": "Whether missingness that could depend on true value likely depended on it.",
+          "considerations": [
+            "Possible dependence in 3.3 does not establish likely dependence in 3.4. Judge likelihood from missingness reasons and trial circumstances; absent contrary evidence alone does not establish likelihood.",
+            "Keep the stages distinct: observed outcome data and follow-up availability describe what was obtained; 3.3 asks whether missingness could depend on the true value; 3.4 asks whether that dependence was likely. Do not promote possible dependence to likely dependence without supporting evidence."
+          ],
+          "decision_rule": "Consider differences in missingness or censoring rates, reasons that depend on true value, reasons differing between groups, trial circumstances, and censoring after stopping or changing intervention. Answer no when analysis accounted for participant characteristics likely to explain the relationship.",
+          "evidence_needed": [
+            "Group-specific missingness or censoring, reasons for missingness, trial circumstances, and any analysis accounting for relevant participant characteristics."
+          ],
+          "id": "sq:missing:likely-dependent",
+          "invalid_shortcuts": [
+            "different group sizes alone",
+            "an ITT analysis",
+            "a generic loss-to-follow-up statement"
+          ],
+          "no_information_rule": "Use no_information when likelihood of dependence on true value cannot be judged from the available evidence.",
+          "official_guidance": "This question distinguishes between situations in which (i) missingness could depend on its true value and (ii) it is likely that missingness depended on its true value. Five reasons for answering ‘Yes’ are differences between intervention groups in the proportions of missing outcome data; reported reasons that provide evidence that missingness depends on its true value; reasons that differ between intervention groups; trial circumstances; and censoring when participants stop or change their assigned intervention.",
+          "options": [
+            "yes",
+            "probably_yes",
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "query_suggestions": [
+            {
+              "mode": "any",
+              "purpose": "outcome-dependent missingness",
+              "query": "censoring",
+              "source_role": null
+            },
+            {
+              "mode": "all",
+              "purpose": "differential missingness",
+              "query": "missing by treatment group",
+              "source_role": null
+            },
+            {
+              "mode": "all",
+              "purpose": "missingness mechanism",
+              "query": "reason for missing outcome",
+              "source_role": null
+            }
+          ],
+          "source_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4",
+          "wording": "If Y/PY/NI to 3.3: Is it likely that missingness in the outcome depended on its true value?"
+        }
+      ],
+      "guidance": null,
+      "official_guidance": null,
+      "pack": null
+    },
+    {
+      "item": "item_37",
+      "arguments": {
+        "cursor": "dcp2.7e14b7c671d04527bee229b00c26eaf0.2"
+      },
+      "questions": null,
+      "guidance": null,
+      "official_guidance": null,
+      "pack": null
+    },
+    {
+      "item": "item_38",
+      "arguments": {
+        "cursor": "dcp2.7e14b7c671d04527bee229b00c26eaf0.3"
+      },
+      "questions": null,
+      "guidance": null,
+      "official_guidance": null,
+      "pack": null
+    }
+  ],
+  "supplement_table_read": {
+    "item": "item_40",
+    "arguments": {
+      "trial_id": "attal-2016",
+      "windows": [
+        {
+          "source_id": "sh_bb3875b9f26c3f5b",
+          "page": 13,
+          "start_line": 1,
+          "end_line": 200
+        },
+        {
+          "source_id": "sh_bb3875b9f26c3f5b",
+          "page": 14,
+          "start_line": 1,
+          "end_line": 100
+        },
+        {
+          "source_id": "sh_bb3875b9f26c3f5b",
+          "page": 15,
+          "start_line": 1,
+          "end_line": 100
+        }
+      ]
+    },
+    "delivered_pages": [
+      {
+        "source_id": "sh_bb3875b9f26c3f5b",
+        "page": 13,
+        "numbered_text": "1|\n2|12\n3|Web Extra file 9\n4|Post-hoc sensitivity analysis of the primary outcome with various methods of imputation for\n5|missing data\n6|A post-hoc sensitivity analysis of the primary outcome (see table further) showed that the LOCF results were\n7|similar to 3 other imputation methods: linear interpolation, maximum likelihood analysis (no case wise deletion\n8|by SAS Proc Mixed), and Markov chain Monte-Carlo (MCMC) multiply imputation that is suitable for arbitrary\n9|missing patterns. This comparison showed that the BTX-A clinical efficacy was invariant whatever the method\n10|of imputation used.\n11|Self-reported pain, weekly records\n12|\n13|\n14|\n15|Beta\n16|95% CI low\n17|95% CI high\n18|p\n19|LOCF\n20|Treatment\n21|-0.768\n22|-0.948\n23|-0.588\n24|<.0001\n25|Baseline pain\n26|0.760\n27|0.703\n28|0.817\n29|<.0001\n30|Week1*\n31|-0.799\n32|-1.435\n33|-0.163\n34|0.0139\n35|Week15*\n36|-0.849\n37|-1.485\n38|-0.213\n39|0.009\n40|\n41|Week24*\n42|\n43|-1.449\n44|-2.085\n45|-0.814\n46|<.0001\n47|Interpolation using 2 adjacent points\n48|Treatment\n49|-0.723\n50|-0.906\n51|-0.540\n52|<.0001\n53|Baseline pain\n54|0.777\n55|0.720\n56|0.835\n57|<.0001\n58|Week1*\n59|-0.799\n60|-1.445\n61|-0.154\n62|0.0154\n63|Week15*\n64|-0.852\n65|-1.498\n66|-0.207\n67|0.0098\n68|\n69|Week24*\n70|\n71|-1.494\n72|-2.140\n73|-0.849\n74|<.0001\n75|Interpolation using 3 adjacent points\n76|Treatment\n77|-0.752\n78|-0.936\n79|-0.568\n80|<.0001\n81|Baseline pain\n82|0.755\n83|0.697\n84|0.813\n85|<.0001\n86|Week1*\n87|-0.799\n88|-1.448\n89|-0.150\n90|0.016\n91|Week15*\n92|-0.837\n93|-1.486\n94|-0.188\n95|0.0116\n96|\n97|Week24*\n98|\n99|-1.459\n100|-2.108\n101|-0.809\n102|<.0001\n103|PROC MIXED imputed\n104|Treatment\n105|-0.650\n106|-0.842\n107|-0.458\n108|<.0001\n109|Baseline pain\n110|0.730\n111|0.671\n112|0.790\n113|<.0001\n114|Week1*\n115|-0.799\n116|-1.446\n117|-0.152\n118|0.0156\n119|Week15*\n120|-1.037\n121|-1.713\n122|-0.362\n123|0.0026\n124|\n125|Week24*\n126|\n127|-1.821\n128|-2.503\n129|-1.139\n130|<.0001\n131|\n132|[Extracted table 1]\n133||Treatment -0.768 -0.948 -0.588<br>Baseline pain 0.760 0.703 0.817<br>Week1* -0.799 -1.435 -0.163<br>Week15* -0.849 -1.485 -0.213<br>Week24* -1.449 -2.085 -0.814||<.0001||\n134||---|---|---|---|\n135||||<.0001||\n136||||0.0139||\n137||||0.009||\n138||||<.0001||\n139|\n140|[Extracted table 2]\n141||Column 1|Column 2|Column 3|\n142||---|---|---|\n143|||0.760||\n144|||-0.799||\n145|||-0.849||\n146|||-1.449||\n147|\n148|[Extracted table 3]\n149||Treatment<br>Baseline pain<br>Week1*<br>Week15*<br>Week24*||-0.723||-0.906 -0.540 <.0001<br>0.720 0.835 <.0001<br>-1.445 -0.154 0.0154<br>-1.498 -0.207 0.0098<br>-2.140 -0.849 <.0001||<.0001||\n150||---|---|---|---|---|---|---|---|\n151||||0.777||||<.0001||\n152||||-0.799||||||\n153||||-0.852||||0.0098||\n154||||-1.494||||<.0001||\n155|\n156|[Extracted table 4]\n157||Treatment<br>Baseline pain<br>Week1*<br>Week15*<br>Week24*||-0.752||-0.936 -0.568<br>0.697 0.813<br>-1.448 -0.150<br>-1.486 -0.188<br>-2.108 -0.809||<.0001||\n158||---|---|---|---|---|---|---|---|\n159||||0.755||||<.0001||\n160||||-0.799||||0.016||\n161||||-0.837||||0.0116||\n162||||-1.459||||<.0001||\n163|\n164|[Extracted table 5]\n165||Treatment<br>Baseline pain<br>Week1*<br>Week15*<br>Week24*||-0.650||-0.842 -0.458<br>0.671 0.790<br>-1.446 -0.152<br>-1.713 -0.362<br>-2.503 -1.139||<.0001||\n166||---|---|---|---|---|---|---|---|\n167||||0.730||||<.0001||\n168||||-0.799||||0.0156||\n169||||-1.037||||0.0026||\n170||||-1.821||||<.0001||",
+        "line_count": 170,
+        "returned_start_line": 1,
+        "returned_end_line": 170,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_cf00ad339b2cfd9c"
+      },
+      {
+        "source_id": "sh_bb3875b9f26c3f5b",
+        "page": 14,
+        "numbered_text": "1|\n2|13\n3|Multiply imputed†\n4|Treatment\n5|-0.662\n6|-0.849\n7|-0.475\n8|<.0001\n9|Baseline pain\n10|0.724\n11|0.665\n12|0.784\n13|<.0001\n14|Week1*\n15|-0.799\n16|-1.441\n17|-0.157\n18|0.0148\n19|Week15*\n20|-1.080\n21|-1.747\n22|-0.413\n23|0.0016\n24|\n25|Week24*\n26|\n27|-1.719\n28|-2.392\n29|-1.047\n30|<.0001\n31|* Reference = baseline pain\n32|† Markov chain Monte-Carlo (MCMC) method (Schafer, J.L. (1997), Analysis of Incomplete Multivariate\n33|Data, New York: Chapman and Hall) with 5 imputation datasets.\n34|\n35|[Extracted table 1]\n36|||-0.662|||-0.849|||-0.475|||<.0001||\n37||---|---|---|---|---|---|---|---|---|---|---|---|\n38|||0.724|||0.665|||0.784|||<.0001||\n39|||-0.799|||||||||||\n40|||-1.080|||-1.747|||-0.413|||||\n41|||-1.719|||-2.392|||-1.047|||<.0001||",
+        "line_count": 41,
+        "returned_start_line": 1,
+        "returned_end_line": 41,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_b56ef275d38d7ed0"
+      },
+      {
+        "source_id": "sh_bb3875b9f26c3f5b",
+        "page": 15,
+        "numbered_text": "1|\n2|14\n3|\n4|\n5|Web Extra file 10\n6|\n7|LOCF as a method of imputation\n8|\n9|LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\n10|In the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n11|(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\n12|more prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\n13|and more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\n14|Missing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\n15|Not at Random (MNAR) pattern.",
+        "line_count": 15,
+        "returned_start_line": 1,
+        "returned_end_line": 15,
+        "page_remainder": null,
+        "truncated": false,
+        "next_start_line": null,
+        "passage_ref": "eh_0421f4266b92324e"
+      }
+    ],
+    "error": null
+  },
+  "interpretation": "Original model received actual tables before saving, not merely the narrative claim of invariance; no current-guidance contradiction should be inferred without checking delivered instructions."
+}

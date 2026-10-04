@@ -1,0 +1,16 @@
+{
+  "requested_outcome": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks",
+  "outcome_csv_row": [
+    {
+      "slug": "attal-2016",
+      "meta_id": "lneurol-neuropathic",
+      "primary_outcome": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks",
+      "primary_outcome_source": "Methods: The primary outcome was the efficacy of botulinum toxin A versus placebo, measured as the change from baseline in self-reported mean weekly pain intensity over the course of 24 weeks from the first administration.",
+      "anchor_as_printed": "Botulinum toxin A reduced pain intensity over 24 weeks compared with placebo (adjusted effect estimate -0.77, 95% CI -0.95 to -0.59; p<0.0001)",
+      "anchor_source": "Abstract, Findings",
+      "nct": "NCT01251211",
+      "registration_other": "",
+      "notes": "the meta labelled 50% pain reduction (a secondary); Lancet Neurol PDF saved by Zaid, appendix by curl"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "candidate_decision": "reject separate SQ3.2 card",
+  "shipped_decision": "retain smaller existing-example correction; not paid-tested",
+  "measured_accuracy_gain": false,
+  "benchmark_agreement_claim": false,
+  "old_new_labels": {
+    "attal-2016": [
+      "probably_yes",
+      "probably_yes"
+    ],
+    "nefigard": [
+      "probably_yes",
+      "probably_yes"
+    ]
+  },
+  "assessment": {
+    "same_approved_result": "Both preserve interval-level result; new Attal 24-week wording is imprecise but does not substitute point-specific effect.",
+    "assumption_comparison": "Neither explicitly contrasts changed and retained assumptions; candidate objective not met.",
+    "real_reassurance": "Both recognize stable estimates; neither asserts method names alone prove no bias.",
+    "mar_uncertainty": "New explicitly notes authors classification does not establish conditional MAR plausibility; old attributes authors claim without explicit endorsement.",
+    "control": "Both retain probably_yes; new omits the actual alternative-assumption predictors supplied on complete source page and invokes all plausible mechanisms. Reasoning limitation, not established wrong label.",
+    "universal_mnar_requirement": "Neither explicitly demands MNAR sensitivity; comprehensive-mechanism language in new control risks over-demand.",
+    "source_scope": "No table omission diagnosis; original October 1 trace delivered actual tables before saved answer."
+  },
+  "limits": [
+    "Two stochastic responses do not establish causality or accuracy.",
+    "No scientifically certain reversal of original Attal probably_yes is justified solely by lack of reported MNAR analysis.",
+    "Final small correction not assessed in a third paid call."
+  ]
+}

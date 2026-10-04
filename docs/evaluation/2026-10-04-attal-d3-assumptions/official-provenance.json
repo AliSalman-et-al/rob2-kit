@@ -1,0 +1,22 @@
+{
+  "retrieved_on": "2026-10-04",
+  "official_landing": "https://www.riskofbias.info/welcome/rob-2-0-tool/current-version-of-rob-2",
+  "official_download": "https://drive.google.com/uc?export=download&id=19R9savfPdCHC8XLz2iiMvL_71lPJERWK",
+  "private_pdf": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/attal-d3-assumptions-20261004/20190822-official-guidance.pdf",
+  "pdf_sha256": "a9e9c4fdc4be2d29b5c0a1a6b828e09f2014a34f6d5c302a532f6153ea0fd670",
+  "version": "22 August 2019",
+  "matches_current_pack_source_sha256": true,
+  "locators": [
+    "6.1.5–6.1.7, pp42–44",
+    "6.3, p44",
+    "Box8, SQ3.2–3.4, pp45–46"
+  ],
+  "handbook": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-08",
+  "handbook_sections": [
+    "8.5.1",
+    "8.5.3"
+  ],
+  "sas_primary_documentation": "https://support.sas.com/documentation/onlinedoc/stat/123/mi.pdf",
+  "sas_locator": "The MI Procedure, Statistical Assumptions for Multiple Imputation, printed p4745 (physical p35)",
+  "important_scope": "SAS documentation explains standard MI assumptions; trial-specific configuration/variables remain unreported, so no assertion that this exact documented procedure was used."
+}

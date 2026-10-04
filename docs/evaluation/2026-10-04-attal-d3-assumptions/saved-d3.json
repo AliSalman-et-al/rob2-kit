@@ -1,0 +1,92 @@
+{
+  "active_questions": [
+    "sq:missing:data-available",
+    "sq:missing:evidence-unbiased"
+  ],
+  "answers": [
+    {
+      "answer": "probably_no",
+      "bases": [
+        {
+          "evidence": "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+          "kind": "direct_support",
+          "source": "LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\nIn the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\nmore prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\nand more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\nMissing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\nNot at Random (MNAR) pattern."
+        },
+        {
+          "evidence": "sha256:eb02f403c72fd474c665cb31859adaa970c49980d846075d2e6407caa65ba7eb",
+          "kind": "direct_support",
+          "source": "Between Oct 2, 2010, and Aug 2, 2013, 152 participants\nwere enrolled in the study, of whom 68 were randomly\nassigned (34 per group; fi gure 1). One woman withdrew\non the day of the fi rst administration because she was\nafraid of the treatment and one man did not fi ll out any\npain assessment diaries and so he was not included in\nthe trial. We therefore included 66 participants in the\nintention-to-treat analysis: 34 in the botulinum toxin A\ngroup and 32 in the placebo group. 58 participants\nreceived a second treatment administration (32 in the\nbotulinum toxin A group and 26 in the placebo group)"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The primary analysis included 66 of 68 randomized participants, and LOCF-imputed values count as missing. In the 66-person dataset, 131/1,650 weekly pain records (7.9%) and 29/396 visit records (7.3%) were missing. Missing records were more common toward the end and in placebo. This is not clearly all or nearly all outcome data, particularly with a small trial and differential missingness.",
+      "question_id": "sq:missing:data-available",
+      "unknowns": [
+        "The supplement does not report how many individual participants had any missing record or arm-specific counts of observed and imputed values."
+      ]
+    },
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:a28850514ad6d6918d2e911cbc9578bae1ab88d18aad0085c7747c41d87752bf",
+          "kind": "direct_support",
+          "source": "A post-hoc sensitivity analysis of the primary outcome (see table further) showed that the LOCF results were\nsimilar to 3 other imputation methods: linear interpolation, maximum likelihood analysis (no case wise deletion\nby SAS Proc Mixed), and Markov chain Monte-Carlo (MCMC) multiply imputation that is suitable for arbitrary\nmissing patterns. This comparison showed that the BTX-A clinical efficacy was invariant whatever the method\nof imputation used."
+        },
+        {
+          "evidence": "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+          "kind": "context",
+          "source": "LOCF is one of the different methods of imputation that can be applied to datasets containing few missing data.\nIn the present study, out of 1650 data points for weekly pain (primary outcome) (66 x 25 records) only 131\n(7.9 %) were missing, and out of 396 data points (66 x 6 visits), 29 (7.3 %) were missing. Because they were\nmore prevalent at the end of the 24 weeks period mostly due to dropouts (time effect, Friedman test: p<0.0001)\nand more prevalent in the placebo group (2-sample Wilcoxon test: p=0.043) the missing pattern was identified as\nMissing at Random (MAR). No baseline effect on the missingness was detected, thereby ruling out a Missing\nNot at Random (MNAR) pattern."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "A post-hoc sensitivity analysis compared LOCF with linear interpolation, maximum likelihood mixed-model analysis, and MCMC multiple imputation and reported that clinical efficacy was invariant across methods. This supports probable robustness of the treatment effect, although the report does not show sensitivity to departures from the MAR assumption or plausible MNAR scenarios, and missingness was more common in placebo and late follow-up.",
+      "question_id": "sq:missing:evidence-unbiased",
+      "unknowns": [
+        "No sensitivity analysis under explicitly MNAR assumptions is reported."
+      ]
+    }
+  ],
+  "domain_id": "domain:missing",
+  "driver_questions": [],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+          "sha256:eb02f403c72fd474c665cb31859adaa970c49980d846075d2e6407caa65ba7eb"
+        ],
+        "question_id": "sq:missing:data-available",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:a28850514ad6d6918d2e911cbc9578bae1ab88d18aad0085c7747c41d87752bf",
+          "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94"
+        ],
+        "question_id": "sq:missing:evidence-unbiased",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      }
+    ],
+    "identity": "sha256:331539b7042fbd5102250e94a24a11571bff39aee3f572e07401c1ceb09de8a9"
+  },
+  "identity": "sha256:bf0ced3074fb77b47ff79c489efe59a7c1468d28a9e57b926e2c74d902115024",
+  "inactive_questions": [
+    "sq:missing:true-value-dependent",
+    "sq:missing:likely-dependent"
+  ],
+  "judgment": "low",
+  "observed_at": "2026-10-01T12:38:49.017865+00:00",
+  "result_identity": "sha256:f4a659126993b61a1487de8136960b59066acd72256331f095ce6de40b5dc77e",
+  "revision_basis": null,
+  "search_accounts": [],
+  "supersedes": null,
+  "trace": [
+    "missing.low"
+  ],
+  "trial_id": "attal-2016"
+}

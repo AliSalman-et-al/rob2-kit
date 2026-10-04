@@ -1,0 +1,14 @@
+[
+  {
+    "arm": "old",
+    "sha256": "75303f0a13f1f8cdf6f16537968dd4eff3d0455feb88eb8482caedcaadbf548d",
+    "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/attal-d3-assumptions-20261004/old-stderr.log",
+    "not_published": "Unrelated CLI operational metadata; raw preserved privately."
+  },
+  {
+    "arm": "new",
+    "sha256": "a1fdf36b083fa90eeaeed95dd07ec4a417589c49349557ef405d6778ff14d672",
+    "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/attal-d3-assumptions-20261004/new-stderr.log",
+    "not_published": "Unrelated CLI operational metadata; raw preserved privately."
+  }
+]

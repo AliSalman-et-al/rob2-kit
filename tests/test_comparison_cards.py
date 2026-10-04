@@ -465,6 +465,7 @@ def test_public_domain_cards_pair_endpoint_specific_scientific_contrasts() -> No
     expected_pairs = (
         ("domain:deviations", "d2-exclusion-rule-and-outcome-availability"),
         ("domain:missing", "d3-treatment-stop-with-followup-versus-loss"),
+        ("domain:missing", "d3-mitigation-evidence"),
         ("domain:measurement", "d4-toxicity-visits-by-endpoint"),
         ("domain:measurement", "d4-safety-window-evidence"),
         ("domain:selection", "d5-amendment-versus-unblinded-access"),

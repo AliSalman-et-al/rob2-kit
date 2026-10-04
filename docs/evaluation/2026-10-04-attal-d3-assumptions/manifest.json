@@ -1,0 +1,52 @@
+{
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "limits": {
+    "calls": 2,
+    "responses_per_arm": 1,
+    "tools": 0,
+    "output_tokens_per_arm": 3000,
+    "wall_seconds_per_arm": 300,
+    "idle_seconds_per_arm": 120,
+    "input_telemetry_only": true
+  },
+  "arms": {
+    "old": {
+      "work": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/old",
+      "config_sha256": "6ae7d6a71fdef0e42aac280814237aff08089c5f0d8bbf47b2558b60c79bf080",
+      "input_sha256": "39c00d0b74224dac1d11d72991bc71b214af810500913017ae3445443369b737",
+      "evidence_manifest_sha256": "06e2628080f6979cf6ef4656095fa41babb579b5542b8c33952b83bcba066ba1",
+      "existing_rollout_hashes": {
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/old/home/sessions/2026/10/04/rollout-2026-10-04T04-33-40-01a1041d-ba25-71c1-b562-32d84f247a03.jsonl": "c1b33310e567dc0f198e307cc245343a4aa301e4a793091ab2b16715c55c6484"
+      }
+    },
+    "new": {
+      "work": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new",
+      "config_sha256": "7ff32d942028fb0a9f6e11405c55f82d0a5cc3d8801da4d346c740381d345a3e",
+      "input_sha256": "4eb5e91462460213580e4985b1d566a04c0badef77587cad64c5bbf1d4c44a37",
+      "evidence_manifest_sha256": "acd2d1200a6c43c46fb492a6ba7f651871be7eaa6ca9c7a2f6f478e406c1095c",
+      "existing_rollout_hashes": {
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T06-32-44-01a1048a-bb6e-73b3-b567-7233b29bfa48.jsonl": "4029b8e588c4f199440486b12379a07ea86fc9abde8e316a873b0e53b00d2e83",
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T05-36-09-01a10456-ef2f-7d30-9c9b-3ef3a486d004.jsonl": "edc69c88c0275976429f4b4983f5c70915f4d868dd4dcdf7f61902d6a1d6a660",
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T04-33-51-01a1041d-e522-7452-bc88-0d3a490aa0df.jsonl": "14365017c47602cd84858376f4c54a45328af1399f85ca6651228dac9e2bb786",
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T07-18-33-01a104b4-adab-7d30-ba50-bad7aac88e9e.jsonl": "22dfb6aa516600793b71fda39e62e0359ddfa0e27a6f76e4405f2616d9112717"
+      }
+    }
+  },
+  "instructions_sha256": "e5bb5355b851696528d5bf67451a849754fee22a3f0808fd9a252b1e4089a297",
+  "sources_sha256": "b3aafd62f4544fd8d8507e236b6de8d8568b4960d16886fcf4b9e9d09fe397e0",
+  "scope_review_sha256": "87e7f7f89d449659f4cd2db934440fec6b0b9e3ee09a77bbbb53eba6ab9f5cc9",
+  "private_criteria_sha256": "549d43b770ca6a8c97bc00c6d04a392cb48709112dbb1155dd906a050c6c0b26",
+  "runner_sha256": "a8d5356277809bd65ad072c5395730d48a6520234977dce16d7b94db856919fe",
+  "protected_originals": {
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/finalized/35b7779d15b3c996582d9ec317be67b969e1770409cb8d46af936f5ed6346c59.rob2.zip": "734cba17c8a570027161e6aa1dbc2b48cc9f42adb196a115fe8be658c4ed3030",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/canonical.sqlite3": "61eb552bc83d9be85934f12e1f959d847083983f1ab773ae3b7bf58fce481899",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/working.sqlite3": "d6f499d48c35ed78baf1895abc7b29b4b52f6468968cac6946f981fb406eeddc",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/derivative.sqlite3": "83c1c0844b4da91c36b9217a1225bcf205c0eb9805b5209ba400f00b02e58527",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/attal-2016/mmc1.pdf": "e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/attal-2016/S1474-4422-16-00017-X.pdf": "cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/nefigard/.rob2-kit/finalized/2fb6694c4059a09fdee4f54bb9263afbb01b9a034319de26787d9108b53bd427.rob2.zip": "b8337aaa8962d1ace8fee025711dea52a0b66ec1886b604f41fe7a9a0f2a7c2f",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/nefigard/.rob2-kit/derivative.sqlite3": "987fb7141bdb0f135cd3cda2f25b08def978f9d467fa62f9bb84d3b46d79ad96"
+  },
+  "implementation_sha256": "ea66b8addfa0ac2e8f3d3885cb2b66eeb0820175e55b3cae0a47f007044cbb90"
+}

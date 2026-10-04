@@ -1,0 +1,13 @@
+{
+  "freeze_before_launch": true,
+  "criteria": [
+    "Retain exact overall endpoint rather than point-specific contrast.",
+    "Recognize real numerical stability without treating method names as proof.",
+    "Distinguish changed trajectory restrictions and retained/unreported assumptions; do not assert all methods have identical MAR assumption.",
+    "Assess source mechanism correspondence; treatment discontinuation does not alone prove outcome loss.",
+    "Do not demand explicit MNAR analysis universally or every conceivable worst-case scenario.",
+    "Retain control reassurance when alternative assumptions address early discontinuers; same label alone is neither gain nor failure.",
+    "Separate factual/methodological error from a defensible probability judgment."
+  ],
+  "decision": "Keep only with no observed scientific regression and demonstrably useful structured comparison; revise or reject if it adds false demands/overconfidence. Two observations do not estimate accuracy."
+}
