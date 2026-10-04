@@ -1,0 +1,393 @@
+{
+  "read_pages": {
+    "item": "item_6",
+    "tool": "read_pages",
+    "arguments": {
+      "trial_id": "bagg-2022",
+      "windows": [
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 59
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 2,
+          "start_line": 1,
+          "end_line": 119
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 119
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 100
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 189
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 265
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 161
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 179
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 176
+        },
+        {
+          "source_id": "sh_5582fd4a6f0b7c5f",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 186
+        }
+      ]
+    },
+    "receipt": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 3,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "bagg-2022",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "pages": [
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 1,
+            "numbered_text": "1|Effect of Graded Sensorimotor Retraining on Pain Intensity\n2|in Patients With Chronic Low Back Pain\n3|A Randomized Clinical Trial\n4|Matthew K. Bagg, PhD; Benedict M. Wand, PhD; Aidan G. Cashin, PhD; Hopin Lee, PhD; Markus H\u00fcbscher, PhD;\n5|Tasha R. Stanton, PhD; Neil E. O'Connell, PhD; Edel T. O'Hagan, MSc; Rodrigo R. N. Rizzo, MSc; Michael A. Wewege, MSc;\n6|Martin Rabey, PhD; Stephen Goodall, PhD; Sopany Saing, MPH; Serigne N. Lo, PhD; Hannu Luomajoki, PhD;\n7|Robert D. Herbert, PhD; Chris G. Maher, DMedSc; G. Lorimer Moseley, PhD; James H. McAuley, PhD\n8|IMPORTANCE The effects of altered neural processing, defined as altering neural networks\n9|responsible for perceptions of pain and function, on chronic pain remains unclear.\n10|OBJECTIVE To estimate the effect of a graded sensorimotor retraining intervention\n11|(RESOLVE) on pain intensity in people with chronic low back pain.\n12|DESIGN, SETTING, AND PARTICIPANTS This parallel, 2-group, randomized clinical trial recruited\n13|participants with chronic (>3 months) nonspecific low back pain from primary care and\n14|community settings. A total of 276 adults were randomized (in a 1:1 ratio) to the intervention\n15|or sham procedure and attention control groups delivered by clinicians at a medical research\n16|institute in Sydney, Australia. The first participant was randomized on December 10, 2015,\n17|and the last was randomized on July 25, 2019. Follow-up was completed on February 3, 2020.\n18|INTERVENTIONS Participants randomized to the intervention group (n = 138) were asked to\n19|participate in 12 weekly clinical sessions and home training designed to educate them about\n20|and assist them with movement and physical activity while experiencing lower back pain.\n21|Participants randomized to the control group (n = 138) were asked to participate in 12 weekly\n22|clinical sessions and home training that required similar time as the intervention but did not\n23|focus on education, movement, and physical activity. The control group included sham laser\n24|and shortwave diathermy applied to the back and sham noninvasive brain stimulation.\n25|MAIN OUTCOMES AND MEASURES The primary outcome was pain intensity at 18 weeks,\n26|measured on an 11-point numerical rating scale (range, 0 [no pain] to 10 [worst pain\n27|imaginable]) for which the between-group minimum clinically important difference\n28|is 1.0 point.\n29|RESULTS Among 276 randomized patients (mean [SD] age, 46 [14.3] years; 138 [50%]\n30|women), 261 (95%) completed follow-up at 18 weeks. The mean pain intensity was 5.6 at\n31|baseline and 3.1 at 18 weeks in the intervention group and 5.8 at baseline and 4.0 at 18 weeks\n32|in the control group, with an estimated between-group mean difference at 18 weeks\n33|of -1.0 point ([95% CI, -1.5 to -0.4]; P = .001), favoring the intervention group.\n34|CONCLUSIONS AND RELEVANCE In this randomized clinical trial conducted at a single center\n35|among patients with chronic low back pain, graded sensorimotor retraining, compared with a\n36|sham procedure and attention control, significantly improved pain intensity at 18 weeks. The\n37|improvements in pain intensity were small, and further research is needed to understand the\n38|generalizability of the findings.\n39|TRIAL REGISTRATION ANZCTR Identifier: ACTRN12615000610538\n40|JAMA. 2022;328(5):430-439. doi:10.1001/jama.2022.9930\n41|Visual Abstract\n42|Supplemental content\n43|Author Affiliations: Author\n44|affiliations are listed at the end of this\n45|article.\n46|Corresponding Author: James H.\n47|McAuley, PhD, Neuroscience\n48|Research Australia, Margarete\n49|Ainsworth Building, Barker Street,\n50|Randwick 2031, Sydney,\n51|New South Wales, Australia\n52|(j.mcauley@neura.edu.au).\n53|Research\n54|JAMA | Original Investigation\n55|430\n56|(Reprinted)\n57|jama.com\n58|\u00a9 2022 American Medical Association. All rights reserved.\n59|Downloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+            "line_count": 59,
+            "returned_start_line": 1,
+            "returned_end_line": 59,
+            "page_remainder": null,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_7f3091c24da3fa22"
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 2,
+            "numbered_text": "1|I\n2|n 2019, low back pain affected approximately 52 million\n3|peopleintheUSand568millionpeopleworldwide.1,2Based\n4|on data from 1990 to 2019, low back pain was the leading\n5|cause of years lived with disability worldwide.1 A meta-\n6|analysis from 2013 indicated that one-third of people with low\n7|back pain experienced persistent pain and disability 3 months\n8|after symptom onset,3 and these individuals were unlikely to\n9|recover completely within 1 year.3\n10|New effective treatments are needed for low back pain.4-6\n11|Graded sensorimotor retraining (RESOLVE) is a novel inter-\n12|vention designed to alter how people think about their body\n13|in pain, how they process sensory information from their back,\n14|and how they move their back during activities.\n15|This randomized clinical trial evaluated the effects of\n16|graded sensorimotor retraining, compared with an attention\n17|control with sham procedure, in people with moderate to se-\n18|vere chronic low back pain.\n19|Methods\n20|Study Design and Participants\n21|This parallel, 2-group, randomized clinical trial was ap-\n22|proved by the University of New South Wales Human Re-\n23|searchEthicsCommittee(HC15357).Thetrialprotocolisshown\n24|in Supplement 1. Protocols published during the trial7,8 did not\n25|include secondary outcomes that were process variables, and\n26|these outcomes are not reported here. The secondary out-\n27|come of Insomnia Severity Index was omitted from the pub-\n28|lished protocol7 in error. Participants were recruited between\n29|November 1, 2015, and July 28, 2019. The first participant was\n30|randomized on December 10, 2015, and follow-up was com-\n31|pleted on February 3, 2020. All participants gave written in-\n32|formed consent.\n33|Participants were recruited in Sydney, Australia, by di-\n34|rect referral from primary care clinicians as well as by adver-\n35|tisements in the community using local and online media.\n36|People were eligible for inclusion if they reported back pain\n37|with a pain intensity rating of at least 3 of 10 on an 11-point nu-\n38|merical rating scale that persisted for at least 12 consecutive\n39|weeks, regardless of whether they had associated leg pain. Ad-\n40|ditional inclusion criteria were age between 18 and 70 years,\n41|fluency in the English language, ability to access the internet,\n42|and availability of a trusted person to assist with the home por-\n43|tion of the intervention. People with radicular pain, with low\n44|back pain caused by a serious medical condition (ie, infec-\n45|tion, fracture, malignancy), who were pregnant or gave birth\n46|in the past 6 months, who had undergone spinal surgery in the\n47|past 12 months or were scheduled for major surgery in the next\n48|12 months, with an uncontrolled mental health condition that\n49|would impede participation, and with contraindications to\n50|physical activity, transcranial direct current stimulation, cra-\n51|nialelectricalstimulation,low-intensitylasertherapy,orshort-\n52|wave diathermy were excluded.\n53|Randomization and Masking\n54|Eligible participants were randomly allocated (in a 1:1 ratio) to\n55|receive the intervention or matched attention control with\n56|sham procedures. Participants were informed that both group\n57|interventions contained treatments that targeted central ner-\n58|vous system function, combined with treatments directed to-\n59|ward functioning of the back. Participants were informed that\n60|some of the treatments were not active. No further informa-\n61|tion was disclosed publicly to maintain the integrity of blind-\n62|ing. Participants were not required to stop ongoing treatment\n63|for their low back pain.\n64|Arandomizationsequencewasgeneratedusingcomputer-\n65|generatedblockrandomization(randomblocksizerange,2-10).\n66|Randomizations were sealed in opaque, sequentially num-\n67|bered envelopes. Eligible participants were randomly as-\n68|signed immediately after baseline assessment by opening the\n69|next numbered envelope, at which point they were consid-\n70|ered enrolled. The trial clinicians were unblinded, but partici-\n71|pants, researchers collecting outcome data, and researchers\n72|analyzing outcome data were masked to group identity.\n73|Procedures\n74|Graded Sensorimotor Retraining\n75|The graded sensorimotor retraining intervention was deliv-\n76|ered by a physiotherapist (n = 6) or an exercise physiologist\n77|(n = 1). The intervention consisted of 12 individual treatment\n78|sessions lasting up to 1 hour scheduled over 12 to 18 weeks.\n79|The intervention included a home treatment component that\n80|participants were encouraged to complete for 30 minutes 5\n81|times per week during the treatment period, recording their\n82|participation in an intervention diary. The primary intention\n83|wastohelppeopleinpainunderstandthatitwassafeandhelp-\n84|ful to move (step 1), feel safe to move (step 2), and experience\n85|that it was safe to move (step 3) as they progressed toward re-\n86|engagement with meaningful functional goals. The first ses-\n87|sion included contemporary pain education delivered using\n88|graphical media, video, metaphor, and narrative and contin-\n89|ued for the duration of the intervention (step 1). In sessions 2\n90|through 12, graded premovement treatments were provided\n91|in the clinic and continued at home, which involved sensory\n92|precision training and mental rehearsal of movement (step 2).\n93|Inthesixthsession,participantsbegangradedmovementtrain-\n94|ing in the clinic and continued at home, starting with simple\n95|Key Points\n96|Question What is the effect of a graded sensorimotor retraining\n97|intervention on pain intensity for adults with chronic low back pain?\n98|Findings In this randomized clinical trial that included 276\n99|participants, a graded sensorimotor retraining intervention,\n100|compared with a sham procedure and attention control, resulted\n101|in a statistically significant improvement in pain intensity at 18\n102|weeks (estimated mean difference, 1.0 point on an 11-point\n103|numeric rating scale [range, 0-10 points]).\n104|Meaning Among patients with chronic low back pain, a graded\n105|sensorimotor retraining intervention, compared with a sham\n106|procedure and attention control, significantly improved pain\n107|intensity at 18 weeks, although the improvements were modest\n108|and further research in other patient populations is needed to\n109|understand the generalizability of the findings.\n110|Effect of Graded Sensorimotor Retraining on Pain Intensity in Patients With Chronic Low Back Pain\n111|Original Investigation Research\n112|jama.com\n113|(Reprinted)\n114|JAMA\n115|August 2, 2022\n116|Volume 328, Number 5\n117|431\n118|\u00a9 2022 American Medical Association. All rights reserved.\n119|Downloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+            "line_count": 119,
+            "returned_start_line": 1,
+            "returned_end_line": 119,
+            "page_remainder": null,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_b5bbb9db5a0e35e5"
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 3,
+            "numbered_text": "1|spinal movements before progressing toward more complex\n2|exercises, such as squatting, lunging, and lifting, which con-\n3|tinuedforthedurationoftheintervention.Eachtreatmentses-\n4|sion followed a standardized protocol with mandatory pro-\n5|gression (eFigure in Supplement 2). The full intervention\n6|description is provided in the eMethods in Supplement 2.\n7|Attention Control With Sham Procedures\n8|The attention control with sham procedures was delivered by\n9|a physiotherapist (n = 3), 2 of whom also delivered the graded\n10|sensorimotor retraining intervention. Participants random-\n11|ized to the control group underwent 12 1-hour sessions over a\n12|period of 12 to 18 weeks. Sessions took place approximately\n13|weekly.Thecontrolgroupwasdesignedtocontrolfortimewith\n14|an expert clinician and the graded progression of treatment in\n15|the intervention.\n16|The first 2 sessions included discussion of the partici-\n17|pant's low back pain experience without advice or education\n18|provided. Sessions 3 through 12 included sham low-intensity\n19|laser therapy to the most painful area of the back and sham\n20|transcranial direct current stimulation applied to the motor\n21|and prefrontal cortices on the side contralateral to their worst\n22|pain.9 In the sixth session, participants began sham short-\n23|wave diathermy over the back, which continued for the dura-\n24|tion of the intervention. To match the intervention's home\n25|training component, participants were provided with a sham\n26|cranial electrical stimulation device and instructed to use it\n27|at home for 30 minutes 5 times a week and record their use in\n28|a diary. Treatment adherence to the intervention and control\n29|was assessed by recording the attendance of participants at\n30|each treatment session.\n31|Data Collection\n32|Data were collected at baseline (prior to randomization) and\n33|at 18, 26, and 52 weeks after randomization using mailed ques-\n34|tionnaires and secure online data-capture software. Demo-\n35|graphic and clinical characteristics (age, sex, work status, edu-\n36|cational level, duration of current back pain episode, number\n37|of previous episodes, self-reported use of prescribed and over-\n38|the-counter medicines for low back pain, other areas of pain,\n39|and back pain-related compensation status) were obtained at\n40|the baseline assessment prior to randomization, along with all\n41|primary and secondary outcome measurements. No data were\n42|collected on race, ethnicity, or ancestry.\n43|Outcome Measurements\n44|Primary Outcome\n45|The primary outcome was mean pain intensity over the pre-\n46|vious week assessed using an 11-point numerical rating\n47|scale10 (range, 0 [no pain] to 10 [worst pain imaginable]) at 18\n48|weeks after randomization. The between-group minimal\n49|clinically important difference (MCID) is 1.0 point on the\n50|11-point numerical rating scale.11 The within-group MCID is\n51|a 30% change from baseline.12\n52|Secondary Outcomes\n53|Secondary outcomes were disability, assessed using the 24-\n54|item Roland-Morris Disability Questionnaire13 (scale range,\n55|0-24; higher scores indicate greater disability; within-group\n56|MCID, 30% from baseline)12; health-related quality of life, as-\n57|sessed using the 5-level EuroQoL-5 dimensions14 question-\n58|naire (EQ-5D-5L; scale range, 1-5; higher scores indicate bet-\n59|ter quality of life; within-group MCID, 0.03 from baseline15)\n60|and the EuroQol-5D health thermometer (range, 0-100;\n61|higherscoresindicatebetterqualityoflife;within-groupMCID,\n62|10.5)15; depressive symptoms, assessed using the depression\n63|subscale of the Depression Anxiety Stress Scale (range, 0-21;\n64|higher scores indicate worse outcome; MCID not estab-\n65|lished); sleep quality (insomnia), assessed using the Insom-\n66|nia Severity Index (range 0-28; higher scores indicate worse\n67|insomnia; MCID not established); beliefs about low back pain,\n68|assessed using the Back Beliefs Questionnaire (range 9-45;\n69|lower scores indicate more pessimistic beliefs about the con-\n70|sequences of low back pain; MCID not established); kinesio-\n71|phobia, assessed using the Tampa Scale of Kinesiophobia\n72|(range, 17-68; higher scores are worse; MCID not estab-\n73|lished); catastrophizing, assessed using the Pain Catastroph-\n74|izing Scale (range, 0-52; higher scores are worse; MCID not es-\n75|tablished); the Pain Self-Efficacy Questionnaire (range, 0-60;\n76|higher scores are better; within-group MCID, 5.5); and treat-\n77|ment rationale credibility, assessed using the Credibility and\n78|Expectancy Questionnaire16 (scale range, 0-48; lower scores\n79|are worse, MCID not established).\n80|Serious adverse events and adverse events were reported\n81|by the patient and recorded by the trial therapist at the begin-\n82|ning of each treatment session.\n83|Additional Prespecified Outcomes\n84|Additional prespecified outcomes consist of process variables\n85|(2-pointdiscriminationdistance,left-rightjudgementtaskper-\n86|formance [accuracy and speed], Neurophysiology of Pain\n87|Questionnaire score, Fremantle Back Awareness Question-\n88|naire score, Movement Imagery Questionnaire-Revised score,\n89|and Elgueta-Cancino Pelvic Tilt Test) and cost-effectiveness,\n90|which will be reported separately.\n91|Post Hoc Outcomes\n92|Post hoc outcomes consisted of recovery, defined as pain in-\n93|tensity in the past week rated less than or equal to 1 on the\n94|11-point numerical rating scale at both 18 and 26 weeks after\n95|randomization (MCID not established); response to interven-\n96|tion, defined as at least 30% reduction in pain intensity from\n97|baseline to 18 weeks; response to intervention, defined as at\n98|least50%reductioninpainintensityfrombaselineto18weeks;\n99|and global perceived effect, assessed using the Global Back\n100|Recovery Scale (range, -5 to 5; lower scores indicate poorer re-\n101|covery; MCID not established).\n102|Sample Size Calculation\n103|The trial was designed to detect a mean (SD) between-group\n104|difference of 1.0 (2.0) point in pain intensity at the primary end\n105|point of 18 weeks. A 1.0-point difference on an 11-point nu-\n106|merical rating scale has been suggested as the threshold for\n107|clinical importance for a between-group difference (between-\n108|group MCID) in clinical trials investigating interventions for\n109|chronic pain.11 Sample size was calculated for an interaction\n110|Research Original Investigation\n111|Effect of Graded Sensorimotor Retraining on Pain Intensity in Patients With Chronic Low Back Pain\n112|432\n113|JAMA\n114|August 2, 2022\n115|Volume 328, Number 5\n116|(Reprinted)\n117|jama.com\n118|\u00a9 2022 American Medical Association. All rights reserved.\n119|Downloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+            "line_count": 119,
+            "returned_start_line": 1,
+            "returned_end_line": 119,
+            "page_remainder": null,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_e2b51ea83b74ff12"
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 4,
+            "numbered_text": "1|effect between time (4 repeated observations) and group ran-\n2|domization, using an estimated interobservation correlation\n3|of base 0.6 with decay rate 0.1, significance level of .05, and\n4|power of 80%.17 With a 1:1 treatment randomization and an-\n5|ticipating a 15% loss to follow-up, the trial aimed to recruit 276\n6|participants. After 15 participants had been randomized, an er-\n7|rorwasdetectedinthespecificationofrepeatedmeasuresused\n8|for the sample size calculation. A recalculation required the\n9|sample to be increased from 266 to 276 and for disability, mea-\n10|sured by the Roland Morris Disability Questionnaire, to be\n11|changed from a primary outcome to a secondary outcome to\n12|maintain statistical power for a single primary outcome-\n13|pain intensity.\n14|Statistical Analysis\n15|Mean values are presented for normally distributed data and\n16|median values with IQRs are presented for skewed data. The\n17|mean between-group difference on the primary outcome of\n18|pain intensity and the secondary outcomes of disability, qual-\n19|ity of life, depressive symptoms, insomnia, back beliefs,\n20|kinesiophobia, pain catastrophizing, pain self-efficacy, and\n21|global perceived effect were estimated with linear mixed mod-\n22|elsthatincorporatedgrouprandomization,time,andthetreat-\n23|ment \u00d7 time interaction term. Time was modeled as a 4-level\n24|categorical variable, which assumed observations were col-\n25|lected at the stipulated time. The model was robust to data\n26|missing at random and accounted for baseline outcome val-\n27|ues. For continuous outcomes, the estimated effects were the\n28|differences in mean values between the groups at 18 weeks,\n29|26 weeks, and 52 weeks and the overall difference across all\n30|time points. For the post hoc dichotomous outcomes, recov-\n31|eryandresponse,thepercentageofparticipantsineithergroup\n32|was compared using the Fisher exact test. The effect of the in-\n33|terventionwasexpressedastheabsolutedifferenceinrisk,and\n34|the ratio of risks, between groups. Credibility was compared\n35|between groups using an independent samples t test. The full\n36|analysis set included all randomized participants who pro-\n37|vided data at each time point analyzed. For all statistical analy-\n38|ses, participant data were analyzed in the groups to which they\n39|were randomized, regardless of adherence. Missing data were\n40|considered trivial for the primary outcome of pain intensity\n41|at 18 weeks, and assumed to be missing at random. There-\n42|fore, multiple imputation was not performed.\n43|All effects were estimated with a 95% CI and all statistical\n44|tests were 2-sided with \u03b1 level of .05. Because of the po-\n45|tential for type I error due to multiple comparisons, findings\n46|for analyses of secondary outcomes should be interpreted\n47|as exploratory.\n48|The mean effect of the intervention on pain intensity at\n49|18 weeks on the principal stratum of participants who would\n50|adhere to the randomized intervention regardless of which\n51|intervention group they were randomized to (the complier\n52|mean causal effect) was estimated using instrumental vari-\n53|able regression with allocation as the instrumental variable.18\n54|Figure 1. Flow of Participants in a Study of the Effect of Sensorimotor Retraining on Pain Intensity\n55|in Chronic Low Back Pain\n56|1585 Patients assessed for eligibility\n57|1309 Excluded\n58|604 Could not attend the study site\n59|113 No chronic low back pain\n60|90 Not aged 18-70 y\n61|74 Could not perform the home intervention\n62|66 Reported low back pain intensity less\n63|than 3 of 10\n64|30 Declined participation\n65|24 Other",
+            "line_count": 100,
+            "returned_start_line": 1,
+            "returned_end_line": 65,
+            "page_remainder": {
+              "source_id": "sh_5582fd4a6f0b7c5f",
+              "page": 4,
+              "start_line": 66,
+              "end_line": 100
+            },
+            "truncated": true,
+            "next_start_line": 66,
+            "passage_ref": "eh_a0f6ff0508c50cfb"
+          }
+        ],
+        "remaining_windows": [
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 4,
+            "start_line": 66,
+            "end_line": 100
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 189
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 265
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 161
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 179
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 176
+          },
+          {
+            "source_id": "sh_5582fd4a6f0b7c5f",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 186
+          }
+        ]
+      }
+    },
+    "error": null
+  },
+  "select_text_evidence": {
+    "item": "item_15",
+    "tool": "select_text_evidence",
+    "arguments": {
+      "trial_id": "bagg-2022",
+      "source_id": "sh_90c77f638a7d3e91",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 9
+    },
+    "receipt": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 3,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "bagg-2022",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "evidence": {
+          "kind": "narrative",
+          "handle": "eh_56878dbead328c58",
+          "identity": "sha256:56878dbead328c58f6d06fd17cf90804d3f0296eefc3e800e05358f020626b5d",
+          "trial_id": "bagg-2022",
+          "source_id": "sh_90c77f638a7d3e91",
+          "source_version": "sha256:f6218dce780c08d931af59f3a68f6d0ce65c72e885972a416500a88a6b25f407",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 9,
+          "start": 0,
+          "end": 596,
+          "quote": "Trial protocol\nThe trial protocol was submitted to UNSW ethics committee on Nov 29, 2015, prior to\nrandomisation of the first participant.\nThe Statistical Analysis Plan was drafted on Mar 2, 2020.\nOne major change was made to the trial protocol during the trial.\nJune 2016 - due to error in the specification of repeated measures used for the sample size\ncalculation the sample size was changed to 276 and disability, measured by the RMDQ, from\nprimary to secondary outcome. This change was included in the published protocol (Bagg et\nal. 2017) and submission to ethics committee on Nov 27, 2016.",
+          "inclusion_reason": null,
+          "domain_id": null,
+          "question_id": null,
+          "search_session": null,
+          "candidate_rank": null,
+          "returned_previously": null,
+          "text_status": "complete",
+          "recovery": null
+        }
+      }
+    },
+    "error": null
+  },
+  "save_domain_judgment": {
+    "item": "item_19",
+    "tool": "save_domain_judgment",
+    "arguments": {
+      "trial_id": "bagg-2022",
+      "domain_id": "domain:selection",
+      "expected_revision": 3,
+      "answers": [
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "no_information",
+          "bases": [
+            {
+              "evidence": "eh_56878dbead328c58",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_75cb920cf1ff919c",
+              "role": "context"
+            },
+            {
+              "evidence": "eh_fc0fcdbbd1bf24e9",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The captured supplement dates the SAP draft to March 2, 2020, and describes the approved primary endpoint/analysis as pain intensity at 18 weeks using a mixed-effects model. The main report says follow-up was completed February 3, 2020, and reports the corresponding 18-week analysis. However, neither source establishes when unblinded outcome data became available to the investigators making analysis decisions. The chronology raises a concern that the SAP was drafted after outcome collection, but collection completion, data cutoff, or a draft date alone does not establish investigator access. Under the question's uncertainty rule, neither a definitive nor probable timing judgment is sufficiently grounded.",
+          "unknowns": [
+            "When investigators first had access to unblinded outcome data; whether the March 2, 2020 SAP draft was finalized before such access."
+          ],
+          "counterevidence": [],
+          "limitations": [
+            {
+              "premise": "The captured sources do not report when investigators making analysis decisions first accessed unblinded outcome data.",
+              "stopping_rationale": "I inspected the supplement's protocol chronology (page 1), SAP content and date (pages 7, 12-13), and the main report's follow-up and analysis sections. These establish SAP drafting after follow-up completion and the reported analysis, but not investigator access timing; no captured source passage resolves that missing event."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "no",
+          "bases": [
+            {
+              "evidence": "eh_75cb920cf1ff919c",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_fc0fcdbbd1bf24e9",
+              "role": "direct_support"
+            }
+          ],
+          "justification": "The SAP identifies one primary pain measurement: average pain intensity in the previous week on a subject-rated 0-10 NRS at 18 weeks. The report provides pain results at the specified primary time point and also reports follow-up pain at 26 and 52 weeks. It separately identifies recovery and response thresholds as post hoc outcomes and reports both 30% and 50% response definitions. Thus the inspected material does not show an eligible pain measurement selected from multiple eligible scales/definitions with only a favorable subset reported; the stated primary measure and the presented additional pain follow-ups/threshold results are reported.",
+          "unknowns": [],
+          "counterevidence": []
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "no",
+          "bases": [
+            {
+              "evidence": "eh_d6b37a75bfc7a32a",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_fc0fcdbbd1bf24e9",
+              "role": "direct_support"
+            },
+            {
+              "evidence": "eh_b7e9d9e487fb79b3",
+              "role": "context"
+            }
+          ],
+          "justification": "For the approved 18-week mean difference, the SAP specifies a mixed-effects model with group-by-time terms and an 18-week contrast; the main report describes linear mixed models, estimates the between-group difference at 18 weeks, and reports that result. The report also discloses a separately specified complier causal-effect analysis and reports its estimate. The captured passages do not identify a set of eligible alternative analyses from which the 18-week primary estimate was selected based on results, nor a result-driven reporting choice. Although the SAP's chronology relative to unblinded access remains unknown, that uncertainty alone is not evidence of selection among analyses.",
+          "unknowns": [
+            "Whether other eligible analyses were conducted but not reported, beyond the primary mixed-effects analysis and the reported complier causal-effect analysis."
+          ],
+          "counterevidence": []
+        }
+      ]
+    },
+    "receipt": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 4,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "bagg-2022",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint": {
+          "identity": "sha256:b19a9f0a704806c05bbd6ec18a329f1c5feca51440a1f6f19579a7d6059a71f4",
+          "trial_id": "bagg-2022",
+          "domain_id": "domain:selection",
+          "judgment": "some_concerns",
+          "driver_questions": [
+            "sq:selection:prespecified-analysis"
+          ],
+          "evidence_sufficiency": {
+            "claims": [
+              {
+                "question_id": "sq:selection:prespecified-analysis",
+                "status": "unresolved",
+                "evidence": [
+                  "sha256:56878dbead328c58f6d06fd17cf90804d3f0296eefc3e800e05358f020626b5d",
+                  "sha256:75cb920cf1ff919ceeb6232750d0c60490d1702524c24a8a6bbc0ae8180e18cc",
+                  "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [
+                  "The captured sources do not report when investigators making analysis decisions first accessed unblinded outcome data."
+                ],
+                "support_attribution": "host_asserted"
+              },
+              {
+                "question_id": "sq:selection:multiple-measurements",
+                "status": "supported",
+                "evidence": [
+                  "sha256:75cb920cf1ff919ceeb6232750d0c60490d1702524c24a8a6bbc0ae8180e18cc",
+                  "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "host_asserted"
+              },
+              {
+                "question_id": "sq:selection:multiple-analyses",
+                "status": "supported",
+                "evidence": [
+                  "sha256:d6b37a75bfc7a32a8aa67e543e0cddf2b0919bf16a149b69f9a11cb9cb481f9a",
+                  "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d",
+                  "sha256:b7e9d9e487fb79b34292ee95ba349dc4be31e65cf5ffe5a0b264bcf96c4bca59"
+                ],
+                "search_receipts": [],
+                "unresolved_premises": [],
+                "support_attribution": "host_asserted"
+              }
+            ],
+            "identity": "sha256:0622acab05af711882f7c14692b6df7efe6296571a9db4859733397cd1d60008"
+          }
+        },
+        "trial_ready_for_review": false,
+        "retry": false
+      }
+    },
+    "error": null
+  }
+}

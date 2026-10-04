@@ -1,0 +1,57 @@
+{
+  "events.jsonl": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/events.jsonl",
+    "sha256": "f45a3cf5253235f66cfe763a7ba0ae9cb12795db20ada7f9e48422cf07abf580",
+    "bytes": 213278
+  },
+  "initial-canonical.sqlite3": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/initial-canonical.sqlite3",
+    "sha256": "ebb9be5730cfdf460e3d4eb783af66634ebf0ab83a39f2ad2a2d1bab6aa77010",
+    "bytes": 389120
+  },
+  "availability-packet.bin": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/availability-packet.bin",
+    "sha256": "e0ad7c4aacc96ac3e16f2df8f9a929669f05c408af7161cea59da8a3955ffbbc",
+    "bytes": 844555
+  },
+  "availability-manifest.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/availability-manifest.json",
+    "sha256": "4398d506d04203f86ef426d89a24fd3e8e45ff8211068e6fa29e2b35ffaba36a",
+    "bytes": 25920
+  },
+  "protected-staging.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/protected-staging.json",
+    "sha256": "d1e98a155ebae2bf3a6149e163e74360d40f8e0e2d720131f5ec3a1d8af40360",
+    "bytes": 662822
+  },
+  "stderr.log": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/stderr.log",
+    "sha256": "63eb31dcf65d5c0a7af9e23d316cf214b18850a2bf8c39a917eeeccc65a2003a",
+    "bytes": 442813
+  },
+  "native-tools-list.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/native-tools-list.json",
+    "sha256": "73e9110ac30b64497e2386ab233b19b21578455ecc3bdb040d401aed575769e6",
+    "bytes": 1096537
+  },
+  "native-instructions.md": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/native-instructions.md",
+    "sha256": "b9790d27c32b2ce9855d921afde5c6c4888c4c7b65a81cb027ff2979d1dfc8df",
+    "bytes": 71401
+  },
+  "main-p3.png": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/main-p3.png",
+    "sha256": "7fafe8c753c039bfd20e0b79307a8208a21af79589af3d24fcae72758295f7e4",
+    "bytes": 319054
+  },
+  "main-p4.png": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/main-p4.png",
+    "sha256": "a802c42ae3c9b8c56baab6e325059217ae24c52af39e2332a08d05593d5f29eb",
+    "bytes": 209873
+  },
+  "main-p6.png": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/main-p6.png",
+    "sha256": "1d6c4a6c2c9540af4416898a4f7366f31d8afbc4bf283eab7f02cf435209496c",
+    "bytes": 157336
+  }
+}

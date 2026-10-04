@@ -91,6 +91,20 @@ an explicit stopping rationale and, when useful, the current search receipt. A
 Source role or an empty passage list cannot establish either plan presence or
 plan absence.
 
+## Bind the comparison to the cited passages
+
+Keep earlier and later plan versions in the comparison. Matching the latest SAP
+and report does not resolve changes in earlier intended measurements or analyses.
+Read the relevant earlier definitions when they could change the conclusion;
+qualify unresolved differences without assuming they were driven by results.
+
+When a warrant says that alternative results were reported, cite the actual
+results passages or tables, not only a methods paragraph describing analyses.
+Likewise, cite the relevant plan passages for the intended alternatives. Reuse
+adequate captured Evidence; no additional search is needed just to add a citation.
+A method description can support what was analysed without establishing that all
+estimates were fully reported. Keep inference and remaining uncertainty explicit.
+
 ## Separate the two selection mechanisms
 
 For eligible outcome measurements, compare alternative scales, definitions,

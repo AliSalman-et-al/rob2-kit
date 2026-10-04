@@ -1,0 +1,1 @@
+Private review criteria only, not modelinput. Bagg2022 complete main10pages + protocol/SAP27 + intervention9 + sharing1. Plan/report/outcome/method/time correspondence requires independent audit. SAP date alone cannot prove unblinded result-driven choices. No preferred label frozen.

@@ -1,0 +1,404 @@
+{
+  "case": "bagg-2022",
+  "frozen_implementation": "f7bbe3886a578fd8da7837a4cbf04bc1a1eff699",
+  "original_Code_source_set": {
+    "PDFs": 4,
+    "pages": 47,
+    "complete_and_hash_verified": true
+  },
+  "prior_exposure": "Original Code Oct1 benchmark only; no prior improvement-campaign paid diagnostic found",
+  "original_Result_target_report_relation_unchanged": true,
+  "official_authority": {
+    "source_sha256": "a9e9c4fdc4be2d29b5c0a1a6b828e09f2014a34f6d5c302a532f6153ea0fd670",
+    "locator": "22August2019 fullguidance pp63-65Box11",
+    "unchanged": true,
+    "interpretation": "5.1 permits result-unrelated changes;5.2/5.3 require eligiblealternatives AND likelyresult-basedselection. Source dates/mismatch/multiplicity alone do not establish it."
+  },
+  "native_answers": [
+    {
+      "question_id": "sq:selection:prespecified-analysis",
+      "answer": "no_information"
+    },
+    {
+      "question_id": "sq:selection:multiple-measurements",
+      "answer": "no"
+    },
+    {
+      "question_id": "sq:selection:multiple-analyses",
+      "answer": "no"
+    }
+  ],
+  "native_label": "some_concerns",
+  "findings": [
+    {
+      "question": "5.1",
+      "classification": "defensible unresolved chronology, not uniquely required NI",
+      "assessment": "The cited draft date follows reported follow-up completion. Neither event establishes unblinded access. NI is defensible, but exact timestamps are not required for ProbablyYes. The 2015 protocol already specifies assignment-group mixed models, random intercepts and blinded-statistician intent; this is supportive earlier planning, not proof that blinding/timing safeguards were carried out. Original covariate and timing descriptions differ in detail from the later SAP. A qualified probably judgment can be defensible if that consistency and trial circumstances support it; no operator answer imposed.",
+      "citation_issue": "The report follow-up completion date is read in mainpage1 but absent from the5.1 cited bases. It is a source-supported fact, not a fabricated date; the durable warrant does not bind that chronology premise to its actual passage.",
+      "under_discussed": "Cited supplement1page1 also documents an early amendment for repeated-measures power error. This stated result-unrelated rationale should be considered separately from late SAP timing, without treating either as proof of access chronology."
+    },
+    {
+      "question": "5.2",
+      "classification": "overconfident completeness / incomplete earlier-plan comparison",
+      "assessment": "Main Table2 fully reports 18,26,52week pain estimates including a nonsignificant52week estimate. This supports a reassuring conclusion for the later stated schedule. However the unread original protocolpage4 specified baseline,3/6weeks during treatment,immediatepost-treatment and laterpost-treatment assessments. The saved No warrant does not reconcile those earlier intended measurements or qualify their applicability. The discrepancy alone does not show eligible alternatives were measured, withheld, or selected on results; it does not warrant automatic Yes/ProbablyYes. A probably-no inference or unresolved qualification may be more defensible than categorical all-intentions correspondence.",
+      "citation_issue": "Bases cite SAPprimarydefinition and mainanalysis methods only; actual Table2/Table3 reporting asserted in prose is not in this question’s selected bases, though it was read and Table2was available as Evidence."
+    },
+    {
+      "question": "5.3",
+      "classification": "generally reassuring matching primary method; incomplete citation/qualification",
+      "assessment": "SAP13 and report4 both specify assignment-group mixed models and the18weekcontrast. The fullanalysisset and MAR/no-imputation statement is retained in the exact Result; the separate principal-complier analysis is not silently substituted for it. Reporting a primary and complier analysis is not evidence of result-driven selection. Original2015modelprognosticcovariates and laterSAP14plannedpossibleATET, plus eight-versus-nine-session compliance definitions, deserve qualified handling: their eligibility for this assignment-effect Result is not established. No unsupported selective-reporting defect is inferred.",
+      "citation_issue": "The warrant says the complier estimate is reported, but its bases contain SAPprimarymodel, mainanalysisdescription and Table2primary/secondaryoutcomes; the actual complierestimate is in main8, which was read but not cited. Do not substitute methods for actual result disclosure."
+    }
+  ],
+  "selected_evidence": {
+    "sha256:56878dbead328c58f6d06fd17cf90804d3f0296eefc3e800e05358f020626b5d": {
+      "end": 596,
+      "end_line": 9,
+      "handle": "eh_56878dbead328c58",
+      "identity": "sha256:56878dbead328c58f6d06fd17cf90804d3f0296eefc3e800e05358f020626b5d",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "Trial protocol\nThe trial protocol was submitted to UNSW ethics committee on Nov 29, 2015, prior to\nrandomisation of the first participant.\nThe Statistical Analysis Plan was drafted on Mar 2, 2020.\nOne major change was made to the trial protocol during the trial.\nJune 2016 - due to error in the specification of repeated measures used for the sample size\ncalculation the sample size was changed to 276 and disability, measured by the RMDQ, from\nprimary to secondary outcome. This change was included in the published protocol (Bagg et\nal. 2017) and submission to ethics committee on Nov 27, 2016.",
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "source_version": "sha256:f6218dce780c08d931af59f3a68f6d0ce65c72e885972a416500a88a6b25f407",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "bagg-2022"
+    },
+    "sha256:75cb920cf1ff919ceeb6232750d0c60490d1702524c24a8a6bbc0ae8180e18cc": {
+      "end": 1282,
+      "end_line": 21,
+      "handle": "eh_75cb920cf1ff919c",
+      "identity": "sha256:75cb920cf1ff919ceeb6232750d0c60490d1702524c24a8a6bbc0ae8180e18cc",
+      "kind": "narrative",
+      "page": 12,
+      "quote": "Outcome definitions\nPrimary outcome:\nThe primary outcome is pain intensity, defined as average pain intensity in the past week, assessed using a\nsubject-rated 11-point NRS at 18-weeks post-randomisation.33 The numeric rating scale is a continuous\nmeasure that ranges from 0 (no pain) to 10 (worst pain imaginable).44",
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "source_version": "sha256:f6218dce780c08d931af59f3a68f6d0ce65c72e885972a416500a88a6b25f407",
+      "start": 966,
+      "start_line": 17,
+      "trial_id": "bagg-2022"
+    },
+    "sha256:b7e9d9e487fb79b34292ee95ba349dc4be31e65cf5ffe5a0b264bcf96c4bca59": {
+      "end": 2956,
+      "end_line": 265,
+      "handle": "eh_b7e9d9e487fb79b3",
+      "identity": "sha256:b7e9d9e487fb79b34292ee95ba349dc4be31e65cf5ffe5a0b264bcf96c4bca59",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "Table 2. Estimates of Clinical Efficacy for Primary and Secondary Outcomes in a Study of the Effect of Sensorimotor Retraining on Pain Intensity\nin Chronic Low Back Pain\nOutcome\nIntervention\nControl\nTreatment effect,\nmean (95% CI)a\nP value\nMean (SD)\nNo. of participants\nMean (SD)\nNo. of participants\nPrimary outcome (18-wk value)\nPain intensityb\nBaseline\n5.6 (1.8)\n138\n5.8 (1.8)\n138\n18 wk\n3.1 (2.4)\n128\n4.0 (2.5)\n133\n-1.0 (-1.5 to -0.4)\n.001\n26 wk\n3.3 (2.4)\n131\n3.9 (2.4)\n128\n-0.7 (-1.2 to -0.1)\n.02\n52 wk\n3.5 (2.7)\n128\n4.0 (2.7)\n129\n-0.5 (-1.1 to 0.1)\n.09\nOverall intervention effectc\n-0.6 (-1.0 to 0.1)\n.01\nSecondary outcomes\nDisabilityd\nBaseline\n9.6 (5.4)\n138\n10 (5.0)\n138\n18 wk\n3.6 (4.6)\n127\n6.4 (5.8)\n130\n-2.6 (-3.9 to -1.3)\n<.001\n26 wk\n4.0 (5.0)\n126\n6.3 (5.8)\n127\n-2.1 (-3.4 to -0.8)\n.002\n52 wk\n4.1 (5.4)\n122\n6.1 (5.8)\n124\n-1.8 (-3.1 to -0.5)\n.008\nOverall intervention effect\n-1.7 (-2.8 to -0.6)\n.003\nQuality of life (EQ-5D-5L)e\nBaseline\n0.6 (0.3)\n138\n0.5 (0.3)\n138\n18 wk\n0.8 (0.3)\n122\n0.7 (0.3)\n125\n0.1 (0.0 to 0.1)\n.02\n26 wk\n0.7 (0.3)\n120\n0.7 (0.3)\n125\n0.1 (0.0 to 0.1)\n.05\n52 wk\n0.7 (0.3)\n114\n0.7 (0.3)\n120\n0.1 (0.0 to 0.1)\n.05\nOverall intervention effect\n0.1 (0.0 to 0.1)\n.06\nQuality of life (0-100)f\nBaseline\n62.0 (20)\n138\n65.3 (18)\n138\n18 wk\n78.3 (16.8)\n122\n73.1 (17.3)\n125\n4.6 (0.1 to 9.1)\n.05\n26 wk\n77.1 (17.4)\n120\n71.8 (18.1)\n125\n4.4 (-0.1 to 9.0)\n.06\n52 wk\n76.3 (18.9)\n114\n70.5 (20.7)\n121\n5.0 (0.4 to 9.6)\n.03\nOverall intervention effect\n2.7 (-1.1 to 6.4)\n.16\nDepressive symptom scoreg\nBaseline\n4.6 (5.0)\n138\n5 (4.9)\n138\n18 wk\n2.4 (4.0)\n122\n3.2 (4.6)\n125\n-0.8 (-2.0 to 0.3)\n.16\n26 wk\n2.4 (4.2)\n120\n3.5 (4.8)\n126\n-1.0 (-2.1 to 0.2)\n.10\n52 wk\n2.8 (4.6)\n114\n3.2 (4.6)\n122\n-0.3 (-1.5 to 0.9)\n.63\nOverall intervention effect\n-0.6 (-1.6 to 0.4)\n.22\nInsomnia Severity Index (0-28)h\nBaseline\n13.5 (7.7)\n138\n14.0 (7.5)\n138\n18 wk\n8.4 (7.4)\n122\n10.3 (7.7)\n125\n-1.8 (-3.7 to 0.1)\n.06\n26 wk\n8.9 (7.5)\n120\n10.8 (7.7)\n126\n-1.5 (-3.3 to 0.4)\n.12\n52 wk\n9.0 (7.6)\n114\n10.5 (7.7)\n121\n-1.4 (-3.2 to 0.5)\n.16\nOverall intervention effect\n-1.3 (-2.9 to 0.3)\n.12\nBack beliefsi\nBaseline\n26.2 (6.6)\n138\n25.6 (6.4)\n138\n18 wk\n34.7 (6.9)\n122\n29.2 (6.8)\n126\n5.4 (3.6 to 7.1)\n<.001\n26 wk\n33.5 (7.1)\n120\n29.5 (6.9)\n126\n3.8 (2.1 to 4.3)\n<.001\n52 wk\n33.8 (7.2)\n114\n29.6 (7.5)\n122\n3.8 (2.1 to 5.5)\n<.001\nOverall intervention effect\n3.4 (2.0 to 4.8)\n<.001\nKinesiophobiaj\nBaseline\n38.5 (7.6)\n138\n38.4 (7.3)\n138\n18 wk\n29.1 (7.8)\n122\n35.4 (8.3)\n126\n-6.3 (-8.2 to -4.3)\n<.001\n26 wk\n29.5 (8.1)\n120\n35.3 (7.5)\n126\n-5.4 (-7.3 to -3.4)\n<.001\n52 wk\n29.4 (8.2)\n113\n35.2 (8.2)\n122\n-5.2 (-7.2 to -3.2)\n<.001\nOverall intervention effect\n-4.2 (-5.8 to -2.6)\n<.001\n(continued)\nEffect of Graded Sensorimotor Retraining on Pain Intensity in Patients With Chronic Low Back Pain\nOriginal Investigation Research\njama.com\n(Reprinted)\nJAMA\nAugust 2, 2022\nVolume 328, Number 5\n435\n© 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026\n",
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "source_version": "sha256:0f3aa344f15a2520c9b5b056670844861e9d6e9dbd1108071876e15a4d0b0937",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "bagg-2022"
+    },
+    "sha256:d6b37a75bfc7a32a8aa67e543e0cddf2b0919bf16a149b69f9a11cb9cb481f9a": {
+      "end": 2502,
+      "end_line": 34,
+      "handle": "eh_d6b37a75bfc7a32a",
+      "identity": "sha256:d6b37a75bfc7a32a8aa67e543e0cddf2b0919bf16a149b69f9a11cb9cb481f9a",
+      "kind": "narrative",
+      "page": 13,
+      "quote": "Primary outcome\nWe will use a mixed-effects model to estimate the effect of allocation to intervention group on the primary\noutcome; pain intensity at 18-weeks post randomisation. Mixed-effect models are recommended for\nestimating treatment effects at specific time-points in clinical trials.54256 We will model intervention group\nas a binary variable and time as a categorical variable with 4 levels corresponding to the repeated measures.\nWe will use an unconstrained correlation structure as this is most plausible, given the repeated\nmeasurements are at different time intervals. The model will include three fixed-effect terms for the\ngroup.time interactions and a random intercept. The intercept term will account for the dependency of\nobservations within participants due to repeated measures. The model is\nݕሺ݆݅ሻൌߚͲ݅൅ߚͳǤ݃ݎ݋ݑ݌൅ߚʹǤ ݐͳ ൅ߚ͵Ǥ ݐʹ ൅ߚͶǤ ݐ͵ ൅ߚͷǤ ݐͳǤ݃ݎ݋ݑ݌൅ߚ͸Ǥ ݐʹǤ݃ݎ݋ݑ݌൅ߚ͹Ǥ ݐ͵Ǥ݃ݎ݋ݑ݌\n, where:\n* ݕሺ݆݅ሻ LV WKH RXWFRPH IRU WKH L·WK SDUWLFLSDQW DW WKH M·WK WLPH SRLQW\n* ߚͲ݅ is the LQWHUFHSW IRU WKH L·WK SDUWLFLSDQW PRGHOOHG DV D UDQGRP HIIHFW a1 ߚԢͲ݅, var(ߚͲ))\n* ݐͳǡ ݐʹǡ ݐ͵ are indicator variables for the three post-randomisation time-points. Baseline is the reference\ntime.\nThe primary analysis will use the point estimate of ߚͷ and its 95% confidence interval to estimate the effect\nof intervention at 18-weeks post-randomisation (Table 2).\nSecondary outcomes\nWe will also use mixed-effects models to estimate the effect of allocation to intervention group on\nfunction, QoL and GPE. These models will be specified in the same manner as for the primary outcome.\nWe will use appropriate coefficients and their 95% confidence intervals to estimate the effects of\nintervention at each follow-up time point (Table 3).",
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "source_version": "sha256:f6218dce780c08d931af59f3a68f6d0ce65c72e885972a416500a88a6b25f407",
+      "start": 778,
+      "start_line": 13,
+      "trial_id": "bagg-2022"
+    },
+    "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d": {
+      "end": 2428,
+      "end_line": 42,
+      "handle": "eh_fc0fcdbbd1bf24e9",
+      "identity": "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "Statistical Analysis\nMean values are presented for normally distributed data and\nmedian values with IQRs are presented for skewed data. The\nmean between-group difference on the primary outcome of\npain intensity and the secondary outcomes of disability, qual-\nity of life, depressive symptoms, insomnia, back beliefs,\nkinesiophobia, pain catastrophizing, pain self-efficacy, and\nglobal perceived effect were estimated with linear mixed mod-\nelsthatincorporatedgrouprandomization,time,andthetreat-\nment × time interaction term. Time was modeled as a 4-level\ncategorical variable, which assumed observations were col-\nlected at the stipulated time. The model was robust to data\nmissing at random and accounted for baseline outcome val-\nues. For continuous outcomes, the estimated effects were the\ndifferences in mean values between the groups at 18 weeks,\n26 weeks, and 52 weeks and the overall difference across all\ntime points. For the post hoc dichotomous outcomes, recov-\neryandresponse,thepercentageofparticipantsineithergroup\nwas compared using the Fisher exact test. The effect of the in-\nterventionwasexpressedastheabsolutedifferenceinrisk,and\nthe ratio of risks, between groups. Credibility was compared\nbetween groups using an independent samples t test. The full\nanalysis set included all randomized participants who pro-\nvided data at each time point analyzed. For all statistical analy-\nses, participant data were analyzed in the groups to which they\nwere randomized, regardless of adherence. Missing data were\nconsidered trivial for the primary outcome of pain intensity\nat 18 weeks, and assumed to be missing at random. There-\nfore, multiple imputation was not performed.",
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "source_version": "sha256:0f3aa344f15a2520c9b5b056670844861e9d6e9dbd1108071876e15a4d0b0937",
+      "start": 745,
+      "start_line": 14,
+      "trial_id": "bagg-2022"
+    }
+  },
+  "exact_warrants": [
+    {
+      "answer": "no_information",
+      "bases": [
+        {
+          "evidence": "sha256:56878dbead328c58f6d06fd17cf90804d3f0296eefc3e800e05358f020626b5d",
+          "kind": "direct_support",
+          "source": "Trial protocol\nThe trial protocol was submitted to UNSW ethics committee on Nov 29, 2015, prior to\nrandomisation of the first participant.\nThe Statistical Analysis Plan was drafted on Mar 2, 2020.\nOne major change was made to the trial protocol during the trial.\nJune 2016 - due to error in the specification of repeated measures used for the sample size\ncalculation the sample size was changed to 276 and disability, measured by the RMDQ, from\nprimary to secondary outcome. This change was included in the published protocol (Bagg et\nal. 2017) and submission to ethics committee on Nov 27, 2016."
+        },
+        {
+          "evidence": "sha256:75cb920cf1ff919ceeb6232750d0c60490d1702524c24a8a6bbc0ae8180e18cc",
+          "kind": "context",
+          "source": "Outcome definitions\nPrimary outcome:\nThe primary outcome is pain intensity, defined as average pain intensity in the past week, assessed using a\nsubject-rated 11-point NRS at 18-weeks post-randomisation.33 The numeric rating scale is a continuous\nmeasure that ranges from 0 (no pain) to 10 (worst pain imaginable).44"
+        },
+        {
+          "evidence": "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d",
+          "kind": "direct_support",
+          "source": "Statistical Analysis\nMean values are presented for normally distributed data and\nmedian values with IQRs are presented for skewed data. The\nmean between-group difference on the primary outcome of\npain intensity and the secondary outcomes of disability, qual-\nity of life, depressive symptoms, insomnia, back beliefs,\nkinesiophobia, pain catastrophizing, pain self-efficacy, and\nglobal perceived effect were estimated with linear mixed mod-\nelsthatincorporatedgrouprandomization,time,andthetreat-\nment × time interaction term. Time was modeled as a 4-level\ncategorical variable, which assumed observations were col-\nlected at the stipulated time. The model was robust to data\nmissing at random and accounted for baseline outcome val-\nues. For continuous outcomes, the estimated effects were the\ndifferences in mean values between the groups at 18 weeks,\n26 weeks, and 52 weeks and the overall difference across all\ntime points. For the post hoc dichotomous outcomes, recov-\neryandresponse,thepercentageofparticipantsineithergroup\nwas compared using the Fisher exact test. The effect of the in-\nterventionwasexpressedastheabsolutedifferenceinrisk,and\nthe ratio of risks, between groups. Credibility was compared\nbetween groups using an independent samples t test. The full\nanalysis set included all randomized participants who pro-\nvided data at each time point analyzed. For all statistical analy-\nses, participant data were analyzed in the groups to which they\nwere randomized, regardless of adherence. Missing data were\nconsidered trivial for the primary outcome of pain intensity\nat 18 weeks, and assumed to be missing at random. There-\nfore, multiple imputation was not performed."
+        },
+        {
+          "kind": "limitation",
+          "stopping_rationale": "I inspected the supplement's protocol chronology (page 1), SAP content and date (pages 7, 12-13), and the main report's follow-up and analysis sections. These establish SAP drafting after follow-up completion and the reported analysis, but not investigator access timing; no captured source passage resolves that missing event.",
+          "unresolved_premise": "The captured sources do not report when investigators making analysis decisions first accessed unblinded outcome data."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The captured supplement dates the SAP draft to March 2, 2020, and describes the approved primary endpoint/analysis as pain intensity at 18 weeks using a mixed-effects model. The main report says follow-up was completed February 3, 2020, and reports the corresponding 18-week analysis. However, neither source establishes when unblinded outcome data became available to the investigators making analysis decisions. The chronology raises a concern that the SAP was drafted after outcome collection, but collection completion, data cutoff, or a draft date alone does not establish investigator access. Under the question's uncertainty rule, neither a definitive nor probable timing judgment is sufficiently grounded.",
+      "question_id": "sq:selection:prespecified-analysis",
+      "unknowns": [
+        "When investigators first had access to unblinded outcome data; whether the March 2, 2020 SAP draft was finalized before such access."
+      ]
+    },
+    {
+      "answer": "no",
+      "bases": [
+        {
+          "evidence": "sha256:75cb920cf1ff919ceeb6232750d0c60490d1702524c24a8a6bbc0ae8180e18cc",
+          "kind": "direct_support",
+          "source": "Outcome definitions\nPrimary outcome:\nThe primary outcome is pain intensity, defined as average pain intensity in the past week, assessed using a\nsubject-rated 11-point NRS at 18-weeks post-randomisation.33 The numeric rating scale is a continuous\nmeasure that ranges from 0 (no pain) to 10 (worst pain imaginable).44"
+        },
+        {
+          "evidence": "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d",
+          "kind": "direct_support",
+          "source": "Statistical Analysis\nMean values are presented for normally distributed data and\nmedian values with IQRs are presented for skewed data. The\nmean between-group difference on the primary outcome of\npain intensity and the secondary outcomes of disability, qual-\nity of life, depressive symptoms, insomnia, back beliefs,\nkinesiophobia, pain catastrophizing, pain self-efficacy, and\nglobal perceived effect were estimated with linear mixed mod-\nelsthatincorporatedgrouprandomization,time,andthetreat-\nment × time interaction term. Time was modeled as a 4-level\ncategorical variable, which assumed observations were col-\nlected at the stipulated time. The model was robust to data\nmissing at random and accounted for baseline outcome val-\nues. For continuous outcomes, the estimated effects were the\ndifferences in mean values between the groups at 18 weeks,\n26 weeks, and 52 weeks and the overall difference across all\ntime points. For the post hoc dichotomous outcomes, recov-\neryandresponse,thepercentageofparticipantsineithergroup\nwas compared using the Fisher exact test. The effect of the in-\nterventionwasexpressedastheabsolutedifferenceinrisk,and\nthe ratio of risks, between groups. Credibility was compared\nbetween groups using an independent samples t test. The full\nanalysis set included all randomized participants who pro-\nvided data at each time point analyzed. For all statistical analy-\nses, participant data were analyzed in the groups to which they\nwere randomized, regardless of adherence. Missing data were\nconsidered trivial for the primary outcome of pain intensity\nat 18 weeks, and assumed to be missing at random. There-\nfore, multiple imputation was not performed."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The SAP identifies one primary pain measurement: average pain intensity in the previous week on a subject-rated 0-10 NRS at 18 weeks. The report provides pain results at the specified primary time point and also reports follow-up pain at 26 and 52 weeks. It separately identifies recovery and response thresholds as post hoc outcomes and reports both 30% and 50% response definitions. Thus the inspected material does not show an eligible pain measurement selected from multiple eligible scales/definitions with only a favorable subset reported; the stated primary measure and the presented additional pain follow-ups/threshold results are reported.",
+      "question_id": "sq:selection:multiple-measurements",
+      "unknowns": []
+    },
+    {
+      "answer": "no",
+      "bases": [
+        {
+          "evidence": "sha256:d6b37a75bfc7a32a8aa67e543e0cddf2b0919bf16a149b69f9a11cb9cb481f9a",
+          "kind": "direct_support",
+          "source": "Primary outcome\nWe will use a mixed-effects model to estimate the effect of allocation to intervention group on the primary\noutcome; pain intensity at 18-weeks post randomisation. Mixed-effect models are recommended for\nestimating treatment effects at specific time-points in clinical trials.54256 We will model intervention group\nas a binary variable and time as a categorical variable with 4 levels corresponding to the repeated measures.\nWe will use an unconstrained correlation structure as this is most plausible, given the repeated\nmeasurements are at different time intervals. The model will include three fixed-effect terms for the\ngroup.time interactions and a random intercept. The intercept term will account for the dependency of\nobservations within participants due to repeated measures. The model is\nݕሺ݆݅ሻൌߚͲ݅൅ߚͳǤ݃ݎ݋ݑ݌൅ߚʹǤ ݐͳ ൅ߚ͵Ǥ ݐʹ ൅ߚͶǤ ݐ͵ ൅ߚͷǤ ݐͳǤ݃ݎ݋ݑ݌൅ߚ͸Ǥ ݐʹǤ݃ݎ݋ݑ݌൅ߚ͹Ǥ ݐ͵Ǥ݃ݎ݋ݑ݌\n, where:\n* ݕሺ݆݅ሻ LV WKH RXWFRPH IRU WKH L·WK SDUWLFLSDQW DW WKH M·WK WLPH SRLQW\n* ߚͲ݅ is the LQWHUFHSW IRU WKH L·WK SDUWLFLSDQW PRGHOOHG DV D UDQGRP HIIHFW a1 ߚԢͲ݅, var(ߚͲ))\n* ݐͳǡ ݐʹǡ ݐ͵ are indicator variables for the three post-randomisation time-points. Baseline is the reference\ntime.\nThe primary analysis will use the point estimate of ߚͷ and its 95% confidence interval to estimate the effect\nof intervention at 18-weeks post-randomisation (Table 2).\nSecondary outcomes\nWe will also use mixed-effects models to estimate the effect of allocation to intervention group on\nfunction, QoL and GPE. These models will be specified in the same manner as for the primary outcome.\nWe will use appropriate coefficients and their 95% confidence intervals to estimate the effects of\nintervention at each follow-up time point (Table 3)."
+        },
+        {
+          "evidence": "sha256:fc0fcdbbd1bf24e971dcf56a3bd265dd61e53dd7770fece2eb6611235955d33d",
+          "kind": "direct_support",
+          "source": "Statistical Analysis\nMean values are presented for normally distributed data and\nmedian values with IQRs are presented for skewed data. The\nmean between-group difference on the primary outcome of\npain intensity and the secondary outcomes of disability, qual-\nity of life, depressive symptoms, insomnia, back beliefs,\nkinesiophobia, pain catastrophizing, pain self-efficacy, and\nglobal perceived effect were estimated with linear mixed mod-\nelsthatincorporatedgrouprandomization,time,andthetreat-\nment × time interaction term. Time was modeled as a 4-level\ncategorical variable, which assumed observations were col-\nlected at the stipulated time. The model was robust to data\nmissing at random and accounted for baseline outcome val-\nues. For continuous outcomes, the estimated effects were the\ndifferences in mean values between the groups at 18 weeks,\n26 weeks, and 52 weeks and the overall difference across all\ntime points. For the post hoc dichotomous outcomes, recov-\neryandresponse,thepercentageofparticipantsineithergroup\nwas compared using the Fisher exact test. The effect of the in-\nterventionwasexpressedastheabsolutedifferenceinrisk,and\nthe ratio of risks, between groups. Credibility was compared\nbetween groups using an independent samples t test. The full\nanalysis set included all randomized participants who pro-\nvided data at each time point analyzed. For all statistical analy-\nses, participant data were analyzed in the groups to which they\nwere randomized, regardless of adherence. Missing data were\nconsidered trivial for the primary outcome of pain intensity\nat 18 weeks, and assumed to be missing at random. There-\nfore, multiple imputation was not performed."
+        },
+        {
+          "evidence": "sha256:b7e9d9e487fb79b34292ee95ba349dc4be31e65cf5ffe5a0b264bcf96c4bca59",
+          "kind": "context",
+          "source": "Table 2. Estimates of Clinical Efficacy for Primary and Secondary Outcomes in a Study of the Effect of Sensorimotor Retraining on Pain Intensity\nin Chronic Low Back Pain\nOutcome\nIntervention\nControl\nTreatment effect,\nmean (95% CI)a\nP value\nMean (SD)\nNo. of participants\nMean (SD)\nNo. of participants\nPrimary outcome (18-wk value)\nPain intensityb\nBaseline\n5.6 (1.8)\n138\n5.8 (1.8)\n138\n18 wk\n3.1 (2.4)\n128\n4.0 (2.5)\n133\n-1.0 (-1.5 to -0.4)\n.001\n26 wk\n3.3 (2.4)\n131\n3.9 (2.4)\n128\n-0.7 (-1.2 to -0.1)\n.02\n52 wk\n3.5 (2.7)\n128\n4.0 (2.7)\n129\n-0.5 (-1.1 to 0.1)\n.09\nOverall intervention effectc\n-0.6 (-1.0 to 0.1)\n.01\nSecondary outcomes\nDisabilityd\nBaseline\n9.6 (5.4)\n138\n10 (5.0)\n138\n18 wk\n3.6 (4.6)\n127\n6.4 (5.8)\n130\n-2.6 (-3.9 to -1.3)\n<.001\n26 wk\n4.0 (5.0)\n126\n6.3 (5.8)\n127\n-2.1 (-3.4 to -0.8)\n.002\n52 wk\n4.1 (5.4)\n122\n6.1 (5.8)\n124\n-1.8 (-3.1 to -0.5)\n.008\nOverall intervention effect\n-1.7 (-2.8 to -0.6)\n.003\nQuality of life (EQ-5D-5L)e\nBaseline\n0.6 (0.3)\n138\n0.5 (0.3)\n138\n18 wk\n0.8 (0.3)\n122\n0.7 (0.3)\n125\n0.1 (0.0 to 0.1)\n.02\n26 wk\n0.7 (0.3)\n120\n0.7 (0.3)\n125\n0.1 (0.0 to 0.1)\n.05\n52 wk\n0.7 (0.3)\n114\n0.7 (0.3)\n120\n0.1 (0.0 to 0.1)\n.05\nOverall intervention effect\n0.1 (0.0 to 0.1)\n.06\nQuality of life (0-100)f\nBaseline\n62.0 (20)\n138\n65.3 (18)\n138\n18 wk\n78.3 (16.8)\n122\n73.1 (17.3)\n125\n4.6 (0.1 to 9.1)\n.05\n26 wk\n77.1 (17.4)\n120\n71.8 (18.1)\n125\n4.4 (-0.1 to 9.0)\n.06\n52 wk\n76.3 (18.9)\n114\n70.5 (20.7)\n121\n5.0 (0.4 to 9.6)\n.03\nOverall intervention effect\n2.7 (-1.1 to 6.4)\n.16\nDepressive symptom scoreg\nBaseline\n4.6 (5.0)\n138\n5 (4.9)\n138\n18 wk\n2.4 (4.0)\n122\n3.2 (4.6)\n125\n-0.8 (-2.0 to 0.3)\n.16\n26 wk\n2.4 (4.2)\n120\n3.5 (4.8)\n126\n-1.0 (-2.1 to 0.2)\n.10\n52 wk\n2.8 (4.6)\n114\n3.2 (4.6)\n122\n-0.3 (-1.5 to 0.9)\n.63\nOverall intervention effect\n-0.6 (-1.6 to 0.4)\n.22\nInsomnia Severity Index (0-28)h\nBaseline\n13.5 (7.7)\n138\n14.0 (7.5)\n138\n18 wk\n8.4 (7.4)\n122\n10.3 (7.7)\n125\n-1.8 (-3.7 to 0.1)\n.06\n26 wk\n8.9 (7.5)\n120\n10.8 (7.7)\n126\n-1.5 (-3.3 to 0.4)\n.12\n52 wk\n9.0 (7.6)\n114\n10.5 (7.7)\n121\n-1.4 (-3.2 to 0.5)\n.16\nOverall intervention effect\n-1.3 (-2.9 to 0.3)\n.12\nBack beliefsi\nBaseline\n26.2 (6.6)\n138\n25.6 (6.4)\n138\n18 wk\n34.7 (6.9)\n122\n29.2 (6.8)\n126\n5.4 (3.6 to 7.1)\n<.001\n26 wk\n33.5 (7.1)\n120\n29.5 (6.9)\n126\n3.8 (2.1 to 4.3)\n<.001\n52 wk\n33.8 (7.2)\n114\n29.6 (7.5)\n122\n3.8 (2.1 to 5.5)\n<.001\nOverall intervention effect\n3.4 (2.0 to 4.8)\n<.001\nKinesiophobiaj\nBaseline\n38.5 (7.6)\n138\n38.4 (7.3)\n138\n18 wk\n29.1 (7.8)\n122\n35.4 (8.3)\n126\n-6.3 (-8.2 to -4.3)\n<.001\n26 wk\n29.5 (8.1)\n120\n35.3 (7.5)\n126\n-5.4 (-7.3 to -3.4)\n<.001\n52 wk\n29.4 (8.2)\n113\n35.2 (8.2)\n122\n-5.2 (-7.2 to -3.2)\n<.001\nOverall intervention effect\n-4.2 (-5.8 to -2.6)\n<.001\n(continued)\nEffect of Graded Sensorimotor Retraining on Pain Intensity in Patients With Chronic Low Back Pain\nOriginal Investigation Research\njama.com\n(Reprinted)\nJAMA\nAugust 2, 2022\nVolume 328, Number 5\n435\n© 2022 American Medical Association. All rights reserved.\nDownloaded from jamanetwork.com by Zaid Anwar on 09/28/2026\n"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "For the approved 18-week mean difference, the SAP specifies a mixed-effects model with group-by-time terms and an 18-week contrast; the main report describes linear mixed models, estimates the between-group difference at 18 weeks, and reports that result. The report also discloses a separately specified complier causal-effect analysis and reports its estimate. The captured passages do not identify a set of eligible alternative analyses from which the 18-week primary estimate was selected based on results, nor a result-driven reporting choice. Although the SAP's chronology relative to unblinded access remains unknown, that uncertainty alone is not evidence of selection among analyses.",
+      "question_id": "sq:selection:multiple-analyses",
+      "unknowns": [
+        "Whether other eligible analyses were conducted but not reported, beyond the primary mixed-effects analysis and the reported complier causal-effect analysis."
+      ]
+    }
+  ],
+  "independent_relevant_source_windows": [
+    {
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "label": "jama_bagg_2022_oi_220066.pdf",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 59,
+      "numbered_text": "1|Effect of Graded Sensorimotor Retraining on Pain Intensity\n2|in Patients With Chronic Low Back Pain\n3|A Randomized Clinical Trial\n4|Matthew K. Bagg, PhD; Benedict M. Wand, PhD; Aidan G. Cashin, PhD; Hopin Lee, PhD; Markus Hübscher, PhD;\n5|Tasha R. Stanton, PhD; Neil E. O'Connell, PhD; Edel T. O'Hagan, MSc; Rodrigo R. N. Rizzo, MSc; Michael A. Wewege, MSc;\n6|Martin Rabey, PhD; Stephen Goodall, PhD; Sopany Saing, MPH; Serigne N. Lo, PhD; Hannu Luomajoki, PhD;\n7|Robert D. Herbert, PhD; Chris G. Maher, DMedSc; G. Lorimer Moseley, PhD; James H. McAuley, PhD\n8|IMPORTANCE The effects of altered neural processing, defined as altering neural networks\n9|responsible for perceptions of pain and function, on chronic pain remains unclear.\n10|OBJECTIVE To estimate the effect of a graded sensorimotor retraining intervention\n11|(RESOLVE) on pain intensity in people with chronic low back pain.\n12|DESIGN, SETTING, AND PARTICIPANTS This parallel, 2-group, randomized clinical trial recruited\n13|participants with chronic (>3 months) nonspecific low back pain from primary care and\n14|community settings. A total of 276 adults were randomized (in a 1:1 ratio) to the intervention\n15|or sham procedure and attention control groups delivered by clinicians at a medical research\n16|institute in Sydney, Australia. The first participant was randomized on December 10, 2015,\n17|and the last was randomized on July 25, 2019. Follow-up was completed on February 3, 2020.\n18|INTERVENTIONS Participants randomized to the intervention group (n = 138) were asked to\n19|participate in 12 weekly clinical sessions and home training designed to educate them about\n20|and assist them with movement and physical activity while experiencing lower back pain.\n21|Participants randomized to the control group (n = 138) were asked to participate in 12 weekly\n22|clinical sessions and home training that required similar time as the intervention but did not\n23|focus on education, movement, and physical activity. The control group included sham laser\n24|and shortwave diathermy applied to the back and sham noninvasive brain stimulation.\n25|MAIN OUTCOMES AND MEASURES The primary outcome was pain intensity at 18 weeks,\n26|measured on an 11-point numerical rating scale (range, 0 [no pain] to 10 [worst pain\n27|imaginable]) for which the between-group minimum clinically important difference\n28|is 1.0 point.\n29|RESULTS Among 276 randomized patients (mean [SD] age, 46 [14.3] years; 138 [50%]\n30|women), 261 (95%) completed follow-up at 18 weeks. The mean pain intensity was 5.6 at\n31|baseline and 3.1 at 18 weeks in the intervention group and 5.8 at baseline and 4.0 at 18 weeks\n32|in the control group, with an estimated between-group mean difference at 18 weeks\n33|of -1.0 point ([95% CI, -1.5 to -0.4]; P = .001), favoring the intervention group.\n34|CONCLUSIONS AND RELEVANCE In this randomized clinical trial conducted at a single center\n35|among patients with chronic low back pain, graded sensorimotor retraining, compared with a\n36|sham procedure and attention control, significantly improved pain intensity at 18 weeks. The\n37|improvements in pain intensity were small, and further research is needed to understand the\n38|generalizability of the findings.\n39|TRIAL REGISTRATION ANZCTR Identifier: ACTRN12615000610538\n40|JAMA. 2022;328(5):430-439. doi:10.1001/jama.2022.9930\n41|Visual Abstract\n42|Supplemental content\n43|Author Affiliations: Author\n44|affiliations are listed at the end of this\n45|article.\n46|Corresponding Author: James H.\n47|McAuley, PhD, Neuroscience\n48|Research Australia, Margarete\n49|Ainsworth Building, Barker Street,\n50|Randwick 2031, Sydney,\n51|New South Wales, Australia\n52|(j.mcauley@neura.edu.au).\n53|Research\n54|JAMA | Original Investigation\n55|430\n56|(Reprinted)\n57|jama.com\n58|© 2022 American Medical Association. All rights reserved.\n59|Downloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "label": "jama_bagg_2022_oi_220066.pdf",
+      "page": 3,
+      "start_line": 31,
+      "end_line": 119,
+      "numbered_text": "31|Data Collection\n32|Data were collected at baseline (prior to randomization) and\n33|at 18, 26, and 52 weeks after randomization using mailed ques-\n34|tionnaires and secure online data-capture software. Demo-\n35|graphic and clinical characteristics (age, sex, work status, edu-\n36|cational level, duration of current back pain episode, number\n37|of previous episodes, self-reported use of prescribed and over-\n38|the-counter medicines for low back pain, other areas of pain,\n39|and back pain-related compensation status) were obtained at\n40|the baseline assessment prior to randomization, along with all\n41|primary and secondary outcome measurements. No data were\n42|collected on race, ethnicity, or ancestry.\n43|Outcome Measurements\n44|Primary Outcome\n45|The primary outcome was mean pain intensity over the pre-\n46|vious week assessed using an 11-point numerical rating\n47|scale10 (range, 0 [no pain] to 10 [worst pain imaginable]) at 18\n48|weeks after randomization. The between-group minimal\n49|clinically important difference (MCID) is 1.0 point on the\n50|11-point numerical rating scale.11 The within-group MCID is\n51|a 30% change from baseline.12\n52|Secondary Outcomes\n53|Secondary outcomes were disability, assessed using the 24-\n54|item Roland-Morris Disability Questionnaire13 (scale range,\n55|0-24; higher scores indicate greater disability; within-group\n56|MCID, 30% from baseline)12; health-related quality of life, as-\n57|sessed using the 5-level EuroQoL-5 dimensions14 question-\n58|naire (EQ-5D-5L; scale range, 1-5; higher scores indicate bet-\n59|ter quality of life; within-group MCID, 0.03 from baseline15)\n60|and the EuroQol-5D health thermometer (range, 0-100;\n61|higherscoresindicatebetterqualityoflife;within-groupMCID,\n62|10.5)15; depressive symptoms, assessed using the depression\n63|subscale of the Depression Anxiety Stress Scale (range, 0-21;\n64|higher scores indicate worse outcome; MCID not estab-\n65|lished); sleep quality (insomnia), assessed using the Insom-\n66|nia Severity Index (range 0-28; higher scores indicate worse\n67|insomnia; MCID not established); beliefs about low back pain,\n68|assessed using the Back Beliefs Questionnaire (range 9-45;\n69|lower scores indicate more pessimistic beliefs about the con-\n70|sequences of low back pain; MCID not established); kinesio-\n71|phobia, assessed using the Tampa Scale of Kinesiophobia\n72|(range, 17-68; higher scores are worse; MCID not estab-\n73|lished); catastrophizing, assessed using the Pain Catastroph-\n74|izing Scale (range, 0-52; higher scores are worse; MCID not es-\n75|tablished); the Pain Self-Efficacy Questionnaire (range, 0-60;\n76|higher scores are better; within-group MCID, 5.5); and treat-\n77|ment rationale credibility, assessed using the Credibility and\n78|Expectancy Questionnaire16 (scale range, 0-48; lower scores\n79|are worse, MCID not established).\n80|Serious adverse events and adverse events were reported\n81|by the patient and recorded by the trial therapist at the begin-\n82|ning of each treatment session.\n83|Additional Prespecified Outcomes\n84|Additional prespecified outcomes consist of process variables\n85|(2-pointdiscriminationdistance,left-rightjudgementtaskper-\n86|formance [accuracy and speed], Neurophysiology of Pain\n87|Questionnaire score, Fremantle Back Awareness Question-\n88|naire score, Movement Imagery Questionnaire-Revised score,\n89|and Elgueta-Cancino Pelvic Tilt Test) and cost-effectiveness,\n90|which will be reported separately.\n91|Post Hoc Outcomes\n92|Post hoc outcomes consisted of recovery, defined as pain in-\n93|tensity in the past week rated less than or equal to 1 on the\n94|11-point numerical rating scale at both 18 and 26 weeks after\n95|randomization (MCID not established); response to interven-\n96|tion, defined as at least 30% reduction in pain intensity from\n97|baseline to 18 weeks; response to intervention, defined as at\n98|least50%reductioninpainintensityfrombaselineto18weeks;\n99|and global perceived effect, assessed using the Global Back\n100|Recovery Scale (range, -5 to 5; lower scores indicate poorer re-\n101|covery; MCID not established).\n102|Sample Size Calculation\n103|The trial was designed to detect a mean (SD) between-group\n104|difference of 1.0 (2.0) point in pain intensity at the primary end\n105|point of 18 weeks. A 1.0-point difference on an 11-point nu-\n106|merical rating scale has been suggested as the threshold for\n107|clinical importance for a between-group difference (between-\n108|group MCID) in clinical trials investigating interventions for\n109|chronic pain.11 Sample size was calculated for an interaction\n110|Research Original Investigation\n111|Effect of Graded Sensorimotor Retraining on Pain Intensity in Patients With Chronic Low Back Pain\n112|432\n113|JAMA\n114|August 2, 2022\n115|Volume 328, Number 5\n116|(Reprinted)\n117|jama.com\n118|© 2022 American Medical Association. All rights reserved.\n119|Downloaded from jamanetwork.com by Zaid Anwar on 09/28/2026",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "label": "jama_bagg_2022_oi_220066.pdf",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 50,
+      "numbered_text": "1|effect between time (4 repeated observations) and group ran-\n2|domization, using an estimated interobservation correlation\n3|of base 0.6 with decay rate 0.1, significance level of .05, and\n4|power of 80%.17 With a 1:1 treatment randomization and an-\n5|ticipating a 15% loss to follow-up, the trial aimed to recruit 276\n6|participants. After 15 participants had been randomized, an er-\n7|rorwasdetectedinthespecificationofrepeatedmeasuresused\n8|for the sample size calculation. A recalculation required the\n9|sample to be increased from 266 to 276 and for disability, mea-\n10|sured by the Roland Morris Disability Questionnaire, to be\n11|changed from a primary outcome to a secondary outcome to\n12|maintain statistical power for a single primary outcome-\n13|pain intensity.\n14|Statistical Analysis\n15|Mean values are presented for normally distributed data and\n16|median values with IQRs are presented for skewed data. The\n17|mean between-group difference on the primary outcome of\n18|pain intensity and the secondary outcomes of disability, qual-\n19|ity of life, depressive symptoms, insomnia, back beliefs,\n20|kinesiophobia, pain catastrophizing, pain self-efficacy, and\n21|global perceived effect were estimated with linear mixed mod-\n22|elsthatincorporatedgrouprandomization,time,andthetreat-\n23|ment × time interaction term. Time was modeled as a 4-level\n24|categorical variable, which assumed observations were col-\n25|lected at the stipulated time. The model was robust to data\n26|missing at random and accounted for baseline outcome val-\n27|ues. For continuous outcomes, the estimated effects were the\n28|differences in mean values between the groups at 18 weeks,\n29|26 weeks, and 52 weeks and the overall difference across all\n30|time points. For the post hoc dichotomous outcomes, recov-\n31|eryandresponse,thepercentageofparticipantsineithergroup\n32|was compared using the Fisher exact test. The effect of the in-\n33|terventionwasexpressedastheabsolutedifferenceinrisk,and\n34|the ratio of risks, between groups. Credibility was compared\n35|between groups using an independent samples t test. The full\n36|analysis set included all randomized participants who pro-\n37|vided data at each time point analyzed. For all statistical analy-\n38|ses, participant data were analyzed in the groups to which they\n39|were randomized, regardless of adherence. Missing data were\n40|considered trivial for the primary outcome of pain intensity\n41|at 18 weeks, and assumed to be missing at random. There-\n42|fore, multiple imputation was not performed.\n43|All effects were estimated with a 95% CI and all statistical\n44|tests were 2-sided with α level of .05. Because of the po-\n45|tential for type I error due to multiple comparisons, findings\n46|for analyses of secondary outcomes should be interpreted\n47|as exploratory.\n48|The mean effect of the intervention on pain intensity at\n49|18 weeks on the principal stratum of participants who would\n50|adhere to the randomized intervention regardless of which",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "label": "jama_bagg_2022_oi_220066.pdf",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 45,
+      "numbered_text": "1|The complier mean causal effect analysis was specified in the\n2|statistical analysis plan.8 For this analysis, (observed) adher-\n3|ence to the (randomized) intervention was defined as attend-\n4|ing at least 9 treatment sessions, ie, 75% of the intervention.\n5|Sensitivity analyses were conducted to examine the robust-\n6|ness of conclusions to different assumptions in the complier\n7|mean causal effect population (the principal compliers). The\n8|statistical analyses were completed using R, version 3.3.3\n9|(R Foundation), or Stata, version 10 (StataCorp), and vali-\n10|dated independently by a second investigator.\n11|Results\n12|A total of 276 participants were randomized. Figure 1 shows\n13|the flow of participants through the trial. The trial had suffi-\n14|cient funding to obtain follow-up observations for all partici-\n15|pants at 18 weeks. At this time, a single additional observa-\n16|tionwascollectedfromparticipantswhohadnotyetcompleted\n17|follow-up, after which the trial was closed because additional\n18|funding was unavailable. Thirty-four participants were con-\n19|tacted early to provide the 26-week follow-up and 45 were\n20|contacted early to provide the 52-week follow-up data. Over-\n21|all, 261 participants (95%) provided data for the primary out-\n22|come at 18 weeks, 259 (94%) at 26 weeks, and 257 (93%) at 52\n23|weeks.Forthe9secondaryoutcomes,themedian(range)num-\n24|bers of missing data values were 29 (19-29) at 18 weeks, 30\n25|(23-31) at 26 weeks, and 40 (30-42) at 52 weeks. The median\n26|(IQR) time to follow-up at each time point was 19.3 (18-20)\n27|weeks at week 18, 27.6 (26-27.7) weeks at week 26, and 48.5\n28|(47.6-53.6) weeks at week 52.\n29|Table 1 shows baseline characteristics of participants. The\n30|mean (SD) age was 46 (14.3) years and 138 of 276 participants\n31|(50%) were women. Participants reported symptoms of back\n32|pain for a median (IQR) of 5 (3.0-8.1) years. At baseline, pain\n33|intensity based on the numerical rating scale pain intensity\n34|(score range, 0-10) was moderate to high (mean [SD] score, 5.7\n35|[1.8]), disability (score range, 0-24; 0 indicates the best out-\n36|come) was moderate (mean [SD] score, 9.8 [5.2]), health-\n37|relatedqualityoflife(scorerange,0-100;100 indicatesthe best\n38|outcome) was moderate (mean [SD] score, 63.7 [19.1]), depres-\n39|sive symptoms (score range, 0-21; 0 indicates the best out-\n40|come) were low (mean [SD] score, 4.8 [5.0]), and sleep prob-\n41|lems (score range, 0-28; 0 indicates the best outcome) were\n42|moderate (mean [SD] score, 13.7 [7.6]). Twenty-four percent\n43|of participants were taking opioid analgesics and 79% had re-\n44|cently consulted health care professionals for low back pain.\n45|The median (IQR) number of sessions attended was 12 (12-12).",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "label": "jama_bagg_2022_oi_220066.pdf",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 53,
+      "numbered_text": "1|Table 2. Estimates of Clinical Efficacy for Primary and Secondary Outcomes in a Study of the Effect of Sensorimotor Retraining on Pain Intensity\n2|in Chronic Low Back Pain\n3|Outcome\n4|Intervention\n5|Control\n6|Treatment effect,\n7|mean (95% CI)a\n8|P value\n9|Mean (SD)\n10|No. of participants\n11|Mean (SD)\n12|No. of participants\n13|Primary outcome (18-wk value)\n14|Pain intensityb\n15|Baseline\n16|5.6 (1.8)\n17|138\n18|5.8 (1.8)\n19|138\n20|18 wk\n21|3.1 (2.4)\n22|128\n23|4.0 (2.5)\n24|133\n25|-1.0 (-1.5 to -0.4)\n26|.001\n27|26 wk\n28|3.3 (2.4)\n29|131\n30|3.9 (2.4)\n31|128\n32|-0.7 (-1.2 to -0.1)\n33|.02\n34|52 wk\n35|3.5 (2.7)\n36|128\n37|4.0 (2.7)\n38|129\n39|-0.5 (-1.1 to 0.1)\n40|.09\n41|Overall intervention effectc\n42|-0.6 (-1.0 to 0.1)\n43|.01\n44|Secondary outcomes\n45|Disabilityd\n46|Baseline\n47|9.6 (5.4)\n48|138\n49|10 (5.0)\n50|138\n51|18 wk\n52|3.6 (4.6)\n53|127",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 9,
+      "numbered_text": "1|Trial protocol\n2|The trial protocol was submitted to UNSW ethics committee on Nov 29, 2015, prior to\n3|randomisation of the first participant.\n4|The Statistical Analysis Plan was drafted on Mar 2, 2020.\n5|One major change was made to the trial protocol during the trial.\n6|June 2016 - due to error in the specification of repeated measures used for the sample size\n7|calculation the sample size was changed to 276 and disability, measured by the RMDQ, from\n8|primary to secondary outcome. This change was included in the published protocol (Bagg et\n9|al. 2017) and submission to ethics committee on Nov 27, 2016.",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 4,
+      "start_line": 25,
+      "end_line": 53,
+      "numbered_text": "25|Blinding\n26|Patients will be blinded to group allocation and study hypothesis. It is not possible for therapists to be blinded to the\n27|study hypothesis as the treating therapists are on the research team. The statistician analysing the data will be blind to\n28|group allocation.\n29|\n30|Sample Size Calculations\n31|We require 266 patients to detect a one point (SD=2.5) between group difference in the first primary outcome, pain\n32|intensity (Numerical Rating Scale), at six weeks post intervention. We consider this to be the smallest worthwhile effects\n33|that would justify implementation of the intervention. A one point on the NRS is established as the minimal clinically\n34|important difference for pain intensity in chronic pain clinical trials (Dworkin et al., 2008).\n35|Sample size was calculated using the Glimmpse software. We calculated for 7 repeated observations, an estimated\n36|intra-cluster correlation (correlation between the observations) with base 0.6 and decay rate 0.1, Type I error (alpha)\n37|of 5% and allowing for up to 15% loss to follow up. We conservatively ignored the increase in statistical power conferred\n38|by baseline covariates and stratification.\n39|\n40|Outcomes\n41|The primary outcomes will be pain intensity (Numerical Rating Scale) and Disability (Roland Morris Disability\n42|Questionnaire) at six weeks post intervention.\n43|Secondary outcomes will include two-point discrimination distance, left-right recognition accuracy, depression subscale\n44|of the Depression, Anxiety and Stress Scale (DASS-21), Pain Catastrophising Scale, credibility and expectancy\n45|questionnaire, Neurophysiology of Pain questionnaire, Back Beliefs Questionnaire, Fremantle Back Awareness\n46|Questionnaire, Tampa Scale of Kinesophobia, Pain Self-Efficacy Questionnaire, Insomnia Severity Index, EuroQoL 5D-5L,\n47|Movement Imagery Questionnaire-Revised, Health Resource Use and Usual Activities, Elgueta-Cancino Pelvic Tilt Test.\n48|A measure of recurrence will be taken at 52 weeks for patients who are pain free for a month or longer.\n49|Participants will be assessed in all measures at baseline, 3 and 6 weeks of the intervention, immediately post-\n50|intervention (week 12) and at 6 weeks, 3, 6 and 12 months post-intervention. All questionnaires will be accessible via\n51|secure web-links emailed to patients individually. Tactile acuity will be assessed using two-point discrimination by the\n52|study therapists. The Recognise® software provides left-right recognition accuracy and response time data. Individual\n53|participant data will be extracted into a spreadsheet using software.",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 13,
+      "numbered_text": "1|RESOLVE Trial (NHMRC1087045)\n2|Trial Protocol\n3|Sensorimotor Retraining for Chronic Low Back Pain\n4|Version [5, 27 Nov 2015]\n5|Statistical Analysis\n6|The data will be analysed by intention-to-treat by a statistician blinded to group allocation. We will analyse the effect\n7|of the treatment intervention separately for each outcome using linear mixed models with random intercepts for\n8|individuals to account for correlation of repeated measures. The model will include terms for important prognostic\n9|factors measured prior to randomisation and specified a priori. We will obtain estimates of the effect of the intervention\n10|and 95% confidence intervals by constructing linear contrasts to compare the adjusted mean change (continuous\n11|variables) or difference in proportions (dichotomous variables) in outcome from baseline to each time point between\n12|the treatment and control group. Linear contrasts will be used to determine the effect of Informed Sensorimotor\n13|Retraining compared to placebo control.",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 11,
+      "start_line": 10,
+      "end_line": 26,
+      "numbered_text": "10|the allocation sequence. The allocations were printed and placed in 276 sealed, opaque, sequentially\n11|numbered envelopes.33\n12|Timing of outcome assessments, interim analyses and stopping guidance\n13|The outcome measures are defined in the trial protocol. Outcomes were to be measured at baseline and 18,\n14|26 and 52-weeks post-randomisation. Intervention credibility was measured at baseline and 2-weeks post-\n15|randomisation. We did not specify interim analyses in the trial protocol.33\n16|We determined during the trial that we had sufficient funding to complete recruitment and collect the\n17|primary end-point at 18-weeks for all participants, after which we would close the trial. We collected the\n18|primary end-point for participant ID276 on 28th November 2019 and initiated the final collection of\n19|outcome data for all remaining participants that had not completed follow-up (defined as receipt of\n20|outcome data for the 52-week time point). We contacted n=45 participants to provide their 52-week time\n21|point data early and n=34 participants to provide their 26-week time point data early. This latter group of\n22|participants did not provide outcome data for the 52-week time point.\n23|Sample size\n24|The required sample size is n=276 participants to have at least 80% power to detect a minimal clinically\n25|important difference36 of 1-point (SD 2.0) in pain intensity (0-10 numeric rating scale, NRS), between\n26|levels of intervention, at 18-weeks post-randomisation. We calculated the sample size for an interaction",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 12,
+      "start_line": 4,
+      "end_line": 21,
+      "numbered_text": "4|not require entry or checking.\n5|Analytic Principles\n6|General considerations\n7|We will conduct the analyses respecting these principles:\n8|* all participants will be analysed in the group to which they were allocated (intention-to-treat39)\n9|* all treatment effect estimates will be provided along with their associated 95% confidence intervals\n10|* all statistical tests will be 2-sided with a nominal alpha level of .05\n11|* P values will not be adjusted for multiplicity. However, the outcomes are clearly categorised by\n12|degree of importance33 and no subgroup analysis will be performed.\n13|* the null hypothesis for each outcome is that there is no difference between the intervention groups.\n14|Whereas, the alternative hypothesis is that graded sensory-motor precision training is superior to the\n15|control intervention.\n16|* all analyses will be performed using STATA40 and R.41243\n17|Outcome definitions\n18|Primary outcome:\n19|The primary outcome is pain intensity, defined as average pain intensity in the past week, assessed using a\n20|subject-rated 11-point NRS at 18-weeks post-randomisation.33 The numeric rating scale is a continuous\n21|measure that ranges from 0 (no pain) to 10 (worst pain imaginable).44",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 13,
+      "start_line": 5,
+      "end_line": 34,
+      "numbered_text": "5|Compliance with the intervention\n6|Compliance was assessed by recording the attendance of participants at each treatment session. We will\n7|consider compliance as a continuous variable, defined as the number of treatment sessions attended, and as\n8|a binary variable, defined as attendance of greater than or equal to eight treatment sessions (75% of the\n9|intervention). We will present frequency distributions for both groups to describe the proportion of\n10|participants that attended each intervention session. We will also present the proportion of participants in\n11|either group that attended greater than or equal to eight treatment sessions.\n12|Analysis\n13|Primary outcome\n14|We will use a mixed-effects model to estimate the effect of allocation to intervention group on the primary\n15|outcome; pain intensity at 18-weeks post randomisation. Mixed-effect models are recommended for\n16|estimating treatment effects at specific time-points in clinical trials.54256 We will model intervention group\n17|as a binary variable and time as a categorical variable with 4 levels corresponding to the repeated measures.\n18|We will use an unconstrained correlation structure as this is most plausible, given the repeated\n19|measurements are at different time intervals. The model will include three fixed-effect terms for the\n20|group.time interactions and a random intercept. The intercept term will account for the dependency of\n21|observations within participants due to repeated measures. The model is\n22|ݕሺ݆݅ሻൌߚͲ݅൅ߚͳǤ݃ݎ݋ݑ݌൅ߚʹǤ ݐͳ ൅ߚ͵Ǥ ݐʹ ൅ߚͶǤ ݐ͵ ൅ߚͷǤ ݐͳǤ݃ݎ݋ݑ݌൅ߚ͸Ǥ ݐʹǤ݃ݎ݋ݑ݌൅ߚ͹Ǥ ݐ͵Ǥ݃ݎ݋ݑ݌\n23|, where:\n24|* ݕሺ݆݅ሻ LV WKH RXWFRPH IRU WKH L·WK SDUWLFLSDQW DW WKH M·WK WLPH SRLQW\n25|* ߚͲ݅ is the LQWHUFHSW IRU WKH L·WK SDUWLFLSDQW PRGHOOHG DV D UDQGRP HIIHFW a1 ߚԢͲ݅, var(ߚͲ))\n26|* ݐͳǡ ݐʹǡ ݐ͵ are indicator variables for the three post-randomisation time-points. Baseline is the reference\n27|time.\n28|The primary analysis will use the point estimate of ߚͷ and its 95% confidence interval to estimate the effect\n29|of intervention at 18-weeks post-randomisation (Table 2).\n30|Secondary outcomes\n31|We will also use mixed-effects models to estimate the effect of allocation to intervention group on\n32|function, QoL and GPE. These models will be specified in the same manner as for the primary outcome.\n33|We will use appropriate coefficients and their 95% confidence intervals to estimate the effects of\n34|intervention at each follow-up time point (Table 3).",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 14,
+      "start_line": 13,
+      "end_line": 18,
+      "numbered_text": "13|Estimating treatment effect with incomplete adherence\n14|If there is significant non-adherence with the allocated interventions we will estimate the complier-average\n15|causal effect (CACE) using instrumental variable estimation.57259 We will also estimate the average\n16|treatment effect in the treated (ATET) using propensity score weighting.60,61\n17|\n18|",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "page": 21,
+      "start_line": 1,
+      "end_line": 42,
+      "numbered_text": "1|\n2|\n3|Table 2. Analysis of primary outcome (shell)\n4|Time point\n5|Intervention, number, mean\n6|(SD)\n7|Control, number, mean\n8|(SD)\n9|Mean difference (95%\n10|CI)\n11|P\n12|Value\n13|Pain intensity at\n14|n=xx\n15|n=xx\n16|\n17|\n18|18 wksa\n19|xx (xx)\n20|xx (xx)\n21|xx (xx to xx)\n22|.xx\n23|26 wks\n24|xx (xx)\n25|xx (xx)\n26|xx (xx to xx)\n27|.xx\n28|52 wks\n29|xx (xx)\n30|xx (xx)\n31|xx (xx to xx)\n32|.xx\n33|Overall intervention\n34|effectb\n35|\n36|\n37|\n38|.xx\n39|a, b: P values are from a mixed effects model comparing between group differences at 18-weeks post-\n40|randomisation (a: primary outcome) and over the entire 52-week trial (b).\n41|\n42|",
+      "attribution": "independent operator review only, never model input"
+    },
+    {
+      "source_id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "label": "jama_bagg_2022_oi_220066.pdf",
+      "page": 7,
+      "start_line": 25,
+      "end_line": 47,
+      "numbered_text": "25|group met the criterion for recovery (Fisher exact test\n26|P = .04; risk difference, 10% [95% CI, 0.0%-20%]; risk ratio,\n27|1.9 [95% CI, 1.0-3.5]). At the 18-week follow-up, 87 partici-\n28|pants (68.0%) in the intervention group and 66 (49.6%) in\n29|the control group had a 30% or greater decrease in pain\n30|intensity from baseline (risk difference, 20% [95% CI, 10%-\n31|30%]; P = .002; risk ratio, 1.4 [95% CI, 1.1-1.7]; P = .003). At\n32|the 18-week follow-up, 54 participants (42.2%) in the inter-\n33|vention group and 40 (30%) in the control group had a 50%\n34|or greater decrease in pain intensity (risk difference, 10%\n35|[95% CI, 0%-30%]; P = .04; risk ratio, 1.4 [95% CI, 1.0-1.9];\n36|P = .04).\n37|At the 18-week follow-up, the global perceived effect\n38|changed from 0.2 to 2.6 in the intervention group and from 0\n39|to1.6inthecontrolgroup(between-groupdifference,1.1points\n40|[95% CI, 0.6-1.5], P < .001). Estimates for 26 weeks and 52\n41|weeks are listed in Table 3.\n42|Thecompliermeancausaleffectoftheinterventiononpain\n43|intensity at 18 weeks was -1.1 points (95% CI, -1.7 to -0.4) on\n44|the numeric rating scale (range, 0-10).\n45|Adverse Events\n46|No serious adverse events were reported. Two adverse\n47|events, both transient general musculoskeletal pain, were re-",
+      "attribution": "independent operator review only, never model input"
+    }
+  ],
+  "feature_use": {
+    "working_checkpoint_calls": 0,
+    "compact_interpretations": 0,
+    "scopes": 0,
+    "legacy_links": 0,
+    "benefit_demonstrated": false,
+    "sourcefaithfulness_of_field": "not assessable; no field used",
+    "actual_extra_actions": 0,
+    "actual_extra_interpretation_scalar_fields": 0,
+    "judgment_submissions": 1,
+    "direct_Evidence_citation_occurrences": 8,
+    "native_example": [
+      {
+        "evidence": "eh_75cb920cf1ff919c",
+        "role": "direct_support"
+      },
+      {
+        "evidence": "eh_fc0fcdbbd1bf24e9",
+        "role": "direct_support"
+      }
+    ]
+  },
+  "friction_counts": {
+    "mechanical_optional_path_old_actions": [
+      "save_working_checkpoint",
+      "get_status",
+      "save_domain_judgment"
+    ],
+    "mechanical_new_actions": [
+      "save_domain_judgment"
+    ],
+    "old_minimal_scoped_additional_scalar_occurrences": 14,
+    "new_minimal_scoped_additional_scalar_occurrences": 2,
+    "count_excludes": "routine unchanged judgment/Evidence/role fields",
+    "native_lower_friction_demonstrated": false
+  },
+  "decision": {
+    "keep": "Keep the compact optional source-bound capture supported by neutral native tests: it reuses one existing basis field and WorkingNote representation, removes coordinate/checkpoint copying, and leaves ordinary citations unchanged. This is a bounded ergonomic capability, not demonstrated scientific benefit. One compact-path exposure is insufficient to infer all optional dimensions are useless.",
+    "revise": "Add concise D5 guidance for earlier-plan reconciliation and citation of actual reported alternatives, directly supported by this trace. No field is made obligatory.",
+    "remove": "Do not retain the obsolete mandatory-seeming manual checkpoint ceremony as the preferred path; f7 already removed it. No additional ledger/tool/dimension or automatic scope inference is added. No further scope scaffolding expansion is justified.",
+    "legacy": "All legacy fields/serialization remain; no runtime validator/label or savedjudgment change.",
+    "research_limit": "Repeated absence of feature use must be reported; exclude the field from any demonstrated scientific-gain claim. Future natural-use evidence requires separate authorization."
+  },
+  "source_delivery": {
+    "main_report_all10pages": true,
+    "complete_D5_context": true,
+    "read_windows": 22,
+    "unique_pages": 20,
+    "model_images": 0,
+    "original_protocol_measurement_page4_not_read": true,
+    "availability_is_not_delivery": true
+  },
+  "attempts": {
+    "invocations": 1,
+    "submission_rejections": 0,
+    "review_alerts": [],
+    "loops": false,
+    "paid_retry": false
+  },
+  "usage": {
+    "input_tokens": 981058,
+    "cached_input_tokens": 890624,
+    "output_tokens": 2478,
+    "reasoning_output_tokens": 754,
+    "uncached_input_tokens": 90434,
+    "durable_provider_records": 18,
+    "elapsed_seconds": 187.30038560499088,
+    "tool_calls": 19,
+    "attribution": "observed durable usage records, not estimated invoice"
+  },
+  "accuracy_claim": false,
+  "aligned_human_reference_used": false,
+  "frozen_output_unchanged": true
+}

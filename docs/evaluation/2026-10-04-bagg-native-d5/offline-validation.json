@@ -1,0 +1,15 @@
+{
+  "focused_tests": "tests/test_integrated_observation_basis.py tests/test_working_observation_scope.py tests/test_contract_surface_budget.py tests/release/test_release_manifest.py",
+  "passed": 21,
+  "seconds": 67.71,
+  "ruff": "passed",
+  "format": "passed",
+  "ty": "passed",
+  "git_diff_check": "passed",
+  "scientific_pack_evaluator_models_bundle_verifier_unchanged_from_frozen_code": true,
+  "postrun_change": "14 generic D5 source-comparison guidance lines only; no runtime/schema/label change",
+  "paid_postchange_calls": 0,
+  "behavioral_effect": "unmeasured",
+  "frozen_guidance_sha256": "cf29382934fb0620d5111aa1f478bedccf986c9bda8015e9c5fc5b62c20901ac",
+  "postrun_guidance_sha256": "a3866965032142f122e453bdfdc7b4dba9a253666dfa4a4eda2482adbc8688d8"
+}

@@ -1,0 +1,28 @@
+model = "gpt-6-luna"
+model_reasoning_effort = "medium"
+approval_policy = "never"
+sandbox_mode = "read-only"
+model_instructions_file = "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/native-instructions.md"
+web_search = "disabled"
+[features]
+shell_tool = false
+unified_exec = false
+view_image = false
+apps = false
+browser_use = false
+computer_use = false
+sleep_tool = false
+tool_suggest = false
+multi_agent = false
+[mcp_servers.rob2]
+command = "/home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python"
+args = ["-m", "rob2_kit.interfaces.cli.app", "mcp-codex"]
+required = true
+default_tools_approval_mode = "approve"
+startup_timeout_sec = 60
+tool_timeout_sec = 90
+enabled_tools = ["get_status", "get_domain_context", "list_sources", "read_pages", "select_text_evidence", "search_sources", "search_sources_batch", "render_page", "select_visual_evidence", "save_working_checkpoint", "save_domain_judgment"]
+[mcp_servers.rob2.env]
+ROB2_WORKSPACE = "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/workspace"
+PYTHONPATH = "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/bagg-native-d5/code/src"
+PYTHONDONTWRITEBYTECODE = "1"

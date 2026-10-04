@@ -1,0 +1,75 @@
+{
+  "outcome": "success",
+  "state_revision": 1,
+  "phase": "proposal",
+  "batch_identity": "sha256:224e133d1d6996cd90bb668ef5d7653a5fe0ea445fb407f24a2ac3b0bcdf41ec",
+  "conditions": [],
+  "trials": [
+    {
+      "id": "bagg-2022",
+      "label": "bagg-2022",
+      "requested_outcome": "Pain intensity",
+      "sources": [
+        {
+          "id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+          "trial_id": "bagg-2022",
+          "role": "main_article",
+          "label": "jama_bagg_2022_oi_220066.pdf",
+          "logical_path": "jama_bagg_2022_oi_220066.pdf",
+          "sha256": "sha256:2582d7a885adbed2b836a9164533c79a96c87970845ece806c1955b40dfa0b39",
+          "media_type": "application/pdf",
+          "page_count": 10,
+          "projection_hash": "sha256:0f3aa344f15a2520c9b5b056670844861e9d6e9dbd1108071876e15a4d0b0937",
+          "origin": "local_dossier",
+          "declared_role": "main_article"
+        },
+        {
+          "id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+          "trial_id": "bagg-2022",
+          "role": "supplement",
+          "label": "joi220066supp1_prod.pdf",
+          "logical_path": "joi220066supp1_prod.pdf",
+          "sha256": "sha256:f2120f0942d1ec0ec1dc6e80c16453db17044a9833dbfae8ae5794a7dfcd19f9",
+          "media_type": "application/pdf",
+          "page_count": 27,
+          "projection_hash": "sha256:f6218dce780c08d931af59f3a68f6d0ce65c72e885972a416500a88a6b25f407",
+          "origin": "local_dossier",
+          "declared_role": "supplement"
+        },
+        {
+          "id": "source_86dfa8708d643032f217c49fdc1b2fe9a8a9ceec8e4cbde1a3f8c2fb190786b2",
+          "trial_id": "bagg-2022",
+          "role": "supplement",
+          "label": "joi220066supp2_prod.pdf",
+          "logical_path": "joi220066supp2_prod.pdf",
+          "sha256": "sha256:fd86963d44eaa8de653e592eb0372bc374a0fdb86562156161886330ce4ad2e0",
+          "media_type": "application/pdf",
+          "page_count": 9,
+          "projection_hash": "sha256:9ef4413171924459ebe7a5f5b00733b16e11f28cc0c06bf38f9c39c6f9b4ba64",
+          "origin": "local_dossier",
+          "declared_role": "supplement"
+        },
+        {
+          "id": "source_fa7cd688bcb9e820abfd1fcf827eb70c3a8c6cfe6785404bf10c9f55dcc449d0",
+          "trial_id": "bagg-2022",
+          "role": "supplement",
+          "label": "joi220066supp3_prod.pdf",
+          "logical_path": "joi220066supp3_prod.pdf",
+          "sha256": "sha256:b9ed58104bfe11bd174a7d060f3202f02870f930d1de595ca1bf0107f75845c4",
+          "media_type": "application/pdf",
+          "page_count": 1,
+          "projection_hash": "sha256:118a1cb7e732c42a3fd42e5938fb076972561238fef5a8a40caf3260a8abf49b",
+          "origin": "local_dossier",
+          "declared_role": "supplement"
+        }
+      ],
+      "registry": {
+        "kind": "not_found",
+        "query": "undeclared",
+        "retrieved_at": "2026-10-04T09:21:04.853311Z"
+      },
+      "omissions": [],
+      "identity": "sha256:df57f8d8ee69e236714902a71aa1ee791ac9cc002e7f91acbb9cb5e7a61d879f"
+    }
+  ]
+}

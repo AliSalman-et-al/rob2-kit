@@ -1,0 +1,22 @@
+{
+  "outcome": "success",
+  "state_revision": 3,
+  "phase": "assessment",
+  "approved": true,
+  "acknowledgment_record": {
+    "review_identity": "sha256:ca0e7c5cbb7f328ccf0288d4160859e7a374ff9f29011847490cca0efe73f2fd",
+    "purpose": "proposal",
+    "caller": "explicit-parent-integrated-D5-task",
+    "method": "verified-original-source-exact-Result-reconstruction",
+    "observed_at": "2026-10-04T09:21:10.012578Z",
+    "workflow_basis": 1,
+    "identity": "sha256:af63c9b518c7dfd06b3370b58474adbaca09b9b583b68f7fd8660fbc68d423fd"
+  },
+  "acknowledgment": "sha256:af63c9b518c7dfd06b3370b58474adbaca09b9b583b68f7fd8660fbc68d423fd",
+  "continuation": {
+    "operation": "get_domain_context",
+    "authority": "host",
+    "trial_id": "bagg-2022",
+    "domain_id": "domain:randomization"
+  }
+}

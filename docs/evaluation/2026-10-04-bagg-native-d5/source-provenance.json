@@ -1,0 +1,225 @@
+{
+  "original_inventory": {
+    "case": "bagg-2022",
+    "bundle": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/bagg-2022/.rob2-kit/finalized/43cfacfa6acfffa68110ab8b8c283aaa8c6f16cbe50f70476033f99d32a71383.rob2.zip",
+    "bundle_sha256": "f90508045e707c468c2ba02db987f007e8519120382100f4319d7102d14f1b9b",
+    "sources": [
+      {
+        "source": {
+          "declared_role": "main_article",
+          "id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+          "label": "jama_bagg_2022_oi_220066.pdf",
+          "logical_path": "jama_bagg_2022_oi_220066.pdf",
+          "media_type": "application/pdf",
+          "origin": "local_dossier",
+          "page_count": 10,
+          "projection_hash": "sha256:0f3aa344f15a2520c9b5b056670844861e9d6e9dbd1108071876e15a4d0b0937",
+          "role": "main_article",
+          "sha256": "sha256:2582d7a885adbed2b836a9164533c79a96c87970845ece806c1955b40dfa0b39",
+          "trial_id": "bagg-2022"
+        }
+      },
+      {
+        "source": {
+          "declared_role": "supplement",
+          "id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+          "label": "joi220066supp1_prod.pdf",
+          "logical_path": "joi220066supp1_prod.pdf",
+          "media_type": "application/pdf",
+          "origin": "local_dossier",
+          "page_count": 27,
+          "projection_hash": "sha256:f6218dce780c08d931af59f3a68f6d0ce65c72e885972a416500a88a6b25f407",
+          "role": "supplement",
+          "sha256": "sha256:f2120f0942d1ec0ec1dc6e80c16453db17044a9833dbfae8ae5794a7dfcd19f9",
+          "trial_id": "bagg-2022"
+        }
+      },
+      {
+        "source": {
+          "declared_role": "supplement",
+          "id": "source_86dfa8708d643032f217c49fdc1b2fe9a8a9ceec8e4cbde1a3f8c2fb190786b2",
+          "label": "joi220066supp2_prod.pdf",
+          "logical_path": "joi220066supp2_prod.pdf",
+          "media_type": "application/pdf",
+          "origin": "local_dossier",
+          "page_count": 9,
+          "projection_hash": "sha256:9ef4413171924459ebe7a5f5b00733b16e11f28cc0c06bf38f9c39c6f9b4ba64",
+          "role": "supplement",
+          "sha256": "sha256:fd86963d44eaa8de653e592eb0372bc374a0fdb86562156161886330ce4ad2e0",
+          "trial_id": "bagg-2022"
+        }
+      },
+      {
+        "source": {
+          "declared_role": "supplement",
+          "id": "source_fa7cd688bcb9e820abfd1fcf827eb70c3a8c6cfe6785404bf10c9f55dcc449d0",
+          "label": "joi220066supp3_prod.pdf",
+          "logical_path": "joi220066supp3_prod.pdf",
+          "media_type": "application/pdf",
+          "origin": "local_dossier",
+          "page_count": 1,
+          "projection_hash": "sha256:118a1cb7e732c42a3fd42e5938fb076972561238fef5a8a40caf3260a8abf49b",
+          "role": "supplement",
+          "sha256": "sha256:b9ed58104bfe11bd174a7d060f3202f02870f930d1de595ca1bf0107f75845c4",
+          "trial_id": "bagg-2022"
+        }
+      }
+    ]
+  },
+  "new_capture_sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_5582fd4a6f0b7c5fe8105c80ea128e741ab7ee3c08848fbb8de08ba2b414163e",
+      "label": "jama_bagg_2022_oi_220066.pdf",
+      "logical_path": "jama_bagg_2022_oi_220066.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 10,
+      "projection_hash": "sha256:0f3aa344f15a2520c9b5b056670844861e9d6e9dbd1108071876e15a4d0b0937",
+      "role": "main_article",
+      "sha256": "sha256:2582d7a885adbed2b836a9164533c79a96c87970845ece806c1955b40dfa0b39",
+      "trial_id": "bagg-2022"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_90c77f638a7d3e91834e2e3fbece2f8d8b6feee10eeacdea1538a24a3dc959e8",
+      "label": "joi220066supp1_prod.pdf",
+      "logical_path": "joi220066supp1_prod.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 27,
+      "projection_hash": "sha256:f6218dce780c08d931af59f3a68f6d0ce65c72e885972a416500a88a6b25f407",
+      "role": "supplement",
+      "sha256": "sha256:f2120f0942d1ec0ec1dc6e80c16453db17044a9833dbfae8ae5794a7dfcd19f9",
+      "trial_id": "bagg-2022"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_86dfa8708d643032f217c49fdc1b2fe9a8a9ceec8e4cbde1a3f8c2fb190786b2",
+      "label": "joi220066supp2_prod.pdf",
+      "logical_path": "joi220066supp2_prod.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 9,
+      "projection_hash": "sha256:9ef4413171924459ebe7a5f5b00733b16e11f28cc0c06bf38f9c39c6f9b4ba64",
+      "role": "supplement",
+      "sha256": "sha256:fd86963d44eaa8de653e592eb0372bc374a0fdb86562156161886330ce4ad2e0",
+      "trial_id": "bagg-2022"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_fa7cd688bcb9e820abfd1fcf827eb70c3a8c6cfe6785404bf10c9f55dcc449d0",
+      "label": "joi220066supp3_prod.pdf",
+      "logical_path": "joi220066supp3_prod.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:118a1cb7e732c42a3fd42e5938fb076972561238fef5a8a40caf3260a8abf49b",
+      "role": "supplement",
+      "sha256": "sha256:b9ed58104bfe11bd174a7d060f3202f02870f930d1de595ca1bf0107f75845c4",
+      "trial_id": "bagg-2022"
+    }
+  ],
+  "reconstructed_result": {
+    "applicability": {
+      "design": "individual_parallel",
+      "evidence": [
+        "eh_5cf40c882c8a45d9",
+        "eh_72d85712fe544f8b",
+        "eh_b7e9d9e487fb79b3"
+      ],
+      "rationale": "The report describes a parallel two-group randomized clinical trial with participants randomized 1:1 to intervention or control."
+    },
+    "bindings": [
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/effect_measure"
+        },
+        "value_digest": "sha256:09f25693017a629fc9ee3e2a1956159ef6797625d1470a8100619e01fe924478"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/estimate"
+        },
+        "value_digest": "sha256:1c52469fed2f3391fc7194b26be25a6fbdefc62e9fd4fcfe6e92a7be241e0e68"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/precision"
+        },
+        "value_digest": "sha256:e8f8f346873043d25ffb5781895be7d607939e319b06d81f33d39e37458a0753"
+      },
+      {
+        "evidence_index": 0,
+        "field": {
+          "path": "/reported/endpoint/name"
+        },
+        "value_digest": "sha256:0fc8033ec942ca7a18b848b1b7c896ba523636292bf8a190628b1ee9ee92c352"
+      }
+    ],
+    "clarity": {
+      "analysis_population": "specified",
+      "comparison_groups": "specified",
+      "effect_measure": "specified",
+      "eligible_result_choice": "specified",
+      "measurement": "specified",
+      "outcome_definition": "specified",
+      "source_table_meaning": "specified",
+      "time_point": "specified"
+    },
+    "evidence": [
+      {
+        "handle": "eh_5cf40c882c8a45d9",
+        "kind": "narrative"
+      }
+    ],
+    "kind": "assessable",
+    "relation": "exact",
+    "relation_rationale": "The final report identifies pain intensity at 18 weeks after randomization as the primary outcome; the SAP defines it as average pain intensity in the previous week measured on a subject-rated 11-point NRS from 0 to 10. Both randomized groups are compared using the between-group mean difference. The mixed model estimates the 18-week effect using data from participants with observed outcome data at each analyzed time point; 261 of 276 randomized participants supplied the primary outcome at 18 weeks.",
+    "reported": {
+      "analysis_population": "The full analysis set comprised all randomized participants who provided outcome data at each time point analyzed, analyzed in their randomized groups regardless of adherence. At 18 weeks, 128 intervention and 133 control participants provided pain outcome data (261/276 overall); missing data were assumed missing at random and no multiple imputation was performed.",
+      "effect_measure": "Between-group mean difference",
+      "endpoint": {
+        "definition": null,
+        "name": "Pain intensity"
+      },
+      "estimate": "-1.0",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, -1.5 to -0.4"
+    },
+    "requested_outcome": "Pain intensity",
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "Graded sensorimotor retraining (RESOLVE)",
+          "id": "intervention"
+        },
+        {
+          "assignment": "Sham procedure and attention control",
+          "id": "control"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Mean difference",
+      "measurement": {
+        "method": "Mean pain intensity over the previous week, measured on an 11-point numerical rating scale from 0 (no pain) to 10 (worst pain imaginable).",
+        "metric": "Pain intensity"
+      },
+      "outcome_definition": "Pain intensity",
+      "time_point_or_window": {
+        "description": "18 weeks after randomization",
+        "kind": "quantified",
+        "unit": "weeks",
+        "value": "18"
+      }
+    },
+    "trial_id": "bagg-2022"
+  },
+  "postapproval_domain_records": 0,
+  "operator_facts": "No working observations, scoped notes, participant-flow rows, archived domain answers or gold seeded. Exact approved scientific target/report/relation reconstructed from verified original PDFs. All original registered source bytes available."
+}
