@@ -45,7 +45,14 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     assert variants[1]["type"] == "string"
     citation = variants[0]
     assert set(citation["required"]) == {"evidence", "role"}
-    assert citation["properties"]["evidence"]["type"] == "string"
+    references = citation["properties"]["evidence"]["anyOf"]
+    assert references[0]["type"] == "string"
+    objects = [item for item in references if item.get("type") == "object"]
+    assert {frozenset(item["required"]) for item in objects} == {
+        frozenset({"source_id", "page", "start_line", "end_line"}),
+        frozenset({"delivery_receipt", "region", "transcription"}),
+    }
+    assert all(item["additionalProperties"] is False for item in objects)
     assert citation["additionalProperties"] is False
     point = answer["properties"]["counterevidence"]["items"]
     assert point["properties"]["evidence"]["type"] == "array"
