@@ -1,0 +1,81 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "finalized",
+    "state_revision": 12,
+    "next_action": null,
+    "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+  },
+  "data": {
+    "sources": [
+      {
+        "id": "sh_ec3fcba1a06e0ddc",
+        "trial_id": "gupta-2024",
+        "role": "main_article",
+        "label": "NEJMoa2305582.pdf",
+        "logical_path": "NEJMoa2305582.pdf",
+        "sha256": "sha256:9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4",
+        "media_type": "application/pdf",
+        "page_count": 12,
+        "projection_hash": "sha256:7ce14c05829d5faeedb69e383dd0c410c2c39da6d2949b36250e15ba4755d169",
+        "origin": "local_dossier",
+        "declared_role": "main_article"
+      },
+      {
+        "id": "sh_f5de7e58b7a415fc",
+        "trial_id": "gupta-2024",
+        "role": "supplement",
+        "label": "nejmoa2305582_appendix.pdf",
+        "logical_path": "nejmoa2305582_appendix.pdf",
+        "sha256": "sha256:97e8259cc7e1e617ae2dd1c69f37f5908c94034d70966a0b7a2955ce32802771",
+        "media_type": "application/pdf",
+        "page_count": 30,
+        "projection_hash": "sha256:deba28941be66d40a9a2b5c686b31424eb751d41796e1fd47b619cc02c81def2",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      },
+      {
+        "id": "sh_4665b37b8242dc75",
+        "trial_id": "gupta-2024",
+        "role": "supplement",
+        "label": "nejmoa2305582_data-sharing.pdf",
+        "logical_path": "nejmoa2305582_data-sharing.pdf",
+        "sha256": "sha256:18555d1ae2e199f89a68ebbcf03e5a55856726e9a93980947ad34e34a0e1cb38",
+        "media_type": "application/pdf",
+        "page_count": 1,
+        "projection_hash": "sha256:08ea3a424cb382d656ab6cdc223d633d5b036a2875fa7d38da08b24a2c2af123",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      },
+      {
+        "id": "sh_af0386b8458837c5",
+        "trial_id": "gupta-2024",
+        "role": "supplement",
+        "label": "nejmoa2305582_disclosures.pdf",
+        "logical_path": "nejmoa2305582_disclosures.pdf",
+        "sha256": "sha256:a420e41c0133ef3b78e5d2309d3d4bbb5ea3335bb935dc14f4c5cdb6e919b91e",
+        "media_type": "application/pdf",
+        "page_count": 15,
+        "projection_hash": "sha256:aca5b01560f51e26333a29168b9532bd740612ed1f715fe16024ec68268d6df5",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      },
+      {
+        "id": "sh_cb7067006a91d4e5",
+        "trial_id": "gupta-2024",
+        "role": "supplement",
+        "label": "nejmoa2305582_protocol.pdf",
+        "logical_path": "nejmoa2305582_protocol.pdf",
+        "sha256": "sha256:d2e5c181534c620be01520f334ccee80b685217233f3b0a5c99cc85b33ee76f7",
+        "media_type": "application/pdf",
+        "page_count": 134,
+        "projection_hash": "sha256:5054b0a70b155f8b278081f3afb37ce906ce450e4309444954b00c55aaeee122",
+        "origin": "local_dossier",
+        "declared_role": "supplement"
+      }
+    ],
+    "conditions": [],
+    "omissions": [],
+    "navigation": null
+  }
+}

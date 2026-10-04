@@ -1,0 +1,41 @@
+{
+  "run_id": 37169989508,
+  "tested_sha": "d4aa130f49d88c553bf10b9c3920960422266c89",
+  "representative_failed_windows_313_job": 111340789935,
+  "failed": 2,
+  "passed": 1385,
+  "skipped": 8,
+  "failure": "Two historical-fixture replay tests used platform-default decoding; mojibake source fact text exceeded published 4000-character limit",
+  "fix": "Explicit UTF-8 fixture read; no source, schema, production or scientific-state change",
+  "encoding_reproduction": [
+    {
+      "case": "baby",
+      "fixture_sha256": "b7f58b4b1351246ad96adfe62d949b192b2bf791a29bcfde68be7a374250b8e8",
+      "decoding": {
+        "utf-8": {
+          "max_fact_text_characters": 4000,
+          "over_4000": 0
+        },
+        "cp1252": {
+          "max_fact_text_characters": 4034,
+          "over_4000": 14
+        }
+      }
+    },
+    {
+      "case": "exscel",
+      "fixture_sha256": "f5721201a8b8a8f537388ecf071c398b9c8d87902bb413882d6e84f894e9e8f2",
+      "decoding": {
+        "utf-8": {
+          "max_fact_text_characters": 4000,
+          "over_4000": 0
+        },
+        "cp1252": {
+          "max_fact_text_characters": 4012,
+          "over_4000": 13
+        }
+      }
+    }
+  ],
+  "windows_fix_still_awaits_CI": true
+}

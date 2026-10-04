@@ -1,0 +1,33 @@
+{
+  "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+  "page": 7,
+  "start_line": 85,
+  "end_line": 94,
+  "numbered_text": "85|Oxygen reduction test not performed when infant was eligible\n86|- no./total no. (%)§\n87|13/86 (15.1)\n88|13/94 (13.8)\n89|* Early discontinuation was defined as discontinuation when fewer than three doses had been received.\n90|† The median was assessed among infants who had received at least one dose.\n91|‡ Echocardiography was planned to be performed at 3 weeks (18 to 24 days) after birth to assess the patency of the PDA;\n92|infants who died before the 3-week echocardiogram could be obtained were excluded (33 infants in the ibuprofen group\n93|and 21 in the placebo group).\n94|§ Denominators are the numbers of infants who were eligible for the test.",
+  "text_sha256": "3a0c97f4d9df0b7844209f3278163595af716b9c6da951651d86f9b5597524bf",
+  "delivered_to_model": false,
+  "selected_original_citations_support_counts": false,
+  "original_citations": [
+    {
+      "handle": "eh_324148091d5038f7",
+      "source_id": "source_f5de7e58b7a415fc5cc82d9469fe4bbc371ac4f10f270b8d8e8156fbe328994a",
+      "page": 14,
+      "start_line": 20,
+      "end_line": 45
+    },
+    {
+      "handle": "eh_664cb2e87a63db02",
+      "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 102
+    },
+    {
+      "handle": "eh_d6d5b2bf301983ce",
+      "source_id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 125
+    }
+  ]
+}

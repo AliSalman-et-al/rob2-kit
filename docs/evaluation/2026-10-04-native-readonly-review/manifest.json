@@ -1,0 +1,90 @@
+{
+  "authorization": "One bounded native read-only selected D4 review, not reopening or revision; no retry",
+  "fresh_context": true,
+  "source_finalized_fork": "01a1046c-cdbe-7c81-8e2f-410015d6a089",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "home": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home",
+  "config_sha256": "7ff32d942028fb0a9f6e11405c55f82d0a5cc3d8801da4d346c740381d345a3e",
+  "existing_rollout_hashes": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T06-32-44-01a1048a-bb6e-73b3-b567-7233b29bfa48.jsonl": "4029b8e588c4f199440486b12379a07ea86fc9abde8e316a873b0e53b00d2e83",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T05-36-09-01a10456-ef2f-7d30-9c9b-3ef3a486d004.jsonl": "edc69c88c0275976429f4b4983f5c70915f4d868dd4dcdf7f61902d6a1d6a660",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T04-33-51-01a1041d-e522-7452-bc88-0d3a490aa0df.jsonl": "14365017c47602cd84858376f4c54a45328af1399f85ca6651228dac9e2bb786"
+  },
+  "flags": [
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "model_instructions_file=\"/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/native-readonly-review-20261004/rob2-assess/SKILL.md\"",
+    "-c",
+    "web_search=\"disabled\"",
+    "-c",
+    "mcp_servers.rob2.command=\"/home/ali/Documents/Codex/2026-10-02/task/rob2-kit/.venv/bin/python\"",
+    "-c",
+    "mcp_servers.rob2.args=[\"-m\",\"rob2_kit.interfaces.cli.app\",\"mcp-codex\"]",
+    "-c",
+    "mcp_servers.rob2.required=true",
+    "-c",
+    "mcp_servers.rob2.default_tools_approval_mode=\"approve\"",
+    "-c",
+    "mcp_servers.rob2.startup_timeout_sec=60",
+    "-c",
+    "mcp_servers.rob2.tool_timeout_sec=90",
+    "-c",
+    "mcp_servers.rob2.enabled_tools=[\"get_status\",\"review_trial\",\"list_sources\",\"read_pages\",\"search_sources\",\"search_sources_batch\",\"render_page\"]",
+    "-c",
+    "mcp_servers.rob2.env.ROB2_WORKSPACE=\"/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/native-readonly-review-20261004/workspace\"",
+    "-c",
+    "mcp_servers.rob2.env.PYTHONPATH=\"/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/native-readonly-review-20261004/code/src\"",
+    "-c",
+    "mcp_servers.rob2.env.PYTHONDONTWRITEBYTECODE=\"1\""
+  ],
+  "prompt_sha256": "9125b36e39fb9d79e311b7df39be1a976b49b9e174555c664d43e231ad909cb5",
+  "private_criteria_sha256": "45b30649b3372f6966515993bfa2503c5484ecb77a663098c1ebec1b344176d0",
+  "scoring_units_sha256": "13096d7ba5773be2d7851f11440ff8710c1f900ce567235ee5d97e6f4b6181b4",
+  "availability_manifest_sha256": "2104d14f2ca299342d1e5e926852c98f2f30ce73fe54a5b7b78e2c7cc50ec054",
+  "availability_packet_sha256": "bf0b6b299d4dd5eb83b74124405db251288b3fce4ea01344cb2486d5abd803f0",
+  "availability_packet_not_model_input": true,
+  "captured_pages": 191,
+  "skill_sha256": "94d3227852b4ac4e223d3287df2b0d0f7ffcd47ad04ceb7d1d7352d4f6ce61d1",
+  "runner_sha256": "9dbd2eaca414edb57e66ee8b9d5ec5b4c6d8fae960900c075e0f08dc5fe3a44a",
+  "limits": {
+    "turns": 1,
+    "tools": 12,
+    "output_tokens": 3000,
+    "wall_seconds": 360,
+    "idle_seconds": 120,
+    "input_telemetry_only": true
+  },
+  "allowed_tools": [
+    "get_status",
+    "review_trial",
+    "list_sources",
+    "read_pages",
+    "search_sources",
+    "search_sources_batch",
+    "render_page"
+  ],
+  "source_inventory": [
+    {
+      "id": "source_ec3fcba1a06e0ddceecbdc3cf37557a1a3b533e200d263de481c228cc373d510",
+      "sha256": "sha256:9e56233a96ba7b0b9d4cadebfdcc00f82b2ea11eba8daa64cfb88ad86f701cd4"
+    },
+    {
+      "id": "source_f5de7e58b7a415fc5cc82d9469fe4bbc371ac4f10f270b8d8e8156fbe328994a",
+      "sha256": "sha256:97e8259cc7e1e617ae2dd1c69f37f5908c94034d70966a0b7a2955ce32802771"
+    },
+    {
+      "id": "source_4665b37b8242dc7521d264a9107e1c68cd0c989bd96472168970010fc0ff2f56",
+      "sha256": "sha256:18555d1ae2e199f89a68ebbcf03e5a55856726e9a93980947ad34e34a0e1cb38"
+    },
+    {
+      "id": "source_af0386b8458837c5a709e9768be4f6cdaece3efaa36cc82b0ee1c6dc1250ab23",
+      "sha256": "sha256:a420e41c0133ef3b78e5d2309d3d4bbb5ea3335bb935dc14f4c5cdb6e919b91e"
+    },
+    {
+      "id": "source_cb7067006a91d4e53d09d8476b0d76a0ac6292b03d6db7ce32a4df4f5c2fbef8",
+      "sha256": "sha256:d2e5c181534c620be01520f334ccee80b685217233f3b0a5c99cc85b33ee76f7"
+    }
+  ]
+}

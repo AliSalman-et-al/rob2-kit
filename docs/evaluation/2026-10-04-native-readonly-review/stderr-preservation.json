@@ -1,0 +1,6 @@
+{
+  "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/native-readonly-review-20261004/native-cli-stderr.log",
+  "sha256": "6c6522aa776ce55b561418c38385dd73f4c51c67421a81545127e1f43a54dd74",
+  "bytes": 192437,
+  "reason": "CLI telemetry contains account metadata; raw log is preserved privately, not published."
+}

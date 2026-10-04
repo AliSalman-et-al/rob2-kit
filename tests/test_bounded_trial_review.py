@@ -257,7 +257,7 @@ def test_selected_summary_keeps_full_saved_claims_and_recovers_exact_sources(
         / "docs/evaluation/2026-10-04-selected-review-packing"
         / f"{case}-snapshot.json"
     )
-    receipt = json.loads(artifact.read_text())
+    receipt = json.loads(artifact.read_text(encoding="utf-8"))
     before = json.loads(json.dumps(receipt))
     selector = {"domain_id": domain_id}
     _, expected = server._review_target(receipt, selector)

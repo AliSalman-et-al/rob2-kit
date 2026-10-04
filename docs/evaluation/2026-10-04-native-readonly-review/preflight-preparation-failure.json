@@ -1,0 +1,1 @@
+{"model_calls":0,"error":"Operator preflight search_sources omitted required mode; native status/review/source/read/render succeeded before argument validation failure. Corrected mode=all; no inference launched."}

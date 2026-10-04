@@ -1,0 +1,37 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "finalized",
+    "state_revision": 12,
+    "next_action": null,
+    "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+  },
+  "data": {
+    "scope_review": [],
+    "trial_dispositions": {
+      "gupta-2024": "assessed"
+    },
+    "terminal_counts": {
+      "assessed": 1,
+      "needs_input": 0,
+      "unsupported_design": 0,
+      "failed": 0,
+      "pending": 0,
+      "reviewable": 0
+    },
+    "selected_evidence": [],
+    "working_checkpoint": {
+      "status": "absent",
+      "reason": "no_active_trial",
+      "trial_id": null,
+      "checkpoint_identity": null,
+      "checkpoint": null,
+      "stale_domains": [],
+      "recovery": "reorient_from_sources"
+    },
+    "investigation": null,
+    "trial_review": null,
+    "main_report_reading": {},
+    "conditions": []
+  }
+}

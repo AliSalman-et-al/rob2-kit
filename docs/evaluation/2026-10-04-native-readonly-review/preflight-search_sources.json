@@ -1,0 +1,150 @@
+{
+  "outcome": "success",
+  "head": {
+    "phase": "finalized",
+    "state_revision": 12,
+    "next_action": null,
+    "authoritative_wording": "Batch finalized. RoB 2 assessments completed for 1/1 Trials. 0 Trials need information; 0 have unsupported designs; 0 Trials failed."
+  },
+  "data": {
+    "hits": [
+      {
+        "source_id": "sh_cb7067006a91d4e5",
+        "source_role": "supplement",
+        "source_label": "nejmoa2305582_protocol.pdf",
+        "page": 18,
+        "start_line": 1,
+        "end_line": 9,
+        "preview": "Baby-OSCAR Protocol, Version 2, 10 Dec 2014, REC Number: 14/EM/0172\nPage 15\n\npharmacologic PDA closure is reported to improve alveolarisation and minimise the impaired\npostnatal alveolar development that is the pathologic hallmark of ''new bronchopulmonary\ndysplasia (BPD)\" [Clyman RI, 2013]. An early selective treatment approach for closure of a\nPDA is suggested to trial its effect on BPD, which is the hypothesis of this trial.\n\nBoth indomethacin and ibuprofen have been shown to have comparable efficacy in",
+        "passage_ref": "eh_bd898853942023c3",
+        "candidate_truncated": false,
+        "candidate_recovery": null,
+        "rank": 1,
+        "within_source_rank": 1,
+        "range": {
+          "start": 1,
+          "end": 3
+        }
+      },
+      {
+        "source_id": "sh_cb7067006a91d4e5",
+        "source_role": "supplement",
+        "source_label": "nejmoa2305582_protocol.pdf",
+        "page": 18,
+        "start_line": 12,
+        "end_line": 50,
+        "preview": "Ohlsson A, 2010; Cooke I, 2009].\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n*p<0.05\n^^ Weighted Mean Differences [WMD] (95% Confidence interval)\n\n\n5. Trial Objective\n\n\n5.1. Primary Objective\nTo determine if selective early treatment of echocardiographically confirmed large PDAs in\nextremely preterm babies with ibuprofen within 72 hours of birth reduces the incidence of\ndeath at 36 weeks postmenstrual age or moderate or severe bronchopulmonary dysplasia\n(BPD) at 36 weeks postmenstrual age.",
+        "passage_ref": "eh_a3fdc5dece611864",
+        "candidate_truncated": false,
+        "candidate_recovery": null,
+        "rank": 2,
+        "within_source_rank": 2,
+        "range": {
+          "start": 1,
+          "end": 3
+        }
+      },
+      {
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "source_role": "main_article",
+        "source_label": "NEJMoa2305582.pdf",
+        "page": 9,
+        "start_line": 9,
+        "end_line": 18,
+        "preview": "(13.6%) in the ibuprofen group and 33 of 321\n(10.3%) in the placebo group died (adjusted risk\nratio, 1.32; 95% CI, 0.92 to 1.90). Among the\ninfants who survived to 36 weeks of postmen-\nstrual age, moderate or severe bronchopulmo-\nnary dysplasia was present in 176 of 274 (64.2%)\nin the ibuprofen group and 169 of 285 (59.3%) in\nthe placebo group (adjusted risk ratio, 1.09; 95%\nCI, 0.96 to 1.23) (Table 2 and Figs. S3 and S4).\nResults for the primary outcome excluding in-",
+        "passage_ref": "eh_4c88bea91c702c58",
+        "candidate_truncated": false,
+        "candidate_recovery": null,
+        "rank": 3,
+        "within_source_rank": 1,
+        "range": {
+          "start": 1,
+          "end": 3
+        }
+      }
+    ],
+    "query": "bronchopulmonary",
+    "mode": "all",
+    "profile": "porter-unicode61-v1",
+    "total_matches": 31,
+    "truncated": true,
+    "condition": null,
+    "search_receipt": "sr_7d4edadd1592cb53",
+    "session_id": "sha256:f0b63c11b45cd3c7a14f1c8525a8d9646778cf7e72e40f1c02d3be544290b404",
+    "session_handle": "ss_f0b63c11b45cd3c7",
+    "matching_page_count": 31,
+    "candidate_count": 55,
+    "distinct_passage_count": 55,
+    "distinct_page_count": 31,
+    "distinct_source_count": 3,
+    "ranking_complete": true,
+    "returned_rank_start": 1,
+    "returned_rank_end": 3,
+    "next_cursor": "sc_f0b63c11b45cd3c7_3",
+    "exhausted": false,
+    "term_feedback": [
+      {
+        "source_id": "sh_cb7067006a91d4e5",
+        "page_count": 134,
+        "query_matching_page_count": 19,
+        "term_page_counts": [
+          {
+            "term": "bronchopulmonary",
+            "matching_page_count": 19
+          }
+        ]
+      },
+      {
+        "source_id": "sh_ec3fcba1a06e0ddc",
+        "page_count": 12,
+        "query_matching_page_count": 9,
+        "term_page_counts": [
+          {
+            "term": "bronchopulmonary",
+            "matching_page_count": 9
+          }
+        ]
+      },
+      {
+        "source_id": "sh_f5de7e58b7a415fc",
+        "page_count": 30,
+        "query_matching_page_count": 3,
+        "term_page_counts": [
+          {
+            "term": "bronchopulmonary",
+            "matching_page_count": 3
+          }
+        ]
+      },
+      {
+        "source_id": "sh_4665b37b8242dc75",
+        "page_count": 1,
+        "query_matching_page_count": 0,
+        "term_page_counts": [
+          {
+            "term": "bronchopulmonary",
+            "matching_page_count": 0
+          }
+        ]
+      },
+      {
+        "source_id": "sh_af0386b8458837c5",
+        "page_count": 15,
+        "query_matching_page_count": 0,
+        "term_page_counts": [
+          {
+            "term": "bronchopulmonary",
+            "matching_page_count": 0
+          }
+        ]
+      }
+    ],
+    "term_feedback_truncated": false,
+    "term_feedback_sources_truncated": false,
+    "diagnostic": null,
+    "spelling_suggestions": [],
+    "spelling_suggestions_incomplete": false,
+    "purpose_domain_id": null,
+    "purpose_question_id": null
+  }
+}
