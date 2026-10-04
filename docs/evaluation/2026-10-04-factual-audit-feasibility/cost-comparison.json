@@ -1,0 +1,35 @@
+{
+  "new_audit": {
+    "input_tokens": 20806,
+    "cached_input_tokens": 1792,
+    "output_tokens": 1106,
+    "reasoning_output_tokens": 0,
+    "uncached_input_tokens": 19014,
+    "responses": 1,
+    "turns": 1,
+    "tools": 0,
+    "wall_seconds": 27.457849045997136
+  },
+  "native_fork": {
+    "input_tokens": 765107,
+    "cached_input_tokens": 683520,
+    "uncached_input_tokens": 81587,
+    "output_tokens": 2476,
+    "reasoning_output_tokens": 566,
+    "turns": 1,
+    "tools": 13,
+    "wall_seconds": 77.21926663599152
+  },
+  "original_supplied_clause_panel": {
+    "input_tokens": 16807,
+    "cached_input_tokens": 0,
+    "output_tokens": 663,
+    "reasoning_output_tokens": 0,
+    "responses": 1,
+    "tools": 0,
+    "wall_seconds": 18.677928150995285
+  },
+  "audit_input_as_fraction_of_native_cumulative_input": 0.027193582074141263,
+  "audit_uncached_as_fraction_of_native_uncached_input": 0.23305183423829776,
+  "comparison_limit": "Extra audit cost, not cost saving. Tasks/scopes differ; reasoning tokens are included in output. This new response is separate, not inherited native usage."
+}

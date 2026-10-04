@@ -1,0 +1,38 @@
+{
+  "model": "gpt-6-luna",
+  "reasoning_effort": "medium",
+  "codex_version": "codex-cli 0.159.0",
+  "base_sha": "d6bdae597e72d4ff6221bc2dc65aa1e44fc4ea2f",
+  "authorization": "One full-Domain factual feasibility response, two supplied domains, zero tools,3k output,300s wall,120s idle,no retry. Parent01a0fae8-209c-74b0-bd95-43be086b40e3. No assessment continuation.",
+  "limits": {
+    "calls": 1,
+    "responses_per_arm": 1,
+    "tools": 0,
+    "output_tokens_per_arm": 3000,
+    "wall_seconds_per_arm": 300,
+    "idle_seconds_per_arm": 120,
+    "input_telemetry_only": true
+  },
+  "instructions_sha256": "e5bb5355b851696528d5bf67451a849754fee22a3f0808fd9a252b1e4089a297",
+  "private_criteria_sha256": "32b0d0f3b9967ad8757375be8a2c550aa23149fa6d438658dc9d3773681e7b5c",
+  "scoring_units_sha256": "691de5a3c1ea0558920196bd578d8adbface36a4745ef8b51e6539a233d5cb92",
+  "exporter_sha256": "3b6007a69a92a232a831cc7879137470dc58749bd296bb604521768767f87f15",
+  "arms": {
+    "panel": {
+      "work": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new",
+      "config_sha256": "7ff32d942028fb0a9f6e11405c55f82d0a5cc3d8801da4d346c740381d345a3e",
+      "input_sha256": "f216dc5b11798163c743f6e2c146212a5f8c35b64db06e58427f3b674d10c149",
+      "evidence_manifest_sha256": "d5eadc5a80f4938c9a92bf08450612b0ad38dbe46f8f4fd7c94bc0626e1e7379"
+    }
+  },
+  "existing_rollout_hashes": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T05-36-09-01a10456-ef2f-7d30-9c9b-3ef3a486d004.jsonl": "edc69c88c0275976429f4b4983f5c70915f4d868dd4dcdf7f61902d6a1d6a660",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/d3-guidance-pair-20261003/new/home/sessions/2026/10/04/rollout-2026-10-04T04-33-51-01a1041d-e522-7452-bc88-0d3a490aa0df.jsonl": "14365017c47602cd84858376f4c54a45328af1399f85ca6651228dac9e2bb786"
+  },
+  "protected_bundle_hashes": {
+    "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/docs/evaluation/2026-10-04-gupta-fork-continuation/caf5f259a9f5eef456a05a6543fac933aa9bcbc55a99ba4b03430da8b760ab2d.rob2.zip": "d9fcea6ca0a34498b0c05191b07455df381597d8e6213db181b646b060ebe70f",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/cases/dapa-hf/.rob2-kit/finalized/00446bb5d9fd64b3ad27b1f1b804c94f26678c9149ce2244f7f3d2f2db9f1593.rob2.zip": "fd37753de5cce5af41b38de42f0ff69389337e4f31d9faf4d851ee5393585d54"
+  },
+  "runner_sha256": "f2a38b6253d18cf241836e63171e6b009ec0faf8ebfbfac57a6ccc9a85e7a77e",
+  "credentials_read_or_copied": false
+}

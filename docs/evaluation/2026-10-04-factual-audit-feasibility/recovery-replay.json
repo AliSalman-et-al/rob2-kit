@@ -1,0 +1,35 @@
+{
+  "answer_selector_target_sizes": {
+    "sq:measurement:method-inappropriate": {
+      "characters": 11018,
+      "utf8_bytes": 11062,
+      "contains_count_clause": false
+    },
+    "sq:measurement:differential": {
+      "characters": 13027,
+      "utf8_bytes": 13075,
+      "contains_count_clause": true
+    },
+    "sq:measurement:assessor-aware": {
+      "characters": 5494,
+      "utf8_bytes": 5500,
+      "contains_count_clause": false
+    }
+  },
+  "read_only_sqlite": true,
+  "view_digest_verified": true,
+  "native_prefix_characters": 20041,
+  "full_projection_characters": 38861,
+  "count_clause_position": 22950,
+  "differential_question_position": 23298,
+  "missing_from_first_prefix": true,
+  "fragment_lengths": [
+    20041,
+    18820
+  ],
+  "additional_fragments_to_complete": 1,
+  "pure_recovery_reconstructs_exact_target": true,
+  "derivative_database_unchanged": true,
+  "instructions_already_explicit": "SKILL.md step7 says follow next_cursor and parse once complete; review_trial description supplies cursor and question selectors.",
+  "distinction": "Observable presentation burden: serialized cited facts precede relevant warrant and require additional retrieval. Observable follow-through failure: native model did not request the exposed cursor. No evidence of inaccessible evidence, broken recovery, or anchoring. No runtime change."
+}

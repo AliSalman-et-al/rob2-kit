@@ -1,0 +1,16 @@
+[
+  {
+    "trial": "gupta-2024",
+    "export_matches_verified_bundle": true,
+    "every_claim_and_role_present": true,
+    "all_exact_cited_spans_present": true,
+    "export_sha256": "8817fa911bedfd6e3e4814475d9d1442dbeaf51a724064c38e2f69b6d176fb5c"
+  },
+  {
+    "trial": "dapa-hf",
+    "export_matches_verified_bundle": true,
+    "every_claim_and_role_present": true,
+    "all_exact_cited_spans_present": true,
+    "export_sha256": "bb656525b8fda87619de522117d6689cf1b3db9028f5c930aecd6ccca04e0bb5"
+  }
+]
