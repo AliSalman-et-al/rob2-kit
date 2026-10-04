@@ -1,4 +1,5 @@
 """Supported Codex entrypoint and frozen runner binding controls; no model calls."""
+
 from __future__ import annotations
 
 import json
@@ -50,4 +51,6 @@ def test_actual_stdio_entrypoint_preflight_binds_original_schemas(command, tmp_p
     workspace.mkdir()
     result = probe_server_advertised_inventory(executable, workspace, mcp_command=command)
     assert result["status"] == "verified"
-    assert result["server_binding"]["args"] == [command]
+    binding = result["server_binding"]
+    assert isinstance(binding, dict)
+    assert binding["args"] == [command]

@@ -701,10 +701,9 @@ def _verify_wheel_archive(wheel: Path) -> None:
             member = f"rob2_kit/hosts/{host}"
             payload = json.loads(archive.read(member))
             expected_command = "rob2 mcp-codex" if host == "codex.json" else "rob2 mcp"
-            if (
-                payload.get("mcp_command") != expected_command
-                or payload.get("skills") != ["rob2-assess"]
-            ):
+            if payload.get("mcp_command") != expected_command or payload.get("skills") != [
+                "rob2-assess"
+            ]:
                 raise ValueError(f"wheel host contract differs: {host}")
         missing_skills = sorted(skill_members - set(names))
         if missing_skills:

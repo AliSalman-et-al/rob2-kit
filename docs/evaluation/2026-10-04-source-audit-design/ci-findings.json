@@ -1,0 +1,36 @@
+{
+  "previous_head": "14be01c73e9ad434d617cbc23edbf67e6afcfefc",
+  "run_id": 37166486136,
+  "initial_whole_run_log_request": "Failed before log read: too many API requests; narrowed to one representative Ubuntu 3.12 job per failure class, then read each once.",
+  "jobs": {
+    "tests": 111330331554,
+    "type_check": 111330331421,
+    "format": 111330331761
+  },
+  "before": {
+    "tests": "1 failed, 1381 passed, 8 skipped; stale content_hash expectation in test_pack_ids_wording_provenance_and_hashes",
+    "types": "8 diagnostics in tests/test_codex_integration.py, tests/test_codex_mcp_images.py, tests/test_gupta_cumulative_guard_replay.py",
+    "format": "2 files: docs/release/verify.py and tests/test_codex_integration.py"
+  },
+  "causes": {
+    "pack_hash": "a8e1d4b legitimately changed D3 guidance; content hash changed to 49ab9cec..., while independently pinned 22 question wording hash stayed unchanged. Test fixture was not synchronized. Current/historical pack descriptors were already synchronized; do not alter historical artifacts.",
+    "typing": "New diagnostic/transport tests did not narrow optional or object values and used constructor aliases/parameter names incompatible with checked dependency annotations.",
+    "format": "Recent Codex host integration edits not formatted."
+  },
+  "fixes": "Update only current pack-hash test; narrow typed values; validate image wire dictionaries; use typed protocol-compatible callback; format two files. No production judgment or algorithm change.",
+  "after": {
+    "focused_tests": "41 passed",
+    "export_tests": "2 passed",
+    "lint": "passed src tests docs/release plus prototype",
+    "format": "passed same scope",
+    "types": "passed same scope"
+  },
+  "full_suite_rerun": false,
+  "current_ci_wait": false,
+  "raw_log_provenance": {
+    "ci-14be01c-format.log": "aa1116771b4e725c8d835e592b4b65d5223d7d2fb55c9afaa2fa833a698b520e",
+    "ci-14be01c-types.log": "b4e55f3cc911bd377797307402a459f245efd7b9c61c7ef2f1745e7d8dca9944",
+    "ci-14be01c-failed.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ci-14be01c-tests.log": "9ae939c3087dfa44b695625dc27dd1c03ad549006d692db3e7229891bbbd3fab"
+  }
+}

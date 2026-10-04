@@ -1,0 +1,18 @@
+{
+  "model_calls": 0,
+  "status": "offline design; future inference not authorized",
+  "files": {
+    "docs/evaluation/2026-10-04-source-audit-design/native-measurement-review.json": "760428161e8c9101f133b9be3a0010eadb2345e3bf6ec2b5ec58ba3a0eae47d4",
+    "docs/evaluation/2026-10-04-source-audit-design/ci-findings.json": "c1785ef78548958ed819f583c2bc9e9c5df189f61deb154556a2da73828093c8",
+    "docs/evaluation/2026-10-04-source-audit-design/lint-after.txt": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "docs/evaluation/2026-10-04-source-audit-design/format-after.txt": "35ff24d8a92c0ac97b235b057e7a009fcd264bc97ab856d529326a06c0fee756",
+    "docs/evaluation/2026-10-04-source-audit-design/comparison.json": "9b566527700e8ab5dbe8987cefb7d8f35e21015ee95673504e38bd55c2bbc7db",
+    "docs/evaluation/2026-10-04-source-audit-design/deterministic-measurement-input.json": "8817fa911bedfd6e3e4814475d9d1442dbeaf51a724064c38e2f69b6d176fb5c",
+    "docs/evaluation/2026-10-04-source-audit-design/compare.py": "521e2804612adeae317dd1e3ebbaf6e0e29ff0a27978d2ba530fda84e7b62101",
+    "docs/evaluation/2026-10-04-source-audit-design/type-check-after.txt": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "docs/evaluation/2026-10-04-source-audit-design/export-tests.txt": "e0f99c009e3f0cb266186091c50ea73692ee91d8e6be128e02c71a43032856ce",
+    "docs/evaluation/2026-10-04-source-audit-design/README.md": "17c24f35054b6442e883449563e4b7cf78a5ddef49db0999e48247c0988fe441",
+    "docs/evaluation/2026-10-04-source-audit-design/focused-ci-tests.txt": "cd48f018a14500b5cdfd7e537786ce424e7edf9c73dde972c258963dd39d92ca",
+    "scripts/export_factual_audit.py": "3b6007a69a92a232a831cc7879137470dc58749bd296bb604521768767f87f15"
+  }
+}

@@ -50,7 +50,11 @@ async def _replay(compat) -> None:
     def render_page(inline: bool = True) -> ToolResult:
         content = [TextContent(type="text", text=json.dumps(receipt))]
         if inline:
-            content.append(ImageContent(type="image", data=image["data"], mimeType="image/png"))
+            content.append(
+                ImageContent.model_validate(
+                    {"type": "image", "data": image["data"], "mimeType": "image/png"}
+                )
+            )
         return ToolResult(content=content, structured_content=receipt)
 
     @mcp.tool()
@@ -89,6 +93,7 @@ async def _replay(compat) -> None:
         assert not any(c.type == "image" for c in metadata.content)
     # Middleware changes advertised copies, not the normal tool or its schema.
     original = await mcp.get_tool("render_page")
+    assert original is not None
     assert original.output_schema == original_schema
 
 
@@ -98,12 +103,16 @@ def test_codex_compat_preserves_error_flags_even_with_image_content() -> None:
 
     async def replay():
         result = ToolResult(
-            content=[ImageContent(type="image", data="pixels", mimeType="image/png")],
+            content=[
+                ImageContent.model_validate(
+                    {"type": "image", "data": "pixels", "mimeType": "image/png"}
+                )
+            ],
             structured_content={"outcome": "error"},
             is_error=True,
         )
 
-        async def next_call(_):
+        async def next_call(context: MiddlewareContext[CallToolRequestParams]) -> ToolResult:
             return result
 
         context = MiddlewareContext(message=CallToolRequestParams(name="render_page"))
