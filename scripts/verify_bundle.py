@@ -1671,11 +1671,31 @@ def _valid_result_step(step: object) -> bool:
     return True
 
 
+def _valid_count_evidence_closure(link: object, evidence: dict, trial_id: object) -> bool:
+    if not isinstance(link, dict):
+        return False
+    handles = {
+        handle
+        for row in (link.get("result_step") or {}).get("counts", [])
+        for handle in row["basis"]
+    }
+    bindings = link.get("count_evidence") or {}
+    if not isinstance(bindings, dict) or set(bindings) != handles:
+        return False
+    return all(
+        isinstance(evidence.get(identity), dict)
+        and evidence[identity].get("handle") == handle
+        and evidence[identity].get("trial_id") == trial_id
+        for handle, identity in bindings.items()
+    )
+
+
 def _valid_working_observation_link(value: object) -> bool:
     if not isinstance(value, dict) or not {"observation"} <= set(value) <= {
         "checkpoint_identity",
         "observation",
         "result_step",
+        "count_evidence",
         "transfer",
     }:
         return False
@@ -2230,7 +2250,13 @@ def _domain_evidence_ids(record: object) -> set[str]:
         for evidence_identity in row["basis"]
         if isinstance(evidence_identity, str)
     }
-    return answer_basis_ids | missing_data_ids
+    nested_ids = {
+        value
+        for answer in record["answers"]
+        for basis in answer.get("bases", [])
+        for value in (basis.get("working_observation", {}).get("count_evidence") or {}).values()
+    }
+    return answer_basis_ids | missing_data_ids | nested_ids
 
 
 def _valid_evidence_sufficiency(
@@ -5003,7 +5029,14 @@ def verify(path: Path) -> tuple[bool, str]:
                             )
                             or (
                                 "working_observation" in use
-                                and not _valid_working_observation_link(use["working_observation"])
+                                and (
+                                    not _valid_working_observation_link(use["working_observation"])
+                                    or not _valid_count_evidence_closure(
+                                        use["working_observation"],
+                                        proposal_evidence,
+                                        record.get("trial_id"),
+                                    )
+                                )
                             )
                         ):
                             return False, "direct Domain Evidence basis is malformed"
@@ -5271,8 +5304,15 @@ def verify(path: Path) -> tuple[bool, str]:
                                 )
                                 or (
                                     "working_observation" in use
-                                    and not _valid_working_observation_link(
-                                        use["working_observation"]
+                                    and (
+                                        not _valid_working_observation_link(
+                                            use["working_observation"]
+                                        )
+                                        or not _valid_count_evidence_closure(
+                                            use["working_observation"],
+                                            proposal_evidence,
+                                            item.get("trial_id"),
+                                        )
                                     )
                                 )
                             ):

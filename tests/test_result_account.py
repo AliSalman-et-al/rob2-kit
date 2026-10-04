@@ -1,8 +1,10 @@
 """An upstream factual account is reusable without deriving signalling answers."""
 
 import copy
+import sqlite3
 from pathlib import Path
 
+import pymupdf
 import pytest
 from support import rob2 as support
 
@@ -12,6 +14,12 @@ from rob2_kit.workflow_models import WorkingCheckpointDraft
 
 @pytest.fixture
 def account(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, dict, dict, int]:
+    trial = tmp_path / "input" / "trial"
+    trial.mkdir(parents=True)
+    with pymupdf.open() as document:
+        page = document.new_page()
+        page.insert_text((48, 48), "Alpha: 20 randomized; 19 analyzed; 18 completed.")
+        document.save(trial / "counts.pdf")
     original = support._workspace
 
     def create(path: Path, requested_outcome: str = "requested outcome") -> Path:
@@ -38,6 +46,28 @@ def account(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, dict
             "end_line": 3,
         },
     )["data"]["evidence"]
+    source = next(
+        item
+        for item in support._call(workspace, "list_sources", {"trial_id": "trial"})["data"][
+            "sources"
+        ]
+        if item["label"] == "counts.pdf"
+    )
+    rendered = support._call(
+        workspace, "render_page", {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    )["data"]
+    visual = support._call(
+        workspace,
+        "select_visual_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": source["id"],
+            "delivery_receipt": rendered["delivery_receipt"],
+            "region": [0.0, 0.0, 1.0, 1.0],
+            "transcription": "Alpha: 20 randomized; 19 analyzed; 18 completed.",
+            "uncertainty": "Endpoint availability is unspecified.",
+        },
+    )["data"]["evidence"]
     note = {
         "text": "Alpha has analysis and completion counts but unknown urine availability.",
         "sources": [
@@ -62,7 +92,7 @@ def account(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, dict
                     "randomized": 20,
                     "analyzed": 19,
                     "completed": 18,
-                    "basis": [count_evidence["handle"]],
+                    "basis": [visual["handle"]],
                 }
             ],
         },
@@ -116,7 +146,9 @@ def test_account_counts_exist_before_judgment_and_scope_and_unknowns_survive_dom
         assert steps[0]["unknowns"] == ["Observed urine count remains unknown."]
         assert steps[0]["counterevidence"][0]["sources"] == steps[0]["observation"]["sources"]
         assert steps[1]["observation"]["scope"]["groups"] == ["Beta"]
-        assert any(item["handle"] == count_evidence["handle"] for item in context["evidence"])
+        assert any(
+            item["handle"] == steps[0]["counts"][0]["basis"][0] for item in context["evidence"]
+        )
         if domain != "domain:selection":
             projections = [
                 card["participant_flow"]
@@ -128,8 +160,10 @@ def test_account_counts_exist_before_judgment_and_scope_and_unknowns_survive_dom
     assert _state(workspace).get("domain_records", {}) == {}
 
 
+@pytest.mark.parametrize("scope_role", ["context", "contradiction", "inference"])
 def test_step_snapshot_transfer_and_changed_dependency_do_not_rewrite_answers(
     account: tuple,
+    scope_role: str,
 ) -> None:
     workspace, main, count_evidence, revision = account
     context = _context(workspace, "domain:deviations")
@@ -146,10 +180,17 @@ def test_step_snapshot_transfer_and_changed_dependency_do_not_rewrite_answers(
     response = support._call(workspace, "save_domain_judgment", draft)
     assert response["outcome"] == "repair", response
     assert any(item["code"] == "result_step_transfer" for item in response["repairs"])
-    first["bases"][-1]["kind"] = "inference"
+    first["bases"][-1]["kind"] = scope_role
     first["bases"][-1]["working_observation"]["transfer"] = (
         "Earlier-phase rescue is contextual, not evidence of selected-window deviations."
     )
+    if scope_role == "contradiction":
+        first["counterevidence"] = [
+            {
+                "basis_index": 1,
+                "implication": "Earlier rescue does not establish selected-window deviations.",
+            }
+        ]
     response = support._call(workspace, "save_domain_judgment", draft)
     assert response["outcome"] == "success", response
     record = copy.deepcopy(_state(workspace)["domain_records"]["trial:domain:deviations"])
@@ -233,6 +274,23 @@ def test_step_snapshot_transfer_and_changed_dependency_do_not_rewrite_answers(
         assert shared["counts"][0]["completed"] == 18
         assert shared["counts"][0].get("observed") is None
         assert shared["counterevidence"][0]["sources"] == shared["observation"]["sources"]
+    nested = _state(workspace)["domain_records"]["trial:domain:missing"]["answers"][0]["bases"][-1][
+        "working_observation"
+    ]
+    handle = nested["result_step"]["counts"][0]["basis"][0]
+    identity = nested["count_evidence"][handle]
+    assert identity != count_evidence["identity"]
+    with sqlite3.connect(workspace / ".rob2-kit/canonical.sqlite3") as db:
+        assert db.execute(
+            "SELECT 1 FROM canonical_records WHERE identity=? AND kind='evidence'", (identity,)
+        ).fetchone()
+    # Disposable visual render/evidence caches may be lost after canonical commit.
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as db:
+        db.execute("DELETE FROM renders")
+        db.execute("DELETE FROM evidence_handles")
+        db.execute("DELETE FROM visual_deliveries")
+    recovered = _context(workspace, "domain:missing")
+    assert any(item["handle"] == handle for item in recovered["evidence"])
     finalized = support._finalize_assessment(workspace, revision)
     artifact = workspace / finalized["data"]["artifact"]["path"]
     assert verify_bundle(artifact)
@@ -287,3 +345,23 @@ def test_account_replaces_parallel_notes_and_count_sources_must_be_explicit(
     monkeypatch.setattr(working, "_result_identity", lambda state, trial: "sha256:" + "0" * 64)
     status = support._call(workspace, "get_status", {})["data"]["working_checkpoint"]
     assert status["reason"] == "result_changed" and status["checkpoint"] is None
+
+
+@pytest.mark.parametrize("module", ["rob2_kit.application.finalization", "verify_bundle"])
+def test_nested_count_closure_rejects_missing_tampered_and_other_trial(module: str) -> None:
+    import importlib
+
+    validate = importlib.import_module(module)._valid_count_evidence_closure
+    link = {
+        "result_step": {"counts": [{"basis": ["eh_abc"]}]},
+        "count_evidence": {"eh_abc": "sha256:original"},
+    }
+    evidence = {"sha256:original": {"handle": "eh_abc", "trial_id": "trial"}}
+    assert validate(link, evidence, "trial")
+    assert not validate(link, {}, "trial")
+    assert not validate(link, evidence, "other")
+    assert not validate({**link, "count_evidence": {"eh_abc": "sha256:changed"}}, evidence, "trial")
+    assert not validate({"result_step": link["result_step"]}, evidence, "trial")
+    assert not validate(
+        link, {"sha256:original": {"handle": "eh_different", "trial_id": "trial"}}, "trial"
+    )

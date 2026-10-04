@@ -2838,17 +2838,37 @@ def save_domain_judgment(
         for key, value in (state.get("proposal") or {}).get("evidence", {}).items()
         if isinstance(value, dict) and value.get("trial_id") == parsed.trial_id
     }
+    working_steps = {
+        step["identity"]: step
+        for step in (
+            (working_checkpoint_status(root, state, parsed.trial_id).get("checkpoint") or {}).get(
+                "result_account"
+            )
+            or ()
+        )
+    }
     referenced_handles: set[str] = set()
     for _, answer in active_answer_items:
         for basis in answer.bases:
             evidence_handle = getattr(basis, "evidence", None)
             if isinstance(evidence_handle, str):
                 referenced_handles.add(evidence_handle)
+            link = getattr(basis, "working_observation", None)
+            if link is not None:
+                submitted = link.model_dump(mode="json", exclude_none=True)
+                step = (
+                    working_steps.get(submitted.get("step_identity"))
+                    or submitted.get("result_step")
+                    or {}
+                )
+                for count in step.get("counts", ()):
+                    referenced_handles.update(count["basis"])
         for row in answer.missing_data or ():
             referenced_handles.update(row.basis)
     if parsed.revision_basis is not None and parsed.revision_basis.kind == "new_evidence":
         referenced_handles.add(parsed.revision_basis.evidence)
     catalog = dict(proposal_catalog)
+    catalog.update(_canonical_account_count_evidence(root, state, parsed.trial_id))
     missing_handles = {
         handle
         for handle in referenced_handles
@@ -3027,14 +3047,16 @@ def save_domain_judgment(
                             transfer = link.get("transfer")
                             scope = note.get("scope") or {}
                             if scope.get("relation") == "mismatch" and (
-                                basis["kind"] != "inference" or not transfer
+                                basis["kind"] not in {"inference", "context", "contradiction"}
+                                or not transfer
                             ):
                                 repairs.append(
                                     _repair(
                                         f"{path}/working_observation",
                                         "result_step_transfer",
-                                        "A known different scope requires an inference basis "
-                                        "and explicit transfer; preserve the source scope.",
+                                        "Different scope needs an explicit relevance rationale "
+                                        "for context/counterevidence, or transfer as inference; "
+                                        "preserve the source scope.",
                                     )
                                 )
                             if not _step_source_intersects(note, evidence):
@@ -3046,7 +3068,27 @@ def save_domain_judgment(
                                         "Source location.",
                                     )
                                 )
+                            count_evidence = {}
+                            for row in step.get("counts", ()):
+                                for handle in row["basis"]:
+                                    nested_evidence = catalog_by_handle.get(handle) or catalog.get(
+                                        handle
+                                    )
+                                    if (
+                                        nested_evidence is None
+                                        or nested_evidence.get("trial_id") != parsed.trial_id
+                                    ):
+                                        repairs.append(
+                                            _repair(
+                                                f"{path}/working_observation",
+                                                "result_step_count_evidence",
+                                                "Nested count Evidence must resolve in this Trial.",
+                                            )
+                                        )
+                                    else:
+                                        count_evidence[handle] = nested_evidence["identity"]
                             basis["working_observation"] = {
+                                **({"count_evidence": count_evidence} if count_evidence else {}),
                                 "checkpoint_identity": checkpoint["identity"],
                                 "observation": note,
                                 "result_step": step,
@@ -3084,7 +3126,10 @@ def save_domain_judgment(
                             or (
                                 (link["observation"].get("scope") or {}).get("relation")
                                 == "mismatch"
-                                and (basis["kind"] != "inference" or not link.get("transfer"))
+                                and (
+                                    basis["kind"] not in {"inference", "context", "contradiction"}
+                                    or not link.get("transfer")
+                                )
                             )
                         ):
                             repairs.append(
@@ -3092,7 +3137,8 @@ def save_domain_judgment(
                                     f"{path}/working_observation",
                                     "result_step_snapshot_invalid",
                                     "Use an unchanged current factual step and preserve its Source "
-                                    "scope; known transfers require an explicit inference.",
+                                    "scope; contextual use needs relevance rationale, "
+                                    "support needs explicit inference.",
                                 )
                             )
                         notes = list(checkpoint.get("observations", ()))
@@ -3104,6 +3150,17 @@ def save_domain_judgment(
                             notes.extend(premise.get("counterevidence", ()))
                         if (
                             working.get("reason") in {"result_changed", "source_changed"}
+                            or (
+                                step is not None
+                                and link.get("count_evidence", {})
+                                != {
+                                    handle: (
+                                        catalog_by_handle.get(handle) or catalog.get(handle) or {}
+                                    ).get("identity")
+                                    for row in step.get("counts", ())
+                                    for handle in row["basis"]
+                                }
+                            )
                             or checkpoint.get("identity") != link.get("checkpoint_identity")
                             or link["observation"] not in notes
                         ):
@@ -3510,6 +3567,21 @@ def save_domain_judgment(
         trial_ready_for_review=snapshot is not None,
         continuation=_continuation(state),
     )
+
+
+def _canonical_account_count_evidence(
+    root: Path, state: dict[str, Any], trial_id: str
+) -> dict[str, dict[str, Any]]:
+    """Recover promoted count Evidence without depending on disposable handles."""
+    identities = {
+        value
+        for record in (state.get("domain_records") or {}).values()
+        if record.get("trial_id") == trial_id
+        for answer in record.get("answers", [])
+        for basis in answer.get("bases", [])
+        for value in (basis.get("working_observation", {}).get("count_evidence") or {}).values()
+    }
+    return _canonical_evidence_records(root, identities)
 
 
 def _domain_question_cards(
@@ -4001,6 +4073,7 @@ def get_domain_context(
         "deduplicated": associated_duplicates + explicit_duplicates + unassigned_duplicates,
     }
     catalog = dict(proposal_catalog)
+    catalog.update(_canonical_account_count_evidence(root, state, trial_id))
     for value in [*selected_candidates, *selected_discoveries, *selected_explicit]:
         catalog[value["identity"]] = value
     missing_handles = {
@@ -4022,6 +4095,7 @@ def get_domain_context(
         for reference in row.get("basis", [])
         if isinstance(reference, str) and reference.startswith("eh_")
     }
+    preview_handles -= {item.get("handle") for item in catalog.values()}
     if preview_handles:
         catalog.update(_evidence_for_handles(root, preview_handles, trial_id))
 

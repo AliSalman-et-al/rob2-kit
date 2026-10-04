@@ -2130,6 +2130,12 @@ class WorkingObservationLink(StrictModel):
         description="Existing working checkpoint identity for a resumed note; omitted for a "
         "basis-local observation captured during judgment submission.",
     )
+    count_evidence: dict[str, Identity] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Server-resolved count handles to canonical Evidence identities; "
+        "original step stays unchanged.",
+    )
     result_step: WorkingResultStep | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
@@ -2139,7 +2145,8 @@ class WorkingObservationLink(StrictModel):
     transfer: NonBlankText | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
-        description="Explicit scientific inference transferring a different source scope.",
+        description="Relevance rationale for different-scoped context/counterevidence, "
+        "or scientific transfer as inference.",
     )
     observation: WorkingNote = Field(
         description="Source-located observation retained as a warrant snapshot."

@@ -43,7 +43,9 @@ An answer basis can retain its factual-step dependency with:
 Use real returned IDs. The server resolves the reference into the existing
 canonical warrant snapshot with the complete original step and observation.
 Cited Evidence must intersect that step's source locator. Known `mismatch`
-scope requires `role: inference` and an explicit transfer; source scope is not
+scope used as support requires `role: inference` and an explicit transfer. Context
+or contradiction can retain its genuine role with an explicit relevance rationale
+in `transfer`; source scope is not
 rewritten. Other scope interpretations remain host assertions, not entailment.
 A direct source fact still needs a question-specific scientific warrant.
 

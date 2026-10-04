@@ -2258,6 +2258,12 @@ class ComparisonCard(PublicModel):
 
 
 class WorkingObservationLinkData(PublicModel):
+    count_evidence: dict[str, Identity] | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Server-resolved count handles to canonical Evidence identities; "
+        "original step stays unchanged.",
+    )
     result_step: WorkingResultStep | None = Field(
         default=None, exclude_if=lambda value: value is None
     )
