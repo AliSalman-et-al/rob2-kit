@@ -20,24 +20,36 @@ instead of `observations`, `interpretations`, `premise_records`, `drafts`,
 (`assignment_course`, `outcome_ascertainment`, `analysis`, `plan_report`), one
 existing `WorkingNote` as `observation`, optional `inference`, source-located
 `counterevidence`, `unknowns`, and optional existing participant-flow `counts`.
-Use exact source windows or whole-page visual coordinates in notes. Count rows
+Use the same references as Domain bases in `observation.sources` and
+`counterevidence[].sources`: returned Evidence handles, exact text windows, or
+delivered visual transcriptions. The existing selectors resolve source locations;
+a selected handle avoids copying locators. Visual references require the actual
+current-Trial image-delivery receipt. Count rows
 require explicit selected current-Trial Evidence bases. Quantities are optional;
 completion, analysis and imputation counts do not create observed outcomes.
 The server returns content identities in `get_status` and Domain context.
 
-Request shape (replace illustrative values with current Trial/source values):
+Request shape (illustrative only; replace all values with your current Trial,
+actual returned Evidence handle and inspected facts):
 
 ```json
-{"checkpoint":{"trial_id":"<current Trial>","result_account":[
+{"checkpoint":{"trial_id":"trial-a","result_account":[
   {"id":"collection","aspect":"outcome_ascertainment",
-   "observation":{"text":"<source-grounded factual observation>",
-    "sources":[{"source_id":"<returned Source ID>","page":1,
-                "start_line":1,"end_line":3}]}}
+   "observation":{"text":"The report describes specimen collection.",
+    "sources":["eh_0123456789abcdef"]}}
 ]}}
 ```
 
-`result_account` is directly an array, without a `steps` wrapper. Source
-locators belong in `observation.sources`, not beside `observation.text`.
+`result_account` is directly an array, without a `steps` wrapper. References
+belong in `observation.sources`, not beside `observation.text`. Add optional
+`unknowns`, `inference`, source-linked `counterevidence`, or `observation.scope`
+only where useful; empty fields are valid. When repairing a malformed request,
+compare it with the attempted draft before resubmitting. Structural repair does
+not resolve scientific uncertainty: reconsider any removed or changed observation,
+unknown, inference or counterpoint explicitly. No rejected content is merged into
+the accepted checkpoint. Native tool receipts retain attempted requests; offline
+`account_repair_review.py` can display exact scientific-content changes between
+those attempts for diagnostic review.
 
 `get_domain_context` reuses these count rows in the existing flow and missing-data
 projections before any D2/D3 save. An empty account count set remains empty;

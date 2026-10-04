@@ -2516,7 +2516,11 @@ def get_status(
         "optional existing count rows into Domain flow context before judgments. Recover returned "
         "step identities with get_status. Facts, counterevidence and unknowns remain "
         "host assertions; "
-        "step edits flag depended-on answers for reconsideration without changing labels."
+        "step edits flag depended-on answers for reconsideration without changing labels. "
+        "Account observation/counterevidence sources use the same Evidence handles, text ranges "
+        "or delivered visual references as Domain bases; returned handles avoid locator copying. "
+        "result_account is directly an array. Preserve or explicitly reconsider unknowns and "
+        "qualifiers when repairing structure; rejected drafts are never merged automatically."
     ),
     annotations=_MUTATION,
     output_schema=output_schema("save_working_checkpoint"),

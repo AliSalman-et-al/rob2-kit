@@ -1,0 +1,297 @@
+[
+  {
+    "item_id": "item_14",
+    "checkpoint": {
+      "trial_id": "chua-2022",
+      "result_account": {
+        "steps": [
+          {
+            "id": "assignment",
+            "aspect": "assignment_course",
+            "observation": {
+              "text": "Report describes adults requiring ED RSI, 1:1 site-stratified variable-block randomization via independent statistician web service, concealment through completion; open-label due to intervention. Assigned HFNC vs NRM/standard NC.",
+              "source_id": "sh_ab74cf546ed17772",
+              "page": 2,
+              "start_line": 78,
+              "end_line": 86
+            }
+          },
+          {
+            "id": "collection",
+            "aspect": "outcome_ascertainment",
+            "observation": {
+              "text": "Lowest SpO2 collected by pulse oximetry during first intubation attempt, from paralytic administration to ETCO2 confirmation or second attempt; coordinator, nurse or clinician not involved in intubation recorded lowest value.",
+              "source_id": "sh_ab74cf546ed17772",
+              "page": 3,
+              "start_line": 24,
+              "end_line": 41
+            },
+            "unknowns": [
+              "Assessor blinding to group not stated."
+            ]
+          },
+          {
+            "id": "analysis",
+            "aspect": "analysis",
+            "observation": {
+              "text": "Primary efficacy analyses ITT, stratified/adjusted site; lowest SpO2 compared using van Elteren test. Report calls ITT but excludes two randomized controls: post-randomization DNR and OR intubation. PP supplementary population also reported.",
+              "source_id": "sh_ab74cf546ed17772",
+              "page": 3,
+              "start_line": 61,
+              "end_line": 82
+            }
+          },
+          {
+            "id": "reporting",
+            "aspect": "plan_report",
+            "observation": {
+              "text": "Primary endpoint lowest SpO2 first attempt; post-hoc quantile regression of first quartile is reported. Protocol cited as published elsewhere but its bytes unavailable; registry bytes unavailable per intake condition, so plan/report correspondence unresolved.",
+              "source_id": "sh_ab74cf546ed17772",
+              "page": 3,
+              "start_line": 24,
+              "end_line": 30
+            },
+            "unknowns": [
+              "Protocol and historical registry content unavailable; cannot establish prespecification or chronology."
+            ]
+          }
+        ]
+      }
+    },
+    "receipt": {
+      "content": [
+        {
+          "type": "text",
+          "text": "1 validation error for call[save_working_checkpoint]\ncheckpoint.result_account\n  Input should be a valid tuple [type=tuple_type, input_value={'steps': [{'id': 'assign...tion or chronology.']}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/tuple_type"
+        }
+      ],
+      "structured_content": null
+    },
+    "error": null,
+    "scientific_content_changes": []
+  },
+  {
+    "item_id": "item_15",
+    "checkpoint": {
+      "trial_id": "chua-2022",
+      "result_account": [
+        {
+          "id": "assignment",
+          "aspect": "assignment_course",
+          "observation": {
+            "text": "Report describes adults requiring ED RSI, 1:1 site-stratified variable-block randomization via independent statistician web service, concealment through completion; open-label due to intervention. Assigned HFNC vs NRM/standard NC.",
+            "source_id": "sh_ab74cf546ed17772",
+            "page": 2,
+            "start_line": 78,
+            "end_line": 86
+          }
+        },
+        {
+          "id": "collection",
+          "aspect": "outcome_ascertainment",
+          "observation": {
+            "text": "Lowest SpO2 collected by pulse oximetry during first intubation attempt, from paralytic administration to ETCO2 confirmation or second attempt; coordinator, nurse or clinician not involved in intubation recorded lowest value.",
+            "source_id": "sh_ab74cf546ed17772",
+            "page": 3,
+            "start_line": 24,
+            "end_line": 41
+          },
+          "unknowns": [
+            "Assessor blinding to group not stated."
+          ]
+        },
+        {
+          "id": "analysis",
+          "aspect": "analysis",
+          "observation": {
+            "text": "Primary efficacy analyses ITT, stratified/adjusted site; lowest SpO2 compared using van Elteren test. Report calls ITT but excludes two randomized controls: post-randomization DNR and OR intubation. PP supplementary population also reported.",
+            "source_id": "sh_ab74cf546ed17772",
+            "page": 3,
+            "start_line": 61,
+            "end_line": 82
+          }
+        },
+        {
+          "id": "reporting",
+          "aspect": "plan_report",
+          "observation": {
+            "text": "Primary endpoint lowest SpO2 first attempt; post-hoc quantile regression of first quartile is reported. Protocol cited as published elsewhere but its bytes unavailable; registry bytes unavailable per intake condition, so plan/report correspondence unresolved.",
+            "source_id": "sh_ab74cf546ed17772",
+            "page": 3,
+            "start_line": 24,
+            "end_line": 30
+          },
+          "unknowns": [
+            "Protocol and historical registry content unavailable; cannot establish prespecification or chronology."
+          ]
+        }
+      ]
+    },
+    "receipt": {
+      "content": [
+        {
+          "type": "text",
+          "text": "20 validation errors for call[save_working_checkpoint]\ncheckpoint.result_account.0.observation.sources\n  Field required [type=missing, input_value={'text': 'Report describe...ne': 78, 'end_line': 86}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.result_account.0.observation.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_ab74cf546ed17772', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.0.observation.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.0.observation.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=78, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.0.observation.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=86, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.1.observation.sources\n  Field required [type=missing, input_value={'text': 'Lowest SpO2 col...ne': 24, 'end_line': 41}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.result_account.1.observation.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_ab74cf546ed17772', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.1.observation.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.1.observation.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=24, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.1.observation.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=41, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.2.observation.sources\n  Field required [type=missing, input_value={'text': 'Primary efficac...ne': 61, 'end_line': 82}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.result_account.2.observation.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_ab74cf546ed17772', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.2.observation.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.2.observation.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=61, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.2.observation.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=82, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.3.observation.sources\n  Field required [type=missing, input_value={'text': 'Primary endpoin...ne': 24, 'end_line': 30}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.result_account.3.observation.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_ab74cf546ed17772', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.3.observation.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.3.observation.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=24, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.result_account.3.observation.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=30, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+        }
+      ],
+      "structured_content": null
+    },
+    "error": null,
+    "scientific_content_changes": []
+  },
+  {
+    "item_id": "item_16",
+    "checkpoint": {
+      "trial_id": "chua-2022",
+      "result_account": [
+        {
+          "id": "assignment",
+          "aspect": "assignment_course",
+          "observation": {
+            "text": "Report: 1:1 site-stratified variable-block randomization by independent statistician web service, concealment until completion; open-label due to intervention. HFNC vs NRM/standard NC.",
+            "sources": [
+              {
+                "source_id": "sh_ab74cf546ed17772",
+                "page": 2,
+                "start_line": 78,
+                "end_line": 86
+              }
+            ]
+          }
+        },
+        {
+          "id": "collection",
+          "aspect": "outcome_ascertainment",
+          "observation": {
+            "text": "Lowest SpO2 measured by pulse oximetry during first attempt; independent coordinator/nurse/clinician records lowest value.",
+            "sources": [
+              {
+                "source_id": "sh_ab74cf546ed17772",
+                "page": 3,
+                "start_line": 24,
+                "end_line": 41
+              }
+            ]
+          }
+        },
+        {
+          "id": "analysis",
+          "aspect": "analysis",
+          "observation": {
+            "text": "ITT analysis, site stratified/adjusted; van Elteren test. Two randomized controls excluded post-randomization, due DNR and OR intubation.",
+            "sources": [
+              {
+                "source_id": "sh_ab74cf546ed17772",
+                "page": 3,
+                "start_line": 61,
+                "end_line": 82
+              },
+              {
+                "source_id": "sh_ab74cf546ed17772",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 7
+              }
+            ]
+          }
+        },
+        {
+          "id": "reporting",
+          "aspect": "plan_report",
+          "observation": {
+            "text": "Primary endpoint first-attempt lowest SpO2. Post-hoc quantile regression of first quartile also reported. Protocol cited, but protocol and registry bytes unavailable; correspondence unresolved.",
+            "sources": [
+              {
+                "source_id": "sh_ab74cf546ed17772",
+                "page": 3,
+                "start_line": 24,
+                "end_line": 30
+              },
+              {
+                "source_id": "sh_ab74cf546ed17772",
+                "page": 6,
+                "start_line": 4,
+                "end_line": 13
+              }
+            ]
+          },
+          "unknowns": [
+            "Protocol and registry unavailable; chronology/prespecification unresolved."
+          ]
+        }
+      ]
+    },
+    "receipt": {
+      "content": [],
+      "structured_content": {
+        "outcome": "success",
+        "head": {
+          "phase": "assessment",
+          "state_revision": 3,
+          "next_action": {
+            "operation": "get_domain_context",
+            "authority": "host",
+            "trial_id": "chua-2022",
+            "domain_id": "domain:randomization",
+            "cursor": null,
+            "max_response_bytes": null
+          },
+          "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+        },
+        "data": {
+          "checkpoint_identity": "sha256:437f31e6b4b403b0176ef8c4d75f78fbb5c6e02c1f7c37f7f8cfac9f16f9b5e5",
+          "trial_id": "chua-2022",
+          "result_identity": "sha256:ed85285d0388fe101453b6617940e45e65c4b192985a0b2f35646a08cb51c280",
+          "source_count": 5,
+          "authoritative": false,
+          "next_action": "Resume from these source-linked notes. Recover cited text with read_pages only when it is missing or uncertain; use render_page for a whole-page visual locator. These notes are not Evidence or saved Domain answers."
+        }
+      }
+    },
+    "error": null,
+    "scientific_content_changes": [
+      {
+        "path": "analysis.observation.text",
+        "before": "Primary efficacy analyses ITT, stratified/adjusted site; lowest SpO2 compared using van Elteren test. Report calls ITT but excludes two randomized controls: post-randomization DNR and OR intubation. PP supplementary population also reported.",
+        "after": "ITT analysis, site stratified/adjusted; van Elteren test. Two randomized controls excluded post-randomization, due DNR and OR intubation.",
+        "kind": "changed"
+      },
+      {
+        "path": "assignment.observation.text",
+        "before": "Report describes adults requiring ED RSI, 1:1 site-stratified variable-block randomization via independent statistician web service, concealment through completion; open-label due to intervention. Assigned HFNC vs NRM/standard NC.",
+        "after": "Report: 1:1 site-stratified variable-block randomization by independent statistician web service, concealment until completion; open-label due to intervention. HFNC vs NRM/standard NC.",
+        "kind": "changed"
+      },
+      {
+        "path": "collection.observation.text",
+        "before": "Lowest SpO2 collected by pulse oximetry during first intubation attempt, from paralytic administration to ETCO2 confirmation or second attempt; coordinator, nurse or clinician not involved in intubation recorded lowest value.",
+        "after": "Lowest SpO2 measured by pulse oximetry during first attempt; independent coordinator/nurse/clinician records lowest value.",
+        "kind": "changed"
+      },
+      {
+        "path": "collection.unknowns",
+        "before": [
+          "Assessor blinding to group not stated."
+        ],
+        "after": null,
+        "kind": "removed"
+      },
+      {
+        "path": "reporting.observation.text",
+        "before": "Primary endpoint lowest SpO2 first attempt; post-hoc quantile regression of first quartile is reported. Protocol cited as published elsewhere but its bytes unavailable; registry bytes unavailable per intake condition, so plan/report correspondence unresolved.",
+        "after": "Primary endpoint first-attempt lowest SpO2. Post-hoc quantile regression of first quartile also reported. Protocol cited, but protocol and registry bytes unavailable; correspondence unresolved.",
+        "kind": "changed"
+      },
+      {
+        "path": "reporting.unknowns",
+        "before": [
+          "Protocol and historical registry content unavailable; cannot establish prespecification or chronology."
+        ],
+        "after": [
+          "Protocol and registry unavailable; chronology/prespecification unresolved."
+        ],
+        "kind": "changed"
+      }
+    ]
+  }
+]

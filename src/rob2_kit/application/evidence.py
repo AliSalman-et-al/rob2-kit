@@ -20,7 +20,7 @@ import pymupdf
 from rapidfuzz.distance import OSA
 
 from ..models import canonical_json_bytes
-from ..workflow_models import SearchReceiptHandle
+from ..workflow_models import DomainSourceReference, SearchReceiptHandle
 from ._state import (
     _SEARCH_PROFILE,
     _canonical_query_text,
@@ -4691,3 +4691,51 @@ def select_visual_evidence(
             evidence,
         ),
     }
+
+
+def source_reference_resolver(
+    workspace: str | Path, trial_id: str
+) -> Callable[["DomainSourceReference"], str]:
+    """Reuse existing text/visual selectors for compact current-Trial references."""
+    from ..workflow_models import VisualEvidenceReference, WorkingSourceRange
+    from .source_handles import resolve_source_handle
+
+    handles: dict[WorkingSourceRange | VisualEvidenceReference, str] = {}
+
+    def resolve(reference: str | WorkingSourceRange | VisualEvidenceReference) -> str:
+        if isinstance(reference, str):
+            return reference
+        if reference not in handles:
+            if isinstance(reference, VisualEvidenceReference):
+                with _db(_root(workspace), "derivative.sqlite3") as connection:
+                    delivery = connection.execute(
+                        "SELECT source_id FROM visual_deliveries WHERE identity=? AND trial_id=?",
+                        (reference.delivery_receipt, trial_id),
+                    ).fetchone()
+                if delivery is None:
+                    raise ValueError(
+                        "visual Evidence requires a current-Trial ImageContent receipt"
+                    )
+                selected = select_visual_evidence(
+                    workspace,
+                    trial_id,
+                    delivery[0],
+                    reference.delivery_receipt,
+                    reference.transcription,
+                    list(reference.region),
+                    reference.uncertainty,
+                )
+            else:
+                source_id = resolve_source_handle(workspace, trial_id, reference.source_id)
+                selected = select_text_evidence_by_lines(
+                    workspace,
+                    trial_id,
+                    source_id,
+                    reference.page,
+                    reference.start_line,
+                    reference.end_line,
+                )
+            handles[reference] = selected["evidence"]["handle"]
+        return handles[reference]
+
+    return resolve

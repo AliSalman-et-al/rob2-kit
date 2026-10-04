@@ -1,14 +1,17 @@
 """An upstream factual account is reusable without deriving signalling answers."""
 
 import copy
+import json
 import sqlite3
 from pathlib import Path
+from typing import Any
 
 import pymupdf
 import pytest
 from support import rob2 as support
 
 from rob2_kit.application._state import _state
+from rob2_kit.application.source_handles import source_handle
 from rob2_kit.workflow_models import WorkingCheckpointDraft
 
 
@@ -397,3 +400,128 @@ def test_nested_visual_count_source_must_validate_before_promotion(
     assert saved["outcome"] != "success", saved
     assert _state(workspace)["revision"] == revision
     assert not _state(workspace).get("domain_records")
+
+
+def test_account_selected_handle_preserves_exact_unknowns_without_copying_locators(account: tuple):
+    workspace, _, selected, _ = account
+    prior = _state(workspace)
+    draft: dict[str, Any] = {
+        "trial_id": "trial",
+        "result_account": [
+            {
+                "id": "observation",
+                "aspect": "outcome_ascertainment",
+                "observation": {
+                    "text": "Availability is unresolved.",
+                    "sources": [selected["handle"]],
+                },
+                "unknowns": ["Blinding is unreported.", "Observed outcome count is unknown."],
+                "inference": "Completion alone does not establish observation.",
+                "counterevidence": [
+                    {"text": "Analysis is reported.", "sources": [selected["handle"]]}
+                ],
+            }
+        ],
+    }
+    saved = support._call(workspace, "save_working_checkpoint", {"checkpoint": draft})
+    assert saved["outcome"] == "success", saved
+    step = _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"][
+        "result_account"
+    ][0]
+    assert step["unknowns"] == draft["result_account"][0]["unknowns"]
+    assert step["inference"] == draft["result_account"][0]["inference"]
+    assert step["observation"]["sources"] == [
+        {
+            "source_id": selected["source_id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 3,
+        }
+    ]
+    assert step["counterevidence"][0]["sources"] == step["observation"]["sources"]
+    assert _state(workspace) == prior
+    bad = copy.deepcopy(draft)
+    bad["result_account"][0]["observation"]["sources"] = ["eh_" + "f" * 16]
+    rejected = support._call(workspace, "save_working_checkpoint", {"checkpoint": bad})
+    assert rejected["outcome"] == "condition"
+    unchanged = _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"][
+        "result_account"
+    ][0]
+    assert unchanged == step
+
+
+def test_account_visual_reference_reuses_delivered_image_selector(account: tuple):
+    workspace, _, _, _ = account
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        delivery = connection.execute("SELECT identity FROM visual_deliveries LIMIT 1").fetchone()[
+            0
+        ]
+        candidates = [
+            json.loads(bytes(row[0]))
+            for row in connection.execute("SELECT payload FROM evidence_handles")
+        ]
+    visual = next(e for e in candidates if e["kind"] == "figure")
+    reference = {
+        "delivery_receipt": delivery,
+        "region": [0, 0, 1, 1],
+        "transcription": visual["transcription"],
+        "uncertainty": "Count meaning unresolved.",
+    }
+    draft: dict[str, Any] = {
+        "trial_id": "trial",
+        "result_account": [
+            {
+                "id": "flow",
+                "aspect": "analysis",
+                "observation": {"text": "Flow has analysis counts.", "sources": [reference]},
+                "unknowns": ["Actual outcome observation is unresolved."],
+            }
+        ],
+    }
+    saved = support._call(workspace, "save_working_checkpoint", {"checkpoint": draft})
+    assert saved["outcome"] == "success", saved
+    step = _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"][
+        "result_account"
+    ][0]
+    assert step["observation"]["sources"] == [
+        {
+            "source_id": source_handle(visual["source_id"]),
+            "page": 1,
+            "start_line": 0,
+            "end_line": 0,
+        }
+    ]
+    assert step["unknowns"] == ["Actual outcome observation is unresolved."]
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        items = [
+            json.loads(bytes(row[0]))
+            for row in connection.execute("SELECT payload FROM evidence_handles")
+        ]
+    resolved = next(e for e in items if e.get("uncertainty") == reference["uncertainty"])
+    assert resolved["render"]["page"] == 1
+    assert resolved["render"]["source_id"] == visual["source_id"]
+    assert resolved["region"] == [0.0, 0.0, 1.0, 1.0]
+
+    # Resaving the returned whole-page note preserves its canonical content identity.
+    resaved = support._call(
+        workspace,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {"trial_id": "trial", "result_account": [step]},
+        },
+    )
+    assert resaved["outcome"] == "success", resaved
+    again = _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"][
+        "result_account"
+    ][0]
+    assert again == step
+    bad = copy.deepcopy(draft)
+    bad["result_account"][0]["observation"]["sources"][0]["delivery_receipt"] = "sha256:" + "f" * 64
+    rejected = support._call(workspace, "save_working_checkpoint", {"checkpoint": bad})
+    assert rejected["outcome"] == "condition"
+    assert (
+        _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"]["result_account"][
+            0
+        ]
+        == step
+    )

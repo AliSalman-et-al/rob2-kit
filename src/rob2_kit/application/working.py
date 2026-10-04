@@ -5,9 +5,12 @@ from typing import Any
 
 from ..models import canonical_json_bytes
 from ..workflow_models import (
+    WorkingAccountNote,
     WorkingCheckpoint,
     WorkingCheckpointDraft,
     WorkingDomainBinding,
+    WorkingNote,
+    WorkingResultStep,
     WorkingSourceBinding,
     WorkingSourceRange,
 )
@@ -132,9 +135,11 @@ def _ranges(draft: WorkingCheckpointDraft) -> tuple[WorkingSourceRange, ...]:
     for item in draft.terminology:
         values.extend(item.sources)
     for step in draft.result_account or ():
-        values.extend(step.observation.sources)
-        for note in step.counterevidence:
-            values.extend(note.sources)
+        for note in (step.observation, *step.counterevidence):
+            for source in note.sources:
+                if not isinstance(source, WorkingSourceRange):
+                    raise ValueError("working_checkpoint_reference_not_resolved")
+                values.append(source)
     for premise in draft.premise_records:
         for item in (*premise.observations, *premise.counterevidence):
             values.extend(item.sources)
@@ -236,6 +241,51 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
                 "detail": "The Trial is not part of the active Batch.",
             },
         )
+    if draft.result_account is not None:
+        from .evidence import _evidence_for_handles, source_reference_resolver
+
+        resolve = source_reference_resolver(root, trial_id)
+
+        def note_locations(note: WorkingAccountNote) -> WorkingNote:
+            references = tuple(
+                reference
+                if isinstance(reference, WorkingSourceRange) and reference.start_line == 0
+                else resolve(reference)
+                for reference in note.sources
+            )
+            selected = _evidence_for_handles(
+                root,
+                {reference for reference in references if isinstance(reference, str)},
+                trial_id,
+            )
+            by_handle = {item["handle"]: item for item in selected.values()}
+            locations = []
+            for reference in references:
+                if isinstance(reference, WorkingSourceRange):
+                    locations.append(reference)
+                    continue
+                item = by_handle[reference]
+                locations.append(
+                    WorkingSourceRange(
+                        source_id=source_handle(item["source_id"]),
+                        page=item["render"]["page"] if item["kind"] == "figure" else item["page"],
+                        start_line=item.get("start_line", 0),
+                        end_line=item.get("end_line", 0),
+                    )
+                )
+            return WorkingNote.model_validate({**note.model_dump(), "sources": locations})
+
+        normalized = tuple(
+            WorkingResultStep.model_validate(
+                {
+                    **step.model_dump(),
+                    "observation": note_locations(step.observation),
+                    "counterevidence": tuple(note_locations(note) for note in step.counterevidence),
+                }
+            )
+            for step in draft.result_account
+        )
+        draft = draft.model_copy(update={"result_account": normalized})
     source_scope = _source_scope(state, trial_id)
     if draft.result_account is not None:
         result_identity = _result_identity(state, trial_id)
@@ -304,7 +354,8 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
         raise ValueError("working_checkpoint_main_report_missing_requires_observation")
     if isinstance(draft.main_report_source_id, str) and draft.main_report_source_id != "missing":
         if not any(
-            note_range.source_id == draft.main_report_source_id
+            isinstance(note_range, WorkingSourceRange)
+            and note_range.source_id == draft.main_report_source_id
             for observation in observations
             for note_range in observation.sources
         ):

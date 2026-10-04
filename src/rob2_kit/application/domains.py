@@ -22,9 +22,7 @@ from ..workflow_models import (
     DomainDraft,
     DomainEvidenceCitation,
     DomainSaveAnswer,
-    VisualEvidenceReference,
     WorkingNote,
-    WorkingSourceRange,
 )
 from ._state import (
     _canonical_evidence_records,
@@ -53,12 +51,10 @@ from .evidence import (
     _unassigned_search_evidence,
     _verified_source_projections,
     main_report_reading_status,
-    select_text_evidence_by_lines,
-    select_visual_evidence,
     source_reading_status,
 )
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
-from .source_handles import resolve_source_handle, source_handle
+from .source_handles import source_handle
 from .status import _active_trial_and_domain, _continuation
 from .working import investigation_projection, working_checkpoint_status
 
@@ -2619,43 +2615,9 @@ def resolve_domain_sources(
     of direct entailment. The unchanged canonical validator still checks the
     active path, uncertainty, Trial ownership and every selected Evidence identity.
     """
-    handles: dict[WorkingSourceRange | VisualEvidenceReference, str] = {}
+    from .evidence import source_reference_resolver
 
-    def resolve(reference: str | WorkingSourceRange | VisualEvidenceReference) -> str:
-        if isinstance(reference, str):
-            return reference
-        if reference not in handles:
-            if isinstance(reference, VisualEvidenceReference):
-                with _db(_root(workspace), "derivative.sqlite3") as connection:
-                    delivery = connection.execute(
-                        "SELECT source_id FROM visual_deliveries WHERE identity=? AND trial_id=?",
-                        (reference.delivery_receipt, trial_id),
-                    ).fetchone()
-                if delivery is None:
-                    raise ValueError(
-                        "visual Evidence requires a current-Trial ImageContent receipt"
-                    )
-                selected = select_visual_evidence(
-                    workspace,
-                    trial_id,
-                    delivery[0],
-                    reference.delivery_receipt,
-                    reference.transcription,
-                    list(reference.region),
-                    reference.uncertainty,
-                )
-            else:
-                source_id = resolve_source_handle(workspace, trial_id, reference.source_id)
-                selected = select_text_evidence_by_lines(
-                    workspace,
-                    trial_id,
-                    source_id,
-                    reference.page,
-                    reference.start_line,
-                    reference.end_line,
-                )
-            handles[reference] = selected["evidence"]["handle"]
-        return handles[reference]
+    resolve = source_reference_resolver(workspace, trial_id)
 
     return [
         answer.model_copy(

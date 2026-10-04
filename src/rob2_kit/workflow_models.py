@@ -340,8 +340,42 @@ class WorkingResultStep(StrictModel):
         return _identity(self, self.identity)
 
 
+class WorkingAccountNote(StrictModel):
+    text: NonBlankText = Field(
+        max_length=4_000, description="Source-grounded observation or qualification."
+    )
+    sources: tuple[DomainSourceReference, ...] = Field(
+        min_length=1,
+        max_length=8,
+        description="Same Evidence references as Domain bases: selected handle, exact text "
+        "range, or delivered visual transcription. Resolves original source locations.",
+    )
+    scope: WorkingObservationScope | None = None
+    domain_id: DomainId | None = None
+    question_id: QuestionId | None = None
+
+
+class WorkingResultStepDraft(StrictModel):
+    id: NonBlankText = Field(description="Stable host name; reused when revising this step.")
+    identity: Identity | None = Field(
+        default=None, description="Returned content identity; omit when editing."
+    )
+    aspect: Literal["assignment_course", "outcome_ascertainment", "analysis", "plan_report"]
+    observation: WorkingAccountNote
+    inference: NonBlankText | None = Field(
+        default=None, description="Optional host inference, not a source fact."
+    )
+    counterevidence: tuple[WorkingAccountNote, ...] = ()
+    unknowns: tuple[NonBlankText, ...] = Field(
+        default=(),
+        description="Preserve unresolved facts and qualifiers during structural repair; "
+        "empty is valid.",
+    )
+    counts: tuple[MissingDataRow, ...] = ()
+
+
 class WorkingCheckpointDraft(StrictModel):
-    result_account: tuple[WorkingResultStep, ...] | None = Field(
+    result_account: tuple[WorkingResultStepDraft, ...] | None = Field(
         default=None,
         exclude_if=lambda value: value is None,
         description="Experimental selected-Result reconstruction. Replaces overlapping notes, "
