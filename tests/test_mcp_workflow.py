@@ -81,6 +81,11 @@ def test_cli_exports_packaged_skill(tmp_path: Path) -> None:
     assert cli_main(["export-skill", "--output", str(destination)]) == 0
     assert (destination / "SKILL.md").is_file()
     assert (destination / "references" / "randomization.md").is_file()
+    installed = (destination / "SKILL.md").read_text()
+    assert "what each selected source actually establishes" in installed
+    assert "a correct claim\nwith the wrong citation, and a defensible inference" in installed
+    assert "A planned analysis is not a performed result." in installed
+    assert "does not require another model call or reassessing the whole Domain" in installed
 
 
 def test_domain_questions_include_typed_premise_rules_and_shortcuts(tmp_path: Path) -> None:

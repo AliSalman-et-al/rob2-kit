@@ -408,8 +408,12 @@ Inspect the review's exact Result, checkpoint identities, and compact
 `domain_findings` projection. Use its decisive justifications, material
 unknowns, counterevidence, and exact Evidence expansion actions to reconcile
 concrete contradictions or unsupported links in one bounded pass. Compare material
-claims with cited fact text or exact Evidence expansions; a valid handle or
-host-asserted support role does not prove semantic support. For figure, legend and
+claims with what each selected source actually establishes, using cited fact text
+or exact Evidence expansions. Distinguish an unsupported clause, a correct claim
+with the wrong citation, and a defensible inference; preserve uncertainty.
+A planned analysis is not a performed result. Use this focus within the existing
+review; it does not require another model call or reassessing the whole Domain.
+For figure, legend and
 conduct distinctions, use [visual Evidence](references/evidence.md#use-visual-evidence-for-visual-meaning).
 Large reviews
 return `data.review_page.mode:"summary"`: all answer headers and actual driver
