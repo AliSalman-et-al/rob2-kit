@@ -33,9 +33,12 @@ inappropriate assignment-effect analysis; keep that issue distinct for Domain
 3. If an analysis defect activates the impact question, consider outcome rarity
 and prognostic exclusions as well as the percentage affected.
 
-An eligible participant excluded from the assignment-effect analysis after
-randomization is an analysis exclusion whether the exclusion occurred before
-the approved endpoint was measured or after an outcome value was recorded.
+First distinguish omission solely because the selected outcome is missing from
+an independent analysis restriction, reassignment, or omission of observed data.
+Fewer analyzed than randomized does not establish which mechanism occurred.
+Timing before or after ascertainment alone does not settle 2.6: the missing-only
+exception remains applicable. An independently established analysis restriction
+can occur before or after an outcome value was recorded.
 Record whether the endpoint was unavailable or was observed and then omitted.
 An observed value omitted by analysis does not become missing outcome data.
 Treatment stopping alone establishes neither; a censoring rule does not count
@@ -58,7 +61,8 @@ care; in the changed case, the same treatment change is prohibited and caused
 by trial participation or trial staff. Change the 2.3 reasoning only when both
 protocol inconsistency and a trial-context cause change. A second contrast keeps
 the excluded participants and reasons fixed while moving exclusion from before
-to after endpoint ascertainment. The 2.6 exclusion premise remains; the timing
-changes whether outcomes were unavailable or observed and then omitted, and
-therefore whether D3 also needs missing-outcome reasoning. Do not import an
+to after endpoint ascertainment. An independently established restriction
+remains a restriction; timing alone does not establish it or rule out missing-only
+omission. Distinguish unavailable outcomes from observed values omitted by
+analysis before deciding whether D3 also needs missing-outcome reasoning. Do not import an
 expected answer or risk label from either pair.

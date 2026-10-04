@@ -25,6 +25,20 @@ require explicit selected current-Trial Evidence bases. Quantities are optional;
 completion, analysis and imputation counts do not create observed outcomes.
 The server returns content identities in `get_status` and Domain context.
 
+Request shape (replace illustrative values with current Trial/source values):
+
+```json
+{"checkpoint":{"trial_id":"<current Trial>","result_account":[
+  {"id":"collection","aspect":"outcome_ascertainment",
+   "observation":{"text":"<source-grounded factual observation>",
+    "sources":[{"source_id":"<returned Source ID>","page":1,
+                "start_line":1,"end_line":3}]}}
+]}}
+```
+
+`result_account` is directly an array, without a `steps` wrapper. Source
+locators belong in `observation.sources`, not beside `observation.text`.
+
 `get_domain_context` reuses these count rows in the existing flow and missing-data
 projections before any D2/D3 save. An empty account count set remains empty;
 previous answers do not fill its gaps. Caller-supplied previews remain possible.

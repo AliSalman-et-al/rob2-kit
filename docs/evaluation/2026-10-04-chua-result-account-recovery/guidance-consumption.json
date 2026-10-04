@@ -1,0 +1,77 @@
+[
+  {
+    "arguments": {
+      "document": "SKILL.md"
+    },
+    "data": {
+      "document": "SKILL.md",
+      "content_sha256": "sha256:0e0210492f816139d49d07265aaa86b41873f5bf0981828c7fd533c636f99e13",
+      "links": [
+        "references/codex.md",
+        "references/deviations.md",
+        "references/evidence.md",
+        "references/measurement.md",
+        "references/missing.md",
+        "references/randomization.md",
+        "references/read-main-report.md",
+        "references/result-account.md",
+        "references/result.md",
+        "references/selection.md"
+      ]
+    }
+  },
+  {
+    "arguments": {
+      "document": "references/result-account.md"
+    },
+    "data": {
+      "document": "references/result-account.md",
+      "content_sha256": "sha256:89af7af4789c6512a686a99e5bffdef0b6141aaba2eb4035acbf5a7afdff09f4",
+      "links": []
+    }
+  },
+  {
+    "arguments": {
+      "document": "references/evidence.md"
+    },
+    "data": {
+      "document": "references/evidence.md",
+      "content_sha256": "sha256:4b45a2be5a9e103cdb9965fe2ba2b60b218ae0d3e9827676cd4ed4da19fcbb29",
+      "links": [
+        "references/result.md"
+      ]
+    }
+  },
+  {
+    "arguments": {
+      "document": "references/deviations.md"
+    },
+    "data": {
+      "document": "references/deviations.md",
+      "content_sha256": "sha256:46a95f83c34eee8440f7383bc6951b8cb6996e6d34964ea258190b99aa857d26",
+      "links": []
+    }
+  },
+  {
+    "arguments": {
+      "document": "references/missing.md"
+    },
+    "data": {
+      "document": "references/missing.md",
+      "content_sha256": "sha256:5a9e2d560daf123dbd9fc6c4fd1ae08f8524f0a3d3231e19c1f5ededf8f086af",
+      "links": []
+    }
+  },
+  {
+    "arguments": {
+      "document": "references/selection.md"
+    },
+    "data": {
+      "document": "references/selection.md",
+      "content_sha256": "sha256:a3866965032142f122e453bdfdc7b4dba9a253666dfa4a4eda2482adbc8688d8",
+      "links": [
+        "references/evidence.md"
+      ]
+    }
+  }
+]

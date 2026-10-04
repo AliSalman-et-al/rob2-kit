@@ -1,0 +1,110 @@
+[
+  {
+    "arguments": {
+      "checkpoint": {
+        "trial_id": "chua-2022",
+        "result_account": [
+          {
+            "id": "assignment",
+            "aspect": "assignment_course",
+            "observation": {
+              "text": "Report: 1:1 site-stratified variable-block randomization by independent statistician web service, concealment until completion; open-label due to intervention. HFNC vs NRM/standard NC.",
+              "sources": [
+                {
+                  "source_id": "sh_ab74cf546ed17772",
+                  "page": 2,
+                  "start_line": 78,
+                  "end_line": 86
+                }
+              ]
+            }
+          },
+          {
+            "id": "collection",
+            "aspect": "outcome_ascertainment",
+            "observation": {
+              "text": "Lowest SpO2 measured by pulse oximetry during first attempt; independent coordinator/nurse/clinician records lowest value.",
+              "sources": [
+                {
+                  "source_id": "sh_ab74cf546ed17772",
+                  "page": 3,
+                  "start_line": 24,
+                  "end_line": 41
+                }
+              ]
+            }
+          },
+          {
+            "id": "analysis",
+            "aspect": "analysis",
+            "observation": {
+              "text": "ITT analysis, site stratified/adjusted; van Elteren test. Two randomized controls excluded post-randomization, due DNR and OR intubation.",
+              "sources": [
+                {
+                  "source_id": "sh_ab74cf546ed17772",
+                  "page": 3,
+                  "start_line": 61,
+                  "end_line": 82
+                },
+                {
+                  "source_id": "sh_ab74cf546ed17772",
+                  "page": 4,
+                  "start_line": 1,
+                  "end_line": 7
+                }
+              ]
+            }
+          },
+          {
+            "id": "reporting",
+            "aspect": "plan_report",
+            "observation": {
+              "text": "Primary endpoint first-attempt lowest SpO2. Post-hoc quantile regression of first quartile also reported. Protocol cited, but protocol and registry bytes unavailable; correspondence unresolved.",
+              "sources": [
+                {
+                  "source_id": "sh_ab74cf546ed17772",
+                  "page": 3,
+                  "start_line": 24,
+                  "end_line": 30
+                },
+                {
+                  "source_id": "sh_ab74cf546ed17772",
+                  "page": 6,
+                  "start_line": 4,
+                  "end_line": 13
+                }
+              ]
+            },
+            "unknowns": [
+              "Protocol and registry unavailable; chronology/prespecification unresolved."
+            ]
+          }
+        ]
+      }
+    },
+    "receipt": {
+      "outcome": "success",
+      "head": {
+        "phase": "assessment",
+        "state_revision": 3,
+        "next_action": {
+          "operation": "get_domain_context",
+          "authority": "host",
+          "trial_id": "chua-2022",
+          "domain_id": "domain:randomization",
+          "cursor": null,
+          "max_response_bytes": null
+        },
+        "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+      },
+      "data": {
+        "checkpoint_identity": "sha256:437f31e6b4b403b0176ef8c4d75f78fbb5c6e02c1f7c37f7f8cfac9f16f9b5e5",
+        "trial_id": "chua-2022",
+        "result_identity": "sha256:ed85285d0388fe101453b6617940e45e65c4b192985a0b2f35646a08cb51c280",
+        "source_count": 5,
+        "authoritative": false,
+        "next_action": "Resume from these source-linked notes. Recover cited text with read_pages only when it is missing or uncertain; use render_page for a whole-page visual locator. These notes are not Evidence or saved Domain answers."
+      }
+    }
+  }
+]

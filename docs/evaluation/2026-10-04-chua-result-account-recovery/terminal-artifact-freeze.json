@@ -1,0 +1,16 @@
+{
+  "private_root": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/chua-result-account-recovery-20261004",
+  "freeze_sha256": "f3d9d5b717bfdd002911b17e762b78aed9b91e59d9247c1d887d7c16b884021f",
+  "files": {
+    "manifest.json": "c6f3e2c1c5f207c77def70299dcd5470533075da3952680c4eb77c7dce279dde",
+    "native-guidance-preflight-receipts.json": "92ccc6c6913fc141699419a67097082ac199a81f277613301704eaa248d69aff",
+    "prototype/answer-freeze.json": "aa3996789eb418e5c466036a277d3651499ab97a338a7ecf76ea7a42d5873c66",
+    "prototype/events.jsonl": "2520196635a6c3d241b2f45774db686b08dbcf825477151b37bfd3cb51762ca6",
+    "prototype/run.json": "5138ef719dfb44510df0ca81a02f780e22f574f7e4a32d25d621b3c1899eb47f",
+    "prototype/workspace/.rob2-kit/canonical.sqlite3": "2d264aec1a0e245225072dba7caea6ad9e643736c2d694012c00ab63e8ba6be9",
+    "prototype/workspace/.rob2-kit/working.sqlite3": "0457673462c39ddc5f24a8028f14648e868d21914b5029ecc43578305b340ff0",
+    "selected-result.json": "39293a276a9b0d8eec1ff79095336f9755632be68f79307ff50fdefd756dae5f",
+    "setup.json": "24ad8131695ae276dc13b6233f55fe36c5bdd23dc695e4d22e74638d2099a684"
+  },
+  "note": "Complete file manifest retained in private freeze; selected artifact hashes here."
+}
