@@ -585,3 +585,26 @@ def test_d5_access_recipient_and_chronology_uncertainty_remain_distinct() -> Non
     )
     assert "do not identify" in pair["left_facts"][1]
     assert "dated report confirms investigators" in pair["right_facts"][1]
+
+
+def test_d45_likelihood_allows_contextual_inference_without_proof_of_influence() -> None:
+    guidance = _question("sq:measurement:influence-likely").guidance
+    text = _guidance_text(("sq:measurement:influence-likely",))
+    # Cochrane section 7.3 pp.52–53 gives these contextual routes, beyond
+    # the strong-belief example in Box 10. Preserve both concern and reassurance.
+    for factor in (
+        "subconscious",
+        "comparator",
+        "involvement in care",
+        "independent interviewer",
+        "intervening treatments",
+    ):
+        assert factor in text
+    assert "not required for a probable judgment" in text
+    assert "absence of documented influence or strong beliefs alone" in text
+    assert "not automatic answers" in text
+    assert "require evidence or strong beliefs" not in text
+    assert "no_information" in guidance.operational.no_information_rule
+    assert (
+        guidance.official.source_locator == "Full guidance p. 54, Box 10, signalling question 4.5"
+    )

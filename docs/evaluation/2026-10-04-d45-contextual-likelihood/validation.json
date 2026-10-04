@@ -1,0 +1,22 @@
+{
+  "focused_controls": {
+    "passed": 8,
+    "deselected": 64,
+    "seconds": 37.95
+  },
+  "scientific_guidance_suite": {
+    "passed": 18,
+    "seconds": 0.63
+  },
+  "initial_control_assertion_failure": {
+    "failed": 3,
+    "passed": 5,
+    "reason": "Successful save receipts are compact; corrected test to inspect canonical state, without changing production validation."
+  },
+  "ruff": "passed",
+  "ty_scientific_pack": "passed",
+  "diff_check": "passed",
+  "paid_model_calls": 0,
+  "full_benchmark": false,
+  "frozen_answers_modified": false
+}

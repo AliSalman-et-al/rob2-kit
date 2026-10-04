@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.10"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.11"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -587,10 +587,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
     ),
     "sq:measurement:influence-likely": _guidance(
         "Full guidance p. 54, Box 10, signalling question 4.5",
-        "Whether knowledge of intervention likely influenced outcome assessment. Require evidence or strong beliefs plus a judgement opportunity; awareness alone does not establish influence.",
+        "Whether knowledge of intervention likely influenced outcome assessment. Assess conscious and subconscious interests and expectations using the assessor, comparator, assessment setting and timing; awareness alone does not establish likely influence.",
         "Distinguish possible influence without reason to believe it occurred from likely influence. Strong beliefs about benefits or harms make influence more likely, for example patient-reported symptoms or recovery assessed by an intervention provider. A standardized scale or grading rule does not by itself remove an elicitation, attribution, grading, or assessment pathway.",
         (
-            "Evidence of actual influence or strong beliefs and judgement opportunities that make influence likely, given the assessor and outcome.",
+            "Source-supported circumstances bearing on likelihood: comparator, assessor involvement in care, interview or reporting setting, assessment timing, and any evidence of actual influence or strong beliefs. Direct proof of changed ratings or documented strong beliefs is not required for a probable judgment.",
         ),
         "Use no_information when likelihood of influence cannot be judged; this question is conditional on possible influence in 4.4.",
         (
@@ -601,11 +601,11 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "Possible influence without evidence it occurred maps differently from likely influence.",
-            "Likely influence requires more than assessor awareness or a possible pathway: look for evidence it occurred, or strong beliefs and a real judgement opportunity. Keep this conclusion separate from measurement susceptibility and detection opportunity.",
+            "Possible influence without reason to believe it occurred maps differently from likely influence.",
+            "Weigh reasons for and against likely influence, including subconscious expectations. No-treatment or usual-care comparators may raise concern relative to another active intervention; a care provider assessing their own treatment may have an interest in its success. Independent assessment, an independent interviewer, or a long interval with intervening treatments may reduce concern. These are contextual considerations, not automatic answers; keep likelihood separate from mere possibility, measurement susceptibility and detection opportunity.",
             "Objective components can provide valid reassurance for those components without overriding likely influence or unresolved Evidence for subjective components in the same Result.",
         ),
-        ("assessor awareness alone", "an objective endpoint label", "an ITT analysis"),
+        ("assessor awareness alone", "absence of documented influence or strong beliefs alone", "an objective endpoint label", "an ITT analysis"),
     ),
     "sq:selection:prespecified-analysis": _guidance(
         "Full guidance p. 63, Box 11, signalling question 5.1",

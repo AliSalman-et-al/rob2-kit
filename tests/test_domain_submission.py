@@ -8,6 +8,7 @@ import pytest
 from pydantic import ValidationError
 from support.rob2 import _assessment_workspace, _call, _domain_draft
 
+from rob2_kit.application._state import _state
 from rob2_kit.workflow_models import DomainAnswer, DomainSaveAnswer
 
 REJECTED = json.loads(
@@ -352,3 +353,38 @@ def test_public_answer_schema_requires_all_reasoning_fields(field: str) -> None:
     del answer[field]
     with pytest.raises(ValidationError, match=field):
         DomainSaveAnswer.model_validate(answer)
+
+
+@pytest.mark.parametrize(
+    "value, judgment",
+    [("probably_yes", "high"), ("probably_no", "some_concerns"), ("no_information", "high")],
+)
+@pytest.mark.parametrize("valid_evidence", [True, False])
+def test_d45_contextual_answers_preserve_calibration_and_evidence_binding(
+    tmp_path: Path, value: str, judgment: str, valid_evidence: bool
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:measurement", revision, evidence)
+    answer = draft["answers"][-1]
+    assert answer["question_id"] == "sq:measurement:influence-likely"
+    answer["answer"] = value
+    answer["bases"] = [
+        {
+            "kind": "inference",
+            "evidence": evidence["handle"] if valid_evidence else "eh_0000000000000000",
+        }
+    ]
+    answer["justification"] = (
+        "The cited context bears on likelihood; direct evidence of changed ratings is unavailable."
+    )
+    answer["unknowns"] = ["Whether individual ratings actually changed."]
+    response = _call(workspace, "save_domain_judgment", draft)
+    if valid_evidence:
+        assert response["outcome"] == "success", response
+        record = _state(workspace)["domain_records"]["trial:domain:measurement"]
+        assert record["answers"][-1]["answer"] == value
+        assert record["judgment"] == judgment
+        assert record["answers"][-1]["unknowns"] == answer["unknowns"]
+    else:
+        assert response["outcome"] == "repair", response
+        assert any(item["code"] == "invalid_evidence" for item in response["repairs"])
