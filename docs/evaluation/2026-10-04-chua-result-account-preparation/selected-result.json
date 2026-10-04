@@ -1,0 +1,51 @@
+{
+  "trial_id": "chua-2022",
+  "relation": "narrower",
+  "relation_rationale": "Same lowest SpO2 first-attempt endpoint, measurement, window, randomized comparison and median-difference estimator. Target assignment effect includes all 192 randomized participants; reported intention-to-treat analysis includes 97 intervention and 93 control, excluding two randomized controls (postrandomization do-not-resuscitate order and operating-room intubation). This reported population restriction is retained as narrower, without asserting exact assignment-estimand correspondence. Its bias implications remain for independent RoB2 assessment.",
+  "clarity": {
+    "analysis_population": "specified",
+    "comparison_groups": "specified",
+    "effect_measure": "specified",
+    "eligible_result_choice": "specified",
+    "measurement": "specified",
+    "outcome_definition": "specified",
+    "source_table_meaning": "specified",
+    "time_point": "specified"
+  },
+  "target": {
+    "comparison_groups": [
+      {
+        "assignment": "High-flow nasal cannula for preoxygenation and apnoeic oxygenation",
+        "id": "intervention"
+      },
+      {
+        "assignment": "Non-rebreather mask preoxygenation and standard nasal cannula apnoeic oxygenation",
+        "id": "control"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Median difference",
+    "measurement": {
+      "method": "Pulse oximetry; lowest SpO2 during first intubation attempt",
+      "metric": "Lowest SpO2 during the first intubation attempt"
+    },
+    "outcome_definition": "Lowest SpO2 during the first intubation attempt",
+    "time_point_or_window": {
+      "description": "First intubation attempt, from paralytic administration to quantitative end-tidal carbon dioxide confirmation if successful, or start of second attempt if unsuccessful",
+      "kind": "described"
+    }
+  },
+  "reported": {
+    "analysis_population": "Reported intention-to-treat: intervention n=97 and control n=93; two of 95 randomized controls excluded because of a do-not-resuscitate order established after randomization and intubation in the operating room.",
+    "effect_measure": "Median diff",
+    "endpoint": {
+      "definition": null,
+      "name": "Lowest SpO2 during first attempt"
+    },
+    "estimate": "0",
+    "form": "comparative_effect",
+    "group_values": [],
+    "precision": "0–4.0"
+  }
+}
