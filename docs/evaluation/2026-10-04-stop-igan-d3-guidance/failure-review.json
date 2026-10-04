@@ -1,0 +1,25 @@
+{
+  "verdict": "Revise before adoption; retain opt-in prototype. Conditional all-domain replacement not triggered.",
+  "accuracy_gain_demonstrated": false,
+  "production_completion_demonstrated": false,
+  "additional_paid_calls": 0,
+  "old": {
+    "3.1": "Correctly preserves available-case72/80 and71/82 and distinguishes imputed from observed. NI is cautious; published available-case scope supplies meaningful availability evidence, so a probable judgment merits consideration without requiring individual reasons/count precision. No automatic wrong-label finding.",
+    "3.2": "Correctly distinguishes actual numerical reassurance from proof of robustness to plausible missingness assumptions; reports actual MI execution without inventing assumptions. No required MNAR method or prespecification gate imposed.",
+    "3.3": "Unknown withdrawal/loss reasons are honest; possible true-value dependence can merit PY, but exact probability is unresolved.",
+    "path": "Missing active3.4 after3.3NI. No computed label; no repaired answer inferred."
+  },
+  "new": {
+    "3.1": "Unsupported substitution: four non-completers per arm becomes four lacking observed remission endpoints and95% observed. Main4L32\u201335 and main7L10 give available remission denominators72/71; completion cannot establish outcome availability. Its own uncertainty caveat does not support the exact count. PN direction is plausible but the stated count is not grounded.",
+    "3.2": "Cites prespecification, MI/permutation names, significant differences and similar available-case estimate. These are genuine reassuring facts, but reported significance/permutation does not demonstrate robustness to plausible outcome-dependent missingness. MI assumptions/numerical estimates and planned best/worst execution remain unknown. PY is not disproved solely by missing exact counts; this response does not justify its confidence sufficiently.",
+    "3.3_and_3.4": "Supplied despite inactive path after3.2PY. Production ignores extras. Their balancing arguments do not repair the active3.2 premise.",
+    "path": "Strict requested format violated by inactive extras; production active projection correctly yieldsLow. Not a native commit or evidence-entailment validation."
+  },
+  "common": {
+    "target_scope": "Both retain approved full clinical remission at3years rather than eGFR decline.",
+    "citations": "Main4L24\u201340 supports completion/sensitivity/available-case narrative; primary imputation wording is main4L11\u201317 and main7L37\u201341. New3.1 citation lacks caption range but facts available elsewhere in input. Main5L53\u201364 supports departure categories only, not total endpoint missingness. Protocol113L13\u201318 supports planned substitution/sensitivity, not actual implementation of best/worst scenarios.",
+    "evidence_limits": "Registry bytes unavailable. Full article/appendix supplied, original matched PDF dossier fingerprinted, not archived exact production replay. Required source preflight passes structural coverage only.",
+    "entailment_vs_algorithm": "Deterministic Low follows chosen3.2PY even if its evidence rationale is insufficient. Algorithm correctness is not scientific validity."
+  },
+  "next": "Discuss one distinct source-complete PIONEER-6 corroboration before any additional inference. Freeze source scope and official-fidelity criteria; production path semantics permits ignored extras but missing active answers remains incomplete. Do not tune to STOP desired labels. No broad accuracy/All-Low agreement inference."
+}

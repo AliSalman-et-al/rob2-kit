@@ -1,0 +1,14 @@
+{
+  "old": {
+    "response.txt": "f3cfa3ea970c9869991d3e8d3a8a0e27dabd3c343e2c66a215db94e4e3eab3c7",
+    "events.jsonl": "3ddcefef2466656f0abd2a7b5f2090094838825e61ccf85d7786d4215882c186",
+    "run.json": "4c947643402b3ff96e12a7546aef27e831eb8d2064f3c5440e2c85641acbd0d1",
+    "durable-token-usage-records.json": "4dbb544ec5a83cbfa99a5e31085a4400c06b2675bd0ff1b7da3862361c256740"
+  },
+  "new": {
+    "response.txt": "057d767fe68f785c3a913c6ee64746245d266f2db948db3fed4a5700a83f6fb3",
+    "events.jsonl": "37317d987f00b739e5c7c07bdb9bd413e2d9058ed36d7c3e312c2a5804528776",
+    "run.json": "4196e8bb081cf60bd0cacc7f6d5abad150f930745fb99afa7005386621246649",
+    "durable-token-usage-records.json": "f32b83b95272687353a2dd18e0e5cc4bf1d4c239eb8fe21d5fe36f2e6689f0cb"
+  }
+}

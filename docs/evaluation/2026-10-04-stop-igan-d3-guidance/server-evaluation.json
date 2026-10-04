@@ -1,0 +1,64 @@
+{
+  "old": {
+    "answers": {
+      "sq:missing:data-available": "no_information",
+      "sq:missing:evidence-unbiased": "no",
+      "sq:missing:true-value-dependent": "no_information"
+    },
+    "active_questions": [
+      "sq:missing:data-available",
+      "sq:missing:evidence-unbiased",
+      "sq:missing:true-value-dependent",
+      "sq:missing:likely-dependent"
+    ],
+    "inactive_answers": [],
+    "missing_active": [
+      "sq:missing:likely-dependent"
+    ],
+    "server_evaluation_error": "answers must be supplied exactly for active questions; missing=['sq:missing:likely-dependent'], inactive=[]",
+    "production_projection": {
+      "behavior": "application/domains.py ignores inactive branch answers before evaluate_domain; no missing answer invented",
+      "answers": {
+        "sq:missing:data-available": "no_information",
+        "sq:missing:evidence-unbiased": "no",
+        "sq:missing:true-value-dependent": "no_information"
+      },
+      "error": "answers must be supplied exactly for active questions; missing=['sq:missing:likely-dependent'], inactive=[]"
+    },
+    "native_commit_performed": false
+  },
+  "new": {
+    "answers": {
+      "sq:missing:data-available": "probably_no",
+      "sq:missing:evidence-unbiased": "probably_yes",
+      "sq:missing:true-value-dependent": "probably_yes",
+      "sq:missing:likely-dependent": "no_information"
+    },
+    "active_questions": [
+      "sq:missing:data-available",
+      "sq:missing:evidence-unbiased"
+    ],
+    "inactive_answers": [
+      "sq:missing:likely-dependent",
+      "sq:missing:true-value-dependent"
+    ],
+    "missing_active": [],
+    "server_evaluation_error": "answers must be supplied exactly for active questions; missing=[], inactive=['sq:missing:likely-dependent', 'sq:missing:true-value-dependent']",
+    "production_projection": {
+      "behavior": "application/domains.py ignores inactive branch answers before evaluate_domain; no missing answer invented",
+      "answers": {
+        "sq:missing:data-available": "probably_no",
+        "sq:missing:evidence-unbiased": "probably_yes"
+      },
+      "algorithm_evaluation": {
+        "domain_id": "domain:missing",
+        "judgment": "low",
+        "trace": [
+          "missing.low"
+        ],
+        "driver_questions": []
+      }
+    },
+    "native_commit_performed": false
+  }
+}

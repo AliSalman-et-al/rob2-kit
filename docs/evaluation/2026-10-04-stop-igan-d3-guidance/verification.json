@@ -1,0 +1,13 @@
+{
+  "focused_command": "PYTHONPATH=src:scripts:. shared-venv-python -m pytest tests/test_d3_authoritative_context.py tests/test_model_facing_assets.py -q",
+  "focused_result": "15 passed in 22.44s",
+  "code_changes": false,
+  "protected_original_hashes_unchanged": true,
+  "identical_source_spans": true,
+  "source_preflight": "passed both arms; structural coverage only",
+  "paid_responses": 2,
+  "retry": false,
+  "native_commit": false,
+  "full_benchmark": false,
+  "default_adoption": false
+}
