@@ -281,7 +281,7 @@ def _assert_repairs(receipt: dict[str, Any]) -> None:
     )
 
 
-def test_domain_public_shape_is_flat_and_closed() -> None:
+def test_domain_public_shape_is_closed_with_optional_observation_link() -> None:
     async def inspect() -> dict[str, Any]:
         async with Client(mcp) as client:
             tool = next(
@@ -307,7 +307,11 @@ def test_domain_public_shape_is_flat_and_closed() -> None:
         "absence_searches",
     }
     direct = _resolve_local(draft, answer["properties"]["bases"]["items"])
-    assert set(direct["properties"]) == {"role", "evidence"}
+    assert set(direct["properties"]) == {"role", "evidence", "working_observation"}
+    assert set(direct["required"]) == {"role", "evidence"}
+    link = direct["properties"]["working_observation"]["anyOf"][0]
+    assert link["additionalProperties"] is False
+    assert set(link["properties"]) == {"checkpoint_identity", "observation"}
     assert "oneOf" not in answer["properties"]["bases"]["items"]
     assert direct["properties"]["role"]["enum"] == [
         "direct_support",

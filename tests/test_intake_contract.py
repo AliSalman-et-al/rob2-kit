@@ -987,7 +987,8 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
     ]
     citation = answers["properties"]["bases"]["items"]
     assert citation["additionalProperties"] is False
-    assert set(citation["properties"]) == {"evidence", "role"}
+    assert set(citation["properties"]) == {"evidence", "role", "working_observation"}
+    assert set(citation["required"]) == {"evidence", "role"}
     assert citation["properties"]["role"]["enum"] == [
         "direct_support",
         "indirect_support",

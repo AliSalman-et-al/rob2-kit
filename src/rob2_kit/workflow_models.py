@@ -134,19 +134,35 @@ class WorkingObservationScope(StrictModel):
         default=(),
         description="Groups actually described by this observation, including other arms.",
     )
-    stage: NonBlankText | None = None
-    window: NonBlankText | None = None
-    population: NonBlankText | None = None
-    method: NonBlankText | None = None
+    stage: NonBlankText | None = Field(
+        default=None,
+        description="Stage covered, such as sampling or treatment completion.",
+    )
+    window: NonBlankText | None = Field(
+        default=None, description="Time point or interval actually covered by this observation."
+    )
+    population: NonBlankText | None = Field(
+        default=None,
+        description="Participant or measurement population actually covered by this observation.",
+    )
+    method: NonBlankText | None = Field(
+        default=None,
+        description="Measurement or analysis method to which this observation applies.",
+    )
     meaning: Literal["reported", "inferred", "uncertain"] = Field(
         default="uncertain", description="Whether the observation is reported or host inferred."
     )
-    uncertainty: NonBlankText | None = None
+    uncertainty: NonBlankText | None = Field(
+        default=None,
+        description="Unresolved source meaning, scope or interpretation; not proof of absence.",
+    )
 
 
 class WorkingNote(StrictModel):
     scope: WorkingObservationScope | None = Field(
-        default=None, exclude_if=lambda value: value is None
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Optional host interpretation of the observation scope relative to the Result.",
     )
 
     text: NonBlankText = Field(
@@ -1993,8 +2009,12 @@ class DomainLimitationBasis(StrictModel):
 class WorkingObservationLink(StrictModel):
     """Durable snapshot of an existing working observation used in a warrant."""
 
-    checkpoint_identity: Identity
-    observation: WorkingNote
+    checkpoint_identity: Identity = Field(
+        description="Identity of the existing source/Result-bound working checkpoint, not a Domain."
+    )
+    observation: WorkingNote = Field(
+        description="Unchanged checkpoint observation retained as a warrant snapshot."
+    )
 
 
 class DirectEvidenceUse(StrictModel):
