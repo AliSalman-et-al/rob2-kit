@@ -25,3 +25,13 @@ receipt-based reading-delivery report, preserves every controller turn, and mark
 missing usage unknown. Required reading and Domain checkpoints are operational
 boundaries; their presence does not certify scientific correctness. See
 [evidence and limitations](evaluation/2026-10-04-completion-integration/README.md).
+
+Overall aggregation follows [ADR 0039](adr/0039-conditional-cumulative-concerns.md).
+Multiple Some concerns propose Some concerns; High requires the optional host
+combined-impact assessment for the exact approved Result and five checkpoints.
+`review_trial.cumulative_concerns` records a supported escalation, no escalation,
+or unresolved combined impact with a rationale. Omission remains valid. Review
+receipts expose proposal/adoption and attribution; revised aggregates create new
+identities, so a prior closure reference cannot silently bind a different judgment.
+Historical bundles retain their count-policy interpretation. This correction
+supports rule fidelity and makes no Domain-accuracy or benchmark-gain claim.

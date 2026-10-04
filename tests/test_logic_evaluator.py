@@ -67,7 +67,7 @@ def test_all_overall_combinations_against_independent_oracle():
     domain_ids = tuple(QIDS)
     for values in product(("low", "some_concerns", "high"), repeat=5):
         judgments = dict(zip(domain_ids, values, strict=True))
-        if "high" in values or values.count("some_concerns") >= 2:
+        if "high" in values:
             expected = "high"
         elif "some_concerns" in values:
             expected = "some_concerns"

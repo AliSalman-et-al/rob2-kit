@@ -16,8 +16,13 @@ from typing import Any, cast
 
 from pydantic import ValidationError
 
+from ..logic.aggregation import (
+    AGGREGATION_CONTRACT,
+    LEGACY_AGGREGATION_CONTRACT,
+    snapshot_evaluation,
+)
 from ..logic.evaluator import active_questions as derive_active_questions
-from ..logic.evaluator import evaluate_domain, evaluate_overall
+from ..logic.evaluator import evaluate_domain, evaluate_historical_overall, evaluate_overall
 from ..models import canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
 from ..workflow_models import (
@@ -2819,7 +2824,10 @@ def _valid_overall_receipt(
             hypothetical_domain = evaluate_domain(domain_id, projected_answers).judgment.value
             hypothetical_judgments = dict(current_judgments)
             hypothetical_judgments[domain_id] = hypothetical_domain
-            hypothetical_overall = evaluate_overall(hypothetical_judgments).judgment.value
+            aggregate = (
+                evaluate_overall if "aggregation" in snapshot else evaluate_historical_overall
+            )
+            hypothetical_overall = aggregate(hypothetical_judgments).judgment.value
         except (KeyError, TypeError, ValueError):
             return False
         expected_alternative_keys = required | {
@@ -2969,7 +2977,8 @@ def _verify_domain_lineage(
 def _scientific_contract_descriptor() -> dict[str, Any]:
     """Return the exact scientific contract bound into finalized artifacts.
 
-    The pack's content hash binds the complete question and decision contract.
+    The pack's content hash binds the Domain question and decision contract;
+    the separate aggregation marker binds the overall policy.
     The official source hash is repeated on each question because the pack's
     provenance model records the source version but not its digest.  Requiring
     one consistent pair here makes an ambiguous or partially edited pack fail
@@ -2985,6 +2994,7 @@ def _scientific_contract_descriptor() -> dict[str, Any]:
     if official_version != SCIENTIFIC_PACK.provenance.version:
         raise ValueError("scientific pack has inconsistent official source provenance")
     return {
+        "aggregation_contract": AGGREGATION_CONTRACT,
         "id": SCIENTIFIC_PACK.id,
         "version": SCIENTIFIC_PACK.version,
         "result_semantics_version": _RESULT_SEMANTICS_VERSION,
@@ -3003,6 +3013,9 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
     except (AttributeError, StopIteration, ValueError):
         return False
     if isinstance(value, dict) and value == expected:
+        return True
+    expected.pop("aggregation_contract")
+    if value == expected:
         return True
     # These exact historical descriptors are also retained by the dependency-free
     # verifier. Guidance edits change the computed pack hash, not result semantics.
@@ -3125,6 +3138,7 @@ def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
     snapshots = state.get("snapshots", {})
     return {
         trial_id: {
+            "aggregation": snapshot.get("aggregation"),
             "overall": snapshot["overall"],
             "domains": dict(snapshot["domain_judgments"]),
             "overall_trace": list(snapshot.get("overall_trace", ())),
@@ -3201,7 +3215,12 @@ def _valid_trial_review_closures(
         review_shape_with_attribution = review_shape | {"domain_attribution"}
         if (
             not isinstance(review, dict)
-            or set(review) not in (review_shape, review_shape_with_attribution)
+            or set(review)
+            not in (
+                review_shape,
+                review_shape_with_attribution,
+                review_shape_with_attribution | {"snapshot_identity", "aggregation"},
+            )
             or review.get("trial_id") != trial_id
             or review.get("disposition") not in review_dispositions
             or review.get("disposition") != disposition
@@ -3436,6 +3455,17 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
         "snapshot_history_records": state.get("snapshot_history_records", {}),
         "terminals": state.get("terminals", {}),
         "scientific_pack": _scientific_contract_descriptor(),
+        "legacy_aggregation_snapshots": {
+            "contract": LEGACY_AGGREGATION_CONTRACT,
+            "identities": sorted(
+                {
+                    snapshot["identity"]
+                    for records in state.get("snapshot_history_records", {}).values()
+                    for snapshot in records
+                    if "aggregation" not in snapshot
+                }
+            ),
+        },
     }
     has_trial_reviews = "trial_reviews" in state
     has_trial_closures = "trial_closures" in state
@@ -3963,12 +3993,41 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         ),
                     }
                 )
+            canonical_shapes.update(
+                {shape | {"legacy_aggregation_snapshots"} for shape in tuple(canonical_shapes)}
+            )
             if not isinstance(canonical_value, dict) or set(canonical_value) not in (
                 *canonical_shapes,
             ):
                 return fail()
             scientific_pack = canonical_value.get("scientific_pack")
             if not _valid_scientific_contract_descriptor(scientific_pack):
+                return fail()
+            aggregation_history = canonical_value.get("snapshot_history_records")
+            if not isinstance(aggregation_history, dict) or any(
+                not isinstance(records, list) for records in aggregation_history.values()
+            ):
+                return fail()
+            unmarked = sorted(
+                {
+                    item.get("identity")
+                    for records in aggregation_history.values()
+                    for item in records
+                    if isinstance(item, dict) and "aggregation" not in item
+                }
+            )
+            if scientific_pack.get("aggregation_contract") == AGGREGATION_CONTRACT:
+                if canonical_value.get("legacy_aggregation_snapshots") != {
+                    "contract": LEGACY_AGGREGATION_CONTRACT,
+                    "identities": unmarked,
+                }:
+                    return fail()
+            elif "legacy_aggregation_snapshots" in canonical_value or any(
+                "aggregation" in item
+                for records in aggregation_history.values()
+                for item in records
+                if isinstance(item, dict)
+            ):
                 return fail()
             semantics_version = (
                 scientific_pack.get(
@@ -4675,6 +4734,7 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         expected_shape.update(
                             key
                             for key in (
+                                "aggregation",
                                 "overall_trace",
                                 "overall_driver_domains",
                                 "overall_receipt",
@@ -4712,7 +4772,7 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         )
                     ):
                         return fail()
-                    expected_overall = evaluate_overall(item["domain_judgments"])
+                    expected_overall = snapshot_evaluation(item)
                     if (
                         "overall_trace" in item
                         and item["overall_trace"] != list(expected_overall.trace)
@@ -4860,7 +4920,8 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         or snapshot.get("domain_judgments") != expected_judgments
                     ):
                         return fail()
-                    expected_overall = evaluate_overall(expected_judgments)
+                    expected_overall = snapshot_evaluation(snapshot)
+
                     if (
                         (
                             "overall_trace" in snapshot
@@ -4886,6 +4947,15 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                     overall = expected_overall.judgment.value
                     if snapshot.get("overall") != overall:
                         return fail()
+            if any(
+                (
+                    review.get("snapshot_identity") != snapshots[trial_id].get("identity")
+                    or review.get("aggregation") != snapshots[trial_id].get("aggregation")
+                )
+                for trial_id, review in canonical_value.get("trial_reviews", {}).items()
+                if trial_id in snapshots and "aggregation" in snapshots[trial_id]
+            ):
+                return fail()
             if has_trial_reviews and not _valid_trial_review_closures(
                 canonical_value.get("trial_reviews"),
                 canonical_value.get("trial_closures"),

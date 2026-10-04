@@ -625,6 +625,7 @@ def test_finalize_response_projects_frozen_assessment_summary_and_retry(
             claim["support_attribution"] = "not_established"
     expected = {
         "trial": {
+            "aggregation": snapshot["aggregation"],
             "overall": snapshot["overall"],
             "domains": snapshot["domain_judgments"],
             "overall_trace": snapshot["overall_trace"],
@@ -686,6 +687,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
     assert len(official_sources) == 1
     official_version, official_sha256 = next(iter(official_sources))
     assert descriptor == {
+        "aggregation_contract": "rob2-kit.overall.cochrane-conditional.v1",
         "id": SCIENTIFIC_PACK.id,
         "version": SCIENTIFIC_PACK.version,
         "content_hash": SCIENTIFIC_PACK.content_hash,
@@ -698,10 +700,30 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
     assert _standalone_verify(artifact).returncode == 0
 
 
+def _historical_count_fixture(canonical: dict[str, Any]) -> None:
+    """Construct the historical schema before testing historical pack pins."""
+    canonical.pop("legacy_aggregation_snapshots")
+    canonical["scientific_pack"].pop("aggregation_contract")
+    for trial_id, historical in canonical["snapshot_history_records"].items():
+        for snapshot in historical:
+            snapshot.pop("aggregation")
+            snapshot["identity"] = _identity({k: v for k, v in snapshot.items() if k != "identity"})
+        canonical["snapshot_history"][trial_id] = [item["identity"] for item in historical]
+        canonical["snapshots"][trial_id] = deepcopy(historical[-1])
+        review = canonical["trial_reviews"][trial_id]
+        review.pop("snapshot_identity")
+        review.pop("aggregation")
+        review["identity"] = _identity({k: v for k, v in review.items() if k != "identity"})
+        closure = canonical["trial_closures"][trial_id]
+        closure["review_identity"] = review["identity"]
+        closure["identity"] = _identity({k: v for k, v in closure.items() if k != "identity"})
+
+
 def test_pre_d27_clarification_pack_remains_verifiable(tmp_path: Path) -> None:
     source = _artifact(tmp_path / "source")
 
     def use_previous_guidance(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:84ad544a7b345abba306c4d305ed7ad74b47d9c1960167b5c32b233e975ea34c"
         )
@@ -716,6 +738,7 @@ def test_prior_v08_scientific_pack_remains_verifiable(tmp_path: Path) -> None:
     source = _artifact(tmp_path / "source")
 
     def use_prior_guidance(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
         canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.8"
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:5c49411aedccf4cae2e3e97a955760ed83bd00283ff5a0ae5041272d13439b60"
@@ -739,6 +762,7 @@ def test_previous_v07_scientific_packs_remain_verifiable(tmp_path: Path, content
     source = _artifact(tmp_path / "source")
 
     def use_previous_pack(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
         canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.7"
         canonical["scientific_pack"]["content_hash"] = content_hash
         _convert_group_bound_result_to_legacy(canonical)
@@ -888,6 +912,7 @@ def test_rehashed_v06_empty_derived_inputs_fail_both_verifiers(tmp_path: Path) -
     source = _artifact(tmp_path / "source")
 
     def convert_to_v06(canonical: dict[str, Any]) -> None:
+        _historical_count_fixture(canonical)
         canonical["scientific_pack"]["result_semantics_version"] = "rob2-kit.result-semantics.v0.6"
         canonical["scientific_pack"]["content_hash"] = (
             "sha256:3ef492b34a81c19e3f75d72fea2b92c40aebde80c06e24e44c36cd76dc4cf3d4"

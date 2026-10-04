@@ -163,6 +163,11 @@ _SCIENTIFIC_PACK = {
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
     },
 }
+_CONDITIONAL_AGGREGATION_CONTRACT = "rob2-kit.overall.cochrane-conditional.v1"
+_CONDITIONAL_SCIENTIFIC_PACK = {
+    **_SCIENTIFIC_PACK,
+    "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
+}
 _PRE_D3_INDIRECT_EVIDENCE_PACK = {
     **_SCIENTIFIC_PACK,
     "content_hash": "sha256:2a11301824d7fa0a2f773d0fd75985ad03a2dca2a2cd7107e7376f46cdb8905a",
@@ -2885,9 +2890,13 @@ def _domain_evaluation(domain_id: object, answers: dict[str, str]) -> tuple[str,
     raise ValueError("unknown Domain")
 
 
-def _overall_evaluation(judgments: dict[str, str]) -> tuple[str, str, list[str]]:
+def _overall_evaluation(
+    judgments: dict[str, str], *, legacy: bool = False
+) -> tuple[str, str, list[str]]:
     if set(judgments) != _EXPECTED_DOMAIN_IDS:
         raise ValueError("all five Domain judgments are required")
+    if any(value not in {"low", "some_concerns", "high"} for value in judgments.values()):
+        raise ValueError("invalid Domain judgment")
     if "high" in judgments.values():
         return (
             "high",
@@ -2895,7 +2904,7 @@ def _overall_evaluation(judgments: dict[str, str]) -> tuple[str, str, list[str]]
             [domain_id for domain_id in _EXPECTED_DOMAIN_ORDER if judgments[domain_id] == "high"],
         )
     concerns = list(judgments.values()).count("some_concerns")
-    if concerns >= 2:
+    if legacy and concerns >= 2:
         return (
             "high",
             "overall.multiple_some_concerns_high",
@@ -2942,6 +2951,66 @@ def _counterfactual_missing_reason(missing: list[str]) -> str:
     return f"missing active question IDs: [{', '.join(missing)}]"
 
 
+def _snapshot_evaluation(snapshot: dict[str, object]) -> tuple[str, str, list[str]]:
+    judgments = snapshot["domain_judgments"]
+    if not isinstance(judgments, dict):
+        raise ValueError("invalid Domain judgments")
+    record = snapshot.get("aggregation")
+    if "aggregation" not in snapshot:
+        return _overall_evaluation(judgments, legacy=True)
+    if (
+        not isinstance(record, dict)
+        or set(record)
+        != {
+            "contract",
+            "proposed",
+            "adopted",
+            "rule",
+            "assessment_status",
+            "assessment",
+            "authority",
+        }
+        or record.get("contract") != _CONDITIONAL_AGGREGATION_CONTRACT
+    ):
+        raise ValueError("invalid aggregation contract")
+    proposed, rule, drivers = _overall_evaluation(judgments)
+    adopted = proposed
+    assessment = record["assessment"]
+    status, authority = "omitted", "algorithm"
+    if assessment is not None:
+        if not isinstance(assessment, dict) or set(assessment) != {
+            "result_identity",
+            "checkpoints",
+            "conclusion",
+            "rationale",
+        }:
+            raise ValueError("invalid cumulative assessment")
+        status, authority = assessment["conclusion"], "host"
+        if (
+            status not in {"substantially_lowers_confidence", "no_escalation", "unresolved"}
+            or not isinstance(assessment["rationale"], str)
+            or not assessment["rationale"].strip()
+            or assessment["result_identity"] != snapshot.get("result_identity")
+            or assessment["checkpoints"] != snapshot.get("checkpoints")
+            or proposed != "some_concerns"
+            or len(drivers) < 2
+        ):
+            raise ValueError("invalid cumulative assessment basis")
+        if status == "substantially_lowers_confidence":
+            adopted, rule = "high", "overall.cumulative_concerns_high"
+    if record != {
+        "contract": _CONDITIONAL_AGGREGATION_CONTRACT,
+        "proposed": proposed,
+        "adopted": adopted,
+        "rule": rule,
+        "assessment_status": status,
+        "assessment": assessment,
+        "authority": authority,
+    }:
+        raise ValueError("invalid aggregation provenance")
+    return adopted, rule, drivers
+
+
 def _valid_overall_receipt(
     receipt: object,
     snapshot: dict[str, object],
@@ -2962,7 +3031,7 @@ def _valid_overall_receipt(
     if not isinstance(judgments, dict):
         return False
     try:
-        expected_overall, expected_rule, expected_driver_domains = _overall_evaluation(judgments)
+        expected_overall, expected_rule, expected_driver_domains = _snapshot_evaluation(snapshot)
     except (KeyError, TypeError, ValueError):
         return False
     if (
@@ -3133,7 +3202,9 @@ def _valid_overall_receipt(
             hypothetical_domain, _, _ = _domain_evaluation(domain_id, projected_answers)
             hypothetical_judgments = dict(judgments)
             hypothetical_judgments[domain_id] = hypothetical_domain
-            hypothetical_overall, _, _ = _overall_evaluation(hypothetical_judgments)
+            hypothetical_overall, _, _ = _overall_evaluation(
+                hypothetical_judgments, legacy="aggregation" not in snapshot
+            )
         except (KeyError, TypeError, ValueError):
             return False
         expected_alternative_keys = required | {
@@ -4269,7 +4340,12 @@ def _valid_trial_review_closures(
         review_shape_with_attribution = review_shape | {"domain_attribution"}
         if (
             not isinstance(review, dict)
-            or set(review) not in (review_shape, review_shape_with_attribution)
+            or set(review)
+            not in (
+                review_shape,
+                review_shape_with_attribution,
+                review_shape_with_attribution | {"snapshot_identity", "aggregation"},
+            )
             or review.get("trial_id") != trial_id
             or review.get("disposition") not in allowed
             or review.get("disposition") != disposition
@@ -4471,11 +4547,15 @@ def verify(path: Path) -> tuple[bool, str]:
                         ),
                     }
                 )
+            canonical_shapes.update(
+                {shape | {"legacy_aggregation_snapshots"} for shape in tuple(canonical_shapes)}
+            )
             if not isinstance(canonical, dict) or set(canonical) not in canonical_shapes:
                 return False, "canonical envelope is not closed"
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
+                _CONDITIONAL_SCIENTIFIC_PACK,
                 _PRE_D3_INDIRECT_EVIDENCE_PACK,
                 _PRE_D27_MECHANISM_WARRANT_PACK,
                 _PRE_D31_IMPACT_WARRANT_PACK,
@@ -4498,6 +4578,32 @@ def verify(path: Path) -> tuple[bool, str]:
                 _OLDER_SCIENTIFIC_PACK,
             ):
                 return False, "scientific pack descriptor differs"
+            aggregation_history = canonical.get("snapshot_history_records")
+            if not isinstance(aggregation_history, dict) or any(
+                not isinstance(records, list) for records in aggregation_history.values()
+            ):
+                return False, "historical aggregation provenance is malformed"
+            unmarked = sorted(
+                {
+                    item.get("identity")
+                    for records in aggregation_history.values()
+                    for item in records
+                    if isinstance(item, dict) and "aggregation" not in item
+                }
+            )
+            if scientific_pack == _CONDITIONAL_SCIENTIFIC_PACK:
+                if canonical.get("legacy_aggregation_snapshots") != {
+                    "contract": "rob2-kit.overall.count-policy.v1",
+                    "identities": unmarked,
+                }:
+                    return False, "historical aggregation provenance differs"
+            elif "legacy_aggregation_snapshots" in canonical or any(
+                "aggregation" in item
+                for records in aggregation_history.values()
+                for item in records
+                if isinstance(item, dict)
+            ):
+                return False, "new aggregation cannot use a historical descriptor"
             semantics_version = (
                 scientific_pack.get("result_semantics_version", "rob2-kit.result-semantics.v0.5")
                 if isinstance(scientific_pack, dict)
@@ -5374,6 +5480,7 @@ def verify(path: Path) -> tuple[bool, str]:
                         expected_shape.update(
                             key
                             for key in (
+                                "aggregation",
                                 "overall_trace",
                                 "overall_driver_domains",
                                 "overall_receipt",
@@ -5410,13 +5517,12 @@ def verify(path: Path) -> tuple[bool, str]:
                         )
                     ):
                         return False, "snapshot history semantics are invalid"
-                    judgments = item["domain_judgments"]
                     try:
                         (
                             expected_overall,
                             expected_rule,
                             expected_driver_domains,
-                        ) = _overall_evaluation(judgments)
+                        ) = _snapshot_evaluation(item)
                     except (KeyError, TypeError, ValueError):
                         return False, "snapshot history overall inputs are invalid"
                     if item.get("overall") != expected_overall:
@@ -5554,8 +5660,8 @@ def verify(path: Path) -> tuple[bool, str]:
                     if expected_judgments != snapshot_judgments:
                         return False, f"snapshot Domain judgments mismatch: {trial_id}"
                     try:
-                        overall, expected_rule, expected_driver_domains = _overall_evaluation(
-                            expected_judgments
+                        overall, expected_rule, expected_driver_domains = _snapshot_evaluation(
+                            snapshot
                         )
                     except (KeyError, TypeError, ValueError):
                         return False, f"overall inputs are invalid: {trial_id}"
@@ -5576,6 +5682,15 @@ def verify(path: Path) -> tuple[bool, str]:
                         return False, f"overall receipt mismatch: {trial_id}"
                     if snapshot.get("overall") != overall:
                         return False, f"overall judgment mismatch: {trial_id}"
+            if any(
+                (
+                    review.get("snapshot_identity") != snapshots[trial_id].get("identity")
+                    or review.get("aggregation") != snapshots[trial_id].get("aggregation")
+                )
+                for trial_id, review in canonical.get("trial_reviews", {}).items()
+                if trial_id in snapshots and "aggregation" in snapshots[trial_id]
+            ):
+                return False, "Trial review snapshot binding differs"
             if has_trial_reviews and not _valid_trial_review_closures(
                 canonical.get("trial_reviews"),
                 canonical.get("trial_closures"),

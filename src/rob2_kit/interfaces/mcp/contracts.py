@@ -28,6 +28,7 @@ from rob2_kit.models import Answer, Judgment, QuerySuggestion, ResponseFramework
 from rob2_kit.workflow_models import (
     AssessableTargetRelation,
     ComparativeEffectResult,
+    CumulativeConcernsAssessment,
     DomainCounterevidence,
     DomainId,
     EvidenceHandle,
@@ -897,7 +898,21 @@ class TrialDomainAttribution(PublicModel):
     )
 
 
+class OverallAggregationDecision(PublicModel):
+    contract: Literal["rob2-kit.overall.cochrane-conditional.v1"]
+    proposed: Judgment
+    adopted: Judgment
+    rule: str = Field(min_length=1)
+    assessment_status: Literal[
+        "omitted", "substantially_lowers_confidence", "no_escalation", "unresolved"
+    ]
+    assessment: CumulativeConcernsAssessment | None
+    authority: Literal["algorithm", "host"]
+
+
 class TrialReviewSummary(PublicModel):
+    snapshot_identity: Identity | None = None
+    aggregation: OverallAggregationDecision | None = None
     identity: Identity
     trial_id: TrialId
     result_identity: Identity
@@ -2933,6 +2948,7 @@ class Artifact(PublicModel):
 
 
 class AssessmentSummary(PublicModel):
+    aggregation: OverallAggregationDecision | None = None
     overall: Judgment
     domains: dict[DomainId, Judgment] = Field(min_length=5, max_length=5)
     overall_trace: tuple[str, ...] = ()

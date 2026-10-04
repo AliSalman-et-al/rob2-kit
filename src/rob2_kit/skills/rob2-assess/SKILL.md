@@ -20,14 +20,21 @@ own source interpretation, Result selection, Evidence selection, and signalling
 answers. Proposal Review is the only researcher gate. After approval, continue
 without asking for signalling answers, progress confirmation, or final approval.
 
-Overall risk is deterministic: all five Low Domains produce Low overall; one
-Some concerns Domain with no High produces Some concerns overall; any High
-Domain, or at least two Some concerns Domains with no High Domain, produces
-High overall. This is the kit's retained aggregation policy (ADR 0035). Cochrane
-guidance qualifies the multiple-concerns escalation by whether the combination
-substantially lowers confidence; the kit currently uses the count rule instead.
-Keep that policy effect separate from evidence supporting individual Domains.
-The server applies it at the Trial snapshot; no researcher decision is requested.
+Overall risk concerns the exact approved Result. All five Low Domains propose
+Low; any High Domain produces High; otherwise the proposal is Some concerns.
+Multiple Some concerns do not automatically establish High. If their combination
+substantially lowers confidence in this result, optionally submit
+`cumulative_concerns` in `review_trial`, with the exact Result identity, all five
+current checkpoint identities, that conclusion, and a result-specific rationale.
+You may instead record `no_escalation` or `unresolved` with the rationale and
+limitation. Omission is valid and distinct from either conclusion; no researcher
+confirmation or extra form is required. An unresolved combination preserves Some
+concerns. All-Low and any-High aggregates cannot be overridden this way.
+The server records the proposal, adopted judgment, host attribution and versioned
+rule. Result or Domain revisions require reconsidering this bound assessment.
+ADR 0039 supersedes the former count policy; old snapshots retain their historical
+policy. Sensitivity alternatives show algorithmic proposals and do not transfer
+a cumulative judgment to changed checkpoints.
 
 ## Read one complete MCP receipt
 

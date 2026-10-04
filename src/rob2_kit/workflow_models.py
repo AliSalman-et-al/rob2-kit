@@ -2891,10 +2891,20 @@ class ProposalReasoningDraft(StrictModel):
     expected_revision: ExpectedRevision
 
 
+class CumulativeConcernsAssessment(StrictModel):
+    """Optional host assessment of the combined impact for one exact Result."""
+
+    result_identity: Identity
+    checkpoints: tuple[Identity, ...] = Field(min_length=5, max_length=5)
+    conclusion: Literal["substantially_lowers_confidence", "no_escalation", "unresolved"]
+    rationale: NonBlankText
+
+
 class TrialReviewRequest(StrictModel):
     trial_id: TrialId
     expected_revision: ExpectedRevision
     request: TerminalRequest | None = None
+    cumulative_concerns: CumulativeConcernsAssessment | None = None
 
     @model_validator(mode="after")
     def request_matches_trial(self) -> TrialReviewRequest:

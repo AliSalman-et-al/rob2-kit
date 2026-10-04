@@ -1,0 +1,17 @@
+{
+  "aggregation_contract": "rob2-kit.overall.cochrane-conditional.v1",
+  "historical_contract": "rob2-kit.overall.count-policy.v1",
+  "proposal_vectors": 243,
+  "eligible_cumulative_vectors": 26,
+  "host_conclusions": ["substantially_lowers_confidence", "no_escalation", "unresolved"],
+  "final_focused_tests_passed": 64,
+  "installed_and_standalone_verifiers": "passed",
+  "historical_fixture_unchanged_verification": "passed",
+  "full_source_and_tests_type_check": "passed",
+  "touched_code_lint": "passed",
+  "paid_model_invocations": 0,
+  "benchmark_cases_run": 0,
+  "full_benchmark": "off",
+  "domain_accuracy_gain": "not_measured",
+  "scientific_effect": "conditional overall rule fidelity; no Domain table changes"
+}

@@ -6,6 +6,7 @@ from typing import Any, Literal
 
 from pydantic import ValidationError
 
+from ..logic.aggregation import aggregation_record
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
 from ..models import ResponseFramework, canonical_json_bytes
 from ..packs import SCIENTIFIC_PACK
@@ -3475,6 +3476,7 @@ def save_domain_judgment(
                 overall_evaluation,
             ),
         }
+        snapshot["aggregation"], _ = aggregation_record(snapshot)
         snapshot["identity"] = _identity(snapshot)
         current_snapshots = state.get("snapshots")
         snapshots: dict[str, Any] = (

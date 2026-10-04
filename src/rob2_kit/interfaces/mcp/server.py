@@ -96,6 +96,7 @@ from rob2_kit.application.trials import review_trial as _review_trial
 from rob2_kit.application.working import save_working_checkpoint as _save_working_checkpoint
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
+    CumulativeConcernsAssessment,
     DomainId,
     DomainRevisionBasis,
     DomainSaveAnswer,
@@ -4344,6 +4345,14 @@ def review_trial(
             ),
         ),
     ] = None,
+    cumulative_concerns: Annotated[
+        CumulativeConcernsAssessment | None,
+        Field(
+            description="Optional combined-impact judgment for multiple Some concerns; bind "
+            "the exact Result and all five checkpoints. Omission preserves the default proposal. "
+            "Unresolved preserves Some concerns and its limitation."
+        ),
+    ] = None,
     cursor: Annotated[
         StrictStr | None,
         Field(
@@ -4387,6 +4396,7 @@ def review_trial(
         trial_id=trial_id,
         expected_revision=expected_revision,
         request=request,
+        cumulative_concerns=cumulative_concerns,
     )
 
     pending_review_receipt: dict[str, Any] | None = None
