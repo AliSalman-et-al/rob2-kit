@@ -37,6 +37,7 @@ def _load_contract() -> dict[str, Any]:
     if value["contract_version"] != "0.11.0":
         raise ValueError("public contract version differs")
     expected_order = [
+        "read_guidance",
         "prepare_batch",
         "get_status",
         "save_working_checkpoint",
@@ -80,7 +81,7 @@ def _load_contract() -> dict[str, Any]:
         raise ValueError("public tool description is missing")
     if any(item["destructive"] or not item["idempotent"] for item in value["tools"]):
         raise ValueError("public tool safety annotations differ")
-    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != []:
+    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != ["rob2://guidance/{name}"]:
         raise ValueError("public resource catalog differs")
     if set(value["resource_descriptions"]) != {"rob2://current-batch"} or not all(
         isinstance(description, str) and description.strip()

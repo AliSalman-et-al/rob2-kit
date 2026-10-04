@@ -20,6 +20,7 @@ MANIFEST_SCHEMA = "rob2-kit.observation-import-manifest.v1"
 SUPPORTED_SERVERS = frozenset({"rob2"})
 DOCUMENTED_TOOLS = frozenset(
     {
+        "read_guidance",
         "finalize_batch",
         "close_trial",
         "get_domain_context",

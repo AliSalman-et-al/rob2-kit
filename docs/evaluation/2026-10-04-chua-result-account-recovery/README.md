@@ -69,3 +69,15 @@ canonical/working partial stores, code and all failures at
 `diagnostics/chua-result-account-recovery-20261004` in the task workspace.
 The first blocked invocation's entire freeze still matches (zero altered files);
 its normal comparator has no run files. No frozen judgment was edited after review.
+
+## Post-push integration correction
+
+Earlier f46 CI reported 1,479 passed, eight skipped and five failed tests:
+release catalog expectations, documented observation tools and the exhaustive
+schema outcome table omitted the new guidance surface. Type checking also found
+an unqualified diagnostic-script import. Updated those integration declarations
+(including the new resource template) and import, without assessment behavior
+changes. All 24 affected tests, full source/test/release type checking, scoped lint
+and whitespace checks passed locally. The shared environment requires the clone's
+`src`, repository and `tests` on `PYTHONPATH`; an initial incomplete-path check
+failed before the correctly configured check passed. No paid retest.

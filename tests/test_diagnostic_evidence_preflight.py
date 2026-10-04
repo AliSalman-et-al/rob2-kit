@@ -176,7 +176,7 @@ def test_image_identity_pixel_and_geometry_drift_prevents_launch(tmp_path, chang
 
 
 def test_local_reference_is_not_delivered_until_included_in_instructions(tmp_path: Path) -> None:
-    from diagnostic_evidence_preflight import check_instruction_delivery
+    from scripts.diagnostic_evidence_preflight import check_instruction_delivery
 
     skill = tmp_path / "SKILL.md"
     reference = tmp_path / "procedure.md"

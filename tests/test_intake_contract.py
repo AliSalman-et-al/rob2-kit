@@ -253,6 +253,7 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
         output = cast(dict[str, Any], tool.output_schema)
         assert output["type"] == "object"
         expected_outcomes = {
+            "read_guidance": 2,
             "get_status": 2,
             "list_sources": 2,
             "search_sources": 2,
