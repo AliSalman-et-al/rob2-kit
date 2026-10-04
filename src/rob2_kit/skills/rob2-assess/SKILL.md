@@ -23,6 +23,14 @@ current assessment need not restart or pause for this optional reference; contin
 with existing Sources and honestly bounded unknowns. Missing optional documents
 do not determine NI or any judgment.
 
+Before initial intake, optional `prepare_batch(acquire_registry_documents=true,
+trial_labels=[...])` captures current official registry-linked protocol/SAP PDFs
+for exact named Trials with supplied NCT identifiers. False disables acquisition;
+omission preserves host manifest settings. Default dossiers stay unchanged. This
+adds current evidence, not historical replay, and cannot refresh an existing Batch.
+Read acquired Sources separately through their returned handles; capture and
+metadata dates do not establish comprehension or pre-unblinding finalization.
+
 The server owns workflow state, identities, and deterministic RoB 2 logic. You
 own source interpretation, Result selection, Evidence selection, and signalling
 answers. Proposal Review is the only researcher gate. After approval, continue

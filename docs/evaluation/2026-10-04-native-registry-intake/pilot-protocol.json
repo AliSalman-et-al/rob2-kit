@@ -1,0 +1,75 @@
+{
+  "choice_basis": "Parallel randomized DAPA-HF design and observed separate public protocol/SAP availability; no labels consulted",
+  "evidence_policy": "New current acquisition; preserve all original files. Freeze returned native Sources and exact relevant page/line/image windows before inference. Source identities pending prospective intake. Not same-corpus accuracy comparison.",
+  "future_intake_arguments": {
+    "acquire_registry_documents": true,
+    "expected_revision": 0,
+    "requested_outcome": "cardiovascular death or worsening heart failure",
+    "trial_labels": [
+      "dapa-hf"
+    ]
+  },
+  "launch_ready": false,
+  "launcher_reference": {
+    "configured_model_id": "gpt-6-luna",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/fixed_campaign_runner.py",
+    "reasoning_effort": "medium",
+    "sha256": "sha256:fcbb4e40b97602e211cc0109089c6f3d4581fd2e4a2c3c437c49a7f95f349a64",
+    "verified_from": "configuration line78 and execution argv line158; no process launched"
+  },
+  "original_inputs": [
+    {
+      "byte_count": 477718,
+      "original_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/NEJMoa1911303.pdf",
+      "pages": 14,
+      "pilot_input_path": "input/dapa-hf/NEJMoa1911303.pdf",
+      "sha256": "sha256:fa73636e3b883f1c17d4e5883384e8d289073c776fa981476927d03280f6d600"
+    },
+    {
+      "byte_count": 1591140,
+      "original_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_appendix.pdf",
+      "pages": 47,
+      "pilot_input_path": "input/dapa-hf/nejmoa1911303_appendix.pdf",
+      "sha256": "sha256:be3782e5cce018dba47c85f09b394cd847ff8c3adf5cf8ddb6280c72a4fe3568"
+    },
+    {
+      "byte_count": 69120,
+      "original_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_data-sharing.pdf",
+      "pages": 1,
+      "pilot_input_path": "input/dapa-hf/nejmoa1911303_data-sharing.pdf",
+      "sha256": "sha256:f973ddbb5e095ad851ce570cd091afde85fabff9a0cf4a729a0f9dbe3cdef853"
+    },
+    {
+      "byte_count": 849762,
+      "original_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_disclosures.pdf",
+      "pages": 143,
+      "pilot_input_path": "input/dapa-hf/nejmoa1911303_disclosures.pdf",
+      "sha256": "sha256:dd2e45dbc916f040c9e8a8859f20e3e6be2fe56637b8101677ebdef6b244bdf2"
+    },
+    {
+      "byte_count": 2288594,
+      "original_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/nejmoa1911303_protocol.pdf",
+      "pages": 275,
+      "pilot_input_path": "input/dapa-hf/nejmoa1911303_protocol.pdf",
+      "sha256": "sha256:2aaa0770fb33dd19335299ad3582779c3ff98125dd6b720b04092d69b01ad053"
+    },
+    {
+      "byte_count": 249,
+      "original_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/dapa-hf/sources.toml",
+      "pilot_input_path": "input/dapa-hf/sources.toml",
+      "sha256": "sha256:4c9957d8be37c01a58acc3f99dac231daa472bfcfd68e4c579c2656d394b8c62"
+    }
+  ],
+  "paid_model_calls": 0,
+  "pilot": "one prospective D5 source-augmented pilot; not launched",
+  "registry_id": "NCT03036124",
+  "remaining_preflight": [
+    "Explicit future diagnostic authorization",
+    "Prospective intake capture and exact Result definition with source citations",
+    "Freeze research criteria, model input, all required uncited/text/image windows and source bytes",
+    "Pass scripts/diagnostic_evidence_preflight.py:launch_checked before inference; no launch this turn"
+  ],
+  "requested_outcome": "cardiovascular death or worsening heart failure",
+  "scientific_judgments": 0,
+  "source_repository": "/home/ali/Documents/Code/rob2-kit-benchmark"
+}

@@ -303,7 +303,7 @@ def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:
             "operation": "prepare_batch",
             "authority": "host",
             "expected_revision": int(state.get("revision", 0)),
-            "caller_inputs": ["requested_outcome", "trial_labels"],
+            "caller_inputs": ["requested_outcome", "trial_labels", "acquire_registry_documents"],
         }
     if phase == "proposal":
         return {

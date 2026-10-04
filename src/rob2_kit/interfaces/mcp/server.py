@@ -2455,10 +2455,26 @@ def prepare_batch(
         TrialLabels | None,
         Field(description="Exact input/{TRIAL NAME} directory labels. Omit to capture all."),
     ] = None,
+    acquire_registry_documents: Annotated[
+        StrictBool | None,
+        Field(
+            description=(
+                "Initial-intake override: true captures official registry protocol/SAP PDFs "
+                "for explicit trial_labels; false disables; omitted uses manifests. "
+                "Adds current evidence, never refreshes an existing Batch."
+            )
+        ),
+    ] = None,
 ) -> ToolResult:
     return _invoke(
         "prepare_batch",
-        lambda: _prepare_batch(_workspace(), requested_outcome, expected_revision, trial_labels),
+        lambda: _prepare_batch(
+            _workspace(),
+            requested_outcome,
+            expected_revision,
+            trial_labels,
+            acquire_registry_documents,
+        ),
     )
 
 

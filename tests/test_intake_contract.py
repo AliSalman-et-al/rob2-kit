@@ -354,6 +354,7 @@ def test_prepare_batch_schema_is_closed_and_requires_outcome_request() -> None:
         "requested_outcome",
         "expected_revision",
         "trial_labels",
+        "acquire_registry_documents",
     }
     assert schema["properties"]["requested_outcome"]["type"] == "string"
     outcome_description = schema["properties"]["requested_outcome"]["description"]
@@ -626,7 +627,7 @@ def test_receipt_head_uses_authoritative_post_operation_status(tmp_path: Path) -
         "operation": "prepare_batch",
         "authority": "host",
         "expected_revision": 0,
-        "caller_inputs": ["requested_outcome", "trial_labels"],
+        "caller_inputs": ["requested_outcome", "trial_labels", "acquire_registry_documents"],
     }
     assert prepared["head"]["phase"] == "proposal"
     assert prepared["head"]["next_action"] == {

@@ -14,7 +14,11 @@ Result.
 
 A missing protocol/SAP in this captured dossier does not show publication
 unavailability. Prospective intake can opt into official registry-linked document
-capture using `registry.acquire_documents = true` in `sources.toml`. This adds
+capture through native `prepare_batch(acquire_registry_documents=true,
+trial_labels=["exact directory label"])`, or host `registry.acquire_documents = true`
+in `sources.toml`. False overrides host acquisition; omission retains manifest
+settings. Choose only before initial capture; changing this choice cannot refresh
+an existing Batch. This adds
 new current source versions; it does not refresh or replace archived benchmark
 bytes. In Source inventory, inspect the registry document discovery/provenance
 Source for URLs, document/upload/retrieval dates and acquisition unknowns. Read

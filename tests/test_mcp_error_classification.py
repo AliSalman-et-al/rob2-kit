@@ -47,7 +47,7 @@ def test_search_batch_preserves_integrity_and_no_source_conditions(
         "operation": "prepare_batch",
         "authority": "host",
         "expected_revision": 0,
-        "caller_inputs": ["requested_outcome", "trial_labels"],
+        "caller_inputs": ["requested_outcome", "trial_labels", "acquire_registry_documents"],
     }
     monkeypatch.setattr(server, "_workspace", lambda: "unused")
     monkeypatch.setattr(

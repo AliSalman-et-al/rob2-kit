@@ -36,7 +36,13 @@ the fixed `input/{TRIAL NAME}/` layout. `prepare_batch` receives the requested
 outcome and optional exact Trial labels. The server discovers immediate
 non-hidden, non-link Trial directories, limits the Batch to named Trials when
 provided, and derives stable Trial IDs from their names. It captures all
-supported Sources in each selected directory. Intake records their content and
+supported Sources in each selected directory. The optional native
+`acquire_registry_documents` initial-intake argument overrides manifest document
+acquisition; true requires explicit Trial labels, false disables it, and omission
+preserves existing settings. Current registry-linked planning PDFs become distinct
+Sources with readable acquisition provenance. The choice binds the intake
+declaration and cannot refresh an existing Batch. Capture is not host reading or
+proof of prespecification; missing documents do not determine signaling answers. Intake records their content and
 projection identities and attempts registry resolution. A typed Intake condition
 remains visible to the model but does not create a researcher gate.
 

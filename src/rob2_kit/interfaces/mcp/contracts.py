@@ -83,7 +83,9 @@ class PrepareBatchAction(PublicModel):
     operation: Literal["prepare_batch"]
     authority: Literal["host"]
     expected_revision: NonNegativeInt
-    caller_inputs: tuple[Literal["requested_outcome", "trial_labels"], ...]
+    caller_inputs: tuple[
+        Literal["requested_outcome", "trial_labels", "acquire_registry_documents"], ...
+    ]
 
 
 class GetDomainContextAction(PublicModel):
@@ -3075,7 +3077,7 @@ def _head(value: dict[str, Any]) -> dict[str, Any]:
             "operation": "prepare_batch",
             "authority": "host",
             "expected_revision": value.get("state_revision", 0),
-            "caller_inputs": ["requested_outcome", "trial_labels"],
+            "caller_inputs": ["requested_outcome", "trial_labels", "acquire_registry_documents"],
         }
     else:
         next_action = None
