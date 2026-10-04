@@ -349,3 +349,50 @@ def test_native_review_schema_requires_nullable_fields_and_preserves_visual_arra
     # These are locally accepted nullable observations, never mandatory OCR facts.
     visual = schema["$defs"]["VisualEvidenceReference"]["properties"]["uncertainty"]
     assert {"type": "null"} in visual["anyOf"]
+
+
+@pytest.mark.parametrize(
+    "failure", ["root", "optional", "extra-properties", "broken-ref", "keyword"]
+)
+def test_native_preflight_rejects_unsupported_or_unbound_schema_before_inference(failure: str):
+    from scripts.export_factual_audit import check_native_review_schema, native_review_schema
+
+    schema = native_review_schema()
+    if failure == "root":
+        schema["anyOf"] = [{"type": "string"}]
+    elif failure == "optional":
+        schema["$defs"]["SourceCheckReference"]["required"].remove("quote")
+    elif failure == "extra-properties":
+        schema["$defs"]["VisualEvidenceReference"]["additionalProperties"] = True
+    elif failure == "broken-ref":
+        schema["properties"]["findings"]["items"]["$ref"] = "#/$defs/nonexistent"
+    else:
+        schema["$defs"]["WorkingSourceRange"]["properties"]["page"]["ge"] = 1
+    with pytest.raises(ValueError):
+        check_native_review_schema(schema)
+
+
+def test_native_preflight_preserves_integer_bound_and_local_text_limits():
+    from scripts.export_factual_audit import native_review_schema
+
+    schema = native_review_schema()
+    page = schema["$defs"]["WorkingSourceRange"]["properties"]["page"]
+    assert page["minimum"] == 1 and "ge" not in page
+    assert "minLength" not in schema["$defs"]["SourceCheckFinding"]["properties"]["uncertainty"]
+    with pytest.raises(ValueError):
+        SourceCheckReport.model_validate(
+            {
+                "snapshot_identity": "sha256:" + "0" * 64,
+                "findings": [
+                    {
+                        "claim_id": "claim",
+                        "field": "justification",
+                        "clause": "fact",
+                        "classification": "unresolved",
+                        "explanation": "unknown",
+                        "uncertainty": " ",
+                        "references": [],
+                    }
+                ],
+            }
+        )

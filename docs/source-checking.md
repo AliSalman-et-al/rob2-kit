@@ -119,3 +119,10 @@ Preparation now uses `native_review_schema()` rather than raw Pydantic schema:
 nullable values must be emitted and the four coordinates use a constrained
 homogeneous array. Local validation remains unchanged. Native acceptance of this
 repair has not been retested; no scientific reviewer benefit is established.
+
+Technical recovery preflight additionally found Pydantic's nonstandard `ge`
+annotation on page. Native projection maps it to `minimum` and uses a conservative
+documented keyword profile (local text-length/nonblank checks remain authoritative).
+`check_native_review_schema()` checks root/object requirements, closed properties,
+required nullable fields, supported vocabulary and local resolved references before
+preparation. This is an offline check; provider acceptance must still be observed.

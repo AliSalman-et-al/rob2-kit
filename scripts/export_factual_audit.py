@@ -72,6 +72,14 @@ def native_review_schema() -> dict[str, Any]:
                 normalize(child)
         elif isinstance(value, dict):
             value.pop("default", None)
+            # Pydantic's integer BeforeValidator can expose its constraint as
+            # `ge`, which is not a JSON Schema keyword. Keep the numeric bound.
+            if "ge" in value:
+                value["minimum"] = max(value.get("minimum", value["ge"]), value.pop("ge"))
+            # Use the documented conservative native string profile. The local
+            # contract retains length and nonblank checks on returned values.
+            value.pop("minLength", None)
+            value.pop("maxLength", None)
             coordinates = value.pop("prefixItems", None)
             if coordinates is not None:
                 if not coordinates or any(item != coordinates[0] for item in coordinates):
@@ -84,7 +92,71 @@ def native_review_schema() -> dict[str, Any]:
                 normalize(child)
 
     normalize(schema)
+    check_native_review_schema(schema)
     return schema
+
+
+def check_native_review_schema(schema: dict[str, Any]) -> None:
+    """Check the documented strict subset before a paid native request.
+
+    This is an offline wire-contract check, not a provider acceptance claim.
+    It intentionally rejects extra schema vocabulary instead of silently
+    admitting a future Pydantic extension that the provider cannot compile.
+    """
+    allowed = {
+        "$defs",
+        "$ref",
+        "type",
+        "title",
+        "description",
+        "enum",
+        "const",
+        "properties",
+        "required",
+        "additionalProperties",
+        "items",
+        "minItems",
+        "maxItems",
+        "pattern",
+        "format",
+        "minimum",
+        "maximum",
+        "exclusiveMinimum",
+        "exclusiveMaximum",
+        "multipleOf",
+        "anyOf",
+    }
+    if schema.get("type") != "object" or "anyOf" in schema:
+        raise ValueError("Native review root must be an object without anyOf")
+
+    def check(node: dict[str, Any]) -> None:
+        unknown = set(node) - allowed
+        if unknown:
+            raise ValueError(f"Unsupported native schema keywords: {sorted(unknown)}")
+        if "$ref" in node:
+            reference = node["$ref"]
+            if not isinstance(reference, str) or not reference.startswith("#/$defs/"):
+                raise ValueError("Native review references must resolve inside $defs")
+            if reference.removeprefix("#/$defs/") not in schema.get("$defs", {}):
+                raise ValueError("Native review reference does not resolve")
+        if node.get("type") == "object":
+            properties = node.get("properties", {})
+            required = node.get("required", [])
+            if node.get("additionalProperties") is not False:
+                raise ValueError("Native review objects must forbid additional properties")
+            if set(required) != set(properties) or len(required) != len(properties):
+                raise ValueError(
+                    "Native review must require every property, including nullable ones"
+                )
+        for mapping in (node.get("$defs", {}), node.get("properties", {})):
+            for child in mapping.values():
+                check(child)
+        for child in node.get("anyOf", []):
+            check(child)
+        if "items" in node:
+            check(node["items"])
+
+    check(schema)
 
 
 def prepare_native_review(
