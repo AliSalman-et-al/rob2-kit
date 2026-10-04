@@ -1,0 +1,115 @@
+{
+  "normal": {
+    "replay_only": true,
+    "boundary": "unfinished",
+    "host_scope": {
+      "trial_id": "chua-2022",
+      "result_identity": "sha256:ed85285d0388fe101453b6617940e45e65c4b192985a0b2f35646a08cb51c280",
+      "domain_ids": [
+        "domain:deviations",
+        "domain:missing",
+        "domain:selection"
+      ],
+      "accepted": {},
+      "missing": [
+        "domain:deviations",
+        "domain:missing",
+        "domain:selection"
+      ],
+      "reading_complete": false,
+      "complete": false
+    },
+    "pending_action": {
+      "operation": "get_domain_context",
+      "authority": "host",
+      "trial_id": "chua-2022",
+      "domain_id": "domain:deviations",
+      "cursor": "dcp2.f11a799b41f046ea85a8c21f0948a687.1",
+      "max_response_bytes": 32768
+    },
+    "receipt_reading": {
+      "basis": "successful native required-window and numbered-text receipts",
+      "model_narrative_consulted": false,
+      "required_window_count": 12,
+      "complete": false,
+      "missing_windows": [
+        {
+          "trial_id": "chua-2022",
+          "source_id": "sh_ab74cf546ed17772",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 118
+        },
+        {
+          "trial_id": "chua-2022",
+          "source_id": "sh_ab74cf546ed17772",
+          "page": 12,
+          "start_line": 1,
+          "end_line": 50
+        }
+      ],
+      "uncertified_partial_fragments": 0,
+      "truncated_requirement_envelope_seen": false,
+      "limitation": "Delivery is not comprehension; unlisted sources/windows are not certified."
+    },
+    "trace_invocations_observed": 1,
+    "trace_usage": {
+      "input_tokens": 295944,
+      "cached_input_tokens": 232704,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 852,
+      "reasoning_output_tokens": 89
+    },
+    "durable_execution": {
+      "input_tokens": 295944,
+      "cached_input_tokens": 232704,
+      "output_tokens": 852,
+      "reasoning_output_tokens": 89
+    }
+  },
+  "prototype": {
+    "replay_only": true,
+    "boundary": "complete",
+    "host_scope": {
+      "trial_id": "chua-2022",
+      "result_identity": "sha256:ed85285d0388fe101453b6617940e45e65c4b192985a0b2f35646a08cb51c280",
+      "domain_ids": [
+        "domain:deviations",
+        "domain:missing",
+        "domain:selection"
+      ],
+      "accepted": {
+        "domain:deviations": "sha256:c633fa7accfb392a5030a6d6c238b1b44b520c493c515822acc4e2f082e9de36",
+        "domain:missing": "sha256:239247e1dfdbe1a54ad3fd81fc236c1b8ad7464b21f4d421013395b2451d3ded",
+        "domain:selection": "sha256:653c19dd87fba0fd5b95d61d4c492eedf2af6d2cc1f0d69f268ae0a2673ddf4c"
+      },
+      "missing": [],
+      "reading_complete": true,
+      "complete": true
+    },
+    "pending_action": {
+      "operation": "get_domain_context",
+      "authority": "host",
+      "trial_id": "chua-2022",
+      "domain_id": "domain:deviations"
+    },
+    "receipt_reading": {
+      "basis": "successful native required-window and numbered-text receipts",
+      "model_narrative_consulted": false,
+      "required_window_count": 12,
+      "complete": true,
+      "missing_windows": [],
+      "uncertified_partial_fragments": 0,
+      "truncated_requirement_envelope_seen": false,
+      "limitation": "Delivery is not comprehension; unlisted sources/windows are not certified."
+    },
+    "trace_invocations_observed": 1,
+    "trace_usage": {},
+    "durable_execution": {
+      "input_tokens": 4406409,
+      "cached_input_tokens": 4215296,
+      "output_tokens": 10156,
+      "reasoning_output_tokens": 2047
+    }
+  }
+}

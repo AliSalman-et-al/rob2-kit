@@ -8,3 +8,20 @@ The tool reads only documents in the installed rob2-assess skill. It rejects arb
 Native diagnostic preparation must test the actual stdio client and enabled-tool configuration: walk the skill's transitive local links, compare returned UTF-8 bytes/hashes with the frozen package, verify every required document is reachable, and freeze the receipts. Check that the root skill is supplied in actual client instructions. Client capability/availability does not establish that a later model consumed a reference; inspect that invocation's native receipts separately. No exhaustive unrelated document reading is imposed on the assessor.
 
 This fixes a general integration defect exposed by a tools-only invocation whose root instructions required a local reference that no enabled interface could read. It adds no scientific rule, default prototype activation, case hint, Source substitution or shell access. The first failed invocation remains immutable; corrected attempts must be separately authorized and versioned.
+
+## Host completion for scoped diagnostics
+
+Use the existing `scripts/run_rsi_case.py`/`workflow_completion.drive` integration
+for host-owned completion. Same-session resumes require explicit
+`--completion-resumes N` and a shared `--timeout-seconds` budget; default is zero.
+A partial assessment additionally takes `--completion-scope FILE`, containing only
+`trial_id`, approved `result_identity`, and `domain_ids`. Both experimental routes
+must use the same prospective policy. Partial scope completion is not batch
+finalization or a scored full benchmark outcome. RSI handoff/runtime/isolation
+checks remain required; frozen bespoke diagnostic directories are not RSI ledgers.
+
+Model final text cannot complete actionable canonical work. RSI records a
+receipt-based reading-delivery report, preserves every controller turn, and marks
+missing usage unknown. Required reading and Domain checkpoints are operational
+boundaries; their presence does not certify scientific correctness. See
+[evidence and limitations](evaluation/2026-10-04-completion-integration/README.md).

@@ -32,6 +32,7 @@ def trace(
             "type": "item.completed",
             "item": {
                 "type": "mcp_tool_call",
+                "server": "rob2",
                 "tool": tool,
                 "arguments": {},
                 "result": payload,
@@ -216,3 +217,342 @@ def test_finalization_receipt_lookup_matches_authoritative_revision() -> None:
     assert artifact and artifact["path"].endswith(".rob2.zip")
     assert finalized_artifact({**status, "state_revision": 13}, [trace_path]) is None
     assert finalized_artifact({**status, "phase": "assessment"}, [trace_path]) is None
+
+
+def scoped_fixture(reading="complete", domains=None):
+    from scripts.workflow_completion import AssessmentScope, scoped_status
+
+    scope = AssessmentScope(
+        "neutral", "sha256:" + "a" * 64, ("domain:deviations", "domain:missing", "domain:selection")
+    )
+    records = {
+        f"neutral:{d}": {
+            "trial_id": "neutral",
+            "domain_id": d,
+            "result_identity": scope.result_identity,
+            "identity": "sha256:" + "b" * 64,
+        }
+        for d in (scope.domain_ids if domains is None else domains)
+    }
+    status = {
+        **pending(),
+        "main_report_reading": {
+            "neutral": {
+                "status": reading,
+                "required_range_count": 2 if reading == "required" else 0,
+                "required_ranges": [
+                    {"source_id": "sh_0123456789abcdef", "page": 2, "start_line": 1, "end_line": 4}
+                ]
+                if reading == "required"
+                else [],
+            }
+        },
+    }
+    return scope, scoped_status(
+        status, scope, result_identity=scope.result_identity, domain_records=records
+    )
+
+
+def test_scoped_premature_final_with_unread_pages_uses_generic_same_session_continuation(tmp_path):
+    from scripts.workflow_completion import scope_verified
+
+    scope, unread = scoped_fixture("required")
+    _, done = scoped_fixture()
+    statuses = iter([unread, unread, done])
+    prompts = []
+
+    def invoke(session, prompt, remaining, index):
+        prompts.append((session, prompt))
+        return Turn(0, trace(tmp_path / f"scope-{index}.jsonl", tool="read_pages"))
+
+    result = drive(
+        invoke,
+        lambda: next(statuses),
+        lambda s: scope_verified(s, scope),
+        prompt="Assess the bound scope",
+        session=None,
+        max_resumes=1,
+        no_progress_limit=2,
+        wall_seconds=60,
+        scope=scope,
+    )
+    assert result["boundary"] == "complete"
+    assert len(result["turns"]) == 2 and prompts[1][0] == "same"
+    assert "no other Domains, review, closure or finalization" in prompts[1][1]
+    assert "follow its authoritative pending action through review" not in prompts[1][1]
+    assert "Some concerns" not in prompts[1][1] and "blinded" not in prompts[1][1]
+    assert result["usage"]["input_tokens"] == 200
+
+
+def test_scoped_unsubmitted_domains_remain_actionable_and_zero_resumes_are_not_success(tmp_path):
+    from scripts.workflow_completion import scope_verified
+
+    scope, status = scoped_fixture(domains=("domain:missing",))
+    assert status["continuation"]["domain_id"] == "domain:deviations"
+    result = drive(
+        lambda *args: Turn(0, trace(tmp_path / "one.jsonl")),
+        lambda: status,
+        lambda s: scope_verified(s, scope),
+        prompt="Assess",
+        session=None,
+        max_resumes=0,
+        no_progress_limit=2,
+        wall_seconds=60,
+        scope=scope,
+    )
+    assert result["boundary"] == "unfinished" and len(result["turns"]) == 1
+
+
+def test_scoped_completed_goal_stops_without_finalizing_or_model_call():
+    from scripts.workflow_completion import scope_verified
+
+    scope, done = scoped_fixture()
+    result = drive(
+        lambda *args: pytest.fail("already complete"),
+        lambda: done,
+        lambda s: scope_verified(s, scope),
+        prompt="Assess",
+        session=None,
+        max_resumes=2,
+        no_progress_limit=2,
+        wall_seconds=60,
+        scope=scope,
+    )
+    assert result["boundary"] == "complete" and result["turns"] == []
+    assert done["phase"] == "assessment"
+
+
+def test_scoped_genuine_blocker_human_gate_and_changed_result_never_invoke():
+    from scripts.workflow_completion import scope_verified, scoped_status
+
+    scope, status = scoped_fixture(domains=())
+    for pending_status in (
+        {**status, "outcome": "condition"},
+        {**status, "continuation": {"authority": "researcher"}},
+    ):
+        current = scoped_status(
+            pending_status, scope, result_identity=scope.result_identity, domain_records={}
+        )
+        result = drive(
+            lambda *args: pytest.fail("blocked/gated"),
+            lambda: current,
+            lambda s: scope_verified(s, scope),
+            prompt="Assess",
+            session="same",
+            max_resumes=2,
+            no_progress_limit=2,
+            wall_seconds=60,
+            scope=scope,
+        )
+        assert result["boundary"] in {"blocked", "waiting_for_user"}
+    changed = scoped_status(status, scope, result_identity="sha256:" + "f" * 64, domain_records={})
+    assert boundary(changed, verified=False, scope=scope) == "blocked"
+
+
+def test_scoped_failed_handoff_and_no_progress_protection(tmp_path):
+    from scripts.workflow_completion import scope_verified
+
+    scope, status = scoped_fixture(domains=())
+    for replacement, failed in ((True, False), (False, True)):
+        result = drive(
+            lambda *args: Turn(
+                0,
+                trace(
+                    tmp_path / f"handoff-{replacement}.jsonl",
+                    session="other" if replacement else "same",
+                    failed=failed,
+                ),
+            ),
+            lambda: status,
+            lambda s: scope_verified(s, scope),
+            prompt="Assess",
+            session="same",
+            max_resumes=5,
+            no_progress_limit=2,
+            wall_seconds=60,
+            scope=scope,
+        )
+        assert result["boundary"] == ("aborted" if replacement else "unfinished")
+        assert len(result["turns"]) == (1 if replacement else 2)
+
+
+def test_scope_loader_rejects_labels_and_wrong_domain_fields(tmp_path):
+    from scripts.workflow_completion import AssessmentScope
+
+    path = tmp_path / "scope.json"
+    path.write_text(
+        json.dumps(
+            {
+                "trial_id": "neutral",
+                "result_identity": "sha256:" + "a" * 64,
+                "domain_ids": ["domain:missing"],
+                "preferred_label": "low",
+            }
+        )
+    )
+    with pytest.raises(ValueError, match="requires only"):
+        AssessmentScope.load(path)
+    with pytest.raises(ValueError, match="invalid bound"):
+        AssessmentScope("neutral", "sha256:" + "a" * 64, ("domain:invented",))
+
+
+def test_receipt_reading_report_does_not_accept_narrative_or_partial_line(tmp_path):
+    from scripts.workflow_completion import receipt_reading_report
+
+    rows = [
+        {
+            "type": "item.completed",
+            "item": {
+                "type": "mcp_tool_call",
+                "server": "rob2",
+                "tool": "get_domain_context",
+                "arguments": {"trial_id": "neutral"},
+                "result": {
+                    "structured_content": {
+                        "outcome": "success",
+                        "data": {
+                            "reading_recovery": {
+                                "trial_id": "neutral",
+                                "windows": [
+                                    {
+                                        "source_id": "sh_0123456789abcdef",
+                                        "page": 1,
+                                        "start_line": 1,
+                                        "end_line": 2,
+                                    }
+                                ],
+                            }
+                        },
+                    }
+                },
+            },
+        },
+        {
+            "type": "item.completed",
+            "item": {"type": "agent_message", "text": "All main pages read; complete."},
+        },
+    ]
+    path = tmp_path / "reading.jsonl"
+    path.write_text("\n".join(map(json.dumps, rows)))
+    assert receipt_reading_report([path])["complete"] is False
+    read = {
+        "type": "item.completed",
+        "item": {
+            "type": "mcp_tool_call",
+            "server": "rob2",
+            "tool": "read_pages",
+            "arguments": {"trial_id": "neutral"},
+            "result": {
+                "structured_content": {
+                    "outcome": "success",
+                    "data": {
+                        "pages": [
+                            {
+                                "source_id": "sh_0123456789abcdef",
+                                "page": 1,
+                                "returned_start_line": 1,
+                                "returned_end_line": 2,
+                                "passage_ref": None,
+                                "numbered_text": "1|partial",
+                            }
+                        ]
+                    },
+                }
+            },
+        },
+    }
+    rows.append(read)
+    path.write_text("\n".join(map(json.dumps, rows)))
+    assert receipt_reading_report([path])["complete"] is False
+    read["item"]["result"]["structured_content"]["data"]["pages"][0]["passage_ref"] = (
+        "eh_0123456789abcdef"
+    )
+    path.write_text("\n".join(map(json.dumps, rows)))
+    assert receipt_reading_report([path])["complete"] is True
+
+
+def test_scoped_cursor_recovery_uses_only_current_authoritative_rob2_receipts(tmp_path):
+    from scripts.workflow_completion import scoped_status
+
+    scope, status = scoped_fixture(domains=())
+    action = {
+        "operation": "get_domain_context",
+        "authority": "host",
+        "trial_id": "neutral",
+        "domain_id": "domain:selection",
+        "cursor": "current-next",
+    }
+    item = {
+        "type": "mcp_tool_call",
+        "server": "rob2",
+        "tool": "get_domain_context",
+        "result": {
+            "structured_content": {
+                "outcome": "success",
+                "head": {"state_revision": 4, "next_action": action},
+                "data": {
+                    "context_page": {
+                        "trial_id": "neutral",
+                        "domain_id": "domain:selection",
+                        "snapshot_digest": "stable",
+                        "index": 1,
+                    }
+                },
+            }
+        },
+    }
+    path = tmp_path / "cursor.jsonl"
+    path.write_text(json.dumps({"type": "item.completed", "item": item}) + "\n")
+    current = scoped_status(
+        status, scope, result_identity=scope.result_identity, domain_records={}, traces=[path]
+    )
+    assert current["continuation"] == action
+    item["result"]["structured_content"]["head"]["state_revision"] = 3
+    path.write_text(json.dumps({"type": "item.completed", "item": item}) + "\n")
+    stale = scoped_status(
+        status, scope, result_identity=scope.result_identity, domain_records={}, traces=[path]
+    )
+    assert "cursor" not in stale["continuation"]
+    item["server"] = "untrusted"
+    path.write_text(json.dumps({"type": "item.completed", "item": item}) + "\n")
+    assert not scoped_status(
+        status, scope, result_identity=scope.result_identity, domain_records={}, traces=[path]
+    )["host_progress"]["context_pages"]
+
+
+def test_existing_bounded_reading_policy_and_out_of_scope_history_are_preserved():
+    from scripts.workflow_completion import scope_verified, scoped_status
+
+    scope, status = scoped_fixture("budget_limited")
+    assert scope_verified(status, scope)
+    prior = {
+        "neutral:domain:randomization": {
+            "domain_id": "domain:randomization",
+            "identity": "sha256:" + "c" * 64,
+        }
+    }
+    same = scoped_status(
+        status,
+        scope,
+        result_identity=scope.result_identity,
+        domain_records=prior,
+        outside_scope_baseline={"neutral:domain:randomization": "sha256:" + "c" * 64},
+    )
+    assert same.get("outcome") != "condition"
+    changed = scoped_status(
+        status,
+        scope,
+        result_identity=scope.result_identity,
+        domain_records=prior,
+        outside_scope_baseline={},
+    )
+    assert changed["condition"]["code"] == "completion_scope_violated"
+
+
+def test_missing_turn_usage_is_unknown_not_zero_cost(tmp_path):
+    path = trace(tmp_path / "partial.jsonl")
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    path.write_text("\n".join(json.dumps(row) for row in rows if row["type"] != "turn.completed"))
+    facts = trace_facts(path)
+    assert facts["usage"] == {} and facts["usage_receipt_available"] is False
+    assert facts["completed_turns"] == 0

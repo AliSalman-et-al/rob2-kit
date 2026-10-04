@@ -1,0 +1,13 @@
+{
+  "base_sha": "3b0778994f2718adc65c0412c5dbc1952846dfdb",
+  "files": {
+    "scripts/workflow_completion.py": "d9cae5da759b55f17aac4fa9b192ef15be60152d67b1175a954a4fd841797170",
+    "scripts/run_rsi_case.py": "3c0f02e25a9254e420079fc76d0da84794c7b36e6fb6c5449b6dd5039d107959",
+    "tests/test_workflow_completion.py": "a738b4977d5e8003cb1c055c0185c66d6ba8d84d434a8ff2e7a4da3cc88cc0da",
+    "docs/operational-guidance.md": "37f413e35a346197d8279c83b1dd9341f47ba07fbf641dc78e804da49c150540",
+    "docs/evaluation/2026-10-04-completion-integration/frozen-diagnostic-replay.json": "cd0fb23c14bf9d3b1469b4df094ff9c09e8687e80a55b2df7e239f48efbb5fe4",
+    "docs/evaluation/2026-10-04-completion-integration/validation.json": "df75d9bf51ab32be984d5092b131e9db8a6251b67e9f9a6b711f8f1e1e6aced7",
+    "docs/evaluation/2026-10-04-completion-integration/README.md": "e70f3a681f255c619e6a7b880f98d28ec76d6a53fdae958a8a6ed50fdd75e96e"
+  },
+  "paid_calls": 0
+}

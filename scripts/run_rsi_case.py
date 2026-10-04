@@ -32,7 +32,16 @@ from benchmark_contract import (
     trace_session_ids,
 )
 from prepare_rsi_workspace import approved_scope_record, prepare_workspace
-from workflow_completion import Turn, drive, finalized_artifact
+from workflow_completion import (
+    AssessmentScope,
+    Turn,
+    boundary,
+    drive,
+    finalized_artifact,
+    receipt_reading_report,
+    scope_verified,
+    scoped_status,
+)
 
 try:
     import fcntl
@@ -450,9 +459,7 @@ def _host_delivery_postcondition(
     )
 
 
-def _codex_mcp_config(
-    command: str, workspace: Path, mcp_command: str = "mcp-codex"
-) -> list[str]:
+def _codex_mcp_config(command: str, workspace: Path, mcp_command: str = "mcp-codex") -> list[str]:
     return [
         "[mcp_servers.rob2]",
         "command = " + json.dumps(command),
@@ -1769,6 +1776,12 @@ def main() -> None:
         help="Opt in to bounded SAME-session resumes after unfinished natural exits (default off)",
     )
     parser.add_argument("--completion-no-progress", type=int, default=2)
+    parser.add_argument(
+        "--completion-scope",
+        type=Path,
+        help="Opt in to a frozen JSON Trial/Result/Domain scope; zero resumes still classifies "
+        "premature finals as unfinished. No review/closure/finalization for this scope.",
+    )
     parser.add_argument("--benchmark-index", type=Path)
     parser.add_argument("--benchmark-index-sha256")
     parser.add_argument("--attempt-number", type=int, default=1)
@@ -1815,6 +1828,12 @@ def main() -> None:
         help="Required nonempty reason when allowing a build-only continuation transition",
     )
     args = parser.parse_args()
+    completion_scope = None
+    if args.completion_scope is not None:
+        try:
+            completion_scope = AssessmentScope.load(args.completion_scope)
+        except (OSError, ValueError, TypeError) as error:
+            parser.error(str(error))
     if args.mark_scientific_terminal:
         if not args.terminal_reason or not args.terminal_reason.strip():
             parser.error("--mark-scientific-terminal requires --terminal-reason")
@@ -1832,8 +1851,8 @@ def main() -> None:
         parser.error("--timeout-seconds must be positive")
     if args.completion_resumes < 0 or args.completion_no_progress < 1:
         parser.error("completion budgets must be nonnegative resumes and positive no-progress")
-    if args.completion_resumes and args.timeout_seconds is None:
-        parser.error("completion resumes require a shared --timeout-seconds wall budget")
+    if (args.completion_resumes or completion_scope is not None) and args.timeout_seconds is None:
+        parser.error("completion controller requires a shared --timeout-seconds wall budget")
     if args.attempt_number < 1:
         parser.error("--attempt-number must be positive")
     if args.phase == 1 and (
@@ -2221,6 +2240,7 @@ def main() -> None:
     codex_mcp_args = codex_mcp_binding.get("args")
     if (
         not isinstance(codex_mcp_command, str)
+        or not isinstance(codex_mcp_args, list)
         or codex_mcp_args not in (["mcp"], ["mcp-codex"])
         or codex_mcp_binding.get("server") != "rob2"
         or codex_mcp_binding.get("workspace_sha256")
@@ -2408,6 +2428,20 @@ def main() -> None:
         "shared_wall_seconds": args.timeout_seconds,
         "approval_automatic": False,
         "selection": "one workflow; retain every turn; no answer-dependent retry",
+        "controller": "workflow_completion.drive"
+        if args.completion_resumes or completion_scope
+        else None,
+        "goal": "bound assessment Domains" if completion_scope else "verified finalized Batch",
+        "scope_file_sha256": _sha256_file(args.completion_scope) if completion_scope else None,
+        "scope": (
+            {
+                "trial_id": completion_scope.trial_id,
+                "result_identity": completion_scope.result_identity,
+                "domain_ids": completion_scope.domain_ids,
+            }
+            if completion_scope
+            else None
+        ),
     }
     _atomic_json(metadata_path, metadata)
     environment = _codex_environment(
@@ -2423,18 +2457,43 @@ def main() -> None:
         auth_copy.unlink(missing_ok=True)
         shutil.copyfile(auth_source, auth_copy)
         _mark_execution_running(run_dir, execution, args.phase)
-        if args.completion_resumes:
+        if args.completion_resumes or completion_scope is not None:
+            outside_scope_baseline = None
 
             def read_workflow_status() -> dict[str, object]:
+                nonlocal outside_scope_baseline
                 receipt = subprocess.run(
                     [str(rob2_command), "status", "--workspace", str(workspace)],
                     capture_output=True,
                     text=True,
                     check=True,
                 )
-                return json.loads(receipt.stdout)
+                status = json.loads(receipt.stdout)
+                if completion_scope is not None:
+                    from rob2_kit.application._state import _state
+                    from rob2_kit.application.working import _result_identity
+
+                    state = _state(workspace)
+                    if outside_scope_baseline is None:
+                        outside_scope_baseline = {
+                            key: record["identity"]
+                            for key, record in state.get("domain_records", {}).items()
+                            if key.startswith(completion_scope.trial_id + ":")
+                            and record["domain_id"] not in completion_scope.domain_ids
+                        }
+                    status = scoped_status(
+                        status,
+                        completion_scope,
+                        result_identity=_result_identity(state, completion_scope.trial_id),
+                        domain_records=state.get("domain_records", {}),
+                        traces=turn_paths,
+                        outside_scope_baseline=outside_scope_baseline,
+                    )
+                return status
 
             def verify_workflow_artifact(status: dict[str, object]) -> bool:
+                if completion_scope is not None:
+                    return scope_verified(status, completion_scope)
                 artifact = status.get("artifact") or finalized_artifact(status, turn_paths)
                 if status.get("phase") != "finalized" or not isinstance(artifact, dict):
                     return False
@@ -2502,7 +2561,24 @@ def main() -> None:
                 max_resumes=args.completion_resumes,
                 no_progress_limit=args.completion_no_progress,
                 wall_seconds=args.timeout_seconds,
+                scope=completion_scope,
             )
+            completion_record["host_invocations"] = len(completion_record["turns"])
+            completion_record["same_session_resumes"] = max(
+                len(completion_record["turns"]) - (0 if args.session else 1), 0
+            )
+            completion_record["model_turn_completed_receipts"] = sum(
+                turn["completed_turns"] for turn in completion_record["turns"]
+            )
+            completion_record["usage_receipts_complete"] = all(
+                turn["usage_receipt_available"] for turn in completion_record["turns"]
+            )
+            completion_record["usage_basis"] = (
+                "preserved turn.completed receipts; absent usage is unknown"
+            )
+            completion_record["dollar_cost"] = None
+            completion_record["goal"] = metadata["completion_policy"]["goal"]
+            completion_record["scope"] = metadata["completion_policy"]["scope"]
             # Preserve each original turn and an aggregate trace for existing phase audits.
             trace.write_bytes(b"".join(path.read_bytes() for path in turn_paths))
             _atomic_json(run_dir / f"phase-{args.phase}.completion.json", completion_record)
@@ -2516,6 +2592,10 @@ def main() -> None:
                 terminal_state = "failed_infrastructure"
             elif completion_record["boundary"] == "waiting_for_user":
                 terminal_state = "waiting_for_user"
+            elif completion_scope is not None and completion_record["boundary"] == "complete":
+                # A scoped diagnostic is complete, but it is not a scored finalized Batch.
+                terminal_state = "resumable"
+                terminal_reason = "Requested assessment scope complete; full Batch not finalized."
             elif completion_record["boundary"] == "unfinished":
                 terminal_state = "resumable"
         else:
@@ -2583,8 +2663,27 @@ def main() -> None:
                 and isinstance(continuation, dict)
                 and continuation.get("authority") == "researcher"
             )
+            if completion_record is None and terminal_state is None:
+                state_boundary = boundary(status_data, verified=False)
+                if state_boundary == "unfinished":
+                    # Artifact hints and final prose never complete actionable canonical work.
+                    terminal_state = "resumable"
+                    terminal_reason = (
+                        "Authoritative host workflow remains actionable; no automatic resume."
+                    )
+                elif state_boundary == "waiting_for_user":
+                    terminal_state = "waiting_for_user"
+
         except (OSError, subprocess.CalledProcessError, json.JSONDecodeError):
             artifact = None
+    reading_report_path = run_dir / f"phase-{args.phase}.reading-delivery.json"
+    reading_report = receipt_reading_report(sorted(run_dir.glob("phase-*.jsonl")))
+    _atomic_json(reading_report_path, reading_report)
+    metadata["reading_verification"] = {
+        "path": reading_report_path.name,
+        "sha256": _sha256_file(reading_report_path),
+        "basis": "native receipts, never final narrative",
+    }
     terminal_reason = _finish_execution(
         run_dir,
         execution,
