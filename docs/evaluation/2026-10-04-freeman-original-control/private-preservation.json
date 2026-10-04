@@ -1,0 +1,37 @@
+{
+  "events.jsonl": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/events.jsonl",
+    "sha256": "80b1e9335e210a67282712693b6f7a0f0ab0ba5215e6bd4aa39b19ec959f08f6",
+    "bytes": 502880
+  },
+  "initial-canonical.sqlite3": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/initial-canonical.sqlite3",
+    "sha256": "b63c6c310a374b8ea64c8b77b4fdee02f4fe5ef936723ea5e778c9a5ccb98312",
+    "bytes": 643072
+  },
+  "availability-packet.bin": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/availability-packet.bin",
+    "sha256": "d7490b81acae500b553b111964177adf6537b240650ef9951621a45ffcaed644",
+    "bytes": 525189
+  },
+  "availability-manifest.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/availability-manifest.json",
+    "sha256": "bb852451af5e4599e964dd0600e7364e0661979c1cb54161ffaf593de8ff53e3",
+    "bytes": 25827
+  },
+  "protected-staging.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/protected-staging.json",
+    "sha256": "191dba95c5cdd6df09b1b064657aed01220995f0618d0641fcc6f4524a8845e9",
+    "bytes": 646207
+  },
+  "stderr.log": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/stderr.log",
+    "sha256": "68f9b904f1255f8f02d8393347155379b597d1e6e57681f609c4e5482ecc69de",
+    "bytes": 453248
+  },
+  "SETUP-STATUS.json": {
+    "path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/SETUP-STATUS.json",
+    "sha256": "8ddaf37b9c6adc056a5b8f8caf44376f3a1d20200db3f0c173aaf4c151eb20bf",
+    "bytes": 1267
+  }
+}

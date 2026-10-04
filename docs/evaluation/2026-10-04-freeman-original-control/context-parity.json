@@ -1,0 +1,61 @@
+{
+  "same_starting_state_current_vs_prototype_non_guidance_equal": true,
+  "reconstructed_prototype_vs_original_initial_non_guidance_equal": true,
+  "mode_differences": [],
+  "restoration_differences": [],
+  "compared_fields": [
+    "answers",
+    "comparison_cards",
+    "completion_rule",
+    "coverage",
+    "domain_id",
+    "evidence",
+    "evidence_workspace",
+    "investigation",
+    "pack",
+    "primary_report",
+    "questions",
+    "reading_recovery",
+    "result",
+    "trial_id",
+    "working_checkpoint"
+  ],
+  "ignored_only_guidance_or_pagination": [
+    "guidance",
+    "traps",
+    "response_framework",
+    "official_guidance",
+    "guidance_profile",
+    "context_page",
+    "question explanatory guidance fields",
+    "card propositions/paired_examples/prompt"
+  ],
+  "native_tool_transport": "mcp-codex",
+  "scratch_only": "Context deliveries done only in separate parity clones; model starting workspace unconsumed",
+  "question_current_fields": [
+    "id",
+    "wording",
+    "options",
+    "activation_status",
+    "activation",
+    "official_guidance",
+    "source_locator",
+    "bias_construct",
+    "decision_rule",
+    "evidence_needed",
+    "no_information_rule",
+    "answer_anchors",
+    "considerations",
+    "invalid_shortcuts",
+    "query_suggestions"
+  ],
+  "question_prototype_fields": [
+    "id",
+    "wording",
+    "options",
+    "activation_status",
+    "activation",
+    "guidance_locator",
+    "query_suggestions"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "authorization": "Exactly one matched native original-guidance Freeman control; not an accuracy retry; no further paid call",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "home": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/freeman-original-control/home",
+  "config_sha256": "9ed2ab4de20ca0145e5f78fec129459223eaeda59003d796c0ac5b2ea0aeb454",
+  "skill_sha256": "e9ce314205652d707e53719cce2924b278f3a7b75c8a9ef63006c62e94fc877d",
+  "prompt_sha256": "e6337aa8faabb6dcbcb3a482803f23878b6bf4cf96b5ba5ae2998fad71266b1f",
+  "private_criteria_sha256": "66bf7f6c7f2f791e89a00dfe8d749354b3a3b9bf0546354f8be48ece018d1fe9",
+  "availability_manifest_sha256": "bb852451af5e4599e964dd0600e7364e0661979c1cb54161ffaf593de8ff53e3",
+  "availability_packet_sha256": "d7490b81acae500b553b111964177adf6537b240650ef9951621a45ffcaed644",
+  "availability_packet_not_model_input": true,
+  "source_provenance_sha256": "596d0fac6b2144e098ef8d0033fad786f405169f024d36168005077b3c62605d",
+  "initial_canonical_sha256": "b63c6c310a374b8ea64c8b77b4fdee02f4fe5ef936723ea5e778c9a5ccb98312",
+  "runner_sha256": "72b22794975d02385719a415f87126dad4278afd1891d16e42a0a3de6971464f",
+  "allowed_tools": [
+    "get_status",
+    "get_domain_context",
+    "list_sources",
+    "read_pages",
+    "select_text_evidence",
+    "search_sources",
+    "search_sources_batch",
+    "render_page",
+    "select_visual_evidence",
+    "save_domain_judgment"
+  ],
+  "limits": {
+    "invocations": 1,
+    "tool_count_stop": false,
+    "input_token_stop": false,
+    "output_review_threshold": 6000,
+    "wall_review_seconds": 480,
+    "idle_review_seconds": 90,
+    "identical_rejected_submissions_stop": 3,
+    "supervised": true
+  },
+  "flags": [
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "features.code_mode={enabled=true,direct_only_tool_namespaces=[\"mcp__rob2\"]}"
+  ],
+  "official_guidance": {
+    "profile": "current",
+    "original_pack": "rob2.parallel.assignment2019.1",
+    "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1",
+    "note": "Original abbreviated official excerpts plus maintained decision rules/anchors/considerations, response framework, comparisonexamples/traps; no prototype fullsharedsections/FAQreplacement"
+  },
+  "control_guidance_profile": "current",
+  "prototype_original_initial_parity_sha256": "093d92d4b1eb6219d5bad7e02771bd7dbcba65be45746726990f5a47efb3ac88",
+  "restoration_sha256": "735bb3ca64cfe08b1fd1d11d65fa7d713ad1d79ad93b5837021f8eb394ed8a01"
+}
