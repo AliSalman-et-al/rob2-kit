@@ -1,0 +1,139 @@
+{
+  "applicability": {
+    "design": "individual_parallel",
+    "evidence": [
+      "eh_23f55557805ffcdb"
+    ],
+    "rationale": "Patients were individually randomized by computer-generated sequence to parallel treatment arms."
+  },
+  "bindings": [
+    {
+      "evidence_index": 0,
+      "field": {
+        "path": "/reported/endpoint/name"
+      },
+      "value_digest": "sha256:708923c0757b2e59ab4bc4ed347cd54c42ff89be9d781c34db5bdfdc463465a8"
+    },
+    {
+      "evidence_index": 0,
+      "field": {
+        "path": "/reported/group_values/0/statistic"
+      },
+      "value_digest": "sha256:ab1a02724479e01444ccebed8ffd1567146273d9dcf6327639735f8661f214cb"
+    },
+    {
+      "evidence_index": 0,
+      "field": {
+        "path": "/reported/group_values/0/value"
+      },
+      "value_digest": "sha256:7b074ee72045c863f4a4699a7ac965086b386375ffa468023979776a862b7ef3"
+    },
+    {
+      "evidence_index": 0,
+      "field": {
+        "path": "/reported/group_values/0/unit"
+      },
+      "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+    },
+    {
+      "evidence_index": 0,
+      "field": {
+        "path": "/reported/group_values/1/statistic"
+      },
+      "value_digest": "sha256:ab1a02724479e01444ccebed8ffd1567146273d9dcf6327639735f8661f214cb"
+    },
+    {
+      "evidence_index": 0,
+      "field": {
+        "path": "/reported/group_values/1/value"
+      },
+      "value_digest": "sha256:373806e7ddba46e2989a9d48807ad529218668fa14881b8132970dbd9977bb9a"
+    },
+    {
+      "evidence_index": 0,
+      "field": {
+        "path": "/reported/group_values/1/unit"
+      },
+      "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+    }
+  ],
+  "clarity": {
+    "analysis_population": "specified",
+    "comparison_groups": "specified",
+    "effect_measure": "specified",
+    "eligible_result_choice": "specified",
+    "measurement": "specified",
+    "outcome_definition": "specified",
+    "source_table_meaning": "specified",
+    "time_point": "specified"
+  },
+  "evidence": [
+    {
+      "delivery_receipt": "sha256:33aab4a4559f50a23ee4294a4a462b06f0b26c766a692dd523425495064ed902",
+      "handle": "eh_dbb65a6f5830cdda",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "render_identity": "sha256:18718379f5c74e6d65a7c869b2d445fb2c98502309b4a8b28b5fbdaac7910b86",
+      "transcription": "Figure 2A: Change in HbA1c from baseline at 26 and 52 weeks, ANCOVA LOCF. HbA1c change from baseline (%), LS mean \u00b1 SE. At 26 weeks: dulaglutide 1.5 mg -1.51%, dulaglutide 0.75 mg -1.30%, exenatide -0.99%, placebo -0.46%. Figure 2 caption: Data are LS mean \u00b1 SE."
+    }
+  ],
+  "kind": "assessable",
+  "relation": "narrower",
+  "relation_rationale": "The reported 26-week outcome and selected comparison match the requested endpoint and window. Its analysis population is restricted to treated participants with evaluable HbA1c and uses pre-rescue measurements with LOCF; equivalence to the all-randomized assignment target is unresolved.",
+  "reported": {
+    "analysis_population": "Randomized participants who received at least one dose with evaluable HbA1c data: dulaglutide 1.5 mg n=271 and placebo n=119. Only pre-rescue measurements were used. LOCF imputed missing postbaseline values; if there were no data after randomization, the endpoint was considered missing.",
+    "endpoint": {
+      "definition": null,
+      "name": "Change in HbA1c from baseline"
+    },
+    "form": "group_bound_values",
+    "group_values": [
+      {
+        "group_id": "dulaglutide_1_5_mg",
+        "statistic": "LS mean",
+        "unit": "%",
+        "value": "-1.51"
+      },
+      {
+        "group_id": "placebo",
+        "statistic": "LS mean",
+        "unit": "%",
+        "value": "-0.46"
+      }
+    ]
+  },
+  "requested_outcome": "Change in HbA1c from baseline",
+  "target": {
+    "comparison_groups": [
+      {
+        "assignment": "Dulaglutide 1.5 mg once weekly with metformin and pioglitazone",
+        "id": "dulaglutide_1_5_mg"
+      },
+      {
+        "assignment": "Placebo once weekly with metformin and pioglitazone",
+        "id": "placebo"
+      }
+    ],
+    "effect_of_interest": "assignment",
+    "intended_analysis_population": "All randomized participants in the comparison groups",
+    "intended_effect_measure": "Mean difference",
+    "measurement": {
+      "method": "Change in HbA1c from baseline",
+      "metric": "Change in HbA1c from baseline"
+    },
+    "outcome_definition": "Change in HbA1c from baseline",
+    "time_point_or_window": {
+      "description": "26 weeks from randomization",
+      "kind": "quantified",
+      "unit": "weeks",
+      "value": "26"
+    }
+  },
+  "trial_id": "award-1-2014"
+}

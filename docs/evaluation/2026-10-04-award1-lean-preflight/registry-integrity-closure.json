@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "baseline_sha": "247db8c805c34923e2cd086124b084d040121834",
+  "current_production_sha": "e6b13031ddfa72437f3e1f2f9ca3b38ea58a064c",
+  "baseline_and_current_source_metadata_and_returned_text_hashes_identical": true,
+  "original_archival_workspace_preserved": true,
+  "amended_common_result_identity": "sha256:ee6ba47857cd93475de561ab58008fa85d8f8248c5db2d4ce81c014f2b1d0ae5",
+  "registry_primary_271_119_link_verified": {
+    "source_projection_lines": [
+      5709,
+      5710,
+      5715,
+      5802,
+      5803,
+      5808,
+      5809,
+      5819,
+      5840,
+      5844,
+      5845
+    ],
+    "matching_contrast": "26-week HbA1c change; OG000 dulaglutide 1.5 mg versus OG003 placebo; LS difference -1.05",
+    "additional_exact_LS_mean_and_primary_type_lines": [
+      5790,
+      5792,
+      5799,
+      5801,
+      5846
+    ]
+  },
+  "raw_JSON_authenticated": false,
+  "captured_text_bytes_hashed_under_own_text_identity": true,
+  "old_D3_answers": 0,
+  "working_checkpoints": 0,
+  "operator_D3_fixture_facts": false,
+  "amended_initial_assessment_reads": 0,
+  "captured_text_byte_tampering_rejected": {
+    "passed": true,
+    "mode": "byte-tamper",
+    "rejected": "EvidenceIntegrityError",
+    "message": "captured Source bytes do not match Canonical identity"
+  },
+  "derivative_projection_tampering_rejected": {
+    "passed": true,
+    "mode": "projection-tamper",
+    "rejected": "EvidenceIntegrityError",
+    "message": "captured Source projection identity is corrupt"
+  },
+  "paid_calls": 0
+}

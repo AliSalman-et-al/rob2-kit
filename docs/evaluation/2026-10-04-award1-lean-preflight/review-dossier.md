@@ -1,5 +1,16 @@
 # AWARD-1 D3 independent source dossier
 
+**Post-review amendment:** the active common fixture is now explicitly amended:
+target and reported group values unchanged, reported population qualified as
+evaluable pre-rescue LOCF (271/119), relation `narrower`, assignment-estimand
+equivalence unresolved. The archival fixture described below is preserved, not
+rewritten. See `amended-common-manifest.json` and `registry-integrity.md`.
+Overall 976/978 is not a selected-arm mismatch: both untreated people were in
+exenatide. Available outcomes excluded from analysis concern D2; genuinely
+missing/imputed outcomes concern D3. Rescue does not identify which measurements
+were unobserved versus excluded. Independent review grants qualified GO for an
+exposed-case citation-mechanism test, with no preferred D3.4 label or accuracy claim.
+
 This is a **development-exposed preparation**, not a held-out test. AWARD-1 had
 a paid Luna native invocation on October 2, recovered October 3: 663,869 input,
 575,488 cached input, 3,855 output tokens, approximately 105.5 seconds. Its source

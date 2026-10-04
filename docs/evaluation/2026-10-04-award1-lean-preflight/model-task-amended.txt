@@ -1,0 +1,2 @@
+Assess domain:missing for the approved AWARD-1 Result using the available Sources and full official D3 context. Use the normal native tools to inspect sources and save a supported complete active-path judgment with explicit unknowns and counterevidence. Stop after the accepted D3 checkpoint.
+The registry Source is a preserved text projection of the October 1 capture. Original raw registry JSON bytes are unavailable; this text Source does not authenticate those absent bytes.
