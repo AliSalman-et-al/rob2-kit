@@ -1,0 +1,23 @@
+{
+  "cases_deeply_inspected": [
+    {
+      "slug": "monarch-2",
+      "relation": "narrower",
+      "target_population": "All randomized participants in the comparison groups",
+      "reported_population": "Intent-to-treat efficacy population (n=669): 446 assigned abemaciclib plus fulvestrant and 223 assigned placebo plus fulvestrant; the CONSORT diagram shows 44 randomized endocrine-naïve patients excluded before this analysis, with their arm allocation not reported.",
+      "original_files_unchanged": true,
+      "current_three_domain_card_checks": "passed"
+    },
+    {
+      "slug": "monaleesa-3",
+      "relation": "exact",
+      "target_population": "All randomized participants in the comparison groups",
+      "reported_population": "Full analysis set comprising all randomly assigned patients (484 assigned ribociclib plus fulvestrant and 242 assigned placebo plus fulvestrant); 210 and 151 PFS events, respectively, at data cutoff.",
+      "original_files_unchanged": true,
+      "current_three_domain_card_checks": "passed"
+    }
+  ],
+  "model_calls": 0,
+  "runtime_changes": false,
+  "human_reference_used": false
+}
