@@ -154,3 +154,26 @@ state that the reported analysis was chosen because its estimate was favorable
 and the other analyses were withheld. The changed premise is applicability,
 chronology, or result dependence; document availability, dates, and the existence
 of eligible alternatives do not answer the selection question by themselves.
+
+
+For an explicit protocol/SAP DOI or public PDF reference found in a supplied
+Source, the host CLI can stage a candidate in a fresh prospective workspace:
+`rob2 stage-companion --workspace CURRENT --reference reference.json --output NEW`.
+The JSON requires trial_id, source_id, page, exact textual citation,
+linkage_rationale, requested_role (protocol/sap), locator_kind (url/doi), locator,
+and optional registry_id. The locator must occur in the cited page text; an exact
+NCT-scoped CDN filename from a registry Source is also supported. Image-only
+citations need textual recovery before this command; do not invent a quotation.
+
+Only vetted ClinicalTrials.gov CDN, PLOS journals and PMC HTTPS hosts are supported.
+DOIs use exact Crossref metadata and one advertised supported PDF link; missing,
+ambiguous or inaccessible links remain unresolved candidates. No scraping or
+paywall/browser challenge workaround is provided. The new workspace copies input,
+not the active ledger: run normal prepare_batch and researcher review there.
+Existing captured Sources and review bindings remain in the original workspace;
+registry settings in the copied manifest retain their normal replay/current
+behavior. The prospective workspace is enriched evidence, not historical replay.
+Candidate PDF and capture metadata are declared other, with requested role and
+trial linkage retained as qualified assertions. Read/search the candidate and its
+provenance before evaluating applicability, plan timing or actual conduct. This
+command cannot insert evidence into an approved active Batch.

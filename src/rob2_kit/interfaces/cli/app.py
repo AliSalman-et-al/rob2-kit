@@ -31,6 +31,7 @@ def main(argv: list[str] | None = None) -> int:
         "command",
         nargs="?",
         choices=(
+            "stage-companion",
             "status",
             "review",
             "finalize",
@@ -56,9 +57,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--output",
-        help=("destination for archive-sources or the rob2-assess directory for export-skill"),
+        help="destination for archive-sources, export-skill, or a fresh companion workspace",
     )
+    parser.add_argument("--reference", help="JSON CompanionReference for stage-companion")
     args = parser.parse_args(argv)
+    if args.command == "stage-companion":
+        from rob2_kit.application.companion_sources import CompanionReference, stage_companion
+
+        if not args.reference or not args.output:
+            parser.error("stage-companion requires --reference and --output (fresh workspace)")
+        reference = CompanionReference.model_validate_json(Path(args.reference).read_text())
+        print(json.dumps(stage_companion(args.workspace, args.output, reference), sort_keys=True))
+        return 0
     if args.command == "mcp-codex":
         from rob2_kit.interfaces.mcp.codex import main as run_codex_mcp
 

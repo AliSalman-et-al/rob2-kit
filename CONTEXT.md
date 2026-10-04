@@ -40,6 +40,14 @@ supported Sources in each selected directory. Intake records their content and
 projection identities and attempts registry resolution. A typed Intake condition
 remains visible to the model but does not create a researcher gate.
 
+The host CLI `stage-companion` can fetch one explicit cited public PDF, or an
+exact DOI metadata-advertised supported PDF, into a fresh prospective workspace.
+It preserves the parent Source/page/hash and qualified Trial linkage. Candidate
+and capture provenance are declared `other`; requested protocol/SAP role is a
+hint. The original ledger and its review bindings remain intact. The new workspace
+requires normal intake and Proposal Review; active-Batch Source insertion is not
+supported. Registry settings in copied input retain normal current/replay behavior.
+
 The closed workflow phases are `empty`, `proposal`, `assessment`,
 `ready_to_finalize`, and `finalized`.
 
