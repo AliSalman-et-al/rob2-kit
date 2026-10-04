@@ -1,0 +1,15 @@
+{
+  "assessment_code_sha": "f46df3c04b794e52f6e11e0f54ae6c5af22bc4f9",
+  "review_base_sha": "a91eea249680c34c207c8b2d7d70c782e8fe14e3",
+  "operator_assessment_repair": false,
+  "further_paid_calls": 0,
+  "files": {
+    "independent-review.md": "b12c9f424229361e40cdf792ee36406e9b6ed90be843f1b1915000f20f8154f2",
+    "accepted-warrants.json": "3048157eb718a620f501c744a964ca11d04eb06c1b67b2fe74b7ff68e8a80e85",
+    "result-account.json": "65d5f5747c59bf96f77fc9dd678729c0707814a75a167d00dbfbabf5b8dd8f61",
+    "rejected-submissions.json": "604c3d15b7a4ba472f6ede72e73779bfa4ea9da219ea23d5ef67f62d9037082e",
+    "guidance-consumption.json": "8dcfd3f98bc4a20a29350dc8c33d16d247c0ba71e06dec3740e57ea0ad74a73f",
+    "execution.json": "07623b5a412909ad4793c575e61e8ff37b784377f0552b01430857c57d46c755",
+    "terminal-artifact-freeze.json": "7288afda9dcf9bd9ca5d1c79eacf09489241cd231238db4d9423484a4e7e23dc"
+  }
+}
