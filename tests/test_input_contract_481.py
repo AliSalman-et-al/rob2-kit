@@ -35,8 +35,16 @@ def test_public_schema_examples_and_counterevidence_shape_match_the_model() -> N
     assert set(counterevidence_shape["required"]) == {"evidence", "implication"}
     evidence_variants = counterevidence_shape["properties"]["evidence"]["items"]["anyOf"]
     assert {variant["type"] for variant in evidence_variants} == {"string", "object"}
-    range_shape = next(variant for variant in evidence_variants if variant["type"] == "object")
+    range_shape = next(
+        variant for variant in evidence_variants if "source_id" in variant.get("properties", {})
+    )
     assert set(range_shape["required"]) == {"source_id", "page", "start_line", "end_line"}
+    visual_shape = next(
+        variant
+        for variant in evidence_variants
+        if "delivery_receipt" in variant.get("properties", {})
+    )
+    assert set(visual_shape["required"]) == {"delivery_receipt", "region", "transcription"}
     assert counterevidence_shape["properties"]["implication"]["type"] == "string"
     answer = DomainSaveAnswer.model_validate(
         {

@@ -22,6 +22,7 @@ from ..workflow_models import (
     DomainDraft,
     DomainEvidenceCitation,
     DomainSaveAnswer,
+    VisualEvidenceReference,
     WorkingNote,
     WorkingSourceRange,
 )
@@ -53,6 +54,7 @@ from .evidence import (
     _verified_source_projections,
     main_report_reading_status,
     select_text_evidence_by_lines,
+    select_visual_evidence,
     source_reading_status,
 )
 from .missing_data import reconcile_missing_data as reconcile_typed_missing_data
@@ -2583,27 +2585,47 @@ def _canonical_observed_at(root: Path, identity: str) -> str | None:
 def resolve_domain_sources(
     workspace: str | Path, trial_id: str, answers: list[DomainSaveAnswer]
 ) -> list[DomainSaveAnswer]:
-    """Normalize compact references through the existing exact Evidence selector.
+    """Normalize compact references through the existing text and visual selectors.
 
     Compact bases are a host assertion of supporting facts, not a server finding
     of direct entailment. The unchanged canonical validator still checks the
     active path, uncertainty, Trial ownership and every selected Evidence identity.
     """
-    handles: dict[WorkingSourceRange, str] = {}
+    handles: dict[WorkingSourceRange | VisualEvidenceReference, str] = {}
 
-    def resolve(reference: str | WorkingSourceRange) -> str:
+    def resolve(reference: str | WorkingSourceRange | VisualEvidenceReference) -> str:
         if isinstance(reference, str):
             return reference
         if reference not in handles:
-            source_id = resolve_source_handle(workspace, trial_id, reference.source_id)
-            selected = select_text_evidence_by_lines(
-                workspace,
-                trial_id,
-                source_id,
-                reference.page,
-                reference.start_line,
-                reference.end_line,
-            )
+            if isinstance(reference, VisualEvidenceReference):
+                with _db(_root(workspace), "derivative.sqlite3") as connection:
+                    delivery = connection.execute(
+                        "SELECT source_id FROM visual_deliveries WHERE identity=? AND trial_id=?",
+                        (reference.delivery_receipt, trial_id),
+                    ).fetchone()
+                if delivery is None:
+                    raise ValueError(
+                        "visual Evidence requires a current-Trial ImageContent receipt"
+                    )
+                selected = select_visual_evidence(
+                    workspace,
+                    trial_id,
+                    delivery[0],
+                    reference.delivery_receipt,
+                    reference.transcription,
+                    list(reference.region),
+                    reference.uncertainty,
+                )
+            else:
+                source_id = resolve_source_handle(workspace, trial_id, reference.source_id)
+                selected = select_text_evidence_by_lines(
+                    workspace,
+                    trial_id,
+                    source_id,
+                    reference.page,
+                    reference.start_line,
+                    reference.end_line,
+                )
             handles[reference] = selected["evidence"]["handle"]
         return handles[reference]
 
@@ -2611,7 +2633,7 @@ def resolve_domain_sources(
         answer.model_copy(
             update={
                 "bases": tuple(
-                    citation
+                    citation.model_copy(update={"evidence": resolve(citation.evidence)})
                     if isinstance(citation, DomainEvidenceCitation)
                     else DomainEvidenceCitation(evidence=resolve(citation), role="indirect_support")
                     for citation in answer.bases

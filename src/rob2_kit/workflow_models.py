@@ -117,6 +117,37 @@ class WorkingSourceRange(StrictModel):
         return self
 
 
+class VisualEvidenceReference(StrictModel):
+    """Host transcription of an authentic delivered image, not verified OCR."""
+
+    delivery_receipt: Identity = Field(
+        description="Receipt returned alongside render_page ImageContent for this Trial."
+    )
+    region: tuple[
+        NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate, NormalizedCoordinate
+    ] = Field(description="Normalized x0,y0,x1,y1 bounds of the transcribed image region.")
+    transcription: VisualTranscription = Field(
+        description="Literal self-contained account of the region, including relevant labels, "
+        "values, units, denominators and footnotes. This is a host observation, not OCR truth."
+    )
+    uncertainty: VisualTranscription | None = Field(
+        default=None,
+        max_length=2_000,
+        exclude_if=lambda value: value is None,
+        description="Optional uncertainty about the image interpretation; do not invent a value.",
+    )
+
+    @model_validator(mode="after")
+    def ordered_region(self) -> VisualEvidenceReference:
+        x0, y0, x1, y1 = self.region
+        if not (x0 < x1 and y0 < y1):
+            raise ValueError("region must be ordered and inside the render page")
+        return self
+
+
+DomainSourceReference = SubmittedEvidenceHandle | WorkingSourceRange | VisualEvidenceReference
+
+
 class WorkingObservationScope(StrictModel):
     """Host interpretation of source scope, never a source-entailment certificate."""
 
@@ -2275,7 +2306,9 @@ class DomainEvidenceCitation(StrictModel):
         "Existing checkpoint-identity/observation links remain valid for resumed notes. "
         "No scope, source entailment or answer is inferred by the server.",
     )
-    evidence: SubmittedEvidenceHandle = Field(description="Current-Trial selected Evidence handle.")
+    evidence: DomainSourceReference = Field(
+        description="Selected handle, exact text range, or delivered visual-region transcription."
+    )
     role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
         Field(description="Scientific relationship of the inspected Evidence to this question.")
     )
@@ -2295,9 +2328,9 @@ class DomainInformationLimit(StrictModel):
 class DomainCounterpoint(StrictModel):
     """One scientific counterclaim citing inspected Evidence directly."""
 
-    evidence: tuple[SubmittedEvidenceHandle | WorkingSourceRange, ...] = Field(
+    evidence: tuple[DomainSourceReference, ...] = Field(
         min_length=1,
-        description="Selected handles or exact text ranges for this counterclaim.",
+        description="Selected handles, exact text ranges or delivered visual references.",
     )
     implication: NonBlankText = Field(
         description="How the cited passages together limit or challenge the answer."
@@ -2323,13 +2356,12 @@ class DomainSaveAnswer(StrictModel):
     answer: Answer = Field(
         description="Submitted response; must be among this question card's permitted options."
     )
-    bases: tuple[DomainEvidenceCitation | SubmittedEvidenceHandle | WorkingSourceRange, ...] = (
-        Field(
-            default=(),
-            description="Lean support: handles or exact text ranges assert supporting "
-            "facts, saved as indirect_support. Use full citations for other roles or annotations. "
-            "Source resolution does not establish entailment or change an answer.",
-        )
+    bases: tuple[DomainEvidenceCitation | DomainSourceReference, ...] = Field(
+        default=(),
+        description="Lean support: handles, exact text ranges or delivered visual references "
+        "assert supporting "
+        "facts, saved as indirect_support. Use full citations for other roles or annotations. "
+        "Source resolution does not establish entailment or change an answer.",
     )
     absence_searches: tuple[SubmittedSearchReceiptHandle, ...] = Field(
         default=(),
@@ -2351,13 +2383,18 @@ class DomainSaveAnswer(StrictModel):
         description="Remaining material unknowns; explicitly use [] when none remain."
     )
     counterevidence: tuple[DomainCounterpoint, ...] = Field(
-        description="Counterclaims cite Evidence handles directly; explicitly use [] when none."
+        description="Counterclaims cite inspected source references; explicitly use [] when none."
     )
 
     def canonical_payload(self) -> dict[str, Any]:
         payload = self.model_dump(mode="json", exclude={"absence_searches", "limitations"})
         if any(not isinstance(citation, DomainEvidenceCitation) for citation in self.bases):
             raise ValueError("resolve compact source references before canonical submission")
+        if any(
+            isinstance(citation, DomainEvidenceCitation) and not isinstance(citation.evidence, str)
+            for citation in self.bases
+        ):
+            raise ValueError("resolve citation source references before canonical submission")
         payload["bases"] = [
             {
                 "kind": citation.role,
@@ -2380,7 +2417,7 @@ class DomainSaveAnswer(StrictModel):
             for handle in point.evidence:
                 if not isinstance(handle, str):
                     raise ValueError(
-                        "resolve counterpoint source ranges before canonical submission"
+                        "resolve counterpoint source references before canonical submission"
                     )
                 indexes = [
                     index

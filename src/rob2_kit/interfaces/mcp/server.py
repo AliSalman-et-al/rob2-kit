@@ -271,7 +271,13 @@ class _InputSchemaDelivery(Middleware):
                     + "/".join(
                         str(step)
                         for step in item["loc"]
-                        if step not in {"DomainEvidenceCitation", "constrained-str"}
+                        if step
+                        not in {
+                            "DomainEvidenceCitation",
+                            "WorkingSourceRange",
+                            "VisualEvidenceReference",
+                            "constrained-str",
+                        }
                         and not str(step).startswith("function-")
                     ),
                     "detail": item["msg"],
@@ -3498,7 +3504,10 @@ def select_text_evidence(
     title="Render source page",
     description=(
         "Render one PDF page. Returns metadata and pixels as ImageContent by default; "
-        "pass inline=false for metadata/cache-only use."
+        "pass inline=false for metadata/cache-only use. After inspecting pixels, a Domain "
+        "basis may use {delivery_receipt, region, transcription, uncertainty?} directly in "
+        "save_domain_judgment, or select_visual_evidence can return a reusable handle. "
+        "Only the receipt issued alongside pixels supports visual selection."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("render_page"),
@@ -4152,10 +4161,13 @@ def get_domain_context(
         "Counterevidence objects give nonempty evidence handle lists and explain the cited "
         "Evidence's joint implication. "
         "For opt-in lean drafting, bases may contain selected Evidence handle strings or exact "
-        "read_pages source ranges. These assert supporting facts and become indirect_support; "
-        "the server captures exact text and reuses its Evidence identity without a selection call. "
-        "Keep full citations for explicit context/contradiction roles and visual Evidence handles. "
-        "Counterpoints also accept text ranges. No observation or premise layer is required. "
+        "read_pages source ranges, or {delivery_receipt, region, transcription, uncertainty?} "
+        "from an inspected render_page image. These assert supporting facts and become "
+        "indirect_support; the existing selectors resolve exact text or host visual Evidence. "
+        "Visual source/page/render/hash are derived from the authentic current-Trial receipt; "
+        "the transcription is not verified OCR. Text ranges never cover graphical cells. "
+        "Keep {evidence: reference, role} for explicit roles. Counterpoints accept the same "
+        "references. No observation or premise layer is required. "
         "Optional bases[].working_observation accepts {text, scope?}; the server captures "
         "the cited Evidence locator without a working checkpoint. Existing checkpoint links "
         "remain available for resumed notes. Scope is host asserted and cannot decide an answer. "

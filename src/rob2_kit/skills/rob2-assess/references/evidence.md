@@ -128,9 +128,12 @@ were delivered; it does not establish that the definition is complete.
 ## Use visual Evidence for visual meaning
 
 Call `render_page` when layout, axes, columns, symbols, or footnotes affect the
-meaning. Inspect the returned pixels, then call `select_visual_evidence` with the
-`delivery_receipt` from the same response, a normalized region, and a literal,
-self-contained transcription. A receipt is issued only when the response includes
+meaning. Inspect the returned pixels, then use their `delivery_receipt`, a normalized
+region and a literal, self-contained transcription. During Domain submission, this
+reference may go directly in `bases` or `counterevidence[].evidence`; call
+`select_visual_evidence` first when a reusable selected handle is useful (or needed
+for Proposal construction). Both paths use the same visual selector. A receipt is
+issued only when the response includes
 an MCP `ImageContent` block; `inline=false` returns metadata without a receipt and
 cannot support visual Evidence. Include every applicable title, axis, series,
 label, value, unit, uncertainty, denominator, and footnote visible in the region.
@@ -239,14 +242,29 @@ This is syntax, not a recommended answer. Compact entries assert supporting fact
 the server saves their scientific role as `indirect_support`, not proven direct
 entailment. It resolves text through the existing exact selector and reuses the
 Evidence content identity. No separate selection call, working observation or
-premise record is needed. Counterpoints may use the same handle/range references.
+premise record is needed. Counterpoints may use the same references.
 Keep unknowns, limiting implications and any investigation stopping rationale
 explicit; all active questions and the normal validation rules still apply.
 
 For context, contradiction, an explicit support role or an annotation, retain the
-full `{evidence, role, working_observation?}` citation. Use already selected visual
-Evidence handles: a text range cannot supply a visual transcription or render
-receipt. The full official guidance and source reading/recovery workflow are
+full `{evidence: reference, role, working_observation?}` citation. Its reference may
+also be a text range or a delivered visual reference. A visual reference is:
+
+```json
+{
+  "delivery_receipt": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "region": [0.1, 0.2, 0.9, 0.8],
+  "transcription": "Literal labels, values, units and qualifications visible in this region.",
+  "uncertainty": "The exact value of one marker is unclear; no value is inferred."
+}
+```
+
+Copy an authentic receipt from the returned image; the example is syntax only.
+The server resolves Source, page, render and pixel hash from that receipt and retains
+your transcription and uncertainty as host observations. A text range never becomes
+visual Evidence and cannot substitute for graphical cells. Reuse selected handles
+when the same long transcription would otherwise be repeated across answers.
+The full official guidance and source reading/recovery workflow are
 unchanged. Neither a compact reference nor successful saving proves entailment.
 
 ## Preserve working observation scope

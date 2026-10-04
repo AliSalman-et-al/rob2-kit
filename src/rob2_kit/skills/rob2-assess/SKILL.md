@@ -266,8 +266,10 @@ lossless character fragments. A fragment has no `passage_ref` or Evidence
 authority; continue its exact `next_start_char` window until the complete line
 is returned before selecting or citing it. Recover the Evidence needed for each premise
 with `read_pages`, and render `render_page` image blocks separately when layout
-matters. Inspect the actual image block and pass its `delivery_receipt` to
-`select_visual_evidence` before using a transcription.
+matters. Inspect the actual image block. A Domain basis may directly contain
+`{delivery_receipt, region, transcription, uncertainty?}` from that image, or use
+`select_visual_evidence` first for a reusable handle. Text ranges do not capture
+graphical cells. The host's transcription remains an observation, not verified OCR.
 
 For a comparison card, use `question_id` to find its wording and options in
 `questions`. Before citing Evidence with `text_status:"omitted"`, confirm that
