@@ -1674,6 +1674,7 @@ def _comparison_cards(
                     "randomized",
                     "eligible",
                     "treated",
+                    "completed",
                     "observed",
                     "analyzed",
                     "imputed",
@@ -1687,6 +1688,7 @@ def _comparison_cards(
             ("randomized", "randomized"),
             ("eligible", "eligible"),
             ("treated", "treated"),
+            ("completed", "completed"),
             ("observed", "observed"),
             ("analyzed", "analyzed"),
             ("imputed", "imputed"),
@@ -1725,6 +1727,8 @@ def _comparison_cards(
                 )
             ]
             for kind, field in flow_fields:
+                if kind == "completed" and field not in row:
+                    continue
                 value = row.get(field)
                 status = (
                     "conflicted"
@@ -1746,6 +1750,7 @@ def _comparison_cards(
                         "event_definition": row.get("event_definition"),
                         "scope": scope,
                         "passages": basis_passages,
+                        **({"semantics": row["semantics"]} if "semantics" in row else {}),
                     }
                 )
 
@@ -3529,6 +3534,7 @@ def get_domain_context(
                             "randomized",
                             "eligible",
                             "treated",
+                            "completed",
                             "observed",
                             "analyzed",
                             "imputed",

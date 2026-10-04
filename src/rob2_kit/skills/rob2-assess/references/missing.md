@@ -52,6 +52,7 @@ evidence of missing outcomes.
 Keep these quantities distinct for each arm and time point:
 
 - randomized participants;
+- participants reported to complete study or follow-up (`completed`);
 - participants with the outcome observed;
 - participants included in the reported analysis;
 - participants whose outcomes were imputed; and
@@ -61,6 +62,13 @@ Keep these quantities distinct for each arm and time point:
 An analyzed count is not necessarily an observed count. Imputed outcomes count
 as missing outcome data for RoB 2. Treatment discontinuation is not missing
 outcome data when follow-up and outcome ascertainment continued.
+
+When completion and endpoint availability are both reported, record them as
+separate source-bound quantities before applying the official questions. The
+existing preview accepts `completed` alongside `observed`, `analyzed` and
+`imputed`; it does not turn completion into observed outcomes or infer overlap
+between those groups. Preserve the row's outcome-status and censoring semantics
+and inspect the cited passages when their relationship is unresolved.
 
 Questions 2.3, 2.6, and 3.1 may include compact `missing_data` rows. Give each
 row a comparable arm, population, unit, and time point. Use a row-level `basis`

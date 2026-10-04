@@ -368,6 +368,12 @@ known Result scope, Source provenance, passage groups, and compatible D3
 arithmetic. The host classifies causation, follow-up, censoring, and plan
 correspondence.
 
+Participant-flow rows keep study/follow-up completion (`completed`) separate
+from endpoint observation, analysis inclusion and imputation. Completion never
+enters missing-outcome arithmetic. Comparison projections retain the row's
+outcome-status and censoring semantics together with Result scope and source
+coordinates; they do not infer overlap or a signaling answer.
+
 For Domain 4, the host's audit starts from the approved event and ascertainment
 method, then checks method suitability, between-group detection opportunities,
 assessor identity and awareness, and any influence mechanism in that order.

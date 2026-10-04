@@ -1,0 +1,17 @@
+{
+  "paid_model_calls": 0,
+  "initial_focused_run": "44 passed, 1 failed: new native test used internal preview_missing_data rather than public missing_data argument; fixed test, not runtime",
+  "corrected_native_round_trip": "1 passed",
+  "arithmetic_semantics_and_historical_bundle_suite": "57 passed in 167.75s",
+  "final_new_behaviors_and_authoritative_context_suite": "8 passed in 24.75s",
+  "lint": "ruff check src tests scripts/verify_bundle.py passed",
+  "format": "nine changed Python files already formatted",
+  "type_check": "ty check src tests docs/release passed (CI scope)",
+  "unrestricted_type_check": "An initial ty check without CI paths also checked historical diagnostic and benchmark scripts and reported 324 diagnostics. No unrelated scripts were repaired; CI-scoped check passed.",
+  "release_verifier": "Initially rejected stale public schema hashes, then passed after regenerating public-contract.json",
+  "code_benchmark_bundles": "STOP-IgAN and PIONEER-6 independently verified; hashes unchanged",
+  "algorithm_and_official_guidance_changes": false,
+  "activation_gate_changes": false,
+  "accuracy_or_model_behavior_improvement_demonstrated": false,
+  "full_benchmark": false
+}

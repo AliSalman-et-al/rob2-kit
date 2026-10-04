@@ -264,3 +264,64 @@ def test_participant_counts_do_not_answer_the_d3_availability_proposition() -> N
         )[0]
         availability = next(item for item in card["propositions"] if item["name"] == "availability")
         assert availability["status"] == "unknown"
+
+
+def test_endpoint_observations_can_outnumber_completed_follow_up() -> None:
+    # Continuous endpoint measurements can be available despite missed final visits.
+    rows = reconcile_missing_data(
+        [
+            {
+                "arm": "active",
+                "population": "randomized participants",
+                "unit": "participants",
+                "time_point": "week 12",
+                "endpoint": "change in symptom score",
+                "randomized": 100,
+                "completed": 88,
+                "observed": 94,
+                "analyzed": 94,
+                "semantics": {"population_role": "randomized", "outcome_status": "observed"},
+            }
+        ]
+    )
+    assert rows["rows"][0]["missing"] == 6
+    assert rows["conflicts"] == []
+    card = _comparison_cards("domain:missing", _result(), {}, [], [], participant_flow_data=rows)[0]
+    flow = {item["kind"]: item for item in card["participant_flow"]}
+    assert flow["completed"]["value"] == 88
+    assert flow["observed"]["value"] == 94
+    assert flow["observed"]["endpoint"] == "change in symptom score"
+    assert flow["observed"]["semantics"]["outcome_status"] == "observed"
+
+
+def test_time_to_event_censoring_is_not_converted_to_missing_outcomes() -> None:
+    for kind in ("administrative", "loss_to_follow_up"):
+        rows = reconcile_missing_data(
+            [
+                {
+                    "arm": "active",
+                    "population": "randomized participants",
+                    "unit": "participants",
+                    "time_point": "common cutoff",
+                    "endpoint": "time to first major event",
+                    "randomized": 100,
+                    "completed": 88,
+                    "analyzed": 100,
+                    "event_count": 10,
+                    "event_definition": "first major event",
+                    "semantics": {
+                        "population_role": "follow_up",
+                        "outcome_status": "unknown",
+                        "censoring": {"kind": kind, "count": 12, "timing": "variable follow-up"},
+                    },
+                }
+            ]
+        )
+        card = _comparison_cards(
+            "domain:missing", _result(), {}, [], [], participant_flow_data=rows
+        )[0]
+        flow = {item["kind"]: item for item in card["participant_flow"]}
+        assert flow["completed"]["value"] == 88 and flow["analyzed"]["value"] == 100
+        assert flow["observed"]["value"] is None
+        assert flow["completed"]["semantics"]["censoring"]["kind"] == kind
+        assert card["missing_data"]["rows"][0]["missing"] is None

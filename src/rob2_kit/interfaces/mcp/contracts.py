@@ -36,6 +36,7 @@ from rob2_kit.workflow_models import (
     MissingDataSemantics,
     NormalizedCoordinate,
     OmissionDecision,
+    ParticipantFlowKind,
     QuestionId,
     RegistryOutcome,
     RelativePath,
@@ -2319,16 +2320,7 @@ class MissingDataScope(PublicModel):
 class ParticipantFlowProjection(PublicModel):
     """A source-bound participant transition or event numerator."""
 
-    kind: Literal[
-        "randomized",
-        "eligible",
-        "treated",
-        "observed",
-        "analyzed",
-        "imputed",
-        "excluded",
-        "event",
-    ]
+    kind: ParticipantFlowKind
     value: StrictInt | None = Field(default=None, ge=0)
     status: Literal["supported", "unknown", "conflicted"] = "unknown"
     result_identity: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
@@ -2340,6 +2332,9 @@ class ParticipantFlowProjection(PublicModel):
     )
     scope: MissingDataScope
     passages: tuple[ComparisonPassageRef, ...] = ()
+    semantics: MissingDataSemantics | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
 
 
 class MissingDataBounds(PublicModel):
@@ -2363,6 +2358,7 @@ class MissingDataReconciledRow(PublicModel):
     randomized: StrictInt | None = Field(default=None, ge=0)
     eligible: StrictInt | None = Field(default=None, ge=0)
     treated: StrictInt | None = Field(default=None, ge=0)
+    completed: StrictInt | None = Field(default=None, ge=0, exclude_if=lambda value: value is None)
     observed: StrictInt | None = Field(default=None, ge=0)
     analyzed: StrictInt | None = Field(default=None, ge=0)
     imputed: StrictInt | None = Field(default=None, ge=0)

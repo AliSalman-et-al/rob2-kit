@@ -182,7 +182,9 @@ def _valid_missing_data(
         "event_definition",
     )
     legacy_optional = {"semantics"}
-    current_optional = legacy_optional | set(result_scope_fields[1:]) | {"result_identity"}
+    current_optional = (
+        legacy_optional | set(result_scope_fields[1:]) | {"result_identity", "completed"}
+    )
     current_schema = any(isinstance(row, dict) and "missing_bounds" in row for row in value["rows"])
     required = current_required if current_schema else legacy_required
     optional = current_optional if current_schema else legacy_optional
@@ -199,7 +201,7 @@ def _valid_missing_data(
             return False
         numeric_fields = ["randomized", "observed", "analyzed", "imputed"]
         if current_schema:
-            numeric_fields.extend(["eligible", "treated", "excluded", "event_count"])
+            numeric_fields.extend(["eligible", "treated", "completed", "excluded", "event_count"])
         if any(
             row.get(key) is not None
             and (isinstance(row[key], bool) or not isinstance(row[key], int) or row[key] < 0)
@@ -231,6 +233,7 @@ def _valid_missing_data(
             "randomized",
             "eligible",
             "treated",
+            "completed",
             "observed",
             "analyzed",
             "imputed",
@@ -336,6 +339,7 @@ def _valid_missing_data(
             "randomized",
             "eligible",
             "treated",
+            "completed",
             "observed",
             "analyzed",
             "imputed",

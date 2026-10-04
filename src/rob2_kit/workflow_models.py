@@ -392,6 +392,7 @@ ParticipantFlowKind = Literal[
     "randomized",
     "eligible",
     "treated",
+    "completed",
     "observed",
     "analyzed",
     "imputed",
@@ -442,6 +443,13 @@ class MissingDataRow(StrictModel):
     )
     treated: NonNegativeInt | None = Field(
         default=None, description="Number receiving or starting the assigned intervention."
+    )
+    completed: NonNegativeInt | None = Field(
+        default=None,
+        description=(
+            "Number reported to complete study or follow-up in this scope. This is not an "
+            "observed-outcome count; endpoint availability and overlap remain separate facts."
+        ),
     )
     observed: NonNegativeInt | None = Field(
         default=None, description="Number with observed outcome data when reported."

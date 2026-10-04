@@ -538,3 +538,56 @@ def test_analysis_rule_context_preserves_conditional_inference() -> None:
     assert all(
         not {"expected_answer", "expected_judgment", "severity"} & p.keys() for p in pairs.values()
     )
+
+
+def test_native_completion_preview_and_save_preserve_unknown_observation(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    for domain in ("domain:randomization", "domain:deviations"):
+        revision = _save_domain(workspace, domain, revision, evidence)
+    row = {
+        "arm": "intervention",
+        "population": "randomized participants",
+        "unit": "participants",
+        "time_point": "week 12",
+        "randomized": 100,
+        "completed": 95,
+        "analyzed": 100,
+        "basis": [evidence["handle"]],
+        "semantics": {
+            "population_role": "follow_up",
+            "outcome_status": "unknown",
+            "censoring": {"kind": "administrative", "timing": "common cutoff"},
+        },
+    }
+    before = _call(workspace, "get_status", {})["head"]["state_revision"]
+    preview = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "domain_id": "domain:missing",
+            "missing_data": [row],
+            "guidance_profile": "official_d3_prototype",
+        },
+    )
+    assert preview["outcome"] == "success", preview
+    assert _call(workspace, "get_status", {})["head"]["state_revision"] == before
+    card = preview["data"]["comparison_cards"][0]
+    flow = {item["kind"]: item for item in card["participant_flow"]}
+    assert flow["completed"]["value"] == 95
+    assert flow["observed"]["value"] is None and flow["observed"]["status"] == "unknown"
+    assert flow["completed"]["result_identity"] == card["result_identity"]
+    assert flow["completed"]["scope"]["arm"] == "intervention"
+    assert flow["completed"]["passages"]
+    assert flow["completed"]["semantics"]["censoring"]["kind"] == "administrative"
+    assert card["missing_data"]["rows"][0]["missing"] is None
+
+    draft = _domain_draft("trial", "domain:missing", revision, evidence)
+    next(a for a in draft["answers"] if a["question_id"] == "sq:missing:data-available")[
+        "missing_data"
+    ] = [row]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success", saved
+    restored = _call(workspace, "get_domain_context", {"domain_id": "domain:missing"})
+    persisted = restored["data"]["comparison_cards"][0]["missing_data"]["rows"][0]
+    assert persisted["completed"] == 95 and persisted["observed"] is None
+    assert persisted["result_identity"] == card["result_identity"]

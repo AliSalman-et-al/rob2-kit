@@ -1,0 +1,16 @@
+[
+  {
+    "case": "stop-igan",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/stop-igan/.rob2-kit/finalized/fd1ff10d6526ad75f83607b17622270541676e1798843f3d27b09344963a047a.rob2.zip",
+    "sha256": "044d76ce385b07d6a8e52e01d72ef686bf3eae9ca1a7292cd4cefb30e5b3c271",
+    "independent_bundle_verification": true,
+    "bytes_unchanged": true
+  },
+  {
+    "case": "pioneer-6",
+    "path": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/pioneer-6/.rob2-kit/finalized/bdebf52b3d257ad54d1e73c7b257503f2c05ee3f8064bded9181dc3436f47618.rob2.zip",
+    "sha256": "4d5bc58fcf6097c48da0343cf2a6bb48f3a62cd748e4e5776235201176032cfe",
+    "independent_bundle_verification": true,
+    "bytes_unchanged": true
+  }
+]
