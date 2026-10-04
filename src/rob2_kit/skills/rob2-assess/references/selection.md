@@ -12,6 +12,18 @@ before unblinded outcome data were available, or that later changes were
 unrelated to the results. Then compare the plan with the approved reported
 Result.
 
+A missing protocol/SAP in this captured dossier does not show publication
+unavailability. Prospective intake can opt into official registry-linked document
+capture using `registry.acquire_documents = true` in `sources.toml`. This adds
+new current source versions; it does not refresh or replace archived benchmark
+bytes. In Source inventory, inspect the registry document discovery/provenance
+Source for URLs, document/upload/retrieval dates and acquisition unknowns. Read
+the linked protocol/SAP passages themselves; capture is not reading. Recover
+image-only pages with `render_page`. The metadata link establishes registry
+association, while Trial/content applicability and pre-unblinding finalization
+still require assessment. Unsupported or absent registry links leave an explicit
+unknown; companion publications may remain available through other sources.
+
 Use captured Source provenance to locate the applicable plan passages. The
 active comparison card lists every captured Source, including supplements and
 combined protocol documents with no selected passages. Compare

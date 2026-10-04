@@ -42,6 +42,7 @@ from ._state import (
     internal_path,
 )
 from .contracts import WorkflowConflict
+from .registry_documents import acquire_documents
 from .result_scope import result_scope_review
 from .status import _continuation
 
@@ -289,6 +290,7 @@ def _manifest_registry_identifier(config: dict[str, Any]) -> str | None:
                 "captured_at",
                 "sha256",
                 "provenance",
+                "acquire_documents",
             }
         )
         if unsupported:
@@ -598,6 +600,9 @@ def prepare_batch(
             for item in omissions
         ]
         nct = _manifest_registry_identifier(config)
+        acquire = (config.get("registry") or {}).get("acquire_documents", False)
+        if not isinstance(acquire, bool):
+            raise ValueError("registry.acquire_documents must be boolean")
         registry_replay = _manifest_registry_replay(config)
         replay_relative = registry_replay["replay"] if registry_replay is not None else None
         replay_data: bytes | None = None
@@ -839,6 +844,84 @@ def prepare_batch(
             conditions.append(
                 {"code": "invalid_registry_identifier", "trial_id": trial_id, "value": str(nct)}
             )
+        if acquire:
+            # Explicitly opting into acquisition against a replay creates current
+            # sources; the archived registry bytes and assessment source remain intact.
+            document_capture = (
+                _registry_record(nct) if replay_data is not None else registry_capture
+            )
+            if (
+                document_capture.outcome.get("kind") == "matched"
+                and document_capture.content is not None
+            ):
+                documents, provenance = acquire_documents(str(nct), document_capture.content)
+            else:
+                documents, provenance = (
+                    [],
+                    {
+                        "status": "registry_unavailable_or_unmatched",
+                        "capture_kind": "new_public_capture_not_historical_replay",
+                        "registry_outcome": document_capture.outcome,
+                    },
+                )
+            # This source itself makes unknown acquisition outcomes readable,
+            # without converting them into a workflow blocker or signalling answer.
+            metadata = json.dumps(provenance, indent=2, ensure_ascii=False).encode()
+            version = hashlib.sha256(metadata).hexdigest()[:16]
+            acquired = [
+                (f"registry_documents/{version}/{doc.filename}", doc.content, doc.role)
+                for doc in documents
+            ]
+            acquired.append((f"registry_documents/{version}/capture.json", metadata, "other"))
+            if replay_data is not None and document_capture.content is not None:
+                acquired.append(
+                    (
+                        f"registry_documents/{version}/current_registry.json",
+                        document_capture.content,
+                        "other",
+                    )
+                )
+            for relative, data, role in acquired:
+                digest = "sha256:" + hashlib.sha256(data).hexdigest()
+                source_id = _source_id(trial_id, relative, digest)
+                pages = _pages(Path(relative), data)
+                media_type = "application/pdf" if relative.endswith(".pdf") else "application/json"
+                target = internal_path(root, "sources", trial_id, f"{source_id}.bin")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+                records.append(
+                    {
+                        "id": source_id,
+                        "trial_id": trial_id,
+                        "role": role,
+                        "label": (
+                            "Registry document discovery/provenance: new capture, "
+                            "not historical replay"
+                            if relative.endswith("/capture.json")
+                            else "Current registry response used for document discovery"
+                            if relative.endswith("/current_registry.json")
+                            else f"Current registry-linked {role}: {Path(relative).name}"
+                        ),
+                        "logical_path": relative,
+                        "sha256": digest,
+                        "media_type": media_type,
+                        "page_count": len(pages),
+                        "origin": "registry",
+                        "projection_hash": _projection_hash(digest, media_type, pages),
+                    }
+                )
+                with _db(root, "derivative.sqlite3") as derivative:
+                    derivative.executemany(
+                        "INSERT OR REPLACE INTO pages VALUES (?,?,?)",
+                        [(source_id, number, text) for number, text in enumerate(pages, 1)],
+                    )
+                    derivative.executemany(
+                        "INSERT INTO pages_fts VALUES (?,?,?,?)",
+                        [
+                            (source_id, number, *_search_derivative(text))
+                            for number, text in enumerate(pages, 1)
+                        ],
+                    )
         # A plain dossier has no registry claim to review.  A manifest that
         # declares an authoritative NCT or registry outcome does.
         if (nct is not None or "registry" in config) and registry_record.get("kind") != "matched":

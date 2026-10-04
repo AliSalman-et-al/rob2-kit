@@ -50,3 +50,6 @@ validator rejection and before/after freeze checks. The offline inspection scrip
 is separately preserved at task-workspace
 `diagnostics/chua-host-assisted-handoff-20261004/preflight.py`; it contains no launch
 adapter. Production code and original protected artifacts were not changed.
+
+Full preserved blocker checkpoint SHA: `7fd0de7a9f2177c980a036d6e7b4770b1c98ef4c`.
+The original control remains incomplete; no further workaround is authorized.

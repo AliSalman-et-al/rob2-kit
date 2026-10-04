@@ -1449,6 +1449,7 @@ def _comparison_cards(
                 "registry_url": (
                     registry_capture.get("url")
                     if source.get("origin") == "registry"
+                    and source.get("role") == "registry"
                     and isinstance(registry_capture, dict)
                     and registry_capture.get("kind") == "matched"
                     else None
@@ -1456,6 +1457,7 @@ def _comparison_cards(
                 "registry_retrieved_at": (
                     registry_capture.get("retrieved_at")
                     if source.get("origin") == "registry"
+                    and source.get("role") == "registry"
                     and isinstance(registry_capture, dict)
                     and registry_capture.get("kind") == "matched"
                     else None
