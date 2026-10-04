@@ -1,0 +1,19 @@
+# Registry source-delta eligibility, 4 October 2026
+
+Recommendation: one MONALEESA-3 native source-fidelity pilot after evidence preflight and parent approval. No paid call was made. DAPA is not recommended; ACTT is not a Code benchmark case.
+
+## DAPA correspondence
+
+Original Code dossier: `nejmoa1911303_protocol.pdf`, 275 pages, SHA256 `2aaa0770fb33dd19335299ad3582779c3ff98125dd6b720b04092d69b01ad053`. Registry documents are different bytes, not new substantive plans. Protocol pages 1–103 correspond to Code pages 87–189: 101 pages have exact whitespace-normalized extracted text; remaining differences are sponsor-address/investigator redaction on pages 1 and 5. SAP pages 1–52 correspond to Code pages 223–274: 32 exact whitespace-normalized text pages; 50 exact alphanumeric-normalized pages. The two remaining image-only registry pages (1, 3) were visually compared with Code pages 223, 225: matching edition 3/date 23 July 2019 covers, with placement/redaction differences. This is qualified content correspondence, not PDF identity. Exact rendered-page matching found 55 protocol pages and zero SAP pages; raster equality is not claimed for other pages. Publisher dossier additionally retains versions/signature material. Preserve both versions and their provenance.
+
+Registry PDF hashes: protocol `f2cf95437aa48759484b4bea996d56e2640d23c8467c81c640a4839a26322f5e`; SAP `1ede27af86fb4859ebd7b7f0f1b4cf9e406c618f5a60c2b43c43b6351bed83f0`. DAPA is extensively development-exposed. A repeated assessment would not demonstrate new scientific information.
+
+## Selection and limitations
+
+Examined the 106 actual Code trial manifests and local input filenames for identity/availability only; no benchmark labels or scored judgments used. Neither ACTT NCT04280705 nor related NCT04257656 occurs in those manifests, and no ACTT/remdesivir-named case is tracked. No invented ACTT benchmark pilot. Filename screening was only preliminary: MONALEESA-3 was then directly checked and contains one article PDF and its manifest, no local plan. Only that candidate received a registry lookup; no registry crawl.
+
+[Official MONALEESA-3 record](https://clinicaltrials.gov/study/NCT02422615) explicitly lists [protocol](https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/Prot_002.pdf) and [SAP](https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/SAP_003.pdf). Both captured on 4 October 2026, hashes and UTC retrieval times in eligibility.json. Protocol: 185 pages, amended version 04, release 29 January 2020. SAP: 106 pages, 2023 final CSR plan pages 1–29 plus embedded Final Amendment v2.0 release 11 October 2017 pages 30–106. Embedded plan page 43 states decisions preceded database lock/unblinding and references protocol amendment 2 of 28 July 2016. Later plan page 9 records unblinding following PFS/OS benefit. Registry upload 2 November 2023 proves public availability then, not pre-2018 availability. Neither embedded date nor sponsor assertion independently establishes original approval timing. Later protocol applicability must be checked against the exact 2018 result.
+
+Eligibility is an availability gap and native evidence-use test, not a prospective accuracy claim. Full MCP access and normal completion are intended; no forced tool sequence or domain answers. Private review criteria remain outside model input. Exact native IDs/page-line coverage and 2018 result detail remain to be frozen before `launch_checked`; current packet is not launch-ready. Full benchmark remains off. No production changes or new framework.
+
+Supporting raw captures, page text, visual comparisons and hash freeze are private in `diagnostics/source-delta-20261004`; original benchmark and previous capture freezes were only read. Interrupted an unnecessarily expensive all-page fuzzy comparison; exact aligned checks supplied the needed evidence instead.
