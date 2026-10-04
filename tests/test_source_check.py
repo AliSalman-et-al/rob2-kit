@@ -53,7 +53,10 @@ def assessment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, d
     draft = support._domain_draft("trial", "domain:selection", revision, text)
     first = draft["answers"][0]
     first["justification"] = FACT + " " + INFERENCE
-    first["unknowns"] = ["These counts do not establish observed outcome availability."]
+    first["unknowns"] = [
+        "These counts do not establish observed outcome availability.",
+        "The outcome measurement method remains unresolved.",
+    ]
     first["bases"] += [
         {
             "evidence": {"source_id": notes["id"], "page": 1, "start_line": 1, "end_line": 2},
@@ -396,3 +399,26 @@ def test_native_preflight_preserves_integer_bound_and_local_text_limits():
                 ],
             }
         )
+
+
+def test_excerpt_receipt_and_saved_unknown_entry_identity(
+    assessment: tuple[Path, dict[str, Any]],
+) -> None:
+    workspace, packet = assessment
+    report = _report(packet)
+    reference = report["findings"][0]["references"][0]
+    reference["quote"] = "Alpha 20, Beta 30, Gamma 40 randomized participants."
+    receipt = validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+    resolved = receipt["resolved_references"][0]
+    assert resolved["quote"] == reference["quote"]
+    assert resolved["resolved_subspan"]["start_char"] == len("Period 1: ")
+    assert resolved["resolved_location"]["end_line"] == 1
+    first = report["findings"][0]
+    first["field"] = "unknowns"
+    unknowns = packet["claims"][0]["unknowns"]
+    first["clause"] = unknowns[0]
+    receipt = validate_report(workspace, packet, SourceCheckReport.model_validate(report))
+    assert receipt["resolved_clauses"][0]["entry_path"] == [0]
+    first["clause"] = " ".join(unknowns)
+    with pytest.raises(ValueError, match="one exact saved field entry"):
+        validate_report(workspace, packet, SourceCheckReport.model_validate(report))

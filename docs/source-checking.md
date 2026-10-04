@@ -3,7 +3,9 @@
 This is an advisory source-fidelity path, disabled unless explicitly prepared.
 It does not introduce a model into the server, change scientific authority, or
 add a closure gate. Official Cochrane guidance and the original assessor remain
-authoritative. No paid reviewer behavior has been demonstrated for this version.
+authoritative. The Freeman recovery experiment is rejected for default adoption: it missed known
+cross-arm and original-citation errors and gave false assurance. No scientific gain
+was demonstrated. Its frozen report is not endorsed feedback for the original author.
 
 Prepare a fresh native request from a current workspace (one Domain or all saved
 Domains), with explicit assessor/reviewer identities and settings:
@@ -56,7 +58,12 @@ legitimate inference, narrower support, citation gaps, contradictions or unresol
 support. Each has explicit uncertainty. Every saved claim must be represented,
 including retained facts/inferences; that checks report coverage, not scientific
 completeness of its conclusions. Non-unresolved findings require source references.
-Narrative quotes must equal the complete specified line window. Source ownership,
+Narrative quotes may be complete windows or contiguous excerpts within explicitly
+bound windows. The resolver collapses only ASCII whitespace runs to one space and
+records the exact original subspan as half-open Unicode codepoint offsets in the
+page projection. It does not change case, punctuation, signs, numbers or Unicode
+characters, join omitted words, splice Sources, or merge saved unknown entries.
+Repeated excerpts need narrower windows. Excerpt binding does not validate meaning. Source ownership,
 captured integrity, current Result/checkpoints and unchanged canonical claims are
 verified. Visual observations require authentic receipts and retain interpretation
 uncertainty; provenance does not certify transcription truth. Claim-specific
@@ -126,3 +133,14 @@ documented keyword profile (local text-length/nonblank checks remain authoritati
 `check_native_review_schema()` checks root/object requirements, closed properties,
 required nullable fields, supported vocabulary and local resolved references before
 preparation. This is an offline check; provider acceptance must still be observed.
+
+## Freeman experiment closure
+
+The immutable recovery report and original rejection receipt remain in
+`docs/evaluation/2026-10-04-freeman-source-check-recovery/`. Their historical
+27/27 complete-window rejection was overstrict: 13 references are faithful
+contiguous excerpts under whitespace-only comparison. Fourteen do not match
+contiguously (including paraphrase, ellipses and omitted source words). Three
+findings also join separate saved unknown entries. This contract correction
+does not repair the report, endorse its conclusions or change its scientific
+misses. No report was sent back to the author and no further review was purchased.
