@@ -365,3 +365,35 @@ def test_nested_count_closure_rejects_missing_tampered_and_other_trial(module: s
     assert not validate(
         link, {"sha256:original": {"handle": "eh_different", "trial_id": "trial"}}, "trial"
     )
+
+
+@pytest.mark.parametrize("change", ["missing", "tampered"])
+def test_nested_visual_count_source_must_validate_before_promotion(
+    account: tuple, change: str
+) -> None:
+    workspace, main, evidence_a, revision = account
+    steps = _context(workspace, "domain:missing")["working_checkpoint"]["checkpoint"][
+        "result_account"
+    ]
+    source = next(
+        s
+        for s in _state(workspace)["batch"]["trials"][0]["sources"]
+        if s["logical_path"] == "counts.pdf"
+    )
+    captured = workspace / ".rob2-kit/sources/trial" / (source["id"] + ".bin")
+    if change == "missing":
+        captured.unlink()
+    else:
+        captured.write_bytes(b"tampered source")
+    draft = support._domain_draft("trial", "domain:missing", revision, main)
+    draft["answers"][0]["bases"].append(
+        {
+            "kind": "context",
+            "evidence": evidence_a["handle"],
+            "working_observation": {"step_identity": steps[0]["identity"]},
+        }
+    )
+    saved = support._call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] != "success", saved
+    assert _state(workspace)["revision"] == revision
+    assert not _state(workspace).get("domain_records")

@@ -318,7 +318,13 @@ def test_domain_public_shape_is_closed_with_optional_observation_link() -> None:
     assert compact["required"] == ["text"]
     link = variants[1]
     assert link["additionalProperties"] is False
-    assert set(link["properties"]) == {"checkpoint_identity", "observation"}
+    assert set(link["properties"]) == {
+        "checkpoint_identity",
+        "observation",
+        "result_step",
+        "transfer",
+        "count_evidence",
+    }
     assert "oneOf" not in answer["properties"]["bases"]["items"]
     assert direct["properties"]["role"]["enum"] == [
         "direct_support",

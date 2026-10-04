@@ -633,8 +633,8 @@ def investigation_projection(
             ),
         }
         proposition = (
-            "Reconstruct how the selected Result was produced from assignment through "
-            "outcome collection, analysis and reporting before applying signalling questions."
+            "Reconstruct selected-Result production: assignment, outcome collection, "
+            "analysis and reporting."
         )
         source_bindings = _source_scope(state, trial_id)
         source_scope = tuple(source_handle(item.source_id) for item in source_bindings)
