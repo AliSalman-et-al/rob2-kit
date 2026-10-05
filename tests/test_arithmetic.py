@@ -117,6 +117,26 @@ def test_precision_is_local_deterministic_and_reports_rounding():
     assert upper["result"] == "1.000000000000000000000000002"
 
 
+@pytest.mark.parametrize(
+    "expression",
+    [
+        "a + b",
+        "a + (-a)",
+        "(+a) - a",
+        "a + (-10000000000000000000000000001)",
+        "(+10000000000000000000000000001) - a",
+        "a - (-(-a))",
+        "a + (-(-(-a)))",
+        "a + (-(-b))",
+    ],
+)
+def test_unary_signs_preserve_exact_literal_and_named_operands(expression):
+    value = "10000000000000000000000000001"
+    result = calculate_arithmetic(expression, {"a": value, "b": "-" + value})
+    assert result["result"] == "0"
+    assert not result["inexact"] and not result["rounded"]
+
+
 def test_native_calculator_has_no_workspace_dependency_and_preserves_state(tmp_path, monkeypatch):
     workspace, _, _ = _assessment_workspace(tmp_path)
     before = _state(workspace)

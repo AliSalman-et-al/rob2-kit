@@ -75,7 +75,7 @@ def calculate_arithmetic(
             return values[node.id]
         if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
             value = evaluate(node.operand)
-            return +value if isinstance(node.op, ast.UAdd) else -value
+            return value if isinstance(node.op, ast.UAdd) else value.copy_negate()
         if isinstance(node, ast.BinOp) and isinstance(
             node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)
         ):
@@ -113,7 +113,10 @@ def calculate_arithmetic(
                 "result": format(result, "f"),
                 "precision": 28,
                 "rounding": "ROUND_HALF_EVEN",
-                "precision_semantics": "28 significant digits at each operation and final result.",
+                "precision_semantics": (
+                    "Unary signs are exact; 28 significant digits at each binary operation "
+                    "and final result."
+                ),
                 "inexact": context.flags[Inexact],
                 "rounded": context.flags[Rounded],
                 "distinction": _DISTINCTION,

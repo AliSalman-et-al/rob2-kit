@@ -27,8 +27,11 @@ Python's binary floating-point representation.
 Limits: expression512characters/64syntaxnodes; at most16letter-led input names of
 32characters; numeric strings64characters; no exponent notation/nonfinite inputs;
 units200characters; at most8assumptions of200characters. Arithmetic uses a fresh local
-Decimal context with28significant digits and ROUND_HALF_EVEN at each operation and
-final result, exponent range[-256,256]. Undefined operations, zero division and numeric
+Decimal context with28significant digits and ROUND_HALF_EVEN at each binary operation
+and final result, exponent range[-256,256]. Unary plus preserves its operand exactly;
+unary minus changes only its sign with `copy_negate()`, without rounding. Negative
+literal and named-input representations therefore retain the same value before
+binary arithmetic. Undefined operations, zero division and numeric
 range/underflow are rejected. Flags expose rounding/inexactness; exact mathematical
 rational values beyond this precision are not claimed.
 
@@ -75,3 +78,16 @@ This closes a verified execution-affordance gap; actual model benefit remains un
 Independent review should assess syntax/resource bounds, deterministic precision,
 state isolation, compatibility and limits before any later separately authorized locked
 case. No paid inference, full benchmark or merge occurred.
+
+## Independent review follow-up
+
+Independent AI review of `c3f36fd` reported 10,000 generated reference cases
+(9,985 numeric matches and 15 zero-divisions), 5,000 malformed-input fuzz cases
+and 109 targeted checks. It identified representation-dependent early rounding
+from decimal unary signs. The follow-up uses exact unary identity/sign inversion
+and adds literal, named-input and nested-sign cancellation regressions. Binary
+rounding, final-result precision, grammar and workspace isolation remain unchanged.
+This is arithmetic implementation validation, not scientific or model-benefit validation.
+
+Follow-up validation: all55arithmetic checks pass, including the eight added exact-sign
+cancellation cases and native state-isolation checks. Focused Ruff/format/type checks pass.

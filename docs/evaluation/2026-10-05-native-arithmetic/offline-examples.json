@@ -17,7 +17,7 @@
         "result": "-3.75",
         "precision": 28,
         "rounding": "ROUND_HALF_EVEN",
-        "precision_semantics": "28 significant digits at each operation and final result.",
+        "precision_semantics": "Unary signs are exact; 28 significant digits at each binary operation and final result.",
         "inexact": false,
         "rounded": false,
         "distinction": "Arithmetic does not validate source selection, units, assumptions or scientific inference."
@@ -40,7 +40,7 @@
         "result": "10.4375",
         "precision": 28,
         "rounding": "ROUND_HALF_EVEN",
-        "precision_semantics": "28 significant digits at each operation and final result.",
+        "precision_semantics": "Unary signs are exact; 28 significant digits at each binary operation and final result.",
         "inexact": false,
         "rounded": false,
         "distinction": "Arithmetic does not validate source selection, units, assumptions or scientific inference."
@@ -59,7 +59,7 @@
         "result": "7.500",
         "precision": 28,
         "rounding": "ROUND_HALF_EVEN",
-        "precision_semantics": "28 significant digits at each operation and final result.",
+        "precision_semantics": "Unary signs are exact; 28 significant digits at each binary operation and final result.",
         "inexact": false,
         "rounded": false,
         "distinction": "Arithmetic does not validate source selection, units, assumptions or scientific inference."
@@ -80,7 +80,7 @@
         "result": "0.86046511627906976744186047",
         "precision": 28,
         "rounding": "ROUND_HALF_EVEN",
-        "precision_semantics": "28 significant digits at each operation and final result.",
+        "precision_semantics": "Unary signs are exact; 28 significant digits at each binary operation and final result.",
         "inexact": true,
         "rounded": true,
         "distinction": "Arithmetic does not validate source selection, units, assumptions or scientific inference."
@@ -99,7 +99,7 @@
         "result": "3.18604651162790697674418605",
         "precision": 28,
         "rounding": "ROUND_HALF_EVEN",
-        "precision_semantics": "28 significant digits at each operation and final result.",
+        "precision_semantics": "Unary signs are exact; 28 significant digits at each binary operation and final result.",
         "inexact": true,
         "rounded": true,
         "distinction": "Arithmetic does not validate source selection, units, assumptions or scientific inference."
@@ -119,7 +119,7 @@
         "result": "2.2384",
         "precision": 28,
         "rounding": "ROUND_HALF_EVEN",
-        "precision_semantics": "28 significant digits at each operation and final result.",
+        "precision_semantics": "Unary signs are exact; 28 significant digits at each binary operation and final result.",
         "inexact": false,
         "rounded": false,
         "distinction": "Arithmetic does not validate source selection, units, assumptions or scientific inference."
@@ -139,7 +139,7 @@
         "result": "0.7038",
         "precision": 28,
         "rounding": "ROUND_HALF_EVEN",
-        "precision_semantics": "28 significant digits at each operation and final result.",
+        "precision_semantics": "Unary signs are exact; 28 significant digits at each binary operation and final result.",
         "inexact": false,
         "rounded": false,
         "distinction": "Arithmetic does not validate source selection, units, assumptions or scientific inference."
