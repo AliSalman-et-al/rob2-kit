@@ -1,0 +1,13 @@
+{
+  "unblinded_after_score_lock_commit": "63f6e297d90bec7b0aa0e139217008359e34b0c9",
+  "score_lock_sha256": "6f699af1c7da991569f33cc203442a7e4d02eae7c1031ae3cc527e1ceef2b06e",
+  "packet_commit": "333701ee31d77450d30951a933595d8732c3ed2a",
+  "preexisting_private_key_sha256": "2a2cd5ca149f737aefe2b1f0f86ed060ffad2594ce2fd88c26d2d3f95555d104",
+  "mapping": {
+    "U": "ordinary",
+    "V": "contrastive"
+  },
+  "private_key_or_original_modified": false,
+  "raw_and_blind_response_hashes_verified": true,
+  "session_or_account_metadata_published": false
+}
