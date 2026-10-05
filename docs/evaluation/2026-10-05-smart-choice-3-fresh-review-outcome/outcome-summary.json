@@ -1,0 +1,33 @@
+{
+  "classification": "One development-exposed native review-continuation outcome; no accuracy/generalization claim",
+  "session_id": "01a10c11-50f6-7e73-9c2a-5a282059dce3",
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "original_installed_runtime": true,
+  "initial_sessions": 1,
+  "generic_same_session_technical_continuations": 1,
+  "initial_technical_stop": "three identical failed native calls without repair",
+  "initial_elapsed_seconds": 44.7392932609946,
+  "continuation_elapsed_seconds": 64.31115317999502,
+  "finalized": true,
+  "domain_save_calls": 0,
+  "saved_domain_records_unchanged": true,
+  "original_self_review_revised_domains": [
+    "domain:deviations"
+  ],
+  "raw_output_freeze_sha256": "209e2a128f45beba95c717ddc2179031044ed78a535445b0c60341ed1cb557d1",
+  "raw_frozen_files": 133,
+  "paid_work_stopped": true,
+  "usage": {
+    "response_count": 15,
+    "usage": {
+      "input_tokens": 707266,
+      "cached_input_tokens": 624896,
+      "output_tokens": 2689,
+      "reasoning_output_tokens": 844
+    },
+    "uncached_input_tokens": 82370,
+    "cost_usd": null,
+    "cost_note": "No verified current pricing; token usage is observed, dollars unknown. Reasoning tokens are a subset of output."
+  }
+}

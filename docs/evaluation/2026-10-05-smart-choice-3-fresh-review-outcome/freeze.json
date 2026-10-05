@@ -1,0 +1,14 @@
+{
+  "classification": "Post-run comparison projection; never model input or canonical answer repair",
+  "raw_output_freeze_sha256": "209e2a128f45beba95c717ddc2179031044ed78a535445b0c60341ed1cb557d1",
+  "raw_frozen_files": 133,
+  "scientific_records_unchanged": true,
+  "paid_work_stopped": true,
+  "packet_files": {
+    "README.md": "6b5e30e45a505a55d5a1a559391c9237f42fb87c998ad84fd76e24f295c97558",
+    "actual-reviewer-delivery.json": "ca6021fc40b2b5c9d206a513adcd74110bf5e37945e525b77b0e9447a933c9e6",
+    "canonical-domain-comparison.json": "df466250b8c455eabd7f538b926ef65678093c276a7e9a5cefe022697c195a29",
+    "outcome-summary.json": "db93301a92461b6eec0400dd9a519b613ba9ab0a48c6c1b8a0f6cf60e51cb242",
+    "verification-summary.json": "4e90559dfd2189557a1e38ce1e0c23b5d6ece78668e7c17c17a10fc418fc916b"
+  }
+}
