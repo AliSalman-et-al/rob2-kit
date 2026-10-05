@@ -1,0 +1,163 @@
+{
+  "benchmark_commit": "d04473df4a07a3117f3171df2d8471ec0defd522",
+  "original_pdfs": [
+    {
+      "name": "NEJMoa2022190.pdf",
+      "sha256": "34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d",
+      "bytes": 691927,
+      "physical_pages": 12
+    },
+    {
+      "name": "nejmoa2022190_appendix.pdf",
+      "sha256": "690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36",
+      "bytes": 1125380,
+      "physical_pages": 36
+    },
+    {
+      "name": "nejmoa2022190_data-sharing.pdf",
+      "sha256": "bfb7a39325c4f1688d7a9f5704d3fe62f0b163fdc83d7d5efea92bf4bfc57c48",
+      "bytes": 71871,
+      "physical_pages": 1
+    },
+    {
+      "name": "nejmoa2022190_disclosures.pdf",
+      "sha256": "9db6fb9bece690c0615ad5f9d1028759f6f29c2911e54b6884573b56ca2096d2",
+      "bytes": 767142,
+      "physical_pages": 134
+    },
+    {
+      "name": "nejmoa2022190_protocol.pdf",
+      "sha256": "d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b",
+      "bytes": 4732148,
+      "physical_pages": 361
+    }
+  ],
+  "captured_sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_86a079a751dac5fe91aed868c3f6fc3c1396eecbc57e8b27f1d708ddaff28133",
+      "label": "NEJMoa2022190.pdf",
+      "logical_path": "NEJMoa2022190.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 12,
+      "projection_hash": "sha256:c19f022c510372aa011c5dba1f3e454c1aa378084d6e5a51505d3d149af26ca2",
+      "role": "main_article",
+      "sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_76bbaffd97a85a6b8fdf8aeef4821bb4790e2621e4fe760f418fefe319173105",
+      "label": "nejmoa2022190_appendix.pdf",
+      "logical_path": "nejmoa2022190_appendix.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 36,
+      "projection_hash": "sha256:776441a3ab7551f6fc76424c86f7b502af9e2d4b65014a7cfd81f391448cd1c1",
+      "role": "supplement",
+      "sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_8567c0aa8a03c2e4ad8bbfe2059c0bd3548a228934546bee3d2af5535907a886",
+      "label": "nejmoa2022190_data-sharing.pdf",
+      "logical_path": "nejmoa2022190_data-sharing.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 1,
+      "projection_hash": "sha256:fa9a9629f3f1baee19a8d29158305f50b211827e4b4083349e57a84e7d6974b2",
+      "role": "supplement",
+      "sha256": "sha256:bfb7a39325c4f1688d7a9f5704d3fe62f0b163fdc83d7d5efea92bf4bfc57c48",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_ebe4a206f67934c262619d2b089729335e001f3512739448592f6ecf3dfe03a1",
+      "label": "nejmoa2022190_disclosures.pdf",
+      "logical_path": "nejmoa2022190_disclosures.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 134,
+      "projection_hash": "sha256:ed6a78f67fd8ebf7a4af991b1f97cd28de6a41ee4a17eca7b1f55d85124f5ed1",
+      "role": "supplement",
+      "sha256": "sha256:9db6fb9bece690c0615ad5f9d1028759f6f29c2911e54b6884573b56ca2096d2",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_7217646080e47f76b28520a90ee44f4cd855d5ea7a5eb3585b07f10f93d21572",
+      "label": "nejmoa2022190_protocol.pdf",
+      "logical_path": "nejmoa2022190_protocol.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 361,
+      "projection_hash": "sha256:98aad73c443171b975aefa3d02773d559a8f3af32b9ec8eaf8b304d721f9dedc",
+      "role": "supplement",
+      "sha256": "sha256:d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": null,
+      "id": "source_195e016e4fe0d0ae5fb384f1ac2f18e321f70dbd182eec32bad5e68b04a78600",
+      "label": "ClinicalTrials.gov NCT03057977",
+      "logical_path": "registry/NCT03057977.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:042e830b8c5f3d61d17745cfbfe91f41f02fc35b936aae4a6a91a74a5353538c",
+      "role": "registry",
+      "sha256": "sha256:f30dd32a4c2848a583fd5526ab5bd6bbdd1e6e29c759773f7c845a6db1115daa",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": null,
+      "id": "source_40e369928ed503c970287b21c03d7ebd2cd909303350efcbf67abcea9528e68d",
+      "label": "Current registry-linked protocol: Prot_000.pdf",
+      "logical_path": "registry_documents/41c0962a08b6372b/Prot_000.pdf",
+      "media_type": "application/pdf",
+      "origin": "registry",
+      "page_count": 138,
+      "projection_hash": "sha256:2f469b74bbecbd19c6ed4e4d2f00b24b99bb333de94761530fbca0fbe8ae8f15",
+      "role": "protocol",
+      "sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": null,
+      "id": "source_172cbb2b02595cb51d221fe0dac1633f362d2a534d2d6f4197ed85ff7bbee206",
+      "label": "Current registry-linked sap: SAP_001.pdf",
+      "logical_path": "registry_documents/41c0962a08b6372b/SAP_001.pdf",
+      "media_type": "application/pdf",
+      "origin": "registry",
+      "page_count": 72,
+      "projection_hash": "sha256:48a3dfc9e1315d6d66151160286d68a35916e44ce7a02c9ed8b34e4a22366b49",
+      "role": "sap",
+      "sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37",
+      "trial_id": "emperor-reduced"
+    },
+    {
+      "declared_role": null,
+      "id": "source_fb9107ff8a3e42c5a5ba5789b5641983ab8ed7f9aae7775a672e3725e0a9a109",
+      "label": "Registry document discovery/provenance: new capture, not historical replay",
+      "logical_path": "registry_documents/41c0962a08b6372b/capture.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:b6275216e633b9f12db99c440bc19fa531cbf9bb59bd0a6066adf54079446605",
+      "role": "other",
+      "sha256": "sha256:41c0962a08b6372b9b2ad493369c9b68a1ca6b93f9ce1d882ecdaf4c3b22b972",
+      "trial_id": "emperor-reduced"
+    }
+  ],
+  "registry": {
+    "kind": "matched",
+    "registry_id": "NCT03057977",
+    "retrieved_at": "2026-10-05T13:21:36.142811Z",
+    "title": "A Phase III Randomised, Double-blind Trial to Evaluate Efficacy and Safety of Once Daily Empagliflozin 10 mg Compared to Placebo, in Patients With Chronic Heart Failure With Reduced Ejection Fraction (HFrEF)",
+    "url": "https://clinicaltrials.gov/study/NCT03057977"
+  },
+  "original_registry_raw_capture_available": false,
+  "current_capture_not_historical_replay": true
+}

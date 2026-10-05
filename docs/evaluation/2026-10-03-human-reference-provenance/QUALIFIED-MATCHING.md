@@ -66,3 +66,28 @@ unique primary report remains a reconstruction assumption. These are not
 author-confirmed exact-result worksheets. They add no non-Low label diversity.
 The existing DAPA-HF reconstructed stratum is unchanged. No accuracy calculation,
 new case launch, or prediction inspection follows from this entry.
+
+## Bounded non-Low reference search supplied 2026-10-05
+
+The parent supplied a separate, explicitly label-stratified reference audit that
+found **zero fully qualified exact-result matches**. No predictions were
+inspected. The following are verified discrepancy diagnostics from that audit,
+not exact-result accuracy references; this implementation task preserves the
+findings without changing benchmark labels, inputs, or model prompts.
+
+| Case and Code row | Human RoB 2 rating and review result | Primary-report/Code result and binding limit |
+| --- | --- | --- |
+| Bausys 2023, NCT04223401; CSV line 48 | BJA review eFigure 1, second row: D1 Low, D2 Some concerns, D3–D5 Low, overall Some concerns. Complications forest Figure 2 uses 14/61 versus 36/61, RR 0.39 (0.23–0.64). | Primary Methods/Table 2: 64/64 randomized; intervention-starter analysis 61/61; operated primary 90-day complications 14/59 versus 35/59, RR 0.40 (0.24–0.66), matching the Code anchor. Both event counts and denominators differ from the review forest. Study-level human graphic lacks explicit outcome/window/population/estimand linkage. Exact label transfer is unestablished. |
+| Einarsson 2017, NCT01566929; CSV line 44 | HRU RoB 2 Figure 2, fifth row, printed p114: D1–D4 Low, D5 Some concerns, overall Some concerns. Live-birth forest Figure 3, p117 uses 45/160 versus 42/157, OR 1.07 (0.65–1.76). | Primary full analysis set 45/152 versus 42/153 matches Code. FAS requires follow-up and IVF start or spontaneous pregnancy; one cycle includes postrandomization spontaneous pregnancy, follow-up ends February 2017, and is not a common fixed window. Human rating has no explicit assessed-result linkage; exact transfer remains unverified. |
+
+Bausys sources: [review](https://pmc.ncbi.nlm.nih.gov/articles/PMC11947603/),
+[original RoB 2 supplement](https://ars.els-cdn.com/content/image/1-s2.0-S0007091225000236-mmc1.docx),
+and [primary report](https://academic.oup.com/bjs/article/110/12/1800/7282358).
+The audit checked primary HTML; its primary PDF was unavailable. Prior Bausys
+exposure was Source/preflight metadata only, with no paid assessment.
+
+Einarsson sources: [review](https://pmc.ncbi.nlm.nih.gov/articles/PMC12766448/)
+and [primary PDF](https://academic.oup.com/humrep/article-pdf/32/8/1621/18774991/dex235.pdf).
+Primary locators are outcome/FAS p1623, flow p1624, and Table II p1626. The human
+ratings are actual RoB 2 ratings; this is not a RoB 1 relabeling problem.
+EMPEROR preparation remains separate and adds no non-Low reference diversity.
