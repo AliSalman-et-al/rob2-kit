@@ -214,7 +214,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert "Call get_status" in approval_description
     review_tool = by_name["review_trial"]
     assert "With no request" in (review_tool.description or "")
-    assert "deterministic Cochrane" in (review_tool.description or "")
+    assert "explicit cumulative_concerns assessment" in (review_tool.description or "")
+    assert "substantially lowers confidence" in (review_tool.description or "")
     review_request = review_tool.parameters["properties"]["request"]
     assert "examples" not in review_request
     assert "permitted uncertainty answer" in review_request["description"]
