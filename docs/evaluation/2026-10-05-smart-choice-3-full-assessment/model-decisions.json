@@ -1,0 +1,756 @@
+{
+  "classification": "Model decisions, not independent scientific adjudication",
+  "result_identity": "sha256:94c615317deb5034b73ef2385f7ccabea298ba78661cc661a59c492d9cd7d1dd",
+  "domains": [
+    {
+      "domain_id": "domain:deviations",
+      "judgment": "some_concerns",
+      "identity": "sha256:f901ca8764ace778612f75c11ffe6d6750c16535490f6d9b3f358143498a9946",
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "This is explicitly a randomized open-label trial; participants were not masked to assignment.",
+          "question_id": "sq:deviations:participants-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:f0456b4a8454fd4f1e0c6c9e1c87506c44f2e78758aee3d8be9044544f2c36ad",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 67,
+                "end_line": 72
+              }
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The report states that study investigators were not masked to allocation, supporting awareness by intervention personnel.",
+          "question_id": "sq:deviations:personnel-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:f0456b4a8454fd4f1e0c6c9e1c87506c44f2e78758aee3d8be9044544f2c36ad",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 67,
+                "end_line": 72
+              }
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "The supplement categorizes protocol violations as patient preference, clinician judgment, prescription error, and prior non-DES implantation; the participant-flow account reports follow-up loss separately. These categories do not establish that changes inconsistent with the intervention protocol were caused by the trial context.",
+          "question_id": "sq:deviations:context-deviations",
+          "unknowns": [
+            "Whether any protocol-inconsistent intervention changes were caused by trial engagement or trial personnel."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:08b2638bc44174113733d59ac95876a028bcf55cf6f162eb9ac4c4dc31176c43",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 27,
+                "start_line": 3,
+                "end_line": 28
+              }
+            },
+            {
+              "evidence": "sha256:310539bcfbc43e3cbd4ed5f18ae38b8fb1ec8cd6cbc00aa13426565d6c77a073",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 4,
+                "start_line": 102,
+                "end_line": 145
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The captured report and protocol-deviation table give broad reasons and counts but do not link treatment changes to trial-context causes; causal attribution cannot be inferred from these categories.",
+              "unresolved_premise": "Whether protocol-inconsistent intervention deviations arose because of the trial context.",
+              "source_coordinates": {}
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The selected result uses the ITT analysis: randomized participants are analyzed in their assigned groups regardless of whether correct treatment was administered or crossover occurred. The per-protocol result is a separate sensitivity analysis.",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:531063b3ddcbfe6936796532fe409d6101310a9739fc5ae36b44814ce5e3a26b",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 4,
+                "start_line": 65,
+                "end_line": 67
+              }
+            },
+            {
+              "evidence": "sha256:2d92522fb1504296e4926d09fa4ab03b4b9625e48b32e102e55e26248f93fe12",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 66,
+                "start_line": 17,
+                "end_line": 23
+              }
+            }
+          ]
+        }
+      ],
+      "decision": {
+        "adjudication": null,
+        "adopted": "some_concerns",
+        "authority": "algorithm",
+        "contract": "rob2-kit.domain.reasoned-adjudication.v1",
+        "proposed": "some_concerns",
+        "trace_authority": "proposed_algorithm"
+      },
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:f0456b4a8454fd4f1e0c6c9e1c87506c44f2e78758aee3d8be9044544f2c36ad"
+            ],
+            "question_id": "sq:deviations:participants-aware",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:f0456b4a8454fd4f1e0c6c9e1c87506c44f2e78758aee3d8be9044544f2c36ad"
+            ],
+            "question_id": "sq:deviations:personnel-aware",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:08b2638bc44174113733d59ac95876a028bcf55cf6f162eb9ac4c4dc31176c43",
+              "sha256:310539bcfbc43e3cbd4ed5f18ae38b8fb1ec8cd6cbc00aa13426565d6c77a073"
+            ],
+            "question_id": "sq:deviations:context-deviations",
+            "search_receipts": [],
+            "status": "unresolved",
+            "unresolved_premises": [
+              "Whether protocol-inconsistent intervention deviations arose because of the trial context."
+            ]
+          },
+          {
+            "evidence": [
+              "sha256:531063b3ddcbfe6936796532fe409d6101310a9739fc5ae36b44814ce5e3a26b",
+              "sha256:2d92522fb1504296e4926d09fa4ab03b4b9625e48b32e102e55e26248f93fe12"
+            ],
+            "question_id": "sq:deviations:appropriate-analysis",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          }
+        ],
+        "identity": "sha256:ea2519bd45585ab25a983badd94c40f78065d5b12b2dff39da16a0536627f278"
+      },
+      "revision_basis": {
+        "kind": "self_correction",
+        "rationale": "Review identified that the second context passage was cited with a one-page offset and concerned baseline data. Replace it with the inspected participant-flow passage; the answer remains no_information because the trial-context cause of intervention deviations is unresolved."
+      },
+      "supersedes": "sha256:17dc3e56178209c320e0b64e3e8dbea1703aae67fce22d7ee3e9ec340a65a0a0"
+    },
+    {
+      "domain_id": "domain:measurement",
+      "judgment": "low",
+      "identity": "sha256:37771d9322f3572cff0e92227d9f2b5edbe717ec317a7c83c700308e1d3e51c7",
+      "answers": [
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "MACCE combines all-cause death, myocardial infarction defined by the Fourth Universal Definition, and stroke defined by stated clinical criteria. Events were independently adjudicated by a blinded committee using defined criteria, and vital status was cross-checked against the national insurance system. These methods are appropriate for this hard-event composite.",
+          "question_id": "sq:measurement:method-inappropriate",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:9a9c77aa46726dcbf5dbe53d3c5f309da21dd96688fddc5f641674a7c4edf5ff",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 43,
+                "end_line": 51
+              }
+            },
+            {
+              "evidence": "sha256:582250d211760b061074ad783c62cdf5f469d1fd68a89a20225b1ea194ae8ee1",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 94,
+                "end_line": 104
+              }
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "Both groups had the same scheduled follow-up intervals and active surveillance for clinical events, with telephone interviews if in-person visits were unavailable. Vital status was cross-checked for all participants and the event committee was independent and blinded. Open-label treatment does not establish a group difference in MACCE ascertainment under these shared procedures.",
+          "question_id": "sq:measurement:differential",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:bf70c17fe38404b8ebf4d4bcadd129a7825b4001a45781711c97bee69f0c0851",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 77,
+                "end_line": 87
+              }
+            },
+            {
+              "evidence": "sha256:cce18ea987dc3c1fcfcb7c94590c02975101f173a19c2e26fee7e0edb5d0ab8a",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 103,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:9a9c77aa46726dcbf5dbe53d3c5f309da21dd96688fddc5f641674a7c4edf5ff",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 43,
+                "end_line": 51
+              }
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The relevant event assessors were the independent clinical event adjudication committee, which reviewed all reported primary and secondary events in a blinded manner; discrepancies were resolved by discussion and majority vote.",
+          "question_id": "sq:measurement:assessor-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:9a9c77aa46726dcbf5dbe53d3c5f309da21dd96688fddc5f641674a7c4edf5ff",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 43,
+                "end_line": 51
+              }
+            }
+          ]
+        }
+      ],
+      "decision": {
+        "adjudication": null,
+        "adopted": "low",
+        "authority": "algorithm",
+        "contract": "rob2-kit.domain.reasoned-adjudication.v1",
+        "proposed": "low",
+        "trace_authority": "proposed_algorithm"
+      },
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:9a9c77aa46726dcbf5dbe53d3c5f309da21dd96688fddc5f641674a7c4edf5ff",
+              "sha256:582250d211760b061074ad783c62cdf5f469d1fd68a89a20225b1ea194ae8ee1"
+            ],
+            "question_id": "sq:measurement:method-inappropriate",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:bf70c17fe38404b8ebf4d4bcadd129a7825b4001a45781711c97bee69f0c0851",
+              "sha256:cce18ea987dc3c1fcfcb7c94590c02975101f173a19c2e26fee7e0edb5d0ab8a",
+              "sha256:9a9c77aa46726dcbf5dbe53d3c5f309da21dd96688fddc5f641674a7c4edf5ff"
+            ],
+            "question_id": "sq:measurement:differential",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:9a9c77aa46726dcbf5dbe53d3c5f309da21dd96688fddc5f641674a7c4edf5ff"
+            ],
+            "question_id": "sq:measurement:assessor-aware",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          }
+        ],
+        "identity": "sha256:e0ee8d624ad7c4f4593bb97189aa74602db13dda0834c44b7e7a048acf905994"
+      },
+      "revision_basis": null,
+      "supersedes": null
+    },
+    {
+      "domain_id": "domain:missing",
+      "judgment": "low",
+      "identity": "sha256:acc51271323f490ea24d226263230eb0ae304f0a0e3d3af9385fcf4f0246295d",
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Primary endpoint assessment at \u22651 year was completed in 5444/5506 participants (98.9%; 2722/2752 and 2722/2754), and median follow-up was about 2.3 years. The selected analysis included all randomized participants and censored participants without an event at last known contact or 3 years. This supports nearly complete useful follow-up for the time-to-event estimate, without proving complete observation through the full potential window.",
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Arm-specific follow-up and censoring beyond the \u22651-year assessment are not fully enumerated; event-free participants were censored at last known contact."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:67e4ea4a81c4f387f761143baf69606ec2df8e6578fcbf581cc05d52384aa715",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 5,
+                "start_line": 117,
+                "end_line": 145
+              }
+            },
+            {
+              "evidence": "sha256:5ab110eaba4f5ec83f70af2236b68ec72f3c04057c8439ce6e43c1a39a3e2630",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 6,
+                "start_line": 6,
+                "end_line": 23
+              }
+            },
+            {
+              "evidence": "sha256:0d8d1c91a538dc680d79b0b1620f2057b0d6fcb41d85634aafa03074e2390998",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 4,
+                "start_line": 86,
+                "end_line": 89
+              }
+            }
+          ]
+        }
+      ],
+      "decision": {
+        "adjudication": null,
+        "adopted": "low",
+        "authority": "algorithm",
+        "contract": "rob2-kit.domain.reasoned-adjudication.v1",
+        "proposed": "low",
+        "trace_authority": "proposed_algorithm"
+      },
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:67e4ea4a81c4f387f761143baf69606ec2df8e6578fcbf581cc05d52384aa715",
+              "sha256:5ab110eaba4f5ec83f70af2236b68ec72f3c04057c8439ce6e43c1a39a3e2630",
+              "sha256:0d8d1c91a538dc680d79b0b1620f2057b0d6fcb41d85634aafa03074e2390998"
+            ],
+            "question_id": "sq:missing:data-available",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          }
+        ],
+        "identity": "sha256:1d4d3c39ecbe7aba9ebeb15510a5eca6cbebda7b3f85db08a578f786eb3dad56"
+      },
+      "revision_basis": null,
+      "supersedes": null
+    },
+    {
+      "domain_id": "domain:randomization",
+      "judgment": "low",
+      "identity": "sha256:b79f92241cf43bf10622d8cc2b0e59a40882188c70e8ca20fbba017791a35ff6",
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The report specifies computer-generated permuted blocks of size four with 1:1 assignment, a random component in sequence generation.",
+          "question_id": "sq:randomization:sequence",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:f1683809a3896358d21fa3381d4fc60dfb6397b4846148cf0a7bed85a85fc479",
+              "kind": "indirect_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 62,
+                "end_line": 70
+              }
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Allocation was performed through a web-based randomization program supplied by S-Soft after eligibility and consent, which supports remote allocation before assignment. The sources do not explicitly identify who controlled access to the system or state concealment safeguards, so the inference remains probable.",
+          "question_id": "sq:randomization:concealment",
+          "unknowns": [
+            "The report does not state whether the enrolling personnel could access forthcoming assignments or identify the operator controlling the web-based system."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:e598b631576ab942b1960e5072ff390126c6a1dbdfe6f988dbf2badde05f4ef0",
+              "kind": "indirect_support",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 58,
+                "start_line": 17,
+                "end_line": 23
+              }
+            },
+            {
+              "evidence": "sha256:9bce911d4ce1e4c8e5a39bcb1b58f890905b5dc668a3085de99c5a6e0ae22c8f",
+              "kind": "indirect_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 62,
+                "end_line": 72
+              }
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The randomized groups were nearly equal in size and the reported baseline characteristics, including key enrollment risks, were closely balanced; no pattern suggests a randomization problem.",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:ec3784d4c619341081d2b5cedc3c2a3b51a7bf80c6be2fcef1a115f994d2bf57",
+              "kind": "indirect_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 5,
+                "start_line": 84,
+                "end_line": 108
+              }
+            }
+          ]
+        }
+      ],
+      "decision": {
+        "adjudication": null,
+        "adopted": "low",
+        "authority": "algorithm",
+        "contract": "rob2-kit.domain.reasoned-adjudication.v1",
+        "proposed": "low",
+        "trace_authority": "proposed_algorithm"
+      },
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:f1683809a3896358d21fa3381d4fc60dfb6397b4846148cf0a7bed85a85fc479"
+            ],
+            "question_id": "sq:randomization:sequence",
+            "search_receipts": [],
+            "status": "indirect",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:e598b631576ab942b1960e5072ff390126c6a1dbdfe6f988dbf2badde05f4ef0",
+              "sha256:9bce911d4ce1e4c8e5a39bcb1b58f890905b5dc668a3085de99c5a6e0ae22c8f"
+            ],
+            "question_id": "sq:randomization:concealment",
+            "search_receipts": [],
+            "status": "indirect",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:ec3784d4c619341081d2b5cedc3c2a3b51a7bf80c6be2fcef1a115f994d2bf57"
+            ],
+            "question_id": "sq:randomization:baseline-imbalance",
+            "search_receipts": [],
+            "status": "indirect",
+            "unresolved_premises": []
+          }
+        ],
+        "identity": "sha256:d07218a2b5c37ffa1c3c1da3f4598fe8bfff30f5af460dc434cc20a1452e40a0"
+      },
+      "revision_basis": null,
+      "supersedes": null
+    },
+    {
+      "domain_id": "domain:selection",
+      "judgment": "low",
+      "identity": "sha256:a3cac77f4180e308d2ddf7f35ddb33bc91ccf3e21ecf7edfc29c1bc1b4cd32e3",
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "The captured SAP identifies this SMART-CHOICE 3 comparison and was dated 30 March 2023. It specifies the MACCE composite, ITT primary analysis, stratified Cox HR with 95% CI, and timing one year after last enrollment. The reported result matches these choices. The plan date preceded final enrollment (31 July 2023); the report says the interim blind analysis had no treatment-group analyses and describes no interim analyses by group. Together these support, but do not directly establish, that the plan was finalized before investigators could access unblinded outcome data.",
+          "question_id": "sq:selection:prespecified-analysis",
+          "unknowns": [
+            "The sources do not directly state when the SAP was finalized relative to investigators' first possible access to unblinded outcome data."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:859a9549c03b9fe7459d6b4db19658f1dd06d3917b179b3050a85d8f19c7a002",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 88,
+                "start_line": 3,
+                "end_line": 19
+              }
+            },
+            {
+              "evidence": "sha256:5d89fc62b30f7d9b6809ef3012127d6489f6dbadd431ded832202dc750b15e9b",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 95,
+                "start_line": 34,
+                "end_line": 43
+              }
+            },
+            {
+              "evidence": "sha256:eb831164936cbaaabbe7b6a2ed9505396ae8ae70aeedaa35aa5af6940d56ff2b",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 96,
+                "start_line": 6,
+                "end_line": 22
+              }
+            },
+            {
+              "evidence": "sha256:b54da8ec3820fa0c3e2f4e4f6ca541e3cf2654fb604197040cfcb4ed1b16827b",
+              "kind": "inference",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 4,
+                "start_line": 50,
+                "end_line": 64
+              }
+            },
+            {
+              "evidence": "sha256:bd22ace0b23332eeae6090e26489be55b99df5a89fc5c0257e71be44ff695dfa",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 4,
+                "start_line": 65,
+                "end_line": 89
+              }
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The SAP specifies one primary outcome measurement: time to MACCE, defined as the composite of all-cause death, MI, or stroke. The report uses this definition for the approved Result. The separately listed component outcomes are distinct secondary endpoints, not alternative eligible measurements of the primary MACCE result.",
+          "question_id": "sq:selection:multiple-measurements",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:eb831164936cbaaabbe7b6a2ed9505396ae8ae70aeedaa35aa5af6940d56ff2b",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 96,
+                "start_line": 6,
+                "end_line": 22
+              }
+            },
+            {
+              "evidence": "sha256:582250d211760b061074ad783c62cdf5f469d1fd68a89a20225b1ea194ae8ee1",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 3,
+                "start_line": 94,
+                "end_line": 104
+              }
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "The SAP identifies ITT as the primary analysis and per-protocol as exploratory sensitivity analysis, and specifies the stratified Cox model. The report presents the ITT result, the PP sensitivity estimate, and complete-follow-up sensitivity results. Although alternative analyses were possible, the report does not indicate that the approved estimate was selected because of its result; the reported plan and analyses support a probable judgment against result-driven selection.",
+          "question_id": "sq:selection:multiple-analyses",
+          "unknowns": [
+            "The report does not enumerate every possible model or adjustment set considered, and absence of such reporting cannot prove no unreported analysis occurred."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:0a3a9d84259ce16905c27ed5d247e37a0c869728be371205f7c14bed4a0e68d6",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 95,
+                "start_line": 12,
+                "end_line": 43
+              }
+            },
+            {
+              "evidence": "sha256:c6e7320e5d9933247d0a21845c678e9c597db5fd8a8f276b44038fe520a9a480",
+              "kind": "context",
+              "source_coordinates": {
+                "source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+                "source_version": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+                "page": 96,
+                "start_line": 24,
+                "end_line": 33
+              }
+            },
+            {
+              "evidence": "sha256:bd22ace0b23332eeae6090e26489be55b99df5a89fc5c0257e71be44ff695dfa",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 4,
+                "start_line": 65,
+                "end_line": 89
+              }
+            },
+            {
+              "evidence": "sha256:1cc34e2152999fd731c77c0a0a360803c83bad3fba265343ab996b23a7057160",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 6,
+                "start_line": 41,
+                "end_line": 45
+              }
+            },
+            {
+              "evidence": "sha256:f9fc9849a4e8393dda0df5a62944a7bbbd29b86deba504ddc72ae6edfddc78ff",
+              "kind": "direct_support",
+              "source_coordinates": {
+                "source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+                "source_version": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+                "page": 8,
+                "start_line": 4,
+                "end_line": 12
+              }
+            }
+          ]
+        }
+      ],
+      "decision": {
+        "adjudication": null,
+        "adopted": "low",
+        "authority": "algorithm",
+        "contract": "rob2-kit.domain.reasoned-adjudication.v1",
+        "proposed": "low",
+        "trace_authority": "proposed_algorithm"
+      },
+      "evidence_sufficiency": {
+        "claims": [
+          {
+            "evidence": [
+              "sha256:859a9549c03b9fe7459d6b4db19658f1dd06d3917b179b3050a85d8f19c7a002",
+              "sha256:5d89fc62b30f7d9b6809ef3012127d6489f6dbadd431ded832202dc750b15e9b",
+              "sha256:eb831164936cbaaabbe7b6a2ed9505396ae8ae70aeedaa35aa5af6940d56ff2b",
+              "sha256:b54da8ec3820fa0c3e2f4e4f6ca541e3cf2654fb604197040cfcb4ed1b16827b",
+              "sha256:bd22ace0b23332eeae6090e26489be55b99df5a89fc5c0257e71be44ff695dfa"
+            ],
+            "question_id": "sq:selection:prespecified-analysis",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:eb831164936cbaaabbe7b6a2ed9505396ae8ae70aeedaa35aa5af6940d56ff2b",
+              "sha256:582250d211760b061074ad783c62cdf5f469d1fd68a89a20225b1ea194ae8ee1"
+            ],
+            "question_id": "sq:selection:multiple-measurements",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          },
+          {
+            "evidence": [
+              "sha256:0a3a9d84259ce16905c27ed5d247e37a0c869728be371205f7c14bed4a0e68d6",
+              "sha256:c6e7320e5d9933247d0a21845c678e9c597db5fd8a8f276b44038fe520a9a480",
+              "sha256:bd22ace0b23332eeae6090e26489be55b99df5a89fc5c0257e71be44ff695dfa",
+              "sha256:1cc34e2152999fd731c77c0a0a360803c83bad3fba265343ab996b23a7057160",
+              "sha256:f9fc9849a4e8393dda0df5a62944a7bbbd29b86deba504ddc72ae6edfddc78ff"
+            ],
+            "question_id": "sq:selection:multiple-analyses",
+            "search_receipts": [],
+            "status": "supported",
+            "unresolved_premises": []
+          }
+        ],
+        "identity": "sha256:68f749298036e936f7fec262f7037bc57234b0d6b87898d433911a332d97ab7e"
+      },
+      "revision_basis": null,
+      "supersedes": null
+    }
+  ],
+  "overall": {
+    "adopted": "some_concerns",
+    "assessment": null,
+    "assessment_status": "omitted",
+    "authority": "algorithm",
+    "contract": "rob2-kit.overall.cochrane-conditional.v1",
+    "proposed": "some_concerns",
+    "rule": "overall.any_concerns"
+  }
+}
