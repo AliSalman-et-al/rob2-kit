@@ -1,0 +1,338 @@
+{
+  "purpose": "Compact exact source projections for independent review; no new inference or answer edit. Physical PDF page numbering. Completed delivery refs are text-body delivery, not comprehension. Undelivered passages explicitly marked.",
+  "passages": [
+    {
+      "source_label": "nejmoa1507062_protocol.pdf",
+      "original_source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+      "physical_page": 131,
+      "start_line": 1,
+      "end_line": 21,
+      "numbered_text": "1|Statistical analysis plan for the 05TB study (ISRCTN61649292)\n2|\"Intensified treatment with high dose rifampicin and levofloxacin compared\n3|to standard treatment for adult patients with tuberculous meningitis (TBM-\n4|IT)\"\n5|\n6|Authors: Marcel Wolbers and Dorothee Heemskerk\n7|Reviewed by Guy Thwaites, Jeremy Day, Maxine Caws\n8|Version: 2.0, April 5, 2015 - final version prior to unblinding\n9|Purpose\n10|This document details the planned analyses and endpoint derivations for the ISRCTN61649292 trial as\n11|outlined in the published study protocol (Trials 2011, 12:25; doi:10.1186/1745-6215-12-25). It focuses\n12|on the analysis for the main clinical trial publication and does not include analysis for any subsidiary\n13|studies.\n14|Statistical software\n15|Data derivations will be performed with the statistical software SAS v9.2 (SAS Insitute, Cary, North\n16|Carolina, US). All statistical analyses will be performed with the statistical software R using the current R\n17|version at the time of the final analysis (R Foundation for Statistical Computing, Vienna, Austria).\n18|Analysis populations\n19|Intention-to treat population (ITT)\n20|The main analysis population for all analyses is the full analysis set including all randomized patients and\n21|analysis is according to the randomized treatment arm.",
+      "excerpt_sha256": "444426ef5ffd4430734b7a564b80fc84794a796cd866a88ca0b452ab5afdde84",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "proposal",
+          "line": 41,
+          "order": 18,
+          "start_line": 1,
+          "end_line": 44,
+          "numbered_body_sha256": "8c82d32edfa5c9ced0b1e4306304c14bc5eef60ab54543c661e3505aae2a000a"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    },
+    {
+      "source_label": "nejmoa1507062_protocol.pdf",
+      "original_source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+      "physical_page": 132,
+      "start_line": 9,
+      "end_line": 12,
+      "numbered_text": "9|Baseline/date of randomization is defined as the date of the first dose of study treatment (first\n10|TBDR.DateStart for TBDR.TBDrug=1 (\"Rifampicin/Placebo ( Study Drug)\") or 2 (\"Levofloxacin/Placebo\n11|(Study Drug)\")). In case a subject did not receive any study treatment at all, baseline will be defined as\n12|the date of the enrolment assessment (ASREC.StudyVisit=0 \"Baseline\").",
+      "excerpt_sha256": "a27b6733b3c6792c74356107048f84384011a6cb7f8a066c8c8fabbdf4bfa18e",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "proposal",
+          "line": 41,
+          "order": 18,
+          "start_line": 1,
+          "end_line": 57,
+          "numbered_body_sha256": "e4e93adbfd7660ca42afee3b4be2d4daf8418ce80518d5191f3dc902bb52e4b5"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    },
+    {
+      "source_label": "nejmoa1507062_protocol.pdf",
+      "original_source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+      "physical_page": 134,
+      "start_line": 21,
+      "end_line": 45,
+      "numbered_text": "21|Primary endpoint - overall survival during the 9 month follow-up period\n22|Derivation\n23|Definition time to death: [date of death or censoring]-[date of randomization]+1\n24|Definition event indicator: =1 if patient died =0 otherwise\n25|\n26|[Date of randomization]: as defined at the beginning of the \"Baseline characteristics\" section.\n27|[Date of death]:OUTC.DateDeath (if OUTC.Reason9FU=1 \"(1) Patient died\")\n28|[Date of censoring] - last date patient is known to be alive:\n29|-\n30|If OUTC.Completed9FU=1 \"yes, completed 9 months of follow-up\": OUTC.DateAssess\n31|-\n32|If OUTC. Completed9FU=2 \"did not complete 9 months of follow-up\" and patient not dead:\n33|OUTC.DateAlive (\"last date patient was known to be alive\")\n34|-\n35|If outcome form OUTC is missing, the last date alive will be defined as the latest of: last visit data,\n36|last neurological or clinical adverse event start or stop date, last hematology, chemistry in blood or\n37|csf date. [Note: This last part is required only while the study is ongoing. At the end of the study,\n38|there must be an outcome form OUTC for every subject.]\n39|\n40|The date of the actual 9-month follow-up visit will be used in the calculation. However, for subjects for\n41|whom the 9 month visit was delayed by >2 weeks or those who died >2 weeks after month 9 will be\n42|treated as censored on month 9 plus 2 weeks (day 289) instead.\n43|\n44|Planned analyses\n45|Primary analysis",
+      "excerpt_sha256": "d7a69ae5a96ae92c090be3838e6b5eba473677020207e4ff3d0f3dc36fe1ae78",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "proposal",
+          "line": 43,
+          "order": 19,
+          "start_line": 1,
+          "end_line": 45,
+          "numbered_body_sha256": "1de258cc380fea704f00a813592d98134f3e8ef4f00f77201613d1481046ae75"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    },
+    {
+      "source_label": "nejmoa1507062_protocol.pdf",
+      "original_source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+      "physical_page": 135,
+      "start_line": 1,
+      "end_line": 56,
+      "numbered_text": "1|Cox regression with treatment as the only covariate and stratification by HIV status (positive/negative)\n2|and TBM disease severity (modified MRC grade I,II or III) at baseline.\n3|Stratified Cox regression as implemented in the R function survival::coxph will be used with default\n4|arguments (e.g. tie handling according to the Efron approximation). Of note, the protocol pre-specified a\n5|log-rank test rather than Cox regression but the two approaches are essentially equivalent and Cox\n6|regression has the benefit of providing a treatment effect estimate (HR) and associated 95% confidence\n7|interval in addition to the p-value. In case the actual recorded TBM grade differs from the TBM grade\n8|used in the stratified randomization, the actual TBM grade will be used.\n9|\n10|The proportional hazards assumption will be formally tested based on scaled Schoenfeld residuals and\n11|visually assessed by a plot of the scaled Schoenfeld residuals versus transformed time (as implemented\n12|in R function survival::cox.zph). In case of a significant test, a formal comparison of 9 month survival\n13|probabilities between the two groups will also be performed (using Kaplan-Meier estimation and\n14|Greenwood's formula to approximate variance).\n15|\n16|Kaplan-Meier estimates of the survival curve by treatment arm\n17|-\n18|Plots for all patients and subgroups defined by HIV status and TBM grade\n19|-\n20|Explicit numeric estimates (with 95% CI) at 3, 6, and 9 months for all patients and by subgroups\n21|\n22|Cox regression\n23|\uf02d\n24|Include the following baseline covariates (in addition to the treatment group): TBM severity (grade I,\n25|II, III), HIV status (positive/negative), participating (admission) hospital (PNT/HTD), previous TB\n26|episode (yes/no), drug resistance category (MDR-TB / rifampicin (mono-)resistant / isoniazid\n27|resistant / no or other resistance; subjects without a resistance result will be treated as a separate\n28|category \"unknown resistance\" for the purpose of the Cox regression).\n29|Note: The protocol specified \"previous TB treatment\" rather than \"previous TB\" episode but only\n30|the latter was collected on the CRF.\n31|\uf02d\n32|A separate analysis for HIV positive patients only including the above covariates and additionally\n33|prior ARV therapy (yes/no) and CD4 cell count at baseline.\n34|\n35|Note: Derivation rules for the baseline covariates are as per the \"Baseline characteristics\" section above.\n36|\n37|Pre-defined subgroup analyses\n38|\n39|The following subgroups are pre-defined:\n40|\uf02d\n41|Per protocol analysis\n42|\uf02d\n43|TBM grade (I, II, or III)\n44|\uf02d\n45|HIV status (positive/negative)\n46|\uf02d\n47|Previous TB episode (yes/no)*\n48|\uf02d\n49|On TB treatment at enrolment (yes/no)*\n50|\uf02d\n51|TBM diagnostic category (definite / probable / possible) - Note: this is not mentioned in the\n52|protocol but formally added as a pre-defined subgroup analysis in this analysis plan\n53|\uf02d\n54|drug resistance (MDR-TB (including rifampicin (mono-)resistant, if any) / isoniazid resistant / no or\n55|other resistance) - only culture-confirmed patients (in CSF) will be included in this analysis\n56|* replacing the pre-defined subgroup \"previous TB treatment\" which was not collected on the CRF.",
+      "excerpt_sha256": "dd8ef8bcbc613a4625dc1130c47eeb7c78a4da13cc53955648665065bae9aad1",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "proposal",
+          "line": 43,
+          "order": 19,
+          "start_line": 1,
+          "end_line": 57,
+          "numbered_body_sha256": "82e77ad183f183303a9fc5d7646f328ec9fdab0dab6bf5734fc03c1acd360811"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    },
+    {
+      "source_label": "nejmoa1507062_protocol.pdf",
+      "original_source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+      "physical_page": 35,
+      "start_line": 1,
+      "end_line": 27,
+      "numbered_text": "1|\n2|05TB\n3|Protocol 11.0 dated 24FEB11\n4|33/63\n5|11 Interim analysis and role of the Data and Safety Monitoring Committee (DSMC)\n6|An independent DSMC will oversee the trial. Interim analyses are planned after 20 deaths, additionally\n7|after 6 and 12 months of recruitment and yearly thereafter until the completion of the trial. The DSMC\n8|will be provided with unblinded survival curves and summary tables of grade 3&4 and serious adverse\n9|events. Tables will be prepared by the DSMC statistician and distributed to all DSMC members for\n10|review; the study statistician will remain blinded throughout the study..\n11|Based on these data, the committee has to make one of the following recommendations:\n12|\u2022\n13|Continue the trial without modification\n14|\u2022\n15|Continue the trial with modification\n16|\u2022\n17|Stop the trial due to safety concerns\n18|Unless the benefit of intensified treatment is shown \"beyond reasonable doubt\" at an interim analysis, no\n19|formal stopping for efficacy is foreseen. The Haybittle-Peto boundary, requiring p<0.001 at interim\n20|analysis to consider stopping for efficacy, should be used as a guidance. However, the DSMB\n21|recommendation should not be based purely on statistical tables but also requires clinical judgment.\n22|As the dissemination of preliminary summary data could influence the further conduct of the trial and\n23|introduce bias, access to interim data and results will be confidential and strictly limited to the involved\n24|independent statistician and the monitoring board and results (except for the recommendation) will not be\n25|communicated to the outside and/or clinical investigators involved in the trial.\n26|\n27|",
+      "excerpt_sha256": "aaf0fa36e7cf6222b6e426102d3426efbb3fddf11344d39588b0067eedd5cf1b",
+      "completed_delivery_event_refs": [],
+      "delivered_complete_excerpt": false
+    },
+    {
+      "source_label": "nejmoa1507062_protocol.pdf",
+      "original_source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+      "physical_page": 98,
+      "start_line": 19,
+      "end_line": 42,
+      "numbered_text": "19|following patients: patients with a final diagnosis other than TBM major protocol violations and those\n20|receiving less than 2 months of administration of the randomized study drug for reasons other than death.\n21|\n22|11 Interim analysis and role of the Data and Safety Monitoring Committee (DSMC)\n23|An independent DSMC will oversee the trial. Interim analyses are planned after 20 deaths, additionally\n24|after 6 and 12 months of recruitment and yearly thereafter until the completion of the trial. The DSMC\n25|will be provided with unblinded survival curves and summary tables of grade 3&4 and serious adverse\n26|events. Tables will be prepared by the DSMC statistician and distributed to all DSMC members for\n27|review; the study statistician will remain blinded throughout the study..\n28|Based on these data, the committee has to make one of the following recommendations:\n29|\u2022\n30|Continue the trial without modification\n31|\u2022\n32|Continue the trial with modification\n33|\u2022\n34|Stop the trial due to safety concerns\n35|Unless the benefit of intensified treatment is shown \"beyond reasonable doubt\" at an interim analysis, no\n36|formal stopping for efficacy is foreseen. The Haybittle-Peto boundary, requiring p<0.001 at interim\n37|analysis to consider stopping for efficacy, should be used as a guidance. However, the DSMB\n38|recommendation should not be based purely on statistical tables but also requires clinical judgment.\n39|As the dissemination of preliminary summary data could influence the further conduct of the trial and\n40|introduce bias, access to interim data and results will be confidential and strictly limited to the involved",
+      "excerpt_sha256": "54fd7c27f652680cb586383c12db7c23b73a79b1b2d554ded2f7935274e6d9f0",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "assessment",
+          "line": 96,
+          "order": 71,
+          "start_line": 1,
+          "end_line": 42,
+          "numbered_body_sha256": "5a5334b500a1c964ba74c3b00a631abf0bd0f8193370b8e559863bea3a1d5543"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    },
+    {
+      "source_label": "NEJMoa1507062.pdf",
+      "original_source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+      "physical_page": 4,
+      "start_line": 4,
+      "end_line": 23,
+      "numbered_text": "4|enrolling physicians, and investigators remained\n5|unaware of the treatment assignments until the\n6|last patient completed follow-up. The attending\n7|physicians were responsible for enrolling the\n8|participants and for ensuring that the study\n9|drug was given from the correct treatment pack.\n10|Daily monitoring of all inpatients by one of the\n11|investigators ensured uniform management be-\n12|tween the study sites and accurate recording of\n13|clinical data in individual study notes.\n14|Outcome Assessments\n15|The condition of the patients was reviewed daily\n16|until discharge from the hospital for assessment\n17|of clinical progress and neurologic and drug-\n18|related adverse events. After discharge, monthly\n19|visits were scheduled for clinical evaluation and\n20|laboratory monitoring until the completion of\n21|treatment at 9 months.\n22|The primary outcome was death by 9 months\n23|after randomization. The secondary outcomes",
+      "excerpt_sha256": "b8ab33acd9918b0df08f63658cf4400f2ba8b823a53793799678fd8fa97fe68e",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "proposal",
+          "line": 22,
+          "order": 9,
+          "start_line": 1,
+          "end_line": 105,
+          "numbered_body_sha256": "f8283687eeefb97d68b3a9c40f17b43ae2fd055bdca5fd1774cf9629e096f4ac"
+        },
+        {
+          "stage": "assessment",
+          "line": 12,
+          "order": 30,
+          "start_line": 1,
+          "end_line": 105,
+          "numbered_body_sha256": "f8283687eeefb97d68b3a9c40f17b43ae2fd055bdca5fd1774cf9629e096f4ac"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    },
+    {
+      "source_label": "NEJMoa1507062.pdf",
+      "original_source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+      "physical_page": 4,
+      "start_line": 62,
+      "end_line": 103,
+      "numbered_text": "62|The statistical analysis followed the protocol13\n63|and the statistical analysis plan (see the Supple-\n64|mentary Appendix). The primary outcome was\n65|analyzed in all patients and in prespecified\n66|subgroups, with the analysis based on the Cox\n67|proportional-hazards model with stratification\n68|according to HIV infection status and MRC grade.\n69|The ordinal disability score was compared be-\n70|tween the two study groups with a proportional-\n71|odds logistic-regression model with adjustment\n72|for HIV infection status and MRC grade. Second-\n73|ary time-to-event outcomes were analyzed in the\n74|same way as the primary outcome. Additional\n75|prespecified multivariable Cox regression analy-\n76|ses and analyses of the disability score were\n77|based on multiple imputation of missing covari-\n78|ates and disability outcomes, as detailed in the\n79|statistical analysis plan.\n80|The primary analysis population was the inten-\n81|tion-to-treat population, which included all pa-\n82|tients who underwent randomization. The analy-\n83|sis of the primary outcome was repeated in the\n84|per-protocol population, which did not include\n85|patients with unlikely tuberculous meningitis or\n86|an alternative diagnosis according to the diagnos-\n87|tic criteria,14 patients with multidrug-resistant\n88|infections, or patients who received less than\n89|50 days of treatment with the study drug for\n90|reasons other than death. All statistical analyses\n91|were performed with the statistical software R,\n92|version 3.1.2.20\n93|Results\n94|Study Population\n95|From April 18, 2011, through June 18, 2014, a\n96|total of 817 adult patients were randomly assigned\n97|to receive standard antituberculosis treatment plus\n98|either placebo (409 patients; standard-treatment\n99|group) or additional rifampin and levofloxacin\n100|(408 patients; intensified-treatment group). A total\n101|of 53 patients (28 in the standard-treatment group\n102|and 25 in the intensified-treatment group) did not\n103|complete follow-up for reasons other than death.",
+      "excerpt_sha256": "4d9683a980aaf53624e4b0fee22eb8bdc661e9f901a19c5b7f21f01193d864f3",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "proposal",
+          "line": 22,
+          "order": 9,
+          "start_line": 1,
+          "end_line": 105,
+          "numbered_body_sha256": "f8283687eeefb97d68b3a9c40f17b43ae2fd055bdca5fd1774cf9629e096f4ac"
+        },
+        {
+          "stage": "assessment",
+          "line": 12,
+          "order": 30,
+          "start_line": 1,
+          "end_line": 105,
+          "numbered_body_sha256": "f8283687eeefb97d68b3a9c40f17b43ae2fd055bdca5fd1774cf9629e096f4ac"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    },
+    {
+      "source_label": "NEJMoa1507062.pdf",
+      "original_source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+      "physical_page": 8,
+      "start_line": 173,
+      "end_line": 182,
+      "numbered_text": "173|Figure 2. Kaplan-Meier Curves for Overall Survival\n174|According to Treatment Group and HIV Infection Status.\n175|In accordance with the statistical analysis plan, all deaths\n176|in the database were included in the final analysis; this\n177|included two deaths on days 274 and 275. Because the\n178|9-month follow-up visit was on days 270 through 272\n179|for most patients, the numbers of patients at risk on\n180|days 274 and 275 were low, which accounts for the\n181|sharp decrease in the Kaplan-Meier curves at the end\n182|of the study period.",
+      "excerpt_sha256": "eaf237a41eb7c7287a14ab8c83c3e34b909d1ec4727b95f4c4d58c03e27285f4",
+      "completed_delivery_event_refs": [
+        {
+          "stage": "proposal",
+          "line": 24,
+          "order": 10,
+          "start_line": 1,
+          "end_line": 184,
+          "numbered_body_sha256": "68accd26e9aac2d6ec8cbd24630a6b3db160a5bc1cf30ef27b0ef17cc1005227"
+        },
+        {
+          "stage": "assessment",
+          "line": 14,
+          "order": 31,
+          "start_line": 1,
+          "end_line": 184,
+          "numbered_body_sha256": "68accd26e9aac2d6ec8cbd24630a6b3db160a5bc1cf30ef27b0ef17cc1005227"
+        }
+      ],
+      "delivered_complete_excerpt": true
+    }
+  ],
+  "original_scope_records": {
+    "scope-approval.json": {
+      "sha256": "f08bc752ae5fccf41e3967f86fbd71ddbcaac8ed3321c83a842cdef38b69d6ab",
+      "record": {
+        "authority": "Authorized host exact-target scope review only, not scientific Domain adjudication",
+        "result": {
+          "requested_outcome": "All-cause death by nine months after randomization",
+          "reported": {
+            "analysis_population": "Primary intention-to-treat population: all 817 randomized adults, analyzed by assigned treatment (408 intensified; 409 standard). Incomplete follow-up occurred in 25 intensified and 28 standard participants; inclusion in ITT does not establish complete outcome observation.",
+            "effect_measure": "hazard ratio",
+            "endpoint": {
+              "definition": null,
+              "name": "died"
+            },
+            "estimate": "0.94",
+            "form": "comparative_effect",
+            "group_values": [],
+            "precision": "95% confidence interval [CI], 0.73 to 1.22"
+          },
+          "target": {
+            "comparison_groups": [
+              {
+                "assignment": "Standard nine-month antituberculosis regimen plus additional rifampin 5 mg/kg/day (total 15 mg/kg/day) and levofloxacin 20 mg/kg/day for the first eight weeks",
+                "id": "intensified"
+              },
+              {
+                "assignment": "Standard nine-month antituberculosis regimen including rifampin 10 mg/kg/day plus matched placebos for the first eight weeks",
+                "id": "standard"
+              }
+            ],
+            "effect_of_interest": "assignment",
+            "intended_analysis_population": "All randomized participants in the comparison groups",
+            "intended_effect_measure": "Hazard ratio",
+            "measurement": {
+              "method": "All-cause death",
+              "metric": "All-cause death by nine months after randomization"
+            },
+            "outcome_definition": "All-cause death by nine months after randomization",
+            "time_point_or_window": {
+              "description": "By nine months after randomization",
+              "kind": "quantified",
+              "unit": "months",
+              "value": "9"
+            }
+          },
+          "relation": "broader",
+          "relation_rationale": "Select the reported primary ITT Cox hazard ratio for intensified versus standard treatment, stratified by HIV status and MRC grade, for the effect of assignment. Death is unrestricted by cause, matching all-cause death. The reported endpoint is labeled death by nine months after randomization, but Figure 2 explicitly includes deaths on days 274 and 275; SAP uses actual nine-month visit timing capped at day 289. Thus the reported analysis window is broader than a strict nine-month target, whose wording is retained. SAP operationally defines the randomization date using first study dose (or enrolment if untreated); equivalence to actual allocation date is unresolved. Per-protocol HR 0.91 and composite neurologic-event-or-death HR 0.99 are not the requested primary ITT mortality Result.",
+          "clarity": {
+            "analysis_population": "specified",
+            "comparison_groups": "specified",
+            "effect_measure": "specified",
+            "eligible_result_choice": "specified",
+            "measurement": "specified",
+            "outcome_definition": "specified",
+            "source_table_meaning": "specified",
+            "time_point": "conflicting"
+          }
+        },
+        "source_verification": [
+          "Article physical1/4/9: primary all-randomized stratified CoxHR0.94CI0.73\u20131.22, intensifiedvsstandard, nominal9-month death endpoint",
+          "Article physical8Figure2footnote: includes deaths days274/275",
+          "Original suppliedSAP physical134: actual9monthvisit, censoring capday289; time-origin/equivalence ambiguity retained rather than silently imposing certainty"
+        ],
+        "no_domain_feedback": true,
+        "no_source_or_result_rewrite": true,
+        "review_reference": "sha256:86ff7a93392f733a1466f86043c83a4b32591bc3a6e4b6832e6a07c568df5295"
+      }
+    },
+    "target-binding.json": {
+      "sha256": "fb94eb8ed446ed316ccbfab8cf8cc582577cd2153d66b1a739c314d61955f2a0",
+      "record": {
+        "case": "heemskerk-2016",
+        "target": {
+          "population": "All817randomized adults with a clinical diagnosis of tuberculous meningitis, HIV-infected and uninfected; two Vietnamese hospitals",
+          "contrast": "Assignment to intensified regimen versus standard regimen",
+          "outcome": "All-cause death",
+          "window": "By9months after randomization",
+          "estimand": "Effect of assignment",
+          "analysis_population": "Intention-to-treat: all randomized patients",
+          "effect_measure": "Primary Cox hazard ratio stratified by HIVstatus and MRCgrade"
+        },
+        "reported_result": {
+          "hazard_ratio": "0.94",
+          "ci95": [
+            "0.73",
+            "1.22"
+          ],
+          "p_value": "0.66",
+          "intensified": {
+            "randomized": 408,
+            "reported_deaths": 113
+          },
+          "standard": {
+            "randomized": 409,
+            "reported_deaths": 114
+          }
+        },
+        "supporting_windows": [
+          {
+            "source_id": "source_a252079a1a0bc75b4be4842de82eea4d0db1660873b8816a7552deff56dc7201",
+            "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 75,
+            "text_sha256": "28ffce3e150b323d03326bb59b0fc0d3a50b44a56353cd4c02e1c47b14470397"
+          },
+          {
+            "source_id": "source_a252079a1a0bc75b4be4842de82eea4d0db1660873b8816a7552deff56dc7201",
+            "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 105,
+            "text_sha256": "a0167d783e46c6a850a7d4d00a6d384a669e49a75a2cc4c314f442972b61c2cf"
+          },
+          {
+            "source_id": "source_a252079a1a0bc75b4be4842de82eea4d0db1660873b8816a7552deff56dc7201",
+            "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 171,
+            "text_sha256": "803df4d330c993a7311497ec5c802b3c994f5b8f8f99ed3c74ffe070c2e3a8cf"
+          }
+        ],
+        "operator_binding_not_model_hint": true,
+        "reference_boundary": "Human metadata names safety, not established exact mortality result; accuracy denominator excluded",
+        "unknowns": [
+          "Censoring/withdrawal not equated with complete death ascertainment",
+          "Event-count proportions are not the primary Cox hazard ratio",
+          "Per-protocol population and subgroup estimates are separate results",
+          "Plan/report correspondence and access chronology require source appraisal, not this binding"
+        ]
+      }
+    }
+  },
+  "event_log_hashes": {
+    "proposal-events.jsonl": "6a6d51cd86cecc38b379477e3c3a11ffd5107acbb4a5444b7b4de62f75079b67",
+    "assessment-events.jsonl": "da3192729a1d25b58d2cfcfba09430cc8d94489b16ef17cabc4669c3d03aafc7"
+  }
+}

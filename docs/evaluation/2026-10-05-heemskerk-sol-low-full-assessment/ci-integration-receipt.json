@@ -1,0 +1,49 @@
+{
+  "ci_snapshot": {
+    "run_id": 37360851718,
+    "head_sha": "4294802cbba4de68bff042a22c482ac85d2c80fa",
+    "conclusion": "failure",
+    "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37360851718",
+    "latest_completed_inspected_once": true,
+    "no_ci_wait": true
+  },
+  "concrete_failures": [
+    "Stale checked public contract: companion acquisition output schema changed, later optional arithmetic new tool needed catalog entry. Superseded speculative read_guidance schema already restored.",
+    "Existing source-admission fixture may be None: explicit branch assertion required for ty."
+  ],
+  "fixes": [
+    "Regenerated contract from native runtime; only companion output hash and added arithmetic entry differ from old checked artifact.",
+    "Added calculate_arithmetic to release verifier exact catalog.",
+    "Added data/existing non-None assertions to existing fixture."
+  ],
+  "verification": {
+    "release_verify_exitcode": 0,
+    "focused_tests": "12 passed in47.48s: release manifest, four same/different/partial/other-trial acquisition fixtures, two actualstdio preflight variants",
+    "ty": "passed",
+    "ruff_check": "passed",
+    "ruff_format": "196 files already formatted"
+  },
+  "retained_logs": {
+    "latest-completed-ci-failures.log": {
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/heemskerk-2016-sol-low-integration-preparation-20261005/latest-completed-ci-failures.log",
+      "sha256": "7c5d10c60c9b74c755480441af87c77c6b58770d2e89491fe10a68bea04a5647"
+    },
+    "release-verification-current.log": {
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/heemskerk-2016-sol-low-integration-preparation-20261005/release-verification-current.log",
+      "sha256": "4b753ea32acb02e3c8cca89fb0728d3bc15b8326b9205330943a6797be6eeb51"
+    },
+    "release-verification-current-2.log": {
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/heemskerk-2016-sol-low-integration-preparation-20261005/release-verification-current-2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "integration-focused-tests.log": {
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/heemskerk-2016-sol-low-integration-preparation-20261005/integration-focused-tests.log",
+      "sha256": "d9353f0b4be88d6d926b7488c22ea7e6a6fcd962360a385023092200e8a6c91d"
+    },
+    "integration-focused-tests-2.log": {
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/heemskerk-2016-sol-low-integration-preparation-20261005/integration-focused-tests-2.log",
+      "sha256": "e0c63ef30c2e1d9fec16e0c4556b2691ae93730c5d2efec0ddbf71e2b989bf30"
+    }
+  },
+  "boundary": "No scientific output edit or paid rerun; initial local failures retained; current pass does not claim remote CI passed."
+}
