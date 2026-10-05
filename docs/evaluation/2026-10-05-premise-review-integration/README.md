@@ -136,3 +136,9 @@ raw artifact hashes were checked again and remain unchanged. Private attempt
 log hashes are retained in `verification.json`; the first fixture failure also
 remains in the execution transcript and preserved pytest temporary workspaces.
 No additional inference or benchmark runs occurred.
+
+The subsequent [natural-fixture feasibility screen](../2026-10-05-native-review-snapshot-feasibility/README.md)
+looks for a cheaper reviewer continuation from already captured state, rather than
+purchasing a cold assessment to generate an account. It found only a partial
+Chua checkpoint that cannot use normal assessed Trial review. No eligible paid
+contrast is ready and no new assessment or terminal state was manufactured.

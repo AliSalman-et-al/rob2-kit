@@ -1,0 +1,129 @@
+{
+  "roots": [
+    {
+      "root": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases",
+      "databases": 107,
+      "domain_records": 505,
+      "bases": 2983,
+      "linked_bases": 0,
+      "linked_records": 0
+    },
+    {
+      "root": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics",
+      "databases": 176,
+      "domain_records": 303,
+      "bases": 1918,
+      "linked_bases": 5,
+      "linked_records": 1
+    }
+  ],
+  "candidates": [
+    {
+      "database": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/chua-result-account-recovery-20261004/prototype/workspace/.rob2-kit/canonical.sqlite3",
+      "database_sha256": "2d264aec1a0e245225072dba7caea6ad9e643736c2d694012c00ab63e8ba6be9",
+      "checkpoint_identity": "sha256:c633fa7accfb392a5030a6d6c238b1b44b520c493c515822acc4e2f082e9de36",
+      "trial_id": "chua-2022",
+      "domain_id": "domain:deviations",
+      "links": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "basis_index": 0,
+          "basis_role": "direct_support",
+          "link_keys": [
+            "checkpoint_identity",
+            "observation",
+            "result_step"
+          ],
+          "scope_meaning": null,
+          "scope_relation": null,
+          "observation_source_count": 1,
+          "step_id": "assignment",
+          "step_identity": "sha256:a49fafe141175dc9c91cb1e7da17e96fbe6e6ec6ec1a593fe7959897b287e0de",
+          "step_inference_present": false,
+          "step_unknown_count": 0,
+          "step_counterevidence_count": 0,
+          "count_row_count": 0
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "basis_index": 0,
+          "basis_role": "direct_support",
+          "link_keys": [
+            "checkpoint_identity",
+            "observation",
+            "result_step"
+          ],
+          "scope_meaning": null,
+          "scope_relation": null,
+          "observation_source_count": 1,
+          "step_id": "assignment",
+          "step_identity": "sha256:a49fafe141175dc9c91cb1e7da17e96fbe6e6ec6ec1a593fe7959897b287e0de",
+          "step_inference_present": false,
+          "step_unknown_count": 0,
+          "step_counterevidence_count": 0,
+          "count_row_count": 0
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "basis_index": 0,
+          "basis_role": "direct_support",
+          "link_keys": [
+            "checkpoint_identity",
+            "observation",
+            "result_step"
+          ],
+          "scope_meaning": null,
+          "scope_relation": null,
+          "observation_source_count": 2,
+          "step_id": "analysis",
+          "step_identity": "sha256:a515b9b8995a38a9f4e5cf90016c95b2f6f34fc2a017525e261f8130e97ece2f",
+          "step_inference_present": false,
+          "step_unknown_count": 0,
+          "step_counterevidence_count": 0,
+          "count_row_count": 0
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "basis_index": 1,
+          "basis_role": "direct_support",
+          "link_keys": [
+            "checkpoint_identity",
+            "observation",
+            "result_step"
+          ],
+          "scope_meaning": null,
+          "scope_relation": null,
+          "observation_source_count": 2,
+          "step_id": "analysis",
+          "step_identity": "sha256:a515b9b8995a38a9f4e5cf90016c95b2f6f34fc2a017525e261f8130e97ece2f",
+          "step_inference_present": false,
+          "step_unknown_count": 0,
+          "step_counterevidence_count": 0,
+          "count_row_count": 0
+        },
+        {
+          "question_id": "sq:deviations:substantial-impact",
+          "basis_index": 0,
+          "basis_role": "inference",
+          "link_keys": [
+            "checkpoint_identity",
+            "observation",
+            "result_step"
+          ],
+          "scope_meaning": null,
+          "scope_relation": null,
+          "observation_source_count": 2,
+          "step_id": "analysis",
+          "step_identity": "sha256:a515b9b8995a38a9f4e5cf90016c95b2f6f34fc2a017525e261f8130e97ece2f",
+          "step_inference_present": false,
+          "step_unknown_count": 0,
+          "step_counterevidence_count": 0,
+          "count_row_count": 0
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "metadata_only": true,
+  "answers_judgments_and_prose_not_emitted": true
+}
