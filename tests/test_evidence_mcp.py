@@ -1127,7 +1127,7 @@ def test_source_navigation_is_literal_bounded_and_cursor_stable(tmp_path: Path) 
     )["data"]["navigation"]
     assert first["source_id"] == source["id"]
     assert first["projection_hash"] == source["projection_hash"]
-    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.3"
+    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.4"
     assert first["pages_examined"] == 7
     assert all(len(entry["text"]) <= 512 for entry in first["entries"])
 

@@ -1070,7 +1070,7 @@ class SourceNavigationData(PublicModel):
     source_label: str = Field(min_length=1)
     logical_path: str = Field(min_length=1)
     projection_hash: Identity
-    navigation_version: Literal["rob2-kit.source-navigation.v0.3"]
+    navigation_version: Literal["rob2-kit.source-navigation.v0.4"]
     entries: tuple[SourceNavigationEntry, ...] = Field(max_length=12)
     total_entries: NonNegativeInt = Field(
         description="Total entries in the complete deterministic Source navigation index."

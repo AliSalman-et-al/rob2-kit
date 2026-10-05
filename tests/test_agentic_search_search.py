@@ -112,3 +112,18 @@ def test_search_provenance_history_keeps_unassigned_and_purposed_discoveries(
 
     assert ("", "") in purposes
     assert ("domain:randomization", "sq:randomization:sequence") in purposes
+
+
+def test_source_navigation_preserves_split_heading_coordinates() -> None:
+    page = (
+        "Header\n\n1.2\nIntroduction\nBody text.\n\n2.0\n11-Oct-2017\n\n3\n"
+        "This is a long prose sentence that should not become a heading candidate."
+    )
+    headings = [
+        item
+        for item in _source_navigation_entries((page,))
+        if item["kind"] == "heading_candidate" and item["start_line"] != item["end_line"]
+    ]
+    assert len(headings) == 1
+    assert headings[0]["text"] == "1.2\nIntroduction"
+    assert (headings[0]["page"], headings[0]["start_line"], headings[0]["end_line"]) == (1, 3, 4)

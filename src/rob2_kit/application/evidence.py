@@ -52,7 +52,7 @@ _SEARCH_PREVIEW_MAX_BYTES = 512
 _SEARCH_CANDIDATE_MAX_BYTES = 2_048
 _TERM_FEEDBACK_MAX_TERMS = 16
 _TERM_FEEDBACK_MAX_SOURCES = 64
-_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.3"
+_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.4"
 _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
@@ -488,6 +488,30 @@ def _source_navigation_entries(
                     }
                 )
         for line_number, text in useful:
+            # PDF extraction can put a section number and title on adjacent lines.
+            # Keep their literal coordinates; this remains a candidate, not a TOC claim.
+            if re.fullmatch(r"\d+(?:\.\d+)*[.)]?", text) and line_number < len(lines):
+                title = lines[line_number].strip()
+                blank_before = line_number == 1 or not lines[line_number - 2].strip()
+                if (
+                    blank_before
+                    and title
+                    and title[0].isupper()
+                    and len(title) <= 120
+                    and len(title.split()) <= 10
+                    and not title.endswith((".", ":", ";", "?", "!"))
+                    and "@" not in title
+                    and ";" not in title
+                ):
+                    entries.append(
+                        {
+                            "text": lines[line_number - 1] + "\n" + lines[line_number],
+                            "page": page_number,
+                            "start_line": line_number,
+                            "end_line": line_number + 1,
+                            "kind": "heading_candidate",
+                        }
+                    )
             is_caption = caption.match(text) is not None
             if len(text) > 120 or (not is_caption and text.endswith((".", ":", ";", "?", "!"))):
                 continue
