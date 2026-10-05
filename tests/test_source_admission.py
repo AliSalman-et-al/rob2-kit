@@ -658,8 +658,9 @@ def test_concurrent_acquisition_does_not_duplicate_public_fetch(assessed, monkey
     assert recovered["candidate_identity"] == receipt["candidate_identity"] and len(calls) == 1
 
 
+@pytest.mark.parametrize("existing_kind", ["same", "different", "partial", "other_trial"])
 def test_acquisition_reports_existing_byte_identical_source_without_admission(
-    tmp_path, monkeypatch
+    tmp_path, monkeypatch, existing_kind
 ):
     document = pdf("Same protocol NCT00000001")
     original_workspace = support._workspace
@@ -668,14 +669,52 @@ def test_acquisition_reports_existing_byte_identical_source_without_admission(
         root = original_workspace(path, requested_outcome)
         main = root / "input/trial/main.txt"
         main.write_text(main.read_text() + "Companion protocol " + URL + "\n")
-        (root / "input/trial/zexisting.pdf").write_bytes(document)
+        destination = root / "input/trial/zexisting.pdf"
+        if existing_kind == "other_trial":
+            import shutil
+
+            shutil.copytree(root / "input/trial", root / "input/zother")
+            destination = root / "input/zother/zexisting.pdf"
+        existing_bytes = {
+            "same": document,
+            "different": pdf("Different protocol NCT00000001"),
+            "partial": document + b"\n% additional bytes\n",
+            "other_trial": document,
+        }[existing_kind]
+        destination.write_bytes(existing_bytes)
         return root
 
     monkeypatch.setattr(support, "_workspace", with_existing_protocol)
-    workspace, _, _ = support._assessment_workspace(tmp_path)
+    if existing_kind == "other_trial":
+        workspace = support._workspace(tmp_path)
+        first = support._prepared_evidence(workspace)
+        other_sources = _call(workspace, "list_sources", {"trial_id": "zother"})["data"]["sources"]
+        other_main = next(source for source in other_sources if source["label"] == "main.txt")
+        second = _call(
+            workspace,
+            "select_text_evidence",
+            {
+                "trial_id": "zother",
+                "source_id": other_main["id"],
+                "page": 1,
+                "start_line": 1,
+                "end_line": 1,
+            },
+        )["data"]["evidence"]
+        proposed = _call(
+            workspace,
+            "save_proposal",
+            support._proposal_args(
+                workspace, [support._result(first), support._result_for_trial(second, "zother")]
+            ),
+        )
+        assert proposed["outcome"] == "review_required", proposed
+        support._review(workspace)
+    else:
+        workspace, _, _ = support._assessment_workspace(tmp_path)
     sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
     main = next(source for source in sources if source["label"] == "main.txt")
-    existing = next(source for source in sources if source["label"] == "zexisting.pdf")
+    existing = next((source for source in sources if source["label"] == "zexisting.pdf"), None)
     original_client = httpx.Client
     requests = []
 
@@ -706,7 +745,10 @@ def test_acquisition_reports_existing_byte_identical_source_without_admission(
     acquired = _call(workspace, "acquire_companion_source", arguments)
     assert acquired["outcome"] == "success", acquired
     data = acquired["data"]
-    assert data["matching_active_source_ids"] == [existing["id"]]
+    if existing_kind == "same":
+        assert data["matching_active_source_ids"] == [existing["id"]]
+    else:
+        assert "matching_active_source_ids" not in data
     assert data["document_staged"] and not data["document_read"]
     assert not data["admitted_to_active_batch"]
     candidate = workspace / ".rob2-kit/companion_candidates" / data["candidate_identity"][7:]

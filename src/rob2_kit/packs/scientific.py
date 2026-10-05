@@ -123,7 +123,10 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             _anchor(Answer.YES, "A random component was used in sequence generation."),
             _anchor(Answer.NO, "No random element was used, or the sequence was predictable."),
-            _anchor(Answer.NO_INFORMATION, "Only a randomized label is reported and trial circumstances do not support a reasonable probable judgment."),
+            _anchor(
+                Answer.NO_INFORMATION,
+                "Only a randomized label is reported and trial circumstances do not support a reasonable probable judgment.",
+            ),
         ),
         (
             "Minimization should generally be considered random; documented use of no random element or a predictable sequence is different evidence.",
