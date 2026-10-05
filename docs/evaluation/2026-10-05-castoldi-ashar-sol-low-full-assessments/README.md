@@ -33,6 +33,14 @@ Castoldi used one initial session plus approved same-session continuation. Ashar
 
 These are cumulative usage, not instantaneous context or a price estimate. Dollar totals are unknown. Productive reading and normal acquisition were allowed; no arbitrary total token/tool budget or new paid rerun was used. Original output/freeze/event/bundle/source bindings are retained privately and hashed in [private-bindings.json](private-bindings.json). Body delivery, bundle integrity and this implementation-agent interpretation are distinct; no independent human review or private chronology certification is claimed.
 
+## Separate AI source review
+
+The parent reported separate independent AI source reviews after the outputs were sealed; their provenance and verification limits are recorded in [independent-ai-source-review.json](independent-ai-source-review.json). These are source reviews, not human validation or exact-reference accuracy assessments. The original implementation-agent audit is retained separately.
+
+Castoldi review verified the original PDF hash, fresh page4/5 raster hashes and all21 archived numbered-body hashes. It confirms the arm-specific impact qualification, but preserves unknown TKA ascertainment: an eligibility restriction is known; measured-and-discarded versus never-collected IKDC is not. “Willingness” concerns on-site examination rather than necessarily questionnaire nonresponse. Table3 nonsignificance does not establish exchangeability. D3 High follows the official NI branch and does not prove likely dependence. D4 Probably No/Some concerns is defensible under official §7.3p53 active-comparator, independent-interviewer and delayed-assessment circumstances.
+
+Ashar review verified protocol/supplement PDF hashes and all44 source bases against published precommit windows. It supports the legitimate available-case comparison while distinguishing it from the primary mixed-model effect. The five-week MRI and one-month descriptions concern the same nominal posttreatment visit, not a demonstrated endpoint switch; Table2 “At1mo” is later follow-up. The conditional single-item rule/correlations support instrument choice, and explicit expectations support D4 PY beyond unblinding alone. D3 NI-branch High and the hypothetical remaining0.7038-point gap are verified, without proving MNAR. D5 NI/PN/NI is defensible; exhaustive hierarchy must not become a universal PN barrier. Neither review independently certifies private event chronology. Labels and frozen model outputs are unchanged.
+
 ## Next general fixes selected from these failures
 
 1. Clarify that target groups are the approved comparison, while other arms stay source context; preserve valid joint multi-arm targets. Ashar's extra-arm proposal demonstrates the need, before labels existed.
