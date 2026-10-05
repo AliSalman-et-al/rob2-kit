@@ -1,0 +1,3206 @@
+{
+  "method": "Original inference-event counts reused from retained Oct3 inventory; paths checked present. Later development directory associations and bounded textual mentions are conservative indicators, not paid-run counts or proof of no exposure. Repeated directories distinguish repeated active attention from original benchmark exposure. Broad prior exposure inventory excluded from mention scans. Alias/path scans can miss names; no never-exposed or held-out assertion. Source-screening for this preparation adds development exposure to selected cases.",
+  "original_inventory_path": "docs/evaluation/2026-10-03-offline-closure/exposure-inventory.json",
+  "original_inventory_sha256": "1a20188908e55c16298bed1b495af3cea752775e66e0f2ddfa008efcc9b6c883",
+  "original_log_paths_all_present": true,
+  "cases": [
+    {
+      "case": "heemskerk-2016",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/heemskerk-2016/turn-2.jsonl",
+          "inference_event_count": 130
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/heemskerk-2016/turn-1.jsonl",
+          "inference_event_count": 41
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-chua-result-account-preparation/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "jindani-2016",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/jindani-2016/turn-2.jsonl",
+          "inference_event_count": 15
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/jindani-2016/turn-1.jsonl",
+          "inference_event_count": 40
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/jindani-2016/turn-3.jsonl",
+          "inference_event_count": 13
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-chua-result-account-preparation/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "aarnoutse-2017",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/aarnoutse-2017/turn-2.jsonl",
+          "inference_event_count": 117
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/aarnoutse-2017/turn-1.jsonl",
+          "inference_event_count": 30
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-aarnoutse-native-d2"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 23,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-aarnoutse-native-d2/README.md",
+        "docs/evaluation/2026-10-04-aarnoutse-native-d2/approval-receipt.json",
+        "docs/evaluation/2026-10-04-aarnoutse-native-d2/command.json",
+        "docs/evaluation/2026-10-04-aarnoutse-native-d2/delivered-source-windows.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "boeree-2017",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boeree-2017/turn-2.jsonl",
+          "inference_event_count": 115
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boeree-2017/turn-1.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 12,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/README.md",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/retained-records.json",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/source-page-checks.json",
+        "docs/evaluation/2026-10-02-scientific-checkpoints.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "dian-2018",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/dian-2018/turn-2.jsonl",
+          "inference_event_count": 120
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/dian-2018/turn-1.jsonl",
+          "inference_event_count": 36
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 221,
+      "other_mention_examples": [
+        "docs/evaluation/2026-09-27-adjudication-cohort.md",
+        "docs/evaluation/2026-09-27-agent-audit.md",
+        "docs/evaluation/2026-09-27-arasens-d3-prompt-contrast.md",
+        "docs/evaluation/2026-09-27-audit-evidence/eval-findings.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "vel-squez-2018",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/vel-squez-2018/turn-2.jsonl",
+          "inference_event_count": 21
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/vel-squez-2018/turn-4.jsonl",
+          "inference_event_count": 97
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/vel-squez-2018/turn-1.jsonl",
+          "inference_event_count": 18
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/vel-squez-2018/turn-3.jsonl",
+          "inference_event_count": 17
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "atwine-2020",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-2.jsonl",
+          "inference_event_count": 127
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-9.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-7.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-8.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-4.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-6.jsonl",
+          "inference_event_count": 13
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-1.jsonl",
+          "inference_event_count": 24
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-5.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-3.jsonl",
+          "inference_event_count": 8
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-11.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-12.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atwine-2020/turn-10.jsonl",
+          "inference_event_count": 2
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "abbasi-2012",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/abbasi-2012/turn-2.jsonl",
+          "inference_event_count": 13
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/abbasi-2012/turn-1.jsonl",
+          "inference_event_count": 28
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/abbasi-2012/turn-3.jsonl",
+          "inference_event_count": 102
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 7,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-chua-result-account-preparation/README.md",
+        "docs/evaluation/2026-10-04-d45-contextual-likelihood/README.md",
+        "docs/evaluation/2026-10-04-d45-contextual-likelihood/bounded-code-traces.json",
+        "docs/evaluation/2026-10-05-avatar-d4-guidance-pair-recovery/prospective-selection.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "aboelfadl-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/aboelfadl-2022/turn-2.jsonl",
+          "inference_event_count": 13
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/aboelfadl-2022/turn-4.jsonl",
+          "inference_event_count": 112
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/aboelfadl-2022/turn-1.jsonl",
+          "inference_event_count": 24
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/aboelfadl-2022/turn-3.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-chua-result-account-preparation/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "albert-2013",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/albert-2013/turn-2.jsonl",
+          "inference_event_count": 21
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/albert-2013/turn-1.jsonl",
+          "inference_event_count": 33
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/albert-2013/turn-3.jsonl",
+          "inference_event_count": 113
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334",
+        "docs/evaluation/2026-10-02-albert-repair-policy-audit"
+      ],
+      "targeted_record_directory_count": 2,
+      "other_mention_record_count": 55,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334/README.md",
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334/actual-model-tool-calls.json",
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334/final-main-coverage.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "ashar-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ashar-2022/turn-2.jsonl",
+          "inference_event_count": 111
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ashar-2022/turn-1.jsonl",
+          "inference_event_count": 37
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-bagg-native-d5/private-criteria.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "bagg-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bagg-2022/turn-2.jsonl",
+          "inference_event_count": 169
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bagg-2022/turn-1.jsonl",
+          "inference_event_count": 54
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-bagg-native-d5"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 33,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-gupta-real-image-reading/native-model-tool-forms.json",
+        "docs/evaluation/2026-10-03-gupta-real-image-reading/offline-render-wire.json",
+        "docs/evaluation/2026-10-04-award1-lean-preflight/alternative-exposure-check.json",
+        "docs/evaluation/2026-10-04-bagg-native-d5/README.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "bendix-1996",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bendix-1996/turn-2.jsonl",
+          "inference_event_count": 141
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bendix-1996/turn-1.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-bendix-production-d2",
+        "docs/evaluation/2026-10-03-bendix-review-visibility",
+        "docs/evaluation/2026-10-03-bendix-source-only",
+        "docs/evaluation/2026-10-03-bendix-supplied-review"
+      ],
+      "targeted_record_directory_count": 4,
+      "other_mention_record_count": 50,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/README.md",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/retained-records.json",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/source-page-checks.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "bendix-2000",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bendix-2000/turn-2.jsonl",
+          "inference_event_count": 17
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bendix-2000/turn-1.jsonl",
+          "inference_event_count": 12
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bendix-2000/turn-3.jsonl",
+          "inference_event_count": 138
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-bendix-production-d2",
+        "docs/evaluation/2026-10-03-bendix-review-visibility",
+        "docs/evaluation/2026-10-03-bendix-source-only",
+        "docs/evaluation/2026-10-03-bendix-supplied-review"
+      ],
+      "targeted_record_directory_count": 4,
+      "other_mention_record_count": 50,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/README.md",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/retained-records.json",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/source-page-checks.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "stop-igan",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stop-igan/turn-2.jsonl",
+          "inference_event_count": 125
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stop-igan/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-stop-igan-d3-guidance"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 13,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-attal-d3-assumptions/sources.json",
+        "docs/evaluation/2026-10-04-completion-vs-observation/README.md",
+        "docs/evaluation/2026-10-04-completion-vs-observation/existing-case-preservation.json",
+        "docs/evaluation/2026-10-04-completion-vs-observation/verification.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "testing",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/testing/turn-2.jsonl",
+          "inference_event_count": 173
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/testing/turn-1.jsonl",
+          "inference_event_count": 33
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 131,
+      "other_mention_examples": [
+        "docs/evaluation/2026-09-27-agent-audit.md",
+        "docs/evaluation/2026-09-27-audit-evidence/scientific-findings.md",
+        "docs/evaluation/2026-09-27-audit-issues.md",
+        "docs/evaluation/2026-09-27-fresh-audit-evidence/research.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "nefigard",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/nefigard/turn-2.jsonl",
+          "inference_event_count": 136
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/nefigard/turn-1.jsonl",
+          "inference_event_count": 36
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 29,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-d5-five-case-offline/README.md",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/case-warrants-scope-and-delivery.json",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/primary-passages.json",
+        "docs/evaluation/2026-10-03-recovery-d5-protocol/protocol.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "origin",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/origin/turn-2.jsonl",
+          "inference_event_count": 133
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/origin/turn-1.jsonl",
+          "inference_event_count": 25
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-freeman-original-control"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 730,
+      "other_mention_examples": [
+        "docs/evaluation/2026-09-27-adjudication-cohort.md",
+        "docs/evaluation/2026-09-27-agent-audit.md",
+        "docs/evaluation/2026-09-27-arasens-d3-prompt-contrast.md",
+        "docs/evaluation/2026-09-27-audit-issues.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "envision",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/envision/turn-2.jsonl",
+          "inference_event_count": 181
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/envision/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-scientific-premise-audit.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "banovic26-avatar-2024",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/banovic26-avatar-2024/turn-2.jsonl",
+          "inference_event_count": 114
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/banovic26-avatar-2024/turn-1.jsonl",
+          "inference_event_count": 47
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 9,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-05-avatar-d4-guidance-pair-recovery/README.md",
+        "docs/evaluation/2026-10-05-avatar-d4-guidance-pair-recovery/new/recovery-approval-receipt.json",
+        "docs/evaluation/2026-10-05-avatar-d4-guidance-pair-recovery/new/terminal-domain-record.json",
+        "docs/evaluation/2026-10-05-avatar-d4-guidance-pair-recovery/old/recovery-approval-receipt.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "kang25-recovery-2020",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/kang25-recovery-2020/turn-2.jsonl",
+          "inference_event_count": 116
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/kang25-recovery-2020/turn-1.jsonl",
+          "inference_event_count": 25
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 19,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-d5-source-audit/retained-records.json",
+        "docs/evaluation/2026-10-03-d5-correspondence-presentation/replay-input.json",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/case-warrants-scope-and-delivery.json",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/primary-passages.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "frat-2019",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/frat-2019/turn-2.jsonl",
+          "inference_event_count": 111
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/frat-2019/turn-1.jsonl",
+          "inference_event_count": 44
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "baillard-2006",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/baillard-2006/turn-2.jsonl",
+          "inference_event_count": 68
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/baillard-2006/turn-1.jsonl",
+          "inference_event_count": 22
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-05-baillard-scaffolding-results"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 15,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-05-baillard-scaffolding-results/README.md",
+        "docs/evaluation/2026-10-05-baillard-scaffolding-results/execution-summary.json",
+        "docs/evaluation/2026-10-05-minimal-assessment-preparation/README.md",
+        "docs/evaluation/2026-10-05-minimal-assessment-preparation/design.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "baillard-2018",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/baillard-2018/turn-2.jsonl",
+          "inference_event_count": 81
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/baillard-2018/turn-1.jsonl",
+          "inference_event_count": 36
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-05-baillard-scaffolding-results"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 15,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-05-baillard-scaffolding-results/README.md",
+        "docs/evaluation/2026-10-05-baillard-scaffolding-results/execution-summary.json",
+        "docs/evaluation/2026-10-05-minimal-assessment-preparation/README.md",
+        "docs/evaluation/2026-10-05-minimal-assessment-preparation/design.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "chua-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/chua-2022/turn-2.jsonl",
+          "inference_event_count": 113
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/chua-2022/turn-1.jsonl",
+          "inference_event_count": 36
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-chua-host-assisted-handoff",
+        "docs/evaluation/2026-10-04-chua-normal-control",
+        "docs/evaluation/2026-10-04-chua-result-account-preparation",
+        "docs/evaluation/2026-10-04-chua-result-account-recovery"
+      ],
+      "targeted_record_directory_count": 4,
+      "other_mention_record_count": 35,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-gupta-real-image-reading/native-model-tool-forms.json",
+        "docs/evaluation/2026-10-03-gupta-real-image-reading/offline-render-wire.json",
+        "docs/evaluation/2026-10-04-award1-lean-preflight/alternative-exposure-check.json",
+        "docs/evaluation/2026-10-04-award1-lean-preflight/review-dossier.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "guitton-2019",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/guitton-2019/turn-2.jsonl",
+          "inference_event_count": 122
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/guitton-2019/turn-1.jsonl",
+          "inference_event_count": 29
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-guitton-production-d2"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 38,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/README.md",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/retained-records.json",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/source-page-checks.json",
+        "docs/evaluation/2026-10-02-d5-source-audit/README.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "jaber-2016",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/jaber-2016/turn-2.jsonl",
+          "inference_event_count": 113
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/jaber-2016/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "gupta-2024",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/gupta-2024/turn-2.jsonl",
+          "inference_event_count": 173
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/gupta-2024/turn-1.jsonl",
+          "inference_event_count": 29
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-gupta-full-validation",
+        "docs/evaluation/2026-10-03-gupta-guard-image-audit",
+        "docs/evaluation/2026-10-03-gupta-real-image-reading",
+        "docs/evaluation/2026-10-03-gupta-single-case-protocol",
+        "docs/evaluation/2026-10-04-gupta-continuation-readiness",
+        "docs/evaluation/2026-10-04-gupta-fork-continuation"
+      ],
+      "targeted_record_directory_count": 6,
+      "other_mention_record_count": 78,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-citation-linkage-audit/audit.json",
+        "docs/evaluation/2026-10-03-gupta-full-validation/README.md",
+        "docs/evaluation/2026-10-03-gupta-full-validation/accepted-domain-records.json",
+        "docs/evaluation/2026-10-03-gupta-full-validation/budget-state.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "hundscheid-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hundscheid-2022/turn-2.jsonl",
+          "inference_event_count": 140
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hundscheid-2022/turn-1.jsonl",
+          "inference_event_count": 40
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-hundscheid-paired-d5"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 19,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-context-coverage-union/freeze-receipt.json",
+        "docs/evaluation/2026-10-04-d45-contextual-likelihood/README.md",
+        "docs/evaluation/2026-10-04-d45-contextual-likelihood/bounded-code-traces.json",
+        "docs/evaluation/2026-10-04-hundscheid-paired-d5/README.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "el-khuffash-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/el-khuffash-2021/turn-2.jsonl",
+          "inference_event_count": 112
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/el-khuffash-2021/turn-1.jsonl",
+          "inference_event_count": 35
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "de-waal-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-2.jsonl",
+          "inference_event_count": 97
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-9.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-7.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-8.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-4.jsonl",
+          "inference_event_count": 8
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-6.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-1.jsonl",
+          "inference_event_count": 30
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-5.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-3.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-11.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-12.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/de-waal-2021/turn-10.jsonl",
+          "inference_event_count": 9
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "clyman-2019",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-2.jsonl",
+          "inference_event_count": 165
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-9.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-7.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-8.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-4.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-6.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-1.jsonl",
+          "inference_event_count": 29
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-5.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-3.jsonl",
+          "inference_event_count": 10
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-11.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-12.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/clyman-2019/turn-10.jsonl",
+          "inference_event_count": 2
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-native-readonly-review/preflight-search_sources.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "potsiurko-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/potsiurko-2022/turn-2.jsonl",
+          "inference_event_count": 117
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/potsiurko-2022/turn-1.jsonl",
+          "inference_event_count": 24
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "chiba-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/chiba-2021/turn-2.jsonl",
+          "inference_event_count": 136
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/chiba-2021/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "castoldi-2020",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/turn-2.jsonl",
+          "inference_event_count": 106
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/turn-1.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 2,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-nonlow-reference-panel/README.md",
+        "docs/evaluation/2026-10-03-nonlow-reference-panel/candidate-provenance.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "getgood-2020",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/getgood-2020/turn-2.jsonl",
+          "inference_event_count": 183
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/getgood-2020/turn-1.jsonl",
+          "inference_event_count": 40
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 9,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-nonlow-reference-panel/candidate-provenance.json",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/README.md",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/adjudication.json",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/before-after.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "gibbs-2023",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/gibbs-2023/turn-2.jsonl",
+          "inference_event_count": 11
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/gibbs-2023/turn-1.jsonl",
+          "inference_event_count": 18
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "hamido-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hamido-2021/turn-2.jsonl",
+          "inference_event_count": 17
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hamido-2021/turn-1.jsonl",
+          "inference_event_count": 34
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hamido-2021/turn-3.jsonl",
+          "inference_event_count": 98
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "becker-2015",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/becker-2015/turn-2.jsonl",
+          "inference_event_count": 12
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/becker-2015/turn-4.jsonl",
+          "inference_event_count": 92
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/becker-2015/turn-1.jsonl",
+          "inference_event_count": 26
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/becker-2015/turn-3.jsonl",
+          "inference_event_count": 18
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-frozen-an-5a3e580/an-2021/report-deliveries.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "beerendonk-1996",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/beerendonk-1996/turn-2.jsonl",
+          "inference_event_count": 108
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/beerendonk-1996/turn-1.jsonl",
+          "inference_event_count": 26
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "beerendonk-1999",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/beerendonk-1999/turn-2.jsonl",
+          "inference_event_count": 133
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/beerendonk-1999/turn-1.jsonl",
+          "inference_event_count": 37
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "boedt-2023",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-2.jsonl",
+          "inference_event_count": 89
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-9.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-7.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-8.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-4.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-6.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-1.jsonl",
+          "inference_event_count": 34
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-5.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-3.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-11.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-12.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/boedt-2023/turn-10.jsonl",
+          "inference_event_count": 8
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "einarsson-2017",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/einarsson-2017/turn-2.jsonl",
+          "inference_event_count": 142
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/einarsson-2017/turn-1.jsonl",
+          "inference_event_count": 46
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-human-reference-provenance/QUALIFIED-MATCHING.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "espinos-2017",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/espinos-2017/turn-2.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/espinos-2017/turn-1.jsonl",
+          "inference_event_count": 26
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/espinos-2017/turn-3.jsonl",
+          "inference_event_count": 96
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "hanafiah-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hanafiah-2022/turn-2.jsonl",
+          "inference_event_count": 153
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hanafiah-2022/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "an-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/an-2021/turn-2.jsonl",
+          "inference_event_count": 143
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/an-2021/turn-1.jsonl",
+          "inference_event_count": 35
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-02-canvas-premise-review",
+        "docs/evaluation/2026-10-02-d2-trial-context-audit/production-an",
+        "docs/evaluation/2026-10-02-d5-guidance-probe",
+        "docs/evaluation/2026-10-02-deliver-d3-mechanism-9497c9f",
+        "docs/evaluation/2026-10-02-frozen-an-5a3e580",
+        "docs/evaluation/2026-10-02-frozen-an-5a3e580/an-2021",
+        "docs/evaluation/2026-10-02-frozen-production-9d73225/an-2021",
+        "docs/evaluation/2026-10-02-probe-guard-and-cost-audit",
+        "docs/evaluation/2026-10-03-d2-analysis-rule-context",
+        "docs/evaluation/2026-10-03-d27-mechanism-impact",
+        "docs/evaluation/2026-10-03-d3-guidance-pair",
+        "docs/evaluation/2026-10-03-d31-impact-warrant",
+        "docs/evaluation/2026-10-03-d5-paired-behavior/fictional-qualifying-change",
+        "docs/evaluation/2026-10-03-exscel-production-plan",
+        "docs/evaluation/2026-10-03-human-reference-provenance",
+        "docs/evaluation/2026-10-03-nonlow-reference-panel",
+        "docs/evaluation/2026-10-03-selection-semantic-ci-audit",
+        "docs/evaluation/2026-10-03-stopdapt2-sensitivity-relevance",
+        "docs/evaluation/2026-10-03-verifier-and-result-scope-audit",
+        "docs/evaluation/2026-10-04-award1-lean-preflight",
+        "docs/evaluation/2026-10-04-award1-native-lean-pair",
+        "docs/evaluation/2026-10-04-chua-host-assisted-handoff",
+        "docs/evaluation/2026-10-04-companion-reference-corrections",
+        "docs/evaluation/2026-10-04-companion-source-staging",
+        "docs/evaluation/2026-10-04-domain-history-handoff",
+        "docs/evaluation/2026-10-04-freeman-native-d3",
+        "docs/evaluation/2026-10-04-freeman-original-control",
+        "docs/evaluation/2026-10-04-freeman-source-check",
+        "docs/evaluation/2026-10-04-freeman-source-check-recovery",
+        "docs/evaluation/2026-10-04-lean-domain-consolidation",
+        "docs/evaluation/2026-10-04-source-contract-and-result-account",
+        "docs/evaluation/2026-10-04-source-understanding-offline",
+        "docs/evaluation/2026-10-04-stop-igan-d3-guidance",
+        "docs/evaluation/2026-10-05-avatar-d4-guidance-pair-recovery",
+        "docs/evaluation/2026-10-05-companion-acquisition-audit",
+        "docs/evaluation/2026-10-05-d5-mechanism-test",
+        "docs/evaluation/2026-10-05-offline-plan-comparison-audit"
+      ],
+      "targeted_record_directory_count": 37,
+      "other_mention_record_count": 1672,
+      "other_mention_examples": [
+        "docs/evaluation/2026-09-27-adjudication-cohort.md",
+        "docs/evaluation/2026-09-27-agent-audit.md",
+        "docs/evaluation/2026-09-27-arasens-d3-prompt-contrast.md",
+        "docs/evaluation/2026-09-27-audit-evidence/code-findings.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": [
+        "diagnostics/companion-native-audit-20261005",
+        "diagnostics/offline-plan-comparison-audit-20261005",
+        "diagnostics/prospective-d5-mechanism-run-20261005"
+      ]
+    },
+    {
+      "case": "bausys-2023",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-2.jsonl",
+          "inference_event_count": 108
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-9.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-7.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-8.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-4.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-6.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-1.jsonl",
+          "inference_event_count": 49
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-5.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-3.jsonl",
+          "inference_event_count": 8
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-11.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-12.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bausys-2023/turn-10.jsonl",
+          "inference_event_count": 2
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 3,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-human-reference-provenance/QUALIFIED-MATCHING.md",
+        "docs/evaluation/2026-10-05-minimal-assessment-preparation/README.md",
+        "docs/evaluation/2026-10-05-minimal-assessment-preparation/design.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "bente-2014",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bente-2014/turn-2.jsonl",
+          "inference_event_count": 117
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/bente-2014/turn-1.jsonl",
+          "inference_event_count": 31
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "ferreira-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-2.jsonl",
+          "inference_event_count": 97
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-9.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-7.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-8.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-4.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-6.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-1.jsonl",
+          "inference_event_count": 28
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-5.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-3.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-11.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-12.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ferreira-2021/turn-10.jsonl",
+          "inference_event_count": 5
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "fulop-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/fulop-2021/turn-2.jsonl",
+          "inference_event_count": 21
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/fulop-2021/turn-1.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/fulop-2021/turn-3.jsonl",
+          "inference_event_count": 106
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "gillis-2014",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/gillis-2014/turn-2.jsonl",
+          "inference_event_count": 114
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/gillis-2014/turn-1.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "grant-2017",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/grant-2017/turn-2.jsonl",
+          "inference_event_count": 94
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/grant-2017/turn-1.jsonl",
+          "inference_event_count": 26
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 22,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-albert-d3-generalization-3069334/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/accepted-domain-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/domain-history-records.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "elixa",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/elixa/turn-2.jsonl",
+          "inference_event_count": 162
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/elixa/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "leader",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/leader/turn-2.jsonl",
+          "inference_event_count": 229
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/leader/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 23,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-deliver-d3-direct-c341156/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-deliver-d3-mechanism-9497c9f/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-hosted-deliver-d3-db8e68d/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-primary-report-reading/context-pages.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "sustain-6",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/sustain-6/turn-2.jsonl",
+          "inference_event_count": 155
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/sustain-6/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 10,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-numeric-absence-audit/adjudication.json",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/before-after.md",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/freeze.json",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/protocol.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "exscel",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/exscel/turn-2.jsonl",
+          "inference_event_count": 147
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/exscel/turn-1.jsonl",
+          "inference_event_count": 36
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-exscel-continuity-verdict",
+        "docs/evaluation/2026-10-03-exscel-full-bd92ec8",
+        "docs/evaluation/2026-10-03-exscel-host-recovery",
+        "docs/evaluation/2026-10-03-exscel-independent-d3-review",
+        "docs/evaluation/2026-10-03-exscel-preapproval-audit",
+        "docs/evaluation/2026-10-03-exscel-production-plan",
+        "docs/evaluation/2026-10-03-exscel-proposal-bd92ec8",
+        "docs/evaluation/2026-10-03-exscel-review-response-d789ea8"
+      ],
+      "targeted_record_directory_count": 8,
+      "other_mention_record_count": 134,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-campaign-checkpoint/README.md",
+        "docs/evaluation/2026-10-03-campaign-checkpoint/durable-usage-subset.json",
+        "docs/evaluation/2026-10-03-citation-linkage-audit/README.md",
+        "docs/evaluation/2026-10-03-citation-linkage-audit/audit.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "harmony-outcomes",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/harmony-outcomes/turn-2.jsonl",
+          "inference_event_count": 122
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/harmony-outcomes/turn-1.jsonl",
+          "inference_event_count": 30
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "rewind",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/rewind/turn-2.jsonl",
+          "inference_event_count": 108
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/rewind/turn-1.jsonl",
+          "inference_event_count": 40
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 4,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-domain-compaction-readiness/decision.md",
+        "docs/evaluation/2026-10-04-optional-review-integration/README.md",
+        "docs/evaluation/2026-10-04-pioneer-native-d3/delivered-source-windows.json",
+        "docs/evaluation/2026-10-04-pioneer-native-d3/native-receipts.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "pioneer-6",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/pioneer-6/turn-2.jsonl",
+          "inference_event_count": 128
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/pioneer-6/turn-1.jsonl",
+          "inference_event_count": 33
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 46,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-completion-vs-observation/README.md",
+        "docs/evaluation/2026-10-04-completion-vs-observation/existing-case-preservation.json",
+        "docs/evaluation/2026-10-04-completion-vs-observation/verification.json",
+        "docs/evaluation/2026-10-04-d3-authoritative-prototype/evaluation-plan.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "monaleesa-2",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-2.jsonl",
+          "inference_event_count": 10
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-9.jsonl",
+          "inference_event_count": 30
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-7.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-8.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-4.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-6.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-1.jsonl",
+          "inference_event_count": 14
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-5.jsonl",
+          "inference_event_count": 10
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-3.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-2/turn-10.jsonl",
+          "inference_event_count": 48
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 2,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-fresh-failure-discovery/README.md",
+        "docs/evaluation/2026-10-04-fresh-failure-discovery/monaleesa-3.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "monaleesa-3",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-3/turn-2.jsonl",
+          "inference_event_count": 131
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-3/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 24,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-fresh-failure-discovery/README.md",
+        "docs/evaluation/2026-10-04-fresh-failure-discovery/monaleesa-3.json",
+        "docs/evaluation/2026-10-04-fresh-failure-discovery/verification.json",
+        "docs/evaluation/2026-10-04-monaleesa-native-experiment/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "monaleesa-7",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-7/turn-2.jsonl",
+          "inference_event_count": 158
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-7/turn-1.jsonl",
+          "inference_event_count": 50
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-fresh-failure-discovery/monaleesa-3.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "monarch-2",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monarch-2/turn-2.jsonl",
+          "inference_event_count": 169
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monarch-2/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 14,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-domain-compaction-readiness/boundaries.json",
+        "docs/evaluation/2026-10-04-domain-compaction-readiness/decision.md",
+        "docs/evaluation/2026-10-04-domain-history-handoff/README.md",
+        "docs/evaluation/2026-10-04-domain-history-handoff/measurements.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "monarch-3",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monarch-3/turn-2.jsonl",
+          "inference_event_count": 90
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monarch-3/turn-1.jsonl",
+          "inference_event_count": 37
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 5,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-d5-five-case-offline/README.md",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/case-warrants-scope-and-delivery.json",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/primary-passages.json",
+        "docs/evaluation/2026-10-03-recovery-d5-protocol/protocol.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "monarch-plus",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monarch-plus/turn-2.jsonl",
+          "inference_event_count": 144
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/monarch-plus/turn-1.jsonl",
+          "inference_event_count": 44
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-02-frozen-production-9d73225/monarch-plus",
+        "docs/evaluation/2026-10-02-monarch-plus-production-d3",
+        "docs/evaluation/2026-10-02-monarch-plus-separated-submission"
+      ],
+      "targeted_record_directory_count": 3,
+      "other_mention_record_count": 42,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/README.md",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/paid-case-inventory.json",
+        "docs/evaluation/2026-10-02-d27-source-correction/provenance.json",
+        "docs/evaluation/2026-10-02-domain-submission-simplification.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "paloma-2",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/paloma-2/turn-2.jsonl",
+          "inference_event_count": 10
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/paloma-2/turn-7.jsonl",
+          "inference_event_count": 40
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/paloma-2/turn-4.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/paloma-2/turn-6.jsonl",
+          "inference_event_count": 32
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/paloma-2/turn-1.jsonl",
+          "inference_event_count": 12
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/paloma-2/turn-5.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/paloma-2/turn-3.jsonl",
+          "inference_event_count": 9
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-fresh-failure-discovery/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "ascet",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ascet/turn-2.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ascet/turn-1.jsonl",
+          "inference_event_count": 32
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ascet/turn-3.jsonl",
+          "inference_event_count": 112
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 18,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-d5-five-case-offline/case-warrants-scope-and-delivery.json",
+        "docs/evaluation/2026-10-03-recovery-d5-protocol/reference-matching.json",
+        "docs/evaluation/2026-10-05-d5-mechanism-test/README.md",
+        "docs/evaluation/2026-10-05-d5-mechanism-test/actual-source-scope.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "cadet",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/cadet/turn-2.jsonl",
+          "inference_event_count": 84
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/cadet/turn-1.jsonl",
+          "inference_event_count": 27
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 2,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-d5-five-case-offline/case-warrants-scope-and-delivery.json",
+        "docs/evaluation/2026-10-03-recovery-d5-protocol/reference-matching.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "caprie",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/caprie/turn-2.jsonl",
+          "inference_event_count": 82
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/caprie/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 4,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-d5-five-case-offline/case-warrants-scope-and-delivery.json",
+        "docs/evaluation/2026-10-03-host-exam-d5-production/saved-state.json",
+        "docs/evaluation/2026-10-03-host-exam-d5-production/selected-source-support.json",
+        "docs/evaluation/2026-10-03-recovery-d5-protocol/reference-matching.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "host-exam",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-2.jsonl",
+          "inference_event_count": 170
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/host-exam/turn-1.jsonl",
+          "inference_event_count": 44
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-active-question-architecture/host-exam",
+        "docs/evaluation/2026-10-03-host-exam-d5-production"
+      ],
+      "targeted_record_directory_count": 2,
+      "other_mention_record_count": 39,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-active-question-architecture/README.md",
+        "docs/evaluation/2026-10-03-active-question-architecture/freeze-and-preservation.json",
+        "docs/evaluation/2026-10-03-active-question-architecture/host-exam/active-context.json",
+        "docs/evaluation/2026-10-03-active-question-architecture/host-exam/full-context.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "smart-choice-3",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/smart-choice-3/turn-2.jsonl",
+          "inference_event_count": 156
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/smart-choice-3/turn-1.jsonl",
+          "inference_event_count": 39
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-05-smart-choice-3-fresh-review-feasibility",
+        "docs/evaluation/2026-10-05-smart-choice-3-fresh-review-outcome",
+        "docs/evaluation/2026-10-05-smart-choice-3-full-assessment",
+        "docs/evaluation/2026-10-05-smart-choice-3-independent-review",
+        "docs/evaluation/2026-10-05-smart-choice-3-paired-full-assessment",
+        "docs/evaluation/2026-10-05-smart-choice-3-preparation"
+      ],
+      "targeted_record_directory_count": 6,
+      "other_mention_record_count": 22,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-05-native-review-recovery-audit/README.md",
+        "docs/evaluation/2026-10-05-smart-choice-3-fresh-review-feasibility/README.md",
+        "docs/evaluation/2026-10-05-smart-choice-3-fresh-review-feasibility/native-control-summary.json",
+        "docs/evaluation/2026-10-05-smart-choice-3-fresh-review-feasibility/reconstruction-summary.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": [
+        "diagnostics/smart-choice-3-five-domain-preparation-20261005",
+        "diagnostics/smart-choice-3-fresh-review-preparation-20261005",
+        "diagnostics/smart-choice-3-paired-ab-comparison-20261005",
+        "diagnostics/smart-choice-3-sol-low-preparation-20261005"
+      ]
+    },
+    {
+      "case": "stopdapt-2",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-2/turn-2.jsonl",
+          "inference_event_count": 142
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-2/turn-1.jsonl",
+          "inference_event_count": 26
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 9,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-d5-source-audit/README.md",
+        "docs/evaluation/2026-10-02-d5-source-audit/retained-records.json",
+        "docs/evaluation/2026-10-03-contrast-boundary-set/README.md",
+        "docs/evaluation/2026-10-03-contrast-boundary-set/retained-source-and-context-evidence.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "stopdapt-3",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-2.jsonl",
+          "inference_event_count": 397
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-9.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-7.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-8.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-4.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-6.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-1.jsonl",
+          "inference_event_count": 41
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-5.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-3.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-11.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-12.jsonl",
+          "inference_event_count": 3
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/stopdapt-3/turn-10.jsonl",
+          "inference_event_count": 2
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 8,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-campaign-checkpoint/README.md",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/README.md",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/case-warrants-scope-and-delivery.json",
+        "docs/evaluation/2026-10-03-d5-five-case-offline/primary-passages.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "canvas-program",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/canvas-program/turn-2.jsonl",
+          "inference_event_count": 208
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/canvas-program/turn-1.jsonl",
+          "inference_event_count": 36
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 24,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/paid-case-inventory.json",
+        "docs/evaluation/2026-10-02-canvas-premise-review/source-pages.json",
+        "docs/evaluation/2026-10-02-d5-guidance-probe/frozen-source-input.json",
+        "docs/evaluation/2026-10-02-d5-guidance-probe/offline-mapping.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "declare-timi-58",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/declare-timi-58/turn-2.jsonl",
+          "inference_event_count": 99
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/declare-timi-58/turn-1.jsonl",
+          "inference_event_count": 24
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 7,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-numeric-absence-audit/adjudication.json",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/before-after.md",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/freeze.json",
+        "docs/evaluation/2026-10-04-numeric-absence-audit/protocol.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "empa-reg-outcome",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-2.jsonl",
+          "inference_event_count": 108
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-9.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-7.jsonl",
+          "inference_event_count": 4
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-8.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-4.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-6.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-1.jsonl",
+          "inference_event_count": 22
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-5.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-3.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-11.jsonl",
+          "inference_event_count": 7
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-12.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/empa-reg-outcome/turn-10.jsonl",
+          "inference_event_count": 7
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "dapa-hf",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/dapa-hf/turn-2.jsonl",
+          "inference_event_count": 147
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/dapa-hf/turn-1.jsonl",
+          "inference_event_count": 35
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 98,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/README.md",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/paid-case-inventory.json",
+        "docs/evaluation/2026-10-02-deliver-d3-completion-17bad3d/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-deliver-d3-direct-c341156/actual-model-tool-outputs.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "deliver",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/deliver/turn-2.jsonl",
+          "inference_event_count": 122
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/deliver/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-02-deliver-d3-completion-17bad3d",
+        "docs/evaluation/2026-10-02-deliver-d3-direct-c341156",
+        "docs/evaluation/2026-10-02-deliver-d3-mechanism-9497c9f",
+        "docs/evaluation/2026-10-02-deliver-d3-source-recovery",
+        "docs/evaluation/2026-10-02-direct-mcp-delivery",
+        "docs/evaluation/2026-10-02-hosted-deliver-d3-db8e68d",
+        "docs/evaluation/2026-10-02-schema-delivery-audit",
+        "docs/evaluation/2026-10-03-context-source-delivery",
+        "docs/evaluation/2026-10-03-native-visual-delivery-smoke",
+        "docs/evaluation/2026-10-05-emperor-reduced-delivery-map",
+        "docs/evaluation/2026-10-05-quote-selection-delivery"
+      ],
+      "targeted_record_directory_count": 11,
+      "other_mention_record_count": 594,
+      "other_mention_examples": [
+        "docs/evaluation/2026-09-27-adjudication-cohort.md",
+        "docs/evaluation/2026-09-27-agent-audit.md",
+        "docs/evaluation/2026-09-27-arasens-d3-prompt-contrast.md",
+        "docs/evaluation/2026-09-27-audit-issues.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": [
+        "diagnostics/emperor-reduced-delivery-map-20261005"
+      ]
+    },
+    {
+      "case": "emperor-reduced",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/emperor-reduced/turn-2.jsonl",
+          "inference_event_count": 147
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/emperor-reduced/turn-1.jsonl",
+          "inference_event_count": 22
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-05-emperor-reduced-delivery-map",
+        "docs/evaluation/2026-10-05-emperor-reduced-full-preparation",
+        "docs/evaluation/2026-10-05-emperor-reduced-sol-low-full-assessment"
+      ],
+      "targeted_record_directory_count": 3,
+      "other_mention_record_count": 59,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-d31-impact-warrant/paid-case-inventory.json",
+        "docs/evaluation/2026-10-03-emperor-final-8198144/accepted-scope-review.json",
+        "docs/evaluation/2026-10-03-emperor-final-8198144/delivered-evidence.json",
+        "docs/evaluation/2026-10-03-emperor-final-8198144/final-state.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": [
+        "diagnostics/emperor-reduced-delivery-map-20261005",
+        "diagnostics/emperor-reduced-full-preparation-20261005",
+        "diagnostics/emperor-reduced-sol-low-preparation-20261005"
+      ]
+    },
+    {
+      "case": "emperor-preserved",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/emperor-preserved/turn-2.jsonl",
+          "inference_event_count": 136
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/emperor-preserved/turn-1.jsonl",
+          "inference_event_count": 45
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 10,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-deliver-d3-completion-17bad3d/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-deliver-d3-mechanism-9497c9f/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-hosted-deliver-d3-db8e68d/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-primary-report-reading/context-pages.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "allsop-2014",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/allsop-2014/turn-2.jsonl",
+          "inference_event_count": 152
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/allsop-2014/turn-1.jsonl",
+          "inference_event_count": 38
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-allsop-completion-544a523",
+        "docs/evaluation/2026-10-03-allsop-completion-b54db92",
+        "docs/evaluation/2026-10-03-allsop-full-assessment",
+        "docs/evaluation/2026-10-03-allsop-proposal-b12fe45",
+        "docs/evaluation/2026-10-03-allsop-proposal-bef6a06"
+      ],
+      "targeted_record_directory_count": 5,
+      "other_mention_record_count": 82,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-d5-guidance-probe/README.md",
+        "docs/evaluation/2026-10-02-d5-guidance-probe/frozen-source-input.json",
+        "docs/evaluation/2026-10-02-d5-guidance-probe/manifest.json",
+        "docs/evaluation/2026-10-02-d5-guidance-probe/offline-mapping.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "freeman-2020",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/freeman-2020/turn-2.jsonl",
+          "inference_event_count": 132
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/freeman-2020/turn-1.jsonl",
+          "inference_event_count": 24
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-freeman-native-d3",
+        "docs/evaluation/2026-10-04-freeman-original-control",
+        "docs/evaluation/2026-10-04-freeman-source-check",
+        "docs/evaluation/2026-10-04-freeman-source-check-recovery"
+      ],
+      "targeted_record_directory_count": 4,
+      "other_mention_record_count": 66,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-attal-d3-assumptions/captured-projections.json",
+        "docs/evaluation/2026-10-04-attal-d3-assumptions/sources.json",
+        "docs/evaluation/2026-10-04-award1-lean-preflight/alternative-exposure-check.json",
+        "docs/evaluation/2026-10-04-d3-authoritative-prototype/attal-2016-current-scientific-sections.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "haney-2004",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/haney-2004/turn-2.jsonl",
+          "inference_event_count": 31
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/haney-2004/turn-1.jsonl",
+          "inference_event_count": 15
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/haney-2004/turn-3.jsonl",
+          "inference_event_count": 13
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 5,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/accepted-domain-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/domain-history-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/selected-evidence.json",
+        "docs/evaluation/2026-10-03-allsop-completion-b54db92/selected-evidence.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "herrmann-2016",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/herrmann-2016/turn-2.jsonl",
+          "inference_event_count": 14
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/herrmann-2016/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "hill-2017",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hill-2017/turn-2.jsonl",
+          "inference_event_count": 119
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/hill-2017/turn-1.jsonl",
+          "inference_event_count": 32
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 18,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/accepted-domain-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/domain-history-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/selected-evidence.json",
+        "docs/evaluation/2026-10-03-allsop-completion-b54db92/selected-evidence.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "levin-2011",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/levin-2011/turn-2.jsonl",
+          "inference_event_count": 106
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/levin-2011/turn-1.jsonl",
+          "inference_event_count": 33
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 11,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/accepted-domain-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/domain-history-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/selected-evidence.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "levin-2016",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/levin-2016/turn-2.jsonl",
+          "inference_event_count": 143
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/levin-2016/turn-4.jsonl",
+          "inference_event_count": 5
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/levin-2016/turn-1.jsonl",
+          "inference_event_count": 33
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/levin-2016/turn-3.jsonl",
+          "inference_event_count": 12
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 11,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/accepted-domain-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/domain-history-records.json",
+        "docs/evaluation/2026-10-03-allsop-completion-544a523/selected-evidence.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "award-1-2014",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-1-2014/turn-2.jsonl",
+          "inference_event_count": 142
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-1-2014/turn-1.jsonl",
+          "inference_event_count": 37
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-active-question-architecture/award-10"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 76,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/README.md",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/actual-model-tool-calls.json",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/final-main-coverage.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "award-10-2018",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-10-2018/turn-2.jsonl",
+          "inference_event_count": 120
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-10-2018/turn-1.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-active-question-architecture/award-10"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 43,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/README.md",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/paid-case-inventory.json",
+        "docs/evaluation/2026-10-02-next-validation-proposal.md",
+        "docs/evaluation/2026-10-02-registry-replay-recovery.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "award-chn3-2023",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-chn3-2023/turn-2.jsonl",
+          "inference_event_count": 12
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-chn3-2023/turn-4.jsonl",
+          "inference_event_count": 115
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-chn3-2023/turn-1.jsonl",
+          "inference_event_count": 44
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/award-chn3-2023/turn-3.jsonl",
+          "inference_event_count": 19
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-03-award-chn3-paired-behavior"
+      ],
+      "targeted_record_directory_count": 1,
+      "other_mention_record_count": 12,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-award-chn3-paired-behavior/README.md",
+        "docs/evaluation/2026-10-03-award-chn3-paired-behavior/baseline/command.json",
+        "docs/evaluation/2026-10-03-award-chn3-paired-behavior/current/command.json",
+        "docs/evaluation/2026-10-03-campaign-checkpoint/README.md"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "duration-8-2016",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/duration-8-2016/turn-2.jsonl",
+          "inference_event_count": 118
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/duration-8-2016/turn-1.jsonl",
+          "inference_event_count": 42
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "fr-as-2018",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/fr-as-2018/turn-2.jsonl",
+          "inference_event_count": 164
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/fr-as-2018/turn-1.jsonl",
+          "inference_event_count": 48
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "getgoal-duo1-2013",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/getgoal-duo1-2013/turn-2.jsonl",
+          "inference_event_count": 134
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/getgoal-duo1-2013/turn-1.jsonl",
+          "inference_event_count": 26
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 26,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/README.md",
+        "docs/evaluation/2026-10-02-award1-d3-repair4/paid-case-inventory.json",
+        "docs/evaluation/2026-10-02-next-validation-proposal.md",
+        "docs/evaluation/2026-10-02-registry-replay-recovery.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "getgoal-f1-2013",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/getgoal-f1-2013/turn-2.jsonl",
+          "inference_event_count": 96
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/getgoal-f1-2013/turn-1.jsonl",
+          "inference_event_count": 42
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 3,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-contrast-boundary-set/README.md",
+        "docs/evaluation/2026-10-03-contrast-boundary-set/retained-source-and-context-evidence.json",
+        "docs/evaluation/2026-10-03-stopdapt2-sensitivity-relevance/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "allen-2014",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/allen-2014/turn-2.jsonl",
+          "inference_event_count": 115
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/allen-2014/turn-1.jsonl",
+          "inference_event_count": 30
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 68,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-canvas-premise-review/source-pages.json",
+        "docs/evaluation/2026-10-02-direct-mcp-delivery/selected-input-schemas.json",
+        "docs/evaluation/2026-10-02-question-local-feasibility/current-submission-schema.json",
+        "docs/evaluation/2026-10-02-schema-delivery-audit/submission-schema-before-after.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "amini-2022",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/amini-2022/turn-2.jsonl",
+          "inference_event_count": 87
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/amini-2022/turn-1.jsonl",
+          "inference_event_count": 26
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 16,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-d5-guidance-probe/frozen-source-input.json",
+        "docs/evaluation/2026-10-02-d5-source-audit/retained-records.json",
+        "docs/evaluation/2026-10-03-bendix-production-d2/committed-domain.json",
+        "docs/evaluation/2026-10-03-bendix-production-d2/exact-submissions-and-receipts.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "apalla-2013",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/apalla-2013/turn-2.jsonl",
+          "inference_event_count": 85
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/apalla-2013/turn-1.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-deliver-d3-source-recovery/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "arezzo-2008",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/arezzo-2008/turn-2.jsonl",
+          "inference_event_count": 87
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/arezzo-2008/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "atli-2005",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atli-2005/turn-2.jsonl",
+          "inference_event_count": 121
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/atli-2005/turn-1.jsonl",
+          "inference_event_count": 28
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 1,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-04-freeman-native-d3/README.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "attal-2016",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/attal-2016/turn-2.jsonl",
+          "inference_event_count": 139
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/attal-2016/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-attal-d3-assumptions",
+        "docs/evaluation/2026-10-05-attal-sol-low-full-assessment"
+      ],
+      "targeted_record_directory_count": 2,
+      "other_mention_record_count": 56,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-nonlow-reference-panel/README.md",
+        "docs/evaluation/2026-10-03-nonlow-reference-panel/candidate-provenance.json",
+        "docs/evaluation/2026-10-04-attal-d3-assumptions/README.md",
+        "docs/evaluation/2026-10-04-attal-d3-assumptions/adjudication.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": [
+        "diagnostics/attal-ci-review-followup-20261005",
+        "diagnostics/attal-sol-low-full-assessment-20261005"
+      ]
+    },
+    {
+      "case": "lv-2023",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/lv-2023/turn-2.jsonl",
+          "inference_event_count": 29
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/lv-2023/turn-1.jsonl",
+          "inference_event_count": 40
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/lv-2023/turn-3.jsonl",
+          "inference_event_count": 128
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 644,
+      "other_mention_examples": [
+        "docs/evaluation/2026-09-27-adjudication-cohort.md",
+        "docs/evaluation/2026-09-27-agent-audit.md",
+        "docs/evaluation/2026-09-27-arasens-d3-prompt-contrast.md",
+        "docs/evaluation/2026-09-27-audit-evidence/eval-findings.md"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "sanctuary",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/sanctuary/turn-2.jsonl",
+          "inference_event_count": 103
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/sanctuary/turn-1.jsonl",
+          "inference_event_count": 49
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 0,
+      "other_mention_examples": [],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "attal-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/attal-2021/turn-2.jsonl",
+          "inference_event_count": 148
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/attal-2021/turn-1.jsonl",
+          "inference_event_count": 36
+        }
+      ],
+      "targeted_development_record_directories": [
+        "docs/evaluation/2026-10-04-attal-d3-assumptions",
+        "docs/evaluation/2026-10-05-attal-sol-low-full-assessment"
+      ],
+      "targeted_record_directory_count": 2,
+      "other_mention_record_count": 56,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-nonlow-reference-panel/README.md",
+        "docs/evaluation/2026-10-03-nonlow-reference-panel/candidate-provenance.json",
+        "docs/evaluation/2026-10-04-attal-d3-assumptions/README.md",
+        "docs/evaluation/2026-10-04-attal-d3-assumptions/adjudication.json"
+      ],
+      "classification": "targeted-development-exposed",
+      "held_out": false,
+      "local_diagnostic_directory_associations": [
+        "diagnostics/attal-ci-review-followup-20261005",
+        "diagnostics/attal-sol-low-full-assessment-20261005"
+      ]
+    },
+    {
+      "case": "ibrahim-2017",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ibrahim-2017/turn-2.jsonl",
+          "inference_event_count": 9
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ibrahim-2017/turn-1.jsonl",
+          "inference_event_count": 14
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ibrahim-2017/turn-3.jsonl",
+          "inference_event_count": 76
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 3,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-emperor-final-8198144/delivered-evidence.json",
+        "docs/evaluation/2026-10-03-emperor-selection-3fec228/delivered-evidence.json",
+        "docs/evaluation/2026-10-03-offline-closure/continuation-delivery-audit.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "rosen-2021",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/rosen-2021/turn-2.jsonl",
+          "inference_event_count": 12
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/rosen-2021/turn-1.jsonl",
+          "inference_event_count": 16
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/rosen-2021/turn-3.jsonl",
+          "inference_event_count": 90
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 14,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-02-award1-d3-repair4/actual-model-tool-outputs.json",
+        "docs/evaluation/2026-10-02-canvas-premise-review/source-pages.json",
+        "docs/evaluation/2026-10-03-gupta-full-validation/proposal-state-before-approval.json",
+        "docs/evaluation/2026-10-04-aarnoutse-native-d2/delivered-source-windows.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    },
+    {
+      "case": "sung-2020",
+      "original_oct1_campaign_exposure_observed": true,
+      "original_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/sung-2020/turn-2.jsonl",
+          "inference_event_count": 184
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/sung-2020/turn-1.jsonl",
+          "inference_event_count": 34
+        }
+      ],
+      "targeted_development_record_directories": [],
+      "targeted_record_directory_count": 0,
+      "other_mention_record_count": 10,
+      "other_mention_examples": [
+        "docs/evaluation/2026-10-03-active-question-architecture/host-exam/active-context.json",
+        "docs/evaluation/2026-10-03-active-question-architecture/host-exam/full-context.json",
+        "docs/evaluation/2026-10-03-active-question-architecture/host-exam/transport-pages.json",
+        "docs/evaluation/2026-10-03-host-exam-d5-production/approved-seed-state.json"
+      ],
+      "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+      "held_out": false,
+      "local_diagnostic_directory_associations": []
+    }
+  ]
+}

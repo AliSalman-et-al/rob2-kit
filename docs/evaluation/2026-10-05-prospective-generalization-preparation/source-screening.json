@@ -1,0 +1,71 @@
+{
+  "purpose": "Source-characteristic selection; no original/new prediction read for candidate selection. This screening itself is development exposure.",
+  "passages": [
+    {
+      "case": "castoldi-2020",
+      "source_label": "0363546520914936.pdf",
+      "source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+      "database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/.rob2-kit/derivative.sqlite3",
+      "page": 1,
+      "start_line": 19,
+      "end_line": 27,
+      "numbered_text": "19|an extra-articular lateral tenodesis with gracilis tendon (modified Lemaire).\n20|Results: Eighty knees in 79 patients (66%) were available for follow-up at a postoperative mean of 19.4 years (range, 19-20.2). Of\n21|those patients, 43 had a clinical examination and completed patient-reported outcome questionnaires, and the other 37 patients\n22|were evaluated through the questionnaires alone. Standard radiographs were available for 45 patients and laximetry (TELOS) for\n23|42 patients. Mean subjective International Knee Documentation Committee score at last follow-up was 81.8, and no differences\n24|were noted between the BTB and BTB-LET groups (P = .7). Two-thirds of patients were still participating in pivoting sports. A total\n25|of 17 knees (21%) experienced a graft failure, 5 of which (6%) underwent revision ACLR. There was no significant difference in\n26|graft failure risk between the BTB group (29%) and the BTB-LET group (13%; P = .1). Lateral tibiofemoral osteoarthritis was sig-\n27|nificantly more frequent in the BTB-LET group (59%) as compared with the BTB group (22%; P = .02). Lateral compartment",
+      "sha256": "160cd8a3581b07e1ec41096b205844bccd2e9a38b8c82feffd0eeb841381e903"
+    },
+    {
+      "case": "castoldi-2020",
+      "source_label": "0363546520914936.pdf",
+      "source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+      "database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/.rob2-kit/derivative.sqlite3",
+      "page": 4,
+      "start_line": 4,
+      "end_line": 21,
+      "numbered_text": "4|80 patients (81 knees; 67%) were available for follow-up.\n5|One patient underwent a total knee replacement 18 years\n6|after the ACLR and was excluded from the analysis. A total\n7|of 41 patients (34%) were lost to follow-up; 79 patients (80\n8|knees) completed the patient-reported outcomes question-\n9|naire; and 43 patients (36%) underwent a clinical evalua-\n10|tion. Standard radiographs were obtained in 45 patients\n11|(37%), and laximetry data were available for 42 patients\n12|(35%)\n13|(Figure\n14|2).\n15|Preoperative\n16|characteristics\n17|of\n18|the\n19|patients available for follow-up were not statistically dif-\n20|ferent from patients lost to follow-up (Table 3).\n21|Patient-Reported Outcome Scores",
+      "sha256": "d6f7b31cc0576592cc4afc6cd6cb4cfdb37a96b6b474c981ae17224c07bd5528"
+    },
+    {
+      "case": "ashar-2022",
+      "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/ashar-2022/.rob2-kit/derivative.sqlite3",
+      "page": 1,
+      "start_line": 17,
+      "end_line": 25,
+      "numbered_text": "17|August 2020. The study compared PRT with an open-label placebo treatment and with usual\n18|care in a community sample.\n19|INTERVENTIONS Participants randomized to PRT participated in 1 telehealth session with\n20|a physician and 8 psychological treatment sessions over 4 weeks. Treatment aimed to help\n21|patients reconceptualize their pain as due to nondangerous brain activity rather than peripheral\n22|tissue injury, using a combination of cognitive, somatic, and exposure-based techniques.\n23|Participants randomized to placebo received an open-label subcutaneous saline injection in\n24|the back; participants randomized to usual care continued their routine, ongoing care.\n25|MAIN OUTCOMES AND MEASURES One-week mean back pain intensity score (0 to 10) at",
+      "sha256": "1d72d8bc47ecec05a80569de80c39fd92b19fd007951a17fe6e1df8474841328"
+    },
+    {
+      "case": "ashar-2022",
+      "source_label": "jamapsychiatry-e212669-s001.pdf",
+      "source_id": "source_ee5ee64c3c0ee274f750556cd7d0ba755efe18eb8913f74da22cc385eb7c8fc2",
+      "database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/ashar-2022/.rob2-kit/derivative.sqlite3",
+      "page": 1,
+      "start_line": 17,
+      "end_line": 23,
+      "numbered_text": "17|\n18|\n19|TITLE: Mind-body treatments for chronic back pain\n20|\n21|PROTOCOL VERSION DATE: September 5, 2018\n22|VERSION: 4.4\n23|",
+      "sha256": "6749c862ee13de19a12ef3a5c76a2da5707485b1ad38a663f68fa1bb3528864a"
+    },
+    {
+      "case": "heemskerk-2016",
+      "source_label": "NEJMoa1507062.pdf",
+      "source_id": "source_a252079a1a0bc75b4be4842de82eea4d0db1660873b8816a7552deff56dc7201",
+      "database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/heemskerk-2016/.rob2-kit/derivative.sqlite3",
+      "page": 5,
+      "start_line": 31,
+      "end_line": 40,
+      "numbered_text": "31|Figure 1. Screening and Randomization.\n32|Among the patients in the intention-to-treat population, in the standard-treatment group, 22 were lost to follow-up,\n33|5 withdrew from the study, 1 went home to die but could not be contacted, 1 died before the study treatment was\n34|given, and 6 had their treatment assignment revealed; in the intensified-treatment group, 21 were lost to follow-up,\n35|2 withdrew from the study, 2 withdrew before the study treatment was given, and 3 had their treatment assignment\n36|revealed. Among the patients who were confirmed to have a condition other than tuberculous meningitis, in the\n37|standard-treatment group, four had cryptococcal meningitis and one had an intracranial tumor; in the intensified-\n38|treatment group, seven had cryptococcal meningitis, one had encephalitis caused by herpes simplex virus, and one\n39|had eosinophilic meningitis.\n40|817 Underwent randomization",
+      "sha256": "f1eb9e766fe8a9dc8a7f034bed1fc851eeb2f972195f39877d1324e16ccb72b7"
+    },
+    {
+      "case": "heemskerk-2016",
+      "source_label": "nejmoa1507062_protocol.pdf",
+      "source_id": "source_e97ec996a9579de5795358e4bb65345240ba9e648d8446e580e4b64a198bba64",
+      "database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/heemskerk-2016/.rob2-kit/derivative.sqlite3",
+      "page": 130,
+      "start_line": 1,
+      "end_line": 2,
+      "numbered_text": "1|Initial version protocol, approved prior to enrollment: Version 11.0 date 24FEB2011\n2|MoH approval date: 04APR2011",
+      "sha256": "f947940a351c67870b5d2580de202ecbd21910f48a57b9be2efad0c1ac5c2f93"
+    }
+  ]
+}

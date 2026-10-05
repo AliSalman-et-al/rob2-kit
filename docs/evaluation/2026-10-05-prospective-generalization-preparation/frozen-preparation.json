@@ -1,0 +1,270 @@
+{
+  "preparation_only": true,
+  "paid_launch_authorized": false,
+  "full_benchmark_enabled": false,
+  "code_sha": "8880b12f161dc690da53091526be965d4c0187f1",
+  "model": "gpt-6.1-sol",
+  "effort": "low",
+  "implementation_files": {
+    "src/rob2_kit/server.py": "222acb6cd36a8c19ecced6de8f386a5adf0956d3edc299a6c0e2bf2870012e7b",
+    "src/rob2_kit/contract_manifest.py": "40c807cc37fb7721c4d1e74a1343ffc894087de694b8a34f06282cc78d9bd127",
+    "src/rob2_kit/models.py": "0c82dfcf888a4d69bda217d4d08499709152bd17c2fd77a5a2fc999cee24234c",
+    "src/rob2_kit/workflow_models.py": "61543a86833b957952483e2898f9d77b88b131e4f14c56ee397aa3f1d48e2263",
+    "src/rob2_kit/__init__.py": "ea0da99944805f13205dec6213d6d5125caca1c69450699dc605fb6018bd472e",
+    "src/rob2_kit/projection_verify.py": "08e47e90463c97c4f4449dff0efd55a330cb4a430fb281c2518d3a58bb1958fb",
+    "src/rob2_kit/interfaces/__init__.py": "37ad86cb91034b3dd4654eedf290a747615f37594b5c35449523bebecf677d91",
+    "src/rob2_kit/logic/evaluator.py": "391c68b7f10eab08954df44ed3bab9059ddf55f6d69b8a4e871e5df57477c784",
+    "src/rob2_kit/logic/__init__.py": "825ac0b1dff668ba230fcdfb1575d80573ea21ca95366abcaa1060953656a75c",
+    "src/rob2_kit/logic/aggregation.py": "d09dec33f4e85f14bb72b60c7eee9b62a2e447c382f8263b29247cf575d79b10",
+    "src/rob2_kit/logic/adjudication.py": "add7a8b8c6a9b954ba910966e0d778716e6817d1f521b4a25c654c41882d8bed",
+    "src/rob2_kit/evaluation/coverage.py": "e9578afaed8e8e5cf3eecc24140e02e7cdc23b96417e88b89618d366f0d90400",
+    "src/rob2_kit/evaluation/qualification_report.py": "50a97c1478323033c578bcfbed9372381538cdd0664b0356de6499081f539f7f",
+    "src/rob2_kit/evaluation/__init__.py": "a9682c44cf819e7f205915605c43712bd6b4fcdbe2ad439917939d7270a1f011",
+    "src/rob2_kit/evaluation/cohort.py": "faa4eb8199b2931f25bace0149ded8f6ae7f5c24bf21727967a7156b697897a7",
+    "src/rob2_kit/evaluation/adjudication.py": "8274435001b14df94bc1fce79d478fae43cdc8133ac7a955dce09c87b530014d",
+    "src/rob2_kit/evaluation/observations.py": "90f28e004e683df570aed80835b732f7ad54d6c76516e716d02f6c8201827d79",
+    "src/rob2_kit/evaluation/harness.py": "bfc66bd65a8f628c66f05fd65401cf152413d16c073d3c1ba603f17d85f38507",
+    "src/rob2_kit/application/guidance.py": "8808da9d1b454d6152e638a83ced7ac568cf3a6b8e631354e7b9e111132fbc59",
+    "src/rob2_kit/application/source_handles.py": "85600977e8ae8c3c25d7b1b4e139e9f113b8270324d1fbc78e173937e3974fce",
+    "src/rob2_kit/application/domains.py": "49dc9b0b61050aee40950429c05d4627947a875ec9df05ee878b0113f2a8f875",
+    "src/rob2_kit/application/registry_documents.py": "c8c2cf03ff174e7a2cabcfb85d60ecb2c7c293ed8cfa1a43684a2919c5730087",
+    "src/rob2_kit/application/missing_data.py": "e72c9f2c48a00201a81c6ff4eea3eea508df8b2af6f725e6df836977072c9e63",
+    "src/rob2_kit/application/status.py": "a5ffed36789126ad2aa5e30da80b303e74474fd010d451a9228e93832bb2404b",
+    "src/rob2_kit/application/companion_sources.py": "463c628d3c12559dc1510cb6a4f84e01c17b00f8ef1cb8084535712c3bf08d82",
+    "src/rob2_kit/application/intake.py": "9122cb62f61e919c5bae36bcd8f92af65aac3c9b121966a1e498e6ed4fa51eb3",
+    "src/rob2_kit/application/source_check.py": "156c6a221531fc14b60c504e72645f22e679406024266e01a39ee5f24dbc2a94",
+    "src/rob2_kit/application/public_documents.py": "2c295310ee02f78529e7a32c08e8573928ad13563fbca2a5b7e0ad4dbe656712",
+    "src/rob2_kit/application/working.py": "42b12ec0635f87c0ce8a54186cf59226f21616374b9eee8e0f9a810a8d787ae7",
+    "src/rob2_kit/application/__init__.py": "a8bcbffd5bc54cbd7f173f9609c6b7c17fed4a900f24b7f4613259256fdfd3b2",
+    "src/rob2_kit/application/finalization.py": "e74c35adb11383faaeb32b0127ae36bac3400a736dfaecd9c5ab4a7d7c20a16e",
+    "src/rob2_kit/application/evidence.py": "2679bcc90953201a5f9c5fc6bfbaec98b64d5c2481e91e32abcb2a248b1f009a",
+    "src/rob2_kit/application/result_scope.py": "cc1ff2b3546aa5b99f54aab636ace87bc306fc3d1425b4c723fd503ec2b6658d",
+    "src/rob2_kit/application/source_archive.py": "a8423955c4834af26e17f9a82e3d7463a055117708da8c87abffadd076cdfee9",
+    "src/rob2_kit/application/contracts.py": "a105c8110f33d77bd44f9ef6b181d6fd04b4cb198596dfe5e4c0ca88c46f407c",
+    "src/rob2_kit/application/trials.py": "d7891af7854dc09494486b337ca4209ccd3000c614c7ca2af968d0198306356e",
+    "src/rob2_kit/application/_state.py": "b706bb45f50cf3a8fecfff66d35c8fc113793f1604c4d6ac4ddcd0914f58bc41",
+    "src/rob2_kit/application/proposal.py": "9aac77c6059556ce1b214cf725ffd865051b839dc6269ba98708ea9fbcabea20",
+    "src/rob2_kit/packs/policy.py": "f59baac557b90206856f3fa787581cc7c9aade44910b5440b15b965f1f9e938c",
+    "src/rob2_kit/packs/scientific.py": "25cd1ce809182cea825c1e45a59ee91d2dd7570695f2e3b07a6ba235be95314e",
+    "src/rob2_kit/packs/d3_authoritative.py": "82bff0cb361da0a175570db054723f60e2cc3236986b5fa05c8c791782306f1d",
+    "src/rob2_kit/packs/__init__.py": "188f7d0ecd09d14834145dbae25623629aa496cc56e1ea97c62084734276c44d",
+    "src/rob2_kit/hosts/claude-code.json": "790222ffa120aa268e370bb2e61b610930c77e1ceb55c79ed15bfc1719349a4d",
+    "src/rob2_kit/hosts/codex.json": "0cb053caa19c9c15c4ae37690303d1dd72efac7b3b739763d9a6d6970e8967d9",
+    "src/rob2_kit/interfaces/mcp/server.py": "8d1b835c8d6be7b05f4135c86b12a6ea8622e78747288264be0aa5e8f4038788",
+    "src/rob2_kit/interfaces/mcp/__init__.py": "11f091003a2671be56ea847870f869f2128cf5144f2afc60423f4f8ac16a80ae",
+    "src/rob2_kit/interfaces/mcp/codex.py": "e5ae527f4483e26a3158c7d9fe8774c30da7b4f495e9060594ccbf28d6490e19",
+    "src/rob2_kit/interfaces/mcp/contracts.py": "313786970ff24f6867eda9bf56bb2bf25494f4c2589f9f47fbf65ffcba60781f",
+    "src/rob2_kit/interfaces/cli/app.py": "dd07959429a0acb202381261a8252677bb8567183bd810e8e2120f7f852ba77a",
+    "src/rob2_kit/interfaces/cli/__init__.py": "9004f6ab222e2c6bc5dddc1c2940c1f38bfde73ad873399dd72941b34fc630db",
+    "src/rob2_kit/skills/rob2-assess/SKILL.md": "b64108ecd08329f3852a184aa6ed5e6fab472ece56e70bf3c8f95bdc9e1472e3",
+    "src/rob2_kit/skills/rob2-assess/references/missing.md": "321eb66ec8f628c6a2faaecc324749493d5c296e214e09495850caf4af0489f2",
+    "src/rob2_kit/skills/rob2-assess/references/selection.md": "457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+    "src/rob2_kit/skills/rob2-assess/references/result-account.md": "d4ba3b7f1c66f0a5443dcd0c8706c405df3b5eaec160b5abb562f4a99f0087f3",
+    "src/rob2_kit/skills/rob2-assess/references/evidence.md": "538f11697de62118a757fc658a745e79f3efab541486c9ebf726252ed1f06d12",
+    "src/rob2_kit/skills/rob2-assess/references/codex.md": "2e79c28653d03f597d9aaab313a4731a6a46c6552fe75e465cb091ac0c66d019",
+    "src/rob2_kit/skills/rob2-assess/references/deviations.md": "c80cc47daef2f5b9e0a2f3ece7076410884b79671748cf662729c4dd10b5c745",
+    "src/rob2_kit/skills/rob2-assess/references/result.md": "39ee6194ebcb85b06033854372084b84b403dbb93a2a23ad26d0dae0ba120959",
+    "src/rob2_kit/skills/rob2-assess/references/randomization.md": "a1b74f4caba7089c707a0f2233e41d57e8e154a974e216fb38e3979504a8956f",
+    "src/rob2_kit/skills/rob2-assess/references/read-main-report.md": "0c4231261927f467b69c58ffa9557b58ca19cad4d78d57fb4c9665a990eb4435",
+    "src/rob2_kit/skills/rob2-assess/references/measurement.md": "b8b3194ceb99fb029df341ae85a95de6ab540653761235fdc19fe1a3c0154b6d"
+  },
+  "prior_verified_runtime_profile_reference": "diagnostics/attal-sol-low-full-assessment-20261005/frozen-preflight.json",
+  "prior_profile_sha256": "e45cd868f2603b2906e6ff62466e8c6ef4061d060a88727807a41adeae496e1b",
+  "cases": [
+    {
+      "case": "castoldi-2020",
+      "exposure_record": {
+        "case": "castoldi-2020",
+        "original_oct1_campaign_exposure_observed": true,
+        "original_event_logs": [
+          {
+            "path": "benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/turn-2.jsonl",
+            "inference_event_count": 106
+          },
+          {
+            "path": "benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/turn-1.jsonl",
+            "inference_event_count": 28
+          }
+        ],
+        "targeted_development_record_directories": [],
+        "targeted_record_directory_count": 0,
+        "other_mention_record_count": 2,
+        "other_mention_examples": [
+          "docs/evaluation/2026-10-03-nonlow-reference-panel/README.md",
+          "docs/evaluation/2026-10-03-nonlow-reference-panel/candidate-provenance.json"
+        ],
+        "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+        "held_out": false
+      },
+      "sources": [
+        {
+          "label": "0363546520914936.pdf",
+          "original_code_source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+          "projected_pages": 8,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/castoldi-2020/0363546520914936.pdf",
+          "raw_sha256": "8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+          "raw_access": "present"
+        }
+      ],
+      "source_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/.rob2-kit/derivative.sqlite3",
+      "source_extraction_sql": "SELECT page,text FROM pages WHERE source_id=? ORDER BY page",
+      "human_exact_result_alignment": "not established; exclude from exact accuracy denominator pending prospective independent scope verification"
+    },
+    {
+      "case": "ashar-2022",
+      "exposure_record": {
+        "case": "ashar-2022",
+        "original_oct1_campaign_exposure_observed": true,
+        "original_event_logs": [
+          {
+            "path": "benchmark-luna6-medium-2026-10-01/cases/ashar-2022/turn-2.jsonl",
+            "inference_event_count": 111
+          },
+          {
+            "path": "benchmark-luna6-medium-2026-10-01/cases/ashar-2022/turn-1.jsonl",
+            "inference_event_count": 37
+          }
+        ],
+        "targeted_development_record_directories": [],
+        "targeted_record_directory_count": 0,
+        "other_mention_record_count": 1,
+        "other_mention_examples": [
+          "docs/evaluation/2026-10-04-bagg-native-d5/private-criteria.md"
+        ],
+        "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+        "held_out": false
+      },
+      "sources": [
+        {
+          "label": "jamapsychiatry-e212669-s001.pdf",
+          "original_code_source_id": "source_ee5ee64c3c0ee274f750556cd7d0ba755efe18eb8913f74da22cc385eb7c8fc2",
+          "projected_pages": 44,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry-e212669-s001.pdf",
+          "raw_sha256": "b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+          "raw_access": "present"
+        },
+        {
+          "label": "jamapsychiatry-e212669-s002.pdf",
+          "original_code_source_id": "source_59bf520ca4a1a7c3923f4dc05a8cfc993535b56ae075524914384e04b966d91d",
+          "projected_pages": 52,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry-e212669-s002.pdf",
+          "raw_sha256": "82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+          "raw_access": "present"
+        },
+        {
+          "label": "jamapsychiatry-e212669-s003.pdf",
+          "original_code_source_id": "source_e58eb9c30bff53a6c501814aedf01e2b4c38d4b50c40657b9af2eeeb985ec02e",
+          "projected_pages": 1,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry-e212669-s003.pdf",
+          "raw_sha256": "5918f01fe93f64f4c2cd7ecaa1d1bc2b8d14a6cb30c41d4a52accd3112c6251a",
+          "raw_access": "present"
+        },
+        {
+          "label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+          "original_code_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+          "projected_pages": 11,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry_ashar_2021_oi_210060.pdf",
+          "raw_sha256": "2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+          "raw_access": "present"
+        },
+        {
+          "label": "ClinicalTrials.gov NCT03294148",
+          "original_code_source_id": "source_2769356a5128660373ccf564504da4ac33ada6e21c76e19097d240df23dee3a9",
+          "projected_pages": 1,
+          "raw_path": null,
+          "raw_sha256": null,
+          "raw_access": "not present at corpus filename; original projection only, do not claim recovered raw registry"
+        }
+      ],
+      "source_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/ashar-2022/.rob2-kit/derivative.sqlite3",
+      "source_extraction_sql": "SELECT page,text FROM pages WHERE source_id=? ORDER BY page",
+      "human_exact_result_alignment": "not established; exclude from exact accuracy denominator pending prospective independent scope verification"
+    },
+    {
+      "case": "heemskerk-2016",
+      "exposure_record": {
+        "case": "heemskerk-2016",
+        "original_oct1_campaign_exposure_observed": true,
+        "original_event_logs": [
+          {
+            "path": "benchmark-luna6-medium-2026-10-01/cases/heemskerk-2016/turn-2.jsonl",
+            "inference_event_count": 130
+          },
+          {
+            "path": "benchmark-luna6-medium-2026-10-01/cases/heemskerk-2016/turn-1.jsonl",
+            "inference_event_count": 41
+          }
+        ],
+        "targeted_development_record_directories": [],
+        "targeted_record_directory_count": 0,
+        "other_mention_record_count": 1,
+        "other_mention_examples": [
+          "docs/evaluation/2026-10-04-chua-result-account-preparation/README.md"
+        ],
+        "classification": "original-benchmark-exposed; metadata/offline mentions possible",
+        "held_out": false
+      },
+      "sources": [
+        {
+          "label": "NEJMoa1507062.pdf",
+          "original_code_source_id": "source_a252079a1a0bc75b4be4842de82eea4d0db1660873b8816a7552deff56dc7201",
+          "projected_pages": 11,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/heemskerk-2016/NEJMoa1507062.pdf",
+          "raw_sha256": "b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+          "raw_access": "present"
+        },
+        {
+          "label": "nejmoa1507062_appendix.pdf",
+          "original_code_source_id": "source_86486afff863733e92d8cdf9daabc2c6b4e7c1a880b9110cfc9a36f875855806",
+          "projected_pages": 20,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/heemskerk-2016/nejmoa1507062_appendix.pdf",
+          "raw_sha256": "ea1eba55e56638da1f6d14decb6e5240e31464cdcb7cf93d8b8e82f5de0730eb",
+          "raw_access": "present"
+        },
+        {
+          "label": "nejmoa1507062_disclosures.pdf",
+          "original_code_source_id": "source_0ee19a603f55663f2b7bf7203f183024cb5d14897c0743792abc97c6f4a159b3",
+          "projected_pages": 72,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/heemskerk-2016/nejmoa1507062_disclosures.pdf",
+          "raw_sha256": "56b91b958e78062e4c4646c5d69fb9a6dac04fd429d0764d8cd5fd006430e185",
+          "raw_access": "present"
+        },
+        {
+          "label": "nejmoa1507062_protocol.pdf",
+          "original_code_source_id": "source_e97ec996a9579de5795358e4bb65345240ba9e648d8446e580e4b64a198bba64",
+          "projected_pages": 140,
+          "raw_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/heemskerk-2016/nejmoa1507062_protocol.pdf",
+          "raw_sha256": "3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+          "raw_access": "present"
+        }
+      ],
+      "source_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/heemskerk-2016/.rob2-kit/derivative.sqlite3",
+      "source_extraction_sql": "SELECT page,text FROM pages WHERE source_id=? ORDER BY page",
+      "human_exact_result_alignment": "not established; exclude from exact accuracy denominator pending prospective independent scope verification"
+    }
+  ],
+  "benchmark_head": "d04473df4a07a3117f3171df2d8471ec0defd522",
+  "metadata_hashes": {
+    "FILES.csv": "e8eabb911e11dfa248e37fbc1fc13d6a632814c18a57d884b22fc7455de42183",
+    "TRIAL-SUMMARY.csv": "af48ba3112eecfb4b72cebd582eb9d6ada72699434ea8f9cb2741f7e908db604",
+    "OUTCOMES-batch.csv": "5ac71b8cad741a4bf2a8dffa68c9385fba2e73d3d41c13d64730441b14388a77",
+    "LABELS-batch.csv": "e69ed93577ffe3b9d11e6f7d969eeb33b7b74656d2bbe6a977e7a5fc9c214162"
+  },
+  "evaluation_rubric": {
+    "scope": "All five domains and qualified ADR0039 overall; assignment-effect instrument. No preferred labels or trial-specific hints in assessment inputs.",
+    "criteria": [
+      "Preserve exact population, contrast, outcome instrument, time window, estimand and analysis population; distinguish target from reported estimate and source conflicts.",
+      "Each active answer must have inspectable source warrants; audit critical cited and uncited counterevidence, actual delivery before commit, and visual layout when necessary.",
+      "D2: distinguish missing outcomes from non-missing postrandomization exclusions and trial-context deviations; ITT terminology does not settle appropriateness.",
+      "D3: result-specific denominator and missingness, assumptions/mechanism, genuine sensitivity reassurance and outcome dependence; no automatic numeric threshold, baseline balance or MAR claim shortcut.",
+      "D4: identify actual outcome assessor and masking/influence evidence; awareness alone does not decide bias.",
+      "D5: apply official propositions/Box11, plan availability and credible correspondence; no universal timestamp or exhaustive-hierarchy gate and no invented result-driven choice.",
+      "Uncertainty and alternatives remain visible; Probably answers require defensible evidence, not certainty or generic hypothetical risks.",
+      "Record operation failures, delivered contexts, original answers, elapsed/usage; feature use and label agreement alone are not gain."
+    ],
+    "scoring": "Per criterion: supported / material defect / unresolved, with exact source/line or trace references and consequence. No retrospective change of rubric; original output never repaired.",
+    "reference_gate": "Exact accuracy only after independent pre-prediction confirmation of same trial/population, contrast, construct/instrument, window, estimand and analysis population from human assessment itself. Uncertain study-level matches excluded; report qualified concordance separately. All-Low comparison uses identical strictly eligible result set only.",
+    "case_lock": "At most one initial full assessment per selected case. No coached continuation, paired retry, replacement selected for desired labels or repeat tuning on these cases. Freeze all selected first outputs before general code fixes; otherwise report separate version strata. Future fixes tested on existing unit/synthetic coverage and newly selected source-characteristic cases, not repeated paid optimization here.",
+    "failure_rule": "Diagnose source absence, delivery, scope, interpretation, logic and operational failures separately. Implement only general typed fixes with concrete failure evidence; preserve disagreement if defensible. No forced human labels or speculative guardrails."
+  }
+}
