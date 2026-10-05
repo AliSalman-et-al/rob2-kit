@@ -2,8 +2,8 @@
   "model": "gpt-6-luna",
   "reasoning_effort": "medium",
   "cli_version": "codex-cli 0.159.0",
-  "runtime_commit": "c873d7dfdebfa56fe6ceb6102ffc5cc69719f994",
-  "adapter_sha256": "5134494fae5e98458c982004155d1f85f951ad8742df5b2678732eee98971953",
+  "runtime_commit": "9c6c3ae98bd60be613a6d4f687f4684483d0e2eb",
+  "adapter_sha256": "444ca0b15bccdc2235299e74d7500e30652856e1d38cbd973183df7c8a165a7a",
   "arms": {
     "rich": {
       "command": [
@@ -26,15 +26,15 @@
         "unified_exec",
         "--json",
         "--output-schema",
-        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/response-schema.json",
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/response-schema.json",
         "-o",
-        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/rich/response.json",
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/rich/response.json",
         "-"
       ],
-      "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/rich/workspace",
-      "CODEX_HOME": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/rich/home",
-      "config_sha256": "8708393df934f5b3b2a440620da62947b2ad83f83f295980d4257c55f821b128",
-      "prompt_sha256": "e80b834f47a2801c0bd96716cc5d480fc65419f657835cc1da2b2633167d77e1"
+      "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/rich/workspace",
+      "CODEX_HOME": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/rich/home",
+      "config_sha256": "237f9cf5d3db78c9720ea1e7345b66f06f921a43726c247e4107d1e8ecd5cbfa",
+      "prompt_sha256": "ad33f3b99c6f32bd8ca7cdd89856342bc95b6434993cb967b75f9fb560744679"
     },
     "minimal": {
       "command": [
@@ -57,19 +57,18 @@
         "unified_exec",
         "--json",
         "--output-schema",
-        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/response-schema.json",
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/response-schema.json",
         "-o",
-        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/minimal/response.json",
+        "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/minimal/response.json",
         "-"
       ],
-      "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/minimal/workspace",
-      "CODEX_HOME": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5/minimal/home",
-      "config_sha256": "173df66704a15df8bab3ec8713a0f6d9484a3ebb1e2642f2ee9914f3f6d02fe6",
-      "prompt_sha256": "673961e3fd2e76aafe1fb9fa2fb99c42c17919ef219aa54ff04557070fdc9432"
+      "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/minimal/workspace",
+      "CODEX_HOME": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/minimal/home",
+      "config_sha256": "193b16e329453e597d929401bb2d622d7b077998995ba94d554c31c60b6f384f",
+      "prompt_sha256": "8c705dd468384dc65bd1d9386f56314bd79da4d3e72300968a809841b970e53f"
     }
   },
   "inference_launched": false,
   "credentials_copied": false,
-  "launch_requirement": "Future explicit authorization; use existing launch_checked with exact frozen prompt, evidence manifest/bundle, and recorded expected manifest hash.",
-  "initial_plan_preserved": "launch-plan.initial.json"
+  "launch_requirement": "Future explicit authorization; use existing launch_checked with exact frozen prompt, evidence manifest/bundle, and recorded expected manifest hash."
 }

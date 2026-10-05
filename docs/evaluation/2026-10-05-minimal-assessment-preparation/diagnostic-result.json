@@ -1,0 +1,165 @@
+{
+  "kind": "assessable",
+  "trial_id": "baillard-2006",
+  "requested_outcome": "Minimum SpO2 during endotracheal intubation",
+  "relation": "narrower",
+  "relation_rationale": "The reported group means measure minimum SpO2 during endotracheal intubation, but the analysis includes 53 of the 57 randomized participants after two exclusions in each group.",
+  "applicability": null,
+  "target": {
+    "outcome_definition": "Minimum SpO2 during endotracheal intubation",
+    "measurement": {
+      "metric": "Minimum SpO2 per participant during endotracheal intubation, %",
+      "method": "Continuous pulse oximetry (Oxypleth 520A)"
+    },
+    "time_point_or_window": {
+      "kind": "described",
+      "description": "During the endotracheal intubation procedure; minimum value"
+    },
+    "effect_of_interest": "assignment",
+    "comparison_groups": [
+      {
+        "id": "control",
+        "assignment": "Three-minute usual preoxygenation with nonrebreather bag-valve mask"
+      },
+      {
+        "id": "niv",
+        "assignment": "Three-minute NIV pressure-support preoxygenation through face mask"
+      }
+    ],
+    "intended_analysis_population": "All 57 randomized participants: control n=28, NIV n=29",
+    "intended_effect_measure": "Difference between group means of minimum SpO2, percentage points"
+  },
+  "reported": {
+    "form": "group_bound_values",
+    "analysis_population": "53 analyzed participants: control n=26, NIV n=27; 57 randomized (control n=28, NIV n=29), with four excluded for lack of exhaustive data (two per group)",
+    "endpoint": {
+      "name": "minimal SpO2 values",
+      "definition": "Participant minimum SpO2 recorded during endotracheal intubation"
+    },
+    "group_values": [
+      {
+        "group_id": "control",
+        "statistic": "mean ± SD",
+        "value": "81 ± 15",
+        "unit": "%"
+      },
+      {
+        "group_id": "niv",
+        "statistic": "mean ± SD",
+        "value": "93 ± 8",
+        "unit": "%"
+      }
+    ]
+  },
+  "clarity": {
+    "outcome_definition": "specified",
+    "measurement": "specified",
+    "time_point": "specified",
+    "analysis_population": "specified",
+    "comparison_groups": "specified",
+    "effect_measure": "specified",
+    "source_table_meaning": "specified",
+    "eligible_result_choice": "specified"
+  },
+  "evidence": [
+    {
+      "kind": "narrative",
+      "handle": "eh_237558b2295d278a"
+    },
+    {
+      "kind": "narrative",
+      "handle": "eh_b59c0d3d77cbedf9"
+    },
+    {
+      "kind": "narrative",
+      "handle": "eh_d463b894aa2960ed"
+    },
+    {
+      "kind": "narrative",
+      "handle": "eh_e28a8c063f5e954a"
+    },
+    {
+      "kind": "narrative",
+      "handle": "eh_8bebb9772b86680a"
+    },
+    {
+      "kind": "figure",
+      "handle": "eh_10371c37d10a1729",
+      "render_identity": "sha256:5737ca4cacdabdad06ef44a3703612248dbb84359d5b980c302cbe61d6febbf2",
+      "delivery_receipt": "sha256:d0c10d682f39e0c43f4e25be14c9aaf47ee89a2002c17421560452e45daf6746",
+      "region": [
+        0.5,
+        0.07,
+        0.97,
+        0.32
+      ],
+      "transcription": "minimal SpO2 values (93 ± 8% vs. 81 ± 15%, p < 0.001; Figure 3)",
+      "provenance": "host_visual"
+    },
+    {
+      "kind": "figure",
+      "handle": "eh_d9ce592424c44833",
+      "render_identity": "sha256:f795e1283d1593b6ff620eb75cfa23012bf719ac4a9e987ec8ebdec01bf1d9a3",
+      "delivery_receipt": "sha256:cd4b1901ae3172242795d03807420aefe659573810ffd0a45673eac297062b6c",
+      "region": [
+        0.0,
+        0.45,
+        0.55,
+        1.0
+      ],
+      "transcription": "Need for intubation n=78; Exclusion criteria (n=21): neurological cause, cardiac arrest, hyperkaliemia; 57 patients enrolled; Inclusion period; Randomization for preoxygenation; Control group n=28 (Bag-valve mask); NIV group n=29; ABG 1; Preoxygenation 3 min during inclusion period; ABG 2; Induction (Etomidate-Succinylcholine); Intubation (IDS score); 4 exclusions for non exhaustive data (2 control and 2 NIV group); Mechanical ventilation (PEEP=5 and FIO2=1); ABG 3 (+5 min) and ABG 4 (+30 min); n=53",
+      "provenance": "host_visual"
+    }
+  ],
+  "bindings": [
+    {
+      "field": {
+        "path": "/reported/endpoint/name"
+      },
+      "evidence_index": 4,
+      "value_digest": "sha256:b08ae332b380bc9e56a6ce825f7586c64ec5d5146f5920ff47bc824b210e0edb"
+    },
+    {
+      "field": {
+        "path": "/reported/group_values/0/statistic"
+      },
+      "evidence_index": 1,
+      "value_digest": "sha256:744123b9261bfcdd5eccd62bec695da043bdf8234b5e93e97f1558139b779a9e"
+    },
+    {
+      "field": {
+        "path": "/reported/group_values/1/statistic"
+      },
+      "evidence_index": 1,
+      "value_digest": "sha256:744123b9261bfcdd5eccd62bec695da043bdf8234b5e93e97f1558139b779a9e"
+    },
+    {
+      "field": {
+        "path": "/reported/group_values/0/value"
+      },
+      "evidence_index": 5,
+      "value_digest": "sha256:34381c076defa156583427e3920acc40d53f685c5c5c15b98b1fed78fbbe15de"
+    },
+    {
+      "field": {
+        "path": "/reported/group_values/1/value"
+      },
+      "evidence_index": 5,
+      "value_digest": "sha256:ec893a77bff20a7e7b2c08d778a73a0d91c1de91c530514b1f53d3bb8f38da15"
+    },
+    {
+      "field": {
+        "path": "/reported/group_values/0/unit"
+      },
+      "evidence_index": 5,
+      "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+    },
+    {
+      "field": {
+        "path": "/reported/group_values/1/unit"
+      },
+      "evidence_index": 5,
+      "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+    }
+  ]
+}

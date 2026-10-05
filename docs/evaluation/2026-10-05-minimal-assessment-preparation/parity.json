@@ -1,6 +1,6 @@
 {
   "case": "baillard-2006",
-  "result_identity": "sha256:4686d06ec1c65d7c0f2296ea0521310b20b013b4fae323220a255dcdab60eeea",
+  "result_identity": "sha256:1cea133e63251b45b1156af46b5cf3ab2b4a146c72ba40a93fe49fa2e1651582",
   "all_source_projections_match_original": true,
   "sources": 1,
   "all_pages": 7,
@@ -67,7 +67,7 @@
     66,
     67
   ],
-  "common_payload_sha256": "5c826b58e924797a16153d1147b7ceb00119b68f89f72d0e87bce409b6d35ce3",
+  "common_payload_sha256": "19f905858f9d92f13e0571e7d57ca2c695331b1e7b1aeeb5af660e119fe92d59",
   "model": "gpt-6-luna",
   "reasoning_effort": "medium",
   "paid_calls": 0

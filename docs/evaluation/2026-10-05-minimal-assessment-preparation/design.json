@@ -7,14 +7,25 @@
     "reason": "Captured registry source bytes unavailable; live substitution would break source matching."
   },
   "source_repository": "/home/ali/Documents/Code/rob2-kit-benchmark",
-  "private_preparation": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5",
+  "private_preparation": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14",
   "paid_calls": 0,
   "production_defaults_changed": false,
-  "failed_preparations_preserved": [
+  "target_ambiguity": "Resolved diagnostic target: group mean of participant minimum SpO2 during ETI; source primary mean-drop wording retained, no original human-label comparison.",
+  "original_code_object_modified": false,
+  "context_length_factor": "Bundled with content; not length matched",
+  "preparations_preserved": [
     "minimal-assessment-baillard",
     "minimal-assessment-baillard-v2",
     "minimal-assessment-baillard-v3",
-    "minimal-assessment-baillard-v4"
-  ],
-  "target_ambiguity": "Approved mean drop target versus reported minimal SpO2 values; retain ambiguity, no matched-reference accuracy claim."
+    "minimal-assessment-baillard-v4",
+    "minimal-assessment-baillard-v6",
+    "minimal-assessment-baillard-v7",
+    "minimal-assessment-baillard-v8",
+    "minimal-assessment-baillard-v9",
+    "minimal-assessment-baillard-v10",
+    "minimal-assessment-baillard-v11",
+    "minimal-assessment-baillard-v12",
+    "minimal-assessment-baillard-v13",
+    "minimal-assessment-baillard-v5"
+  ]
 }

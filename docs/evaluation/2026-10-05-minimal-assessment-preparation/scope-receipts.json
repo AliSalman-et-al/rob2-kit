@@ -1,0 +1,116 @@
+{
+  "diagnostic_result_identity": "sha256:1cea133e63251b45b1156af46b5cf3ab2b4a146c72ba40a93fe49fa2e1651582",
+  "canonical_source_and_evidence_integrity_verified": true,
+  "receipts": [
+    {
+      "handle": "eh_237558b2295d278a",
+      "identity": "sha256:237558b2295d278a238ec9da6c1e7bc95b9010b8da294ab70f139dc0d4a214b5",
+      "kind": "narrative",
+      "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a",
+      "trial_id": "baillard-2006",
+      "page": 2,
+      "start_line": 30,
+      "end_line": 51,
+      "source_version": "sha256:b08000ee919fb6ba8b43b3bb12c47b0b76fd0bd2468dc821306fb03ff351edd8",
+      "quote_sha256": "f3e6d8909421aa48ba06184fc52a2ad6dc8de4e4ff0b7534cf78543ceb17f814"
+    },
+    {
+      "handle": "eh_b59c0d3d77cbedf9",
+      "identity": "sha256:b59c0d3d77cbedf95733ab596667b7532bc93a618edd3a6279367a442878b1fc",
+      "kind": "narrative",
+      "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a",
+      "trial_id": "baillard-2006",
+      "page": 3,
+      "start_line": 93,
+      "end_line": 124,
+      "source_version": "sha256:b08000ee919fb6ba8b43b3bb12c47b0b76fd0bd2468dc821306fb03ff351edd8",
+      "quote_sha256": "bf17352476ee44436a5ad6dfa29f9d5885fb2ffab6a164e5238fc36f04144133"
+    },
+    {
+      "handle": "eh_d463b894aa2960ed",
+      "identity": "sha256:d463b894aa2960ed62ad2c9c20ccd5a5ae655a80dc66431151eb43275b1c3afd",
+      "kind": "narrative",
+      "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a",
+      "trial_id": "baillard-2006",
+      "page": 3,
+      "start_line": 129,
+      "end_line": 131,
+      "source_version": "sha256:b08000ee919fb6ba8b43b3bb12c47b0b76fd0bd2468dc821306fb03ff351edd8",
+      "quote_sha256": "355cec1ff1d53e44070c30a0b23b442745947c9531a065d9fe3a8284fb9748c1"
+    },
+    {
+      "handle": "eh_e28a8c063f5e954a",
+      "identity": "sha256:e28a8c063f5e954ab1ee29b2c391a493d32e56f8f193ffc75b49776d1a3baad8",
+      "kind": "narrative",
+      "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a",
+      "trial_id": "baillard-2006",
+      "page": 4,
+      "start_line": 8,
+      "end_line": 15,
+      "source_version": "sha256:b08000ee919fb6ba8b43b3bb12c47b0b76fd0bd2468dc821306fb03ff351edd8",
+      "quote_sha256": "69a0fb5bf8579b57b4c1c3b4dac1d67d8af522b795024d5b1a4d660b85e20ead"
+    },
+    {
+      "handle": "eh_8bebb9772b86680a",
+      "identity": "sha256:8bebb9772b86680aec5730b4374b6585af825baa38c8ce185c676cb2273dcf63",
+      "kind": "narrative",
+      "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a",
+      "trial_id": "baillard-2006",
+      "page": 4,
+      "start_line": 98,
+      "end_line": 117,
+      "source_version": "sha256:b08000ee919fb6ba8b43b3bb12c47b0b76fd0bd2468dc821306fb03ff351edd8",
+      "quote_sha256": "3cbf1f584b5df72138fbfea3afdb622e61a20fff2493f28cd6bb3c78367ad057"
+    },
+    {
+      "handle": "eh_10371c37d10a1729",
+      "identity": "sha256:10371c37d10a172977a546544cf393c99833366c697c636430092c704dd73b98",
+      "kind": "figure",
+      "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a",
+      "trial_id": "baillard-2006",
+      "render": {
+        "identity": "sha256:5737ca4cacdabdad06ef44a3703612248dbb84359d5b980c302cbe61d6febbf2",
+        "page": 4,
+        "png_sha256": "sha256:b0be3fbad625ebdd839c520170fd4b2f8a67be1b2f4fb8aa3a02233374cf13bf",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a"
+      },
+      "delivery_receipt": "sha256:d0c10d682f39e0c43f4e25be14c9aaf47ee89a2002c17421560452e45daf6746",
+      "region": [
+        0.5,
+        0.07,
+        0.97,
+        0.32
+      ],
+      "provenance": "host_visual",
+      "transcription_sha256": "449d5147a529c8a47fb553f77443ce6ec2a7bf0a5611bdcf51b35f02365c3c1c"
+    },
+    {
+      "handle": "eh_d9ce592424c44833",
+      "identity": "sha256:d9ce592424c44833c1ce857d5e421b30a02fee2dc7ccb4729ce720201b70724a",
+      "kind": "figure",
+      "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a",
+      "trial_id": "baillard-2006",
+      "render": {
+        "identity": "sha256:f795e1283d1593b6ff620eb75cfa23012bf719ac4a9e987ec8ebdec01bf1d9a3",
+        "page": 2,
+        "png_sha256": "sha256:6a78bdd9e8cbc2895df9cbf2025aa6a4b7a273f798792fa96870cd2d1c5b4bd5",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_dac014810563e4943356ec3e63ce4b3eecb9e7178c1806c4ef603303363da63a"
+      },
+      "delivery_receipt": "sha256:cd4b1901ae3172242795d03807420aefe659573810ffd0a45673eac297062b6c",
+      "region": [
+        0.0,
+        0.45,
+        0.55,
+        1.0
+      ],
+      "provenance": "host_visual",
+      "transcription_sha256": "f69a74ad360ff2e96475413b5c85ba2547481518dfc3d32e40f6129c5a52ab25"
+    }
+  ],
+  "full_selected_payloads_private": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v14/common.json",
+  "original_snapshot_sha256": "1fa1c98c3ef89eb64485b6b07a67bbaefb95801e51f5fead9f60ab3b95db997e",
+  "original_snapshot_matches_v5": true,
+  "paid_calls": 0
+}
