@@ -1,0 +1,38 @@
+{
+  "purpose": "Compare evidential warrant of three D5 wording repairs; no fixed expected labels or success threshold",
+  "dimensions": [
+    "exact randomized result correspondence",
+    "literal source fidelity",
+    "chronology and circumstance interpretation",
+    "justified uncertainty",
+    "selection-mechanism separation"
+  ],
+  "per_signalling_question_scale": {
+    "2": "Explicit supported chain considers relevant counterevidence; reasonable probable inference or supported uncertainty both qualify",
+    "1": "Incomplete warrant without material source contradiction",
+    "0": "Material source contradiction or unsupported certainty/negative inference"
+  },
+  "maximum_per_question": 10,
+  "source_aware_checks": {
+    "pioneer-6": [
+      "Main article3 methods and protocol206\u2013207 establish treatment-policy/full-analysis-set primary first-MACE result, not on-treatment or conditional superiority analyses.",
+      "Protocol62 and175 distinguish blinded investigator analyses from independent confidential monitoring. Weigh prospective policy alongside actual article conduct, not policy alone as proof.",
+      "SAP198\u2013213 including changes212 is complete. Compare content as well as chronology; added tests/sensitivities and amendments do not establish results-driven selection. Do not substitute database lock for first access."
+    ],
+    "ascet": [
+      "Article2 open randomized treatment allocation is distinct from platelet-test masking.",
+      "Article3 statistical methods and article4 results govern randomized two-year contrast; observational RPR and post hoc subgroup analyses are different results.",
+      "No protocol/SAP in captured scope does not prove actual absence. Prior design publication is referenced but not captured. Registry is current captured content, not a historical timeline.",
+      "Article4 independent board/database access does not by itself establish investigator access timing or results-driven selection. Reasonable uncertainty and reasonable supported probable inference can both receive full marks."
+    ]
+  },
+  "serious_errors": [
+    "exact-date-proof prerequisite",
+    "automatic PY from masking or trial size",
+    "lock conflated with access",
+    "confidential DMC access conflated with investigator analysis access",
+    "missing plan equated with results-driven selection",
+    "target/result substitution"
+  ],
+  "review": "Review sources, exact target and answers with arm identity/order/guidance variant hidden; permit supported disagreement. Preserve all four outcomes; no retuning or label repair. Report paired dimension deltas and failures, not statistical accuracy."
+}

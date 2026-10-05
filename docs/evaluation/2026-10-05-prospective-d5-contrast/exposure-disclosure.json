@@ -1,0 +1,31 @@
+{
+  "selection": "source-only for this contrast; not unseen-trial selection",
+  "pioneer-6": {
+    "known": "Original Oct1 benchmark; dedicated Oct4 native D3 development/official prototype campaign",
+    "metadata_report": "docs/evaluation/2026-10-04-pioneer-native-d3/README.md"
+  },
+  "ascet": {
+    "inventory_entry": {
+      "case": "ascet",
+      "inference_event_logs": [
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ascet/turn-2.jsonl",
+          "inference_event_count": 2
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ascet/turn-1.jsonl",
+          "inference_event_count": 32
+        },
+        {
+          "path": "benchmark-luna6-medium-2026-10-01/cases/ascet/turn-3.jsonl",
+          "inference_event_count": 112
+        }
+      ],
+      "campaign_exposure_observed": true
+    },
+    "scope": "Existing inventory reports original Oct1 benchmark exposure. Metadata-only filename inventory found no dedicated ASCET subsequent diagnostic directory; indirect references in other trial dossiers exist. This is not exhaustive proof of no later exposure and no unseen claim is made."
+  },
+  "inventory_path": "docs/evaluation/2026-10-03-offline-closure/exposure-inventory.json",
+  "inventory_sha256": "1a20188908e55c16298bed1b495af3cea752775e66e0f2ddfa008efcc9b6c883",
+  "inspection": "ASCET predictions, judgments, scores and transcripts were not opened to establish exposure."
+}

@@ -1,0 +1,8 @@
+{
+  "changed_json_paths": [
+    "/0/guidance/operational/decision_rule",
+    "/0/guidance/operational/answer_anchors/2/text",
+    "/0/guidance/operational/considerations/1"
+  ],
+  "all_other_question_fields_identical": true
+}
