@@ -1,0 +1,40 @@
+**Domain 5 judgment: Low risk of bias, with residual uncertainty.** Answers: **5.1 probably_yes; 5.2 probably_no; 5.3 probably_no.** The uncertainty concerns the timing and implementation of the final SAP and completeness of numerical reporting—not affirmative evidence of results-driven selection.
+
+All citations below refer to **physical PDF pages** and supplied line numbers. “Protocol/SAP” means *nejmoa1901118_protocol.pdf*; “Article” means *NEJMoa1901118.pdf*; “Appendix” means *nejmoa1901118_appendix.pdf*.
+
+**5.1 — Probably yes**
+
+**Firm evidence:** A sufficiently detailed, applicable analysis plan existed before recruitment. The original protocol was final on **12 February 2016**, and the final protocol was dated **3 November 2016** (Protocol/SAP p. 2, lines 6–10). Randomization occurred between January and August 2017 (Article p. 3, lines 79–82). The original protocol specified:
+
+- Oral semaglutide versus placebo, all randomized participants, a de-facto estimand retaining events regardless of treatment adherence, and an HR comparison (Protocol/SAP p. 62, lines 35–46; p. 63, lines 15–16).
+- FAS analyzed as randomized; follow-up through the in-trial period; censoring at its end; first three-component MACE; and a stratified Cox model with treatment as a fixed factor (Protocol/SAP p. 64, lines 19–56).
+
+The final protocol retained these specifications (Protocol/SAP p. 175, lines 35–46; p. 176, lines 15–16; p. 177, lines 19–56). The SAP explicitly specifies treatment-policy, FAS, in-trial analysis, cardiovascular-risk stratification, and HR with two-sided 95% CI (Protocol/SAP p. 206, lines 36–46). The reported analysis matches these central features (Article p. 3, lines 58–69; Appendix p. 14, lines 7–19), producing the target HR **0.79 (0.57–1.11)** (Article p. 7, lines 65–70, 120–125).
+
+**Reasonable inference:** The final SAP probably preceded access to unblinded outcomes by those making analysis decisions. Both the protocol and SAP specify maintenance of blinding until database release and prohibit pre-lock unblinded analyses apart from confidential DMC-related exceptions; the protocol also requires SAP finalization before lock (Protocol/SAP p. 175, lines 15–23; p. 203, lines 19–23). Primary-endpoint safety reports were specifically kept blinded for Novo Nordisk (Protocol/SAP p. 166, lines 15–24). Confidential independent DMC access does not itself establish investigator access.
+
+**Unresolved:** The SAP is final dated **1 November 2018** (Protocol/SAP p. 198, lines 3–11), after registry-recorded completion on **25 September 2018** (Registry p. 1, lines 1661–1662, 1672–1673). Actual lock, database-release and investigator-access dates are absent. Completion is not proof of unblinding, and planned safeguards are not a dated record of their implementation. This supports **probably_yes**, rather than an unqualified yes.
+
+**5.2 — Probably no**
+
+**Firm evidence:** The target definition and observation period were specified in the early protocol. Other cardiovascular composite definitions were also intended, including expanded MACE (Protocol/SAP p. 63, lines 19–26); the SAP lists expanded and all-cause-death composites (Protocol/SAP p. 209, lines 40–52). The article reports all three composite results together, alongside their components (Article p. 7, lines 65–119).
+
+The inclusion of undetermined deaths as cardiovascular deaths is explicit in the SAP (Protocol/SAP p. 201, lines 38–43) and reported result (Article p. 7, lines 120–123). The Appendix separately reports determined cardiovascular deaths and undetermined deaths, explaining the apparent 10/23 versus 15/30 discrepancy (Appendix p. 38, lines 20–26, 69–75).
+
+**Reasonable inference:** Reporting the planned primary composite together with alternative composites and components supports absence of results-driven measurement selection.
+
+**Unresolved:** No independent review eligibility criteria are supplied, so the target cannot be used to declare every alternative definition or window ineligible. The evidence supports **probably_no**, without proving exhaustive reporting of every potentially eligible measurement.
+
+**5.3 — Probably no**
+
+**Firm evidence:** The primary model and population were specified before recruitment. The SAP distinguishes an additionally adjusted in-trial analysis from two on-treatment sensitivity analyses using 38-day and 7-day windows (Protocol/SAP p. 207, lines 25–40; p. 208, lines 15–20). The Appendix identifies all three in Figure S4 (Appendix p. 19, lines 3–16), and the article reports their consistency with the primary analysis (Article p. 5, lines 8–10).
+
+Two further sensitivity procedures were conditional on establishing superiority (Protocol/SAP p. 208, lines 21–38). Superiority was not established, **P=0.17** (Article p. 5, lines 6–8); their absence therefore has a planned explanation.
+
+The SAP changed the testing hierarchy, attributing added superiority testing to **SUSTAIN-6 findings**, and renamed de-facto as treatment-policy (Protocol/SAP p. 212, lines 21–27, 39). These changes do not demonstrate selection driven by PIONEER-6 results.
+
+**Reasonable inference:** The retained primary analysis and reporting of specified sensitivity analyses support **probably_no**.
+
+**Unresolved:** The supplied Figure S4 text contains descriptions but no numerical sensitivity estimates. Their complete numerical reporting cannot be independently verified here. On-treatment analyses also estimate a different treatment effect; their eligibility should not be assumed from the target alone.
+
+**Why Low risk:** The early applicable protocol, close correspondence of the reported result, and reporting of planned alternatives support Low risk. The missing access chronology and incomplete figure extraction limit certainty but do not establish late planning or results-driven selection. A High-risk judgment is unsupported; Low risk remains an evidence-based, qualified judgment.

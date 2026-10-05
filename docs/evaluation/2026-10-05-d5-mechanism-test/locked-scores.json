@@ -1,0 +1,484 @@
+{
+  "reviewer": {
+    "model": "gpt-6.1-sol",
+    "effort": "low",
+    "profile": "gpt-6.1-sol/low",
+    "profile_basis": "Assigned reviewer profile; no telemetry inspected"
+  },
+  "locked_at_utc": "2026-10-05T15:45:45.718151+00:00",
+  "condition_blinded": true,
+  "access_boundary": "Read only supplied packet directory; no parent repository, condition mapping, history, launch logs or telemetry inspected. Parent supplied task instructions and readiness/compact-scoring messages only.",
+  "hash_verification_before": {
+    "REVIEW-INSTRUCTIONS.md": true,
+    "target-identity.json": true,
+    "answer-inventory.json": true,
+    "official-response-options-layout.txt": true,
+    "pioneer-6-sources.txt": true,
+    "packet-A-answer.txt": true,
+    "ascet-sources.txt": true,
+    "common-official-d5-guidance.json": true,
+    "packet-B-answer.txt": true,
+    "packet-C-answer.txt": true,
+    "source-aware-rubric.json": true,
+    "packet-D-answer.txt": true
+  },
+  "answers": [
+    {
+      "identifier": "packet-A",
+      "case": "ascet",
+      "status": "scored",
+      "domain_label_descriptive": "Some concerns",
+      "questions": {
+        "5.1": {
+          "answer": "no_information",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Preserves full randomized two-year comparison, rather than platelet-reactivity associations."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Article methods and missing captured prospective plan are represented accurately."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Distinguishes registry posting/update from finalization and investigator access; open allocation from platelet masking; independent board from investigators."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "NI is supported by uncaptured prior design and unresolved prospective applicability; no exact-date prerequisite is imposed."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Missing plan is not treated as proof of selection."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "PMC3487336.pdf p2 L23\u201343; p3 L46\u201357,70\u201387; p4 L18\u201324,31\u201348",
+            "ClinicalTrials.gov NCT00222261 p1 L243\u2013254"
+          ],
+          "serious_errors": []
+        },
+        "5.2": {
+          "answer": "no_information",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Keeps the four-component first-event randomized composite as target."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Registry lists three separate outcomes and article composite includes stroke; discrepancy accurately stated."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Recognizes current registry capture cannot supply a historical timeline."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "NI is reasonable under official 5.2 guidance given missing intentions and multiple possible definitions; published-method consistency is acknowledged."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Does not convert measurement discrepancy or post hoc findings into results-driven selection."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "PMC3487336.pdf p3 L46\u201357; p4 L31\u201348; p7 L103\u2013108",
+            "ClinicalTrials.gov NCT00222261 p1 L155\u2013160"
+          ],
+          "serious_errors": []
+        },
+        "5.3": {
+          "answer": "no_information",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Uses 52/499 versus54/502,P=0.87; does not invent a full-population RR/OR."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Accurately identifies categorical methods and person-time model."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Separates article conduct from unavailable prospective analysis intentions."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "NI is supported by insufficiently specified intentions and plausible analytical alternatives; reasonable probable-no disagreement also remains possible."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Separates randomized target from observational/post hoc subgroup analyses and avoids imputing selection."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "PMC3487336.pdf p3 L78\u201398; p4 L4\u201311,42\u201348; p7 L103\u2013108"
+          ],
+          "serious_errors": []
+        }
+      },
+      "total": 30,
+      "maximum": 30,
+      "serious_errors": []
+    },
+    {
+      "identifier": "packet-C",
+      "case": "pioneer-6",
+      "status": "scored",
+      "domain_label_descriptive": "Low risk of bias",
+      "questions": {
+        "5.1": {
+          "answer": "probably_yes",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Matches early FAS/as-randomized, in-trial first-MACE stratified Cox specifications to actual reported HR."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Protocol dates, SAP timing and article conduct accurately represented."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Weighs pre-recruitment protocol plus safeguards against later final SAP and unknown actual access; does not equate lock with access."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "Qualifies probable inference and recognizes completion is not proof of unblinding."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Confidential DMC exception is not conflated with investigator access or results-driven choice."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "NEJMoa1901118.pdf p3 L58\u201382; p7 L65\u201370,120\u2013125",
+            "nejmoa1901118_protocol.pdf p2 L6\u201314; p62 L15\u201346; p64 L19\u201356; p175 L15\u201323; p198 L3\u201311; p205 L64\u201369; p206 L35\u201346"
+          ],
+          "serious_errors": []
+        },
+        "5.2": {
+          "answer": "probably_no",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Preserves primary three-component in-trial MACE rather than another composite."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Accurately reconciles determined/undetermined cardiovascular deaths and reports alternative composites."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Early definition plus actual co-reporting supplies warrant; late SAP is not assumed prospectively verified."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "Explicitly limits claim about exhaustive reporting and eligibility, supporting a probable answer."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Alternative measurements and different estimates are assessed without treating multiplicity alone as selection."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "nejmoa1901118_protocol.pdf p63 L19\u201326; p201 L38\u201343; p209 L40\u201352",
+            "NEJMoa1901118.pdf p7 L65\u2013123",
+            "nejmoa1901118_appendix.pdf p38 L20\u201326,69\u201375"
+          ],
+          "serious_errors": []
+        },
+        "5.3": {
+          "answer": "probably_no",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Retains primary treatment-policy model and separates on-treatment sensitivity results."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Sensitivity roles/windows, conditional superiority procedures, and external SUSTAIN-6 rationale accurately represented."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Compares early primary specification, later changes and actual article/appendix reporting."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "Acknowledges missing numeric figure extraction and final-SAP chronology rather than claiming exhaustive verification."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Multiple analyses, external amendment rationale and planned conditional nonperformance are separated from results-driven selection."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "nejmoa1901118_protocol.pdf p207 L25\u201340; p208 L15\u201338; p212 L21\u201346",
+            "nejmoa1901118_appendix.pdf p19 L3\u201316",
+            "NEJMoa1901118.pdf p5 L6\u201310"
+          ],
+          "serious_errors": []
+        }
+      },
+      "total": 30,
+      "maximum": 30,
+      "serious_errors": []
+    },
+    {
+      "identifier": "packet-D",
+      "case": "pioneer-6",
+      "status": "scored",
+      "domain_label_descriptive": "Low risk of bias",
+      "questions": {
+        "5.1": {
+          "answer": "probably_yes",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Matches early FAS/as-randomized, in-trial first-MACE stratified Cox specifications to actual reported HR."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Protocol dates, SAP timing and article conduct accurately represented."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 1,
+              "rationale": "Correctly weighs early protocol, late SAP, safeguards and unknown actual access. However, comparison of final analysis content is incomplete: unlike the early last-contact rule, SAP p205 L68\u201369 extends the endpoint to death after follow-up when linked to an in-trial MACE. The answer acknowledges general implementation uncertainty but does not assess this concrete refinement. This is incomplete warrant, not a material contradiction or grounds to reject probably_yes."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "Qualifies probable inference and recognizes completion is not proof of unblinding."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Confidential DMC exception is not conflated with investigator access or results-driven choice."
+            }
+          },
+          "total": 9,
+          "source_citations": [
+            "NEJMoa1901118.pdf p3 L58\u201382; p7 L65\u201370,120\u2013125",
+            "nejmoa1901118_protocol.pdf p2 L6\u201314; p62 L15\u201346; p64 L19\u201356; p175 L15\u201323; p198 L3\u201311; p205 L64\u201369; p206 L35\u201346"
+          ],
+          "serious_errors": []
+        },
+        "5.2": {
+          "answer": "probably_no",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Preserves primary three-component in-trial MACE rather than another composite."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Accurately reconciles determined/undetermined cardiovascular deaths and reports alternative composites."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Early definition plus actual co-reporting supplies warrant; late SAP is not assumed prospectively verified."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "Explicitly limits claim about exhaustive reporting and eligibility, supporting a probable answer."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Alternative measurements and different estimates are assessed without treating multiplicity alone as selection."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "nejmoa1901118_protocol.pdf p63 L19\u201326; p201 L38\u201343; p209 L40\u201352",
+            "NEJMoa1901118.pdf p7 L65\u2013123",
+            "nejmoa1901118_appendix.pdf p38 L20\u201326,69\u201375"
+          ],
+          "serious_errors": []
+        },
+        "5.3": {
+          "answer": "probably_no",
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": 2,
+              "rationale": "Retains primary treatment-policy model and separates on-treatment sensitivity results."
+            },
+            "literal source fidelity": {
+              "score": 2,
+              "rationale": "Sensitivity roles/windows, conditional superiority procedures, and external SUSTAIN-6 rationale accurately represented."
+            },
+            "chronology and circumstance interpretation": {
+              "score": 2,
+              "rationale": "Compares early primary specification, later changes and actual article/appendix reporting."
+            },
+            "justified uncertainty": {
+              "score": 2,
+              "rationale": "Acknowledges missing numeric figure extraction and final-SAP chronology rather than claiming exhaustive verification."
+            },
+            "selection-mechanism separation": {
+              "score": 2,
+              "rationale": "Multiple analyses, external amendment rationale and planned conditional nonperformance are separated from results-driven selection."
+            }
+          },
+          "total": 10,
+          "source_citations": [
+            "nejmoa1901118_protocol.pdf p207 L25\u201340; p208 L15\u201338; p212 L21\u201346",
+            "nejmoa1901118_appendix.pdf p19 L3\u201316",
+            "NEJMoa1901118.pdf p5 L6\u201310"
+          ],
+          "serious_errors": []
+        }
+      },
+      "total": 29,
+      "maximum": 30,
+      "serious_errors": []
+    },
+    {
+      "identifier": "packet-B",
+      "case": "ascet",
+      "status": "unscorable_technical_failure",
+      "domain_label_descriptive": null,
+      "questions": {
+        "5.1": {
+          "answer": null,
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "literal source fidelity": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "chronology and circumstance interpretation": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "justified uncertainty": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "selection-mechanism separation": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            }
+          },
+          "total": null,
+          "source_citations": [],
+          "serious_errors": []
+        },
+        "5.2": {
+          "answer": null,
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "literal source fidelity": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "chronology and circumstance interpretation": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "justified uncertainty": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "selection-mechanism separation": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            }
+          },
+          "total": null,
+          "source_citations": [],
+          "serious_errors": []
+        },
+        "5.3": {
+          "answer": null,
+          "dimensions": {
+            "exact randomized result correspondence": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "literal source fidelity": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "chronology and circumstance interpretation": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "justified uncertainty": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            },
+            "selection-mechanism separation": {
+              "score": null,
+              "rationale": "No scientific answer produced; technical provider capacity failure."
+            }
+          },
+          "total": null,
+          "source_citations": [],
+          "serious_errors": []
+        }
+      },
+      "total": null,
+      "maximum": null,
+      "serious_errors": []
+    }
+  ],
+  "interpretation": "Source-aware evidential-warrant scores, no expected labels. Supported uncertainty and probable inferences accepted; not benchmark accuracy or independent human validation.",
+  "paired_anonymous_dimension_deltas": {
+    "packet-D_minus_packet-C": {
+      "5.1": {
+        "exact randomized result correspondence": 0,
+        "literal source fidelity": 0,
+        "chronology and circumstance interpretation": -1,
+        "justified uncertainty": 0,
+        "selection-mechanism separation": 0
+      },
+      "5.2": {
+        "exact randomized result correspondence": 0,
+        "literal source fidelity": 0,
+        "chronology and circumstance interpretation": 0,
+        "justified uncertainty": 0,
+        "selection-mechanism separation": 0
+      },
+      "5.3": {
+        "exact randomized result correspondence": 0,
+        "literal source fidelity": 0,
+        "chronology and circumstance interpretation": 0,
+        "justified uncertainty": 0,
+        "selection-mechanism separation": 0
+      }
+    },
+    "packet-A_vs_packet-B": "Unavailable: packet-B technical failure; no imputed counterpart."
+  },
+  "limitations": [
+    "Three available single responses across two supplied-evidence cases; fourth technical failure.",
+    "Captured dossier only; absent captured plan does not establish actual absence.",
+    "Text figure extraction omits sensitivity numeric values; access chronology is incomplete.",
+    "One AI reviewer, assigned profile, no human validation or independent telemetry verification."
+  ],
+  "hash_verification_after": {
+    "REVIEW-INSTRUCTIONS.md": true,
+    "target-identity.json": true,
+    "answer-inventory.json": true,
+    "official-response-options-layout.txt": true,
+    "pioneer-6-sources.txt": true,
+    "packet-A-answer.txt": true,
+    "ascet-sources.txt": true,
+    "common-official-d5-guidance.json": true,
+    "packet-B-answer.txt": true,
+    "packet-C-answer.txt": true,
+    "source-aware-rubric.json": true,
+    "packet-D-answer.txt": true
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "attempts": [
+    {
+      "identifier": "packet-C",
+      "case": "pioneer-6",
+      "condition": "old",
+      "exit_code": 0,
+      "elapsed_seconds": 63.27645169702009,
+      "durable_profile_verified": true,
+      "durable_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "low",
+          "file": "diagnostics/prospective-d5-mechanism-run-20261005/packet-C/home/sessions/2026/10/05/rollout-2026-10-05T20-39-00-01a10cb7-deba-7530-8ecd-e93566ad1d23.jsonl"
+        }
+      ],
+      "thread_ids": [
+        "01a10cb7-deba-7530-8ecd-e93566ad1d23"
+      ],
+      "response_usage": [
+        {
+          "input_tokens": 80744,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1330,
+          "reasoning_output_tokens": 42
+        }
+      ],
+      "usage_known": true,
+      "technical_errors": [],
+      "tool_calls": [],
+      "answer_present": true
+    },
+    {
+      "identifier": "packet-D",
+      "case": "pioneer-6",
+      "condition": "new",
+      "exit_code": 0,
+      "elapsed_seconds": 70.8723308990011,
+      "durable_profile_verified": true,
+      "durable_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "low",
+          "file": "diagnostics/prospective-d5-mechanism-run-20261005/packet-D/home/sessions/2026/10/05/rollout-2026-10-05T20-40-03-01a10cb8-d5f0-7e03-bba8-da0e0420d11c.jsonl"
+        }
+      ],
+      "thread_ids": [
+        "01a10cb8-d5f0-7e03-bba8-da0e0420d11c"
+      ],
+      "response_usage": [
+        {
+          "input_tokens": 80737,
+          "cached_input_tokens": 6912,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 1428,
+          "reasoning_output_tokens": 66
+        }
+      ],
+      "usage_known": true,
+      "technical_errors": [],
+      "tool_calls": [],
+      "answer_present": true
+    },
+    {
+      "identifier": "packet-B",
+      "case": "ascet",
+      "condition": "new",
+      "exit_code": 1,
+      "elapsed_seconds": 7.20131015899824,
+      "durable_profile_verified": true,
+      "durable_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "low",
+          "file": "diagnostics/prospective-d5-mechanism-run-20261005/packet-B/home/sessions/2026/10/05/rollout-2026-10-05T20-41-15-01a10cb9-eac4-7390-8b3d-51f082a6f9f2.jsonl"
+        }
+      ],
+      "thread_ids": [
+        "01a10cb9-eac4-7390-8b3d-51f082a6f9f2"
+      ],
+      "response_usage": [],
+      "usage_known": false,
+      "technical_errors": [
+        {
+          "type": "error",
+          "message": "Selected model is at capacity. Please try a different model."
+        },
+        {
+          "type": "turn.failed",
+          "error": {
+            "message": "Selected model is at capacity. Please try a different model."
+          }
+        }
+      ],
+      "tool_calls": [],
+      "answer_present": false
+    },
+    {
+      "identifier": "packet-A",
+      "case": "ascet",
+      "condition": "old",
+      "exit_code": 0,
+      "elapsed_seconds": 56.338469272013754,
+      "durable_profile_verified": true,
+      "durable_profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "low",
+          "file": "diagnostics/prospective-d5-mechanism-run-20261005/packet-A/home/sessions/2026/10/05/rollout-2026-10-05T20-41-21-01a10cba-06e2-7e80-8ea9-6083ea3783ad.jsonl"
+        }
+      ],
+      "thread_ids": [
+        "01a10cba-06e2-7e80-8ea9-6083ea3783ad"
+      ],
+      "response_usage": [
+        {
+          "input_tokens": 30892,
+          "cached_input_tokens": 6912,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 924,
+          "reasoning_output_tokens": 54
+        }
+      ],
+      "usage_known": true,
+      "technical_errors": [],
+      "tool_calls": [],
+      "answer_present": true
+    }
+  ],
+  "additional_attempts": 0,
+  "known_usage_totals": {
+    "input_tokens": 192373,
+    "cached_input_tokens": 13824,
+    "output_tokens": 3682,
+    "reasoning_output_tokens": 162
+  },
+  "failed_attempt_usage": "No usage record returned; billing unknown, not asserted zero",
+  "reviewer_packet": "/home/ali/Documents/Codex/2026-10-02/task-4/anonymous-d5-mechanism-review-20261005",
+  "raw_outputs_seal_verified": true
+}
