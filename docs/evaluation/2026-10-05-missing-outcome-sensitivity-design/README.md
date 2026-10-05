@@ -86,3 +86,11 @@ Cochrane Handbook chapter8, sections8.5.1–8.5.3 distinguishes true unobserved 
 Source: [Cochrane Handbook, chapter8](https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-08), accessed2026-10-05. Repository official D3 pack and existing scientific cards already convey these principles; the gap is an optional operational calculation, not a reason to replace official guidance.
 
 Methodological choices needing review before implementation: (1) binary RD-only first increment versus also bounded means; (2) requiring an explicit exact target-population unknown-status partition instead of treating legacy missing arithmetic as sufficient; (3) preview-only output with source declarations, leaving historical saved rows unchanged. Recommended: binary only, explicit partition, preview only. Deterministic offline fixtures and Source-only native integration controls would test scope rejection and arithmetic without paid inference or case-label feedback.
+
+## Methodological review decision: documentation only
+
+The independent review found the formulas correct but declined runtime integration: RD-only capability does not fit the demonstrated HR/mean diagnostic failures and could formalize unsupported counts. No runtime fields, calculator or assessment prerequisites will be added. The input requirements above are prerequisites for this conditional calculation, not for a RoB assessment; unavailable calculation does not mean outcomes were unmeasured by the trial.
+
+Worst-case envelopes primarily contextualize question3.1 materiality. Question3.2 requires sensitivity under plausible, mechanism-relevant assumptions; the logical extremes alone do not establish reassuring mitigation. An auxiliary RD can legitimately provide descriptive context for an HR without bounding it. Requiring a separately approved Result is the proposed API policy, not a Cochrane requirement; do not invent a target to make a calculation fit.
+
+The parent review's conditional Baillard calculation from rounded means yielded 4.229–18.268; adding a nearest-one-percentage-point rounding assumption yielded 3.299–19.198. These are conditional illustration intervals, not proof of actual missingness, corrected trial estimates or adjudication. No such calculation was injected into existing answers.
