@@ -2438,9 +2438,6 @@ def _invoke(
     title="Read packaged operational guidance",
     description="Read SKILL.md or a returned references/*.md document without filesystem access. "
     "Returns exact packaged instruction content, its hash and links to further guidance. "
-    "When you still have its complete text, pass its prior content_sha256 as "
-    "known_content_sha256 to check for changes without redelivery. "
-    "Omit the hash for full recovery. "
     "Guidance is operational instruction, never Trial Source Evidence or an assessment answer.",
     annotations=_READ_ONLY,
     output_schema=output_schema("read_guidance"),
@@ -2449,21 +2446,13 @@ def read_guidance(
     document: Annotated[
         str, Field(description="SKILL.md or a returned references/*.md path.")
     ] = "SKILL.md",
-    known_content_sha256: Annotated[
-        Identity | None,
-        Field(
-            description="Prior returned hash when complete document text remains in context. "
-            "A match returns content_unchanged; a mismatch returns full text. "
-            "Omit for full recovery."
-        ),
-    ] = None,
 ) -> ToolResult:
     from rob2_kit.application.guidance import read_guidance as read
 
     def operation() -> dict[str, Any]:
         status = _get_status_head(_workspace())
         return {
-            **read(document, known_content_sha256=known_content_sha256),
+            **read(document),
             **{
                 key: status[key]
                 for key in ("state_revision", "phase", "continuation")

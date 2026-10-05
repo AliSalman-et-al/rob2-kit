@@ -1,0 +1,371 @@
+{
+  "scope": "Visible agent messages and tool request/result metadata only; no private reasoning text. Original traces unchanged.",
+  "cases": [
+    {
+      "case": "attal",
+      "trace_path": "diagnostics/attal-sol-low-full-assessment-20261005/assessment-events.jsonl",
+      "trace_sha256": "af6b99924d0217eb064a60c599f58b134937f34241a468a454f8b689055ebd3e",
+      "reads": [
+        {
+          "completed_event_line": 88,
+          "request": {
+            "tool": "read_guidance",
+            "arguments": {
+              "document": "references/selection.md"
+            }
+          },
+          "result": {
+            "outcome": "success",
+            "head": {
+              "phase": "assessment",
+              "state_revision": 8,
+              "next_action": {
+                "operation": "get_domain_context",
+                "authority": "host",
+                "trial_id": "attal-2016",
+                "domain_id": "domain:selection",
+                "cursor": null,
+                "max_response_bytes": null
+              },
+              "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+            },
+            "data_metadata": {
+              "document": "references/selection.md",
+              "content_sha256": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+              "links": [
+                "references/evidence.md"
+              ]
+            },
+            "content_utf8_bytes": 15076,
+            "content_sha256_verified": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402"
+          },
+          "nearest_visible_messages": [
+            {
+              "line": 66,
+              "text": "Randomization and deviations have been saved as Low risk, with their reporting limits retained. The supplement reports 131 missing weekly records among the 66 analyzed participants, concentrated later and more often in placebo. Its imputation comparisons are reassuring, but I\u2019m checking whether their assumptions address the documented efficacy-related dropouts.\n"
+            },
+            {
+              "line": 91,
+              "text": "The missing-data domain is High risk: late missing pain ratings were associated with efficacy-related dropout, despite reassuring sensitivity estimates. Measurement is Low risk. I\u2019m finishing the reporting-selection assessment and checking the completed judgments before closure.\n"
+            }
+          ],
+          "surrounding_completed_calls": [
+            {
+              "line": 84,
+              "tool": "get_domain_context",
+              "arguments": {
+                "cursor": "dcp2.6d485e74ac5b45cb88180c984ad53581.3"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 86,
+              "tool": "save_domain_judgment",
+              "arguments": {
+                "trial_id": "attal-2016",
+                "domain_id": "domain:measurement",
+                "answers": "omitted; canonical submission preserved in original trace"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 88,
+              "tool": "read_guidance",
+              "arguments": {
+                "document": "references/selection.md"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 90,
+              "tool": "get_domain_context",
+              "arguments": {
+                "trial_id": "attal-2016",
+                "domain_id": "domain:selection"
+              },
+              "outcome": "success"
+            }
+          ]
+        },
+        {
+          "completed_event_line": 94,
+          "request": {
+            "tool": "read_guidance",
+            "arguments": {
+              "document": "references/selection.md"
+            }
+          },
+          "result": {
+            "outcome": "success",
+            "head": {
+              "phase": "assessment",
+              "state_revision": 8,
+              "next_action": {
+                "operation": "get_domain_context",
+                "authority": "host",
+                "trial_id": "attal-2016",
+                "domain_id": "domain:selection",
+                "cursor": "dcp2.e4427ef998c4425e84a3147338337a1c.1",
+                "max_response_bytes": 32768
+              },
+              "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+            },
+            "data_metadata": {
+              "document": "references/selection.md",
+              "content_sha256": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+              "links": [
+                "references/evidence.md"
+              ]
+            },
+            "content_utf8_bytes": 15076,
+            "content_sha256_verified": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402"
+          },
+          "nearest_visible_messages": [
+            {
+              "line": 91,
+              "text": "The missing-data domain is High risk: late missing pain ratings were associated with efficacy-related dropout, despite reassuring sensitivity estimates. Measurement is Low risk. I\u2019m finishing the reporting-selection assessment and checking the completed judgments before closure.\n"
+            },
+            {
+              "line": 116,
+              "text": "All five domains are complete. Overall risk is High, driven by missing outcome data; reporting selection has Some concerns because the detailed plan and its timing remain unknown. The review retains the two placebo exclusions and the registry/report repeat-dosing conflict.\n"
+            }
+          ],
+          "surrounding_completed_calls": [
+            {
+              "line": 90,
+              "tool": "get_domain_context",
+              "arguments": {
+                "trial_id": "attal-2016",
+                "domain_id": "domain:selection"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 94,
+              "tool": "read_guidance",
+              "arguments": {
+                "document": "references/selection.md"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 95,
+              "tool": "get_domain_context",
+              "arguments": {
+                "trial_id": "attal-2016",
+                "domain_id": "domain:selection",
+                "cursor": "dcp2.e4427ef998c4425e84a3147338337a1c.1"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 97,
+              "tool": "get_domain_context",
+              "arguments": {
+                "trial_id": "attal-2016",
+                "domain_id": "domain:selection",
+                "cursor": "dcp2.e4427ef998c4425e84a3147338337a1c.2"
+              },
+              "outcome": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "castoldi-2020",
+      "trace_path": "diagnostics/castoldi-2020-sol-low-full-assessment-20261005/assessment-events.jsonl",
+      "trace_sha256": "f702a4ae0b0d722dbb9c5d2e93f7a3e3bd787afd9ca255c95d40442a758566a1",
+      "reads": [
+        {
+          "completed_event_line": 86,
+          "request": {
+            "tool": "read_guidance",
+            "arguments": {
+              "document": "references/selection.md"
+            }
+          },
+          "result": {
+            "outcome": "success",
+            "head": {
+              "phase": "assessment",
+              "state_revision": 8,
+              "next_action": {
+                "operation": "get_domain_context",
+                "authority": "host",
+                "trial_id": "castoldi-2020",
+                "domain_id": "domain:selection",
+                "cursor": null,
+                "max_response_bytes": null
+              },
+              "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+            },
+            "data_metadata": {
+              "document": "references/selection.md",
+              "content_sha256": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+              "links": [
+                "references/evidence.md"
+              ]
+            },
+            "content_utf8_bytes": 15076,
+            "content_sha256_verified": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402"
+          },
+          "nearest_visible_messages": [
+            {
+              "line": 78,
+              "text": "Four Domains are saved. The native rules assign High risk to missing outcome data: about one third lacked questionnaire follow-up, no analysis establishes protection from missing-data bias, and dependence on knee function remains unresolved. The other saved Domains have Some concerns. I\u2019m completing reporting-selection review, then checking the full assessment before closure.\n"
+            },
+            {
+              "line": 113,
+              "text": "Review caught an overstatement in the count record: 80 questionnaire completers does not prove exactly 41 unobserved scores, because ascertainment for the excluded knee-replacement patient is unknown. I\u2019m correcting that record to preserve the uncertainty; the missing-data answers remain unchanged.\n"
+            }
+          ],
+          "surrounding_completed_calls": [
+            {
+              "line": 82,
+              "tool": "get_domain_context",
+              "arguments": {
+                "cursor": "dcp2.61aa1d08686d4baf9993d5efe389742f.2"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 84,
+              "tool": "get_domain_context",
+              "arguments": {
+                "cursor": "dcp2.61aa1d08686d4baf9993d5efe389742f.3"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 86,
+              "tool": "read_guidance",
+              "arguments": {
+                "document": "references/selection.md"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 88,
+              "tool": "search_sources",
+              "arguments": {
+                "trial_id": "castoldi-2020",
+                "query": "protocol registration prespecified",
+                "mode": "any",
+                "limit": 10
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 90,
+              "tool": "search_sources",
+              "arguments": {
+                "trial_id": "castoldi-2020",
+                "query": "protocol registration prespecified",
+                "mode": "any",
+                "limit": 10
+              },
+              "outcome": "success"
+            }
+          ]
+        },
+        {
+          "completed_event_line": 92,
+          "request": {
+            "tool": "read_guidance",
+            "arguments": {
+              "document": "references/selection.md"
+            }
+          },
+          "result": {
+            "outcome": "success",
+            "head": {
+              "phase": "assessment",
+              "state_revision": 8,
+              "next_action": {
+                "operation": "get_domain_context",
+                "authority": "host",
+                "trial_id": "castoldi-2020",
+                "domain_id": "domain:selection",
+                "cursor": null,
+                "max_response_bytes": null
+              },
+              "authoritative_wording": "Batch incomplete: 0/1 Trials completed; 1 pending; 0 ready for review and closure. Follow head.next_action. Resolve its condition before continuing, and keep pending Trials unresolved until their own evidence is assessed."
+            },
+            "data_metadata": {
+              "document": "references/selection.md",
+              "content_sha256": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+              "links": [
+                "references/evidence.md"
+              ]
+            },
+            "content_utf8_bytes": 15076,
+            "content_sha256_verified": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402"
+          },
+          "nearest_visible_messages": [
+            {
+              "line": 78,
+              "text": "Four Domains are saved. The native rules assign High risk to missing outcome data: about one third lacked questionnaire follow-up, no analysis establishes protection from missing-data bias, and dependence on knee function remains unresolved. The other saved Domains have Some concerns. I\u2019m completing reporting-selection review, then checking the full assessment before closure.\n"
+            },
+            {
+              "line": 113,
+              "text": "Review caught an overstatement in the count record: 80 questionnaire completers does not prove exactly 41 unobserved scores, because ascertainment for the excluded knee-replacement patient is unknown. I\u2019m correcting that record to preserve the uncertainty; the missing-data answers remain unchanged.\n"
+            }
+          ],
+          "surrounding_completed_calls": [
+            {
+              "line": 88,
+              "tool": "search_sources",
+              "arguments": {
+                "trial_id": "castoldi-2020",
+                "query": "protocol registration prespecified",
+                "mode": "any",
+                "limit": 10
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 90,
+              "tool": "search_sources",
+              "arguments": {
+                "trial_id": "castoldi-2020",
+                "query": "protocol registration prespecified",
+                "mode": "any",
+                "limit": 10
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 92,
+              "tool": "read_guidance",
+              "arguments": {
+                "document": "references/selection.md"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 94,
+              "tool": "save_domain_judgment",
+              "arguments": {
+                "trial_id": "castoldi-2020",
+                "domain_id": "domain:selection",
+                "answers": "omitted; canonical submission preserved in original trace"
+              },
+              "outcome": "success"
+            },
+            {
+              "line": 96,
+              "tool": "review_trial",
+              "arguments": {
+                "trial_id": "castoldi-2020",
+                "expected_revision": 9
+              },
+              "outcome": "success"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "conclusion": "Neither pair of requests nor adjacent visible messages identifies a change-check intent. Exact repeated bytes demonstrate repeated delivery, not avoidable instruction recovery. Optional API justification is not established by these traces."
+}

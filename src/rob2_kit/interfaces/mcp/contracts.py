@@ -3076,16 +3076,9 @@ class FinalizeData(PublicModel):
 
 class GuidanceData(PublicModel):
     document: str
-    content: str | None = Field(default=None, exclude_if=lambda value: value is None)
-    content_unchanged: StrictBool = Field(default=False, exclude_if=lambda value: not value)
+    content: str
     content_sha256: Identity
     links: tuple[str, ...]
-
-    @model_validator(mode="after")
-    def complete_or_known(self) -> GuidanceData:
-        if (self.content is None) != self.content_unchanged:
-            raise ValueError("guidance must provide content or confirm the supplied known hash")
-        return self
 
 
 class PublicCompanionReference(CompanionReference):

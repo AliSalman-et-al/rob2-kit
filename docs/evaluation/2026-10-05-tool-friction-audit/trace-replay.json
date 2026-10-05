@@ -119,5 +119,6 @@
       "identical_repeat_replays": []
     }
   ],
-  "total_replayed_reduction_bytes": 30598
+  "total_replayed_reduction_bytes": 30598,
+  "disposition": "Historical counterfactual for removed API; identical rereads did not establish change-check intent. Not current runtime behavior or demonstrated savings."
 }

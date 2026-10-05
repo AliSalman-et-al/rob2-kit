@@ -5,34 +5,36 @@ No judgments were rerun or changed. `trace-replay.json` binds their byte hashes,
 completed call counts, errors and bounded measurements. These streams are assessment
 continuations, not every preceding proposal/supervision event.
 
-## Supported simplification
+## Negative result: conditional guidance API removed
 
 Attal fetched `references/selection.md` at event lines 88 and 94; Castoldi at
-86 and 92. Both second responses delivered the exact same document hash and
-complete body as the first. They occurred amid D5 reasoning/recovery, with no
-instruction change. Re-reading may be legitimate when text is no longer available;
-a caller should not have to receive it again merely to check for changes.
+86 and 92. Both second responses delivered the same verified 15,076-byte document.
+However, neither request nor adjacent visible message establishes an intention to
+check for changed instructions. Attal read D5 context between the calls and described
+finishing reporting-selection assessment; Castoldi searched sources twice between
+the calls. Legitimate instruction recovery or scientific rereading remains possible.
 
-`read_guidance` now accepts optional `known_content_sha256`. When the complete
-text remains in context and its hash matches current packaged bytes, it returns
-`content_unchanged=true`, the document, hash and links, preserving the workflow
-head. An absent or mismatched hash returns the full exact document. Default reads
-and guidance resources retain full content; no session cache, hidden suppression,
-mandatory workflow or changed official guidance is introduced. The public typed
-receipt validates either full content or an unchanged confirmation. The tool and
-skill explain when to omit the hash for recovery.
+Commit `4294802` added an optional prior-hash API on the assumption that these
+rereads could be change checks. That assumption was unsupported. The API, conditional
+receipt schema, added conditional tests and usage instructions have been removed in
+an ordinary follow-up commit. Exact full-read behavior, resources and the required-content schema are restored;
+git history and evidence remain. The existing status-head reader is retained for
+the three metadata fields this operation needs, avoiding discarded derivative status
+projections. Those fields are checked for exact equality against the full reader.
 
-The operation also uses the existing status-head reader for the three continuation
-fields it actually needs, rather than building discarded working/evidence/status
-projections. This is an implementation simplification; no timing saving is claimed.
+`visible-request-evidence.json` records the exact requests, result metadata, intervening
+calls and nearest visible agent messages, bound to full original trace hashes. It
+contains no private reasoning text. Original trace bytes were not changed.
 
-Offline replay validates the conditional data against the current public type and
-preserves each recorded head, document identity and links. Measured compact UTF-8
-JSON of `structured_content`: Attal 16,015→716 bytes; Castoldi 15,980→681 bytes,
-30,598 bytes combined. These are counterfactual optional-call replay measurements,
-not observed runtime delivery/token savings. They assume the caller still has the
-previous complete text; an actual reread must request full recovery. Ashar has no
-repeat guidance document in this assessment stream, so no reduction is assigned.
+The historical `trace-replay.json` remains an audit artifact, not current API behavior.
+Its 30,598-byte counterfactual reduction assumed the complete instructions remained
+available and a change check was wanted. Identical delivered bytes established neither
+assumption, so this measurement was insufficient to justify added API complexity.
+No actual runtime, token-cost or scientific improvement was demonstrated. This is
+a rejected speculative optimization, not a production safety incident. Independent
+review reproduced the byte arithmetic and recovery behavior, but confirmed that a
+retained hash without its text intentionally omitted instructions and that the proposed
+schema did not itself express the content/confirmation exclusivity.
 
 ## Friction distinguished from scientific work
 
@@ -65,13 +67,15 @@ repeat guidance document in this assessment stream, so no reduction is assigned.
 
 ## Validation and limits
 
-Six guidance tests pass, including native full/conditional/full recovery equivalence,
-wrong-hash recovery, genuinely changed instruction delivery, resource equality,
-transitive exact packaged guidance and no canonical state mutation. Ruff lint/format
-and focused `ty` pass. The replay validates the two historical conditional payloads;
-original event files remain untouched. Scientific pack content, question dependencies,
-Evidence/source identities and canonical scientific records are unchanged.
+The restored guidance tests check transitive exact packaged content, full resource
+recovery and no canonical state mutation. Focused schema inspection verifies the native
+input again accepts only `document`, the receipt requires full `content`, and historical
+full responses still validate. Five focused guidance/tool-schema checks passed (17.93 seconds); all 21 historical
+full guidance receipts validate under the restored schema. Application guidance,
+public contracts and caller skill instructions match the pre-API bytes exactly.
+Ruff lint/format and focused type checks pass.
+No scientific pack, question dependencies, Evidence/source identities, canonical
+scientific records or acquisition improvements were changed.
 
-This is a bounded ergonomics improvement. No paid case, accuracy claim, token-cost
-claim, full benchmark or merge. Whether an agent uses the conditional option
-appropriately remains untested in paid workflows.
+No paid case, answer change, full benchmark or merge. This bounded audit produced a
+negative result rather than a supported new tool feature.

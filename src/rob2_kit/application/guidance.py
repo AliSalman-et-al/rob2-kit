@@ -8,9 +8,7 @@ from typing import Any
 _ROOT = Path(__file__).parents[1] / "skills" / "rob2-assess"
 
 
-def read_guidance(
-    document: str = "SKILL.md", *, known_content_sha256: str | None = None
-) -> dict[str, Any]:
+def read_guidance(document: str = "SKILL.md") -> dict[str, Any]:
     if not re.fullmatch(r"(?:SKILL\.md|references/[a-z][a-z0-9-]*\.md)", document):
         raise ValueError("Choose SKILL.md or a returned references/*.md guidance document")
     path = _ROOT / document
@@ -27,12 +25,10 @@ def read_guidance(
         if not linked.is_relative_to(_ROOT.resolve()):
             raise ValueError("Guidance link leaves the packaged skill")
         links.add(linked.relative_to(_ROOT.resolve()).as_posix())
-    content_sha256 = "sha256:" + hashlib.sha256(body).hexdigest()
-    unchanged = known_content_sha256 == content_sha256
     return {
         "outcome": "success",
         "document": document,
-        **({"content_unchanged": True} if unchanged else {"content": content}),
-        "content_sha256": content_sha256,
+        "content": content,
+        "content_sha256": "sha256:" + hashlib.sha256(body).hexdigest(),
         "links": sorted(links),
     }
