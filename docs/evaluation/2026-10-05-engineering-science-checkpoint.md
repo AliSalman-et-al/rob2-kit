@@ -1,5 +1,6 @@
 # Engineering and science checkpoint, 5 October 2026
 
+Production evidence through `4491676d06d05352acca611aa15120ac9ee055d2`.
 Branch: `improve/scientific-premise-20261002`; no merge. Actual case corpus is
 `/home/ali/Documents/Code/rob2-kit-benchmark`, revision
 `d04473df4a07a3117f3171df2d8471ec0defd522`. Full benchmark remains off.
@@ -57,23 +58,59 @@ calculation-level warrant omitted in the new run; ASCET's new run failed for cap
 produced no answer. Native review also showed source-to-evidence entailment failures despite
 available locators. No locked labels were changed and no paid reruns were launched here.
 
+## Additional completed evidence
+
+[Official algorithm audit](2026-10-05-official-algorithm-audit/README.md) independently
+expands the 22 August 2019 Cochrane tables/figures and activation rules. All 14,130 valid
+paths match runtime and standalone evaluation; 209,700 negative probes reject as expected.
+Parent review independently reproduced PDF/product hashes, exhaustive results and direct
+table/figure comparisons (scoped GO). This establishes deterministic default-rule fidelity,
+not clinical-answer accuracy. No domain logic or legitimate NI-to-High branch changed.
+
+[Native arithmetic](2026-10-05-native-arithmetic/README.md) adds optional bounded decimal
+expressions with explicit inputs/assumptions, without validating source facts, units or
+clinical judgments. Independent reference/fuzz testing identified and corrected unary
+rounding dependence; focused checks and independent review support the fix. Heemskerk made
+zero calculator calls. Neither that run nor retained Castoldi error demonstrates benefit.
+
+[Heemskerk native assessment](2026-10-05-heemskerk-sol-low-full-assessment/README.md)
+completed Low/Low/High/Low/Low, with all four offline verification paths passing. Incomplete
+follow-up differs from all-randomized ITT inclusion. Home-to-die loss supports possible
+prognostic missingness, not proof of deaths or dependence. Pre-unblinding SAP supports
+qualified D5 inference without an exact timestamp gate. Additional KM/Greenwood analysis
+is not replacement Cox analysis. Days 274/275 alone do not establish departure from nine
+calendar months. Human safety labels differ from assessed mortality: no accuracy comparison.
+
+[Frozen qualification mechanism results](2026-10-05-official-qualification-mechanism-results/README.md)
+show one answer change: general minimisation NI to Probably Yes. Seven others tied, including
+D3 sensitivity and D4 mortality/pain controls. Separate blind source-aware AI scoring
+supported 7/8 old and 8/8 new answers under frozen ranges. Two single-session Sol/low calls
+and correlated AI review support a bounded mechanism observation, not causal, clinical,
+benchmark or model superiority. No retry. D3/D4 source fidelity is supported separately;
+incremental behavioral benefit was not demonstrated.
+
+[Tool friction audit](2026-10-05-tool-friction-audit/README.md) rejected the speculative
+conditional guidance-hash API; ordinary follow-up commit removed it. Identical repeated
+bytes did not establish change-check intent; rereading/recovery were legitimate. Hypothetical
+byte savings were not realized gains. Simple one-line status metadata remains.
+
 ## Integration closure and next evaluation decision
 
-Latest completed CI inspected once: `37351131282`, revision `03b537b`. All nine matrix jobs
-for each of tests, lint, types and packaging passed. Only formatting failed. The one-line
-D1.1 anchor was wrapped with AST equality and unchanged literals; all 194 CI format targets
-pass locally. Eight focused qualification/descriptor/hash tests pass. This completed run
-predates the acquisition patch and does not certify latest-head CI success.
+Earlier concrete CI contract/order and fixture typing failures were fixed separately:
+12 focused tests, release verification, types, lint and formatting passed locally. Latest
+completed CI inspected once, `37370427577` at `805fd6f`, failed when Windows Python 3.11
+host lost communication during pytest; failed-job log was unavailable. Root cause and
+assertion outcomes are unknown. Push snapshot `37383580314` at `dd69772` was in progress;
+`4491676` is not certified CI-passing. No unsupported code fix or CI wait/retry was made.
 
-The largest evaluation bottleneck is independently established exact human-result matching:
-October 1 alignment audit had 80 unknown and 26 mismatched cases, zero fully aligned, despite
-98/106 accepted runs. Castoldi and Ashar therefore provide audit evidence, not an accuracy
-denominator or evidence of improvement over All-Low. A small properly matched pilot should
-resolve population, contrast, instrument/construct, window, estimand and analysis population
-before comparison, preferably with independent human review.
+October 1 strict automated audit found 80 unknown, 26 mismatched, zero fully aligned,
+despite 98/106 accepted runs. Its metadata requirements do not prove source-supported
+reconstruction impossible or all human labels unusable. DAPA-HF is a plausible reconstruction;
+Albert needs non-Low linkage review; Heemskerk safety/mortality and Attal responder/mean pain
+are genuine current-target mismatches. Native cases establish no exact-match accuracy gain.
 
-The highest-value untested scientific hypothesis is whether explicit correspondence at the
-calculation level improves D5 reasoning when both plan and report are already delivered.
-Current evidence does not justify a new certainty gate, model-superiority claim or full
-benchmark launch. Runtime model choice, source improvements and guidance changes must be
-separated in any future causal comparison.
+Next: bounded offline linkage review, then discuss at most two frozen assessments including
+a defensibly linked non-Low case. Keep confirmed, reconstructed, pending and mismatched scopes
+separate; alternate results belong in separately versioned diagnostics. Preserve original
+labels and uncertainty. See [small matched-evaluation proposal](2026-10-05-small-matched-evaluation/README.md).
+No new paid cases or full benchmark were launched for this checkpoint.
