@@ -1,0 +1,130 @@
+{
+  "questions": [
+    {
+      "id": "sq:selection:prespecified-analysis",
+      "wording": "Were the data that produced this result analysed in accordance with a pre-specified analysis plan that was finalized before unblinded outcome data were available for analysis?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "source_locator": "Full guidance p. 63, Box 11, signalling question 5.1",
+      "decision_rule": "Compare the approved Result with the applicable plan for the exact intervention comparison, cohort, endpoint, time window, population, analysis, and effect measure. Distinguish protocol or ethics approval, plan finalization, amendment effective dates, registry posting or update, data cutoff, database lock, and investigators' access to unblinded outcome data; only compare chronology when the relevant events and precision are established. Changes made before unblinded data were available, or clearly unrelated to results such as a broken machine, do not raise concerns.",
+      "no_information_rule": "Use a definitive answer when firm evidence establishes timing and correspondence. Use a probable answer when source facts and trial circumstances support only an inference. Use no_information when neither is supported. A plan mention or matching endpoint alone does not establish timing.",
+      "answer_anchors": [
+        {
+          "answer": "yes",
+          "text": "The result follows a sufficiently detailed plan finalized before unblinded outcome data were available."
+        },
+        {
+          "answer": "no",
+          "text": "The result did not follow such a pre-specified plan."
+        },
+        {
+          "answer": "no_information",
+          "text": "Analysis intentions or their timing are not sufficiently reported."
+        }
+      ],
+      "official_guidance": "To avoid the possibility of selection of the reported result, finalization of the analysis intentions must precede availability of unblinded outcome data to the trial investigators. Changes to analysis plans that were made before unblinded outcome data were available, or that were clearly unrelated to the results, do not raise concerns about bias in selection of the reported result."
+    },
+    {
+      "id": "sq:selection:multiple-measurements",
+      "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (e.g. scales, definitions, time points) within the outcome domain?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "source_locator": "Full guidance pp. 63-64, Box 11, signalling question 5.2",
+      "decision_rule": "Answer yes or probably yes when clear evidence shows multiple eligible measures but only one or a subset is fully reported without justification and selection likely depended on results. Answer no or probably no when all eligible intended measures are reported, only one possible measurement exists, or an unrelated inconsistency is explained.",
+      "no_information_rule": "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible measurement was possible, and the inspected reports do not support a reasonable judgment about selection. A missing protocol does not override source-supported evidence of results-driven choice.",
+      "answer_anchors": [
+        {
+          "answer": "yes",
+          "text": "Multiple eligible measurements existed and the reported subset was likely selected on the results."
+        },
+        {
+          "answer": "no",
+          "text": "All eligible measurements correspond to intentions, or only one eligible measurement was possible."
+        },
+        {
+          "answer": "no_information",
+          "text": "Measurement intentions are insufficiently reported despite multiple possible measurements."
+        }
+      ],
+      "official_guidance": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a domain was measured in multiple eligible ways, but data for only one or a subset of measures is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome domain could have been measured."
+    },
+    {
+      "id": "sq:selection:multiple-analyses",
+      "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible analyses of the data?",
+      "options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "source_locator": "Full guidance pp. 64-65, Box 11, signalling question 5.3",
+      "decision_rule": "Multiplicity alone does not establish result-based selection. Answer yes or probably yes only when the justification identifies the eligible alternatives, the reporting or selection evidence, and why selection likely depended on the results. Answer no or probably no when all eligible intended analyses are reported, only one possible analysis exists, or an unrelated inconsistency is explained.",
+      "no_information_rule": "Answer no_information when intentions are unavailable or insufficiently detailed, more than one eligible analysis was possible, and the inspected reports do not support a reasonable judgment about selection. A missing SAP does not override source-supported evidence of results-driven choice.",
+      "answer_anchors": [
+        {
+          "answer": "yes",
+          "text": "Multiple eligible analyses existed and the reported subset was likely selected on the results."
+        },
+        {
+          "answer": "no",
+          "text": "All eligible analyses correspond to intentions, or only one eligible analysis was possible."
+        },
+        {
+          "answer": "no_information",
+          "text": "Analysis intentions are insufficiently reported despite multiple possible analyses."
+        }
+      ],
+      "official_guidance": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a measurement was analysed in multiple eligible ways, but data for only one or a subset of analyses is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome measurement could have been analysed."
+    }
+  ],
+  "official_guidance": {
+    "pack": {
+      "id": "rob2.parallel.assignment",
+      "version": "2019.1",
+      "content_hash": "sha256:f62648b7c4401cb68abf1c9d34ac28d44a232b9c01a697ddac6b11adc4c8b9d2"
+    },
+    "sections": [
+      {
+        "question_ids": [
+          "sq:selection:prespecified-analysis"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance p. 63, Box 11, signalling question 5.1",
+        "excerpt": "To avoid the possibility of selection of the reported result, finalization of the analysis intentions must precede availability of unblinded outcome data to the trial investigators. Changes to analysis plans that were made before unblinded outcome data were available, or that were clearly unrelated to the results, do not raise concerns about bias in selection of the reported result."
+      },
+      {
+        "question_ids": [
+          "sq:selection:multiple-measurements"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance pp. 63-64, Box 11, signalling question 5.2",
+        "excerpt": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a domain was measured in multiple eligible ways, but data for only one or a subset of measures is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome domain could have been measured."
+      },
+      {
+        "question_ids": [
+          "sq:selection:multiple-analyses"
+        ],
+        "source_version": "22 August 2019",
+        "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+        "source_locator": "Full guidance pp. 64-65, Box 11, signalling question 5.3",
+        "excerpt": "Answer ‘Yes’ or ‘Probably yes’ if there is clear evidence that a measurement was analysed in multiple eligible ways, but data for only one or a subset of analyses is fully reported without justification, and the fully reported result is likely to have been selected on the basis of the results. Answer ‘No information’ if analysis intentions are not available or are not reported in sufficient detail and there is more than one way in which the outcome measurement could have been analysed."
+      }
+    ],
+    "complete": true,
+    "next_cursor": null
+  },
+  "note": "Exact guidance/rules delivered in this session; no new interpretation or private adjudication."
+}

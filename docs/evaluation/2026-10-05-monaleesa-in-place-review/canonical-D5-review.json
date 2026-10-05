@@ -1,0 +1,436 @@
+{
+  "identity": "sha256:95f9cc32e3e7e62139278d77a5f2acfc68196be7aba79ab2ed0ae2913e6db7de",
+  "trial_id": "monaleesa-3",
+  "domain_id": "domain:selection",
+  "result_identity": "sha256:bcdef0e0a10b1a12e2350cabfb6814fb1845018f5bc2c9ee84c29dd8db85877f",
+  "judgment": "some_concerns",
+  "decision": {
+    "adjudication": null,
+    "adopted": "some_concerns",
+    "authority": "algorithm",
+    "contract": "rob2-kit.domain.reasoned-adjudication.v1",
+    "proposed": "some_concerns",
+    "trace_authority": "proposed_algorithm"
+  },
+  "driver_questions": [
+    "sq:selection:multiple-analyses"
+  ],
+  "trace": [
+    "selection.some_concerns"
+  ],
+  "active_questions": [
+    "sq:selection:prespecified-analysis",
+    "sq:selection:multiple-measurements",
+    "sq:selection:multiple-analyses"
+  ],
+  "inactive_questions": [],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:9a38f038c2570a41a2f93674e8bd5ea637e43e4a6290509ed3ffeaf94f6be6fe",
+          "sha256:2c39500052e19cc48fe7f1d5598955fb8aed486999fd6ab051ab80719de2a23e",
+          "sha256:0d9dfae1ad4dce6d224c5e4d15cc07744c13f24478070623e47a1b7df1e5e2c1",
+          "sha256:566f7bd9acd6399a0946a29b654d88733e30722018b112c074c74c7b80324950",
+          "sha256:05a1b7b16c928857bf6b90781f4ece697a97b2971cad57718747724bae21863c",
+          "sha256:3f0753c1238ebdceb2071c5f1ce583a4f9b42d1b0693c149f2bcf5f66fdbd057",
+          "sha256:2d3903c48adfc5978fd792794b20d2746d8b9793d8fed24eeb8e9aa48a59192b",
+          "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48",
+          "sha256:af0ed588bba87125aa66f89442cdd203c745b15f325753ba7946ab40d85baceb",
+          "sha256:4c482f99669e69ac1e20057f6a6745c6888cd87788685979a59d7297e4e0f5e1",
+          "sha256:506e0ae05e79fa3b2a9f9de2caf98f1b5789436fd56ec5606f621735fbff518b"
+        ],
+        "question_id": "sq:selection:prespecified-analysis",
+        "search_receipts": [],
+        "status": "indirect",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:b92cd546955079857b41d7c3ffad445bf2a4ca6058dcf11fe337bf8154e39028",
+          "sha256:0b6a9d7a79e4ad92aaf84a640412da67d31a13bcc6ff7517c725464168092ed7",
+          "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48"
+        ],
+        "question_id": "sq:selection:multiple-measurements",
+        "search_receipts": [],
+        "status": "indirect",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:6607ef002a3ed41944411a7d14eb78eb3ef4cb3f3aa2b271bfcdb46215cd8053",
+          "sha256:47321676f26cbf3660b8823d2e7ce6cdc3b8a53c213f45e755f8b3f986425c5d",
+          "sha256:7b41ce6fa0cabe89aa8f7dd4a6f593c3d17a5ab202415e54afc37639751bde61",
+          "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48"
+        ],
+        "question_id": "sq:selection:multiple-analyses",
+        "search_receipts": [],
+        "status": "unresolved",
+        "unresolved_premises": [
+          "The report's completeness and the result based reason, if any, for reporting only selected PFS analyses remain unresolved."
+        ]
+      }
+    ],
+    "identity": "sha256:d2f662ee80474db8c1e9f851c4f58e319761ef825a49080e9cf5bbbe2a8c792c"
+  },
+  "projection_note": "Exact canonical scientific fields; only bases.source quote bodies are relocated to citation metadata/window excerpts. No wording/answer/unknown/counterevidence edit or adjudication.",
+  "answers": [
+    {
+      "answer": "probably_yes",
+      "bases": [
+        {
+          "evidence": "sha256:9a38f038c2570a41a2f93674e8bd5ea637e43e4a6290509ed3ffeaf94f6be6fe",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:9a38f038c2570a41a2f93674e8bd5ea637e43e4a6290509ed3ffeaf94f6be6fe",
+            "source_id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+            "source_handle": "sh_63ff48d02f7cd186",
+            "source_bytes_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+            "source_projection_identity": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+            "page": 31,
+            "start_line": 8,
+            "end_line": 17,
+            "start_character": 79,
+            "end_character": 217,
+            "canonical_quote_sha256": "103c3151c0fa76b2d1de2cb2f221155d7b9b0428959a8ed5aaa804552b85be82"
+          }
+        },
+        {
+          "evidence": "sha256:2c39500052e19cc48fe7f1d5598955fb8aed486999fd6ab051ab80719de2a23e",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:2c39500052e19cc48fe7f1d5598955fb8aed486999fd6ab051ab80719de2a23e",
+            "source_id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+            "source_handle": "sh_63ff48d02f7cd186",
+            "source_bytes_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+            "source_projection_identity": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+            "page": 35,
+            "start_line": 47,
+            "end_line": 70,
+            "start_character": 1298,
+            "end_character": 1922,
+            "canonical_quote_sha256": "172d8d411a44bc980fdd804c7f6a23e963782c452cb9a6c3719e54d9149a3156"
+          }
+        },
+        {
+          "evidence": "sha256:0d9dfae1ad4dce6d224c5e4d15cc07744c13f24478070623e47a1b7df1e5e2c1",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:0d9dfae1ad4dce6d224c5e4d15cc07744c13f24478070623e47a1b7df1e5e2c1",
+            "source_id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+            "source_handle": "sh_63ff48d02f7cd186",
+            "source_bytes_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+            "source_projection_identity": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+            "page": 65,
+            "start_line": 12,
+            "end_line": 25,
+            "start_character": 390,
+            "end_character": 1520,
+            "canonical_quote_sha256": "5980e1ec0ed086fb4118e77f03631c9aa1d4552d96f32d96bd08fa87db4afa9c"
+          }
+        },
+        {
+          "evidence": "sha256:566f7bd9acd6399a0946a29b654d88733e30722018b112c074c74c7b80324950",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:566f7bd9acd6399a0946a29b654d88733e30722018b112c074c74c7b80324950",
+            "source_id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+            "source_handle": "sh_63ff48d02f7cd186",
+            "source_bytes_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+            "source_projection_identity": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+            "page": 66,
+            "start_line": 8,
+            "end_line": 34,
+            "start_character": 80,
+            "end_character": 1793,
+            "canonical_quote_sha256": "9d7764717520e3054dc1440d7aabe4ad20b26f7da026a72cee36830b4db51194"
+          }
+        },
+        {
+          "evidence": "sha256:05a1b7b16c928857bf6b90781f4ece697a97b2971cad57718747724bae21863c",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:05a1b7b16c928857bf6b90781f4ece697a97b2971cad57718747724bae21863c",
+            "source_id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+            "source_handle": "sh_96d557c6e8787ff4",
+            "source_bytes_sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+            "source_projection_identity": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+            "page": 14,
+            "start_line": 8,
+            "end_line": 20,
+            "start_character": 138,
+            "end_character": 1204,
+            "canonical_quote_sha256": "f706971c3724c3c9b94e9c3b92fef5a15f429cd778203d71724ed32c3a4a5eef"
+          }
+        },
+        {
+          "evidence": "sha256:3f0753c1238ebdceb2071c5f1ce583a4f9b42d1b0693c149f2bcf5f66fdbd057",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:3f0753c1238ebdceb2071c5f1ce583a4f9b42d1b0693c149f2bcf5f66fdbd057",
+            "source_id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+            "source_handle": "sh_96d557c6e8787ff4",
+            "source_bytes_sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+            "source_projection_identity": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+            "page": 21,
+            "start_line": 17,
+            "end_line": 38,
+            "start_character": 806,
+            "end_character": 2698,
+            "canonical_quote_sha256": "a1a57932eb8675736dfc593304475f4e31ebd89f27c968ab0cb85fdd50c17e01"
+          }
+        },
+        {
+          "evidence": "sha256:2d3903c48adfc5978fd792794b20d2746d8b9793d8fed24eeb8e9aa48a59192b",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:2d3903c48adfc5978fd792794b20d2746d8b9793d8fed24eeb8e9aa48a59192b",
+            "source_id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+            "source_handle": "sh_4d540ec810479a32",
+            "source_bytes_sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+            "source_projection_identity": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+            "page": 3,
+            "start_line": 44,
+            "end_line": 56,
+            "start_character": 3037,
+            "end_character": 3916,
+            "canonical_quote_sha256": "71fb780fc5c1be952650338260a3114e98a45df4c3ecb0dc79ea3afa941b1750"
+          }
+        },
+        {
+          "evidence": "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48",
+            "source_id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+            "source_handle": "sh_4d540ec810479a32",
+            "source_bytes_sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+            "source_projection_identity": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+            "page": 4,
+            "start_line": 30,
+            "end_line": 41,
+            "start_character": 1810,
+            "end_character": 2484,
+            "canonical_quote_sha256": "d482f9551964b939e94c9053e30ad85fdf5336c84e57375b6759af08652cadd3"
+          }
+        },
+        {
+          "evidence": "sha256:af0ed588bba87125aa66f89442cdd203c745b15f325753ba7946ab40d85baceb",
+          "kind": "context",
+          "source_citation": {
+            "evidence_identity": "sha256:af0ed588bba87125aa66f89442cdd203c745b15f325753ba7946ab40d85baceb",
+            "source_id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+            "source_handle": "sh_63ff48d02f7cd186",
+            "source_bytes_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+            "source_projection_identity": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+            "page": 31,
+            "start_line": 1,
+            "end_line": 73,
+            "start_character": 0,
+            "end_character": 1922,
+            "canonical_quote_sha256": "7faf95d085dd58d54b8ea882c22e259d28adfbf6787d521afd5ac10c25f7ea8b"
+          }
+        },
+        {
+          "evidence": "sha256:4c482f99669e69ac1e20057f6a6745c6888cd87788685979a59d7297e4e0f5e1",
+          "kind": "context",
+          "source_citation": {
+            "evidence_identity": "sha256:4c482f99669e69ac1e20057f6a6745c6888cd87788685979a59d7297e4e0f5e1",
+            "source_id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+            "source_handle": "sh_63ff48d02f7cd186",
+            "source_bytes_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+            "source_projection_identity": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+            "page": 35,
+            "start_line": 1,
+            "end_line": 70,
+            "start_character": 0,
+            "end_character": 1922,
+            "canonical_quote_sha256": "e9166250cc78e37a36afafe802ba776b1b1c3cb9c264be77c5523f0c2b3c431f"
+          }
+        },
+        {
+          "evidence": "sha256:506e0ae05e79fa3b2a9f9de2caf98f1b5789436fd56ec5606f621735fbff518b",
+          "kind": "context",
+          "source_citation": {
+            "evidence_identity": "sha256:506e0ae05e79fa3b2a9f9de2caf98f1b5789436fd56ec5606f621735fbff518b",
+            "source_id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+            "source_handle": "sh_96d557c6e8787ff4",
+            "source_bytes_sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+            "source_projection_identity": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+            "page": 14,
+            "start_line": 1,
+            "end_line": 48,
+            "start_character": 0,
+            "end_character": 2616,
+            "canonical_quote_sha256": "cfab9a414a3ec57acd39c5220cadab3dd6b0999ec2ac3d30da3a989821ac04f0"
+          }
+        }
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 8,
+          "implication": "The current SAP document carries a July 2018 amendment header, after the reported January 2018 primary analysis; the protocol also contains a later 2020 amendment. These current document dates alone cannot prove when every current analysis detail was finalized, although the SAP's version history records earlier 2015 and 2017 versions and the protocol says general investigator unblinding occurred after 2019 analyses."
+        },
+        {
+          "basis_index": 9,
+          "implication": "The current SAP document carries a July 2018 amendment header, after the reported January 2018 primary analysis; the protocol also contains a later 2020 amendment. These current document dates alone cannot prove when every current analysis detail was finalized, although the SAP's version history records earlier 2015 and 2017 versions and the protocol says general investigator unblinding occurred after 2019 analyses."
+        },
+        {
+          "basis_index": 10,
+          "implication": "The current SAP document carries a July 2018 amendment header, after the reported January 2018 primary analysis; the protocol also contains a later 2020 amendment. These current document dates alone cannot prove when every current analysis detail was finalized, although the SAP's version history records earlier 2015 and 2017 versions and the protocol says general investigator unblinding occurred after 2019 analyses."
+        }
+      ],
+      "justification": "The SAP history records a final version dated 27-Aug-2015 and a further version dated 6-Jun-2017; the dated amendments remove interim PFS analyses and update PFS analysis details. The current SAP specifies local-radiology PFS in the FAS, stratified log-rank testing and a stratified Cox hazard ratio, corresponding to the approved local PFS result. The protocol describes the primary analysis in January 2018 and says participants and investigators were unblinded after planned inferential analyses were complete in 2019. This supports, by inference, that the 2017 analysis intentions preceded investigator unblinding. I use probably_yes because the exact access date for investigators involved in the January 2018 analysis is not separately stated, and the SAP copy currently captured also contains a July 2018 amendment after the analysis/publication.",
+      "question_id": "sq:selection:prespecified-analysis",
+      "unknowns": [
+        "The captured sources do not identify the exact date when investigators involved in the January 2018 PFS analysis first had access to unblinded PFS results."
+      ]
+    },
+    {
+      "answer": "no",
+      "bases": [
+        {
+          "evidence": "sha256:b92cd546955079857b41d7c3ffad445bf2a4ca6058dcf11fe337bf8154e39028",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:b92cd546955079857b41d7c3ffad445bf2a4ca6058dcf11fe337bf8154e39028",
+            "source_id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+            "source_handle": "sh_96d557c6e8787ff4",
+            "source_bytes_sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+            "source_projection_identity": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+            "page": 21,
+            "start_line": 29,
+            "end_line": 38,
+            "start_character": 1861,
+            "end_character": 2698,
+            "canonical_quote_sha256": "5cf3d2f9fee366b175d8dcf752e94351227338812d0f547e972efa760eae1ad1"
+          }
+        },
+        {
+          "evidence": "sha256:0b6a9d7a79e4ad92aaf84a640412da67d31a13bcc6ff7517c725464168092ed7",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:0b6a9d7a79e4ad92aaf84a640412da67d31a13bcc6ff7517c725464168092ed7",
+            "source_id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+            "source_handle": "sh_4d540ec810479a32",
+            "source_bytes_sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+            "source_projection_identity": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+            "page": 3,
+            "start_line": 29,
+            "end_line": 35,
+            "start_character": 2004,
+            "end_character": 2470,
+            "canonical_quote_sha256": "f2140afaf7a695aa1e92044de81115b7c78dc0fa065cf55ddb5c7bf672ae3e31"
+          }
+        },
+        {
+          "evidence": "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48",
+            "source_id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+            "source_handle": "sh_4d540ec810479a32",
+            "source_bytes_sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+            "source_projection_identity": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+            "page": 4,
+            "start_line": 30,
+            "end_line": 41,
+            "start_character": 1810,
+            "end_character": 2484,
+            "canonical_quote_sha256": "d482f9551964b939e94c9053e30ad85fdf5336c84e57375b6759af08652cadd3"
+          }
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The protocol specifies local PFS as the primary measurement and audit based BIRC PFS as supportive, using a randomly selected sample. The article reports the local primary PFS result and also reports the BIRC result for the 40% sample. The captured evidence therefore shows the planned primary/supportive measurement structure and reports both results; it gives no indication that one eligible measurement was withheld or chosen because of its result.",
+      "question_id": "sq:selection:multiple-measurements",
+      "unknowns": []
+    },
+    {
+      "answer": "no_information",
+      "bases": [
+        {
+          "evidence": "sha256:6607ef002a3ed41944411a7d14eb78eb3ef4cb3f3aa2b271bfcdb46215cd8053",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:6607ef002a3ed41944411a7d14eb78eb3ef4cb3f3aa2b271bfcdb46215cd8053",
+            "source_id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+            "source_handle": "sh_96d557c6e8787ff4",
+            "source_bytes_sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+            "source_projection_identity": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+            "page": 125,
+            "start_line": 37,
+            "end_line": 48,
+            "start_character": 2155,
+            "end_character": 3144,
+            "canonical_quote_sha256": "e1150c84e1eaab0f4a2913fe86d4ec99e1e4bad6434f1092fb66ba1b6ea2bca0"
+          }
+        },
+        {
+          "evidence": "sha256:47321676f26cbf3660b8823d2e7ce6cdc3b8a53c213f45e755f8b3f986425c5d",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:47321676f26cbf3660b8823d2e7ce6cdc3b8a53c213f45e755f8b3f986425c5d",
+            "source_id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+            "source_handle": "sh_63ff48d02f7cd186",
+            "source_bytes_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+            "source_projection_identity": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+            "page": 68,
+            "start_line": 8,
+            "end_line": 32,
+            "start_character": 80,
+            "end_character": 1912,
+            "canonical_quote_sha256": "e4f1909a1e5a0f2904705d256b0209d5f064559063fcda543114ee630f4f419a"
+          }
+        },
+        {
+          "evidence": "sha256:7b41ce6fa0cabe89aa8f7dd4a6f593c3d17a5ab202415e54afc37639751bde61",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:7b41ce6fa0cabe89aa8f7dd4a6f593c3d17a5ab202415e54afc37639751bde61",
+            "source_id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+            "source_handle": "sh_4d540ec810479a32",
+            "source_bytes_sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+            "source_projection_identity": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+            "page": 3,
+            "start_line": 49,
+            "end_line": 56,
+            "start_character": 3376,
+            "end_character": 3916,
+            "canonical_quote_sha256": "26b32397c7c13e12fe2571bad5726f56825b31b8e945dda29ea064f9ddd90292"
+          }
+        },
+        {
+          "evidence": "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48",
+          "kind": "indirect_support",
+          "source_citation": {
+            "evidence_identity": "sha256:9837fc7fe15a5ea71ef8dab5931e5b0df63f1d39ab9bb5561f832f00cb5cba48",
+            "source_id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+            "source_handle": "sh_4d540ec810479a32",
+            "source_bytes_sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+            "source_projection_identity": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+            "page": 4,
+            "start_line": 30,
+            "end_line": 41,
+            "start_character": 1810,
+            "end_character": 2484,
+            "canonical_quote_sha256": "d482f9551964b939e94c9053e30ad85fdf5336c84e57375b6759af08652cadd3"
+          }
+        },
+        {
+          "kind": "limitation",
+          "stopping_rationale": "The full captured primary article, relevant protocol analysis passages and SAP analysis/history passages were inspected. The article identifies a Data Supplement, but that supplement is not among the captured Trial Sources, and the inspected captured documents do not say whether the sensitivity analyses were performed or why their results are absent from the article. Available source discovery and reading therefore do not support either a results-driven selection judgment or reassurance that all eligible analysis results were reported.",
+          "unresolved_premise": "The report's completeness and the result based reason, if any, for reporting only selected PFS analyses remain unresolved."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The protocol and SAP describe several possible PFS analyses, including the primary FAS analysis and sensitivity analyses using different censoring rules and a per-protocol population. The main article reports the primary local PFS analysis, a BIRC supportive analysis and subgroup results, but the captured report does not give results for the listed sensitivity analyses or explain whether they were performed and fully reported elsewhere. This establishes possible multiplicity, not selection based on results.",
+      "question_id": "sq:selection:multiple-analyses",
+      "unknowns": [
+        "Whether the protocol/SAP sensitivity analyses were all performed and fully reported in the Data Supplement or another report.",
+        "Whether review-level criteria make each listed sensitivity analysis an eligible alternative for this approved result.",
+        "Whether any reporting choice among eligible analyses depended on their results."
+      ]
+    }
+  ]
+}

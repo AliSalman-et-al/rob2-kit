@@ -1,0 +1,933 @@
+{
+  "saved_warrant_context": [
+    {
+      "source": {
+        "id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+        "label": "JCO.2018.78.9909.pdf",
+        "logical_path": "JCO.2018.78.9909.pdf",
+        "role": "main_article",
+        "origin": "local_dossier",
+        "sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+        "projection_hash": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+        "page_count": 10
+      },
+      "page": 3,
+      "start_line": 29,
+      "end_line": 35,
+      "text": "Tumor response was assessed locally per RECIST (version 1.1) at\nscreening, every 8 weeks after random assignment for 18 months, and\nevery 12 weeks thereafter until disease progression, death, withdrawal of\nconsent, or loss to follow-up; for patients who discontinued for any other\nreason, assessments continued per protocol. Imaging data from approx-\nimately 40% of randomly selected patients were reviewed centrally by\na blinded independent review committee (BIRC).",
+      "text_sha256": "f2140afaf7a695aa1e92044de81115b7c78dc0fa065cf55ddb5c7bf672ae3e31",
+      "complete_page_projection_sha256": "dda44bee4c726f9f726bbb6378b3f5482af070cbf51bf368359b020304b47dc4",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_8",
+            "source_id": "sh_4d540ec810479a32",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 288,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_b1feb85e556db1c6",
+            "numbered_text_sha256": "6180c17d854046748acd383d4e81914cf4bf075c93f268722530178642562065"
+          }
+        ],
+        "context_overlaps": [
+          {
+            "call_id": "item_11",
+            "evidence": {
+              "identity": "sha256:b1feb85e556db1c6dfe3815f79708bce8ad8df1512d043e50f27a74bc7d49bce",
+              "handle": "eh_b1feb85e556db1c6",
+              "source_id": "sh_4d540ec810479a32",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 288,
+              "quote_sha256": null,
+              "quote_present": false,
+              "text_status": "omitted",
+              "quote_utf8_bytes": 0
+            }
+          },
+          {
+            "call_id": "item_33",
+            "evidence": {
+              "identity": "sha256:b1feb85e556db1c6dfe3815f79708bce8ad8df1512d043e50f27a74bc7d49bce",
+              "handle": "eh_b1feb85e556db1c6",
+              "source_id": "sh_4d540ec810479a32",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 288,
+              "quote_sha256": null,
+              "quote_present": false,
+              "text_status": "omitted",
+              "quote_utf8_bytes": 0
+            }
+          }
+        ],
+        "search_overlaps": []
+      }
+    },
+    {
+      "source": {
+        "id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+        "label": "JCO.2018.78.9909.pdf",
+        "logical_path": "JCO.2018.78.9909.pdf",
+        "role": "main_article",
+        "origin": "local_dossier",
+        "sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+        "projection_hash": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+        "page_count": 10
+      },
+      "page": 3,
+      "start_line": 44,
+      "end_line": 56,
+      "text": "Primary and Secondary End Points\nThe primary end point was locally assessed PFS. To support the primary\nend point, a BIRC performed a central assessment of PFS in a randomly selected\nsubgroup of patients. Secondary end points included overall survival (OS),\noverall response rate (ORR), clinical benefit rate, and safety and tolerability.\nStatistical Analysis\nThe primary analysis compared PFS between the treatment arms using\na stratified log-rank test. The treatment effect was estimated using a Cox\nproportional hazards model overall and in relevant subgroups. The central PFS\nassessment used in support of the primaryefficacyend point was analyzed using\na Cox proportional hazards model. The primary PFS analysis was to be\nperformed after observing approximately 364 local PFS events to detect a hazard\nratio of 0.67 with 95% power and a one-sided 2.5% level of significance.",
+      "text_sha256": "71fb780fc5c1be952650338260a3114e98a45df4c3ecb0dc79ea3afa941b1750",
+      "complete_page_projection_sha256": "dda44bee4c726f9f726bbb6378b3f5482af070cbf51bf368359b020304b47dc4",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_8",
+            "source_id": "sh_4d540ec810479a32",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 288,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_b1feb85e556db1c6",
+            "numbered_text_sha256": "6180c17d854046748acd383d4e81914cf4bf075c93f268722530178642562065"
+          }
+        ],
+        "context_overlaps": [
+          {
+            "call_id": "item_11",
+            "evidence": {
+              "identity": "sha256:b1feb85e556db1c6dfe3815f79708bce8ad8df1512d043e50f27a74bc7d49bce",
+              "handle": "eh_b1feb85e556db1c6",
+              "source_id": "sh_4d540ec810479a32",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 288,
+              "quote_sha256": null,
+              "quote_present": false,
+              "text_status": "omitted",
+              "quote_utf8_bytes": 0
+            }
+          },
+          {
+            "call_id": "item_33",
+            "evidence": {
+              "identity": "sha256:b1feb85e556db1c6dfe3815f79708bce8ad8df1512d043e50f27a74bc7d49bce",
+              "handle": "eh_b1feb85e556db1c6",
+              "source_id": "sh_4d540ec810479a32",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 288,
+              "quote_sha256": null,
+              "quote_present": false,
+              "text_status": "omitted",
+              "quote_utf8_bytes": 0
+            }
+          }
+        ],
+        "search_overlaps": []
+      }
+    },
+    {
+      "source": {
+        "id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+        "label": "JCO.2018.78.9909.pdf",
+        "logical_path": "JCO.2018.78.9909.pdf",
+        "role": "main_article",
+        "origin": "local_dossier",
+        "sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+        "projection_hash": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+        "page_count": 10
+      },
+      "page": 4,
+      "start_line": 30,
+      "end_line": 41,
+      "text": "Primary End Point\nAt data cutoff, 210 PFS events had occurred in the ribociclib\nplus fulvestrant arm versus 151 in the placebo plus fulvestrant arm.\nPFS was significantly improved in the ribociclib plus fulvestrant\narm versus the placebo plus fulvestrant arm, with a median PFS of\n20.5 months (95% CI, 18.5 to 23.5 months) versus 12.8 months\n(95% CI, 10.9 to 16.3 months), respectively, and a hazard ratio of\n0.593 (95% CI, 0.480 to 0.732; P , .001; Fig 2).\nPFS analyses based on the BIRC were supportive of the\nprimary efficacy results. In the 40% of randomly assigned patients\n(n = 290) included in the BIRC review, the PFS hazard ratio was\n0.492 (95% CI, 0.345 to 0.703).",
+      "text_sha256": "d482f9551964b939e94c9053e30ad85fdf5336c84e57375b6759af08652cadd3",
+      "complete_page_projection_sha256": "76e5891c1f11fd33503b3e7d4053d91abdf8810ba8e462c7298414dd8815a433",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_10",
+            "source_id": "sh_4d540ec810479a32",
+            "page": 4,
+            "start_line": 19,
+            "end_line": 143,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_9ae14b77d9ccdc63",
+            "numbered_text_sha256": "79dc29e59671fe6a0c12412cf70dff2daea8fb05b2011610411371f1856b9040"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": []
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 1,
+      "start_line": 1,
+      "end_line": 23,
+      "text": "Clinical Development\nLEE011 (ribociclib)\nCLEE011F2301 (MONALEESA-3) / NCT02422615\nMONALEESA-3: A randomized double-blind, placebo-controlled\nstudy of ribociclib in combination with fulvestrant for the treatment\nof men and postmenopausal women with hormone receptor\npositive, HER2-negative, advanced breast cancer who have\nreceived no or only one line of prior endocrine treatment\nStatistical Analysis Plan (SAP) - Final CSR\nAuthor:\nTrial Statistician\nDocument type:\nSAP Documentation\nDocument status:\nFinal\nRelease date:\n09-Jan-2023\nNumber of pages:\n29\nProperty of Novartis\nConfidential\nMay not be used, divulged, published or otherwise disclosed\nwithout the consent of Novartis",
+      "text_sha256": "76ecbd056e6e999d084196673f5fb118a68c149e2bdc4d19f3c94ae760a4bb23",
+      "complete_page_projection_sha256": "6f7ca4223204c4df13592316776723ac44044e2d7b42c7880b10513923fa18ba",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 23,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_b32a48ffbb19d97f",
+            "numbered_text_sha256": "fb5a5c0643caf0b6c2cf66cea29f03405e77a0e11c5ae8278924bd6c920bd8d8"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": []
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 31,
+      "start_line": 1,
+      "end_line": 17,
+      "text": "Novartis\nConfidential\nPage 2\nSAP amendment 1\n24-Jul-2018 (10:31)\nCLEE011F2301\n\nDocument History - Changes compared to previous version of SAP.\nVersion\nDate\nChanges\n1.0\n8/27/2015\nFinal version\n2.0\n6/06/2017\nAmendment 1",
+      "text_sha256": "8a41e53a1c53192a44688ea9e2f3193356ee35b6730cb0098b6127ce7a31aae0",
+      "complete_page_projection_sha256": "a17098ec0600df42bf3bb84f274b09f58c8ae5455da6bcd04a3db2b6f338e6e6",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 31,
+            "start_line": 1,
+            "end_line": 73,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_af0ed588bba87125",
+            "numbered_text_sha256": "ce2c0a12a7d655c44cdd87768f97eb56283d4cc9c53fc77b2d56c341605f80b0"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": []
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 35,
+      "start_line": 1,
+      "end_line": 7,
+      "text": "Novartis\nConfidential\nPage 6\nSAP amendment 1\n24-Jul-2018 (10:31)\nCLEE011F2301\n",
+      "text_sha256": "00c4fbc2b0de38149c95100346af77abee7a5cc30000a2ccdc375fc0ccca183d",
+      "complete_page_projection_sha256": "6ad6faff85ed1e5045bb6e080cab1a69c16b5cfa8305734a51cbe3a68cdbc563",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 35,
+            "start_line": 1,
+            "end_line": 70,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_4c482f99669e69ac",
+            "numbered_text_sha256": "d47464808a7b6512a6b03d904f5bc55579a4e513ac354aba2b0a396c31752332"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_26",
+            "request_index": 1,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 35,
+              "start_line": 1,
+              "end_line": 22,
+              "passage_ref": "eh_dd63e20971a85d0f",
+              "rank": 8,
+              "candidate_truncated": false,
+              "preview_sha256": "00fcb04c204da9f51a98c2c2b7cf165813ebb4cf71b664b213a84c7d3414f272"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 35,
+      "start_line": 47,
+      "end_line": 70,
+      "text": "2.0\n10/11/2017\nAmendment 2\nSection 2.1.7\n•\nAdd clarification that a windows of 7 days is allowed for RECIST\nbaseline if investigators overall response is within 7 days of\ntreatment start date\nSection 3.2\n•\nClarify the definition of disease free interval\n•\nAdd the subgroup definition by prior endocrine therapy status\nSection 3.6.3\n•\nClarify the definition of planned cumulative dose for fulvestrant\nSection 3.8\n•\nFor EQ-5D-5L PRO, change \"index score\" to \"visual analog\nscale\" to be consistent with the protocol\nSection 3.9\n•\nRemove the definition of total ANC since some of the\npercentages of immature WBC is not available",
+      "text_sha256": "172d8d411a44bc980fdd804c7f6a23e963782c452cb9a6c3719e54d9149a3156",
+      "complete_page_projection_sha256": "6ad6faff85ed1e5045bb6e080cab1a69c16b5cfa8305734a51cbe3a68cdbc563",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 35,
+            "start_line": 1,
+            "end_line": 70,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_4c482f99669e69ac",
+            "numbered_text_sha256": "d47464808a7b6512a6b03d904f5bc55579a4e513ac354aba2b0a396c31752332"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": []
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 65,
+      "start_line": 12,
+      "end_line": 25,
+      "text": "3.8.1.1\nPrimary analysis\nThe primary analysis of PFS will be based on the local radiological assessments (Source 1 in\nTable 3-2). The analysis will be performed on the FAS and will use the default censoring and\nevent date options from [Table 14-7 of study protocol Appendix 2], i.e. event/censoring rules\nwill be based on options A(1), B(1), C1(1), C2(1), D(1), E(1), and F(1) (summarized in Table\n3-3). In particular, PFS will be censored at the last adequate tumor assessment if a patient\ndidn't have an event or the event occurred after two or more consecutive missing tumor\nassessments (see Section 2.5.5). For the primary analysis, in this study, PFS will not be\ncensored if a new antineoplastic therapy is started; instead, an ITT approach will be used for\nthe purposes of PFS derivation , i.e. option F(1) in [Table 14-7 of protocol Appendix 2] will\nbe used. A sensitivity analysis will be performed censoring PFS at the last adequate tumor\nassessment prior to start of new antineoplastic therapy, i.e. using option F(2). Discontinuation\nof study treatment (for any reason) will not be considered as a reason for censoring.",
+      "text_sha256": "5980e1ec0ed086fb4118e77f03631c9aa1d4552d96f32d96bd08fa87db4afa9c",
+      "complete_page_projection_sha256": "29e71b25b9c13a5ae80fa205b45cf95df549f5a366e2fcbb79e4d01a9ea03934",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 65,
+            "start_line": 1,
+            "end_line": 78,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_349b497dce7ee737",
+            "numbered_text_sha256": "e61e8d686ff8b67ce946de187319bc3bddc89bdccd4594c2d7b55c5b56288fa2"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_26",
+            "request_index": 0,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 65,
+              "start_line": 10,
+              "end_line": 16,
+              "passage_ref": "eh_6bc9778991d9fb75",
+              "rank": 1,
+              "candidate_truncated": false,
+              "preview_sha256": "31b1f29ba70628aab8a29b779c178ab984acc9e58c850ed4bc083a6826ade413"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 0,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 65,
+              "start_line": 18,
+              "end_line": 22,
+              "passage_ref": "eh_9fbc65971d7ec923",
+              "rank": 2,
+              "candidate_truncated": false,
+              "preview_sha256": "44ec8e4406578d4c4576efdff5aebd81e15494161fa646562682dfae1da4806b"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 66,
+      "start_line": 8,
+      "end_line": 34,
+      "text": "3.8.1.2\nHypothesis and test statistic\nThe primary efficacy analysis will be the comparison of PFS between the two treatment arms\nusing a stratified (strata based on IRT data) log-rank test at one-sided 2.5% level of\nsignificance.\nAssuming proportional hazards model for PFS, the following statistical hypotheses will be\ntested to address the primary efficacy objective:\nH01: θ1 ≥ 0 vs. Ha1: θ1 < 0\nwhere θ1 is the log-hazard ratio (fulvestrant+ ribociclib arm vs. fulvestrant + placebo arm) of\nPFS.\n3.8.1.3\nKaplan-Meier estimates\nThe survival distribution of PFS will be estimated using the Kaplan-Meier method. The\nresults will be plotted graphically (Kaplan-Meier curves) by treatment arm. The plots will\ndisplay the number of patients at risk at equidistant time points. The median, 25th and 75th\npercentiles for PFS for each treatment arm will be provided with associated 95% confidence\nintervals. The survival probabilities at 2- month intervals, and the associated 95% confidence\nintervals will be summarized by treatment arm. Kaplan-Meier estimates will be obtained\nusing PROC LEFETEST with method=KM option in SAS. The loglog (double log) option\navailable within PROC LIFETEST will be used to compute the confidence intervals.\nHazard Ratio\nThe PFS hazard ratio with two-sided 95% confidence interval will be derived from the\nstratified Cox proportional hazards model. In this analysis the baseline hazard function will be\nallowed to vary across strata. SAS PHREG procedure with ties=EXACT option will be used\nto carry out this analysis in which the model statement will include treatment arm variable as\nthe only covariate and the STRATA statement will include the stratum information as\nobtained via IRT.",
+      "text_sha256": "9d7764717520e3054dc1440d7aabe4ad20b26f7da026a72cee36830b4db51194",
+      "complete_page_projection_sha256": "4887262893d25e24963b6d9fdd371d31dd681276d8d1f51d5562a6ae458eeea4",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 66,
+            "start_line": 1,
+            "end_line": 48,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_5774c8cb23886e4a",
+            "numbered_text_sha256": "7d0df9a05333458c103861d60fd2839a2216adf265319a9c543c1747b0be4c62"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_26",
+            "request_index": 1,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 66,
+              "start_line": 1,
+              "end_line": 15,
+              "passage_ref": "eh_1f0bc4b30b9a1641",
+              "rank": 1,
+              "candidate_truncated": false,
+              "preview_sha256": "2696c4c8feaa020f27ca8f8104dc3417ea47e6ebc28521260a83a1196afe1984"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 1,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 66,
+              "start_line": 27,
+              "end_line": 32,
+              "passage_ref": "eh_08cd47a1d7c3ff19",
+              "rank": 2,
+              "candidate_truncated": false,
+              "preview_sha256": "31d41e8399cfe6b3ae91b277dd8263d919b3a05edb31c2ac651e49da478a1c52"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 1,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 66,
+              "start_line": 30,
+              "end_line": 37,
+              "passage_ref": "eh_7edb27c6832a51d8",
+              "rank": 3,
+              "candidate_truncated": false,
+              "preview_sha256": "b66217a9b311450d86c8e8d41e63841984e34448924dd3044d52a3549a3b90fd"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 68,
+      "start_line": 8,
+      "end_line": 32,
+      "text": "Sensitivity analyses and further supportive analyses\nAs a sensitivity analysis to assess the impact of stratification, the two treatment groups will be\ncompared using an unstratified log-rank test. The hazard ratio together with associated 95%\nconfidence interval obtained using the unstratified Cox regression model will also be\npresented.\nThe primary efficacy analyses; i.e. the stratified log-rank test, Kaplan-Meier estimates,\nestimate of the median PFS along with 95% confidence interval, and hazard ratio obtained\nusing the Cox proportional hazards model, will be repeated (as appropriate) based on the data\nobtained:\n1. Using the investigator/local assessments (Source 1 in Table 3-2) on the PPS and using\nthe same conventions as for the primary analysis if the primary analysis is found to be\nstatistically significant and if the PPS/FAS are different.\n2. Using investigator/local assessment (Source 1 in Table 3-2) on the FAS and taking the\nevent whenever it occurs - even after two or more consecutive missing tumor\nassessments. The following options from [Table 14-7 of Study Protocol Appendix 2 ]\nwill be used: A(1), B(1), C1(1), C2(3), D(1), E(1) and F(1). In the summary table, this\napproach is referred as 'Actual event PFS analysis'\n3. Using investigator/local assessment (Source 1 in Table 3-2) on the FAS and\nbackdating events occurring after missing tumor assessments. The following options\nfrom [Table 14-7 in Section 3.2.9 of Study Protocol Appendix 2 ] will be used: A(1),\nB(1), C1(2), C2(2), D(1), E(1), and F(1). In the summary tables, this approach is\nreferred as 'Backdating PFS analysis'.\n4. Using investigator/local assessment (Source 1 in Table 3-2) on the FAS and censoring\nPFS at the last adequate tumor assessment before the start of any new antineoplastic\ntherapy excluding palliative radio-therapy.",
+      "text_sha256": "e4f1909a1e5a0f2904705d256b0209d5f064559063fcda543114ee630f4f419a",
+      "complete_page_projection_sha256": "57683e5701169cff20ae3c2d3fe72085e22d6d3b0b89ccdfff468958c6e1d3a8",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 68,
+            "start_line": 1,
+            "end_line": 47,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_c44a13c6db25705b",
+            "numbered_text_sha256": "25561c176b062abfab18a2fb146f1808423e662920bf02f16bea941271e76d76"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_26",
+            "request_index": 0,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 68,
+              "start_line": 15,
+              "end_line": 21,
+              "passage_ref": "eh_de1204a122a1e6bf",
+              "rank": 5,
+              "candidate_truncated": false,
+              "preview_sha256": "afbacedcb2b4fbb52da4772f69cd1e8485b27722d98701b3f6cc6ae6476a14f9"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+        "label": "companions/d8eea6ab9fca1e0050fb5a8f8ea874250c37f70d2c4c9da1425f7e1b842e0377/candidate.pdf",
+        "logical_path": "companions/d8eea6ab9fca1e0050fb5a8f8ea874250c37f70d2c4c9da1425f7e1b842e0377/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+        "projection_hash": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+        "page_count": 185
+      },
+      "page": 14,
+      "start_line": 1,
+      "end_line": 31,
+      "text": "Novartis\nConfidential\nPage 14\nAmended Protocol Version 04 (Clean)\nProtocol No. CLEE011F2301\nAmendment 4 (29-Jan-2020)\nAmendment rationale\nStudy CLEE011F2301 was initiated in June 2015 and completed enrollment on June 2016. 727\npatients were randomized.\nThe study met its primary endpoint of progression-free survival (PFS) at the time of the primary\nanalysis in January 2018, demonstrating a statistically significant improvement in PFS in\npatients receiving ribociclib plus fulvestrant compared to patients receiving placebo plus\nfulvestrant with hazard ratio of 0.593 (95% CI: 0.480, 0.732) at one-sided 2.5 level of\nsignificance (p = 4.10×10-7). Results of this trial led to the approval of KISQALI (Ribociclib,\nLEE011) for supplement indication and new indications in HR-positive, HER2-negative\nadvanced or metastatic breast cancer in the United States in July 2018 and the positive opinion\nfrom CHMP in November 2018.\nThe study met its secondary endpoint of overall survival (OS) at the time of the second OS\ninterim analysis in July 2019. As all the planned inferential analyses for this study are now\ncompleted, all study participants will be unblinded for knowledge of their treatment allocation.\n In addition, patients who\nare still receiving study treatment in the placebo arm, will be allowed to cross-over to the\nribociclib arm, based on the Investigator's judgement and an individualized benefit risk decision.\nAs of Jan 8th, 2020, there are still 117 patients ongoing on study treatment.\nThe purpose of this amendment is to:\ni.\nAllow unblinding of all patients and investigators in order to know patient's current\ntreatment allocation.\nii.\nAllow for patients currently receiving placebo the opportunity to transition to\ninvestigational treatment (LEE011) per investigator discretion.",
+      "text_sha256": "415f6bdb29d1a25194a5619ab5d2b86661ee48a6e55a9480d0a4421845269c5a",
+      "complete_page_projection_sha256": "438f23649f0be3c4e764f857601da13b988d305062483a01b9b6d8c186045639",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_96d557c6e8787ff4",
+            "page": 14,
+            "start_line": 1,
+            "end_line": 48,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_506e0ae05e79fa3b",
+            "numbered_text_sha256": "f78eeb052c49ee23ccac9c7b6fdc5e8c265b3fb6d880959f80a245783194d732"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_26",
+            "request_index": 3,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 14,
+              "start_line": 12,
+              "end_line": 17,
+              "passage_ref": "eh_5d34d83c59f6a454",
+              "rank": 3,
+              "candidate_truncated": false,
+              "preview_sha256": "1224bb47ce4bfa1ecdeba4f4b1a35c6f183fb2550fc2ebac0b0ea617ac0bf6b2"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 3,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 14,
+              "start_line": 17,
+              "end_line": 22,
+              "passage_ref": "eh_79cfd03e26c09118",
+              "rank": 4,
+              "candidate_truncated": false,
+              "preview_sha256": "58dc71d83a09f976617bf91c518f91f75babcb3903dc31b10b2a621eab0f93c2"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 3,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 14,
+              "start_line": 23,
+              "end_line": 32,
+              "passage_ref": "eh_61ba0010e6b1bb47",
+              "rank": 5,
+              "candidate_truncated": false,
+              "preview_sha256": "dd0d77e35318bf7b96118da3ca220d031c5f82a3362a0e2f1d00b68ee0d7284f"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+        "label": "companions/d8eea6ab9fca1e0050fb5a8f8ea874250c37f70d2c4c9da1425f7e1b842e0377/candidate.pdf",
+        "logical_path": "companions/d8eea6ab9fca1e0050fb5a8f8ea874250c37f70d2c4c9da1425f7e1b842e0377/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+        "projection_hash": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+        "page_count": 185
+      },
+      "page": 21,
+      "start_line": 1,
+      "end_line": 38,
+      "text": "Novartis\nConfidential\nPage 21\nAmended Protocol Version 04 (Clean)\nProtocol No. CLEE011F2301\nAmendment 2 (28-Jul-2016)\nAmendment rationale\nStudy CLEE011F2301 was initiated in June 2015 and enrollment has been completed on June\n14th. 727 patients have been randomized in the study.\nThe purpose of this amendment is to:\n(i). Eliminate the originally planned futility interim analysis:\nSince the start of Study CLEE011F2301, additional clinical data have been generated with\nLEE011 and other CDK 4/6 inhibitors that provide additional assurance of the activity of this\ncompound and class in patients with breast cancer. In addition, Study CLEE011F2301 will be\nfully enrolled prior to the time of the originally planned futility analysis, negating the need for\nthe originally planned interim futility analysis.\n(ii) Eliminate the originally planned efficacy interim analysis and add the requirement of\nminimum amount of information from 1st line patients in the primary end point final analysis:\nThe primary objective of the study is to compare investigator assessed PFS in the overall\npopulation (both 1st line and 2nd line). If the primary analysis is statistically significant,\ntreatment effect will be evaluated in 1st line and 2nd line patients separately. Based on the\nestimated median PFS and proportion of patients in 1st line and 2nd line respectively, it is\nexpected that the accumulation of events in 1st line will be slower than 2nd line patients . By\nthe projected efficacy interim analysis, there may not be enough events from 1st line patients\nto support the treatment effect in this sub population. Hence the originally planned efficacy\ninterim analysis is eliminated. In addition, to ensure enough information coming from the 1st\nline patients, a requirement of minimum amount of events coming from 1st line patients in the\nfinal analysis is added.\n(iii). Change the approach for Blinded Independent Review Committee (BIRC) assessment of\nPFS from a full read to an audit (sample) based approach:\nFor studies with local PFS as the primary endpoint, central PFS has generally been used as a\nsecondary analysis in support of the treatment effect observed in the primary efficacy analysis.\nAlthough, 100% central review of scans has been performed in many trials, there is a growing\nbody of evidence that an audit based approach for central evaluation is sufficient (Zhang et al,\n2012, FDA ODAC 2012). Therefore, the study is being amended to change the central\nassessment of PFS from a full read to an audit based approach. Consequently, blinded\nindependent review committee (BIRC) based PFS will no longer be a secondary endpoint but\nwill be considered supportive of the primary analysis.",
+      "text_sha256": "b0fa036c706810b03459f57fc54a2e5b90ae648a382a9edaf5b53ec521e68f1d",
+      "complete_page_projection_sha256": "d59b614b46299487305a28417aa9104ccc4eccc6862fbf08613f429f8168dc1d",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_96d557c6e8787ff4",
+            "page": 21,
+            "start_line": 1,
+            "end_line": 16,
+            "truncated": true,
+            "next_start_line": 17,
+            "passage_ref": "eh_dae8a42e7a5c2f1a",
+            "numbered_text_sha256": "b8c682f1610f6a29494186844d8f5ea52f56ae25d98fa1d26ffd6c5e60367a97"
+          },
+          {
+            "call_id": "item_31",
+            "source_id": "sh_96d557c6e8787ff4",
+            "page": 21,
+            "start_line": 17,
+            "end_line": 43,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_0f680affc0016980",
+            "numbered_text_sha256": "59d1332e655c6837bdebd7bb94e909a67ddc4607cb4a6e1ad1469d30bea3e400"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_25",
+            "request_index": 4,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 5,
+              "end_line": 13,
+              "passage_ref": "eh_745a9e4605b2b9ca",
+              "rank": 1,
+              "candidate_truncated": false,
+              "preview_sha256": "28fe30a6fef4ebaeae98bd7cd2a0bea778a0b4516215231575c7107c46363d4e"
+            }
+          },
+          {
+            "call_id": "item_25",
+            "request_index": 4,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 14,
+              "end_line": 18,
+              "passage_ref": "eh_1bf3959dc3dd8c74",
+              "rank": 2,
+              "candidate_truncated": false,
+              "preview_sha256": "b69a1a6c1c2e561df62a6aaa9ae5d04fb7290393a7c9cee7cb04432d84f3dc77"
+            }
+          },
+          {
+            "call_id": "item_25",
+            "request_index": 4,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 18,
+              "end_line": 22,
+              "passage_ref": "eh_f4f5c0c79540bc39",
+              "rank": 3,
+              "candidate_truncated": false,
+              "preview_sha256": "a6fba7f8bfdda60d59cea52448122204cd4520375a5c0e5bb12540e92ecf83a8"
+            }
+          },
+          {
+            "call_id": "item_25",
+            "request_index": 4,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 23,
+              "end_line": 28,
+              "passage_ref": "eh_400af03de90c4359",
+              "rank": 4,
+              "candidate_truncated": false,
+              "preview_sha256": "349928955f8bf499b9e99ea5052b1729ec6c944c75d64b75803114dfe2234d61"
+            }
+          },
+          {
+            "call_id": "item_25",
+            "request_index": 4,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 25,
+              "end_line": 30,
+              "passage_ref": "eh_980eb840c2924d33",
+              "rank": 5,
+              "candidate_truncated": false,
+              "preview_sha256": "629d6f2dba33801de52b470406bc7ea7d11d5085ed65df213e604cad139279aa"
+            }
+          },
+          {
+            "call_id": "item_25",
+            "request_index": 4,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 30,
+              "end_line": 34,
+              "passage_ref": "eh_628cc54bae3de060",
+              "rank": 6,
+              "candidate_truncated": false,
+              "preview_sha256": "93fbc40ec20262cc0b27291c15e248f7c254112cda9a9736e7933e2987d68275"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 2,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 18,
+              "end_line": 22,
+              "passage_ref": "eh_f4f5c0c79540bc39",
+              "rank": 3,
+              "candidate_truncated": false,
+              "preview_sha256": "a6fba7f8bfdda60d59cea52448122204cd4520375a5c0e5bb12540e92ecf83a8"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 2,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 21,
+              "start_line": 35,
+              "end_line": 42,
+              "passage_ref": "eh_09b680644579b23d",
+              "rank": 4,
+              "candidate_truncated": false,
+              "preview_sha256": "c893afeb4cf45dec1c74b505af02be3fb2266d04fb8638fae2786251c3b79ef7"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "id": "source_96d557c6e8787ff43df492b0ac362082f4f40da074fa0588df3bf8675a6404ea",
+        "label": "companions/d8eea6ab9fca1e0050fb5a8f8ea874250c37f70d2c4c9da1425f7e1b842e0377/candidate.pdf",
+        "logical_path": "companions/d8eea6ab9fca1e0050fb5a8f8ea874250c37f70d2c4c9da1425f7e1b842e0377/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+        "projection_hash": "sha256:008c131da1b2e27d07aca7aa437fdaf03ac3a8005dd2dab0de2181032689c89b",
+        "page_count": 185
+      },
+      "page": 125,
+      "start_line": 37,
+      "end_line": 48,
+      "text": "Supportive analyses\nAs a sensitivity analysis, the distribution of PFS will be compared between the treatment groups\nusing an unstratified log-rank test and the hazard ratio along with the associated 95% confidence\ninterval resulting from an unstratified Cox model will be presented.\nThe primary analysis for PFS may be repeated with data based on PPS if the primary analysis\nis statistically significant. Other sensitivity analyses may be performed such as (1) including\nPFS events even if the events are recorded after two or more missed assessments, (2) backdating\nevents occurring after missing tumor assessments.\nSubgroup analyses will be performed on each level of stratification factors if the primary\nanalysis is significant. The analysis will include Kaplan-Meier summaries and estimation of\nhazard ratios from un-stratified Cox regression models. Additional subgroup analyses to assess\nthe homogeneity of treatment effect based on demographic and baseline disease characteristics",
+      "text_sha256": "e1150c84e1eaab0f4a2913fe86d4ec99e1e4bad6434f1092fb66ba1b6ea2bca0",
+      "complete_page_projection_sha256": "e502c65dd6131a5ec26dfce773ed43ccf663d82a5e54bf4ff6f836155d86cb80",
+      "purpose": "Saved-answer source basis and adjacent version/date context",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_31",
+            "source_id": "sh_96d557c6e8787ff4",
+            "page": 125,
+            "start_line": 1,
+            "end_line": 48,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_463e9f12014539a7",
+            "numbered_text_sha256": "cffb4b84d125c26eef41ddddbfb4ac779501fbe1e351f79cf661229154719ed4"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_26",
+            "request_index": 2,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 125,
+              "start_line": 39,
+              "end_line": 44,
+              "passage_ref": "eh_acbd1f5cd18fb3b8",
+              "rank": 1,
+              "candidate_truncated": false,
+              "preview_sha256": "ad7bf7f788142a395fb8d32e6f57e993505120cec6cdfcdaaccbd8d62147cd5e"
+            }
+          },
+          {
+            "call_id": "item_26",
+            "request_index": 2,
+            "hit": {
+              "source_id": "sh_96d557c6e8787ff4",
+              "page": 125,
+              "start_line": 43,
+              "end_line": 47,
+              "passage_ref": "eh_65a83000b7c61fb8",
+              "rank": 2,
+              "candidate_truncated": false,
+              "preview_sha256": "8da19def7777e3e4e63223f38cde96d1b13d5075334f4e0535522e50bd37bb88"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 31,
+      "start_line": 50,
+      "end_line": 73,
+      "text": "treatment is not considered in safety baseline.\nSection 2.1.9: update last contact date definition per new SAP\ntemplate and alignment with ML2 (CLEE011A2301) submission.\nSection 2.2: Remove PFS interim analysis and update OS interim\nanalysis per protocol.\nSection 2.3.3, 2.3.5: Modify per protocol set definition to align with\nML2 submission.\nSection 2.3.4: Clarify the definition of PAS.\nSection 2.4: Replace the prohibited medication table with a\nreference to the protocol and clarify that the most up to date list will\nbe used for CSR purpose. Describe which analyses are affected by\nnew anti-neoplastic therapies.\nSection 2.5.3: Add clarification about BOR analysis per protocol\namendment and team discussion.\nSection 2.5.4: Update change in methodology per updated RECIST\nguidance.\nSection 2.5.5:\n•\nRemove the footnote of randomization as day 0 in Table 2-3\nto avoid confusion.\n•\nRemove new anti-neoplastic therapy as a censoring reason\nsince the primary analysis doesn't censoring patients at new\ncancer therapy.",
+      "text_sha256": "3d073725cf2b21ea905453a58584bb46ab2cf26b14083fa4f046e9191587fce3",
+      "complete_page_projection_sha256": "a17098ec0600df42bf3bb84f274b09f58c8ae5455da6bcd04a3db2b6f338e6e6",
+      "purpose": "Continuation of the saved full-page context basis: recorded analysis changes following the version-history rows",
+      "delivery_status": {
+        "read_windows": [
+          {
+            "call_id": "item_27",
+            "source_id": "sh_63ff48d02f7cd186",
+            "page": 31,
+            "start_line": 1,
+            "end_line": 73,
+            "truncated": false,
+            "next_start_line": null,
+            "passage_ref": "eh_af0ed588bba87125",
+            "numbered_text_sha256": "ce2c0a12a7d655c44cdd87768f97eb56283d4cc9c53fc77b2d56c341605f80b0"
+          }
+        ],
+        "context_overlaps": [],
+        "search_overlaps": [
+          {
+            "call_id": "item_26",
+            "request_index": 0,
+            "hit": {
+              "source_id": "sh_63ff48d02f7cd186",
+              "page": 31,
+              "start_line": 60,
+              "end_line": 73,
+              "passage_ref": "eh_9bd72b9b477eae34",
+              "rank": 4,
+              "candidate_truncated": false,
+              "preview_sha256": "7f822fafd0ce45bf323fae79d99b88058db9b7a007fb129e71e499e6f5826e53"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "separate_reviewer_recovery_not_added_to_warrant": [
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 30,
+      "start_line": 1,
+      "end_line": 23,
+      "text": "Clinical Development\nLEE011 (ribociclib)\nCLEE011F2301 (MONALEESA-3) / NCT02422615\nMONALEESA-3: A randomized double-blind, placebo-controlled\nstudy of ribociclib in combination with fulvestrant for the treatment\nof men and postmenopausal women with hormone receptor\npositive, HER2-negative, advanced breast cancer who have\nreceived no or only one line of prior endocrine treatment\nStatistical Analysis Plan\nAuthor:\n Trial Statistician\nDocument type:\nSAP Documentation\nDocument status:\nFinal Amendment v2.0\nRelease date:\n11-Oct-2017\nNumber of pages:\n77\nProperty of Novartis\nConfidential\nMay not be used, divulged, published or otherwise disclosed\nwithout the consent of Novartis",
+      "text_sha256": "51f23a79e9c95fa92d3f20e9166a0acb34bc88d8cc7eadf6c80de778860fded0",
+      "complete_page_projection_sha256": "d2038b55a04c8e9d35d61e79e9231c3b1abf46f08768823fcbbdfd66f7a3c084",
+      "purpose": "Post-run reviewer recovery relevant to previous MONALEESA audit; not added to saved warrant",
+      "delivery_status": {
+        "read_windows": [],
+        "search_overlaps": [],
+        "context_overlaps": []
+      }
+    },
+    {
+      "source": {
+        "id": "source_63ff48d02f7cd186df2ebfb486b8c7200854189d83e469d83a35c52f23a35355",
+        "label": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "logical_path": "companions/5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756/candidate.pdf",
+        "role": "other",
+        "origin": "cited_public_document",
+        "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+        "projection_hash": "sha256:9cbd9175c6a71b4b999dc9c3bda7f594e0d243ece4fb47e3bd9d114e05d13651",
+        "page_count": 106
+      },
+      "page": 43,
+      "start_line": 1,
+      "end_line": 20,
+      "text": "Novartis\nConfidential\nPage 14\nSAP amendment 1\n24-Jul-2018 (10:31)\nCLEE011F2301\n\n1\nIntroduction\nThis document describes the detailed statistical methodology to be used for the Clinical Study\nReport (CSR) for the primary PFS analysis of study CLEE011F2301, a phase III, randomized,\ndouble-blind, placebo-controlled study of ribociclib or placebo in combination with\nfulvestrant for the treatment of men and postmenopausal women with hormone receptor\npositive, HER2-negative, advanced breast cancer who have received no or only one line of\nprior endocrine treatment.\nThe content of this SAP is based on CLEE011F2301 protocol amendment 2 (July 28, 2016).\nAll decisions regarding final analysis, as defined in the SAP document, have been made prior\nto database lock and unblinding of the study data.\nCSR deliverables (shells for tables, figures, listings) and further programming specifications\nare described in Tables Figures and Listings (TFL) shells and Programming Datasets",
+      "text_sha256": "d823511b326bb83d2ac8cbb064efcf7eb971b9bdbbc468df4cb4015981c2bf87",
+      "complete_page_projection_sha256": "f48c642881fb01b7aa50590084b7c00719244146208f629cb5d173a93c6b6b78",
+      "purpose": "Post-run reviewer recovery relevant to previous MONALEESA audit; not added to saved warrant",
+      "delivery_status": {
+        "read_windows": [],
+        "search_overlaps": [],
+        "context_overlaps": []
+      }
+    }
+  ]
+}
