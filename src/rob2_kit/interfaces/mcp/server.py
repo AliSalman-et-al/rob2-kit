@@ -83,6 +83,9 @@ from rob2_kit.application.evidence import (
     search_sources as _search_sources,
 )
 from rob2_kit.application.evidence import (
+    select_text_evidence as _select_text_evidence,
+)
+from rob2_kit.application.evidence import (
     select_text_evidence_by_lines as _select_text_evidence_by_lines,
 )
 from rob2_kit.application.evidence import select_visual_evidence as _select_visual_evidence
@@ -1236,6 +1239,7 @@ def _read_pages_transport_bytes(value: dict[str, Any], head: dict[str, Any]) -> 
         "authoritative_wording": head.get("authoritative_wording"),
     }
     normalized = _validate_response("read_pages", normalize("read_pages", enriched))
+    _compact_read_pages_response(normalized)
     return len(
         json.dumps(
             {"content": [], "structured_content": normalized},
@@ -1268,6 +1272,19 @@ def _compact_read_window_fields(value: Any, *, preserve_zero_start: bool = False
     elif isinstance(value, list):
         for item in value:
             _compact_read_window_fields(item)
+
+
+def _compact_read_pages_response(value: dict[str, Any]) -> None:
+    """Use the same compact page representation for packing and delivery."""
+    _compact_read_window_fields(value)
+    data = value.get("data")
+    pages = data.get("pages") if isinstance(data, dict) else None
+    if isinstance(pages, list):
+        for page in pages:
+            if isinstance(page, dict) and not page.get("line_fragment"):
+                page.pop("returned_start_char", None)
+                page.pop("next_start_char", None)
+                page.pop("line_fragment", None)
 
 
 def _domain_context_page_data(
@@ -1948,16 +1965,7 @@ def _content(
         )
     _compact_read_window_fields(normalized)
     if tool == "read_pages":
-        data = normalized.get("data")
-        pages = data.get("pages") if isinstance(data, dict) else None
-        if isinstance(pages, list):
-            for page in pages:
-                if isinstance(page, dict) and not page.get("line_fragment"):
-                    # Keep the legacy page shape compact; character coordinates
-                    # are meaningful only for a physical-line fragment.
-                    page.pop("returned_start_char", None)
-                    page.pop("next_start_char", None)
-                    page.pop("line_fragment", None)
+        _compact_read_pages_response(normalized)
     if tool == "get_domain_context" and domain_context_digest is not None:
         data = normalized.get("data")
         head = normalized.get("head")
@@ -3678,6 +3686,10 @@ def read_pages(
     description=(
         "Select one contiguous range after inspecting its source text. Reuse an existing "
         "passage_ref when its boundaries already cover the premise. Use the "
+        "selected_text to copy a unique literal quote from read_pages without line numbers, "
+        "or start_line/end_line for a range. Quote matching stays on the specified physical "
+        "page, uses presentation normalization only, and requires delivered reading coverage. "
+        "Do not combine quote and range inputs. Use the "
         "1-based source page and line numbers exactly as issued; split a page-boundary passage "
         "into one selection per page; never reconstruct text from a preview. "
         "The server stores the exact unnumbered source text and Source version; a query never "
@@ -3700,28 +3712,52 @@ def select_text_evidence(
         PageNumber, Field(description="1-based page containing the passage.", examples=[7])
     ],
     start_line: Annotated[
-        StrictInt,
+        StrictInt | None,
         Field(ge=1, description="First numbered read_pages line to include.", examples=[5]),
-    ],
+    ] = None,
     end_line: Annotated[
-        StrictInt,
+        StrictInt | None,
         Field(
             ge=1,
             description="Last numbered read_pages line to include, inclusive.",
             examples=[8],
         ),
-    ],
+    ] = None,
+    selected_text: Annotated[
+        StrictStr | None,
+        Field(
+            min_length=1,
+            description="Unique contiguous unnumbered literal quote copied from read_pages. "
+            "Omit both line fields. No paraphrase, reordered text or automatic page relocation.",
+        ),
+    ] = None,
 ) -> ToolResult:
-    return _invoke(
-        "select_text_evidence",
-        lambda: _select_text_evidence_by_lines(
+    def select() -> dict[str, Any]:
+        if selected_text is not None:
+            if start_line is not None or end_line is not None:
+                raise ValueError("use selected_text or both start_line/end_line, not both")
+            return _select_text_evidence(
+                _workspace(),
+                trial_id,
+                _resolve_source_handle(_workspace(), trial_id, source_id),
+                page,
+                selected_text,
+                delivered_page_only=True,
+            )
+        if start_line is None or end_line is None:
+            raise ValueError("supply selected_text or both start_line/end_line")
+        return _select_text_evidence_by_lines(
             _workspace(),
             trial_id,
             _resolve_source_handle(_workspace(), trial_id, source_id),
             page,
             start_line,
             end_line,
-        ),
+        )
+
+    return _invoke(
+        "select_text_evidence",
+        select,
     )
 
 

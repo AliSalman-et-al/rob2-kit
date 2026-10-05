@@ -4390,6 +4390,8 @@ def select_text_evidence(
     source_id: str,
     page: int,
     selected_text: str,
+    *,
+    delivered_page_only: bool = False,
 ) -> dict[str, Any]:
     root = _root(workspace)
     _ensure(root)
@@ -4460,7 +4462,7 @@ def select_text_evidence(
     # 1-based source page index.  A unique exact match elsewhere in this same
     # verified projection is still unambiguous evidence: canonicalize to the
     # actual page rather than making the caller rediscover the page number.
-    if not starts:
+    if not starts and not delivered_page_only:
         candidates: list[tuple[int, list[tuple[int, int]], list[int]]] = []
         occurrence_count = 0
         for candidate_page, candidate_text in enumerate(pages, 1):
@@ -4478,10 +4480,34 @@ def select_text_evidence(
     if not starts:
         raise ValueError(invalid_selection)
     if len(starts) != 1:
+        if delivered_page_only:
+            raise ValueError(
+                f"selected text is ambiguous on physical page {page}; copy a longer unique "
+                "contiguous quote with distinguishing context from read_pages"
+            )
         raise ValueError("selected text is ambiguous; select a unique passage")
     start = spans[starts[0]][0]
     end = spans[starts[0] + len(normalized_selection) - 1][1]
     start_line, end_line, _raw_start, _raw_end = _line_bounds(text, start, end)
+    if delivered_page_only:
+        state = _state(root)
+        with _db(root, "derivative.sqlite3") as connection:
+            ranges = connection.execute(
+                "SELECT start_line,end_line FROM page_reads "
+                "WHERE batch_id=? AND trial_id=? AND source_id=? AND page=? "
+                "ORDER BY start_line,end_line",
+                (_reading_batch_basis(state), trial_id, source_id, page),
+            ).fetchall()
+        next_line = start_line
+        for first, last in ranges:
+            if first > next_line:
+                break
+            next_line = max(next_line, last + 1)
+        if next_line <= end_line:
+            raise ValueError(
+                "selected quote was not fully delivered by read_pages; read this Source's "
+                f"physical page {page}, lines {start_line}-{end_line}, then copy the quote"
+            )
     return {
         "outcome": "success",
         "evidence": _evidence(

@@ -117,7 +117,15 @@ across Sources, use independent `windows`. A passage crossing a page boundary ne
 selection on each page.
 
 Use `select_text_evidence` after inspecting the source text when the prepared
-passage needs different boundaries. Select one contiguous inclusive line range containing
+passage needs narrower boundaries. Supply either `selected_text` (a unique
+contiguous unnumbered literal quote copied from `read_pages`) or both
+`start_line` and `end_line`, never both forms. Quote selection uses the known
+Source and physical page, presentation normalization and delivered reading
+coverage; it rejects absent, ambiguous or unread text. It cannot determine
+whether the passage entails your warrant. An unread-quote error names the
+page/line range to read before selecting again.
+
+Select one contiguous passage containing
 the complete premise and its needed header, list, cohort, denominator, unit, or
 footnote. A heading or list-introducing lead-in alone is incomplete. If the text ends
 mid-sentence or mid-list, read the adjacent Source page before treating that

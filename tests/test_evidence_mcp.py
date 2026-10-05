@@ -35,6 +35,126 @@ from rob2_kit.application.source_handles import resolve_source_handle
 from rob2_kit.packs import SCIENTIFIC_PACK
 
 
+def test_native_quote_selection_requires_delivered_text_and_preserves_range_identity(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/quotes.txt").write_text(
+        "Header.\nUnique outcome at 3 years.\nRepeated phrase.\nRepeated phrase.\n"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "quotes.txt"
+    )
+    args = {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    _call(
+        workspace, "search_sources", {"trial_id": "trial", "query": "Unique outcome", "mode": "all"}
+    )
+    rejected = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "Unique outcome at 3 years."},
+    )
+    assert rejected["outcome"] != "success"
+    assert "not fully delivered by read_pages" in json.dumps(rejected)
+    _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [{"source_id": source["id"], "page": 1, "start_line": 2, "end_line": 2}],
+        },
+    )
+    quote = _call(
+        workspace, "select_text_evidence", {**args, "selected_text": "Unique outcome at 3 years."}
+    )["data"]["evidence"]
+    ranged = _call(workspace, "select_text_evidence", {**args, "start_line": 2, "end_line": 2})[
+        "data"
+    ]["evidence"]
+    assert quote == ranged
+    assert quote["quote"] == "Unique outcome at 3 years."
+    assert quote["start_line"] == quote["end_line"] == 2
+    for text, message in (
+        ("Repeated phrase.", "ambiguous"),
+        ("Unique outcome at 4 years.", "not an exact page selection"),
+    ):
+        rejected = _call(workspace, "select_text_evidence", {**args, "selected_text": text})
+        assert rejected["outcome"] != "success"
+        assert message in json.dumps(rejected)
+    rejected = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "Header.", "start_line": 1, "end_line": 1},
+    )
+    assert rejected["outcome"] != "success"
+    assert "not both" in json.dumps(rejected)
+    assert _state(workspace)["revision"] == 1
+
+
+def test_native_quote_selection_rejects_coverage_gaps_and_wrong_physical_page(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    document.new_page().insert_text((48, 48), "First line.\nMiddle line.\nLast line.")
+    document.new_page().insert_text((48, 48), "Unique second page.")
+    (workspace / "input/trial/quotes.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "quotes.pdf"
+    )
+    args = {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [
+                {"source_id": source["id"], "page": 1, "start_line": line, "end_line": line}
+                for line in (1, 3)
+            ],
+        },
+    )
+    rejected = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "First line. Middle line. Last line."},
+    )
+    assert rejected["outcome"] != "success"
+    assert "not fully delivered by read_pages" in json.dumps(rejected)
+    _call(workspace, "read_pages", {"trial_id": "trial", "source_id": source["id"], "pages": [2]})
+    rejected = _call(
+        workspace, "select_text_evidence", {**args, "selected_text": "Unique second page."}
+    )
+    assert rejected["outcome"] != "success"
+    assert "not an exact page selection" in json.dumps(rejected)
+    second = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "page": 2, "selected_text": "Unique second page."},
+    )["data"]["evidence"]
+    assert second["page"] == 2
+    _call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "windows": [{"source_id": source["id"], "page": 1, "start_line": 2, "end_line": 2}],
+        },
+    )
+    joined = _call(
+        workspace,
+        "select_text_evidence",
+        {**args, "selected_text": "First line. Middle line. Last line."},
+    )["data"]["evidence"]
+    assert joined["quote"] == "First line.\nMiddle line.\nLast line."
+
+
 def test_source_navigation_distinguishes_posting_approval_retrieval_and_unblinding_dates(
     tmp_path: Path,
 ) -> None:
@@ -2242,6 +2362,25 @@ def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: 
         },
     )
     assert first["outcome"] == "success"
+    wire_bytes = len(
+        json.dumps(
+            {
+                "content": [],
+                "structured_content": {
+                    key: value for key, value in first.items() if key != "_image_content"
+                },
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode()
+    )
+    assert (
+        mcp_server._read_pages_transport_bytes(
+            {"outcome": "success", **first["data"]}, first["head"]
+        )
+        == wire_bytes
+    )
+    assert wire_bytes <= 24_000
     pages = first["data"]["pages"]
     assert [page["source_id"] for page in pages] == [main["id"], supplement["id"]]
     supplement_page = pages[1]
