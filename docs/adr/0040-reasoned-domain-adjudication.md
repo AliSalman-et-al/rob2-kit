@@ -66,3 +66,17 @@ prior code/pack, or start a fresh assessment workspace. This is a format boundar
 not an assertion that guidance changes invalidate the science of the old judgment.
 Untouched finalized bundles remain verifiable against their exact historical
 pack descriptor. No migration or historical rewrite is performed.
+
+## Structural recovery payload bound
+
+Before writing an adoption, serialize the complete stable Domain context header
+with its candidate canonical decision and checkpoint identity as UTF-8 JSON.
+This includes rationale, assessor, every counterevidence implication and canonical
+Evidence identifier, plus all other unpaged context fields. The existing paged
+source/question/Evidence/comparison sections are excluded. Reserve 16 KiB for
+native typed envelope, cursor/page metadata and transport headroom. Reject when
+the total exceeds the existing 131072-byte maximum; return an explicit repair
+before canonical mutation. This is a conservative storage/recovery bound, not a
+scientific rationale-length rule. No text is truncated. Near-boundary multi-byte
+text is tested through actual native recovery, alongside oversized counterevidence
+rejection and unchanged canonical state. The ordinary long-rationale test remains.

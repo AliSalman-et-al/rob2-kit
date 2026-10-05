@@ -55,3 +55,14 @@ no-mutation boundary: **4 passed in 44.88s**. Earlier public context contract co
 its new boundary fixture initially supplied an invalid revision-basis scalar and
 Evidence object rather than a handle. That fixture was corrected, with all four
 lifecycle tests subsequently passing. Final Ruff, ty and diff checks passed.
+
+A final independent-review boundary identified accepted unbounded text that could
+exceed the indivisible Domain-context header maximum. Adoption save now counts the
+complete stable candidate header in UTF-8, including canonical Evidence IDs,
+attribution and all counterevidence, with a conservative 16KiB metadata reserve.
+It rejects oversized payloads before mutation without truncation. Near-boundary
+multibyte rationale is accepted and exactly recovered through the real native
+context path; oversized multibyte counterevidence returns repair and unchanged
+canonical state. The ordinary long-rationale path remains covered. Final lifecycle
+and public-contract suite: **8 passed in 50.99s**. Ruff, ty and diff checks passed.
+This is a structural recovery bound, not evidence of scientific correctness.

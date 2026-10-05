@@ -1,5 +1,6 @@
 """Bound domain judgment departures; scientific rationale remains host-owned."""
 
+import json
 from typing import Any
 
 from pydantic import ValidationError
@@ -9,6 +10,24 @@ from .evaluator import evaluate_domain
 
 DOMAIN_JUDGMENT_CONTRACT = "rob2-kit.domain.reasoned-adjudication.v1"
 LEGACY_DOMAIN_JUDGMENT_CONTRACT = "rob2-kit.domain.algorithm-only.v1"
+
+
+# The existing stable context header is indivisible. Reserve 16 KiB for the
+# native typed envelope, page/cursor metadata and wrapper headroom; count every
+# other stable field and the entire canonical decision in UTF-8, not characters.
+DOMAIN_CONTEXT_MAX_BYTES = 131_072
+ADJUDICATION_CONTEXT_METADATA_RESERVE = 16_384
+
+
+def adjudication_context_header_bytes(context: dict[str, Any], record: dict[str, Any]) -> int:
+    header = {
+        key: value
+        for key, value in context.items()
+        if key not in {"primary_report", "questions", "evidence", "comparison_cards"}
+    }
+    header.update(decision=record["decision"], current_checkpoint=record["identity"])
+    envelope = {"content": [], "structured_content": header}
+    return len(json.dumps(envelope, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
 
 
 def require_current_adjudication_pack(state: dict[str, Any], pack_identity: str) -> None:

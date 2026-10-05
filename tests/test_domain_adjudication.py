@@ -386,3 +386,61 @@ def test_prior_pack_adjudication_workspace_fails_explicitly_without_history_rewr
         with pytest.raises(ValueError, match="adjudication_pack_migration_unsupported"):
             operation()
         assert _state(workspace) == before
+
+
+def test_adjudication_utf8_header_boundary_recovers_or_rejects_before_mutation(
+    tmp_path: Path,
+) -> None:
+    from rob2_kit.logic.adjudication import (
+        ADJUDICATION_CONTEXT_METADATA_RESERVE,
+        DOMAIN_CONTEXT_MAX_BYTES,
+        adjudication_context_header_bytes,
+    )
+
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
+    saved = _call(workspace, "save_domain_judgment", draft)
+    parent = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    _call(workspace, "get_domain_context", {"domain_id": "domain:randomization"})
+    draft.update(
+        expected_revision=saved["head"]["state_revision"],
+        supersedes=parent["identity"],
+        revision_basis={"kind": "self_correction", "rationale": "Source-bound host adoption"},
+        adjudication=_adjudication(parent, evidence["handle"]),
+    )
+    context = domains.get_domain_context(workspace, domain_id="domain:randomization")
+    probe = copy.deepcopy(parent)
+    canonical = copy.deepcopy(draft["adjudication"])
+    canonical["evidence"] = [evidence["identity"]]
+    canonical["counterevidence"][0]["evidence"] = evidence["identity"]
+    probe["decision"].update(adopted="high", authority="host", adjudication=canonical)
+    available = (
+        DOMAIN_CONTEXT_MAX_BYTES
+        - ADJUDICATION_CONTEXT_METADATA_RESERVE
+        - adjudication_context_header_bytes(context, probe)
+        - 256
+    )
+    assert available > 0
+    # Multi-byte text, attribution, counterevidence and canonical IDs all count.
+    draft["adjudication"]["rationale"] += "é" * (available // 2)
+    too_large = copy.deepcopy(draft)
+    too_large["adjudication"]["counterevidence"][0]["implication"] += "界" * 1000
+    before = _state(workspace)
+    rejected = _call(workspace, "save_domain_judgment", too_large)
+    assert rejected["outcome"] == "repair", rejected
+    assert rejected["repairs"][0]["code"] == "domain_adjudication_context_oversized"
+    assert _state(workspace) == before
+    accepted = _call(workspace, "save_domain_judgment", draft)
+    assert accepted["outcome"] == "success", accepted
+    decision = _state(workspace)["domain_records"]["trial:domain:randomization"]["decision"]
+    recovered = _call(
+        workspace,
+        "get_domain_context",
+        {
+            "domain_id": "domain:randomization",
+            "max_response_bytes": DOMAIN_CONTEXT_MAX_BYTES,
+        },
+    )
+    assert recovered["outcome"] == "success", recovered
+    assert recovered["data"]["decision"] == decision
+    assert decision["adjudication"]["rationale"] == draft["adjudication"]["rationale"]

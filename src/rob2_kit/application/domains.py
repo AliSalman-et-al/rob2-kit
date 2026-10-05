@@ -7,7 +7,10 @@ from typing import Any, Literal
 from pydantic import ValidationError
 
 from ..logic.adjudication import (
+    ADJUDICATION_CONTEXT_METADATA_RESERVE,
+    DOMAIN_CONTEXT_MAX_BYTES,
     DOMAIN_JUDGMENT_CONTRACT,
+    adjudication_context_header_bytes,
     domain_evidence_ids,
     require_current_adjudication_pack,
 )
@@ -3399,6 +3402,27 @@ def save_domain_judgment(
         if _domain_identity(legacy_candidate) == existing_record.get("identity"):
             return _result("success", state, checkpoint=existing_record, retry=True)
     record["identity"] = _domain_identity(record)
+    if adjudication is not None:
+        recovery_context = get_domain_context(root, parsed.trial_id, parsed.domain_id)
+        required_bytes = (
+            adjudication_context_header_bytes(recovery_context, record)
+            + ADJUDICATION_CONTEXT_METADATA_RESERVE
+        )
+        if required_bytes > DOMAIN_CONTEXT_MAX_BYTES:
+            return _result(
+                "repair",
+                state,
+                repairs=[
+                    _repair(
+                        "/adjudication",
+                        "domain_adjudication_context_oversized",
+                        f"Complete UTF-8 stable context header requires {required_bytes} bytes "
+                        f"including reserved transport metadata; limit {DOMAIN_CONTEXT_MAX_BYTES}. "
+                        "No text was truncated or saved. Submit a substantive concise rationale, "
+                        "assessor attribution and counterevidence within this recovery budget.",
+                    )
+                ],
+            )
     prior_observed_at = _canonical_observed_at(root, record["identity"])
     if prior_observed_at is not None:
         record["observed_at"] = prior_observed_at
