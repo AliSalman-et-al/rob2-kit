@@ -1,0 +1,17 @@
+{
+  "heemskerk-2016": {
+    "private_root": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/heemskerk-2016-sol-low-integration-preparation-20261005",
+    "frozen_files": {
+      "frozen-preflight.json": "c35c8945c220d4ec1ef9e9eec819524a51580f407cfab64a2999fd09f9fb370a",
+      "scope-approval.json": "f08bc752ae5fccf41e3967f86fbd71ddbcaac8ed3321c83a842cdef38b69d6ab",
+      "assessment-outputs-freeze-final.json": "7825d53148fa5b66350b3255e6f40ac0ed99d650a339de236755545de2d76796",
+      "assessment-terminal-state.json": "81dad7276ee29929a40508172f857f9d8089a2e0594b226b5ade1e57389bea00",
+      "assessment-usage.json": "eb3a76577a2e6c15013a5f4504a9e51d7eb3524c59f2cb76098ed8b8faac2a76",
+      "delivery-map.json": "b3e26697496f2c5b0d3e7a70ece179491fa7e89f4d8c1cb46f8eb1f0f1f900a3"
+    },
+    "event_logs": {
+      "proposal-events.jsonl": "6a6d51cd86cecc38b379477e3c3a11ffd5107acbb4a5444b7b4de62f75079b67",
+      "assessment-events.jsonl": "da3192729a1d25b58d2cfcfba09430cc8d94489b16ef17cabc4669c3d03aafc7"
+    }
+  }
+}

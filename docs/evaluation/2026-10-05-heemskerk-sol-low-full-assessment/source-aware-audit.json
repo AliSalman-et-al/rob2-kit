@@ -1,0 +1,79 @@
+{
+  "reviewer": "Implementation agent; not independent expert or human adjudication",
+  "review_after_output_seal": true,
+  "judgments_unchanged": true,
+  "accuracy_eligible": false,
+  "reason": "Existing human reference concerns safety rather than this primary mortality HR; case previously exposed, not held out.",
+  "domains": [
+    {
+      "domain": "D1",
+      "judgment": "Low",
+      "finding": "Reported computer-generated variable blocks and sequential identical pharmacist-prepared packs support sequence and concealment. Baseline differences were retained without treating significance or imbalance alone as randomization failure.",
+      "locators": [
+        "main physical3 lines84\u2013104",
+        "main physical4 lines4\u20139",
+        "main physical6 baseline table"
+      ],
+      "limitation": "Pack dispensing and pharmacist separation are reported procedures, not independently audited execution."
+    },
+    {
+      "domain": "D2",
+      "judgment": "Low",
+      "finding": "Assignment effect uses all817 randomized, retaining untreated/nonadherent participants. Nine revelations do not by themselves establish trial-context deviations; resistance-directed changes and adverse-event interruptions are not automatically such deviations.",
+      "locators": [
+        "main physical3 lines61\u201369",
+        "main physical4 lines80\u2013103",
+        "main physical5 lines32\u201350",
+        "protocol physical89"
+      ],
+      "limitation": "Recipients/timing/consequences of nine revelations are unknown. ProbablyYes for personnel awareness is an inference, not direct recipient documentation. Appropriate ITT analysis does not settle D3."
+    },
+    {
+      "domain": "D3",
+      "judgment": "High",
+      "finding": "53 incomplete follow-ups for reasons other than death and last-known-alive censoring distinguish analysis membership from complete mortality ascertainment. Covariate/disability imputation does not establish mortality robustness. One home-to-die uncontactable participant supports possible health-related missingness.",
+      "locators": [
+        "main physical4 lines101\u2013103",
+        "main physical5 lines32\u201336",
+        "SAP physical134 lines21\u201342",
+        "SAP physical136 lines15\u201334"
+      ],
+      "limitations": [
+        "Exact censoring times and later vital status of incomplete follow-ups are unknown; counts are not an HR sensitivity calculation.",
+        "D3.4 phrase establishes dependence for one participant overstates the source: severe prognosis linked to loss supports possible dependence, not known death or proof of outcome dependence.",
+        "High follows submitted PN/N/Y/NI algorithm path. NI does not prove missingness likely depended on actual mortality; empirical bias remains uncertain."
+      ],
+      "material_warrant_issue_retained": true
+    },
+    {
+      "domain": "D4",
+      "judgment": "Low",
+      "finding": "Common monitoring and direct death/date determination support unlikely influence despite possible assessor awareness. Does not require logical impossibility of influence.",
+      "locators": [
+        "main physical4 lines10\u201323",
+        "main physical5 lines32\u201336",
+        "protocol physical91"
+      ],
+      "limitation": "Outside-hospital verification and performed tracing are incompletely described. Planned visits do not establish actual ascertainment; awareness-driven differential contact remains unestablished."
+    },
+    {
+      "domain": "D5",
+      "judgment": "Low",
+      "finding": "Final SAP2.0 April5,2015 explicitly prior to unblinding matches all-randomized assignment, primary treatment-only Cox stratified HIV/MRC and operational follow-up. It explains logrank-to-Cox change and declares alternatives. Supports qualified ProbablyYes and ProbablyNo without demanding audit timestamps or pretending one eligible analysis.",
+      "locators": [
+        "SAP physical131 lines8\u201321",
+        "SAP physical132 lines9\u201312",
+        "SAP physical134 lines21\u201345",
+        "SAP physical135 lines1\u201356",
+        "main physical4 lines62\u201390",
+        "main physical8 lines173\u2013182"
+      ],
+      "limitations": [
+        "Actual investigator/statistician access logs unavailable; independent DSMC access is not equivalent to investigator unblinding.",
+        "Conditional PH fallback execution is not fully audited. Operational window includes days274/275 and differs from strict target; model retained broader relation. No forced exact match."
+      ]
+    }
+  ],
+  "overall": "High because D3High; no cumulative SomeConcerns policy needed",
+  "causal_claim": "Unpaired live example cannot establish arithmetic or guidance improvement caused judgment quality, nor superiority to AllLow."
+}

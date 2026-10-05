@@ -1,0 +1,1082 @@
+{
+  "heemskerk-2016": [
+    {
+      "domain_id": "domain:deviations",
+      "judgment": "low",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis"
+      ],
+      "inactive_questions": [
+        "sq:deviations:affected-outcome",
+        "sq:deviations:balanced",
+        "sq:deviations:substantial-impact"
+      ],
+      "driver_questions": [],
+      "answers": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "answer": "probably_no",
+          "justification": "Matched placebo pills and identical packs masked participants. Nine assignments were revealed, but the report does not say participants learned them; overall participant awareness is probably absent, with limited possible exceptions. Toxicities alone do not establish recognition of assignment.",
+          "unknowns": [
+            "Whether participants themselves learned the nine revealed assignments."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 3,
+              "implication": "Nine assignments were revealed, so universal successful masking cannot be asserted."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:fa94a601a1266e5517cb0d0fc7b86c99f4e9ba34a4f03e1a6a746fceb0765629",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 100,
+                "end_line": 104
+              }
+            },
+            {
+              "evidence": "sha256:9826e7d7790e5bcd0cbfe41bbe555158d5e86f318be6d1d164df1e83a45457f9",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 4,
+                "end_line": 9
+              }
+            },
+            {
+              "evidence": "sha256:51ac8c414d6908f8bdefbdace382c875bdc9a08059677fb9010133c8d9a5e4c0",
+              "kind": "context",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 32,
+                "end_line": 36
+              }
+            },
+            {
+              "evidence": "sha256:c5030daebd6a50787e5d5201858fc4e4c4a8861af1c9bee119c72a2d6a2f2a8c",
+              "kind": "context",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 27,
+                "end_line": 76
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "answer": "probably_yes",
+          "justification": "Attending clinicians were intended to be masked, but six standard and three intensified assignments were revealed. Emergency revelation probably gave some treating personnel knowledge during follow-up. This does not imply widespread unblinding; central packaging pharmacists were a separate role.",
+          "unknowns": [
+            "Who received each revelation and when."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "The methods report enrolling physicians and investigators remained unaware, in tension with the nine assignment revelations."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:51ac8c414d6908f8bdefbdace382c875bdc9a08059677fb9010133c8d9a5e4c0",
+              "kind": "inference",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 32,
+                "end_line": 36
+              }
+            },
+            {
+              "evidence": "sha256:2e3ffc2066bfdf2ab466c8491f063b25c9f50c418af861f3398287d9bf84e375",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 89,
+                "start_line": 1,
+                "end_line": 42
+              }
+            },
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "context",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:context-deviations",
+          "answer": "probably_no",
+          "justification": "Reported changes involved resistance-directed treatment adjustments, ordinary nonadherence and adverse-event interruptions. These are clinically driven changes that could occur outside the trial. Emergency unblinding was permitted by the protocol. No strong reason links a protocol-inconsistent change to knowledge of trial assignment, so such context-caused deviations are probably absent.",
+          "unknowns": [
+            "Individual consequences of the nine assignment revelations are not described."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:0fc0a8d739d67d151440349668edd2da840e10a192765706984442ec6219a0e2",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 106
+              }
+            },
+            {
+              "evidence": "sha256:04f837425db2bc4dce9c93f9ce98fe5a02e76c45bdbcdcfa167bd0dca99334ce",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 26
+              }
+            },
+            {
+              "evidence": "sha256:ad9be69bc5cfca7b35ea48b1be709f8ce609c1caf7960e11de92105e7eee3f41",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 103
+              }
+            },
+            {
+              "evidence": "sha256:2e3ffc2066bfdf2ab466c8491f063b25c9f50c418af861f3398287d9bf84e375",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 89,
+                "start_line": 1,
+                "end_line": 42
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Main report conduct and flow, protocol blinding procedure and appendix contents/treatment interruption section were inspected; they do not establish an allocation-driven protocol-inconsistent change.",
+              "unresolved_premise": "Consequences of individual assignment revelations remain unknown."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "answer": "yes",
+          "justification": "The selected primary analysis includes all 817 randomized adults in assigned groups (409 standard, 408 intensified), retaining never-treated and nonadherent participants. The separate per-protocol exclusions do not restrict this HR. Incomplete survival follow-up is assessed in D3, not treated as an adherence restriction here.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:9088dd708e521d765f8e6857f8eca820983f7d214d675f944795de409fd90eb8",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 80,
+                "end_line": 90
+              }
+            },
+            {
+              "evidence": "sha256:425291bcbaee0d4c295e2c618219552081e6725fee14b1d6116993eaecf41672",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 47,
+                "end_line": 50
+              }
+            },
+            {
+              "evidence": "sha256:9c8c53de43d473d2a1441c9c38dadf05062bbac3c0847b11763bb7ce54b89e97",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 9,
+                "start_line": 22,
+                "end_line": 42
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:deviations",
+        "stage": "assessment",
+        "line": 55,
+        "order": 51,
+        "revision": 6
+      }
+    },
+    {
+      "domain_id": "domain:measurement",
+      "judgment": "low",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible"
+      ],
+      "inactive_questions": [
+        "sq:measurement:influence-likely"
+      ],
+      "driver_questions": [],
+      "answers": [
+        {
+          "question_id": "sq:measurement:method-inappropriate",
+          "answer": "probably_no",
+          "justification": "Clinical monitoring and recorded death dates measure all-cause mortality directly, without cause attribution or disability grading. This is a suitable and sensitive method for detecting survival differences in the reported window. Missing follow-up is separately appraised in D3; the approved window discrepancy does not make death ascertainment intrinsically invalid.",
+          "unknowns": [
+            "Detailed verification procedure for deaths outside hospital is not described in the inspected monitoring passages."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:2395ee1468235b098b7b385f8c1649a9ba4734bf736e675e710e09a509714ef7",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 134,
+                "start_line": 1,
+                "end_line": 45
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:differential",
+          "answer": "probably_no",
+          "justification": "The report describes common daily inpatient and monthly outpatient review, with uniform management and recording. Matched study regimens used identical administration schedules; the protocol applied the same follow-up rules to both groups. These facts support comparable mortality ascertainment, with no identified mortality-specific differential detection pathway. Planned home visits do not establish complete observed follow-up.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:2e3ffc2066bfdf2ab466c8491f063b25c9f50c418af861f3398287d9bf84e375",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 89,
+                "start_line": 1,
+                "end_line": 42
+              }
+            },
+            {
+              "evidence": "sha256:8aa8153913f4cb7e83122423f61e418c7750798cd3aec50801665fdfd9cfac61",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 91,
+                "start_line": 1,
+                "end_line": 51
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:assessor-aware",
+          "answer": "probably_yes",
+          "justification": "Investigators/clinicians monitoring patients collected clinical outcome information. Although generally masked, some probably learned assignment after the nine reported revelations. Awareness is therefore possible for the relevant assessors in a limited subset, independently of mortality's susceptibility to influence.",
+          "unknowns": [
+            "Identity and timing of assessors informed by each revelation."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "The general methods assert investigator masking until follow-up completion, limiting certainty about the effect of individual revelations."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:c5030daebd6a50787e5d5201858fc4e4c4a8861af1c9bee119c72a2d6a2f2a8c",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 27,
+                "end_line": 76
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:influence-possible",
+          "answer": "probably_no",
+          "justification": "The assessment establishes whether death occurred and its date, without judgment about cause, disability or clinical progression. Knowledge of assignment is unlikely to change that determination, even for the limited possibly unmasked assessors. Unknown subsequent vital status is a missing-data issue and is not assumed to be a falsely classified death.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:2395ee1468235b098b7b385f8c1649a9ba4734bf736e675e710e09a509714ef7",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 134,
+                "start_line": 1,
+                "end_line": 45
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:measurement",
+        "stage": "assessment",
+        "line": 88,
+        "order": 67,
+        "revision": 8
+      }
+    },
+    {
+      "domain_id": "domain:missing",
+      "judgment": "high",
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "probably_no",
+          "justification": "There were 28 incomplete follow-ups in standard and 25 in intensified treatment, distinct from full ITT membership. Those unknown later deaths are material relative to 114 and 113 observed deaths and the near-null HR; plausible unobserved events could importantly change the estimate. Exact censoring times are unavailable, so this is a probable availability judgment rather than an invented complete vital-status count.",
+          "unknowns": [
+            "Exact vital-status ascertainment and censoring times among the 53 incomplete follow-ups."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:c5030daebd6a50787e5d5201858fc4e4c4a8861af1c9bee119c72a2d6a2f2a8c",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 27,
+                "end_line": 76
+              }
+            },
+            {
+              "evidence": "sha256:ad9be69bc5cfca7b35ea48b1be709f8ce609c1caf7960e11de92105e7eee3f41",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 103
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "answer": "no",
+          "justification": "The primary survival analysis uses last-known-alive censoring; the inspected missing-value methods address covariates and disability, not unobserved deaths. Neither the ITT/per-protocol comparison nor routine Cox censoring establishes protection from informative mortality loss. The inspected report and SAP do not provide missing-mortality sensitivity evidence showing this HR is unbiased; this does not assert that bias occurred.",
+          "unknowns": [
+            "Robustness of the mortality HR to plausible informative censoring."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "context",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:2395ee1468235b098b7b385f8c1649a9ba4734bf736e675e710e09a509714ef7",
+              "kind": "context",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 134,
+                "start_line": 1,
+                "end_line": 45
+              }
+            },
+            {
+              "evidence": "sha256:712b987578ffe8629a1aa7b6cb119e111c6119624d1b15a5bed5ef3dbefda57a",
+              "kind": "context",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 136,
+                "start_line": 1,
+                "end_line": 50
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The complete report, appendix outcome section/contents and SAP primary endpoint, censoring and missing-value sections were inspected; available imputation results concern disability or covariates.",
+              "unresolved_premise": "No mechanism-matched mortality robustness result was identified."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "answer": "yes",
+          "justification": "One standard-arm participant went home to die and could not be contacted, explicitly linking unavailable subsequent vital status to severe health status. Other losses and withdrawals could also relate to health. Thus mortality missingness could depend on its true value.",
+          "unknowns": [
+            "Reasons and health status underlying the other follow-up losses."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:51ac8c414d6908f8bdefbdace382c875bdc9a08059677fb9010133c8d9a5e4c0",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 32,
+                "end_line": 36
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "answer": "no_information",
+          "justification": "The home-to-die case establishes dependence for one participant, but does not establish the mechanism for the other 52 incomplete follow-ups. Loss counts are similar (22 versus 21), while withdrawals differ slightly; neither balance nor the planned home visits establishes noninformative loss. Without reasons or timing for most losses, it is not reasonable to conclude likely dependence or likely independence for the selected HR.",
+          "unknowns": [
+            "Health-related reasons, timing and prognosis for most incomplete follow-ups; whether planned tracing was performed."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:c5030daebd6a50787e5d5201858fc4e4c4a8861af1c9bee119c72a2d6a2f2a8c",
+              "kind": "context",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 27,
+                "end_line": 76
+              }
+            },
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "context",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:8aa8153913f4cb7e83122423f61e418c7750798cd3aec50801665fdfd9cfac61",
+              "kind": "context",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 91,
+                "start_line": 1,
+                "end_line": 51
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Inspected reported flow, appendix follow-up search and outcome section, protocol monitoring and SAP censoring/missing-value sections. Plans do not supply actual health-status reasons for the 43 lost participants or most withdrawals.",
+              "unresolved_premise": "Likelihood of informative mortality loss for the overall missing follow-up remains unresolved."
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:missing",
+        "stage": "assessment",
+        "line": 76,
+        "order": 61,
+        "revision": 7
+      }
+    },
+    {
+      "domain_id": "domain:randomization",
+      "judgment": "low",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [],
+      "answers": [
+        {
+          "question_id": "sq:randomization:sequence",
+          "answer": "yes",
+          "justification": "The report states a computer-generated randomization list with variable blocks of 4 and 6, establishing a random sequence for the individually assigned regimens.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:95e708d303548fcbceee45b410343d57f4c2440a34ddb0cb8f39ef8815ffa703",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 95,
+                "end_line": 99
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:randomization:concealment",
+          "answer": "yes",
+          "justification": "The pharmacist prepared visually matched pills in identical sequentially numbered packs dispensed in order; enrolling physicians were unaware of assignments. These containers concealed forthcoming allocations until enrolment and assignment.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:fa94a601a1266e5517cb0d0fc7b86c99f4e9ba34a4f03e1a6a746fceb0765629",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 100,
+                "end_line": 104
+              }
+            },
+            {
+              "evidence": "sha256:9826e7d7790e5bcd0cbfe41bbe555158d5e86f318be6d1d164df1e83a45457f9",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 4,
+                "end_line": 9
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:randomization:baseline-imbalance",
+          "answer": "probably_no",
+          "justification": "Group sizes are 409 and 408, with closely similar age, HIV status, MRC severity and resistance categories. The extended table shows several modest differences (including sodium, prior TB and CSF measures), but no compelling key-prognostic imbalance or pattern indicating failed randomization; these are reasonably compatible with chance across many comparisons.",
+          "unknowns": [],
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Four baseline comparisons were statistically significant; isolated significance across many measures does not itself establish a randomization problem."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:a364c2181c16dc7e16f47210a1e723b853048fc631793ebd5220684e1edead38",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_appendix.pdf",
+                "source_sha256": "sha256:ea1eba55e56638da1f6d14decb6e5240e31464cdcb7cf93d8b8e82f5de0730eb",
+                "kind": "narrative",
+                "page": 12,
+                "start_line": 1,
+                "end_line": 156
+              }
+            },
+            {
+              "evidence": "sha256:498121f0887c724a11411dec624a4b93b768dac1749c326e9d7bc7c5982ceee1",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_appendix.pdf",
+                "source_sha256": "sha256:ea1eba55e56638da1f6d14decb6e5240e31464cdcb7cf93d8b8e82f5de0730eb",
+                "kind": "narrative",
+                "page": 13,
+                "start_line": 1,
+                "end_line": 84
+              }
+            },
+            {
+              "evidence": "sha256:a5f74a7de5a3db104cf52a07db18033c221c496f0c3f80fd30bf64e7723ec4e6",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 6,
+                "start_line": 1,
+                "end_line": 145
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:randomization",
+        "stage": "assessment",
+        "line": 32,
+        "order": 40,
+        "revision": 5
+      }
+    },
+    {
+      "domain_id": "domain:selection",
+      "judgment": "low",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [],
+      "answers": [
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "probably_yes",
+          "justification": "The applicable 05TB SAP version 2.0 dated April 5, 2015 explicitly describes itself as final prior to unblinding and covers this comparison, all randomized ITT adults, overall survival over the operational nine-month follow-up, and treatment-only Cox regression stratified by HIV and MRC. These specifications correspond to the reported primary HR. The original/final protocol named stratified log-rank; the SAP explicitly explains the change to Cox as essentially equivalent while adding HR and CI. Thus correspondence is to the final SAP, not an assertion that the original protocol was identical. Main-report masking until last follow-up and confidential independent DSMC access support probable pre-unblinding finalization.",
+          "unknowns": [
+            "Actual investigator/statistician unblinded outcome access dates and database-lock audit are not supplied.",
+            "Operational randomization-date equivalence and broader nine-month window remain the approved scope uncertainties."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 7,
+              "implication": "Original/final protocol log-rank and covariate-adjusted Cox differ from the final primary model; the applicable SAP explicitly documents and explains the primary change."
+            },
+            {
+              "basis_index": 2,
+              "implication": "Original/final protocol log-rank and covariate-adjusted Cox differ from the final primary model; the applicable SAP explicitly documents and explains the primary change."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:ef8f88505aaecd91304d1435e34e3f773881edaa0df7b31594ebd2458011a3b7",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 131,
+                "start_line": 1,
+                "end_line": 41
+              }
+            },
+            {
+              "evidence": "sha256:2395ee1468235b098b7b385f8c1649a9ba4734bf736e675e710e09a509714ef7",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 134,
+                "start_line": 1,
+                "end_line": 45
+              }
+            },
+            {
+              "evidence": "sha256:1b80e80a4d2eb13baa4933dbb3483a61826fc680bddefbb43345f623dfa09969",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 135,
+                "start_line": 1,
+                "end_line": 56
+              }
+            },
+            {
+              "evidence": "sha256:fb223bde56999a84adf6742e568fde9c1d44fa475904629f294bb7fa1146564a",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 105
+              }
+            },
+            {
+              "evidence": "sha256:ad9be69bc5cfca7b35ea48b1be709f8ce609c1caf7960e11de92105e7eee3f41",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 103
+              }
+            },
+            {
+              "evidence": "sha256:c9bc7aed4169c3d4031aa9cf9a0754fd0be1cfdd6e3c98fa329612fddc6b2dd0",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 130,
+                "start_line": 1,
+                "end_line": 28
+              }
+            },
+            {
+              "evidence": "sha256:6b8f845caa9f558c097ebe6b9bb7e4ed84725d916049217ccc8f0ea8a5994505",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 98,
+                "start_line": 1,
+                "end_line": 42
+              }
+            },
+            {
+              "evidence": "sha256:f3a3a4485b395e1169e3e29b5d14aeb66453f2f8b3f9124a52019baa5ca8cf63",
+              "kind": "context",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 97,
+                "start_line": 1,
+                "end_line": 39
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "probably_no",
+          "justification": "Death has alternative time summaries (protocol/SAP three-, six-, and nine-month estimates and survival curves), and strict calendar cutoff versus actual visit windows could produce different measurements. These alternatives are not erased by selecting the nine-month Result. However nine-month overall survival was primary in the pre-enrollment protocol and the SAP specifies actual visits capped at day 289; the report presents survival curves and explicitly discloses included day-274/275 deaths. This correspondence supports a probable absence of results-driven choice of the reported primary measurement, rather than inferring a single eligible measurement.",
+          "unknowns": [
+            "Review eligibility beyond the requested nine-month endpoint is not independently specified; other time summaries are treated as possible alternatives.",
+            "No independent access audit confirms when window derivations were fixed."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 6,
+              "implication": "The protocol provides multiple survival time summaries; multiplicity exists and a single reported primary endpoint alone would not resolve selection."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:31d975213fe5626452acf0e73dcd9688fd455f366c390ad9c067c51e1b1f606d",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 23,
+                "start_line": 1,
+                "end_line": 57
+              }
+            },
+            {
+              "evidence": "sha256:5940750297d080959b68ec187e4bb4d71073a6e1cdad9726817ed0a0e9aced7f",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 86,
+                "start_line": 1,
+                "end_line": 57
+              }
+            },
+            {
+              "evidence": "sha256:2395ee1468235b098b7b385f8c1649a9ba4734bf736e675e710e09a509714ef7",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 134,
+                "start_line": 1,
+                "end_line": 45
+              }
+            },
+            {
+              "evidence": "sha256:1b80e80a4d2eb13baa4933dbb3483a61826fc680bddefbb43345f623dfa09969",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 135,
+                "start_line": 1,
+                "end_line": 56
+              }
+            },
+            {
+              "evidence": "sha256:6a5c0413323bcdb07a8c5604a0d598d896278faefa5ce434b83f469030ae6080",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 184
+              }
+            },
+            {
+              "evidence": "sha256:ad9be69bc5cfca7b35ea48b1be709f8ce609c1caf7960e11de92105e7eee3f41",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 103
+              }
+            },
+            {
+              "evidence": "sha256:f3a3a4485b395e1169e3e29b5d14aeb66453f2f8b3f9124a52019baa5ca8cf63",
+              "kind": "context",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 97,
+                "start_line": 1,
+                "end_line": 39
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "probably_no",
+          "justification": "Eligible alternatives include stratified log-rank, primary stratified treatment-only Cox, covariate-adjusted Cox, per-protocol and subgroup analyses, and conditional Kaplan-Meier comparison if proportional hazards fails. The final SAP explicitly assigns the reported model to primary ITT analysis and explains the change from log-rank. The report also presents PP and subgroup results and the appendix reports adjusted all-patient and HIV-positive Cox models. This planned hierarchy and reporting of alternatives support probably no results-driven selection; it is not a conclusion based simply on one model or on similarly null estimates.",
+          "unknowns": [
+            "Complete analytic execution logs and actual unblinded access timing are unavailable; cannot establish all possible analyses were executed/reported.",
+            "The prespecified conditional PH fallback depends on diagnostic results, whose complete execution audit is unavailable."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 5,
+              "implication": "Multiple models and a changed primary test create analytic flexibility, but the final plan explains the choice before stated unblinding rather than indicating favorable-result selection."
+            },
+            {
+              "basis_index": 0,
+              "implication": "Multiple models and a changed primary test create analytic flexibility, but the final plan explains the choice before stated unblinding rather than indicating favorable-result selection."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:1b80e80a4d2eb13baa4933dbb3483a61826fc680bddefbb43345f623dfa09969",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 135,
+                "start_line": 1,
+                "end_line": 56
+              }
+            },
+            {
+              "evidence": "sha256:ef8f88505aaecd91304d1435e34e3f773881edaa0df7b31594ebd2458011a3b7",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 131,
+                "start_line": 1,
+                "end_line": 41
+              }
+            },
+            {
+              "evidence": "sha256:5bc3ce88d9a2b1e1f963c9b08ee828fb154ac35b105e518bb60717f045cb24a6",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 9,
+                "start_line": 1,
+                "end_line": 147
+              }
+            },
+            {
+              "evidence": "sha256:1aa830ad162aa1a35b12df757ac604dbcdf9b8569341357023b6f4f70aae0412",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "nejmoa1507062_appendix.pdf",
+                "source_sha256": "sha256:ea1eba55e56638da1f6d14decb6e5240e31464cdcb7cf93d8b8e82f5de0730eb",
+                "kind": "narrative",
+                "page": 16,
+                "start_line": 1,
+                "end_line": 92
+              }
+            },
+            {
+              "evidence": "sha256:ad9be69bc5cfca7b35ea48b1be709f8ce609c1caf7960e11de92105e7eee3f41",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "NEJMoa1507062.pdf",
+                "source_sha256": "sha256:b8673a2adc2d00a14919712c76c6c0c2ff6bbd6e684501a54c89683d8196a01a",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 103
+              }
+            },
+            {
+              "evidence": "sha256:f3a3a4485b395e1169e3e29b5d14aeb66453f2f8b3f9124a52019baa5ca8cf63",
+              "kind": "context",
+              "locator": {
+                "source_label": "nejmoa1507062_protocol.pdf",
+                "source_sha256": "sha256:3b3d9a35dafd54331f425393b12b709c5da9a66d7fc4e15768f2c969c0de72d1",
+                "kind": "narrative",
+                "page": 97,
+                "start_line": 1,
+                "end_line": 39
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:selection",
+        "stage": "assessment",
+        "line": 105,
+        "order": 75,
+        "revision": 9
+      }
+    }
+  ]
+}
