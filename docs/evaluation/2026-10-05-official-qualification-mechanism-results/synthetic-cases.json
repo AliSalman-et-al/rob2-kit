@@ -1,0 +1,70 @@
+[
+  {
+    "case_id": "case-36",
+    "question_id": "sq:measurement:influence-possible",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:measurement:method-inappropriate": "no",
+      "sq:measurement:differential": "no",
+      "sq:measurement:assessor-aware": "yes"
+    },
+    "trial_record": "The selected Result is all-cause death during30days. Outcome collectors knew each participant’s assigned treatment. They recorded occurrence and date of death from routine hospital records and linked civil death registrations; the endpoint did not require deciding whether treatment caused death or whether an event met a severity threshold. The same linkage, follow-up period and definition were used in both groups. The supplied record identifies no differential tracing or misclassification pathway."
+  },
+  {
+    "case_id": "case-71",
+    "question_id": "sq:measurement:influence-possible",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:measurement:method-inappropriate": "no",
+      "sq:measurement:differential": "no",
+      "sq:measurement:assessor-aware": "yes"
+    },
+    "trial_record": "The selected Result is self-reported pain at12weeks. Participants knew their assigned treatment and entered their own0–10rating at home. Software transferred that rating automatically to the trial database. A blinded analyst computed the comparison; neither the participant nor a proxy was masked when deciding which rating to enter. No information establishes how much, if at all, knowledge actually changed the ratings."
+  },
+  {
+    "case_id": "case-82",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A single-centre trial enrolled240adults. Its report says patients were randomized between two treatments. No protocol, assignment list, trial-unit information or contemporary studies by the investigators are supplied. Recruitment and outcome tables contain no information about how assignments were generated."
+  },
+  {
+    "case_id": "case-95",
+    "question_id": "sq:missing:evidence-unbiased",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:missing:data-available": "probably_no"
+    },
+    "trial_record": "The selected Result is12week pain in480randomized adults. At12weeks32of240in one arm and29of240in the other lacked measurements. The analysis carried each missing participant’s most recent pain rating forward; some last ratings were taken atweek2. A second analysis used multiple imputation with treatment group as its only predictor and reported a similar point estimate. No sensitivity analysis varying outcomes after the last observation, validation of the missing-data assumptions, or other information bearing on unobserved12week pain is supplied."
+  },
+  {
+    "case_id": "case-63",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A trial used a central minimisation service to reduce imbalance in age and severity. The supplied configuration chooses the treatment with the smaller imbalance score. When the scores tie, it always assigns the treatment whose code sorts first. Investigators could calculate the next assignment from the current allocation counts and the next participant’s age and severity. No draw is made at either step."
+  },
+  {
+    "case_id": "case-28",
+    "question_id": "sq:missing:evidence-unbiased",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:missing:data-available": "probably_no"
+    },
+    "trial_record": "The selected Result is the adjusted between-group mean difference in0–10pain at12weeks for all600randomized adults, estimated as−1.00. The two groups of300 have18and20missing12week outcomes. A separate follow-up team could not determine why those individuals missed visits. The primary imputation included baseline pain, disease grade, previous pain measurements and treatment. A prespecified sensitivity analysis independently shifted imputed missing pain scores in each arm from−2to+2points relative to their predicted values, including opposed shifts between arms. The range was elicited before database lock from clinicians using external longitudinal data for patients with the same disease grade and earlier pain trajectories. Reported estimates across that range were−0.74to−1.26, with confidence intervals consistently on the same side of zero. Reasons for the actual losses remain unknown."
+  },
+  {
+    "case_id": "case-47",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A multicentre trial enrolled3200adults. The article calls allocation randomized but gives no sequence-generation method. It was coordinated by a trials unit that had organized twelve multicentre trials; contemporaneous independent audits of that unit describe centrally generated computer-random lists in those other trials. The journal imposed a3000word article limit. No sequence log or algorithm for this trial is available."
+  },
+  {
+    "case_id": "case-19",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A trial enrolled640adults using a central web allocation service. The methods name minimisation, balancing site, prior treatment and disease grade. The service returned one treatment assignment after each eligible participant was entered. Its executable code, tie-handling settings and sequence-generation log are unavailable."
+  }
+]

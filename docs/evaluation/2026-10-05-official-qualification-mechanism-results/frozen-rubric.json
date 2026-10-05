@@ -1,0 +1,91 @@
+{
+  "frozen_before_responses": true,
+  "cases": [
+    {
+      "case_id": "case-47",
+      "source_contrast_id": "randomization-circumstantial",
+      "source_locator": "Box4 question1.1 p17 and section1.1 p3",
+      "permissible_supported_answers": [
+        "probably_yes"
+      ],
+      "rationale_criteria": "Circumstantial support can justify a probable random-sequence inference; distinguish other-trial audit evidence from direct documentation of this trial. No definitive method claim.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    },
+    {
+      "case_id": "case-82",
+      "source_contrast_id": "randomization-uninformative",
+      "source_locator": "Box4 question1.1 p17",
+      "permissible_supported_answers": [
+        "no_information"
+      ],
+      "rationale_criteria": "Absence of method and credible circumstances supportsNI, not proof of nonrandom assignment.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    },
+    {
+      "case_id": "case-19",
+      "source_contrast_id": "minimization-general",
+      "source_locator": "Box4 question1.1 p17",
+      "permissible_supported_answers": [
+        "probably_yes",
+        "yes"
+      ],
+      "rationale_criteria": "General minimisation inference does not require separately documented random-element settings; retain uncertainty about actual settings.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    },
+    {
+      "case_id": "case-63",
+      "source_contrast_id": "minimization-known-nonrandom",
+      "source_locator": "Box4 question1.1 p17",
+      "permissible_supported_answers": [
+        "no",
+        "probably_no"
+      ],
+      "rationale_criteria": "Explicit deterministic/predictable method defeats general minimisation inference; computerisation/centralisation alone is not randomness.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    },
+    {
+      "case_id": "case-28",
+      "source_contrast_id": "sensitivity-unknown-mechanism",
+      "source_locator": "Box8 question3.2 p45",
+      "permissible_supported_answers": [
+        "yes",
+        "probably_yes"
+      ],
+      "rationale_criteria": "Assess exact-result plausible-range robustness despite unknown actual missingness mechanism; separate sensitivity assumptions and elicitation plausibility from proof of actual mechanism. Do not require documented mechanism as prerequisite or infer complete data.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    },
+    {
+      "case_id": "case-95",
+      "source_contrast_id": "imputation-not-reassurance",
+      "source_locator": "Box8 question3.2 p45",
+      "permissible_supported_answers": [
+        "no",
+        "probably_no"
+      ],
+      "rationale_criteria": "Method labels/similar imputation estimate do not establish robustness; LOCF/treatment-only imputation assumptions do not correct outcome-related missingness without support.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    },
+    {
+      "case_id": "case-36",
+      "source_contrast_id": "uninfluenced-mortality",
+      "source_locator": "Box10 question4.4 p54",
+      "permissible_supported_answers": [
+        "no",
+        "probably_no"
+      ],
+      "rationale_criteria": "Unlikely influence on direct all-cause mortality/date can support negative answer without proving logical impossibility; do not infer assessors blinded or complete ascertainment.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    },
+    {
+      "case_id": "case-71",
+      "source_contrast_id": "judgement-outcome",
+      "source_locator": "Box10 question4.4 p54",
+      "permissible_supported_answers": [
+        "yes",
+        "probably_yes"
+      ],
+      "rationale_criteria": "Participant remains outcome assessor despite automated transfer and blinded analyst; plausible judgment influence differs from demonstrated actual influence in4.5.",
+      "grading": "Answer within range and source-warrant criteria met are separate dimensions. Outside-range answer with a source-supported alternative explanation is retained for review, not automatically rewritten. No benchmark/domain-label scoring."
+    }
+  ]
+}

@@ -1,0 +1,292 @@
+{
+  "reviewer_model": "gpt-6.1-sol",
+  "reviewer_effort": "low",
+  "blinding_limits": {
+    "condition_mapping": "No condition mapping was provided or consulted. Only the blinded input packet was read; no original assessor prompts, other files, git history or private reasoning traces were consulted.",
+    "possible_inference": "Response wording and differences could allow inference about conditions, so anonymity does not establish perfect blinding. No mapping was inferred or assigned.",
+    "same_model_correlation": "This is a same-model AI review; correlated reasoning or errors with submitted AI responses may limit independence. A separate review does not establish independent expert validation.",
+    "constructed_evidence": "Facts are synthetic constructed cases, evaluated as supplied rather than verified trial evidence.",
+    "criteria_status": "Permissible ranges are frozen investigator criteria, not expert truth. Answer admissibility is judged separately from rationale warrant and calibration; defensible alternatives and ambiguities are retained.",
+    "scope": "Signalling-question response review only; no trial, domain, overall, benchmark accuracy or causal claim. Official context was taken from the packet, not externally verified."
+  },
+  "scored_responses": {
+    "response-29": {
+      "assessments": [
+        {
+          "case_id": "case-36",
+          "submitted_answer": "no",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Unmasked collectors recorded 30-day all-cause death occurrence/date from hospital records and civil registrations.",
+            "No causal attribution or severity threshold; identical linkage and follow-up; no supplied differential tracing or misclassification pathway."
+          ],
+          "limitations_retained": [
+            "Records may contain errors; complete ascertainment is not established.",
+            "Knowledge was unlikely to influence this direct outcome; logical impossibility is not established."
+          ],
+          "source_warrant_issue": "Minor wording ambiguity: absence of an identified pathway should not be read as logical impossibility. The supplied-procedures limitation keeps the rationale sufficiently bounded.",
+          "reasoning": "Box 10 question 4.4 supports a negative answer for nonjudgmental all-cause mortality. No is admissible; probably_no is also defensible because the official wording is likelihood-based. Interpret absence of an identified pathway as bounded to the supplied procedures, not proof of impossibility."
+        },
+        {
+          "case_id": "case-71",
+          "submitted_answer": "yes",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Unmasked participants chose their own subjective pain ratings.",
+            "Automatic transfer and blinded analysis occurred after ratings were chosen."
+          ],
+          "limitations_retained": [
+            "Actual influence and its magnitude are unknown."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 10 questions 4.3-4.4 identify participants as assessors and a plausible influence pathway for pain. The response correctly separates possibility from actual or likely influence under 4.5."
+        },
+        {
+          "case_id": "case-82",
+          "submitted_answer": "no_information",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Only a randomized label is supplied.",
+            "No sequence method or credible contextual evidence is supplied."
+          ],
+          "limitations_retained": [
+            "Missing reporting does not prove nonrandom allocation."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 4 question 1.1 expressly supports no_information when the only method information is a randomized label; section 1.1 does not supply a reasonable probable inference here."
+        },
+        {
+          "case_id": "case-95",
+          "submitted_answer": "no",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Missing 12-week pain data were filled using LOCF, including week-2 ratings.",
+            "Treatment-only multiple imputation produced a similar estimate; no plausible-departure sensitivity analysis or assumption validation is supplied."
+          ],
+          "limitations_retained": [
+            "Actual missing outcomes and mechanisms remain unknown.",
+            "Lack of evidence of protection is not proof of bias."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 8 question 3.2 expressly cautions against assuming LOCF or treatment-only imputation corrects missing-data bias. Similar estimates do not supply the missing robustness evidence."
+        },
+        {
+          "case_id": "case-63",
+          "submitted_answer": "no",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Smaller imbalance score deterministically selected treatment; ties always used treatment-code order.",
+            "No draw occurred; investigators could calculate the next assignment."
+          ],
+          "limitations_retained": [
+            "Conclusion applies to the supplied configuration, not all minimisation procedures."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Explicit deterministic and predictable assignments satisfy the negative rule in Box 4 question 1.1 and override its general minimisation inference. Centralisation is not evidence of randomness."
+        },
+        {
+          "case_id": "case-28",
+          "submitted_answer": "yes",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Prespecified independent and opposed arm shifts of missing pain scores covered -2 to +2 points.",
+            "Clinicians elicited the range before database lock using relevant external longitudinal data.",
+            "The exact selected estimate ranged from -0.74 to -1.26 around -1.00, with confidence intervals on the same side of zero."
+          ],
+          "limitations_retained": [
+            "Actual reasons for missingness remain unknown.",
+            "Robustness is limited to the elicited range, whose plausibility is supplied rather than independently validated.",
+            "No clinical importance threshold is supplied; whether a 0.26-point change counts as little change remains judgmental."
+          ],
+          "source_warrant_issue": "Plausibility and little-change judgments remain conditional; confidence intervals staying on one side of zero alone do not prove absence of meaningful bias. Here magnitude stability and elicitation support are also cited.",
+          "reasoning": "Box 8 question 3.2 permits evidence from plausible-range sensitivity analyses without knowing the actual mechanism. Yes is defensible and within the frozen range; probably_yes is also defensible given judgments about range plausibility and little change. Stable sign alone would be insufficient, but the response also uses magnitude stability and elicitation support."
+        },
+        {
+          "case_id": "case-47",
+          "submitted_answer": "probably_yes",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Large multicentre trial run by an experienced trials unit.",
+            "Contemporaneous independent audits describe computer-random lists in other trials; journal imposed a 3000-word limit."
+          ],
+          "limitations_retained": [
+            "Other-trial audit evidence does not directly document this trial.",
+            "No trial-specific algorithm or sequence log is available."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 4 question 1.1 and section 1.1 allow a probable inference from credible trial circumstances. The response appropriately avoids a definitive trial-specific method claim."
+        },
+        {
+          "case_id": "case-19",
+          "submitted_answer": "probably_yes",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Methods explicitly name minimisation and balancing variables.",
+            "A central web service allocated treatments; code, tie handling and logs are unavailable."
+          ],
+          "limitations_retained": [
+            "Actual settings and presence of a random element are unconfirmed.",
+            "Central web allocation alone does not establish randomness."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 4 question 1.1 states minimisation should generally be considered random because it generally includes a random element. Probably_yes applies that source-supported default while preserving uncertainty; yes is also in the frozen permissible range."
+        }
+      ]
+    },
+    "response-64": {
+      "assessments": [
+        {
+          "case_id": "case-36",
+          "submitted_answer": "no",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Unmasked collectors recorded 30-day all-cause death occurrence/date from hospital records and civil registrations.",
+            "No causal attribution or severity threshold; identical linkage and follow-up; no supplied differential tracing or misclassification pathway."
+          ],
+          "limitations_retained": [
+            "Records may contain errors; complete ascertainment is not established.",
+            "Knowledge was unlikely to influence this direct outcome; logical impossibility is not established."
+          ],
+          "source_warrant_issue": "Minor wording ambiguity: absence of an identified pathway should not be read as logical impossibility. The supplied-procedures limitation keeps the rationale sufficiently bounded.",
+          "reasoning": "Box 10 question 4.4 supports a negative answer for nonjudgmental all-cause mortality. No is admissible; probably_no is also defensible because the official wording is likelihood-based. Interpret absence of an identified pathway as bounded to the supplied procedures, not proof of impossibility."
+        },
+        {
+          "case_id": "case-71",
+          "submitted_answer": "yes",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Unmasked participants chose their own subjective pain ratings.",
+            "Automatic transfer and blinded analysis occurred after ratings were chosen."
+          ],
+          "limitations_retained": [
+            "Actual influence and its magnitude are unknown."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 10 questions 4.3-4.4 identify participants as assessors and a plausible influence pathway for pain. The response correctly separates possibility from actual or likely influence under 4.5."
+        },
+        {
+          "case_id": "case-82",
+          "submitted_answer": "no_information",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Only a randomized label is supplied.",
+            "No sequence method or credible contextual evidence is supplied."
+          ],
+          "limitations_retained": [
+            "Missing reporting does not prove nonrandom allocation."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 4 question 1.1 expressly supports no_information when the only method information is a randomized label; section 1.1 does not supply a reasonable probable inference here."
+        },
+        {
+          "case_id": "case-95",
+          "submitted_answer": "no",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Missing 12-week pain data were filled using LOCF, including week-2 ratings.",
+            "Treatment-only multiple imputation produced a similar estimate; no plausible-departure sensitivity analysis or assumption validation is supplied."
+          ],
+          "limitations_retained": [
+            "Actual missing outcomes and mechanisms remain unknown.",
+            "Lack of evidence of protection is not proof of bias."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 8 question 3.2 expressly cautions against assuming LOCF or treatment-only imputation corrects missing-data bias. Similar estimates do not supply the missing robustness evidence."
+        },
+        {
+          "case_id": "case-63",
+          "submitted_answer": "no",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Smaller imbalance score deterministically selected treatment; ties always used treatment-code order.",
+            "No draw occurred; investigators could calculate the next assignment."
+          ],
+          "limitations_retained": [
+            "Conclusion applies to the supplied configuration, not all minimisation procedures."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Explicit deterministic and predictable assignments satisfy the negative rule in Box 4 question 1.1 and override its general minimisation inference. Centralisation is not evidence of randomness."
+        },
+        {
+          "case_id": "case-28",
+          "submitted_answer": "yes",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Prespecified independent and opposed arm shifts of missing pain scores covered -2 to +2 points.",
+            "Clinicians elicited the range before database lock using relevant external longitudinal data.",
+            "The exact selected estimate ranged from -0.74 to -1.26 around -1.00, with confidence intervals on the same side of zero."
+          ],
+          "limitations_retained": [
+            "Actual reasons for missingness remain unknown.",
+            "Robustness is limited to the elicited range, whose plausibility is supplied rather than independently validated.",
+            "No clinical importance threshold is supplied; whether a 0.26-point change counts as little change remains judgmental."
+          ],
+          "source_warrant_issue": "Plausibility and little-change judgments remain conditional; confidence intervals staying on one side of zero alone do not prove absence of meaningful bias. Here magnitude stability and elicitation support are also cited.",
+          "reasoning": "Box 8 question 3.2 permits evidence from plausible-range sensitivity analyses without knowing the actual mechanism. Yes is defensible and within the frozen range; probably_yes is also defensible given judgments about range plausibility and little change. Stable sign alone would be insufficient, but the response also uses magnitude stability and elicitation support."
+        },
+        {
+          "case_id": "case-47",
+          "submitted_answer": "probably_yes",
+          "answer_in_supported_range": true,
+          "rationale_quality": "strong",
+          "calibration": "appropriate",
+          "facts_used": [
+            "Large multicentre trial run by an experienced trials unit.",
+            "Contemporaneous independent audits describe computer-random lists in other trials; journal imposed a 3000-word limit."
+          ],
+          "limitations_retained": [
+            "Other-trial audit evidence does not directly document this trial.",
+            "No trial-specific algorithm or sequence log is available."
+          ],
+          "source_warrant_issue": null,
+          "reasoning": "Box 4 question 1.1 and section 1.1 allow a probable inference from credible trial circumstances. The response appropriately avoids a definitive trial-specific method claim."
+        },
+        {
+          "case_id": "case-19",
+          "submitted_answer": "no_information",
+          "answer_in_supported_range": false,
+          "rationale_quality": "partial",
+          "calibration": "understated",
+          "facts_used": [
+            "Methods explicitly name minimisation and balancing variables.",
+            "A central web service allocated treatments; code, tie handling and logs are unavailable."
+          ],
+          "limitations_retained": [
+            "Actual settings and presence of a random element are unconfirmed.",
+            "Central web allocation alone does not establish randomness."
+          ],
+          "source_warrant_issue": "The rationale correctly identifies unconfirmed actual settings but omits the explicit official general minimisation inference and treats lack of firm confirmation as requiring no_information. Section 1.1 reserves no_information for circumstances where even a probable inference is unreasonable.",
+          "reasoning": "The factual uncertainty is real and a cautious interpretation is understandable, but probably_yes is a reasonable source-supported inference without separately documented random settings. No supplied contrary configuration defeats that default. Thus no_information is outside the frozen range and is not a persuasive alternative on this packet; factual portions of the rationale remain warranted."
+        }
+      ]
+    }
+  }
+}

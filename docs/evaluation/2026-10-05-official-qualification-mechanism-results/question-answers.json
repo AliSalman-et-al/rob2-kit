@@ -1,0 +1,122 @@
+{
+  "packet-17": {
+    "assessments": [
+      {
+        "case_id": "case-36",
+        "question_id": "sq:measurement:influence-possible",
+        "answer": "no",
+        "rationale": "Death occurrence and date came from hospital records and civil registrations. Assessment required no causal attribution or severity judgment, and the record identifies no pathway through which treatment knowledge could change this assessment.",
+        "limitations": "This conclusion applies to the supplied ascertainment procedures; it does not establish that all records were error-free."
+      },
+      {
+        "case_id": "case-71",
+        "question_id": "sq:measurement:influence-possible",
+        "answer": "yes",
+        "rationale": "Participants were the outcome assessors and knew their treatment when choosing their own pain rating. That knowledge could influence subjective reporting. Automatic transfer and blinded analysis do not remove this reporting pathway.",
+        "limitations": "The record does not establish whether knowledge actually changed ratings or by how much."
+      },
+      {
+        "case_id": "case-82",
+        "question_id": "sq:randomization:sequence",
+        "answer": "no_information",
+        "rationale": "The report only says patients were 'randomized' and supplies neither a generation method nor contextual evidence supporting an inference about a random component.",
+        "limitations": "Missing reporting does not establish that allocation was non-random."
+      },
+      {
+        "case_id": "case-95",
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "no",
+        "rationale": "The supplied analyses use last-observation-carried-forward and multiple imputation based only on treatment group. Neither establishes protection from missing-data bias. Their similar estimates do not test plausible departures in unobserved 12-week pain.",
+        "limitations": "This is an absence of evidence that the result was unbiased, not proof that bias occurred. Missingness mechanisms and actual unobserved outcomes remain unknown."
+      },
+      {
+        "case_id": "case-63",
+        "question_id": "sq:randomization:sequence",
+        "answer": "no",
+        "rationale": "Both imbalance reduction and tie handling were deterministic: 'No draw is made at either step.' The next assignment was calculable, so sequence generation contained no random component.",
+        "limitations": "Central administration does not establish random sequence generation; this answer concerns only the described configuration."
+      },
+      {
+        "case_id": "case-28",
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "yes",
+        "rationale": "The prespecified sensitivity analysis varied missing outcomes independently in both arms, including opposed shifts, over a clinically supported range informed by comparable disease grades and pain trajectories. Estimates remained between -0.74 and -1.26, with confidence intervals consistently on the same side of zero, providing evidence of robustness under plausible missing-outcome assumptions.",
+        "limitations": "Actual reasons for missingness remain unknown. Reassurance is limited to the supported range examined and does not exclude bias under more extreme assumptions."
+      },
+      {
+        "case_id": "case-47",
+        "question_id": "sq:randomization:sequence",
+        "answer": "probably_yes",
+        "rationale": "The large multicentre trial was coordinated by an experienced trials unit whose other contemporary trials had independently audited computer-random lists. Together with the article word limit, this supports an inference that a random component was probably used despite omitted methodological detail.",
+        "limitations": "Evidence from other trials does not confirm this trial's algorithm; no trial-specific sequence log is supplied."
+      },
+      {
+        "case_id": "case-19",
+        "question_id": "sq:randomization:sequence",
+        "answer": "no_information",
+        "rationale": "The record names minimisation but does not establish whether it included a random component. Central web allocation and balancing variables do not distinguish randomised minimisation from a deterministic procedure.",
+        "limitations": "Unavailable code, tie settings and logs prevent resolving how assignments were generated; neither randomness nor determinism is established."
+      }
+    ]
+  },
+  "packet-42": {
+    "assessments": [
+      {
+        "case_id": "case-36",
+        "question_id": "sq:measurement:influence-possible",
+        "answer": "no",
+        "rationale": "Death occurrence and date came from hospital records and civil registrations, without causal attribution or severity judgments. These documented procedures provide no pathway by which collectors\u2019 knowledge of assignment could influence assessment of this all-cause mortality outcome.",
+        "limitations": "This conclusion is limited to the supplied ascertainment procedures; it does not establish that every recorded death was error-free."
+      },
+      {
+        "case_id": "case-71",
+        "question_id": "sq:measurement:influence-possible",
+        "answer": "yes",
+        "rationale": "Participants were the outcome assessors and knew their treatment when choosing their own pain rating. Knowledge could influence this subjective report. Automatic transfer and a blinded analyst do not remove that reporting pathway.",
+        "limitations": "The record does not establish whether knowledge actually changed ratings or the magnitude of any influence; those facts are unnecessary to establish possibility."
+      },
+      {
+        "case_id": "case-82",
+        "question_id": "sq:randomization:sequence",
+        "answer": "no_information",
+        "rationale": "The only sequence-related statement is that patients were 'randomized.' No generation method or contextual evidence supports a reasonable inference about whether a random component was used.",
+        "limitations": "Missing reporting does not establish that allocation was non-random. Recruitment and outcome tables do not supply the missing sequence-generation evidence."
+      },
+      {
+        "case_id": "case-95",
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "no",
+        "rationale": "The reported analyses used last-observation-carried-forward and multiple imputation with treatment group as the only predictor. Neither establishes protection against missing-outcome bias under the supplied guidance. Their similar estimates do not test plausible departures in unobserved 12-week pain.",
+        "limitations": "This is absence of evidence that the result was unbiased, not proof that bias occurred. Actual missing outcomes and the missingness mechanism remain unknown."
+      },
+      {
+        "case_id": "case-63",
+        "question_id": "sq:randomization:sequence",
+        "answer": "no",
+        "rationale": "The configuration deterministically selected the smaller imbalance score and always broke ties by treatment-code order. 'No draw is made at either step,' and investigators could calculate the next assignment. This explicitly establishes a predictable sequence without a random component.",
+        "limitations": "The conclusion concerns the documented configuration; the general presumption that minimisation includes randomness does not override these explicit details."
+      },
+      {
+        "case_id": "case-28",
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "yes",
+        "rationale": "The prespecified sensitivity analysis varied missing pain outcomes independently in both arms, including opposed shifts, over a range supported by relevant longitudinal data and clinician elicitation. Estimates remained between -0.74 and -1.26 around the primary -1.00 estimate, with confidence intervals consistently excluding zero. This supplies informative evidence of robustness under plausible assumptions about unobserved outcomes.",
+        "limitations": "Actual reasons for missingness remain unknown. The evidence supports robustness within the justified sensitivity range, not immunity to every possible missing-outcome scenario."
+      },
+      {
+        "case_id": "case-47",
+        "question_id": "sq:randomization:sequence",
+        "answer": "probably_yes",
+        "rationale": "The large multicentre trial was coordinated by an experienced trials unit whose contemporaneous independently audited trials used computer-random lists. Together with the journal\u2019s 3000-word limit, these circumstances support an inference that this trial also used a random component despite abbreviated reporting.",
+        "limitations": "The audits concern other trials. No trial-specific algorithm or sequence log provides firm confirmation."
+      },
+      {
+        "case_id": "case-19",
+        "question_id": "sq:randomization:sequence",
+        "answer": "probably_yes",
+        "rationale": "The methods explicitly identify minimisation. The supplied guidance says minimisation generally includes a random element, at least for ties, supporting a probable random-sequence inference when no contrary configuration is reported.",
+        "limitations": "The unavailable code, tie settings and generation log prevent confirmation of randomness. Central web allocation alone does not establish a random component."
+      }
+    ]
+  }
+}

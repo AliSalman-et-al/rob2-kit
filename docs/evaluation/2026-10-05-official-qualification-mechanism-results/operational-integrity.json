@@ -1,0 +1,123 @@
+{
+  "two_assessor_conditions": [
+    {
+      "identifier": "packet-17",
+      "returncode": 0,
+      "reason": null,
+      "session_id": "01a10e32-9dfb-72d1-940b-e54913c4cfcd",
+      "session_count": 1,
+      "profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "low"
+        }
+      ],
+      "exact_profile": true,
+      "elapsed_seconds": 27.838467766996473,
+      "durable_response_count": 1,
+      "usage": {
+        "input_tokens": 18467,
+        "cached_input_tokens": 6912,
+        "output_tokens": 960,
+        "reasoning_output_tokens": 85
+      },
+      "uncached_input_tokens": 11555,
+      "cost_usd": null,
+      "final_present": true,
+      "guidance_condition": "before",
+      "prompt_size_proxy": {
+        "prompt_sha256": "49d02c4a046995e4eab53dbcb27008e4ee93ebd16153245d2848041257e14cc6",
+        "bytes": 47141,
+        "characters": 46755,
+        "whitespace_tokens": 5288,
+        "utf8_bytes_div4_proxy": 11785.2,
+        "exact_token_count": null
+      }
+    },
+    {
+      "identifier": "packet-42",
+      "returncode": 0,
+      "reason": null,
+      "session_id": "01a10e33-1061-7ba3-b335-012410ad72c0",
+      "session_count": 1,
+      "profiles": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "low"
+        }
+      ],
+      "exact_profile": true,
+      "elapsed_seconds": 24.800471700029448,
+      "durable_response_count": 1,
+      "usage": {
+        "input_tokens": 18909,
+        "cached_input_tokens": 6912,
+        "output_tokens": 1002,
+        "reasoning_output_tokens": 49
+      },
+      "uncached_input_tokens": 11997,
+      "cost_usd": null,
+      "final_present": true,
+      "guidance_condition": "after",
+      "prompt_size_proxy": {
+        "prompt_sha256": "ce6536b8ff83ee5b0cc7ba77838d5918511101ff6a029a7565437b4d033245e5",
+        "bytes": 49494,
+        "characters": 49076,
+        "whitespace_tokens": 5649,
+        "utf8_bytes_div4_proxy": 12373.5,
+        "exact_token_count": null
+      }
+    }
+  ],
+  "total_durable_usage": {
+    "input_tokens": 37376,
+    "cached_input_tokens": 13824,
+    "output_tokens": 1962,
+    "reasoning_output_tokens": 134
+  },
+  "total_uncached_input_tokens": 23552,
+  "elapsed_seconds_assessor_stages": 52.63893946702592,
+  "cost_usd": null,
+  "source_and_prompt_freeze_unchanged": true,
+  "post_exit_output_seal_sha256": "6ef453e061ce549b193d17e89fa41c5c04eae2b7792fd1051949ec02c99a03cd",
+  "raw_files": {
+    "private_root": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/official-qualification-mechanism-run-20261005",
+    "outputs": {
+      "packet-17": {
+        "final.txt": "36daa0bf16163fd5e0c939194294b6494f8d383d1fe7a7a74ad2589f7e4959e0",
+        "events.jsonl": "a776b673d474e3cac4536a009b7f10d47848272284d178ef13f516849e50b2a7",
+        "exit.json": "08eda0ca9476b1cb4f198293df62badfbc8f88e5e9c91eeb0392344af5798be2",
+        "launch.json": "011a3964d7108889e64f6d232e08d83567a7d2df61a35d9504b1c39aed3759ed",
+        "launch-preflight.json": "ea69a7e997c762d28e02b3b7960e0d9a0f2e7be15ca98a75f991425ebfc224b5"
+      },
+      "packet-42": {
+        "final.txt": "cdd95389edcd198702d7a323c2fe7b198408b434cda4593c182f226e8234c58b",
+        "events.jsonl": "62e4268557d140c06e83741652f74eb38386535e1ba854d094f150bebaf5c5ce",
+        "exit.json": "efab89e69ed0ca7f05485c82d18384bb5a85d07e7d6ea5b8ec3e369b794a68e6",
+        "launch.json": "dda0c526a236cd80e84605f5aba8c277ae746211a3b14d7c73f7772f7fcbf065",
+        "launch-preflight.json": "c0317df114aedd56ca00b46d8aba6f8a2dfb03073320e25f6cb31652340108bc"
+      }
+    }
+  },
+  "errors_and_warnings": [
+    "One offline prelaunch substring assertion matched genericAGENTS.md mention; no inference occurred. Original failure preserved; exact workspace sentinel check substituted, frozen scientific inputs unchanged.",
+    "Both sessions emitted an under-development skip_host_skill_discovery warning; both completed normally.",
+    "Preliminary in-process seal included a changing supervision log. Final post-exit seal binds complete settled outputs and was made before scientific inspection. Original preliminary seal retained."
+  ],
+  "review_input": {
+    "sha256": "9f9745cb4943a78211fb65305ffde7951bff4f35a4908a605f4c6fa0685997d8",
+    "separate_initial_agent": true,
+    "requested_model": "gpt-6.1-sol",
+    "requested_effort": "low",
+    "history_fork": "none",
+    "condition_mapping_not_supplied": true,
+    "final_answers_only_no_private_reasoning": true,
+    "reviewer_usage": "Not exposed by collaboration interface; excluded from assessor token subtotal.",
+    "reviewer_reported_model": "gpt-6.1-sol",
+    "reviewer_reported_effort": "low",
+    "model_verification_boundary": "Requested through isolated subagent model/effort override and self-reported; no CLI durable reviewer usage/profile trace available.",
+    "review_result_sha256": "d0a0e9c76d703c2930829898c45adc57dd074f38ecd0b0ea96ea611255024fd6",
+    "review_output_freeze_sha256": "c36afa1147f1f5cb71169c7d5ab1e6d66364529ab1c1b99da7949b82730314a1"
+  },
+  "usage_proxy_boundary": "Actual CLI input includes generic system/developer/environment context and tokenization; byte/4 input-file proxies are not exact billed input. Reasoning tokens subset of output, not additional charge asserted."
+}

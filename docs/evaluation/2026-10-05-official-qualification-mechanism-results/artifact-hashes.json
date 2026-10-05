@@ -1,0 +1,9 @@
+{
+  "README.md": "71d94a6ab5db350d6f8a409062e4c3737e963c6f0383d90c95b2135b7db602d6",
+  "blinded-source-aware-review.json": "d0a0e9c76d703c2930829898c45adc57dd074f38ecd0b0ea96ea611255024fd6",
+  "frozen-rubric.json": "9cca12d2547d6b8655811acbb57831922af3b5dfebfcf62febe834bbe6197710",
+  "operational-integrity.json": "3780c84212a26e8606b3a5412cd59bdf77e905c7d6ab772e4c2df88a0e409f85",
+  "question-answers.json": "cefc7509e084678fcf84f006ecc88b927c635512e9b690178e21108865032a57",
+  "review-score-projection.json": "5fa943446f40c6327ed4c250dc827360c2d9888590f75866811f4b509a9acc7c",
+  "synthetic-cases.json": "8d3f141447e869230f59a39edd97e5ea02f81c6e092645e5dbf874f938ff4c74"
+}
