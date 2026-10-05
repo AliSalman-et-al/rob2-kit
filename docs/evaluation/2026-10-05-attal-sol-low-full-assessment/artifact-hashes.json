@@ -1,0 +1,28 @@
+{
+  "public_files": {
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/README.md": "daf02f37faed26167a0ecb5a034a34d2adeae2358bc29f51e8541bb94275ccd3",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/assessments-projection.json": "3fea5a43b5a197a5a806b40917ce8790a4be71bccc348cae18353f1b8e88f37d",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/corpus-declaration.json": "8ec0a129f893173935a0a84b7614856567f5795172b8387afa2771a9de4cee03",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/critical-source-delivery.json": "819f591bc94f63274973e7dc69f0e9355493c5eea8e8c4725047ed5f42de1c4e",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/operational-integrity.json": "ee1a31c51839509dda90222d1975c729f60c7ee75e3424c1b9892e51665312ac",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/research-criteria.json": "9d09f18faf697fc0a11a7ab8233844095ace0ae0723158eec02da7678fee06d6",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/source-aware-audit.json": "d58b444c68d83ed6c870067c45c4f07f72a15e4bb2fbd355abc8fcbd9662ce48",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/source-delivery.json": "73c1efc7b3d96abd9fdf8a337d476fe8949dedc3a2327dd563e69885f477f21c",
+    "docs/evaluation/2026-10-05-attal-sol-low-full-assessment/visual-payload-verification.json": "aae797855dfcb8ab579c27216b44a8286235f4c0d974e5a7ffaa14cab5692180"
+  },
+  "retained_private_bindings": {
+    "proposal-events.jsonl": "b6a4a3b47ec50c8def6cbed69fca3f8d91aa96223fdefedb5660e2e4c25da224",
+    "assessment-events.jsonl": "af6b99924d0217eb064a60c599f58b134937f34241a468a454f8b689055ebd3e",
+    "proposal-outputs-freeze-final.json": "5323df210f22ec8236c56049291fe369886bcca48b44dcbe222869ee946e4085",
+    "assessment-outputs-freeze-final.json": "72ed80394a999e76e9df7275cb59f6414f2a76972c0f6903a1c4dd548b1ab41b",
+    "proposal-retained-output-map.json": "a2d89f852327e25cacbc2138e4d3cd2c4279f0522e47b05906661de8fb15f6bd",
+    "frozen-preflight.json": "e45cd868f2603b2906e6ff62466e8c6ef4061d060a88727807a41adeae496e1b",
+    "assessment-continuation-freeze.json": "f8a276a33687a689fd9b227c0e1c76172f029ead4580b7a27a96e0abad5b7e31",
+    "assessment-usage.json": "4c13c06a2666068bd78df6656ae3cdc8881afc49bdbe82ab620c5d1d9b343676",
+    "scope-approval.json": "cfd66b21ce58047f8b19ebf9738ef29c7389b2893ca1b025bc4b9ba66b4785bd",
+    "build_delivery_map.py": "9cf011f4aa6693d82421dd54dc186fa25c856278f424664c706354dba5c23fdd",
+    "delivery-map.json": "744cc9ab4b077500f4979a0fb085a4aa855eb419453bc717944ad7956ac70dfb",
+    "preserved-tool-conditions.json": "ed81ff3d886489eb4a2ea39ddf209f7955a4af54379cb9c7e2ee6a2ef89c562d",
+    "review-verification/captured.sources.zip": "d84ee1e03ba4ab4ba6c3348ab64eefee0f07cdd2d16738aedc120b025040ae26"
+  }
+}

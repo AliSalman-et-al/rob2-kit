@@ -1,0 +1,583 @@
+{
+  "source_inputs": [
+    {
+      "stage": "proposal",
+      "sha256": "b6a4a3b47ec50c8def6cbed69fca3f8d91aa96223fdefedb5660e2e4c25da224"
+    },
+    {
+      "stage": "assessment",
+      "sha256": "af6b99924d0217eb064a60c599f58b134937f34241a468a454f8b689055ebd3e"
+    }
+  ],
+  "all_read_windows": [
+    {
+      "stage": "proposal",
+      "line": 23,
+      "order": 9,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 106,
+      "page_line_count": 106,
+      "numbered_body_sha256": "e8c2eefc4f5e6bef3ca4d9103d58a5bccd941c5280f6068fd628d77460e797d2"
+    },
+    {
+      "stage": "proposal",
+      "line": 23,
+      "order": 9,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 108,
+      "page_line_count": 108,
+      "numbered_body_sha256": "640ab5ffb3969cb61d5985d4e3434e4655b2a8191745509578b48fbd78e8c4e4"
+    },
+    {
+      "stage": "proposal",
+      "line": 23,
+      "order": 9,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 115,
+      "page_line_count": 115,
+      "numbered_body_sha256": "5641525e53e2672aa92147e1940aa4786d86e38367a1533a1b52d1f4a43bc555"
+    },
+    {
+      "stage": "proposal",
+      "line": 23,
+      "order": 9,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 54,
+      "page_line_count": 122,
+      "numbered_body_sha256": "7d3ff561e8433e39315ad9b31866c0545d2e8fe2304eaafe1b52423644a1c230"
+    },
+    {
+      "stage": "proposal",
+      "line": 25,
+      "order": 10,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 4,
+      "start_line": 55,
+      "end_line": 122,
+      "page_line_count": 122,
+      "numbered_body_sha256": "7d8755feeae960379e0c1b1de1e53b99f41ed9df0c1b961e877f63cbf37c61c6"
+    },
+    {
+      "stage": "proposal",
+      "line": 25,
+      "order": 10,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 158,
+      "page_line_count": 158,
+      "numbered_body_sha256": "48b2802921e578df1dab3b82c9f661cbb5bcdc498c910c9b0db913afcf540e3d"
+    },
+    {
+      "stage": "proposal",
+      "line": 25,
+      "order": 10,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 156,
+      "page_line_count": 156,
+      "numbered_body_sha256": "43aefaf4742a370a58ec4c6ff4540ff99a951d0e0b775e182f20272e0124d816"
+    },
+    {
+      "stage": "proposal",
+      "line": 25,
+      "order": 10,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 400,
+      "page_line_count": 400,
+      "numbered_body_sha256": "eec980d95cac8c72f223fd95afba31f74e81d7ae9aa89f2bfe359c791f8b42c6"
+    },
+    {
+      "stage": "proposal",
+      "line": 27,
+      "order": 11,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 125,
+      "page_line_count": 125,
+      "numbered_body_sha256": "3b81a2e262831127df3c43c06cab41e30fcc1539f5ac5af647566d97feef8987"
+    },
+    {
+      "stage": "proposal",
+      "line": 27,
+      "order": 11,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 9,
+      "start_line": 1,
+      "end_line": 175,
+      "page_line_count": 175,
+      "numbered_body_sha256": "17f06eddecef39276650d9de093a01cc9211950f10fa23b579c898a0b3f23095"
+    },
+    {
+      "stage": "proposal",
+      "line": 27,
+      "order": 11,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 164,
+      "page_line_count": 164,
+      "numbered_body_sha256": "3b1e4729de9b42a12fda144415d64a784da3e65c13ff73c7e84edc60204aca50"
+    },
+    {
+      "stage": "proposal",
+      "line": 27,
+      "order": 11,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 11,
+      "start_line": 1,
+      "end_line": 67,
+      "page_line_count": 123,
+      "numbered_body_sha256": "aa043646f8155595e1871e833d0b58548a36d65dcf1eee14ee597e81fbbe9c7c"
+    },
+    {
+      "stage": "proposal",
+      "line": 29,
+      "order": 12,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 11,
+      "start_line": 68,
+      "end_line": 123,
+      "page_line_count": 123,
+      "numbered_body_sha256": "19a7cce31a85e7156c6698a236b94b6f215ecf7367d7226e919653e437e55ceb"
+    },
+    {
+      "stage": "proposal",
+      "line": 33,
+      "order": 14,
+      "source_label": "ClinicalTrials.gov NCT01251211",
+      "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 186,
+      "page_line_count": 186,
+      "numbered_body_sha256": "80cd3e444f0ad9405905c9beac2b97caa4a53fa5b99fc5ef57e5f0796603de4e"
+    },
+    {
+      "stage": "proposal",
+      "line": 37,
+      "order": 16,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 9,
+      "page_line_count": 9,
+      "numbered_body_sha256": "bdc894bf6f030fb856bc99d06cfab71ae40ec10035f5fc8bc002e28545f892a5"
+    },
+    {
+      "stage": "proposal",
+      "line": 37,
+      "order": 16,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 25,
+      "page_line_count": 25,
+      "numbered_body_sha256": "da031664510b7fe8920f4439168e5c03d3a18713d050daabddb7498e02fc79f5"
+    },
+    {
+      "stage": "proposal",
+      "line": 37,
+      "order": 16,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 13,
+      "start_line": 1,
+      "end_line": 170,
+      "page_line_count": 170,
+      "numbered_body_sha256": "77de9338d264d28da53c95fd7ffc1a260a9ef1417afd9542e45e23480b622677"
+    },
+    {
+      "stage": "proposal",
+      "line": 37,
+      "order": 16,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 14,
+      "start_line": 1,
+      "end_line": 41,
+      "page_line_count": 41,
+      "numbered_body_sha256": "9eb4c6aef3318b57e14d5fd594780b5c8bc8d426cf291f871f23626a632100a0"
+    },
+    {
+      "stage": "proposal",
+      "line": 37,
+      "order": 16,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 15,
+      "start_line": 1,
+      "end_line": 15,
+      "page_line_count": 15,
+      "numbered_body_sha256": "9447d5a347a00594d72074c8ac32de02c6fb96792201b8102d51e2e490331934"
+    },
+    {
+      "stage": "assessment",
+      "line": 14,
+      "order": 33,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 106,
+      "page_line_count": 106,
+      "numbered_body_sha256": "e8c2eefc4f5e6bef3ca4d9103d58a5bccd941c5280f6068fd628d77460e797d2"
+    },
+    {
+      "stage": "assessment",
+      "line": 14,
+      "order": 33,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 108,
+      "page_line_count": 108,
+      "numbered_body_sha256": "640ab5ffb3969cb61d5985d4e3434e4655b2a8191745509578b48fbd78e8c4e4"
+    },
+    {
+      "stage": "assessment",
+      "line": 14,
+      "order": 33,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 115,
+      "page_line_count": 115,
+      "numbered_body_sha256": "5641525e53e2672aa92147e1940aa4786d86e38367a1533a1b52d1f4a43bc555"
+    },
+    {
+      "stage": "assessment",
+      "line": 14,
+      "order": 33,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 51,
+      "page_line_count": 122,
+      "numbered_body_sha256": "d5aa004c47d1440cdb33e6f92a55346f22bebe73eacad3a4365cecf0a43970ad"
+    },
+    {
+      "stage": "assessment",
+      "line": 16,
+      "order": 34,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 4,
+      "start_line": 52,
+      "end_line": 122,
+      "page_line_count": 122,
+      "numbered_body_sha256": "9aeeffc7bb9d1e311a4b82cb94c1a81cbf80470b09c23a38d3e1cdab728805c2"
+    },
+    {
+      "stage": "assessment",
+      "line": 16,
+      "order": 34,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 158,
+      "page_line_count": 158,
+      "numbered_body_sha256": "48b2802921e578df1dab3b82c9f661cbb5bcdc498c910c9b0db913afcf540e3d"
+    },
+    {
+      "stage": "assessment",
+      "line": 16,
+      "order": 34,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 156,
+      "page_line_count": 156,
+      "numbered_body_sha256": "43aefaf4742a370a58ec4c6ff4540ff99a951d0e0b775e182f20272e0124d816"
+    },
+    {
+      "stage": "assessment",
+      "line": 16,
+      "order": 34,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 397,
+      "page_line_count": 400,
+      "numbered_body_sha256": "aa30c817b0bf1ad3b3f0e088c4a12391c9e9584b6cce12a6a8bc08139246373f"
+    },
+    {
+      "stage": "assessment",
+      "line": 18,
+      "order": 35,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 7,
+      "start_line": 398,
+      "end_line": 400,
+      "page_line_count": 400,
+      "numbered_body_sha256": "35324dd3ebac0756df39647a64a5cf234ceb27dddf79fd1e3ee61f96a43546f2"
+    },
+    {
+      "stage": "assessment",
+      "line": 18,
+      "order": 35,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 125,
+      "page_line_count": 125,
+      "numbered_body_sha256": "3b81a2e262831127df3c43c06cab41e30fcc1539f5ac5af647566d97feef8987"
+    },
+    {
+      "stage": "assessment",
+      "line": 18,
+      "order": 35,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 9,
+      "start_line": 1,
+      "end_line": 175,
+      "page_line_count": 175,
+      "numbered_body_sha256": "17f06eddecef39276650d9de093a01cc9211950f10fa23b579c898a0b3f23095"
+    },
+    {
+      "stage": "assessment",
+      "line": 18,
+      "order": 35,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 164,
+      "page_line_count": 164,
+      "numbered_body_sha256": "3b1e4729de9b42a12fda144415d64a784da3e65c13ff73c7e84edc60204aca50"
+    },
+    {
+      "stage": "assessment",
+      "line": 18,
+      "order": 35,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 11,
+      "start_line": 1,
+      "end_line": 48,
+      "page_line_count": 123,
+      "numbered_body_sha256": "9b0fd4cdf6875e1e49333ed6a003595946aec56d0b948507341317bbfccd2826"
+    },
+    {
+      "stage": "assessment",
+      "line": 20,
+      "order": 36,
+      "source_label": "S1474-4422-16-00017-X.pdf",
+      "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+      "page": 11,
+      "start_line": 49,
+      "end_line": 123,
+      "page_line_count": 123,
+      "numbered_body_sha256": "05fb419615910d6843796bf93fd147419d86ac9289b910fc8291a7140ccd89af"
+    },
+    {
+      "stage": "assessment",
+      "line": 49,
+      "order": 50,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 66,
+      "page_line_count": 66,
+      "numbered_body_sha256": "0e65dbccf6b06139f919398bad057a075e2097de06e8373aa5751e2af5165436"
+    },
+    {
+      "stage": "assessment",
+      "line": 65,
+      "order": 58,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 38,
+      "page_line_count": 38,
+      "numbered_body_sha256": "fd80abfa151f7885b1e87ec8efc100723f52bd43f8b437d9d21ca185cbb8c826"
+    },
+    {
+      "stage": "assessment",
+      "line": 65,
+      "order": 58,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 13,
+      "start_line": 1,
+      "end_line": 170,
+      "page_line_count": 170,
+      "numbered_body_sha256": "77de9338d264d28da53c95fd7ffc1a260a9ef1417afd9542e45e23480b622677"
+    },
+    {
+      "stage": "assessment",
+      "line": 65,
+      "order": 58,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 14,
+      "start_line": 1,
+      "end_line": 41,
+      "page_line_count": 41,
+      "numbered_body_sha256": "9eb4c6aef3318b57e14d5fd594780b5c8bc8d426cf291f871f23626a632100a0"
+    },
+    {
+      "stage": "assessment",
+      "line": 65,
+      "order": 58,
+      "source_label": "mmc1.pdf",
+      "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+      "page": 15,
+      "start_line": 1,
+      "end_line": 15,
+      "page_line_count": 15,
+      "numbered_body_sha256": "9447d5a347a00594d72074c8ac32de02c6fb96792201b8102d51e2e490331934"
+    },
+    {
+      "stage": "assessment",
+      "line": 105,
+      "order": 77,
+      "source_label": "ClinicalTrials.gov NCT01251211",
+      "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+      "page": 1,
+      "start_line": 59,
+      "end_line": 72,
+      "page_line_count": 186,
+      "numbered_body_sha256": "527c8126986554d6314608db4a79c8cfc6c913e820514aef01f91148d3f09dc5"
+    },
+    {
+      "stage": "assessment",
+      "line": 105,
+      "order": 77,
+      "source_label": "ClinicalTrials.gov NCT01251211",
+      "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+      "page": 1,
+      "start_line": 125,
+      "end_line": 140,
+      "page_line_count": 186,
+      "numbered_body_sha256": "b3054b50bef8bec008a4ee76fb33d65421d993961f91db40e23d890b19371166"
+    },
+    {
+      "stage": "assessment",
+      "line": 105,
+      "order": 77,
+      "source_label": "ClinicalTrials.gov NCT01251211",
+      "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+      "page": 1,
+      "start_line": 172,
+      "end_line": 186,
+      "page_line_count": 186,
+      "numbered_body_sha256": "f6ffb95d92cadcdcb0425274789c90eb7ee4b22d0cf0478763524eb0822fc92b"
+    }
+  ],
+  "visual_deliveries": [
+    {
+      "stage": "assessment",
+      "line": 68,
+      "order": 59,
+      "arguments": {
+        "trial_id": "attal-2016",
+        "source_id": "sh_9892c963d307f34a",
+        "page": 4,
+        "inline": true
+      },
+      "delivery": {
+        "render": {
+          "identity": "sha256:5d447b5e1a69fdadc03b86e71253d04d55f2d81985531bd08bb0d0cc911cf495",
+          "source_id": "sh_9892c963d307f34a",
+          "page": 4,
+          "png_sha256": "sha256:ee3771e912c719aa59e06c30b2e98d3b62821b27beaf73b5ae664e2fa362f3e3",
+          "recipe": "pymupdf-1.5"
+        },
+        "delivery_receipt": "sha256:12f7d513215cff4418beffdb00727c19faac2f75012cad802172dc7f01d3529f"
+      }
+    }
+  ],
+  "tool_condition_count": 2,
+  "scope": "Actual body/window deliveries, not a claim of model comprehension or scientific support.",
+  "domain_commits": [
+    {
+      "domain_id": "domain:deviations",
+      "accepted_commit": {
+        "domain_id": "domain:deviations",
+        "stage": "assessment",
+        "line": 53,
+        "order": 52,
+        "revision": 6
+      }
+    },
+    {
+      "domain_id": "domain:measurement",
+      "accepted_commit": {
+        "domain_id": "domain:measurement",
+        "stage": "assessment",
+        "line": 86,
+        "order": 68,
+        "revision": 8
+      }
+    },
+    {
+      "domain_id": "domain:missing",
+      "accepted_commit": {
+        "domain_id": "domain:missing",
+        "stage": "assessment",
+        "line": 74,
+        "order": 62,
+        "revision": 7
+      }
+    },
+    {
+      "domain_id": "domain:randomization",
+      "accepted_commit": {
+        "domain_id": "domain:randomization",
+        "stage": "assessment",
+        "line": 37,
+        "order": 44,
+        "revision": 5
+      }
+    },
+    {
+      "domain_id": "domain:selection",
+      "accepted_commit": {
+        "domain_id": "domain:selection",
+        "stage": "assessment",
+        "line": 107,
+        "order": 78,
+        "revision": 9
+      }
+    }
+  ]
+}

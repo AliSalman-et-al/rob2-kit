@@ -1,0 +1,947 @@
+[
+  {
+    "domain_id": "domain:deviations",
+    "judgment": "low",
+    "active_questions": [
+      "sq:deviations:participants-aware",
+      "sq:deviations:personnel-aware",
+      "sq:deviations:appropriate-analysis"
+    ],
+    "inactive_questions": [
+      "sq:deviations:context-deviations",
+      "sq:deviations:affected-outcome",
+      "sq:deviations:balanced",
+      "sq:deviations:substantial-impact"
+    ],
+    "driver_questions": [],
+    "answers": [
+      {
+        "question_id": "sq:deviations:participants-aware",
+        "answer": "probably_no",
+        "justification": "Indistinguishable placebo injections and reported masking probably prevented knowledge of assignment. End-of-participation guesses were based on perceived improvement, with substantial incorrect guesses; no participant identified active treatment through skin changes or injection pain. Such response-based guesses do not establish broken masking during diary collection.",
+        "unknowns": [
+          "Individual timing and certainty of treatment guesses during follow-up are unreported."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:9d8f40065f695b9bb9c0006148a0350e9c50f0da6ccdf2164c9dc934f3b83695",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 12,
+              "end_line": 20
+            }
+          },
+          {
+            "evidence": "sha256:1ca066c82cd6a45b03802b33feae95120c364b21e6021e1a3d7bfc76eff8329a",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 8,
+              "start_line": 35,
+              "end_line": 73
+            }
+          }
+        ]
+      },
+      {
+        "question_id": "sq:deviations:personnel-aware",
+        "answer": "probably_no",
+        "justification": "Independent pharmacists prepared syringes so injecting physicians could not recognize treatment; investigators were masked and reported no visible skin changes. Pharmacists' necessary preparation knowledge is confined to preparation with no other study role, and does not establish awareness among clinical carers or injectors.",
+        "unknowns": [
+          "Blinding was not individually documented for every carer."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:798ca7f93dad0eeed2d36b0a3aec17c9736ea4a4ef4afd478aab5111a44b4935",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 6,
+              "end_line": 20
+            }
+          },
+          {
+            "evidence": "sha256:ab729019b58a2135bc2bc5ffc1c70bc6bd4055ffc463ff30d6b06f488700142a",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 8,
+              "start_line": 68,
+              "end_line": 73
+            }
+          }
+        ]
+      },
+      {
+        "question_id": "sq:deviations:appropriate-analysis",
+        "answer": "probably_yes",
+        "justification": "The primary analysis retained assigned groups and included 66 participants regardless of second-administration receipt or study completion; the as-treated restriction applies to a separate secondary endpoint. One excluded placebo participant supplied no diaries; the other withdrew before first administration from fear and probably supplied no post-baseline primary outcome. This is probably a missing-outcome modified ITT analysis, which is appropriate for D2; missingness and LOCF are assessed in D3. The two exclusions are preserved rather than erased by the ITT label.",
+        "unknowns": [
+          "No explicit post-baseline diary availability statement is given for the participant withdrawing before first administration; exclusion solely for missing outcomes is inferred, not proven."
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 3,
+            "implication": "Two randomized placebo participants were excluded, so the reported all-randomized ITT claim is not literally correct."
+          }
+        ],
+        "bases": [
+          {
+            "evidence": "sha256:52b57da64036870daf49a0d739867bde03feb39b4395a86fec818ca05a6037a3",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 4,
+              "start_line": 40,
+              "end_line": 63
+            }
+          },
+          {
+            "evidence": "sha256:b6744da49dfd637b2bd276bc426cdf96b97455073f93fba8bfacfcab683b0358",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 43,
+              "end_line": 54
+            }
+          },
+          {
+            "evidence": "sha256:b5c7b9a4e17872932328aec0f9660b9970cadd3d0e00df0a3e69cf4cf48500e7",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 4,
+              "start_line": 77,
+              "end_line": 117
+            }
+          },
+          {
+            "evidence": "sha256:fc49286fc61903523ac62ea35ab30a7e6f48d88510e48d2f52e9ca300ca9e17c",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 43,
+              "end_line": 51
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The full methods/results/flow, supplement diary eligibility and trial-wide withdrew/diaries search provide no evidence of recorded primary outcomes discarded because of adherence. The timing, absent diaries for the other exclusion, and retention of later noncompleters support a probable missing-only explanation.",
+            "unresolved_premise": "Whether the pre-administration withdrawal had any post-baseline outcomes omitted independently of missingness is unresolved."
+          }
+        ]
+      }
+    ],
+    "accepted_commit": {
+      "domain_id": "domain:deviations",
+      "stage": "assessment",
+      "line": 53,
+      "order": 52,
+      "revision": 6
+    }
+  },
+  {
+    "domain_id": "domain:measurement",
+    "judgment": "low",
+    "active_questions": [
+      "sq:measurement:method-inappropriate",
+      "sq:measurement:differential",
+      "sq:measurement:assessor-aware"
+    ],
+    "inactive_questions": [
+      "sq:measurement:influence-possible",
+      "sq:measurement:influence-likely"
+    ],
+    "driver_questions": [],
+    "answers": [
+      {
+        "question_id": "sq:measurement:method-inappropriate",
+        "answer": "probably_no",
+        "justification": "Participants rated their own average pain over the prior 24 hours each morning using the anchored BPI 0–10 numerical scale; weekly averaging measures the requested mean weekly pain intensity and repeated collection captures change throughout the window. This recognized pain instrument and short recall period are probably suitable and sensitive to plausible pain changes. Subjectivity concerns awareness rather than making the measurement intrinsically inappropriate.",
+        "unknowns": [],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:e21ea3b2fcec44489bb397f073d4719b5486bd5bd25a11096e7556cc02ae6f77",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 69,
+              "end_line": 78
+            }
+          }
+        ]
+      },
+      {
+        "question_id": "sq:measurement:differential",
+        "answer": "probably_no",
+        "justification": "The report describes the same daily diary question, scale, collection schedule and 24-week window for both assigned groups, with matching treatment visits. This supports comparable measurement rather than different detection opportunities. Greater actual missingness in placebo is preserved in D3; it does not establish a different measurement instrument or ascertainment procedure for the ratings that were obtained.",
+        "unknowns": [
+          "Individual adherence to diary timing was not audited in the captured report."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:16784da3895af5b8c154ac9f943a04f893ab9c39148a6da61ff987803d016cb8",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 22,
+              "end_line": 42
+            }
+          },
+          {
+            "evidence": "sha256:e21ea3b2fcec44489bb397f073d4719b5486bd5bd25a11096e7556cc02ae6f77",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 69,
+              "end_line": 78
+            }
+          },
+          {
+            "evidence": "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+            "kind": "context",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 15,
+              "start_line": 9,
+              "end_line": 15
+            }
+          }
+        ]
+      },
+      {
+        "question_id": "sq:measurement:assessor-aware",
+        "answer": "probably_no",
+        "justification": "The participant is the assessor for this self-reported pain endpoint. Participants were masked using indistinguishable placebo injections. Many final treatment guesses were incorrect or uncertain, were based on experienced benefit, and no participant attributed recognition to skin changes or injection pain. This supports probably maintained masking during diary assessment, while response-based guesses do not prove either certain assignment knowledge or an effect on ratings.",
+        "unknowns": [
+          "Timing and certainty of assignment beliefs during individual daily ratings remain unreported."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:e21ea3b2fcec44489bb397f073d4719b5486bd5bd25a11096e7556cc02ae6f77",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 69,
+              "end_line": 78
+            }
+          },
+          {
+            "evidence": "sha256:9d8f40065f695b9bb9c0006148a0350e9c50f0da6ccdf2164c9dc934f3b83695",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 12,
+              "end_line": 20
+            }
+          },
+          {
+            "evidence": "sha256:1ca066c82cd6a45b03802b33feae95120c364b21e6021e1a3d7bfc76eff8329a",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 8,
+              "start_line": 35,
+              "end_line": 73
+            }
+          }
+        ]
+      }
+    ],
+    "accepted_commit": {
+      "domain_id": "domain:measurement",
+      "stage": "assessment",
+      "line": 86,
+      "order": 68,
+      "revision": 8
+    }
+  },
+  {
+    "domain_id": "domain:missing",
+    "judgment": "high",
+    "active_questions": [
+      "sq:missing:data-available",
+      "sq:missing:evidence-unbiased",
+      "sq:missing:true-value-dependent",
+      "sq:missing:likely-dependent"
+    ],
+    "inactive_questions": [],
+    "driver_questions": [
+      "sq:missing:likely-dependent"
+    ],
+    "answers": [
+      {
+        "question_id": "sq:missing:data-available",
+        "answer": "probably_no",
+        "justification": "Actual weekly pain records were incomplete: 131/1650 records (7.9%) among 66 analyzed participants were missing, mainly late and more often in placebo, in addition to two randomized placebo exclusions. This is a record fraction, not a participant availability fraction. For a 0–10 continuous outcome and modest longitudinal effect -0.77, these later unobserved ratings could materially alter the overall contrast; near-complete availability irrespective of their values is therefore probably not established. LOCF values remain missing data. Study completion counts do not establish observed diary counts.",
+        "unknowns": [
+          "Arm-specific weekly record missing counts and number of participants with incomplete primary diaries are not supplied.",
+          "Complete 24-week primary outcome availability for all 68 randomized participants cannot be quantified."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:051d72e9745f8a81305b6a9d2240f9e32cd5b6caada8d101b429fc6cf2ba7f94",
+            "kind": "inference",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 15,
+              "start_line": 9,
+              "end_line": 15
+            }
+          },
+          {
+            "evidence": "sha256:b6744da49dfd637b2bd276bc426cdf96b97455073f93fba8bfacfcab683b0358",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 43,
+              "end_line": 54
+            }
+          },
+          {
+            "evidence": "sha256:35bf9245857617b680a38849c3b8413a93d5b197b74b8ecca564c13c95fa756a",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 6,
+              "start_line": 4,
+              "end_line": 18
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "Report flow/results and supplement missingness section were inspected; scoped supplement missing-term search identifies pages 13 and 15 but no finer availability table. Rate and timing evidence supports a probable response without inventing observed counts.",
+            "unresolved_premise": "Exact participant-level and arm-specific diary availability remains unknown."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:evidence-unbiased",
+        "answer": "probably_no",
+        "justification": "The same primary longitudinal treatment effect remains negative under interpolation, maximum-likelihood and MCMC imputation (overall betas -0.723/-0.752/-0.650/-0.662 versus LOCF -0.768). This provides real reassurance within those analyses, and their post-hoc timing does not invalidate D3 evidence. However, the report does not establish how their conditioning variables/assumptions account for efficacy-related dropout and later unobserved pain. Its claim that absence of a baseline association rules out MNAR does not resolve dependence on unobserved pain. Thus the inspected sensitivity analyses probably do not establish absence of important missing-data bias; no mandatory MNAR method is being imposed.",
+        "unknowns": [
+          "Full imputation models, conditioning variables, and assumptions for missing ratings after efficacy-related dropout are unreported."
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 0,
+            "implication": "All reported alternative overall treatment estimates remain similar and statistically significant, providing bounded reassurance against dependence on the particular imputation method."
+          },
+          {
+            "basis_index": 1,
+            "implication": "All reported alternative overall treatment estimates remain similar and statistically significant, providing bounded reassurance against dependence on the particular imputation method."
+          }
+        ],
+        "bases": [
+          {
+            "evidence": "sha256:cf00ad339b2cfd9c08d9a311076705eb5f0f9aeb2a5da601cc6118cb18d14798",
+            "kind": "context",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 13,
+              "start_line": 1,
+              "end_line": 170
+            }
+          },
+          {
+            "evidence": "sha256:b56ef275d38d7ed08851cee20d336c5d25e23dc2000501d96c5e1e2faaaa0403",
+            "kind": "context",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 14,
+              "start_line": 1,
+              "end_line": 41
+            }
+          },
+          {
+            "evidence": "sha256:0421f4266b92324e7c7d5703fdbcc55b3ea317a5f0d3f073d295579cc091b033",
+            "kind": "inference",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 15,
+              "start_line": 1,
+              "end_line": 15
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "Complete supplementary sensitivity and missingness sections plus main-report methods/discussion were inspected. These identify methods and estimates but do not specify mechanism-relevant assumptions sufficiently to infer correction.",
+            "unresolved_premise": "Protection against the documented dropout mechanism is not established."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:true-value-dependent",
+        "answer": "probably_yes",
+        "justification": "The supplement directly links actual missing weekly pain records to late dropouts. The trial flow describes study discontinuation for absence of efficacy (two active, three placebo), distinct from nonreceipt of the second administration. Persistent pain could therefore influence whether later pain ratings were obtained. Treatment stopping alone is not being counted as missingness; the link comes from the missingness passage and study-discontinuation reasons together.",
+        "unknowns": [
+          "Not every missing record has an individual reason or timing."
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 0,
+            "implication": "Authors classify the pattern as MAR, but their reported baseline test cannot rule out dependence on unobserved later pain."
+          }
+        ],
+        "bases": [
+          {
+            "evidence": "sha256:0421f4266b92324e7c7d5703fdbcc55b3ea317a5f0d3f073d295579cc091b033",
+            "kind": "inference",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 15,
+              "start_line": 1,
+              "end_line": 15
+            }
+          },
+          {
+            "evidence": "sha256:50c3f1ad1bceadbddb30f0d0bda00ec0f7178a1596f6a37b61c760bf444413d3",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "figure",
+              "page": null,
+              "start_line": null,
+              "end_line": null
+            }
+          }
+        ]
+      },
+      {
+        "question_id": "sq:missing:likely-dependent",
+        "answer": "probably_yes",
+        "justification": "Actual missing weekly records were concentrated late, attributed mainly to dropouts, and more common in placebo. Study discontinuations were predominantly for lack of efficacy; the supplement also identifies three placebo participants with worsened pain who stopped prematurely. These converging facts make dependence on persistent or worsening pain likely rather than merely possible. That responder table is based on ITT/imputed results and does not prove their subsequent unobserved values; the conclusion remains probable. Baseline-adjusted LOCF does not demonstrably account for the link to later pain.",
+        "unknowns": [
+          "Individual missing-record reasons and subsequent true pain values remain unknown; exact size and direction of resulting bias cannot be established."
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 3,
+            "implication": "Stable alternative overall treatment estimates limit concern about dependence on one imputation implementation, but do not establish that outcome-related dropout was fully addressed."
+          },
+          {
+            "basis_index": 4,
+            "implication": "Stable alternative overall treatment estimates limit concern about dependence on one imputation implementation, but do not establish that outcome-related dropout was fully addressed."
+          },
+          {
+            "basis_index": 0,
+            "implication": "The authors assert MAR and exclusion of MNAR; this does not follow from absence of a baseline effect alone."
+          }
+        ],
+        "bases": [
+          {
+            "evidence": "sha256:0421f4266b92324e7c7d5703fdbcc55b3ea317a5f0d3f073d295579cc091b033",
+            "kind": "inference",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 15,
+              "start_line": 1,
+              "end_line": 15
+            }
+          },
+          {
+            "evidence": "sha256:50c3f1ad1bceadbddb30f0d0bda00ec0f7178a1596f6a37b61c760bf444413d3",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "figure",
+              "page": null,
+              "start_line": null,
+              "end_line": null
+            }
+          },
+          {
+            "evidence": "sha256:73fd5c139d0c585142b2fc4b26f73882fb21b8d4bef132dce835359af8d0ca82",
+            "kind": "inference",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 10,
+              "start_line": 1,
+              "end_line": 33
+            }
+          },
+          {
+            "evidence": "sha256:cf00ad339b2cfd9c08d9a311076705eb5f0f9aeb2a5da601cc6118cb18d14798",
+            "kind": "context",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 13,
+              "start_line": 1,
+              "end_line": 170
+            }
+          },
+          {
+            "evidence": "sha256:b56ef275d38d7ed08851cee20d336c5d25e23dc2000501d96c5e1e2faaaa0403",
+            "kind": "context",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 14,
+              "start_line": 1,
+              "end_line": 41
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The complete source-located flow, dropout, response and missingness/sensitivity passages provide enough for a probable dependence judgment; captured documents do not provide participant-level missingness or more detailed imputation models.",
+            "unresolved_premise": "The exact missing-value mechanism and bias magnitude remain unresolved."
+          }
+        ]
+      }
+    ],
+    "accepted_commit": {
+      "domain_id": "domain:missing",
+      "stage": "assessment",
+      "line": 74,
+      "order": 62,
+      "revision": 7
+    }
+  },
+  {
+    "domain_id": "domain:randomization",
+    "judgment": "low",
+    "active_questions": [
+      "sq:randomization:sequence",
+      "sq:randomization:concealment",
+      "sq:randomization:baseline-imbalance"
+    ],
+    "inactive_questions": [],
+    "driver_questions": [],
+    "answers": [
+      {
+        "question_id": "sq:randomization:sequence",
+        "answer": "probably_yes",
+        "justification": "An independent pharmacist prepared a schedule that randomly assigned treatments in blocks of four to consecutive numbers. This is more than a randomized label and supports a probably random sequence, although the random-number generation technique is not specified.",
+        "unknowns": [
+          "Exact method generating random permutations within blocks is unreported."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:ab0a8c36aab6efea509ee02540040a2bf5b2c7a0d24b07e514f15510a5fbc039",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 6,
+              "end_line": 10
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The complete report randomization section and trial-wide random-term search across the captured report, registry and supplement do not specify it; no protocol/SAP is captured. The reported independent block randomization supports a probable response.",
+            "unresolved_premise": "Exact random generation technique remains unknown."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:randomization:concealment",
+        "answer": "probably_yes",
+        "justification": "Central allocation was controlled by an independent pharmacist with no other study role; site pharmacists prepared indistinguishable syringes and the code was retained sealed until study end. These safeguards probably prevented enrolling personnel knowing forthcoming treatment. The envelope is described as code storage, not a demonstrated sequential-envelope allocation method.",
+        "unknowns": [
+          "Exact pre-assignment request/access procedure is not described."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:798ca7f93dad0eeed2d36b0a3aec17c9736ea4a4ef4afd478aab5111a44b4935",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 6,
+              "end_line": 20
+            }
+          },
+          {
+            "evidence": "sha256:a85be41740054750f2d845781753324d5a5f2f46576c0a67be59ce15eb508d5a",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 2,
+              "start_line": 46,
+              "end_line": 49
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The full randomization/masking procedure and captured-source discovery provide independent pharmacy control but no further operational details.",
+            "unresolved_premise": "Details of allocation access before enrolment are not fully specified."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:randomization:baseline-imbalance",
+        "answer": "probably_no",
+        "justification": "Randomized group sizes were equal (34 each). The available baseline table for 34 active and 32 placebo participants shows nearly identical age and pain intensity; differences in sex, cause and concomitant analgesics are compatible with chance in this small trial, with no pattern suggesting failed randomization. This inference is limited because the two excluded placebo participants are absent from the baseline table.",
+        "unknowns": [
+          "Baseline characteristics of the two excluded randomized placebo participants are unavailable."
+        ],
+        "counterevidence": [],
+        "bases": [
+          {
+            "evidence": "sha256:4e5b9112a7db5f44a1aec2e87cceb83e9d21f8d9e725154ad004a4aeddbdaabe",
+            "kind": "inference",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 79,
+              "end_line": 149
+            }
+          },
+          {
+            "evidence": "sha256:1b3c3cce309a6bc8aa03b8cabb7a84bf0fb92b7c382a633a854cc8f2de267291",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 43,
+              "end_line": 57
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The inspected Table 1 and participant-flow/results passages explicitly describe the 66-person analysis sample. No separate all-randomized baseline table was identified in captured-source discovery.",
+            "unresolved_premise": "Complete baseline table for all 68 randomized participants is unavailable."
+          }
+        ]
+      }
+    ],
+    "accepted_commit": {
+      "domain_id": "domain:randomization",
+      "stage": "assessment",
+      "line": 37,
+      "order": 44,
+      "revision": 5
+    }
+  },
+  {
+    "domain_id": "domain:selection",
+    "judgment": "some_concerns",
+    "active_questions": [
+      "sq:selection:prespecified-analysis",
+      "sq:selection:multiple-measurements",
+      "sq:selection:multiple-analyses"
+    ],
+    "inactive_questions": [],
+    "driver_questions": [
+      "sq:selection:prespecified-analysis",
+      "sq:selection:multiple-measurements",
+      "sq:selection:multiple-analyses"
+    ],
+    "answers": [
+      {
+        "question_id": "sq:selection:prespecified-analysis",
+        "answer": "no_information",
+        "justification": "The report calls the primary endpoint prespecified and describes baseline/time adjusted longitudinal analysis with LOCF, but neither that label nor the broadly matching current registry diary endpoint establishes a detailed plan finalized before investigator access to unblinded outcomes. Registry first posting was December 2010 and current update March 2016; unseen historical content is unknown. Response-dependent registry repeat timing differs materially from fixed week-12 repeat in the report; its version, amendment timing and reason are unresolved. These facts do not establish late or results-driven change.",
+        "unknowns": [
+          "Detailed applicable plan, primary model parameterization and finalization/access chronology.",
+          "Historical registry scope and reason/timing for dosing-schedule discrepancy."
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 4,
+            "implication": "Prespecified primary endpoint wording and matching diary pain domain support intended primary status, but do not resolve exact analysis chronology."
+          },
+          {
+            "basis_index": 1,
+            "implication": "Prespecified primary endpoint wording and matching diary pain domain support intended primary status, but do not resolve exact analysis chronology."
+          }
+        ],
+        "bases": [
+          {
+            "evidence": "sha256:52b57da64036870daf49a0d739867bde03feb39b4395a86fec818ca05a6037a3",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 4,
+              "start_line": 40,
+              "end_line": 63
+            }
+          },
+          {
+            "evidence": "sha256:fa265fda1eca8e80dd2402e7ab14eb9b33a2019fc9c9b77b82b8eba3835a526b",
+            "kind": "context",
+            "locator": {
+              "source_label": "ClinicalTrials.gov NCT01251211",
+              "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+              "kind": "narrative",
+              "page": 1,
+              "start_line": 125,
+              "end_line": 140
+            }
+          },
+          {
+            "evidence": "sha256:83ed97c9f9f2763db625c4ca055a313919f444014407e941d14c40066c2636de",
+            "kind": "context",
+            "locator": {
+              "source_label": "ClinicalTrials.gov NCT01251211",
+              "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+              "kind": "narrative",
+              "page": 1,
+              "start_line": 172,
+              "end_line": 186
+            }
+          },
+          {
+            "evidence": "sha256:a1ecbbab966d855c20697dbcd20aca68869e5c3b7ec9d2fd92d88b38534c0d24",
+            "kind": "context",
+            "locator": {
+              "source_label": "ClinicalTrials.gov NCT01251211",
+              "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+              "kind": "narrative",
+              "page": 1,
+              "start_line": 59,
+              "end_line": 72
+            }
+          },
+          {
+            "evidence": "sha256:c638858646a71a8b1b7cdf10eab0916a13fd1801fd620f0ad0b32dbbb7866923",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 4,
+              "start_line": 50,
+              "end_line": 63
+            }
+          },
+          {
+            "kind": "limitation",
+            "search_receipt": "sha256:8629d3ae6901962bcbd3cc33e69fa2bb117fbe1d27cec9587a17ad9c79295ff6",
+            "stopping_rationale": "Read the main report completely, navigated supplement and inspected relevant methods/results and post-hoc analyses, and inspected captured registry content and dates. Completed trial-wide bounded plan discovery; no accessible cited applicable protocol/SAP reference was identified. Captured registry first posting does not date its current endpoint content. Further lexical repetition cannot recover an uncaptured historical plan.",
+            "unresolved_premise": "Applicable detailed pre-unblinding analysis intentions and historical measurement/analysis eligibility remain unresolved."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:selection:multiple-measurements",
+        "answer": "no_information",
+        "justification": "Daily/weekly diary intensity, particular weekly contrasts and visit-based BPI pain measures provide possible alternatives within pain intensity. The approved 24-week Result remains fixed, but no independent detailed review hierarchy or historical trial measurement intentions establishes the complete eligible set. Overall and particular weekly diary results and visit pain results are reported; no inspected evidence establishes favorable-result-based selection. Incomplete intentions plus potential alternatives warrants NI rather than probable selection or reassurance.",
+        "unknowns": [
+          "Complete independently eligible measurement set and prespecified hierarchy.",
+          "Whether unpublished eligible pain measurements existed and why particular contrasts were presented."
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 1,
+            "implication": "Reporting overall, weekly and visit pain results argues against a simple single favorable measurement account, but does not establish full intended reporting."
+          },
+          {
+            "basis_index": 2,
+            "implication": "Reporting overall, weekly and visit pain results argues against a simple single favorable measurement account, but does not establish full intended reporting."
+          }
+        ],
+        "bases": [
+          {
+            "evidence": "sha256:75d5e9d05147f7b734b7947544b3a744734f8544f1ec21f960219c9c52a66c66",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 69,
+              "end_line": 98
+            }
+          },
+          {
+            "evidence": "sha256:35bf9245857617b680a38849c3b8413a93d5b197b74b8ecca564c13c95fa756a",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 6,
+              "start_line": 4,
+              "end_line": 18
+            }
+          },
+          {
+            "evidence": "sha256:b585e65a0ceb10906f76a926fb28bac10df5593acca70c16aafafa30d8180811",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 140
+            }
+          },
+          {
+            "evidence": "sha256:fa265fda1eca8e80dd2402e7ab14eb9b33a2019fc9c9b77b82b8eba3835a526b",
+            "kind": "context",
+            "locator": {
+              "source_label": "ClinicalTrials.gov NCT01251211",
+              "source_sha256": "sha256:e4eee6e1759557fbc27ddf01e88a86dfff8cf8d73faefe91ed00fc7a25a139f4",
+              "kind": "narrative",
+              "page": 1,
+              "start_line": 125,
+              "end_line": 140
+            }
+          },
+          {
+            "kind": "limitation",
+            "search_receipt": "sha256:8629d3ae6901962bcbd3cc33e69fa2bb117fbe1d27cec9587a17ad9c79295ff6",
+            "stopping_rationale": "Read the main report completely, navigated supplement and inspected relevant methods/results and post-hoc analyses, and inspected captured registry content and dates. Completed trial-wide bounded plan discovery; no accessible cited applicable protocol/SAP reference was identified. Captured registry first posting does not date its current endpoint content. Further lexical repetition cannot recover an uncaptured historical plan.",
+            "unresolved_premise": "Applicable detailed pre-unblinding analysis intentions and historical measurement/analysis eligibility remain unresolved."
+          }
+        ]
+      },
+      {
+        "question_id": "sq:selection:multiple-analyses",
+        "answer": "no_information",
+        "justification": "Baseline/time adjustment, weekly versus daily model wording, analyzed population and missing-data methods permit multiple plausible analyses. LOCF and post-hoc interpolation, maximum-likelihood and MCMC estimates are actually reported together and consistently favor active treatment, establishing multiplicity rather than results-driven selection. Exact pre-unblinding intentions, complete eligible set and reasons for primary specification remain unresolved. NI follows; post-hoc status alone does not imply selective reporting.",
+        "unknowns": [
+          "Exact intended primary model, adjustment and missing-data specification before unblinded access.",
+          "Complete eligible analysis set and any result-dependent reporting choice."
+        ],
+        "counterevidence": [
+          {
+            "basis_index": 1,
+            "implication": "Several alternative imputation estimates are disclosed; no observed withholding based on favorability is established."
+          },
+          {
+            "basis_index": 2,
+            "implication": "Several alternative imputation estimates are disclosed; no observed withholding based on favorability is established."
+          }
+        ],
+        "bases": [
+          {
+            "evidence": "sha256:52b57da64036870daf49a0d739867bde03feb39b4395a86fec818ca05a6037a3",
+            "kind": "context",
+            "locator": {
+              "source_label": "S1474-4422-16-00017-X.pdf",
+              "source_sha256": "sha256:cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+              "kind": "narrative",
+              "page": 4,
+              "start_line": 40,
+              "end_line": 63
+            }
+          },
+          {
+            "evidence": "sha256:2127450a743716fa5185c94d945b8f5bb243e8cb19e5b791a4df27e8e356310f",
+            "kind": "context",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 13,
+              "start_line": 4,
+              "end_line": 129
+            }
+          },
+          {
+            "evidence": "sha256:df477c1322fee54c50d752ad28998aa9ab680ea8cc71d9804dc54b239deb0031",
+            "kind": "context",
+            "locator": {
+              "source_label": "mmc1.pdf",
+              "source_sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+              "kind": "narrative",
+              "page": 14,
+              "start_line": 3,
+              "end_line": 33
+            }
+          },
+          {
+            "kind": "limitation",
+            "search_receipt": "sha256:8629d3ae6901962bcbd3cc33e69fa2bb117fbe1d27cec9587a17ad9c79295ff6",
+            "stopping_rationale": "Read the main report completely, navigated supplement and inspected relevant methods/results and post-hoc analyses, and inspected captured registry content and dates. Completed trial-wide bounded plan discovery; no accessible cited applicable protocol/SAP reference was identified. Captured registry first posting does not date its current endpoint content. Further lexical repetition cannot recover an uncaptured historical plan.",
+            "unresolved_premise": "Applicable detailed pre-unblinding analysis intentions and historical measurement/analysis eligibility remain unresolved."
+          }
+        ]
+      }
+    ],
+    "accepted_commit": {
+      "domain_id": "domain:selection",
+      "stage": "assessment",
+      "line": 107,
+      "order": 78,
+      "revision": 9
+    }
+  }
+]

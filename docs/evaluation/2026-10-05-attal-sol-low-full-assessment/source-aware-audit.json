@@ -1,0 +1,118 @@
+{
+  "method": "Post-freeze source-aware implementation-agent audit of all active answers and inactive dependencies against the original local dossier, current registry capture and official Cochrane 2019 elaborations. Not independently blinded or clinically adjudicated.",
+  "scope": "Integrated development case; not accuracy/concordance, isolated superiority, or unique gold labels.",
+  "overall": "high",
+  "overall_basis": "D3 High alone drives High; local multiple-SomeConcerns escalation policy is not needed here.",
+  "domains": [
+    {
+      "domain": "D1",
+      "model_judgment": "low",
+      "assessment": "Defensible probable inferences",
+      "source_pages": [
+        "Article PDF3: independent pharmacist, random blocks, concealed preparation",
+        "Article PDF5: analyzed-population baseline table"
+      ],
+      "findings": [
+        "PY sequence follows more than a randomized label while preserving unreported generation details.",
+        "Code storage envelope is not misclassified as proof of a sequential-envelope allocation method.",
+        "Baseline comparison does not pretend to include the two excluded randomized placebo participants."
+      ],
+      "limits": [
+        "Not a randomized-label-only or minimization mechanism control."
+      ]
+    },
+    {
+      "domain": "D2",
+      "model_judgment": "low",
+      "assessment": "Defensible with explicit inference limitation",
+      "source_pages": [
+        "Article PDF3/8: indistinguishable injections, masked investigators, end-of-participation guesses",
+        "Article PDF4/5: assigned groups, analyzed66/randomized68, refusal/no diaries"
+      ],
+      "findings": [
+        "Distinguishes missing-outcome modified ITT from adherence-based as-treated exclusion. Secondary as-treated analysis is not substituted for primary result.",
+        "No diaries is documented for one exclusion; absence of post-baseline outcome data for pre-treatment refusal is inferred and retained as unknown.",
+        "Later noncompleters remain analyzed; missingness is assessed separately in D3."
+      ],
+      "limits": [
+        "PY appropriate-analysis depends on a plausible missing-only inference for the refusal, not proof that no recorded outcomes were discarded."
+      ]
+    },
+    {
+      "domain": "D3",
+      "model_judgment": "high",
+      "assessment": "Strongest source-grounded finding; defensible risk judgment, not proof of realized bias",
+      "source_pages": [
+        "Article PDF4 flow visually delivered: study discontinuations distinct from treatment nonreceipt",
+        "Appendix PDF10: three worsening-pain placebo participants stopped prematurely",
+        "Appendix PDF13/14: actual primary imputation comparisons",
+        "Appendix PDF15:131/1650 missing weekly records, later/placebo-heavy, asserted MAR"
+      ],
+      "findings": [
+        "Does not equate ITT/LOCF with complete observed outcomes or7.9% records with participant availability.",
+        "Acknowledges estimates remain negative across actual alternatives; post-hoc timing does not disqualify D3 reassurance.",
+        "Critically appraises whether conditioning/assumptions cover efficacy-related dropout. No baseline association does not rule out dependence on unobserved pain.",
+        "Does not demand a named MNAR method or claim exact undocumented method failure.",
+        "Actual missingness/dropout linkage and lack-of-efficacy reasons support likely rather than merely possible outcome dependence; imputed worsening table is not treated as proof of unobserved future values."
+      ],
+      "limits": [
+        "Full imputation conditioning is unavailable; appropriate conditioning on observed histories could mitigate some missingness.",
+        "Exact magnitude/direction of resulting bias is unknown. High is defensible, not uniquely certified by this audit.",
+        "The real case contains described dropout mechanisms; it does not isolate the newly removed documentation prerequisite."
+      ]
+    },
+    {
+      "domain": "D4",
+      "model_judgment": "low",
+      "assessment": "Defensible probable maintained masking; participant awareness remains uncertain",
+      "source_pages": [
+        "Article PDF3: participant diary pain assessor and common procedures",
+        "Article PDF8:13/34 active correctly guessed;15/34 active guessed placebo;17/32 placebo guessed placebo; guesses based on perceived response",
+        "Article PDF10: acknowledged potential skin-based unmasking; none reported recognition by skin",
+        "Appendix PDF16: undelivered post-study illustration, inspected only by auditor"
+      ],
+      "findings": [
+        "Correctly identifies participant as assessor for pain. Does not use independent observer masking to erase participant awareness.",
+        "Does not equate subjectivity with invalid measurement or greater missingness with different measurement methods.",
+        "Guesses and possible cosmetic mechanism do not automatically prove knowledge during ratings; substantial incorrect/unknown guesses and no recognized treatment-specific signs support PN with timing uncertainty."
+      ],
+      "limits": [
+        "Participant beliefs could still affect ratings; timing/certainty not documented. PN is not proof of perfect masking.",
+        "Questions4.4/4.5 are inactive, so revised unlikely-influence anchor is not directly behaviorally tested.",
+        "Appendix16 photos are post-study illustration, not trial masking certification; not retrospectively credited to the model."
+      ]
+    },
+    {
+      "domain": "D5",
+      "model_judgment": "some_concerns",
+      "assessment": "Defensible cautious judgment; exact NI answers remain reviewable",
+      "source_pages": [
+        "Article PDF3/4/7: primary longitudinal and visit pain measurements/model description",
+        "Appendix PDF13/14: disclosed post-hoc imputation alternatives",
+        "Current NCT01251211: broadly matching diary endpoint, repeat-dose discrepancy, posting/update dates"
+      ],
+      "findings": [
+        "Does not backdate current endpoint content to first registry posting or interpret dosing difference as proven result-driven amendment.",
+        "Prespecified-primary wording is retained as positive evidence, not silently dismissed.",
+        "Multiplicity/post-hoc status alone is not called results-driven selection.",
+        "Lack of historical detailed intentions alongside potential eligible alternatives supports uncertainty."
+      ],
+      "limits": [
+        "Dated historic plan and amendment reasons remain unavailable.",
+        "Published primary status and joint reporting could support more reassuring5.2/5.3 inferences; complete independently documented eligibility is not a general production prerequisite.",
+        "NI answers are conservative and should receive independent expert review; domain SomeConcerns is defensible from unresolved5.1 without certifying each NI as uniquely correct."
+      ]
+    }
+  ],
+  "new_production_scientific_defect_demonstrated": false,
+  "behavioral_successes": [
+    "Exact original endpoint preserved; narrower reported population not substituted for target.",
+    "Critical rather than automatic sensitivity-method reassurance.",
+    "Participant-assessor and masking nuance preserved."
+  ],
+  "remaining_validation": [
+    "Independent clinical/source-aware adjudication, particularly D2 inference and D5 NI alternatives.",
+    "Prospective positive/negative model cases for randomized-label-only/minimization and nonjudgment mortality exception, if separately authorized.",
+    "Matched comparator needed before any attribution or gain claim."
+  ]
+}

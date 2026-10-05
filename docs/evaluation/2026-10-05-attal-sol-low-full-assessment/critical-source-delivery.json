@@ -1,0 +1,362 @@
+[
+  {
+    "domain": "domain:deviations",
+    "critical_pages": [
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 3,
+        "spans": [
+          [
+            1,
+            115
+          ],
+          [
+            1,
+            115
+          ]
+        ],
+        "page_line_count": 115,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 4,
+        "spans": [
+          [
+            1,
+            51
+          ],
+          [
+            1,
+            54
+          ],
+          [
+            52,
+            122
+          ],
+          [
+            55,
+            122
+          ]
+        ],
+        "page_line_count": 122,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 5,
+        "spans": [
+          [
+            1,
+            158
+          ],
+          [
+            1,
+            158
+          ]
+        ],
+        "page_line_count": 158,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 8,
+        "spans": [
+          [
+            1,
+            125
+          ],
+          [
+            1,
+            125
+          ]
+        ],
+        "page_line_count": 125,
+        "complete_text_body_before_commit": true
+      }
+    ]
+  },
+  {
+    "domain": "domain:measurement",
+    "critical_pages": [
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 3,
+        "spans": [
+          [
+            1,
+            115
+          ],
+          [
+            1,
+            115
+          ]
+        ],
+        "page_line_count": 115,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 8,
+        "spans": [
+          [
+            1,
+            125
+          ],
+          [
+            1,
+            125
+          ]
+        ],
+        "page_line_count": 125,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 10,
+        "spans": [
+          [
+            1,
+            164
+          ],
+          [
+            1,
+            164
+          ]
+        ],
+        "page_line_count": 164,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "mmc1.pdf",
+        "page": 16,
+        "spans": [],
+        "page_line_count": 0,
+        "complete_text_body_before_commit": false
+      }
+    ]
+  },
+  {
+    "domain": "domain:missing",
+    "critical_pages": [
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 4,
+        "spans": [
+          [
+            1,
+            51
+          ],
+          [
+            1,
+            54
+          ],
+          [
+            52,
+            122
+          ],
+          [
+            55,
+            122
+          ]
+        ],
+        "page_line_count": 122,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "mmc1.pdf",
+        "page": 10,
+        "spans": [
+          [
+            1,
+            38
+          ]
+        ],
+        "page_line_count": 38,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "mmc1.pdf",
+        "page": 13,
+        "spans": [
+          [
+            1,
+            170
+          ],
+          [
+            1,
+            170
+          ]
+        ],
+        "page_line_count": 170,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "mmc1.pdf",
+        "page": 14,
+        "spans": [
+          [
+            1,
+            41
+          ],
+          [
+            1,
+            41
+          ]
+        ],
+        "page_line_count": 41,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "mmc1.pdf",
+        "page": 15,
+        "spans": [
+          [
+            1,
+            15
+          ],
+          [
+            1,
+            15
+          ]
+        ],
+        "page_line_count": 15,
+        "complete_text_body_before_commit": true
+      }
+    ]
+  },
+  {
+    "domain": "domain:randomization",
+    "critical_pages": [
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 3,
+        "spans": [
+          [
+            1,
+            115
+          ],
+          [
+            1,
+            115
+          ]
+        ],
+        "page_line_count": 115,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 5,
+        "spans": [
+          [
+            1,
+            158
+          ],
+          [
+            1,
+            158
+          ]
+        ],
+        "page_line_count": 158,
+        "complete_text_body_before_commit": true
+      }
+    ]
+  },
+  {
+    "domain": "domain:selection",
+    "critical_pages": [
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 3,
+        "spans": [
+          [
+            1,
+            115
+          ],
+          [
+            1,
+            115
+          ]
+        ],
+        "page_line_count": 115,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 4,
+        "spans": [
+          [
+            1,
+            51
+          ],
+          [
+            1,
+            54
+          ],
+          [
+            52,
+            122
+          ],
+          [
+            55,
+            122
+          ]
+        ],
+        "page_line_count": 122,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "S1474-4422-16-00017-X.pdf",
+        "page": 7,
+        "spans": [
+          [
+            1,
+            397
+          ],
+          [
+            1,
+            400
+          ],
+          [
+            398,
+            400
+          ]
+        ],
+        "page_line_count": 400,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "mmc1.pdf",
+        "page": 13,
+        "spans": [
+          [
+            1,
+            170
+          ],
+          [
+            1,
+            170
+          ]
+        ],
+        "page_line_count": 170,
+        "complete_text_body_before_commit": true
+      },
+      {
+        "source_label": "mmc1.pdf",
+        "page": 14,
+        "spans": [
+          [
+            1,
+            41
+          ],
+          [
+            1,
+            41
+          ]
+        ],
+        "page_line_count": 41,
+        "complete_text_body_before_commit": true
+      }
+    ]
+  }
+]
