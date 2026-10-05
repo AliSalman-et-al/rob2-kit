@@ -1,0 +1,18 @@
+{
+  "scope": "All five domains and qualified ADR0039 overall; assignment-effect instrument. No preferred labels or trial-specific hints in assessment inputs.",
+  "criteria": [
+    "Preserve exact population, contrast, outcome instrument, time window, estimand and analysis population; distinguish target from reported estimate and source conflicts.",
+    "Each active answer must have inspectable source warrants; audit critical cited and uncited counterevidence, actual delivery before commit, and visual layout when necessary.",
+    "D2: distinguish missing outcomes from non-missing postrandomization exclusions and trial-context deviations; ITT terminology does not settle appropriateness.",
+    "D3: result-specific denominator and missingness, assumptions/mechanism, genuine sensitivity reassurance and outcome dependence; no automatic numeric threshold, baseline balance or MAR claim shortcut.",
+    "D4: identify actual outcome assessor and masking/influence evidence; awareness alone does not decide bias.",
+    "D5: apply official propositions/Box11, plan availability and credible correspondence; no universal timestamp or exhaustive-hierarchy gate and no invented result-driven choice.",
+    "Uncertainty and alternatives remain visible; Probably answers require defensible evidence, not certainty or generic hypothetical risks.",
+    "Record operation failures, delivered contexts, original answers, elapsed/usage; feature use and label agreement alone are not gain."
+  ],
+  "scoring": "Per criterion: supported / material defect / unresolved, with exact source/line or trace references and consequence. No retrospective change of rubric; original output never repaired.",
+  "reference_gate": "Exact accuracy only after independent pre-prediction confirmation of same trial/population, contrast, construct/instrument, window, estimand and analysis population from human assessment itself. Uncertain study-level matches excluded; report qualified concordance separately. All-Low comparison uses identical strictly eligible result set only.",
+  "case_lock": "At most one initial full assessment per selected case. No coached continuation, paired retry, replacement selected for desired labels or repeat tuning on these cases. Freeze all selected first outputs before general code fixes; otherwise report separate version strata. Future fixes tested on existing unit/synthetic coverage and newly selected source-characteristic cases, not repeated paid optimization here.",
+  "failure_rule": "Diagnose source absence, delivery, scope, interpretation, logic and operational failures separately. Implement only general typed fixes with concrete failure evidence; preserve disagreement if defensible. No forced human labels or speculative guardrails.",
+  "integration_observation": "Observe ordinary discovery/use of all current native tools without a calculator cue. Whether arithmetic is used is not a success criterion; audit correct source premises, scope, assumptions and warranted inference whether or not used. No arithmetic-only scientific success or model-benefit attribution."
+}
