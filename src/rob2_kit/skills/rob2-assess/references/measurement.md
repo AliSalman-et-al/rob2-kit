@@ -8,7 +8,10 @@ returned question cards are authoritative. Apply this ordered audit:
 3. Compare methods, thresholds, schedules, and detection opportunities between
    randomized groups.
 4. Identify who determines whether that event occurred, not merely who records
-   it. For participant-reported outcomes, the participant is the assessor.
+   it. For participant-reported outcomes, the participant is the assessor. For
+   hospitalization, discharge or stopping ventilation, the care provider making
+   that decision is the assessor; distinguish this from a committee later
+   classifying or confirming the recorded event (Cochrane section 7.1, pp. 51–52).
 5. Answer assessor awareness separately from susceptibility to influence.
 6. If influence is possible or likely, explain the mechanism. Assess possibility
    before likelihood. If no mechanism can be established, apply the official
@@ -69,7 +72,12 @@ Also compare a safety result with a source-stated shared observation window agai
 the same trial report when it gives treatment-duration or disease-control medians but no safety
 window. These are neutral contrasts: assess suitability, differential detection,
 assessor identity and awareness, susceptibility, and likely influence separately.
-Open-label status or an endpoint class does not supply an answer.
+For intervention-provider decision outcomes, knowledge of intervention is usually
+likely to influence the care provider's decision; appraise that pathway and its
+circumstances, including expectations and counterevidence. Later committee
+blinding or consensus does not establish that the clinical decision maker was
+blinded. Composite appraisal still weighs component contributions. Open-label
+status alone does not supply an answer.
 
 For a mixed-composite paired premise check, hold the component definitions and
 assessor circumstances fixed, and compare source-supported predominance of

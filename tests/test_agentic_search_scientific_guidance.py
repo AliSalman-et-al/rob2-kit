@@ -639,3 +639,22 @@ def test_delivered_measurement_reference_preserves_mixed_composite_qualification
     assert "do not assign high merely" in text
     assert "unknown contributions do not establish either" in text
     assert "awareness, possible influence and likely influence" in text
+
+
+def test_hospitalization_assessor_is_clinical_decision_maker_not_only_reviewer() -> None:
+    awareness = _guidance_text(("sq:measurement:assessor-aware",))
+    likelihood = _guidance_text(("sq:measurement:influence-likely",))
+    assert "care provider making that decision" in awareness
+    assert "committee later classifying or confirming" in awareness
+    assert "decision maker's blinding" in awareness
+    assert "usually likely to be influenced" in likelihood
+    assert "rather than only later committee classification" in likelihood
+    assert "not automatic answers" in likelihood
+    assert "relative frequency or contribution" in likelihood
+
+    from rob2_kit.application.guidance import read_guidance
+
+    reference = read_guidance("references/measurement.md")["content"].casefold()
+    assert "that decision is the assessor" in reference
+    assert "usually" in reference and "later committee" in reference
+    assert "composite appraisal still weighs component contributions" in reference

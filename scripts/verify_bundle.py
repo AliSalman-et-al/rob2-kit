@@ -157,7 +157,7 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.9",
-    "content_hash": "sha256:7ed63739d320db9a7411c003756153a84939fd61a662aacef7b7bf53f8232b30",
+    "content_hash": "sha256:bbf29393fa164107d096edf5fcdf58e08a379ab626534d01ea97b7028620b015",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -182,6 +182,10 @@ _CONDITIONAL_SCIENTIFIC_PACK = {
     **_SCIENTIFIC_PACK,
     "domain_judgment_contract": _DOMAIN_JUDGMENT_CONTRACT,
     "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
+}
+_PRE_ADMISSION_ASSESSOR_PACK = {
+    **_CONDITIONAL_SCIENTIFIC_PACK,
+    "content_hash": "sha256:7ed63739d320db9a7411c003756153a84939fd61a662aacef7b7bf53f8232b30",
 }
 _PRE_COMPOSITE_WEIGHTING_PACK = {
     **_CONDITIONAL_SCIENTIFIC_PACK,
@@ -4721,6 +4725,7 @@ def verify(path: Path) -> tuple[bool, str]:
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,
+                _PRE_ADMISSION_ASSESSOR_PACK,
                 _PRE_COMPOSITE_WEIGHTING_PACK,
                 _PRE_DOMAIN_ADJUDICATION_PACK,
                 _PRE_D45_CONTEXTUAL_PACK,

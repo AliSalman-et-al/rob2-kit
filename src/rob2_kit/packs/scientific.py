@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.12"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.13"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -548,7 +548,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             _anchor(Answer.YES, "Outcome assessors knew the intervention received."),
         ),
         (
-            "The assessor can be a participant, intervention provider, or independent observer.",
+            "The assessor can be a participant, intervention provider, or independent observer. For intervention-provider decision outcomes such as hospitalization, discharge or stopping ventilation, the outcome assessor is the care provider making that decision (Cochrane section 7.1 pp. 51-52). Identify that decision maker separately from a committee later classifying or confirming the recorded event; committee blinding or consensus does not establish the decision maker's blinding.",
             "This asks only whether the relevant assessor knew assignment. It does not establish that the measurement was susceptible to bias, that detection opportunities differed, or that knowledge likely changed the assessment; those are separate questions.",
             "Unknown assessor identity or awareness does not prevent conditional reasoning about whether the measurement could be influenced if awareness existed.",
         ),
@@ -602,7 +602,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         ),
         (
             "Possible influence without reason to believe it occurred maps differently from likely influence.",
-            "Weigh reasons for and against likely influence, including subconscious expectations. No-treatment or usual-care comparators may raise concern relative to another active intervention; a care provider assessing their own treatment may have an interest in its success. Independent assessment, an independent interviewer, or a long interval with intervening treatments may reduce concern. These are contextual considerations, not automatic answers; keep likelihood separate from mere possibility, measurement susceptibility and detection opportunity.",
+            "Weigh reasons for and against likely influence, including subconscious expectations. For intervention-provider decision outcomes such as hospitalization, assessment is usually likely to be influenced when the care provider making the decision knows the intervention (Cochrane section 7.1 p. 52); appraise that decision pathway and its circumstances, rather than only later committee classification. No-treatment or usual-care comparators may raise concern relative to another active intervention; a care provider assessing their own treatment may have an interest in its success. Independent assessment, an independent interviewer, or a long interval with intervening treatments may reduce concern. These are contextual considerations, not automatic answers; keep likelihood separate from mere possibility, measurement susceptibility and detection opportunity.",
             "For a composite, weigh component-specific likelihood and counterevidence in light of relative frequency or contribution and the most influential components (Cochrane section 7.1 p. 52). Preserve concerns about a subjective component, but do not automatically assign High because one component is subjective or could be influenced. Dominant objective components and dominant susceptible components can support different composite appraisals; source-supported contribution, assessor awareness and likelihood of influence remain separate premises. If contribution is unknown, state that limit rather than assume dominance.",
         ),
         ("assessor awareness alone", "absence of documented influence or strong beliefs alone", "an objective endpoint label", "an ITT analysis"),

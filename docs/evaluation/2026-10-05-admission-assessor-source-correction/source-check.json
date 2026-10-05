@@ -1,0 +1,21 @@
+{
+  "review_after_frozen_outputs": true,
+  "main": {
+    "pdf_page_9_table4": "Upper block Primary end point (all-cause death + MACE); counts all-cause death16/9,HF7/1,AMI2/1,stroke1/2,total26/13. Lower totalMACEs includingrepeated repeatsdeaths16/9. No literalfirst-event label or chronology rule.",
+    "pdf_page_7_table3": "Primary outcome time to first MACE; alone does not prove upperTable4deathcountsexclusivelychronologicallyfirstevents.",
+    "pdf_page_2": "An independent data and safety monitoring board adjudicated serious adverse events.",
+    "pdf_page_4": "DSMB members were not blinded during events review; per-protocol consensus; institutional independence does not establish blinding."
+  },
+  "supplement": {
+    "pdf_pages_15_17_tableS4": "Days from randomization to death and causes of25fatalities. No timesofpriorcompositeevents or explicit mutuallyexclusive chronologicallyfirstdeath accounting rule. Causes include stroke and progressiveHF; these do not alone prove a prior distinct qualifyingendpoint.",
+    "pdf_page_14_tableS3": "Postoperative30daycomplications:AMI0/72vs0/25;stroke/TIA2vs0. These are surgicalsubsets,combinedstroke/TIA,notprimaryeventaccounting."
+  },
+  "conclusion": "Call Table4values primary-endpoint component counts;25chronologicallyfirstdeathsunsupported,notdisproven. Frozenmodeloutputfirst-eventclaimretainedandqualifiedasunsupportedinference.",
+  "guidance_audit": "Generic who-determines-outcome wording and provider-interestcontext existed; specific admission/discharge/ventilationcareproviderdecisionmaker versus latercommittee classification distinction omitted. Added at source4.3 and qualified4.5 plusmeasurementreference; no newfields orhandlabels.",
+  "official_guidance": "Cochrane22August2019section7.1pp51\u201352; outcomeassessorcareprovidermakingdecision,usuallylikelyinfluencedwhenaware; compositeappraisalstillweighscontribution.",
+  "validation": "29offlineguidance/transitivedelivery/descriptorhistoricaltests passed11.34s; no paidmodel rerun",
+  "pdf_sha256": {
+    "circ_circulationaha-2021-057639_supp1.pdf": "e7f7319bafb190be1b589f47e2cf4d2b6f8badfa9b5a91822cb04e2f27ec34de",
+    "CIRCULATIONAHA.121.057639.pdf": "dd643e8a0fc65605457c9a030145c67c4d87c43095476bd2b3440008f8513fab"
+  }
+}
