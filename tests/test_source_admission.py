@@ -181,6 +181,7 @@ def test_admitted_history_exports_verify_and_rehashed_tampering_is_rejected(
 
     archive = archive_sources(workspace)
     assert verify_source_archive(workspace / archive["path"])
+
     def remove_source_history(canonical: dict[str, object]) -> None:
         canonical.pop("source_admissions")
         canonical.pop("batch_history")
