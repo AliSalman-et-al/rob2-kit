@@ -1,0 +1,20 @@
+{
+  "hypothesis": "Removing additional local scientific scaffolding may improve source-grounded inference, but may also degrade it.",
+  "case": "baillard-2006",
+  "selection_before_domain_answers_or_gold": true,
+  "excluded_candidate": {
+    "case": "bausys-2023",
+    "reason": "Captured registry source bytes unavailable; live substitution would break source matching."
+  },
+  "source_repository": "/home/ali/Documents/Code/rob2-kit-benchmark",
+  "private_preparation": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/minimal-assessment-baillard-v5",
+  "paid_calls": 0,
+  "production_defaults_changed": false,
+  "failed_preparations_preserved": [
+    "minimal-assessment-baillard",
+    "minimal-assessment-baillard-v2",
+    "minimal-assessment-baillard-v3",
+    "minimal-assessment-baillard-v4"
+  ],
+  "target_ambiguity": "Approved mean drop target versus reported minimal SpO2 values; retain ambiguity, no matched-reference accuracy claim."
+}
