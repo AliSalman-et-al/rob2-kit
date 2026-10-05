@@ -3035,3 +3035,30 @@ def test_pdf_bookmark_navigation_preserves_metadata_and_reading_boundaries(tmp_p
     captured.write_bytes(captured.read_bytes() + b"changed bytes")
     with pytest.raises(ToolError, match="internal_evidence_integrity_error"):
         _call(workspace, "list_sources", {"trial_id": "trial", "source_id": source["id"]})
+
+
+def test_pdf_navigation_excludes_blank_labels_without_normalizing_authored_text(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    document.new_page().insert_text((48, 48), "Literal body.")
+    literal = "  Literal authored label  "
+    document.set_toc([[1, "", 1], [1, "   ", 1], [1, literal, 1]])
+    (workspace / "input" / "trial" / "protocol.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "protocol.pdf"
+    )
+    data = _call(workspace, "list_sources", {"trial_id": "trial", "source_id": source["id"]})[
+        "data"
+    ]["navigation"]
+    assert data["pdf_bookmark_count"] == 1
+    assert data["unmapped_pdf_bookmark_count"] == 2
+    bookmark = next(entry for entry in data["entries"] if entry["kind"] == "pdf_bookmark")
+    assert bookmark["outline_index"] == 2
+    assert bookmark["text"] == literal
+    assert bookmark["label_sha256"] == "sha256:" + hashlib.sha256(literal.encode()).hexdigest()

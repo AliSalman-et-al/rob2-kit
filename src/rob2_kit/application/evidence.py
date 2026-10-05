@@ -202,7 +202,7 @@ def _source_navigation(
             raise EvidenceIntegrityError("captured Source bytes do not match Canonical identity")
         with pymupdf.open(stream=data, filetype="pdf") as document:
             for index, (level, label, page) in enumerate(document.get_toc()):
-                if not label or not 1 <= page <= len(pages):
+                if not label.strip() or not 1 <= page <= len(pages):
                     unmapped_bookmarks += 1
                     continue
                 bookmarks.append(
