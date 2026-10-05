@@ -1,0 +1,67 @@
+{
+  "original_code_source": {
+    "declared_role": "supplement",
+    "id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+    "label": "mmc1.pdf",
+    "logical_path": "mmc1.pdf",
+    "media_type": "application/pdf",
+    "origin": "local_dossier",
+    "page_count": 16,
+    "projection_hash": "sha256:13f190b35edd5feaae148d62150c47fe31db66e1b6d9f98160efe1bd73f1414e",
+    "role": "supplement",
+    "sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+    "trial_id": "attal-2016"
+  },
+  "original_code_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/attal-2016/.rob2-kit/derivative.sqlite3",
+  "extraction_sql": "SELECT text FROM pages WHERE source_id = ? AND page = ?",
+  "extraction_parameters": [
+    "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+    10
+  ],
+  "original_code_text_sha256": "1d712eceb1e4991c016090111db3c02cf3b57b92530202c578d93c1b7859e0fd",
+  "actual_run_source": {
+    "declared_role": "supplement",
+    "id": "source_bb3875b9f26c3f5b3b19aac6c5b1fc36ff0d1fa88bc16b113cfe8e0fc875fd06",
+    "label": "mmc1.pdf",
+    "logical_path": "mmc1.pdf",
+    "media_type": "application/pdf",
+    "origin": "local_dossier",
+    "page_count": 16,
+    "projection_hash": "sha256:13f190b35edd5feaae148d62150c47fe31db66e1b6d9f98160efe1bd73f1414e",
+    "role": "supplement",
+    "sha256": "sha256:e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+    "trial_id": "attal-2016"
+  },
+  "physical_and_projected_page": 10,
+  "actual_completed_delivery": {
+    "stage": "assessment",
+    "event_log": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/attal-sol-low-full-assessment-20261005/assessment-events.jsonl",
+    "event_log_sha256": "af6b99924d0217eb064a60c599f58b134937f34241a468a454f8b689055ebd3e",
+    "jsonl_line": 65,
+    "event_type": "item.completed",
+    "tool_status": "completed",
+    "arguments": {
+      "trial_id": "attal-2016",
+      "source_id": "sh_bb3875b9f26c3f5b",
+      "pages": [
+        10,
+        13,
+        14,
+        15
+      ]
+    },
+    "returned_page": {
+      "source_id": "sh_bb3875b9f26c3f5b",
+      "page": 10,
+      "numbered_text": "1|\n2|9\n3|Web Extra file 6\n4|\n5|Individual responses in the BTX-A and placebo groups at 24 weeks based on weekly\n6|mean scores from pain diaries (ITT population).\n7|\n8|\n9|BTX-A\n10|N = 34\n11|Placebo\n12|N = 32\n13|P\n14|30 % pain relief\n15|50 % pain relief\n16|70 % pain relief*\n17|30 % pain worse*\n18|22 (64.7)\n19|10 (29.4)\n20|4 (11.7)\n21|0\n22|8 (25)\n23|5 (15.6)\n24|3 (9.4)\n25|3 (9.4) **\n26|0.001\n27|0.2\n28|0.7\n29|0.1\n30|\n31|Data are expressed as n (%) of patients.\n32|* Posthoc analyses\n33|** These patients stopped the study prematurely.\n34|\n35|\n36|\n37|\n38|",
+      "line_count": 38,
+      "returned_start_line": 1,
+      "returned_end_line": 38,
+      "page_remainder": null,
+      "truncated": false,
+      "next_start_line": null,
+      "passage_ref": "eh_73fd5c139d0c5851"
+    }
+  },
+  "interpretation": null
+}

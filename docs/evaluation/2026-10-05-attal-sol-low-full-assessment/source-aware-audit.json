@@ -2,7 +2,7 @@
   "method": "Post-freeze source-aware implementation-agent audit of all active answers and inactive dependencies against the original local dossier, current registry capture and official Cochrane 2019 elaborations. Not independently blinded or clinically adjudicated.",
   "scope": "Integrated development case; not accuracy/concordance, isolated superiority, or unique gold labels.",
   "overall": "high",
-  "overall_basis": "D3 High alone drives High; local multiple-SomeConcerns escalation policy is not needed here.",
+  "overall_basis": "D3 High alone drives High through overall.any_high under rob2-kit.overall.cochrane-conditional.v1. ADR0039 requires qualified, result-specific confidence assessment for cumulative concerns; the historical count policy is verification-only.",
   "domains": [
     {
       "domain": "D1",

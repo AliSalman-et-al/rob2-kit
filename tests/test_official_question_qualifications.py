@@ -15,7 +15,7 @@ FIXTURE = Path(__file__).parent / "fixtures/official-guidance-audit-2019"
 
 
 def test_complete_elaborations_match_independently_captured_official_blocks() -> None:
-    source = json.loads((FIXTURE / "elaborations.json").read_text())
+    source = json.loads((FIXTURE / "elaborations.json").read_text(encoding="utf-8"))
     questions = {q.id: q for q in SCIENTIFIC_PACK.questions}
     for captured in source["questions"]:
         guidance = questions[captured["question_id"]].guidance.official
@@ -28,7 +28,7 @@ def test_complete_elaborations_match_independently_captured_official_blocks() ->
 
 
 def test_question_options_dependencies_and_wording_are_unchanged() -> None:
-    baseline = json.loads((FIXTURE / "question-contract-before.json").read_text())
+    baseline = json.loads((FIXTURE / "question-contract-before.json").read_text(encoding="utf-8"))
     assert [
         {
             "id": q.id,

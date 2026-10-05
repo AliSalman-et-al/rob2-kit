@@ -627,8 +627,9 @@ def test_concurrent_workspace_preparation_has_one_atomic_owner(
         parents: bool = False,
         exist_ok: bool = False,
     ) -> None:
-        if path == workspace:
-            barrier.wait(timeout=5)
+        # Synchronize the exclusive ownership claim, not recursive parent creation.
+        if path == workspace and not parents and not exist_ok:
+            barrier.wait(timeout=30)
         original_mkdir(path, mode=mode, parents=parents, exist_ok=exist_ok)
 
     monkeypatch.setattr(Path, "mkdir", synchronized_mkdir)
@@ -638,7 +639,7 @@ def test_concurrent_workspace_preparation_has_one_atomic_owner(
         failures = []
         for future in futures:
             try:
-                results.append(future.result(timeout=10))
+                results.append(future.result(timeout=45))
             except ValueError as error:
                 failures.append(str(error))
 

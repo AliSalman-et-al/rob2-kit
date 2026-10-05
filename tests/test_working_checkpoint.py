@@ -761,7 +761,8 @@ def test_editing_advisory_notes_preserves_a_valid_domain_context_cursor(
         {
             "trial_id": "trial",
             "domain_id": "domain:randomization",
-            "max_response_bytes": 16_384,
+            # Fit the complete official elaboration while retaining pagination.
+            "max_response_bytes": 18_432,
         },
     )
     assert first["outcome"] == "success", first
