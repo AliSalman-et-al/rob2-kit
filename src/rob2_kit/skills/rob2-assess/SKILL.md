@@ -10,6 +10,10 @@ when filesystem reading is unavailable. Start with `read_guidance(document="SKIL
 for exact instruction content and follow its returned `links`; linked documents
 return their own further links. Resource-capable clients can also read
 `rob2://guidance/SKILL` or `rob2://guidance/<reference basename>`.
+For a repeat check while the complete document text remains in context, pass its
+returned `content_sha256` as `known_content_sha256`. An exact match returns
+`content_unchanged=true` with the hash and links; a changed document returns full text.
+Omit the hash whenever you need to recover the complete instructions.
 These instructions are separate from captured Trial Sources and Evidence.
 
 Drive the complete assessment through the public rob2-kit tools, not shell

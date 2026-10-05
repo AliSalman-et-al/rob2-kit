@@ -1,0 +1,123 @@
+{
+  "measurement": "Compact UTF-8 JSON of recorded structured_content; optional conditional-call replay, not observed runtime savings or tokens.",
+  "cases": [
+    {
+      "case": "attal",
+      "trace_sha256": "af6b99924d0217eb064a60c599f58b134937f34241a468a454f8b689055ebd3e",
+      "completed_tool_calls": {
+        "get_status": 2,
+        "read_guidance": 7,
+        "read_pages": 7,
+        "get_domain_context": 19,
+        "search_sources": 8,
+        "save_domain_judgment": 5,
+        "render_page": 1,
+        "select_visual_evidence": 1,
+        "review_trial": 12,
+        "close_trial": 1,
+        "finalize_batch": 1
+      },
+      "errors": [],
+      "guidance_response_bytes": 61015,
+      "identical_repeat_replays": [
+        {
+          "line": 94,
+          "document": "references/selection.md",
+          "content_sha256": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+          "original_response_bytes": 16015,
+          "conditional_replay_bytes": 716,
+          "reduction_bytes": 15299
+        }
+      ]
+    },
+    {
+      "case": "castoldi-2020",
+      "trace_sha256": "f702a4ae0b0d722dbb9c5d2e93f7a3e3bd787afd9ca255c95d40442a758566a1",
+      "completed_tool_calls": {
+        "get_status": 2,
+        "read_guidance": 7,
+        "read_pages": 3,
+        "get_domain_context": 24,
+        "search_sources": 5,
+        "save_domain_judgment": 8,
+        "search_sources_batch": 1,
+        "list_sources": 1,
+        "render_page": 1,
+        "select_visual_evidence": 1,
+        "review_trial": 9,
+        "close_trial": 1,
+        "finalize_batch": 1
+      },
+      "errors": [
+        {
+          "line": 41,
+          "tool": "save_domain_judgment",
+          "outcome": "repair",
+          "codes": [
+            "answer_requires_direct_basis",
+            "answer_requires_direct_basis"
+          ]
+        },
+        {
+          "line": 112,
+          "tool": "save_domain_judgment",
+          "outcome": "condition",
+          "codes": [
+            "domain_context_delivery_stale"
+          ]
+        }
+      ],
+      "guidance_response_bytes": 60998,
+      "identical_repeat_replays": [
+        {
+          "line": 92,
+          "document": "references/selection.md",
+          "content_sha256": "sha256:457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+          "original_response_bytes": 15980,
+          "conditional_replay_bytes": 681,
+          "reduction_bytes": 15299
+        }
+      ]
+    },
+    {
+      "case": "ashar-2022",
+      "trace_sha256": "6d1bb000af5a49542521bf658330a0a3cf5342888ac4db050d9d3934eec23e33",
+      "completed_tool_calls": {
+        "get_status": 3,
+        "read_guidance": 7,
+        "read_pages": 15,
+        "get_domain_context": 27,
+        "search_sources": 9,
+        "save_domain_judgment": 6,
+        "search_sources_batch": 2,
+        "acquire_companion_source": 2,
+        "admit_companion_source": 1,
+        "save_working_checkpoint": 1,
+        "review_trial": 6,
+        "close_trial": 1,
+        "finalize_batch": 1
+      },
+      "errors": [
+        {
+          "line": 107,
+          "tool": "save_domain_judgment",
+          "outcome": "repair",
+          "codes": [
+            "answer_requires_direct_basis"
+          ]
+        },
+        {
+          "line": 128,
+          "tool": "acquire_companion_source",
+          "outcome": "condition",
+          "codes": [
+            "invalid_request"
+          ]
+        }
+      ],
+      "guidance_response_bytes": 85825,
+      "identical_repeat_replays": []
+    }
+  ],
+  "total_replayed_reduction_bytes": 30598
+}
