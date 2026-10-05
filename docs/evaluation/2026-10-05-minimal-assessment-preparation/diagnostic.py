@@ -815,6 +815,8 @@ async def prepare(root: Path, official: Path) -> None:
 
 
 def validate(root: Path, response: Path, workspace: Path) -> dict:
+    # Native containment checks compare resolved paths; accept relative CLI paths too.
+    workspace = workspace.resolve()
     draft = Assessment.model_validate_json(response.read_bytes())
     result = json.loads((root / "diagnostic-result.json").read_text())
     if draft.result_identity != _identity(result):

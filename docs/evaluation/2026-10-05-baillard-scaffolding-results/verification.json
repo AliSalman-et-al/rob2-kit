@@ -1,0 +1,11 @@
+{
+  "original_authoritative_json_schema_both_outputs": "pass",
+  "canonical_evidence_and_active_branch_validation_both_outputs": "pass",
+  "relative_workspace_cli_repair_both_outputs_unchanged_answers_and_proposals": "pass",
+  "ruff": "pass",
+  "raw_failed_validation_attempts_preserved": true,
+  "no_semantic_certification": true,
+  "ruff_format": "pass",
+  "ty": "pass",
+  "git_diff_check": "pass"
+}

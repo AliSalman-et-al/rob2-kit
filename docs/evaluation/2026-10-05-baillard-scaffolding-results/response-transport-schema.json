@@ -1,0 +1,256 @@
+{
+  "$defs": {
+    "Answer": {
+      "enum": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "title": "Answer",
+      "type": "string"
+    },
+    "AnswerDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "question_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "answer": {
+          "$ref": "#/$defs/Answer"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "citations": {
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^eh_[0-9a-f]{8,64}$",
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/WorkingSourceRange"
+              },
+              {
+                "$ref": "#/$defs/VisualEvidenceReference"
+              }
+            ]
+          },
+          "title": "Citations",
+          "type": "array"
+        },
+        "unknowns": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Unknowns",
+          "type": "array"
+        },
+        "counterevidence": {
+          "items": {
+            "$ref": "#/$defs/DomainCounterpoint"
+          },
+          "title": "Counterevidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_id",
+        "answer",
+        "rationale",
+        "citations",
+        "unknowns",
+        "counterevidence"
+      ],
+      "title": "AnswerDraft",
+      "type": "object"
+    },
+    "DomainAnswers": {
+      "additionalProperties": false,
+      "properties": {
+        "domain_id": {
+          "enum": [
+            "domain:randomization",
+            "domain:deviations",
+            "domain:missing",
+            "domain:measurement",
+            "domain:selection"
+          ],
+          "title": "Domain Id",
+          "type": "string"
+        },
+        "answers": {
+          "items": {
+            "$ref": "#/$defs/AnswerDraft"
+          },
+          "minItems": 1,
+          "title": "Answers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "domain_id",
+        "answers"
+      ],
+      "title": "DomainAnswers",
+      "type": "object"
+    },
+    "DomainCounterpoint": {
+      "additionalProperties": false,
+      "description": "One scientific counterclaim citing inspected Evidence directly.",
+      "properties": {
+        "evidence": {
+          "description": "Selected handles, exact text ranges or delivered visual references.",
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^eh_[0-9a-f]{8,64}$",
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/WorkingSourceRange"
+              },
+              {
+                "$ref": "#/$defs/VisualEvidenceReference"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "implication": {
+          "description": "How the cited passages together limit or challenge the answer.",
+          "minLength": 1,
+          "title": "Implication",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence",
+        "implication"
+      ],
+      "title": "DomainCounterpoint",
+      "type": "object"
+    },
+    "VisualEvidenceReference": {
+      "additionalProperties": false,
+      "description": "Host transcription of an authentic delivered image, not verified OCR.",
+      "properties": {
+        "delivery_receipt": {
+          "description": "Receipt returned alongside render_page ImageContent for this Trial.",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Delivery Receipt",
+          "type": "string"
+        },
+        "region": {
+          "description": "Normalized x0,y0,x1,y1 bounds of the transcribed image region.",
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Region",
+          "type": "array",
+          "items": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "transcription": {
+          "description": "Literal self-contained account of the region, including relevant labels, values, units, denominators and footnotes. This is a host observation, not OCR truth.",
+          "minLength": 1,
+          "title": "Transcription",
+          "type": "string"
+        },
+        "uncertainty": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional uncertainty about the image interpretation; do not invent a value.",
+          "title": "Uncertainty"
+        }
+      },
+      "required": [
+        "delivery_receipt",
+        "region",
+        "transcription",
+        "uncertainty"
+      ],
+      "title": "VisualEvidenceReference",
+      "type": "object"
+    },
+    "WorkingSourceRange": {
+      "additionalProperties": false,
+      "description": "One exact, recoverable source location kept in a derivative checkpoint.",
+      "properties": {
+        "source_id": {
+          "description": "Source handle from the current Trial.",
+          "pattern": "^sh_[0-9a-f]{16}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "page": {
+          "description": "1-based page index in the captured Source.",
+          "title": "Page",
+          "type": "integer",
+          "minimum": 1
+        },
+        "start_line": {
+          "description": "First cited line; use 0 only with end_line 0 for a whole-page visual locator.",
+          "minimum": 0,
+          "title": "Start Line",
+          "type": "integer"
+        },
+        "end_line": {
+          "description": "Last cited line; use 0 only with start_line 0 for a whole-page visual locator.",
+          "minimum": 0,
+          "title": "End Line",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_id",
+        "page",
+        "start_line",
+        "end_line"
+      ],
+      "title": "WorkingSourceRange",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "result_identity": {
+      "title": "Result Identity",
+      "type": "string"
+    },
+    "domains": {
+      "items": {
+        "$ref": "#/$defs/DomainAnswers"
+      },
+      "maxItems": 5,
+      "minItems": 5,
+      "title": "Domains",
+      "type": "array"
+    }
+  },
+  "required": [
+    "result_identity",
+    "domains"
+  ],
+  "title": "Assessment",
+  "type": "object"
+}

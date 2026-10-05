@@ -1,5 +1,9 @@
 # Assessment-only scientific scaffolding comparison — preparation only
 
+This document records the frozen pre-inference preparation. The subsequently
+authorized two-session execution and source-first audit are preserved in
+[the results checkpoint](../2026-10-05-baillard-scaffolding-results/README.md).
+
 No paid inference has run. No production defaults changed. This is a falsifiable,
 isolated comparison, not a recommendation to adopt minimalism or roll out the
 experimental full official guidance route.
