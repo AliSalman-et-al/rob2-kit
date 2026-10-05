@@ -26,3 +26,5 @@ PYTHONPATH=src:tests python docs/evaluation/2026-10-05-official-algorithm-audit/
 The script imports existing oracle data only for stable question IDs, never its path generator or judgment logic. Reference rows and activation rules were transcribed from the official source. [Verification receipt](verification.json) records exact locators and counts. This is an implementation-agent verification, not independent human certification, source-warrant validation, benchmark accuracy or evidence of model improvement. No paid evaluation or full benchmark was run.
 
 Existing evaluator, conditional-overall and domain-adjudication suites: **41passed in65.99seconds**. Published reproduction script was rerun successfully against the pinned PDF, with identical counts.
+
+Independent review reproduced the paths, invalid controls and bound source/script/product hashes and returned scopedGO. It did not rerun the41test suite. The additional3.2NI probes now supply only3.1and3.2in each of three activating3.1states and assert the specific forbidden-answer error, correcting a control confound without changing scientific logic.

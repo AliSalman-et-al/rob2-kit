@@ -77,5 +77,17 @@
     "src/rob2_kit/logic/aggregation.py": "d09dec33f4e85f14bb72b60c7eee9b62a2e447c382f8263b29247cf575d79b10",
     "scripts/verify_bundle.py": "1308da65049557a7d71a56fbbc6a65539a1b7413309e59c462feae4df69ac73e",
     "tests/oracle/rob2_parallel.py": "e7322010850f87696f86de7fdc81aac7f5ec28697de780454ba6b6218e524be2"
-  }
+  },
+  "isolated_3_2_ni_negative_controls": {
+    "activating_3_1_states": [
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "only_3_1_and_3_2_supplied": true,
+    "count": 3,
+    "rejection_reason": "answer is not allowed for sq:missing:evidence-unbiased",
+    "all_passed": true
+  },
+  "independent_review": "Parent conveyed independent source/table/figure/script/six-product-hash reproduction and scopedGO. Reviewer did not rerun reported41tests. Original extra3.2NI controls were confounded by also supplying inactive3.3; published script now isolates these probes."
 }

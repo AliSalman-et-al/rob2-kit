@@ -140,12 +140,12 @@ for domain, rs in rows.items():
         "same_label_duplicate_expansions": duplicates,
     }
 # Question3.2 explicitly has no NI option: invalid in all activated contexts.
-for v in itertools.product(NY, YU):
-    a = dict(zip(ids["domain:missing"][:3], (v[0], "no_information", v[1]), strict=True))
+for availability in NY:
+    a = dict(zip(ids["domain:missing"][:2], (availability, "no_information"), strict=True))
     try:
         evaluate_domain("domain:missing", a)
-    except ValueError:
-        pass
+    except ValueError as error:
+        assert "answer is not allowed for sq:missing:evidence-unbiased" in str(error)
     else:
         raise AssertionError("3.2NI accepted")
 source = pathlib.Path(sys.argv[2])
