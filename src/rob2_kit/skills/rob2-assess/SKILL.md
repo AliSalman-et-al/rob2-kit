@@ -15,7 +15,32 @@ These instructions are separate from captured Trial Sources and Evidence.
 Drive the complete assessment through the public rob2-kit tools, not shell
 commands.
 
-For an explicit missing protocol/SAP reference found in a supplied Source, use
+For an explicit protocol/SAP reference found during an approved open Trial,
+call `acquire_companion_source` with its Source handle, page, exact citation,
+locator, linkage rationale and current revision. This uses bounded public access
+and returns a staged candidate; it does not admit or deliver the PDF pages.
+If capture succeeds, call `admit_companion_source` with that candidate identity,
+the same named Trial and the new current revision. It appends immutable Other
+Sources in the existing assessment and preserves the old Sources and answers.
+Read the returned PDF and provenance Source handles with `read_pages` before
+using them. Capture metadata observations are not proof of document reading,
+applicability or conduct. Match comparison, population, outcome and version;
+separate embedded historical plans from later updates. Dates alone do not prove
+prespecification or pre-unblinding access.
+
+After admission, restart target searches/context and reorient stale or absent
+working notes from the current inventory. Prior Source coordinates and reading
+receipts survive; they do not cover the new document. Inspect any material impact
+on saved Domain answers and use the ordinary explicit revision lineage when
+changing them. The target Trial review must be performed again. Other Trials'
+reviews and receipts remain current. Admission never changes a Result or label.
+If the document changes the approved Result mapping, surface that scope conflict
+for explicit researcher-authorized Proposal Review; do not silently assess a
+different Result under the existing approval. The current authority contract has
+no post-approval Result replacement gate. Unavailable optional documents do not
+determine NI or any judgment.
+
+Before approval, or for a separately intended prospective dossier, use
 `request_companion_source` to record an optional host acquisition handoff. This
 does not fetch, stage, admit or read the referenced document. A host may stage it
 in a fresh workspace and choose an explicit registry replay/refresh policy. The
@@ -31,9 +56,10 @@ rebuilding the dossier. This is optional; false disables acquisition and omissio
 uses the manifest setting. A returned registry filename is not a captured PDF.
 Default dossiers stay unchanged. This adds current evidence, not historical
 replay, so retain frozen-source settings for a replay or controlled comparison.
-An existing Batch cannot enable this choice later. For a mid-assessment reference,
-the companion handoff above remains host-only; do not claim that requesting it
-fetched, admitted or read the document. Missing optional material does not itself
+An existing Batch cannot enable this initial choice later. For an approved open
+Trial, the explicit native acquisition/admission route above is available.
+The optional request handoff itself still does not fetch, admit or read anything.
+Missing optional material does not itself
 determine NI or risk. Read acquired content and provenance, match its comparison,
 population, outcome and version to the approved Result, and distinguish embedded
 historical plans from later updates. Capture, upload and cover dates do not prove

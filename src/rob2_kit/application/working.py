@@ -17,7 +17,16 @@ from ..workflow_models import (
 from ..workflow_models import (
     _identity as _with_identity,
 )
-from ._state import _db, _decode_object, _ensure, _result, _root, _state
+from ._state import (
+    _db,
+    _decode_object,
+    _ensure,
+    _reading_batch_basis,
+    _result,
+    _root,
+    _state,
+    _trial_inventory_basis,
+)
 from ._state import _identity as _digest
 from .source_handles import source_handle, source_handle_map
 
@@ -198,7 +207,7 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
     state = _state(root)
     batch = state.get("batch")
     trial_id = draft.trial_id
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     dispositions = state.get("trial_dispositions", {})
     disposition = dispositions.get(trial_id) if isinstance(dispositions, dict) else None
     if not isinstance(batch_id, str) or disposition not in {"pending", "reviewable"}:
@@ -389,7 +398,7 @@ def save_working_checkpoint(workspace: str | Path, draft: WorkingCheckpointDraft
 
     current = _state(root)
     if (
-        current.get("batch", {}).get("identity") != batch_id
+        _trial_inventory_basis(current, trial_id) != batch_id
         or _result_identity(current, trial_id) != checkpoint.result_identity
         or _source_scope(current, trial_id) != checkpoint.source_scope
     ):
@@ -502,8 +511,7 @@ def main_report_identity(root: Path, state: dict[str, Any], trial_id: str) -> di
 def _stored_checkpoint(
     root: Path, state: dict[str, Any], trial_id: str
 ) -> WorkingCheckpoint | None:
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         return None
     with _db(root, "working.sqlite3") as connection:
@@ -550,8 +558,7 @@ def _delivery_projection(
 ) -> dict[str, Any]:
     """Report text ranges returned by read_pages separately from host note references."""
 
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _reading_batch_basis(state)
     source_ids = tuple(item.source_id for item in sources)
     handles = {item.source_id: source_handle(item.source_id) for item in sources}
     if not isinstance(batch_id, str) or not source_ids:
@@ -1010,8 +1017,7 @@ def working_checkpoint_status(
             "checkpoint": None,
             "recovery": "reorient_from_sources",
         }
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         return {
             "status": "absent",

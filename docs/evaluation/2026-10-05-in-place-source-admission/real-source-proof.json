@@ -1,0 +1,35 @@
+{
+  "after_batch_identity": "sha256:522f60d4e0e9e53e18956d411abceda3b1f23d0d1b5d675e4412b18ab7f4840b",
+  "applicability": "Unverified; no SAP applicability/prespecification or accuracy claim",
+  "before_batch_identity": "sha256:b950c378c4086df7a6dcfd8eaa4cf6f76bdaddb3e3ed57fe7ea49871c52776e3",
+  "benchmark_calls": 0,
+  "bundle_identity": "sha256:a912829e7708ad31635a38fe7db1e7efd1b81c676a1789a2da001573c5f04af9",
+  "document_bytes": 2238633,
+  "document_sha256": "2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+  "document_url": "https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/SAP_003.pdf",
+  "failure_preserved": "failed-proof.json; inventory-stale review incorrectly routed to closure; closure rejected safely",
+  "model_calls": 0,
+  "native_bundle_verified": true,
+  "network": "Offline httpx MockTransport through cited-reference validation and bounded fetch machinery; zero external access",
+  "old_sources_preserved": true,
+  "old_target_review_invalidated": true,
+  "operator_delivered_pages": [
+    1,
+    30
+  ],
+  "pages": 106,
+  "recovery": "Same workspace; status now requests fresh target review before closure; no reacquisition/rebuilt assessment/copied answers",
+  "scientific_record_keys_preserved": [
+    "proposal",
+    "review",
+    "domain_records",
+    "domain_history_records",
+    "snapshots",
+    "snapshot_history_records",
+    "trial_reviews"
+  ],
+  "scope": "Neutral approved mechanics fixture carrying real published MONALEESA SAP bytes; no benchmark/scientific judgment evaluation",
+  "source_archive_verified": true,
+  "staged_admitted_read_separated": true,
+  "standalone_bundle_verified": true
+}

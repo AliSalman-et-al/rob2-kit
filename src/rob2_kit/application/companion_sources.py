@@ -1,4 +1,6 @@
-"""Stage one cited public PDF in a fresh prospective dossier, never an active Batch."""
+"""Bounded cited-public-document acquisition, staging and explicit Source admission."""
+
+from __future__ import annotations
 
 import hashlib
 import json
@@ -6,20 +8,251 @@ import re
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 from urllib.parse import quote, unquote, urlsplit
 
 import httpx
 import pymupdf
 from pydantic import BaseModel, ConfigDict, Field
 
-from ._state import _identity, _link_like, _manifest, _result, _root, _state, internal_path
+from ..models import canonical_json_bytes
+from ..workflow_models import CapturedTrial
+from ._state import (
+    _commit_records,
+    _db,
+    _identity,
+    _link_like,
+    _manifest,
+    _pages,
+    _projection_hash,
+    _read,
+    _result,
+    _root,
+    _search_derivative,
+    _source_id,
+    _state,
+    internal_path,
+)
+from .contracts import WorkflowConflict
 from .evidence import _find_source, read_pages
 from .intake import _manifest_registry_identifier, _manifest_registry_replay, _trial_directory
 from .public_documents import MAX_DOCUMENT_BYTES, PUBLIC_DOCUMENT_HOSTS, fetch_bounded
-from .source_handles import resolve_source_handle
+from .source_handles import resolve_source_handle, source_handle
 
 MAX_BYTES = MAX_DOCUMENT_BYTES
+
+
+def _open_trial(root: Path, trial_id: str, expected_revision: int) -> tuple[dict, dict]:
+    state = _state(root)
+    if state.get("revision", 0) != expected_revision:
+        raise WorkflowConflict(expected_revision, int(state.get("revision", 0)))
+    if state.get("phase") != "assessment":
+        raise ValueError("companion admission requires an approved open assessment")
+    trial = next((t for t in state["batch"]["trials"] if t["id"] == trial_id), None)
+    if (
+        trial is None
+        or state.get("trial_dispositions", {}).get(trial_id)
+        not in {
+            "pending",
+            "reviewable",
+        }
+        or trial_id in state.get("trial_closures", {})
+    ):
+        raise ValueError("companion admission requires a named open Trial")
+    return state, trial
+
+
+def acquire_companion_source(
+    workspace: str | Path,
+    reference: CompanionReference,
+    expected_revision: int,
+) -> dict:
+    """Bounded acquisition stages immutable bytes, never assessment Sources or answers."""
+    root = _root(workspace)
+    state, trial = _open_trial(root, reference.trial_id, expected_revision)
+    reference = _canonical_reference(root, reference)
+    source, _ = _validated_reference(root, reference)
+    content, capture = _acquire(reference)
+    if content is None:
+        return _result(
+            "success",
+            state,
+            candidate_identity=None,
+            capture=capture,
+            document_staged=False,
+            admitted_to_active_batch=False,
+            document_read=False,
+        )
+    candidate = {
+        "trial_id": trial["id"],
+        "reference": reference.model_dump(),
+        "parent_source_sha256": source["sha256"],
+        "capture": capture,
+    }
+    candidate["identity"] = _identity(candidate)
+    folder = internal_path(
+        root, "companion_candidates", candidate["identity"].removeprefix("sha256:")
+    )
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / "candidate.pdf"
+    if path.exists() and path.read_bytes() != content:
+        raise ValueError("immutable companion candidate bytes differ")
+    if not path.exists():
+        with path.open("xb") as stream:
+            stream.write(content)
+    state = _commit_records(
+        root,
+        state,
+        expected_revision,
+        {
+            f"companion_candidate:{candidate['identity']}": candidate,
+        },
+    )
+    return _result(
+        "success",
+        state,
+        candidate_identity=candidate["identity"],
+        capture=capture,
+        document_staged=True,
+        admitted_to_active_batch=False,
+        document_read=False,
+    )
+
+
+def admit_companion_source(
+    workspace: str | Path,
+    trial_id: str,
+    candidate_identity: str,
+    expected_revision: int,
+) -> dict:
+    """Append Sources in place with exact inventory lineage and no scientific rewrite."""
+    root = _root(workspace)
+    state, trial = _open_trial(root, trial_id, expected_revision)
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", candidate_identity):
+        raise ValueError("invalid companion candidate identity")
+    candidate = _read(root, f"companion_candidate:{candidate_identity}")
+    if (
+        not isinstance(candidate, dict)
+        or candidate.get("trial_id") != trial_id
+        or (
+            candidate.get("identity") != candidate_identity
+            or _identity({k: v for k, v in candidate.items() if k != "identity"})
+            != candidate_identity
+        )
+    ):
+        raise ValueError("companion candidate is unavailable or belongs to another Trial")
+    if any(
+        item["candidate"]["identity"] == candidate_identity
+        for item in state.get("source_admissions", [])
+    ):
+        raise ValueError("companion candidate is already admitted")
+    reference = CompanionReference.model_validate(candidate["reference"])
+    parent, _ = _validated_reference(root, reference)
+    if parent["sha256"] != candidate["parent_source_sha256"]:
+        raise ValueError("companion candidate parent Source differs")
+    data = internal_path(
+        root, "companion_candidates", candidate_identity[7:], "candidate.pdf"
+    ).read_bytes()
+    if "sha256:" + hashlib.sha256(data).hexdigest() != candidate["capture"]["sha256"]:
+        raise ValueError("companion candidate bytes are corrupt")
+    prefix = "companions/" + candidate_identity[7:]
+    added = []
+    projections = []
+    for relative, content, media in (
+        (prefix + "/candidate.pdf", data, "application/pdf"),
+        (prefix + "/capture.json", canonical_json_bytes(candidate), "application/json"),
+    ):
+        digest = "sha256:" + hashlib.sha256(content).hexdigest()
+        source_id = _source_id(trial_id, relative, digest)
+        pages = _pages(Path(relative), content)
+        source = {
+            "id": source_id,
+            "trial_id": trial_id,
+            "role": "other",
+            "declared_role": "other",
+            "label": relative,
+            "logical_path": relative,
+            "sha256": digest,
+            "media_type": media,
+            "page_count": len(pages),
+            "origin": "cited_public_document",
+            "projection_hash": _projection_hash(digest, media, pages),
+        }
+        path = internal_path(root, "sources", trial_id, f"{source_id}.bin")
+        if path.exists() and path.read_bytes() != content:
+            raise ValueError("immutable Source bytes differ")
+        if not path.exists():
+            with path.open("xb") as stream:
+                stream.write(content)
+        added.append(source)
+        projections.append((source_id, pages))
+    updated = CapturedTrial.model_validate(
+        {
+            **{k: v for k, v in trial.items() if k != "identity"},
+            "sources": [*trial["sources"], *added],
+        }
+    ).model_dump(mode="json")
+    old_batch = state["batch"]
+    batch = {
+        "trials": [updated if t["id"] == trial_id else t for t in old_batch["trials"]],
+        "conditions": old_batch["conditions"],
+    }
+    batch["identity"] = _identity(batch)
+    admission: dict[str, Any] = {
+        "trial_id": trial_id,
+        "candidate": candidate,
+        "source_ids": [s["id"] for s in added],
+        "previous_batch_identity": old_batch["identity"],
+        "batch_identity": batch["identity"],
+        "trial_inventory_identity": updated["identity"],
+    }
+    admission["identity"] = _identity(admission)
+    state = {
+        **state,
+        "batch": batch,
+        "batch_history": [*state.get("batch_history", []), old_batch],
+        "source_admissions": [*state.get("source_admissions", []), admission],
+    }
+    state = _commit_records(
+        root,
+        state,
+        expected_revision,
+        {
+            "batch": batch,
+            f"source_admission:{admission['identity']}": admission,
+        },
+    )
+    # Derivatives are disposable; canonical admission and immutable bytes are already committed.
+    with _db(root, "derivative.sqlite3") as connection:
+        for source_id, pages in projections:
+            connection.executemany(
+                "INSERT OR REPLACE INTO pages VALUES (?,?,?)",
+                [(source_id, n, text) for n, text in enumerate(pages, 1)],
+            )
+            connection.execute("DELETE FROM pages_fts WHERE source_id=?", (source_id,))
+            connection.executemany(
+                "INSERT INTO pages_fts VALUES (?,?,?,?)",
+                [(source_id, n, *_search_derivative(text)) for n, text in enumerate(pages, 1)],
+            )
+        connection.executemany(
+            "INSERT OR REPLACE INTO source_index(source_id,batch_id,trial_id,payload) "
+            "VALUES (?,?,?,?)",
+            [
+                (s["id"], batch["identity"], t["id"], canonical_json_bytes(s))
+                for t in batch["trials"]
+                for s in t["sources"]
+            ],
+        )
+    return _result(
+        "success",
+        state,
+        candidate_identity=candidate_identity,
+        trial_inventory_identity=updated["identity"],
+        source_ids=[source_handle(str(source["id"])) for source in added],
+        document_staged=True,
+        admitted_to_active_batch=True,
+        document_read=False,
+    )
 
 
 class CompanionReference(BaseModel):

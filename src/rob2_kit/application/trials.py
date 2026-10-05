@@ -767,6 +767,15 @@ def _review_payload(
             if disposition == "assessed" and "aggregation" in state["snapshots"][trial_id]
             else {}
         ),
+        **(
+            {
+                "trial_inventory_identity": next(
+                    t["identity"] for t in state["batch"]["trials"] if t["id"] == trial_id
+                )
+            }
+            if any(a["trial_id"] == trial_id for a in state.get("source_admissions", []))
+            else {}
+        ),
         "trial_id": trial_id,
         "result_identity": _identity(_approved_result(state, trial_id)),
         "checkpoint_ids": _checkpoint_ids(state, trial_id),
@@ -795,6 +804,8 @@ def _review_record_is_current(state: dict[str, Any], review: dict[str, Any]) -> 
         return True
     # Reviews written before domain attribution was added remain valid when
     # their original payload still matches the current Result and checkpoints.
+    if "trial_inventory_identity" in payload:
+        return False
     legacy = dict(payload)
     legacy.pop("domain_attribution", None)
     return review.get("identity") == _identity(legacy) and all(

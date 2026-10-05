@@ -16,6 +16,7 @@ import re
 import sys
 import unicodedata
 import zipfile
+from collections.abc import Callable
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -403,6 +404,168 @@ def _valid_batch(batch: object) -> bool:
     return _valid_conditions(batch["conditions"], trial_ids)
 
 
+def _valid_source_history(canonical: dict, hash_identity: Callable[[object], str]) -> bool:
+    """Authenticate append-only inventory versions and their acquisition provenance."""
+    history = canonical.get("batch_history")
+    admissions = canonical.get("source_admissions")
+    if history is None and admissions is None:
+        batch = canonical.get("batch")
+        return isinstance(batch, dict) and not any(
+            s.get("origin") == "cited_public_document"
+            for t in batch.get("trials", [])
+            for s in t.get("sources", [])
+        )
+    if (
+        not isinstance(history, list)
+        or not history
+        or not isinstance(admissions, list)
+        or len(history) != len(admissions)
+    ):
+        return False
+    current_batch = canonical.get("batch")
+    if not isinstance(current_batch, dict):
+        return False
+    versions: list[dict[str, Any]] = [*history, current_batch]
+    if any(not _valid_batch(batch) for batch in versions):
+        return False
+    if len({batch["identity"] for batch in versions}) != len(versions):
+        return False
+    if any(
+        s["origin"] == "cited_public_document" for t in versions[0]["trials"] for s in t["sources"]
+    ):
+        return False
+    changed_trials = set()
+    for previous, current, admission in zip(versions, versions[1:], admissions):
+        if (
+            not isinstance(admission, dict)
+            or set(admission)
+            != {
+                "identity",
+                "trial_id",
+                "candidate",
+                "source_ids",
+                "previous_batch_identity",
+                "batch_identity",
+                "trial_inventory_identity",
+            }
+            or admission.get("identity")
+            != hash_identity({k: v for k, v in admission.items() if k != "identity"})
+        ):
+            return False
+        trial_id = admission["trial_id"]
+        prior = {t["id"]: t for t in previous["trials"]}
+        after = {t["id"]: t for t in current["trials"]}
+        if (
+            set(prior) != set(after)
+            or trial_id not in prior
+            or previous["conditions"] != current["conditions"]
+        ):
+            return False
+        if any(prior[t] != after[t] for t in prior if t != trial_id):
+            return False
+        old, new = prior[trial_id], after[trial_id]
+        if {k: v for k, v in old.items() if k not in {"identity", "sources"}} != {
+            k: v for k, v in new.items() if k not in {"identity", "sources"}
+        }:
+            return False
+        added = new["sources"][len(old["sources"]) :]
+        if new["sources"][: len(old["sources"])] != old["sources"] or len(added) != 2:
+            return False
+        candidate = admission["candidate"]
+        if not isinstance(candidate, dict) or set(candidate) != {
+            "identity",
+            "trial_id",
+            "reference",
+            "parent_source_sha256",
+            "capture",
+        }:
+            return False
+        if (
+            candidate["identity"]
+            != hash_identity({k: v for k, v in candidate.items() if k != "identity"})
+            or candidate["trial_id"] != trial_id
+        ):
+            return False
+        reference, capture = candidate["reference"], candidate["capture"]
+        if (
+            not isinstance(reference, dict)
+            or not isinstance(capture, dict)
+            or reference.get("trial_id") != trial_id
+        ):
+            return False
+        parent = next((s for s in old["sources"] if s["id"] == reference.get("source_id")), None)
+        if (
+            parent is None
+            or parent["sha256"] != candidate["parent_source_sha256"]
+            or not isinstance(reference.get("page"), int)
+            or not 1 <= reference["page"] <= parent["page_count"]
+        ):
+            return False
+        if (
+            capture.get("status") != "captured"
+            or capture.get("reference") != reference
+            or capture.get("source_role") != "other"
+        ):
+            return False
+        prefix = "companions/" + candidate["identity"].removeprefix("sha256:")
+        pdf, provenance = added
+        if any(
+            s["role"] != "other"
+            or s.get("declared_role") != "other"
+            or s["origin"] != "cited_public_document"
+            for s in added
+        ):
+            return False
+        if (
+            pdf["logical_path"] != prefix + "/candidate.pdf"
+            or pdf["media_type"] != "application/pdf"
+            or pdf["sha256"] != capture.get("sha256")
+            or pdf["page_count"] != capture.get("page_count")
+        ):
+            return False
+        if (
+            provenance["logical_path"] != prefix + "/capture.json"
+            or provenance["media_type"] != "application/json"
+            or provenance["sha256"] != hash_identity(candidate)
+        ):
+            return False
+        if (
+            admission["source_ids"] != [s["id"] for s in added]
+            or admission["previous_batch_identity"] != previous["identity"]
+            or admission["batch_identity"] != current["identity"]
+            or admission["trial_inventory_identity"] != new["identity"]
+        ):
+            return False
+        changed_trials.add(trial_id)
+    for trial in versions[-1]["trials"]:
+        review = canonical.get("trial_reviews", {}).get(trial["id"])
+        if trial["id"] in changed_trials and (
+            not isinstance(review, dict)
+            or review.get("trial_inventory_identity") != trial["identity"]
+        ):
+            return False
+        if (
+            isinstance(review, dict)
+            and "trial_inventory_identity" in review
+            and review["trial_inventory_identity"] != trial["identity"]
+        ):
+            return False
+    return True
+
+
+def _valid_versioned_search_account(
+    account: object, trial_id: object, canonical: dict, hash_identity: Callable[[object], str]
+) -> bool:
+    if not isinstance(account, dict):
+        return False
+    for batch in [*canonical.get("batch_history", []), canonical["batch"]]:
+        if batch["identity"] != account.get("batch_identity"):
+            continue
+        sources = {s["id"]: s for t in batch["trials"] if t["id"] == trial_id for s in t["sources"]}
+        return _valid_search_account(account, trial_id, batch["identity"], sources, hash_identity)
+    return False
+
+
 def _valid_main_report_scopes(
     value: object, batch: dict[str, object], evidence: dict[str, object]
 ) -> bool:
@@ -606,7 +769,8 @@ def _valid_source(source: object, trial_id: str) -> bool:
         or not re.fullmatch(r"source_[0-9a-f]{64}", source["id"])
         or not re.fullmatch(r"sha256:[0-9a-f]{64}", source["sha256"])
         or not re.fullmatch(r"sha256:[0-9a-f]{64}", source["projection_hash"])
-        or source["origin"] not in {"local_dossier", "registry", "researcher_provided"}
+        or source["origin"]
+        not in {"local_dossier", "registry", "researcher_provided", "cited_public_document"}
         or source["role"]
         not in {"main_article", "registry", "supplement", "sap", "protocol", "other"}
         or (
@@ -4515,6 +4679,9 @@ def _valid_trial_review_closures(
                 review_shape,
                 review_shape_with_attribution,
                 review_shape_with_attribution | {"snapshot_identity", "aggregation"},
+                review_shape_with_attribution | {"trial_inventory_identity"},
+                review_shape_with_attribution
+                | {"snapshot_identity", "aggregation", "trial_inventory_identity"},
             )
             or review.get("trial_id") != trial_id
             or review.get("disposition") not in allowed
@@ -4723,6 +4890,12 @@ def verify(path: Path) -> tuple[bool, str]:
             canonical_shapes.update(
                 {shape | {"legacy_domain_checkpoints"} for shape in tuple(canonical_shapes)}
             )
+            canonical_shapes.update(
+                {
+                    shape | {"batch_history", "source_admissions"}
+                    for shape in tuple(canonical_shapes)
+                }
+            )
             if not isinstance(canonical, dict) or set(canonical) not in canonical_shapes:
                 return False, "canonical envelope is not closed"
             scientific_pack = canonical.get("scientific_pack")
@@ -4809,6 +4982,8 @@ def verify(path: Path) -> tuple[bool, str]:
                 or not isinstance(terminals, dict)
             ):
                 return False, "canonical batch/dispositions are missing"
+            if not _valid_source_history(canonical, identity):
+                return False, "Source admission history or review inventory basis is invalid"
             if not _valid_batch(batch):
                 return False, "Batch or Source identity is invalid"
             batch_trial_ids = {trial["id"] for trial in batch["trials"]}
@@ -5265,12 +5440,8 @@ def verify(path: Path) -> tuple[bool, str]:
                     if isinstance(item, dict)
                 }
                 for account in accounts:
-                    if not _valid_search_account(
-                        account,
-                        record.get("trial_id"),
-                        batch.get("identity"),
-                        sources,
-                        identity,
+                    if not _valid_versioned_search_account(
+                        account, record.get("trial_id"), canonical, identity
                     ):
                         return False, "search account is malformed"
                 for answer in answers:
@@ -5471,18 +5642,14 @@ def verify(path: Path) -> tuple[bool, str]:
                     accounts = item["search_accounts"]
                     if not isinstance(accounts, list):
                         return False, "Domain history search accounts are malformed"
-                    trial_sources = {
+                    {
                         source.get("id"): source
                         for source in trials.get(item.get("trial_id"), [])
                         if isinstance(source, dict)
                     }
                     for account in accounts:
-                        if not _valid_search_account(
-                            account,
-                            item.get("trial_id"),
-                            batch.get("identity"),
-                            trial_sources,
-                            identity,
+                        if not _valid_versioned_search_account(
+                            account, item.get("trial_id"), canonical, identity
                         ):
                             return False, "Domain history search account is invalid"
                     account_ids = {

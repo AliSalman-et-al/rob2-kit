@@ -728,6 +728,29 @@ def _state(root: Path) -> dict[str, Any]:
     return _read(root, "state") or {"phase": "empty", "revision": 0, "trial_dispositions": {}}
 
 
+def _trial_inventory_basis(state: dict[str, Any], trial_id: str) -> str | None:
+    """Keep the original receipt basis until this Trial's immutable inventory changes."""
+    versions = [*state.get("batch_history", []), state.get("batch")]
+    basis = None
+    previous_trial = None
+    for batch in versions:
+        if not isinstance(batch, dict):
+            continue
+        trial = next((item for item in batch.get("trials", []) if item.get("id") == trial_id), None)
+        if trial is None:
+            return None
+        if trial != previous_trial:
+            basis = batch.get("identity")
+        previous_trial = trial
+    return basis
+
+
+def _reading_batch_basis(state: dict[str, Any]) -> str | None:
+    """Delivered immutable Source coordinates survive append-only admissions."""
+    batch = (state.get("batch_history", []) or [state.get("batch")])[0]
+    return batch.get("identity") if isinstance(batch, dict) else None
+
+
 def _commit(root: Path, state: dict[str, Any], expected: int | None) -> dict[str, Any]:
     current = _state(root)
     if expected is not None and expected != current.get("revision", 0):

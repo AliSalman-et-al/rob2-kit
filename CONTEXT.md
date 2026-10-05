@@ -46,7 +46,22 @@ proof of prespecification; missing documents do not determine signaling answers.
 projection identities and attempts registry resolution. A typed Intake condition
 remains visible to the model but does not create a researcher gate.
 
-The native `request_companion_source` tool records a supplied Source/page-bound
+An approved open Trial can use `acquire_companion_source` with one explicit
+Source/page/citation-bound public reference and the exact current revision. The
+bounded fetcher stages immutable candidate bytes and provenance without admitting
+or delivering Source pages. `admit_companion_source` explicitly appends that
+candidate PDF and provenance as Other Sources in the same workspace. It preserves
+prior Source bytes, IDs, projections and scientific records, creates an immutable
+Batch inventory version, and invalidates only the target Trial's review and
+search/context/working currency. Unaffected Trials retain their currency. Old
+page delivery remains bound to exact immutable Source coordinates; the new PDF
+requires `read_pages`. Both bundle verifiers authenticate the inventory lineage
+and historical search accounts against their original versions. Closed Trials
+cannot admit Sources. Acquisition dates and identifier mentions are not scientific
+authority. The approved Result remains fixed; material mapping changes require
+explicit researcher scope review, not an automatic rewrite (ADR0041/ADR0030).
+
+The optional native `request_companion_source` tool records a supplied Source/page-bound
 reference and returns an optional host acquisition handoff. It performs no network
 request, staging, Source admission or reading, and leaves the current workflow
 continuation intact. The host CLI `stage-companion` accepts native Source handles

@@ -33,8 +33,10 @@ from ._state import (
     _ordered_sources,
     _projection_hash,
     _read,
+    _reading_batch_basis,
     _root,
     _state,
+    _trial_inventory_basis,
     internal_path,
 )
 from .contracts import COUNTERS
@@ -157,6 +159,7 @@ def list_sources(
     ]
     result: dict[str, Any] = {
         "outcome": "success",
+        "trial_inventory_identity": trial["identity"],
         "sources": sources,
         "conditions": conditions,
         "omissions": trial.get("omissions", []),
@@ -1301,7 +1304,7 @@ def search_sources(
         "total_matches": total_matches,
         "truncated": candidate_truncated,
         "condition": condition,
-        "batch_identity": (_read(root, "batch") or {}).get("identity"),
+        "batch_identity": _trial_inventory_basis(_state(root), trial_id),
         "session_id": session_identity,
         "session_handle": session_handle,
         "candidate_count": len(candidates),
@@ -2710,11 +2713,14 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         or isinstance(receipt.get("returned_material"), bool)
         or receipt["returned_material"] < 0
         or not isinstance(receipt.get("returned_candidates"), list)
-        or receipt.get("batch_identity") != batch.get("identity")
         or not isinstance(sources, list)
         or not isinstance(hits, list)
     ):
         raise ValueError("search receipt shape is corrupt")
+    if receipt.get("batch_identity") != _trial_inventory_basis(_state(root), str(trial_id)):
+        raise ValueError(
+            "search receipt inventory is stale; rerun search_sources on the current Trial inventory"
+        )
     authoritative = {
         source["id"]: source
         for trial in batch.get("trials", [])
@@ -2984,8 +2990,7 @@ def record_read_coverage_batch(
     phase = _state(root).get("phase")
     if phase not in {"proposal", "assessment"}:
         return
-    batch = _read(root, "batch") or {}
-    batch_id = batch.get("identity")
+    batch_id = _reading_batch_basis(_state(root))
     if not isinstance(batch_id, str):
         raise ValueError("active Batch identity is unavailable")
     with _db(root, "derivative.sqlite3") as connection:
@@ -3154,8 +3159,7 @@ def main_report_read_gaps(
     phase = phase or state.get("phase")
     if phase not in {"proposal", "assessment"}:
         return []
-    batch = _read(root, "batch") or {}
-    batch_id = batch.get("identity")
+    batch_id = _reading_batch_basis(_state(root))
     if not isinstance(batch_id, str):
         return []
     gaps: list[dict[str, Any]] = []
@@ -3228,12 +3232,12 @@ def source_reading_status(
     """
     root = _root(workspace)
     state = _state(root)
-    batch = state.get("batch") or {}
+    state.get("batch") or {}
     with _db(root, "derivative.sqlite3") as connection:
         rows = connection.execute(
             "SELECT source_id,page,start_line,end_line FROM page_reads "
             "WHERE batch_id=? AND phase=? AND trial_id=? ORDER BY start_line,end_line",
-            (batch.get("identity"), state.get("phase"), trial_id),
+            (_reading_batch_basis(state), state.get("phase"), trial_id),
         ).fetchall()
     requested = {
         (trial_id, row[0])
@@ -3271,8 +3275,7 @@ def main_report_reading_status(
     root = _root(workspace)
     _ensure(root)
     gaps = main_report_read_gaps(root, trials, phase=phase)
-    batch = _read(root, "batch") or {}
-    batch_id = batch.get("identity")
+    batch_id = _reading_batch_basis(_state(root))
     result: dict[str, dict[str, Any]] = {}
     with _db(root, "derivative.sqlite3") as connection:
         for trial in trials:

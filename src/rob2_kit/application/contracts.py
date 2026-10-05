@@ -8,6 +8,8 @@ TOOL_NAMES = (
     "get_status",
     "save_working_checkpoint",
     "request_companion_source",
+    "acquire_companion_source",
+    "admit_companion_source",
     "list_sources",
     "search_sources",
     "search_sources_batch",

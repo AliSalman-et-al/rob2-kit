@@ -42,6 +42,12 @@ from pydantic.functional_validators import AfterValidator, BeforeValidator
 from rob2_kit import __version__
 from rob2_kit.application._state import _db, _identity, _root, _state
 from rob2_kit.application.companion_sources import (
+    acquire_companion_source as _acquire_companion_source,
+)
+from rob2_kit.application.companion_sources import (
+    admit_companion_source as _admit_companion_source,
+)
+from rob2_kit.application.companion_sources import (
     request_companion_source as _request_companion_source,
 )
 from rob2_kit.application.contracts import COUNTERS, TOOL_NAMES, WorkflowConflict
@@ -2465,7 +2471,8 @@ def current_batch() -> str:
         "assessing agent obtain official linked protocol/SAP PDFs through this tool. Omission "
         "uses the dossier setting; a registry filename alone does not mean its PDF was captured. "
         "This adds current Sources, not historical replay. An existing Batch cannot enable it "
-        "later; request_companion_source then records a host handoff only. Read acquired content "
+        "later; an approved open Trial can use acquire_companion_source and explicit "
+        "admit_companion_source. request_companion_source remains a host handoff. Read content "
         "and its provenance before relying on it; capture or plan dates do not prove early "
         "prespecification, applicability or conduct."
     ),
@@ -2616,6 +2623,60 @@ def request_companion_source(
 
 
 @mcp.tool(
+    name="acquire_companion_source",
+    title="Acquire a cited public companion for an open Trial",
+    description=(
+        "At the exact current revision, acquire one protocol/SAP URL or DOI explicitly cited "
+        "in a captured Source of a named open Trial. Uses bounded vetted public PDF access. "
+        "Returns immutable staged bytes/provenance and candidate_identity; no Source admission "
+        "or reading occurs. Failed access admits nothing. Dates, role hints and identifier "
+        "mentions do not prove applicability, prespecification or actual conduct."
+    ),
+    annotations=_INTAKE,
+    output_schema=output_schema("acquire_companion_source"),
+)
+def acquire_companion_source(
+    reference: PublicCompanionReference,
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Exact current workflow revision.")
+    ],
+) -> ToolResult:
+    return _invoke(
+        "acquire_companion_source",
+        lambda: _acquire_companion_source(_workspace(), reference, expected_revision),
+    )
+
+
+@mcp.tool(
+    name="admit_companion_source",
+    title="Admit a staged companion into its open Trial",
+    description=(
+        "Append the exact staged candidate PDF and acquisition provenance as Other Sources "
+        "to its named open Trial at the current revision. Preserves prior Source bytes, "
+        "scientific records and inventory history. Invalidates the target Trial review and "
+        "search/context/working currency, preserving unaffected Trials. Returns new source "
+        "handles; read_pages is still required. No Result, scope, signaling answer or judgment "
+        "is changed. A material Result mapping change requires explicit researcher scope review."
+    ),
+    annotations=_MUTATION,
+    output_schema=output_schema("admit_companion_source"),
+)
+def admit_companion_source(
+    trial_id: TrialId,
+    candidate_identity: Identity,
+    expected_revision: Annotated[
+        ExpectedRevision, Field(description="Exact current workflow revision.")
+    ],
+) -> ToolResult:
+    return _invoke(
+        "admit_companion_source",
+        lambda: _admit_companion_source(
+            _workspace(), trial_id, candidate_identity, expected_revision
+        ),
+    )
+
+
+@mcp.tool(
     name="list_sources",
     title="List Trial sources",
     description=(
@@ -2632,7 +2693,9 @@ def request_companion_source(
         "until terminal is true; totals describe the complete index, not just this response page. "
         "Navigation is a routing aid, not Evidence; read the cited pages before relying on them. "
         "For an explicit missing protocol/SAP reference in a Source, request_companion_source "
-        "records an optional host handoff without admitting a new active Source."
+        "can record an optional host handoff. During an approved open assessment use "
+        "acquire_companion_source then explicit admit_companion_source for in-place admission; "
+        "read the appended PDF and provenance before revising judgments."
     ),
     annotations=_READ_ONLY,
     output_schema=output_schema("list_sources"),

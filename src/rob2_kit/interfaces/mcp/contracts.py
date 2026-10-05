@@ -341,6 +341,8 @@ _RECEIPT_OPTIONS: Final = {
     "read_guidance": {},
     "save_working_checkpoint": {},
     "request_companion_source": {},
+    "acquire_companion_source": {"conflict": True},
+    "admit_companion_source": {"conflict": True},
     "list_sources": {},
     "search_sources": {},
     "search_sources_batch": {},
@@ -920,6 +922,7 @@ class OverallAggregationDecision(PublicModel):
 
 
 class TrialReviewSummary(PublicModel):
+    trial_inventory_identity: Identity | None = None
     snapshot_identity: Identity | None = None
     aggregation: OverallAggregationDecision | None = None
     identity: Identity
@@ -1101,6 +1104,7 @@ class SourceNavigationData(PublicModel):
 
 
 class SourcesData(PublicModel):
+    trial_inventory_identity: Identity | None = None
     sources: tuple[PublicSource, ...]
     conditions: tuple[IntakeCondition, ...] = ()
     omissions: tuple[OmissionDecision, ...] = ()
@@ -3032,12 +3036,31 @@ class CompanionRequestData(PublicModel):
     input_transfer: dict[str, Any]
 
 
+class CompanionAcquisitionData(PublicModel):
+    candidate_identity: Identity | None
+    capture: dict[str, Any]
+    document_staged: StrictBool
+    admitted_to_active_batch: Literal[False]
+    document_read: Literal[False]
+
+
+class CompanionAdmissionData(PublicModel):
+    candidate_identity: Identity
+    trial_inventory_identity: Identity
+    source_ids: tuple[SourceHandle, ...]
+    document_staged: Literal[True]
+    admitted_to_active_batch: Literal[True]
+    document_read: Literal[False]
+
+
 DataByTool: Final = {
     "prepare_batch": PrepareData,
     "get_status": StatusData,
     "read_guidance": GuidanceData,
     "save_working_checkpoint": SaveWorkingCheckpointData,
     "request_companion_source": CompanionRequestData,
+    "acquire_companion_source": CompanionAcquisitionData,
+    "admit_companion_source": CompanionAdmissionData,
     "list_sources": SourcesData,
     "search_sources": SearchData,
     "search_sources_batch": SearchBatchData,

@@ -282,10 +282,12 @@ def _active_trial_and_domain(state: dict[str, Any]) -> tuple[str | None, str | N
 
 
 def _current_trial_review(state: dict[str, Any]) -> dict[str, Any] | None:
+    from .trials import _review_record_is_current
+
     trial_id, _ = _active_trial_and_domain(state)
     reviews = state.get("trial_reviews")
     review = reviews.get(trial_id) if trial_id is not None and isinstance(reviews, dict) else None
-    return review if isinstance(review, dict) else None
+    return review if isinstance(review, dict) and _review_record_is_current(state, review) else None
 
 
 def _continuation(state: dict[str, Any]) -> dict[str, Any] | None:

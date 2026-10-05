@@ -40,9 +40,11 @@ from ._state import (
     _ensure,
     _identity,
     _ordered_sources,
+    _reading_batch_basis,
     _result,
     _root,
     _state,
+    _trial_inventory_basis,
     internal_path,
 )
 from .contracts import WorkflowConflict
@@ -79,8 +81,7 @@ def _domain_context_delivery(
     prefer_views: bool = True,
 ) -> dict[str, Any] | None:
     state = _state(root)
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         return None
     with _db(root, "derivative.sqlite3") as connection:
@@ -181,8 +182,7 @@ def _record_domain_context_view(
     """Persist one opaque context view without sharing a cursor chain."""
 
     state = _state(root)
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         raise ValueError("domain_context_delivery_unavailable: Batch identity is missing")
     with _db(root, "derivative.sqlite3") as connection:
@@ -260,8 +260,7 @@ def _record_domain_context_delivery(
     preview_scope: list[dict[str, Any]] | None = None,
 ) -> None:
     state = _state(root)
-    batch = state.get("batch")
-    batch_id = batch.get("identity") if isinstance(batch, dict) else None
+    batch_id = _trial_inventory_basis(state, trial_id)
     if not isinstance(batch_id, str):
         raise ValueError("domain_context_delivery_unavailable: Batch identity is missing")
     with _db(root, "derivative.sqlite3") as connection:
@@ -1945,7 +1944,7 @@ def _flow_navigation(
         reads = connection.execute(
             "SELECT source_id,page,start_line,end_line FROM page_reads "
             "WHERE batch_id=? AND phase=? AND trial_id=?",
-            ((state.get("batch") or {}).get("identity"), state.get("phase"), trial_id),
+            (_reading_batch_basis(state), state.get("phase"), trial_id),
         ).fetchall()
     result: dict[str, list[dict[str, Any]]] = {}
     for (_, source_id), (_, pages) in verified.items():
@@ -2226,11 +2225,10 @@ def _domain_context_basis_identity(
         account = (working_checkpoint_status(root, state, trial_id).get("checkpoint") or {}).get(
             "result_account"
         )
-    batch = state.get("batch")
     current = (state.get("domain_records") or {}).get(f"{trial_id}:{domain_id}")
     return _identity(
         {
-            "batch_identity": batch.get("identity") if isinstance(batch, dict) else None,
+            "batch_identity": _trial_inventory_basis(state, trial_id),
             "trial_id": trial_id,
             "domain_id": domain_id,
             "result_identity": _identity(_approved_result(state, trial_id)),

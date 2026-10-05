@@ -743,6 +743,7 @@ class SourceOrigin(StrEnum):
     LOCAL_DOSSIER = "local_dossier"
     REGISTRY = "registry"
     RESEARCHER_PROVIDED = "researcher_provided"
+    CITED_PUBLIC_DOCUMENT = "cited_public_document"
 
 
 class SourceRole(StrEnum):

@@ -186,7 +186,12 @@ def verify_source_archive(path: str | Path) -> bool:
                         "other",
                     }
                     or source.get("origin")
-                    not in {"local_dossier", "registry", "researcher_provided"}
+                    not in {
+                        "local_dossier",
+                        "registry",
+                        "researcher_provided",
+                        "cited_public_document",
+                    }
                     or (
                         "declared_role" in source
                         and source["declared_role"] is not None
