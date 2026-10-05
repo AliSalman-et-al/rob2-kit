@@ -1,0 +1,81 @@
+{
+  "official_url": "https://www.cochrane.de/sites/cochrane.de/files/uploads/RoB_2.0_guidance_2019.pdf",
+  "official_pdf_sha256": "a9e9c4fdc4be2d29b5c0a1a6b828e09f2014a34f6d5c302a532f6153ea0fd670",
+  "official_version": "22August2019",
+  "source_locators": {
+    "D1": "Box4 pp16\u201318;Table4/Figure1 p20",
+    "D2": "Box6 pp28\u201329;Table6/Figure2 pp32\u201333, assignmenteffect only",
+    "D3": "Box8 pp45\u201346;Table10/Figure4 pp47\u201348",
+    "D4": "Box10 pp54\u201355;Table12/Figure5 p57",
+    "D5": "Box11 pp62\u201365;Table14/Figure7 p67",
+    "NA": "section1.1 p3: conditional-question NotApplicable; represented by omission in native typed API"
+  },
+  "table_expansion_results": {
+    "domain:randomization": {
+      "unique_valid_active_paths": 125,
+      "judgment_counts": {
+        "low": 18,
+        "some_concerns": 47,
+        "high": 60
+      },
+      "negative_controls_rejected": 750,
+      "same_label_duplicate_expansions": 0
+    },
+    "domain:missing": {
+      "unique_valid_active_paths": 110,
+      "judgment_counts": {
+        "low": 20,
+        "some_concerns": 36,
+        "high": 54
+      },
+      "negative_controls_rejected": 970,
+      "same_label_duplicate_expansions": 0
+    },
+    "domain:measurement": {
+      "unique_valid_active_paths": 493,
+      "judgment_counts": {
+        "low": 48,
+        "some_concerns": 186,
+        "high": 259
+      },
+      "negative_controls_rejected": 5344,
+      "same_label_duplicate_expansions": 0
+    },
+    "domain:selection": {
+      "unique_valid_active_paths": 125,
+      "judgment_counts": {
+        "low": 8,
+        "some_concerns": 37,
+        "high": 80
+      },
+      "negative_controls_rejected": 750,
+      "same_label_duplicate_expansions": 0
+    },
+    "domain:deviations": {
+      "unique_valid_active_paths": 13277,
+      "judgment_counts": {
+        "low": 92,
+        "some_concerns": 3132,
+        "high": 10053
+      },
+      "negative_controls_rejected": 201886,
+      "same_label_duplicate_expansions": 0
+    }
+  },
+  "all_domain_judgments_and_activation_masks_match": true,
+  "no_scientific_product_change": true,
+  "reference_boundary": "Manual table-row expansion and separately transcribed conditional wording; imports oracle only for stable question IDs, not oracle logic/cases. NA omitted; explicit active NA rejected. This verifies mapping of supplied answers, not scientific evidence warrant or benchmark accuracy.",
+  "existing_tests": {
+    "command": "PYTHONPATH=src:scripts:.:tests python -m pytest tests/test_logic_evaluator.py tests/test_conditional_overall.py tests/test_domain_adjudication.py -q",
+    "result": "41 passed in65.99s",
+    "log_sha256": "86fa01f45c1331e7d05040c17971269a2f64a027b142b6aaa322210492dd0e14"
+  },
+  "product_bindings": {
+    "src/rob2_kit/logic/evaluator.py": "391c68b7f10eab08954df44ed3bab9059ddf55f6d69b8a4e871e5df57477c784",
+    "src/rob2_kit/packs/scientific.py": "338dc2eca71aa4dde5ededc88791a3e42d8babba3fa276bd8a383e40b1583967",
+    "src/rob2_kit/logic/adjudication.py": "add7a8b8c6a9b954ba910966e0d778716e6817d1f521b4a25c654c41882d8bed",
+    "src/rob2_kit/logic/aggregation.py": "d09dec33f4e85f14bb72b60c7eee9b62a2e447c382f8263b29247cf575d79b10",
+    "scripts/verify_bundle.py": "1308da65049557a7d71a56fbbc6a65539a1b7413309e59c462feae4df69ac73e",
+    "tests/oracle/rob2_parallel.py": "e7322010850f87696f86de7fdc81aac7f5ec28697de780454ba6b6218e524be2"
+  }
+}
