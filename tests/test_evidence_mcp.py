@@ -531,7 +531,11 @@ def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
 ) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
-        "alpha beta one\nunrelated\nalpha beta two\nunrelated\nalpha beta three\n",
+        "alpha beta one\n"
+        + "unrelated context\n" * 100
+        + "alpha beta two\n"
+        + "unrelated context\n" * 100
+        + "alpha beta three\n",
         encoding="utf-8",
     )
     _call(
@@ -581,7 +585,7 @@ def test_search_session_cursor_reuses_stable_ranking_after_derivative_restart(
     assert [hit["rank"] for hit in restarted["hits"]] == [2, 3]
 
 
-def test_search_returns_multiple_source_windows_for_one_matching_page(
+def test_search_groups_identical_windows_from_separate_match_anchors(
     tmp_path: Path,
 ) -> None:
     workspace = _workspace(tmp_path)
@@ -599,18 +603,19 @@ def test_search_returns_multiple_source_windows_for_one_matching_page(
         "search_sources",
         {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 10},
     )["data"]
-    assert len(result["hits"]) == 2
-    assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
-    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
+    assert len(result["hits"]) == 1
+    assert [hit["rank"] for hit in result["hits"]] == [1]
+    assert [hit["start_line"] for hit in result["hits"]] == [1]
+    assert [hit["end_line"] for hit in result["hits"]] == [4]
+    assert "alpha" in result["hits"][0]["preview"]
+    assert "beta" in result["hits"][0]["preview"]
+    assert result["candidate_count"] == result["distinct_passage_count"] == 1
+    assert result["matching_page_count"] == 1
+    assert result["exhausted"] is True
     receipt = _search_receipt(workspace, result["search_receipt"])
     assert receipt["hits"] == [
         {
             "source_id": resolve_source_handle(workspace, "trial", result["hits"][0]["source_id"]),
-            "page": 1,
-        },
-        {
-            "source_id": resolve_source_handle(workspace, "trial", result["hits"][1]["source_id"]),
             "page": 1,
         },
     ]
@@ -619,7 +624,7 @@ def test_search_returns_multiple_source_windows_for_one_matching_page(
 def test_all_mode_keeps_two_separated_complete_clusters_on_one_page(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
-        "alpha beta first\nnoise\nnoise\nalpha beta second\n",
+        "alpha beta first\n" + "noise context\n" * 100 + "alpha beta second\n",
         encoding="utf-8",
     )
     _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
@@ -631,8 +636,10 @@ def test_all_mode_keeps_two_separated_complete_clusters_on_one_page(tmp_path: Pa
     )["data"]
 
     assert [hit["rank"] for hit in result["hits"]] == [1, 2]
-    assert [hit["start_line"] for hit in result["hits"]] == [1, 1]
-    assert [hit["end_line"] for hit in result["hits"]] == [4, 4]
+    assert "alpha beta first" in result["hits"][0]["preview"]
+    assert "alpha beta second" not in result["hits"][0]["preview"]
+    assert "alpha beta second" in result["hits"][1]["preview"]
+    assert "alpha beta first" not in result["hits"][1]["preview"]
 
 
 def test_search_preview_and_passage_ref_share_one_bounded_window(tmp_path: Path) -> None:
@@ -1512,7 +1519,7 @@ def test_search_session_keeps_distinct_sibling_passages_through_cursor_traversal
 ) -> None:
     workspace = _workspace(tmp_path)
     (workspace / "input" / "trial" / "main.txt").write_text(
-        "alpha beta first\ncontext\ncontext\nalpha beta second\n", encoding="utf-8"
+        "alpha beta first\n" + "unrelated context\n" * 100 + "alpha beta second\n", encoding="utf-8"
     )
     _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
 
@@ -2853,3 +2860,73 @@ def test_read_pages_deferred_window_preserves_character_bounds(
     assert resumed["remaining_windows"] == []
     assert resumed["pages"][0]["numbered_text"] == "1|" + line[start_char:end_char]
     assert resumed["pages"][0]["passage_ref"] is None
+
+
+def test_historical_anchor_recipe_receipt_remains_verifiable(tmp_path: Path) -> None:
+    from rob2_kit.application.evidence import _session_candidates
+
+    workspace = _workspace(tmp_path)
+    text = "alpha\ncontext\ncontext\nbeta\n"
+    (workspace / "input" / "trial" / "main.txt").write_text(text, encoding="utf-8")
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    result = _call(
+        workspace,
+        "search_sources",
+        {"trial_id": "trial", "query": "alpha beta", "mode": "any", "limit": 10},
+    )["data"]
+    current_receipt = _search_receipt(workspace, result["search_receipt"])
+    connection = sqlite3.connect(workspace / ".rob2-kit" / "derivative.sqlite3")
+    current_session = json.loads(
+        connection.execute(
+            "SELECT payload FROM search_sessions WHERE identity=?", (result["session_id"],)
+        ).fetchone()[0]
+    )
+    spec = {**current_session["spec"], "candidate_version": "rob2-kit.search-candidates.v0.9"}
+    identity = _identity(spec)
+    source_id = spec["sources"][0]["id"]
+    candidates = _session_candidates(
+        {source_id: (text,)},
+        "alpha beta",
+        "any",
+        [source_id],
+        [(source_id, 1)],
+        candidate_version="rob2-kit.search-candidates.v0.9",
+    )
+    session = {
+        **current_session,
+        "spec": spec,
+        "identity": identity,
+        "handle": "ss_" + identity.removeprefix("sha256:")[:16],
+        "candidate_count": 2,
+    }
+    receipt = {k: v for k, v in current_receipt.items() if k not in {"identity", "handle"}}
+    receipt.update(
+        session_id=identity,
+        session_handle=session["handle"],
+        candidate_count=2,
+        returned_rank_end=2,
+        returned_material=2,
+        hits=[{"source_id": source_id, "page": 1}] * 2,
+        returned_candidates=[
+            {k: c[k] for k in ("rank", "source_id", "page", "start_line", "end_line")}
+            for c in candidates
+        ],
+    )
+    receipt["identity"] = _identity(receipt)
+    handle = "sr_" + receipt["identity"].removeprefix("sha256:")[:16]
+    receipt["handle"] = handle
+    connection.execute(
+        "INSERT INTO search_sessions VALUES (?,?)", (identity, json.dumps(session).encode("utf-8"))
+    )
+    connection.executemany(
+        "INSERT INTO search_candidates VALUES (?,?,?)",
+        [(identity, c["rank"], json.dumps(c).encode("utf-8")) for c in candidates],
+    )
+    connection.execute(
+        "INSERT INTO search_receipts VALUES (?,?)",
+        (receipt["identity"], json.dumps(receipt).encode("utf-8")),
+    )
+    connection.commit()
+    connection.close()
+    assert _search_receipt(workspace, handle) == receipt
+    assert _search_receipt(workspace, result["search_receipt"]) == current_receipt

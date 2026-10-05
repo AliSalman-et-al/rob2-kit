@@ -57,7 +57,8 @@ _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
 _SEARCH_SESSION_VERSION = "rob2-kit.search-session.v1.0"
-_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.9"
+_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.10"
+_LEGACY_SEARCH_CANDIDATE_VERSION = "rob2-kit.search-candidates.v0.9"
 _SEARCH_NORMALIZATION_VERSION = "rob2-kit.search-normalization.v1"
 _SEARCH_RANKING_VERSION = "fts5-bm25-scoped-page-source-tiebreak.v1"
 _LEGACY_SEARCH_PROFILE = "legacy-default-v1"
@@ -1232,18 +1233,11 @@ def search_sources(
     for candidate in selected_candidates:
         source_id, page = candidate["source_id"], candidate["page"]
         page_text = verified[(trial_id, source_id)][1][page - 1]
-        spans = [
-            (start, end)
-            for start, end in _all_search_match_spans(page_text, normalized_query, mode)
-            if start < candidate["end"] and end > candidate["start"]
-        ]
-        if not spans:
-            spans = [(candidate["start"], candidate["end"])]
-        # Keep the issued candidate's query span as the anchor. The displayed
-        # source window and its reusable Evidence must cover the same bounds.
+        # Candidate coordinates already include the literal delivery window.
+        # Treat it as one bound to retain every grouped anchor and qualifier.
         quote_start, quote_end, hit_candidate_truncated = _search_candidate_window(
             page_text,
-            spans,
+            [(candidate["start"], candidate["end"])],
         )
         if quote_end <= quote_start:
             quote_end = len(page_text)
@@ -2504,7 +2498,11 @@ def _session_candidates(
     ordered_source_ids: list[str],
     all_pairs: list[tuple[str, int]],
     profile: str = _SEARCH_PROFILE,
+    candidate_version: str = _SEARCH_CANDIDATE_VERSION,
 ) -> list[dict[str, Any]]:
+    if candidate_version not in {_SEARCH_CANDIDATE_VERSION, _LEGACY_SEARCH_CANDIDATE_VERSION}:
+        raise ValueError("unsupported search candidate recipe")
+    literal_windows = candidate_version == _SEARCH_CANDIDATE_VERSION
     COUNTERS["candidate_reconstructions"] += 1
     # FTS normally returns each page once, but the canonical session must not
     # depend on that implementation detail.  Preserve the first page rank
@@ -2522,8 +2520,8 @@ def _session_candidates(
             raise ValueError(
                 "search match localization failed: FTS hit has no recoverable Source span"
             )
-        # One local line window per cluster; adjacent windows merge, but the
-        # raw coordinates remain the exact boundaries of the merged quote.
+        # Cluster match lines first. The current recipe expands each cluster
+        # before coalescing, so identical delivered windows count only once.
         windows: list[tuple[int, int]] = []
         for start, end in spans:
             first, last, _raw_start, _raw_end = _line_bounds_from_starts(starts, start, end)
@@ -2540,6 +2538,17 @@ def _session_candidates(
             raw_end = starts[min(last, len(starts) - 1)]
             while raw_end > raw_start and text[raw_end - 1] in "\r\n":
                 raw_end -= 1
+            if literal_windows:
+                anchors = [
+                    (start, end) for start, end in spans if start < raw_end and end > raw_start
+                ]
+                left, right, truncated = _search_candidate_window(text, anchors)
+                # Oversized clusters retain their full anchor range for read_pages recovery.
+                if not truncated:
+                    raw_start, raw_end = left, right
+                    while raw_end > raw_start and text[raw_end - 1] in "\r\n":
+                        raw_end -= 1
+                    first, last, _left, _right = _line_bounds(text, raw_start, raw_end)
             candidates.append(
                 {
                     "source_id": source_id,
@@ -2571,11 +2580,28 @@ def _session_candidates(
             )
             smaller = min(prior["end"] - prior["start"], candidate["end"] - candidate["start"])
             strongly_overlaps = smaller > 0 and overlap * 5 >= smaller * 4
-            if same_page and strongly_overlaps:
+            union_bytes = (
+                len(
+                    pages[candidate["source_id"]][candidate["page"] - 1][
+                        min(prior["start"], candidate["start"]) : max(
+                            prior["end"], candidate["end"]
+                        )
+                    ].encode("utf-8")
+                )
+                if same_page and literal_windows
+                else 0
+            )
+            if (
+                same_page
+                and strongly_overlaps
+                and (not literal_windows or union_bytes <= _SEARCH_CANDIDATE_MAX_BYTES)
+            ):
                 prior["start"] = min(prior["start"], candidate["start"])
                 prior["end"] = max(prior["end"], candidate["end"])
                 prior["start_line"] = min(prior["start_line"], candidate["start_line"])
                 prior["end_line"] = max(prior["end_line"], candidate["end_line"])
+                if literal_windows:
+                    prior["cluster"] = min(prior["cluster"], candidate["cluster"])
                 continue
         coalesced.append(candidate)
 
@@ -2815,9 +2841,15 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ValueError("search session derivative is corrupt") from error
     spec = session.get("spec") if isinstance(session, dict) else None
+    candidate_version = spec.get("candidate_version") if isinstance(spec, dict) else None
+    if not isinstance(candidate_version, str) or candidate_version not in {
+        _SEARCH_CANDIDATE_VERSION,
+        _LEGACY_SEARCH_CANDIDATE_VERSION,
+    }:
+        raise ValueError("search session configuration is stale or corrupt")
     expected_spec = {
         "version": _SEARCH_SESSION_VERSION,
-        "candidate_version": _SEARCH_CANDIDATE_VERSION,
+        "candidate_version": candidate_version,
         "trial_id": trial_id,
         "sources": sources,
         "query": receipt["normalized_query"],
@@ -2880,6 +2912,7 @@ def _search_receipt(root: Path, handle: SearchReceiptHandle) -> dict[str, Any]:
         source_ids,
         all_pairs,
         profile=profile,
+        candidate_version=cast(str, candidate_version),
     )
     if candidates != expected_candidates:
         raise ValueError("search session candidates are stale or corrupt")

@@ -4,9 +4,11 @@ import pytest
 from support.rob2 import _assessment_workspace, _call
 
 from rob2_kit.application.evidence import (
+    _all_search_match_spans,
     _literal_match_spans,
     _native_fts_match_spans,
     _osa_distance,
+    _session_candidates,
     _source_navigation_entries,
 )
 
@@ -127,3 +129,30 @@ def test_source_navigation_preserves_split_heading_coordinates() -> None:
     assert len(headings) == 1
     assert headings[0]["text"] == "1.2\nIntroduction"
     assert (headings[0]["page"], headings[0]["start_line"], headings[0]["end_line"]) == (1, 3, 4)
+
+
+def test_search_window_grouping_preserves_anchors_pages_and_source_versions() -> None:
+    text = "alpha\ncontext\ncontext\nbeta\n"
+    pages = {"protocol-v1": (text, text), "protocol-v2": (text,)}
+    pairs = [("protocol-v1", 1), ("protocol-v1", 2), ("protocol-v2", 1)]
+    current = _session_candidates(pages, "alpha beta", "any", list(pages), pairs)
+    legacy = _session_candidates(
+        pages,
+        "alpha beta",
+        "any",
+        list(pages),
+        pairs,
+        candidate_version="rob2-kit.search-candidates.v0.9",
+    )
+    assert len(legacy) == 6
+    assert len(current) == 3
+    assert [(c["source_id"], c["page"]) for c in current] == pairs
+    for c in current:
+        quote = pages[c["source_id"]][c["page"] - 1][c["start"] : c["end"]]
+        assert quote == text.rstrip("\n")
+        assert all(
+            c["start"] <= start < end <= c["end"]
+            for start, end in _all_search_match_spans(text, "alpha beta", "any")
+        )
+    with pytest.raises(ValueError, match="unsupported search candidate recipe"):
+        _session_candidates(pages, "alpha", "any", list(pages), pairs, candidate_version="unknown")
