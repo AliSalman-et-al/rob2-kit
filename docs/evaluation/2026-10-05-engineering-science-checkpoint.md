@@ -114,3 +114,15 @@ a defensibly linked non-Low case. Keep confirmed, reconstructed, pending and mis
 separate; alternate results belong in separately versioned diagnostics. Preserve original
 labels and uncertainty. See [small matched-evaluation proposal](2026-10-05-small-matched-evaluation/README.md).
 No new paid cases or full benchmark were launched for this checkpoint.
+
+## Final distribution check, 6 October UTC
+
+Wheel built from `3c71d31` and installed in a new isolated CPython 3.13.15 environment,
+with source PYTHONPATH unset for installed checks. All23 native catalog schemas, question
+text and packaged guidance match source; three existing official qualification checks pass
+against the wheel. Arithmetic success/four malformed rejections, unchanged canonical bytes,
+release wheel contents and historical-descriptor product/standalone bundle verification pass.
+No product defect was demonstrated. See [installed integration receipt](2026-10-06-installed-integration/README.md)
+for exact wheel/runtime hashes and retained harness failures. Latest completed CI checked once
+remains37370427577 host communication interruption; assertion outcomes and latest-head success
+are unknown. No paid inference, benchmark, broad suite or merge.
