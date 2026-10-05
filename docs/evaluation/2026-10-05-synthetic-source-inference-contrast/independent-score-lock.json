@@ -1,0 +1,112 @@
+{
+  "status": "Independent scores locked before unblinding",
+  "locked_at_utc_as_reported": "2026-10-05 05:56 UTC",
+  "provenance": "Parent-delivered independent source-first review; reviewer reported no mapping/arm telemetry access or inferred arm identity",
+  "packet_commit": "333701ee31d77450d30951a933595d8732c3ed2a",
+  "mapping_opened_by_operator_at_lock_persistence": false,
+  "counts": {
+    "missed_unsupported_premises": {
+      "denominator": 2,
+      "U": 0,
+      "V": 0
+    },
+    "unsupported_premises_retained_in_revisions": {
+      "denominator": 2,
+      "U": 0,
+      "V": 0
+    },
+    "dependent_reasoning_repaired": {
+      "denominator": 4,
+      "U": 4,
+      "V": 4
+    },
+    "analysis_reasoning_repaired": {
+      "denominator": 2,
+      "claims": [
+        "R92",
+        "M22"
+      ],
+      "U": 2,
+      "V": 2
+    },
+    "missing_outcome_reasoning_repaired": {
+      "denominator": 2,
+      "claims": [
+        "R93",
+        "M23"
+      ],
+      "U": 2,
+      "V": 2
+    },
+    "false_alarm_findings_among_supported": {
+      "denominator": 7,
+      "U": 0,
+      "V": 0
+    },
+    "damaged_supported_revisions": {
+      "denominator": 7,
+      "U": 0,
+      "V": 1,
+      "V_claims": [
+        "T43"
+      ]
+    },
+    "NI_or_information_loss_inflation": {
+      "denominator": 13,
+      "U": 0,
+      "V": 0
+    },
+    "qualified_availability_warrants_retained": {
+      "denominator": 2,
+      "claims": [
+        "T41",
+        "T42"
+      ],
+      "U": 2,
+      "V": 2
+    },
+    "direct_measurement_anchor_retained": {
+      "denominator": 1,
+      "claims": [
+        "T44"
+      ],
+      "U": 1,
+      "V": 1
+    },
+    "new_unsupported_certainty_in_findings": {
+      "denominator": 13,
+      "U": 1,
+      "V": 1,
+      "claims": [
+        "T43"
+      ]
+    },
+    "new_unsupported_certainty_in_revisions": {
+      "denominator": 13,
+      "U": 0,
+      "V": 1,
+      "V_claims": [
+        "T43"
+      ]
+    }
+  },
+  "source_binding_checks": "All six published content hashes verified; 13 findings/revisions and owned contiguous citations per response",
+  "response_bytes": {
+    "U": 16019,
+    "V": 15262
+  },
+  "T43_qualification": {
+    "findings": "Both finding explanations call the nonattender outcome/value missing although source establishes only unaccounted status.",
+    "U_revision": "Restores unaccounted outcome and explicit uncertainty.",
+    "V_revision": "Retains the nonattender\u2019s missing value.",
+    "overlap": "The same V T43 issue appears in damaged revisions and new unsupported assertion; these counts must not be added."
+  },
+  "other_findings": "Both R91/M21 correct unsupported premises; R92/M22 distinguish analysis exclusion; R93/M23 repair conditional missingness logic; K71\u2013K73 retain supported unavailable-outcome handling; T41/T42 preserve 59 observed despite absent arm totals; T44 retains same procedure/calibration.",
+  "absent_new_conclusions": [
+    "unsupported outcome-dependent missingness",
+    "negligible bias",
+    "risk labels"
+  ],
+  "locked_interpretation": "Nondiscriminating ceiling on primary repair outcomes; one wording-sensitive qualified revision difference; no reliable prompt/general accuracy gain; no adoption of contrastive prompt justified.",
+  "execution_qualification": "All three starts and failed original must remain separately recorded."
+}
