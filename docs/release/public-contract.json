@@ -160,7 +160,7 @@
 "idempotent":true,
 "open_world":false,
 "schema_sha256":"sha256:a07822a0fd724fe54d45cd00caf8425c80035173f13a51763ec26bd6298122f7",
-"output_schema_sha256":"sha256:22156ef58ce3bf0ff13fb765cca77330e929facefba5e3dddbd46ff38b41c88a"},
+"output_schema_sha256":"sha256:768a25bba3ef95d920d7a906cb3aad422bc2408c3dc44c1c4ea23e94cb8b1ea1"},
 {"name":"close_trial",
 "title":"Close Trial",
 "description":"Close the Trial against the exact current review reference returned by review_trial. This makes the Trial immutable and advances to the next Trial, or to Batch finalization. A stale reference is rejected after any Result or Domain correction; searches alone do not change the reference. Retry the same closure safely with its returned reference.",

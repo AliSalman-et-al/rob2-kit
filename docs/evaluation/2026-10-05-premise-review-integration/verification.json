@@ -1,0 +1,47 @@
+{
+  "paid_calls": 0,
+  "benchmark_launched": false,
+  "frozen_baillard_inputs_and_raw_output_hashes_rechecked_unchanged": true,
+  "scientific_labels_adjudicated_by_server": false,
+  "broader_review_account_export_source_check_and_contract_tests": {
+    "passed": 59,
+    "seconds": 289.64
+  },
+  "final_targeted_d2_assignment_d3_availability_and_contract_budget_controls": {
+    "passed": 7,
+    "seconds": 50.71,
+    "overlap_with_broader_suite": true
+  },
+  "ruff": "pass",
+  "ruff_format": "pass",
+  "ty": "pass",
+  "generated_public_contract_refreshed": true,
+  "private_attempt_records": {
+    "premise-review-controls-2.log": {
+      "sha256": "208366dc0b7113287bb76f07e2440924cd3a7e756e15b5133893d1955471c778",
+      "bytes": 31995,
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/premise-review-controls-2.log"
+    },
+    "premise-review-controls-3.log": {
+      "sha256": "b343751811cd391373f280bf48f912ae6f3abb52250a2293d3be1ea7b0e5e013",
+      "bytes": 142,
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/premise-review-controls-3.log"
+    },
+    "premise-review-integration-1.log": {
+      "sha256": "a2a5642b5fae3db18e437b44c3ba76077477b77886346eb68bcce45a793dcda1",
+      "bytes": 66,
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/premise-review-integration-1.log"
+    },
+    "premise-review-integration-2.log": {
+      "sha256": "9964b78c8d968e14084f5934b91ea42885a4d28a0d4440dc64891ac22b5d2fac",
+      "bytes": 154,
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/premise-review-integration-2.log"
+    },
+    "premise-review-final-controls.log": {
+      "sha256": "346a18ddfb186602d382c845af2872ee0475778f35d5d048d69386b0024bcdc2",
+      "bytes": 142,
+      "private_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/premise-review-final-controls.log"
+    }
+  },
+  "qualification": "Preserves already-authored snapshots, not semantic entailment or demonstrated model accuracy."
+}

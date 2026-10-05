@@ -558,3 +558,11 @@ flag affected answers for reconsideration, never change labels. Historical
 checkpoints and bundles retain their original identities. The route is experimental;
 behavioral scientific improvement has not been demonstrated. See ADR0038 and the
 skill's selected-Result reconstruction reference for the host procedure.
+
+Native Trial review retains an Evidence basis's original source-bound working
+observation snapshot, including a linked Result-account step's inference,
+unknowns, counterevidence and count-Evidence bindings. It is the warrant's
+relied-on snapshot, not a current account revision or server-verified entailment.
+Existing bounded review detail recovery preserves this optional state without
+adding a consistency gate, scientific answer coercion or default account-first
+workflow. Proposed/adopted judgments remain separate and unchanged.

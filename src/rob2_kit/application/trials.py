@@ -528,6 +528,10 @@ def _review_domain_findings(
                     "kind": basis["kind"],
                     "assertion": "host_asserted",
                 }
+                # Review the warrant's original observation/inference snapshot,
+                # not only its citation role. This does not certify entailment.
+                if isinstance(basis.get("working_observation"), dict):
+                    basis_finding["working_observation"] = basis["working_observation"]
                 evidence_identity = basis.get("evidence")
                 fact_role = (
                     "counterevidence"

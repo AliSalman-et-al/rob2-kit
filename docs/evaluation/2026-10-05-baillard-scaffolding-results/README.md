@@ -32,11 +32,17 @@ The reference for this audit is the captured article plus the complete applicabl
 2019 official guidance, rather than either arm's label. Exact source words and
 inspected figure coordinates are in the adjacent preparation's
 [source receipt](../2026-10-05-minimal-assessment-preparation/source-words-receipt.json).
-The figure establishes 57 randomized and 53 analyzed after two exclusions per
-arm for incomplete records; it does not identify which selected outcome values
-were unavailable. The continuous measurement and reported minima are documented.
-The Methods' primary mean-drop wording remains an unresolved correspondence
-issue, rather than evidence that results-dependent selection occurred.
+The flow figure establishes 57 randomized and 53 analyzed after two exclusions
+per arm for incomplete records. Figure 4 presents minima for 26 control and 27
+NIV participants, supporting at least 53 observed selected outcomes. The other
+four randomized participants' minima remain uncertain: zero to four could be
+unavailable, rather than four verified missing minima. The continuous measurement and reported minima are documented.
+The Methods' primary mean-drop wording remains a correspondence qualification,
+rather than evidence that results-dependent selection occurred. Immediately
+following it, the sample-size planning refers to prior during-ETI saturation
+and a 5% difference in mean saturation during ETI (PDF p.3, lines 114–118).
+That positively supports possible imprecise naming; it does not prove exact
+endpoint correspondence or pre-unblinding plan chronology.
 
 - **D1:** Rich correctly retains unknown all-randomized baseline information.
   Minimal answers No to baseline imbalance from the final-analysis table despite
@@ -61,9 +67,11 @@ issue, rather than evidence that results-dependent selection occurred.
   93% versus a 95% example. Rich explicitly warns that the observed count is
   unknown, yet starts its rationale by asserting that outcomes were unavailable
   for the full randomized population and reuses the same 7% inference. Neither
-  establishes an outcome-specific observed count or explains why the unresolved
-  availability could materially affect this mean difference. Both acknowledge
-  unknown reasons; neither documents outcome-linked missingness. Minimal's
+  establishes the exact outcome-specific availability among all 57 or explains
+  the possible magnitude of the unresolved values. At least 53 minima are
+  reported. Both acknowledge unknown reasons. Emergency-intubation circumstances
+  can support a possible outcome-dependent mechanism at 3.3 without documented
+  actual dependence; that does not establish likelihood at 3.4. Minimal's
   No information at 3.4 produces High through the official branch; that branch is
   not an evaluator bug or proof that outcome dependence actually occurred.
   Rich's Probably No at 3.4 relies on equal exclusions and the absence of described
@@ -87,7 +95,9 @@ issue, rather than evidence that results-dependent selection occurred.
   Minimal's narrow eligibility argument needs a distinction between the exact
   numerical result and the user's independently eligible outcome measurements;
   defining eligibility after seeing the reported minimum can conceal selection
-  opportunities. Rich retains that uncertainty but cannot infer selection merely
+  opportunities. A genuinely independent prechosen minimum-during-ETI eligibility
+  criterion can exclude measurements at other study stages; the frozen exact
+  Result must not automatically be mistaken for that independent criterion. Rich retains that uncertainty but cannot infer selection merely
   from other study-stage time points. Both remain Some concerns.
 
 These findings concern the strength of warrants, not a new case gold standard.
@@ -153,9 +163,16 @@ uncertainties, while still failing to carry them consistently into conclusions.
 Minimal does not meet the frozen source-warrant criterion for removing scaffolding.
 Neither arm's labels establish superiority to All-Low or human agreement.
 
-The actionable mechanism is **premise consistency across conclusions**: the same
-unknown observation/exclusion mechanism is correctly named, then silently treated
-as known to answer D2 and D3. Existing local guidance already describes the right
+The actionable mechanism is **source-to-premise warrant fidelity**: an
+incomplete-record exclusion is promoted to an established missing selected
+outcome without sufficient qualification. Rich acknowledges the unresolved
+selected-outcome availability, then treats it as established; Minimal consistently
+uses the same unsupported premise across Domains. Appropriate D2 analysis and D3
+missing-data concerns are compatible if the selected outcomes really were
+unavailable. A cross-domain contradiction detector could miss this common-mode
+error and must not require different Domain answers. Rich's D2 label change is
+driven by 2.3 NI rather than PN, not by 2.6 Y versus PY; the D3 label change is
+driven solely by 3.4 NI versus PN. Existing local guidance already describes the right
 count distinctions and probability rules. Adding another case-specific warning
 would not address the demonstrated failure. A subsequent implementation should
 make the outcome-availability and analysis-exclusion premises shared, source-bound
@@ -171,3 +188,7 @@ unobserved cases, not a Baillard-specific desired label.
 Paid work stops with these two outputs. Full benchmark remains off. Any later
 paid contrast needs a new frozen design and explicit authorization. This checkpoint
 is evidence for the next architecture investigation, not an accuracy release.
+
+The subsequent offline architecture audit and narrowly scoped review snapshot
+repair are recorded in [the premise review integration](../2026-10-05-premise-review-integration/README.md).
+The frozen model outputs and their validations are unchanged.

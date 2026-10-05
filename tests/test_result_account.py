@@ -12,7 +12,7 @@ from support import rob2 as support
 
 from rob2_kit.application._state import _state
 from rob2_kit.application.source_handles import source_handle
-from rob2_kit.workflow_models import WorkingCheckpointDraft
+from rob2_kit.workflow_models import WorkingCheckpointDraft, WorkingObservationLink
 
 
 @pytest.fixture
@@ -134,6 +134,192 @@ def _context(workspace: Path, domain: str) -> dict:
     )
     assert result["outcome"] == "success", result
     return result["data"]
+
+
+@pytest.mark.parametrize(
+    ("passage", "observed", "inference", "unknowns"),
+    [
+        (
+            "Alpha: 20 randomized; 18 analyzed. Two incomplete records were excluded; "
+            "which outcome measurements were unavailable is not stated.",
+            None,
+            None,
+            ["Selected-outcome availability for the two excluded records is unknown."],
+        ),
+        (
+            "Alpha: 20 randomized; all 20 endpoint values were recorded; 18 analyzed. "
+            "Two measured endpoints were omitted because a separate covariate was missing.",
+            20,
+            None,
+            [],
+        ),
+        (
+            "Alpha: 20 randomized; 18 endpoint values were recorded; 18 analyzed. "
+            "The two unavailable measurements followed a documented equipment failure.",
+            18,
+            None,
+            [],
+        ),
+        (
+            "Alpha: 20 randomized; 18 analyzed. Monitoring stopped before the endpoint "
+            "window in two participants; endpoint recovery is not described.",
+            None,
+            "The interruption probably prevented endpoint recording for those participants.",
+            ["Recovery of endpoint values after the interruption is unknown."],
+        ),
+    ],
+    ids=["unknown", "observed-but-omitted", "unavailable", "qualified-inference"],
+)
+def test_review_preserves_shared_warrant_snapshot_without_adjudicating_it(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    passage: str,
+    observed: int | None,
+    inference: str | None,
+    unknowns: list[str],
+) -> None:
+    original = support._workspace
+
+    def create(path: Path, requested_outcome: str = "requested outcome") -> Path:
+        workspace = original(path, requested_outcome)
+        with (workspace / "input/trial/main.txt").open("a") as stream:
+            stream.write(passage + "\n")
+        return workspace
+
+    monkeypatch.setattr(support, "_workspace", create)
+    workspace, main, revision = support._assessment_workspace(tmp_path)
+    evidence = support._call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            "source_id": main["source_id"],
+            "page": 1,
+            "start_line": 2,
+            "end_line": 2,
+        },
+    )["data"]["evidence"]
+    note = {
+        "text": passage,
+        "sources": [{"source_id": main["source_id"], "page": 1, "start_line": 2, "end_line": 2}],
+        "scope": {"meaning": "reported", "relation": "unknown"},
+    }
+    saved = support._call(
+        workspace,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "result_account": [
+                    {
+                        "id": "ascertainment",
+                        "aspect": "outcome_ascertainment",
+                        "observation": note,
+                        "inference": inference,
+                        "unknowns": unknowns,
+                        "counterevidence": [note],
+                        "counts": [
+                            {
+                                "arm": "Alpha",
+                                "population": "randomized",
+                                "unit": "participants",
+                                "time_point": "selected window",
+                                "randomized": 20,
+                                "analyzed": 18,
+                                "observed": observed,
+                                "basis": [evidence["handle"]],
+                            }
+                        ],
+                    }
+                ],
+            }
+        },
+    )
+    assert saved["outcome"] == "success", saved
+    questions = {}
+    for domain in support.SCIENTIFIC_PACK.domains:
+        context = _context(workspace, domain.id)
+        draft = support._domain_draft("trial", domain.id, revision, main)
+        question_id = {
+            "domain:deviations": "sq:deviations:appropriate-analysis",
+            "domain:missing": "sq:missing:data-available",
+        }.get(domain.id, draft["answers"][0]["question_id"])
+        selected_answer = next(
+            answer for answer in draft["answers"] if answer["question_id"] == question_id
+        )
+        if domain.id in {"domain:deviations", "domain:missing"}:
+            step = context["working_checkpoint"]["checkpoint"]["result_account"][0]
+            selected_answer["bases"].append(
+                {
+                    "kind": "inference" if inference else "context",
+                    "evidence": evidence["handle"],
+                    "working_observation": {"step_identity": step["identity"]},
+                }
+            )
+        questions[domain.id] = question_id
+        committed = support._call(workspace, "save_domain_judgment", draft)
+        assert committed["outcome"] == "success", committed
+        revision = int(committed["head"]["state_revision"])
+    records = copy.deepcopy(_state(workspace)["domain_records"])
+    if inference is not None:
+        relied_on_answer = next(
+            answer
+            for answer in records["trial:domain:deviations"]["answers"]
+            if answer["question_id"] == questions["domain:deviations"]
+        )
+        revised = copy.deepcopy(relied_on_answer["bases"][-1]["working_observation"]["result_step"])
+        revised.pop("identity")
+        revised["inference"] = (
+            "Later account revision: the original inference needs reconsideration."
+        )
+        updated = support._call(
+            workspace,
+            "save_working_checkpoint",
+            {"checkpoint": {"trial_id": "trial", "result_account": [revised]}},
+        )
+        assert updated["outcome"] == "success", updated
+    for domain in ("domain:deviations", "domain:missing", "domain:measurement"):
+        reviewed = support._call(
+            workspace,
+            "review_trial",
+            {
+                "trial_id": "trial",
+                "expected_revision": revision,
+                "domain_id": domain,
+                "question_id": questions[domain],
+            },
+        )
+        assert reviewed["outcome"] == "success", reviewed
+        revision = int(reviewed["head"]["state_revision"])
+        finding = reviewed["data"]["domain_findings"][0]["answers"][0]
+        assert (
+            reviewed["data"]["domain_findings"][0]["decision"]
+            == records[f"trial:{domain}"]["decision"]
+        )
+        original_answer = next(
+            answer
+            for answer in records[f"trial:{domain}"]["answers"]
+            if answer["question_id"] == questions[domain]
+        )
+        assert finding["answer"] == original_answer["answer"]
+        if domain == "domain:measurement":
+            assert all("working_observation" not in basis for basis in finding["bases"])
+        else:
+            link = original_answer["bases"][-1]["working_observation"]
+            # The typed receipt may emit nullable defaults; retained content and
+            # snapshot identities must still match the unchanged canonical basis.
+            assert (
+                WorkingObservationLink.model_validate(
+                    finding["bases"][-1]["working_observation"]
+                ).model_dump(mode="json", exclude_none=True)
+                == link
+            )
+            assert finding["bases"][-1]["assertion"] == "host_asserted"
+            assert link["result_step"]["unknowns"] == unknowns
+            assert link["result_step"].get("inference") == inference
+            assert link["result_step"]["counts"][0].get("observed") == observed
+            assert link["result_step"]["observation"]["scope"]["meaning"] == "reported"
+        assert _state(workspace)["domain_records"] == records
 
 
 def test_account_counts_exist_before_judgment_and_scope_and_unknowns_survive_domains(

@@ -54,6 +54,7 @@ from rob2_kit.workflow_models import (
     SourceRole,
     TrialId,
     UnavailableResult,
+    WorkingObservationLink,
     WorkingPremiseStatus,
     WorkingResultStep,
 )
@@ -2701,10 +2702,19 @@ class ReviewBasisFinding(PublicModel):
             "checks its references but does not independently judge scientific entailment."
         ),
     )
-    evidence: ReviewEvidenceReference | None = None
-    search_receipt: Identity | None = None
-    unresolved_premise: str | None = None
-    stopping_rationale: str | None = None
+    evidence: ReviewEvidenceReference | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+    search_receipt: Identity | None = Field(default=None, exclude_if=lambda value: value is None)
+    unresolved_premise: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    stopping_rationale: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    working_observation: WorkingObservationLink | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+        description="Original source-bound warrant snapshot, including any account-step "
+        "inference, uncertainty and counterevidence. Its interpretation remains host-asserted; "
+        "source identity does not certify entailment. This is not a current account revision.",
+    )
 
 
 class ReviewReadEvidenceAction(PublicModel):
@@ -2831,7 +2841,7 @@ class ReviewAnswerFinding(PublicModel):
     conflicts: tuple[ReviewConflict, ...] = ()
     uninvestigated_routes: tuple[ReviewInvestigationRoute, ...] = ()
     evidence: tuple[ReviewEvidenceReference, ...] = ()
-    bases: tuple[dict[str, Any], ...] = Field(
+    bases: tuple[ReviewBasisFinding, ...] = Field(
         default=(),
         description=(
             "Exact premise-basis assertions retained for review; support remains host-asserted "
