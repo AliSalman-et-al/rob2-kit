@@ -425,7 +425,21 @@ IntakeCondition = Annotated[
 ]
 
 
+class SourceNavigationAction(PublicModel):
+    """Bounded Source outline route; metadata delivery does not record page reading."""
+
+    kind: Literal["navigate"] | None = Field(default=None, exclude_if=lambda value: value is None)
+    operation: Literal["list_sources"]
+    trial_id: TrialId
+    source_id: SourceHandle
+    limit: PositiveInt
+    cursor: str | None = None
+
+
 class PublicSource(PublicModel):
+    navigation_action: SourceNavigationAction | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     id: SourceHandle
     trial_id: TrialId
     role: SourceRole
@@ -963,6 +977,9 @@ class CompanionSourceStatus(PublicModel):
     source_ids: tuple[SourceHandle, ...]
     reading_status: Literal["not_admitted", "unread", "partially_read", "read_complete"]
     next_action: AdmitCompanionRecoveryAction | ReadCompanionRecoveryAction | None
+    navigation_action: SourceNavigationAction | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
 
 
 class StatusData(PublicModel):
@@ -997,6 +1014,9 @@ class SaveWorkingCheckpointData(PublicModel):
 
 
 class SourceNavigationEntry(PublicModel):
+    read_action: EvidenceRecovery | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     text: str = Field(
         min_length=1,
         max_length=512,
@@ -1065,13 +1085,44 @@ class SourceNavigationEntry(PublicModel):
         return self
 
 
+class PdfBookmarkNavigationEntry(PublicModel):
+    """Authored PDF outline metadata, never a quote from the destination page."""
+
+    kind: Literal["pdf_bookmark"]
+    text: str = Field(
+        min_length=1,
+        max_length=512,
+        description="Authored PDF bookmark label; not page text or Evidence.",
+    )
+    page: PageNumber = Field(
+        description="One-based physical page destination in this captured PDF."
+    )
+    outline_index: NonNegativeInt = Field(
+        description="Zero-based index in the authored PDF outline, including unmapped entries."
+    )
+    outline_level: PositiveInt = Field(
+        description="Authored nesting level, without inferred section or date meaning."
+    )
+    label_truncated: StrictBool
+    label_sha256: Identity = Field(
+        description="SHA-256 of the complete authored label's UTF-8 bytes."
+    )
+    read_action: ReadCompanionRecoveryAction
+
+
 class SourceNavigationData(PublicModel):
     source_id: SourceHandle
     source_label: str = Field(min_length=1)
     logical_path: str = Field(min_length=1)
     projection_hash: Identity
-    navigation_version: Literal["rob2-kit.source-navigation.v0.4"]
-    entries: tuple[SourceNavigationEntry, ...] = Field(max_length=12)
+    source_sha256: Identity
+    pdf_bookmark_count: NonNegativeInt
+    unmapped_pdf_bookmark_count: NonNegativeInt
+    navigation_version: Literal["rob2-kit.source-navigation.v0.5"]
+    entries: tuple[
+        Annotated[SourceNavigationEntry | PdfBookmarkNavigationEntry, Field(discriminator="kind")],
+        ...,
+    ] = Field(max_length=12)
     total_entries: NonNegativeInt = Field(
         description="Total entries in the complete deterministic Source navigation index."
     )
@@ -1251,17 +1302,6 @@ class SearchNextAction(PublicModel):
         if self.purpose_question_id is not None and self.purpose_domain_id is None:
             raise ValueError("question purpose requires a Domain")
         return self
-
-
-class SourceNavigationAction(PublicModel):
-    """Executable literal navigation after a scoped lexical miss."""
-
-    kind: Literal["navigate"]
-    operation: Literal["list_sources"]
-    trial_id: TrialId
-    source_id: SourceHandle
-    limit: PositiveInt
-    cursor: str | None = None
 
 
 SearchRecoveryAction = Annotated[
@@ -1537,6 +1577,7 @@ class PageData(PublicModel):
 
 
 class PagesData(PublicModel):
+    navigation_actions: tuple[SourceNavigationAction, ...] = Field(default=(), max_length=20)
     pages: tuple[PageData, ...] = Field(min_length=1)
     remaining_windows: tuple[EvidenceReadWindow, ...] = Field(
         default=(),
@@ -3070,6 +3111,9 @@ class CompanionAcquisitionData(PublicModel):
 
 
 class CompanionAdmissionData(PublicModel):
+    navigation_action: SourceNavigationAction | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     candidate_identity: Identity
     trial_inventory_identity: Identity
     source_ids: tuple[SourceHandle, ...]

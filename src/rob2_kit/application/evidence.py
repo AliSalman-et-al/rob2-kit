@@ -52,7 +52,7 @@ _SEARCH_PREVIEW_MAX_BYTES = 512
 _SEARCH_CANDIDATE_MAX_BYTES = 2_048
 _TERM_FEEDBACK_MAX_TERMS = 16
 _TERM_FEEDBACK_MAX_SOURCES = 64
-_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.4"
+_SOURCE_NAVIGATION_VERSION = "rob2-kit.source-navigation.v0.5"
 _SOURCE_NAVIGATION_MAX_ENTRIES = 12
 _SOURCE_NAVIGATION_MAX_TEXT = 512
 
@@ -117,6 +117,15 @@ def reset_search_caches() -> None:
     _cached_normalized_search_text.cache_clear()
 
 
+def _source_navigation_action(trial_id: str, source_id: str) -> dict[str, Any]:
+    return {
+        "operation": "list_sources",
+        "trial_id": trial_id,
+        "source_id": source_id,
+        "limit": _SOURCE_NAVIGATION_MAX_ENTRIES,
+    }
+
+
 def list_sources(
     workspace: str | Path,
     trial_id: str | None = None,
@@ -149,6 +158,7 @@ def list_sources(
         navigation = _source_navigation(
             source,
             pages,
+            root=root,
             trial_id=trial["id"],
             cursor=cursor,
             limit=limit,
@@ -161,7 +171,10 @@ def list_sources(
     result: dict[str, Any] = {
         "outcome": "success",
         "trial_inventory_identity": trial["identity"],
-        "sources": sources,
+        "sources": [
+            {**source, "navigation_action": _source_navigation_action(trial["id"], source["id"])}
+            for source in sources
+        ],
         "conditions": conditions,
         "omissions": trial.get("omissions", []),
     }
@@ -174,13 +187,58 @@ def _source_navigation(
     source: dict[str, Any],
     pages: tuple[str, ...],
     *,
-    trial_id: str | None = None,
+    root: Path,
+    trial_id: str,
     cursor: str | None,
     limit: int,
 ) -> dict[str, Any]:
-    """Return bounded literal navigation over one verified persisted projection."""
+    """Return bounded PDF metadata and literal navigation, without reading coverage."""
 
-    entries = _source_navigation_entries(pages, trial_id=trial_id, source_id=source["id"])
+    bookmarks: list[dict[str, Any]] = []
+    unmapped_bookmarks = 0
+    if source.get("media_type") == "application/pdf":
+        data = internal_path(root, "sources", trial_id, f"{source['id']}.bin").read_bytes()
+        if "sha256:" + hashlib.sha256(data).hexdigest() != source["sha256"]:
+            raise EvidenceIntegrityError("captured Source bytes do not match Canonical identity")
+        with pymupdf.open(stream=data, filetype="pdf") as document:
+            for index, (level, label, page) in enumerate(document.get_toc()):
+                if not label or not 1 <= page <= len(pages):
+                    unmapped_bookmarks += 1
+                    continue
+                bookmarks.append(
+                    {
+                        "kind": "pdf_bookmark",
+                        "text": label[:_SOURCE_NAVIGATION_MAX_TEXT],
+                        "page": page,
+                        "outline_index": index,
+                        "outline_level": level,
+                        "label_truncated": len(label) > _SOURCE_NAVIGATION_MAX_TEXT,
+                        "label_sha256": "sha256:"
+                        + hashlib.sha256(label.encode("utf-8")).hexdigest(),
+                        "read_action": {
+                            "operation": "read_pages",
+                            "trial_id": trial_id,
+                            "source_id": source["id"],
+                            "pages": [page],
+                        },
+                    }
+                )
+    entries = bookmarks + _source_navigation_entries(
+        pages, trial_id=trial_id, source_id=source["id"]
+    )
+    for entry in entries[len(bookmarks) :]:
+        entry["read_action"] = {
+            "operation": "read_pages",
+            "trial_id": trial_id,
+            "windows": [
+                {
+                    "source_id": source["id"],
+                    "page": entry["page"],
+                    "start_line": entry["start_line"],
+                    "end_line": entry["end_line"],
+                }
+            ],
+        }
     offset = 0
     if cursor is not None:
         payload = _decode_source_navigation_cursor(cursor)
@@ -189,7 +247,9 @@ def _source_navigation(
             or payload.get("projection_hash") != source.get("projection_hash")
             or payload.get("version") != _SOURCE_NAVIGATION_VERSION
         ):
-            raise ValueError("source_navigation_cursor_stale: source or projection changed")
+            raise ValueError(
+                "source_navigation_cursor_stale: Source, projection, or navigation recipe changed"
+            )
         offset = payload["offset"]
         if offset < 0 or offset > len(entries):
             raise ValueError("source_navigation_cursor_expired: request the first page")
@@ -222,6 +282,9 @@ def _source_navigation(
         "source_label": source["label"],
         "logical_path": source["logical_path"],
         "projection_hash": source["projection_hash"],
+        "source_sha256": source["sha256"],
+        "pdf_bookmark_count": len(bookmarks),
+        "unmapped_pdf_bookmark_count": unmapped_bookmarks,
         "navigation_version": _SOURCE_NAVIGATION_VERSION,
         "entries": selected,
         "total_entries": len(entries),
@@ -277,7 +340,7 @@ def _decode_source_navigation_cursor(cursor: str) -> dict[str, Any]:
         or isinstance(payload["offset"], bool)
         or not isinstance(payload["projection_hash"], str)
         or not isinstance(payload["source_id"], str)
-        or payload["version"] != _SOURCE_NAVIGATION_VERSION
+        or not isinstance(payload["version"], str)
     ):
         raise ValueError("source_navigation_cursor_invalid: incomplete cursor")
     return payload
@@ -802,6 +865,7 @@ def _source_navigation_diagnostic(
     source: dict[str, Any] | None,
     pages: tuple[str, ...] | None,
     trial_id: str,
+    root: Path,
 ) -> dict[str, Any] | None:
     """Attach literal source navigation to a scoped lexical miss."""
 
@@ -810,6 +874,7 @@ def _source_navigation_diagnostic(
     navigation = _source_navigation(
         source,
         pages,
+        root=root,
         trial_id=trial_id,
         cursor=None,
         limit=_SOURCE_NAVIGATION_MAX_ENTRIES,
@@ -1387,6 +1452,7 @@ def search_sources(
             source=source,
             pages=verified[(trial_id, requested_source_id)][1] if source is not None else None,
             trial_id=trial_id,
+            root=root,
         )
     return {
         "outcome": "success",

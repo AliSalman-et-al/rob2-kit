@@ -156,3 +156,43 @@ def test_search_window_grouping_preserves_anchors_pages_and_source_versions() ->
         )
     with pytest.raises(ValueError, match="unsupported search candidate recipe"):
         _session_candidates(pages, "alpha", "any", list(pages), pairs, candidate_version="unknown")
+
+
+@pytest.mark.parametrize(
+    ("first_window", "second_window", "text", "expected_count"),
+    [
+        ((1, 1001), (201, 1201), "a\n" * 1000, 1),  # exactly 80% overlap
+        ((1, 1001), (202, 1201), "a\n" * 1000, 2),  # below 80%
+        ((0, 1200), (165, 1365), "é\n" * 682 + "éx\n" + "é\n" * 1000, 1),
+        ((0, 1200), (165, 1366), "é\n" * 682 + "éx\n" + "é\n" * 1000, 2),
+    ],
+)
+def test_search_grouping_overlap_and_utf8_union_cap(
+    monkeypatch, first_window, second_window, text, expected_count
+) -> None:
+    from rob2_kit.application import evidence
+
+    # Control preview bounds to test coalescing at exact boundaries independently
+    # of the preview-expansion heuristic. The two match anchors remain distinct.
+    monkeypatch.setattr(
+        evidence, "_all_search_match_spans", lambda *a, **k: [(100, 101), (1000, 1001)]
+    )
+    monkeypatch.setattr(
+        evidence,
+        "_search_candidate_window",
+        lambda _text, spans: (
+            (*first_window, False) if spans[0][0] < 500 else (*second_window, False)
+        ),
+    )
+    candidates = evidence._session_candidates(
+        {"source": (text,)}, "target", "any", ["source"], [("source", 1)]
+    )
+    assert len(candidates) == expected_count
+    assert all(
+        any(c["start"] <= start < end <= c["end"] for c in candidates)
+        for start, end in [(100, 101), (1000, 1001)]
+    )
+    if first_window[0] == 0:
+        assert len(text[: second_window[1]].encode("utf-8")) == (
+            2048 if expected_count == 1 else 2049
+        )

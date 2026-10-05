@@ -68,6 +68,7 @@ from rob2_kit.application.domains import save_domain_judgment as _save_domain_ju
 from rob2_kit.application.evidence import (
     EvidenceIntegrityError,
     _cursor_handle,
+    _source_navigation_action,
 )
 from rob2_kit.application.evidence import list_sources as _list_sources
 from rob2_kit.application.evidence import read_pages as _read_pages
@@ -2731,7 +2732,8 @@ def list_sources(
         Field(
             description=(
                 "Optional source_id from this Trial. Supplying it returns bounded literal "
-                "heading and leading-page navigation entries."
+                "PDF bookmarks and literal heading/leading-page navigation entries. "
+                "Bookmark labels are metadata, not page quotes; entries include read_pages actions."
             )
         ),
     ] = None,
@@ -3393,6 +3395,12 @@ def read_pages(
                 "passage_ref": None,
             }
 
+        def navigation_actions(pages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+            return [
+                _source_navigation_action(trial_id, source)
+                for source in dict.fromkeys(page["source_id"] for page in pages)
+            ]
+
         def fits(pages: list[dict[str, Any]], pending: list[dict[str, Any]]) -> bool:
             return (
                 _read_pages_transport_bytes(
@@ -3400,6 +3408,7 @@ def read_pages(
                         "outcome": "success",
                         "pages": pages,
                         "remaining_windows": pending,
+                        "navigation_actions": navigation_actions(pages),
                     },
                     transport_head,
                 )
@@ -3656,6 +3665,7 @@ def read_pages(
             "outcome": "success",
             "pages": numbered_pages,
             "remaining_windows": remaining_windows,
+            "navigation_actions": navigation_actions(numbered_pages),
             "_read_coverage": read_coverage,
         }
 

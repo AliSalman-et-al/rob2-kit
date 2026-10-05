@@ -4,7 +4,12 @@ from typing import Any
 from ..packs import SCIENTIFIC_PACK
 from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
-from .evidence import _evidence_catalog, main_report_reading_status, source_reading_status
+from .evidence import (
+    _evidence_catalog,
+    _source_navigation_action,
+    main_report_reading_status,
+    source_reading_status,
+)
 from .result_scope import result_scope_review
 from .working import investigation_projection, working_checkpoint_status
 
@@ -240,6 +245,9 @@ def get_status(workspace: str | Path, *, include_evidence_text: bool = False) ->
                 "document_staged": True,
                 "admitted_to_active_batch": admitted,
                 "source_ids": [source_handle(s) for s in source_ids],
+                "navigation_action": _source_navigation_action(trial_id, source_ids[0])
+                if admitted
+                else None,
                 "reading_status": reading.get(source_ids[0], "unread")
                 if admitted
                 else "not_admitted",

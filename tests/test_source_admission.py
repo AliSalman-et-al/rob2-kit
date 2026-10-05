@@ -91,6 +91,9 @@ def admit(workspace, identity):
     )
     assert receipt["outcome"] == "success", receipt
     assert receipt["data"]["document_read"] is False
+    action = receipt["data"]["navigation_action"]
+    assert action["operation"] == "list_sources" and action["trial_id"] == "trial"
+    assert action["source_id"] == receipt["data"]["source_ids"][0]
     return receipt
 
 
@@ -580,6 +583,17 @@ def test_lost_receipt_status_recovers_without_refetch_or_read_claim(assessed, pu
     assert action["operation"] == "admit_companion_source"
     _call(workspace, action["operation"], {k: v for k, v in action.items() if k != "operation"})
     admitted = _call(workspace, "get_status", {})["data"]["companion_sources"][0]
+    navigation_action = admitted["navigation_action"]
+    navigation = _call(
+        workspace,
+        navigation_action["operation"],
+        {k: v for k, v in navigation_action.items() if k != "operation"},
+    )["data"]["navigation"]
+    assert navigation["source_id"] == admitted["source_ids"][0]
+    assert (
+        _call(workspace, "get_status", {})["data"]["companion_sources"][0]["reading_status"]
+        == "unread"
+    )
     assert admitted["admitted_to_active_batch"] and admitted["reading_status"] == "unread"
     action = admitted["next_action"]
     assert action["operation"] == "read_pages"

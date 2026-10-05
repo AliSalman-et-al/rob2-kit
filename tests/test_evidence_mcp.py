@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import runpy
 import sqlite3
@@ -1134,7 +1135,7 @@ def test_source_navigation_is_literal_bounded_and_cursor_stable(tmp_path: Path) 
     )["data"]["navigation"]
     assert first["source_id"] == source["id"]
     assert first["projection_hash"] == source["projection_hash"]
-    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.4"
+    assert first["navigation_version"] == "rob2-kit.source-navigation.v0.5"
     assert first["pages_examined"] == 7
     assert all(len(entry["text"]) <= 512 for entry in first["entries"])
 
@@ -2930,3 +2931,107 @@ def test_historical_anchor_recipe_receipt_remains_verifiable(tmp_path: Path) -> 
     connection.close()
     assert _search_receipt(workspace, handle) == receipt
     assert _search_receipt(workspace, result["search_receipt"]) == current_receipt
+
+    stale = _call(
+        workspace,
+        "search_sources",
+        {
+            "trial_id": "trial",
+            "query": "alpha beta",
+            "mode": "any",
+            "limit": 1,
+            "cursor": "sc_" + identity.removeprefix("sha256:")[:16] + "_1",
+        },
+    )
+    assert stale["condition"]["code"] == "search_cursor_stale"
+    assert _search_receipt(workspace, handle) == receipt
+
+
+def test_pdf_bookmark_navigation_preserves_metadata_and_reading_boundaries(tmp_path: Path) -> None:
+    from rob2_kit.application.evidence import source_reading_status
+
+    workspace = _workspace(tmp_path)
+    document = pymupdf.open()
+    for page in range(15):
+        document.new_page().insert_text((48, 48), f"Body on physical page {page + 1}.")
+    outline = [
+        [1, "Cover metadata", 1],
+        [2, "Long authored label " + "x" * 600, 2],
+        [1, "Unmapped destination", -1],
+    ]
+    outline.extend([1, f"Section {page}", page] for page in range(3, 16))
+    document.set_toc(outline)
+    (workspace / "input" / "trial" / "protocol.pdf").write_bytes(document.tobytes())
+    document.close()
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        s
+        for s in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if s["label"] == "protocol.pdf"
+    )
+    before = source_reading_status(workspace, "trial")
+    action = source["navigation_action"]
+    data = _call(
+        workspace, action["operation"], {k: v for k, v in action.items() if k != "operation"}
+    )["data"]["navigation"]
+    assert data["source_sha256"] == source["sha256"]
+    assert data["pdf_bookmark_count"] == 15
+    assert data["unmapped_pdf_bookmark_count"] == 1
+    assert data["returned_entries"] == 12
+    assert source_reading_status(workspace, "trial") == before
+    import base64
+
+    encoded = data["next_cursor"].split(".", 1)[1]
+    old_cursor = json.loads(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)))
+    old_cursor["version"] = "rob2-kit.source-navigation.v0.4"
+    old_cursor = "sn1." + base64.urlsafe_b64encode(json.dumps(old_cursor).encode()).decode().rstrip(
+        "="
+    )
+    stale = _call(
+        workspace,
+        "list_sources",
+        {"trial_id": "trial", "source_id": source["id"], "cursor": old_cursor},
+    )
+    assert stale["condition"]["code"] == "source_navigation_cursor_stale"
+    entries = list(data["entries"])
+    assert entries[0]["text"] == "Cover metadata"
+    assert entries[1]["outline_level"] == 2 and entries[1]["label_truncated"] is True
+    assert (
+        entries[1]["label_sha256"]
+        == "sha256:"
+        + hashlib.sha256(("Long authored label " + "x" * 600).encode("utf-8")).hexdigest()
+    )
+    cursor = data["next_cursor"]
+    while cursor:
+        data = _call(
+            workspace,
+            "list_sources",
+            {"trial_id": "trial", "source_id": source["id"], "cursor": cursor},
+        )["data"]["navigation"]
+        entries.extend(data["entries"])
+        cursor = data["next_cursor"]
+    bookmarks = [entry for entry in entries if entry["kind"] == "pdf_bookmark"]
+    assert [entry["outline_index"] for entry in bookmarks] == [0, 1, *range(3, 16)]
+    assert all("start_line" not in entry and "end_line" not in entry for entry in bookmarks)
+    assert all(len(entry["text"]) <= 512 for entry in entries)
+    assert source_reading_status(workspace, "trial") == before
+    read_action = bookmarks[1]["read_action"]
+    read = _call(
+        workspace,
+        read_action["operation"],
+        {k: v for k, v in read_action.items() if k != "operation"},
+    )["data"]
+    assert "Body on physical page 2" in read["pages"][0]["numbered_text"]
+    assert read["navigation_actions"][0]["source_id"] == source["id"]
+    assert source_reading_status(workspace, "trial") != before
+    assert _state(workspace)["revision"] == 1
+
+    internal_source = next(
+        s["id"]
+        for s in _state(workspace)["batch"]["trials"][0]["sources"]
+        if s["label"] == "protocol.pdf"
+    )
+    captured = workspace / ".rob2-kit" / "sources" / "trial" / f"{internal_source}.bin"
+    captured.write_bytes(captured.read_bytes() + b"changed bytes")
+    with pytest.raises(ToolError, match="internal_evidence_integrity_error"):
+        _call(workspace, "list_sources", {"trial_id": "trial", "source_id": source["id"]})

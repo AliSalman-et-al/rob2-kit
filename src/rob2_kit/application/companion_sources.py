@@ -36,7 +36,7 @@ from ._state import (
     internal_path,
 )
 from .contracts import WorkflowConflict
-from .evidence import _find_source, read_pages
+from .evidence import _find_source, _source_navigation_action, read_pages
 from .intake import _manifest_registry_identifier, _manifest_registry_replay, _trial_directory
 from .public_documents import MAX_DOCUMENT_BYTES, PUBLIC_DOCUMENT_HOSTS, fetch_bounded
 from .source_handles import resolve_source_handle, source_handle
@@ -346,6 +346,7 @@ def admit_companion_source(
         document_staged=True,
         admitted_to_active_batch=True,
         document_read=False,
+        navigation_action=_source_navigation_action(trial_id, str(added[0]["id"])),
     )
 
 
