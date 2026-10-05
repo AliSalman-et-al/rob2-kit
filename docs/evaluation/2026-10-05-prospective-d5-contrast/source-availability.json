@@ -1,0 +1,158 @@
+[
+  {
+    "case": "pioneer-6",
+    "source": {
+      "declared_role": "main_article",
+      "id": "source_f32a7f2fce644ea68c956175de5146671e30213da6360d2ff9a12332ed0afe75",
+      "label": "NEJMoa1901118.pdf",
+      "logical_path": "NEJMoa1901118.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 11,
+      "projection_hash": "sha256:5601dc778502bac2518facd16d9610c3d92ec73944f7df0f767356b6f4560a68",
+      "role": "main_article",
+      "sha256": "sha256:da7e3186c5ac50f2c4bf64f3dcaff2470316834bd5ebfcb92595b7f58298bcfe",
+      "trial_id": "pioneer-6"
+    },
+    "verified_file_hash": "sha256:da7e3186c5ac50f2c4bf64f3dcaff2470316834bd5ebfcb92595b7f58298bcfe",
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "projection_availability": "read-only derivative database",
+    "source_database_sha256": "b18a3824fe4c3437b7a42128d220f28b55cfaa9f26359104c8070b45e9518221"
+  },
+  {
+    "case": "pioneer-6",
+    "source": {
+      "declared_role": "supplement",
+      "id": "source_6532547b9f9ff7eda508180f83872c59c6dfb6509815a65c2a2b8b86c6b21d6a",
+      "label": "nejmoa1901118_protocol.pdf",
+      "logical_path": "nejmoa1901118_protocol.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 213,
+      "projection_hash": "sha256:43935a1a56c40480103272ca86123e099d205ae3ea2b972a7faf0604d4659c98",
+      "role": "supplement",
+      "sha256": "sha256:4ac349872c3170eed594cc9588650b36bf856ee1dbb0df07217d2f9d6fd9e067",
+      "trial_id": "pioneer-6"
+    },
+    "verified_file_hash": "sha256:4ac349872c3170eed594cc9588650b36bf856ee1dbb0df07217d2f9d6fd9e067",
+    "pages": [
+      2,
+      22,
+      52,
+      56,
+      62,
+      63,
+      64,
+      133,
+      166,
+      169,
+      175,
+      176,
+      177,
+      198,
+      199,
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209,
+      210,
+      211,
+      212,
+      213
+    ],
+    "projection_availability": "read-only derivative database",
+    "source_database_sha256": "b18a3824fe4c3437b7a42128d220f28b55cfaa9f26359104c8070b45e9518221"
+  },
+  {
+    "case": "pioneer-6",
+    "source": {
+      "declared_role": null,
+      "id": "source_589336e2b0043158689f9e9bfeff38d98af08389f5603b33f11d4347cfc83140",
+      "label": "ClinicalTrials.gov NCT02692716",
+      "logical_path": "registry/NCT02692716.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:ae05daad96fe2ac06967ed49a1d5228e655e7af95c7fdc08ca77620354be8bcb",
+      "role": "registry",
+      "sha256": "sha256:8ddab8d2d0f8806f718c5e89acbfbd7fbfe1a92a66918974ca0e02fad4d5fa56",
+      "trial_id": "pioneer-6"
+    },
+    "verified_file_hash": null,
+    "pages": [
+      1
+    ],
+    "projection_availability": "read-only derivative database",
+    "source_database_sha256": "b18a3824fe4c3437b7a42128d220f28b55cfaa9f26359104c8070b45e9518221"
+  },
+  {
+    "case": "ascet",
+    "source": {
+      "declared_role": "main_article",
+      "id": "source_02a86de3aa35b5144f6a039cffbd5dcc37618d5b47cd503dc1f73d4bf20c4775",
+      "label": "PMC3487336.pdf",
+      "logical_path": "PMC3487336.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 9,
+      "projection_hash": "sha256:da3ea3ecf906de1fc34dcd3bf6b06ff774661ac6b2fe993545c1e85b53f7f1c9",
+      "role": "main_article",
+      "sha256": "sha256:5fccd6564ace4a1cea28811456504c4c1e0311c89d96307aaa6bb69b2c0e04ac",
+      "trial_id": "ascet"
+    },
+    "verified_file_hash": "sha256:5fccd6564ace4a1cea28811456504c4c1e0311c89d96307aaa6bb69b2c0e04ac",
+    "pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "projection_availability": "read-only derivative database",
+    "source_database_sha256": "c7deb1f37d5462061d17507a146e43a7334d28f7951967713b5ad69d2f924d16"
+  },
+  {
+    "case": "ascet",
+    "source": {
+      "declared_role": null,
+      "id": "source_32f41bbb5c872b9c76db3b02942bccdb1eaecfa620097eb3fa90238f543630ea",
+      "label": "ClinicalTrials.gov NCT00222261",
+      "logical_path": "registry/NCT00222261.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:5c7b90020f58d9d4dc66070c14edd63d6bf03432a5aa90e5a813bf4d5b7719aa",
+      "role": "registry",
+      "sha256": "sha256:2d1a35d7efa0ac0ee6bf66b4b458058ab4c638fd04b724691a6b3780cc934631",
+      "trial_id": "ascet"
+    },
+    "verified_file_hash": null,
+    "pages": [
+      1
+    ],
+    "projection_availability": "read-only derivative database",
+    "source_database_sha256": "c7deb1f37d5462061d17507a146e43a7334d28f7951967713b5ad69d2f924d16"
+  }
+]
