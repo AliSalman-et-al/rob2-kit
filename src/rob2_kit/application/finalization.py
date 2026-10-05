@@ -3005,6 +3005,12 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value == expected:
         return True
+    pre_d5_eligibility = {
+        **expected,
+        "content_hash": "sha256:bbf29393fa164107d096edf5fcdf58e08a379ab626534d01ea97b7028620b015",
+    }
+    if value == pre_d5_eligibility:
+        return True
     pre_admission = {
         **expected,
         "content_hash": "sha256:7ed63739d320db9a7411c003756153a84939fd61a662aacef7b7bf53f8232b30",

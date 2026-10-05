@@ -658,3 +658,35 @@ def test_hospitalization_assessor_is_clinical_decision_maker_not_only_reviewer()
     assert "that decision is the assessor" in reference
     assert "usually" in reference and "later committee" in reference
     assert "composite appraisal still weighs component contributions" in reference
+
+
+def test_d5_eligibility_preserves_alternatives_and_review_defined_restrictions() -> None:
+    measurements = _guidance_text(("sq:selection:multiple-measurements",))
+    analyses = _guidance_text(("sq:selection:multiple-analyses",))
+    # Same reported result; broad review eligibility versus independently
+    # prespecified scale/final-value restriction gives different selection space.
+    assert "different scales, definitions or time points" in measurements
+    assert "do not freeze those alternatives" in measurements
+    assert "review genuinely permits only one scale or time point" in measurements
+    assert "do not infer such a restriction from the approved result alone" in measurements
+    assert "final values, change from baseline, ancova" in analyses
+    assert "do not require the selected analysis specification to remain identical" in analyses
+    assert "prespecified review hierarchy" in analyses
+    assert "ineligible change-score analysis" in analyses
+    assert "retain unresolved eligibility" in analyses
+    assert "keep the exact result's comparison, cohort, endpoint, time window" not in measurements
+    assert "keep the exact result's comparison, cohort, endpoint, time window" not in analyses
+    assert "non-reporting of a different outcome domain" in measurements
+    assert "review-level reporting-bias issue" in measurements
+    assert "unreported anxiety domain" in measurements
+    assert "multiplicity alone does not establish" in analyses
+    assert "no_information" in measurements and "no_information" in analyses
+    assert "probably no" in measurements and "probably no" in analyses
+
+    from rob2_kit.application.guidance import read_guidance
+
+    reference = read_guidance("references/selection.md")["content"].casefold()
+    assert "do not freeze these alternatives" in reference
+    assert "missing review criteria leave eligibility unresolved" in reference
+    assert "non-reporting of a separate domain" in reference
+    assert "approved result remains the target" in reference

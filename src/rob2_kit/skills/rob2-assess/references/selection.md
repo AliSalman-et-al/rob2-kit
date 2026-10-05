@@ -123,6 +123,26 @@ estimates were fully reported. Keep inference and remaining uncertainty explicit
 
 ## Separate the two selection mechanisms
 
+The approved Result remains the target being assessed; it does not define the
+eligible alternative set retrospectively. Define that set from the review's
+prespecified outcome-domain criteria or hierarchy, independently of the published
+choice (Cochrane sections 8.1–8.1.2, pp. 58–60; Box 11, pp. 63–65). Eligible
+measurements may differ in scale, definition or time point; eligible analyses may
+use final values, change scores, ANCOVA, different covariates or missing-data
+strategies. Do not freeze these alternatives to the selected measurement/analysis.
+Conversely, if only one scale or a prespecified final-value analysis is eligible
+and is reported, choosing it over an ineligible alternative does not itself bias
+that eligible result. Missing review criteria leave eligibility unresolved; do not
+invent a restriction or expand eligibility merely because an alternative exists.
+
+Distinguish the outcome domain (the state or endpoint of interest) from its
+measurement and analysis. Non-reporting of a separate domain, such as anxiety
+when assessing a reported depression result, concerns review-level reporting bias;
+it does not by itself establish selection bias in this reported Result. Alternative
+depression scales or analyses within the eligible depression domain require the
+separate appraisal below. This distinction does not dismiss selection when it is
+supported within the approved Result's domain.
+
 For eligible outcome measurements, compare alternative scales, definitions,
 thresholds, time points, or assessors. Ask whether only a subset was fully
 reported and whether selection was likely based on the results.

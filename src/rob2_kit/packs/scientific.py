@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.13"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.14"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -672,7 +672,8 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported measurement with all eligible alternatives. Keep the exact Result's comparison, cohort, endpoint, time window, population, and analysis scope fixed while doing so.",
+            "Keep the approved reported Result as the assessment target, but define measurement eligibility independently using the review's prespecified criteria (Cochrane sections 8.1 and 8.1.2, pp. 58-60; Box 11 pp. 63-64). Within the same trial comparison and outcome domain, eligible alternatives may use different scales, definitions or time points; do not freeze those alternatives to the selected measurement. If the review genuinely permits only one scale or time point and that result is reported, selection in preference to an ineligible measurement does not itself bias this eligible result. Do not infer such a restriction from the approved Result alone.",
+            "An outcome domain is the state or endpoint of interest, independent of its measurement. Selection among eligible measurements or analyses within that domain belongs here. Non-reporting of a different outcome domain is a review-level reporting-bias issue and does not by itself put this reported Result at risk (Cochrane section 8.1 p. 58); do not treat an unreported anxiety domain as evidence of selection for a reported depression result.",
             "An applicable plan's correspondence and chronology are relevant context but do not themselves establish results-driven selection. The approved Result fixes the target being assessed; it does not erase other eligible measurements in the outcome domain or make their selection an observed fact.",
             "If eligible alternatives remain unresolved, preserve no_information rather than treating the absence of documented selection as no/probably no. Eligibility is defined independently of which result was reported. A located protocol is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
             "An embedded SAP or platform plan may list eligible measurements without proving that it applied to the approved cohort; applicability and chronology remain separate premises.",
@@ -707,7 +708,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             ),
         ),
         (
-            "Use the review's prespecified outcome-domain eligibility criteria, not only the reported Result, and compare the reported analysis with the complete set of multiple eligible analyses. Keep the exact Result's comparison, cohort, endpoint, time window, population, and effect measure fixed.",
+            "Keep the approved reported Result as the assessment target, but define analysis eligibility independently using the review's prespecified criteria (Cochrane section 8.1.2 p. 60; Box 11 pp. 64-65). Eligible alternatives for its outcome measurement can include final values, change from baseline, ANCOVA, different adjustment sets or missing-data strategies; do not require the selected analysis specification to remain identical across alternatives. If a prespecified review hierarchy seeks only post-intervention values and that analysis is reported, preference over an ineligible change-score analysis does not itself bias the eligible result. Do not invent a hierarchy from the reported analysis; retain unresolved eligibility when sources do not establish it.",
             "An applicable plan's correspondence and chronology are distinct checks. The approved Result fixes the target being assessed; it does not erase eligible alternative analyses or turn an unresolved alternative into an observed selection.",
             "Reporting several analyses together establishes multiplicity, not result-based selection. Inability to rule out selection does not establish that it probably occurred. A located SAP is not required to identify results-driven selection when article methods/results or companion reports establish eligible alternatives and the reason for reporting only a subset.",
             "When the plan is insufficiently detailed and multiple eligible analyses remain possible but unresolved, use no_information; do not turn an unobserved selection into no/probably no merely because the report names one analysis. Preserve the evidence path's support for Low, Some concerns, High, or legitimate uncertainty without forcing a severity category.",
