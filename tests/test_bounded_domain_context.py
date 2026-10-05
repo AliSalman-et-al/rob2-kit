@@ -905,17 +905,20 @@ def test_oversized_narrative_has_exact_read_recovery_and_utf8_accounting() -> No
         "end_line": 80,
         "quote": quote,
         "inclusion_reason": "active_domain_candidate",
+        "returned_previously": True,
     }
     projected = _compact_domain_evidence(
         {
             "answers": [],
             "evidence": [item],
+            "coverage": [{"source_id": item["source_id"], "read": "read_complete"}],
             "evidence_workspace": {"selection_policy_version": "rob2-kit.domain-projection.v0.5"},
         }
     )
     output = projected["evidence"][0]
     assert output["quote"] is None
     assert output["text_status"] == "omitted"
+    assert output["returned_previously"] is True
     assert output["recovery"] == {
         "operation": "read_pages",
         "trial_id": "trial",

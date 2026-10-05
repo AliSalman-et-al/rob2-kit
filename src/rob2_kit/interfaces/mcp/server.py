@@ -1801,9 +1801,8 @@ def _content(
     domain_context_state_revision: int | None = None
     domain_context_view_id: str | None = None
     value = _public_source_references(value)
-    if tool != "get_status":
-        current = _get_status_head(_workspace())
-        value = _enrich_response_head(tool, value, current)
+    current = value if tool == "get_status" else _get_status_head(_workspace())
+    value = _enrich_response_head(tool, value, current)
     if tool == "save_domain_judgment":
         for defect in value.get("repairs", []):
             if "answer_path" in defect:
@@ -4250,8 +4249,10 @@ async def request_proposal_approval(ctx: Context) -> ToolResult:
     description=(
         "Read the approved Result, current Domain checkpoint, "
         "Evidence, comparison cards, and "
-        "question cards and exact unread source windows. Source text is read once through "
-        "read_pages, independently of the immutable context chain. "
+        "question cards and exact unread source windows. Read or reread Source text through "
+        "read_pages, independently of the immutable context chain. Prior delivery receipts "
+        "do not establish that the current reviewer has inspected the text; use omitted "
+        "Evidence recovery windows even when coverage is read_complete. "
         "The investigation projection separates host-asserted sufficiency from "
         "workflow permission and keeps recovery choices visible. Complete required reading before "
         "answering. Use the returned revision "
@@ -4522,8 +4523,10 @@ def save_domain_judgment(
     name="review_trial",
     title="Review Trial",
     description=(
-        "Prepare an exact current Trial review before closure. With no request, all five current "
-        "Domains are reviewed as assessed; an approved unavailable or unsupported-design Result "
+        "Bind an exact current Trial review snapshot before closure. With no request, all five "
+        "current Domain checkpoints are bound as assessed; this records their lineage, not "
+        "server validation of their scientific support. Inspect the snapshot before closing. "
+        "An approved unavailable or unsupported-design Result "
         "produces its typed unassessed outcome. For another genuine blocker, supply a needs_input "
         "or failed terminal request. Repairs, unfinished source review, context limits, ordinary "
         "missing Evidence, and uncertainty answerable with an allowed answer are not blockers. "

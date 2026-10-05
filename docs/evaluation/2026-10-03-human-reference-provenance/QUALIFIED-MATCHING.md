@@ -36,3 +36,33 @@ This is **one case with five correlated domains**, already used in development. 
 Broader performance evidence requires a sufficiently diverse independently scope-matched case set, with material non-Low cases and scientific disagreement adjudication, frozen selection independent of outputs, then prospectively authorized evaluation of complete assessments against All-Low. One reconstructed all-Low case cannot establish superiority. DELIVER requires population-scope resolution before principal inclusion.
 
 The ready future protocol entry point is [proposal-diagnostic-protocol.md](../proposal-diagnostic-protocol.md), with frozen evidence/criteria/manifests and `scripts/diagnostic_evidence_preflight.py:launch_checked` where applicable. This path is preparation, not authorization to run. No further research, implementation edits, paid calls, benchmark, merge or CI wait occurred. Prior CI snapshot6178e93green does not establish current-HEAD green.
+
+## Additional read-only reference audit supplied 2026-10-05
+
+A separate reference audit supplied through the parent thread reconstructs two
+additional unique main results. This entry preserves that audit's findings; it
+does not represent a new prediction inspection or independent reinspection by
+this implementation task. Benchmark data and labels remain unchanged.
+
+The Code benchmark revision is `d04473df4a07a3117f3171df2d8471ec0defd522`,
+`OUTCOMES/LABELS-batch.csv`, lines 80–81. The human source is Neuen et al.,
+[JAMA DOI 10.1001/jama.2025.20834](https://jamanetwork.com/journals/jama/fullarticle/2841163),
+Supplement 1, physical page 4, eTable 2 rows 6 and 7. Both rows explicitly assess
+trial primary outcomes and report D1–D5 Low, with no overall judgment. Assessors
+were B. L. Neuen and H. J. L. Heerspink. The separate audit checked the live
+supplement and archived image independently; the archived locator is main-repo
+revision `5cd5ccceead5b6f40be80f13050e78ece26fa97d`,
+`docs/evaluation/2026-10-03-human-reference-provenance/new-public-etable2-page4.png`.
+
+| Case | Reconstructed main Result | Primary report physical-page locators |
+| --- | --- | --- |
+| EMPEROR-Reduced, NCT03057977 | Empagliflozin 10 mg versus placebo; all 3,730 randomized participants, ITT; adjudicated cardiovascular death or heart-failure hospitalization, time to first event; HR 0.75 (0.65–0.86), 361/1,863 versus 462/1,867; cutoff 2020-04-29. Median 16 months describes follow-up, not a fixed endpoint. | `NEJMoa2022190.pdf`: definition p3; ITT/Cox p5; Table 2 p6; cutoff p7. |
+| EMPEROR-Preserved, NCT03057951 | Same contrast and primary composite; all 5,988 randomized participants, ITT; HR 0.79 (0.69–0.90), 415/2,997 versus 511/2,991; cutoff 2021-04-26. Median 26.2 months describes follow-up, not a fixed endpoint. | `NEJMoa2107038.pdf`: definition/ITT/Cox p3; cutoff/results p4; Table 2 p7. |
+
+Both belong only to the **reconstructed unique main result** stratum. The human
+table does not explicitly restate the population, cutoff, or assignment estimand
+and provides no signaling-question rationales; binding those elements from the
+unique primary report remains a reconstruction assumption. These are not
+author-confirmed exact-result worksheets. They add no non-Low label diversity.
+The existing DAPA-HF reconstructed stratum is unchanged. No accuracy calculation,
+new case launch, or prediction inspection follows from this entry.

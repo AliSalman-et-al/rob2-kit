@@ -1,0 +1,16 @@
+{
+  "model_calls": 0,
+  "historical_revision": 9,
+  "canonical_head_unchanged": true,
+  "original_expansions_successfully_reread_twice": [
+    11,
+    13,
+    15
+  ],
+  "nonempty_window_counts": [
+    4,
+    6,
+    3
+  ],
+  "state_sha256": "5c8ba72fbcadab2e34a7ab48aacac240aabf651eae9d02e09926588424b2f2a4"
+}
