@@ -1,0 +1,53 @@
+{
+  "research_question": "Supplied-evidence responses under frozen guidance condition; declared projection coverage only, not semantic correctness.",
+  "input_sha256": "ce6536b8ff83ee5b0cc7ba77838d5918511101ff6a029a7565437b4d033245e5",
+  "required_windows": [
+    {
+      "source_identity": "sha256:7cb926e32e62ae374c7f8f2c24ec3a3b1def932d215b471b7089ccf57ccb9929",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 41
+    },
+    {
+      "source_identity": "sha256:8c4d5e39670602717752112c31520a8fbedbceca380a0a26c8fdcdcec531fa11",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 618
+    },
+    {
+      "source_identity": "sha256:6b7a1c56dd97497c091f09982099d64c8446ac9b720177bcaeeb26b9c1aacef9",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 70
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "sha256:7cb926e32e62ae374c7f8f2c24ec3a3b1def932d215b471b7089ccf57ccb9929",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 41,
+      "input_start_byte": 737,
+      "input_end_byte": 4168,
+      "text_sha256": "7cb926e32e62ae374c7f8f2c24ec3a3b1def932d215b471b7089ccf57ccb9929"
+    },
+    {
+      "source_identity": "sha256:8c4d5e39670602717752112c31520a8fbedbceca380a0a26c8fdcdcec531fa11",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 618,
+      "input_start_byte": 4179,
+      "input_end_byte": 42974,
+      "text_sha256": "8c4d5e39670602717752112c31520a8fbedbceca380a0a26c8fdcdcec531fa11"
+    },
+    {
+      "source_identity": "sha256:6b7a1c56dd97497c091f09982099d64c8446ac9b720177bcaeeb26b9c1aacef9",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 70,
+      "input_start_byte": 42990,
+      "input_end_byte": 49493,
+      "text_sha256": "6b7a1c56dd97497c091f09982099d64c8446ac9b720177bcaeeb26b9c1aacef9"
+    }
+  ]
+}

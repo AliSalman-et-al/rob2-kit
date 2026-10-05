@@ -1,0 +1,75 @@
+{
+  "only_repaired_fields_differ": true,
+  "changed_native_question_card_fields": 10,
+  "changed_duplicate_official_section_excerpts": 3,
+  "differences": [
+    {
+      "path": "/randomization/official_guidance/sections/0/excerpt",
+      "before_sha256": "056dfe3c16e45546d6fe0eeb1754b5829f024ed99aeea289eb35c00cf7f6743c",
+      "after_sha256": "9776b4c3ad3a7fc4aa95c4ad8acd4f387fddb56227852f68b14640d0e89a4da6"
+    },
+    {
+      "path": "/randomization/questions/0/official_guidance",
+      "before_sha256": "056dfe3c16e45546d6fe0eeb1754b5829f024ed99aeea289eb35c00cf7f6743c",
+      "after_sha256": "9776b4c3ad3a7fc4aa95c4ad8acd4f387fddb56227852f68b14640d0e89a4da6"
+    },
+    {
+      "path": "/randomization/questions/0/decision_rule",
+      "before_sha256": "42a643254b2e3ef7f2fbfd19feb17f99a8a0040216a50e34cdb052137d56e5ea",
+      "after_sha256": "5132dd17f0002d7f35d34b7ff245c836073c8f0fc429f1d6c3493287a61afdd0"
+    },
+    {
+      "path": "/randomization/questions/0/no_information_rule",
+      "before_sha256": "b7fce2d0f355a465cd9b6534639c2a9ff7c0592f519fc16843d6e0f8f7ee06cd",
+      "after_sha256": "9660b7af2527adcd12e35f64a9e6693949f45cdebecf9bd90718d2da0e23b94b"
+    },
+    {
+      "path": "/randomization/questions/0/answer_anchors/2/text",
+      "before_sha256": "9594f954619cacd0f914cb786d90cb196c9587756d524c336c8d4844b5889be5",
+      "after_sha256": "beeb6e9bd8901ce9f9308fb2eafde0fef8590a1322db9d791bcdfbdf58371320"
+    },
+    {
+      "path": "/randomization/questions/0/considerations",
+      "before_sha256": "829818cfb4280678609d6938535fd25cb043fd4ea2ca9cbd922c1ced87d6edb0",
+      "after_sha256": "ec77ac0f728317d532b2a7f1ef3a91d59da1f398ad7fbaa06550b8844aae617c"
+    },
+    {
+      "path": "/missing/official_guidance/sections/1/excerpt",
+      "before_sha256": "9ef0b1a12606d8802765611d3744f2d7577ccd207c6ccbbce56e4e90a10daa47",
+      "after_sha256": "29b9e0822f223b5d5fa5ba9eecf8d0e98eb932f7054353eaf75abaea363f7719"
+    },
+    {
+      "path": "/missing/questions/1/considerations",
+      "before_sha256": "45d1b0b6ebba268724efb03c10e4515684db1388d0e360db8750bb3eb34a2954",
+      "after_sha256": "f434c8db52f041d13fba22a1281b82ce4d45e8444716dfb4bd906d6f5d797b4d"
+    },
+    {
+      "path": "/missing/questions/1/decision_rule",
+      "before_sha256": "c99fb558db6e5276c16d3a55f19a7313e6ae4b2eec62409a3fcd6f740bcb02cb",
+      "after_sha256": "835b331341551943df23dfa276a430fa55f2ab4b8fe1f802dc30c02ffe5e05a8"
+    },
+    {
+      "path": "/missing/questions/1/official_guidance",
+      "before_sha256": "9ef0b1a12606d8802765611d3744f2d7577ccd207c6ccbbce56e4e90a10daa47",
+      "after_sha256": "29b9e0822f223b5d5fa5ba9eecf8d0e98eb932f7054353eaf75abaea363f7719"
+    },
+    {
+      "path": "/measurement/official_guidance/sections/3/excerpt",
+      "before_sha256": "4067f38d752ae2314735c720c5136cded538e70eefe232af925fffb67427a0e7",
+      "after_sha256": "75be6d0e74822ef236d53f3dd86c821510823c24bcde176e081945b612db1f58"
+    },
+    {
+      "path": "/measurement/questions/3/answer_anchors/1/text",
+      "before_sha256": "de4d0d4525d700829c851de193217d55b4efe13b94a8f03e477152953fdebf54",
+      "after_sha256": "337bc2635d7f74536075fedb514cd9e07eccf6cc131c57bf56488e8757e77de4"
+    },
+    {
+      "path": "/measurement/questions/3/official_guidance",
+      "before_sha256": "4067f38d752ae2314735c720c5136cded538e70eefe232af925fffb67427a0e7",
+      "after_sha256": "75be6d0e74822ef236d53f3dd86c821510823c24bcde176e081945b612db1f58"
+    }
+  ],
+  "all_non_target_official_context_equal": true,
+  "case_records_and_order_equal": true,
+  "blinding": "No condition identity, pack hash/version, source-contrast IDs, expected answers, rubric, diff, assertion text or prior model answers in prompts. Official answer anchors are intervention context, not hidden case labels."
+}

@@ -1,0 +1,77 @@
+{
+  "study_type": "Synthetic supplied-evidence mechanism check; not a native full-trial assessment, trial corpus, benchmark accuracy or held-out generalization.",
+  "research_question": "Does repairing three overstrict official qualification fields improve warranted answers/rationale on eight frozen contrasts while retaining supported NI or concern counterexamples?",
+  "assessment_model": "gpt-6.1-sol",
+  "reasoning_effort": "low",
+  "planned_independent_initial_sessions": 2,
+  "planned_responses_per_condition": 1,
+  "within_response_cases": 8,
+  "launch_enabled": false,
+  "paid_calls_made": 0,
+  "condition_controls": {
+    "same_cases_and_case_order": true,
+    "same_complete_general_official_section_1_1": true,
+    "same_relevant_domain_questions_and_official_context_except_repaired_fields": true,
+    "changed_question_fields": 10,
+    "duplicate_changed_official_section_excerpts": 3,
+    "pack_descriptor_metadata_removed": true,
+    "no_tools_or_external_evidence_planned": true,
+    "no_private_rubric_or_expected_answers_in_inputs": true
+  },
+  "freeze": {
+    "case_records": "cases.json",
+    "permissible_answers_and_rationale_criteria": "private-rubric.json (operator only)",
+    "case_and_condition_order": "private-order-and-binding.json (operator only)",
+    "source_contrasts_sha256": "fdd2dfce06f0317e2f6a8afdaf664d8e95109d216dcd382dffdbecc25e854e2b",
+    "before_rendered_sha256": "61856a5bbe4917722a667fb38736081c120a86c6de3f4ffea3d035d8c7751860",
+    "after_rendered_sha256": "66c98aa0de5225c4c8c0167dd1116814ed98a4d7a63cdc77c088613f6a98c77a",
+    "official_source_sha256": "a9e9c4fdc4be2d29b5c0a1a6b828e09f2014a34f6d5c302a532f6153ea0fd670",
+    "old_revision": "55ede95320b67176d91a056baa3773b024612201",
+    "repair_revision": "731aea0ee9363b4bf55d55501a5d86cdb696f49c"
+  },
+  "source_fidelity": [
+    "Records are invented neutral instantiations of eight source-derived control contrasts, not quoted trial facts or actual clinical studies.",
+    "Both inputs share complete official general response section1.1 and complete relevant question elaborations for three domains, except intentional old omissions in the three target elaboration fields.",
+    "Old prompt is intentionally less source-complete only at repaired fields; no claim that old omitted qualifications were delivered.",
+    "Required windows bind synthetic records and supplied guidance projections; the evidence preflight checks byte coverage, not correctness, plausibility or independent clinical validity.",
+    "Other current operational domain material/traps/comparison cards omitted equally; non-target question official content retained equally. Test isolates target operational/elaboration fields, not whole-product before/after behavior."
+  ],
+  "evaluation": [
+    "Seal both final responses, visible outputs, model profile and usage before revealing condition binding or scoring.",
+    "Score answer admissibility and rationale warrant separately; retain reasoned alternative outside preset range for review. Report each case rather than treating cases as independent replicates.",
+    "One draw per condition cannot separate sampling variation from intervention effect; shared batch context creates dependence among eight responses, possible contrast recognition and carryover.",
+    "Common complete response framework may rescue old guidance; tie or negative result retained, no preferred labels or outcome-directed retries.",
+    "No domain/overall judgments requested; upstream activation answers are stipulated solely to activate target questions, not validated judgments.",
+    "No significance, accuracy gain, cost estimate, full-agent/source-search performance or benchmark conclusion from this check."
+  ],
+  "before_launch_remaining": [
+    "Independent review of neutral facts, admissible answer ranges and completeness/controlled-difference audit.",
+    "Verify exact requested model/low in isolated CLI input/config and eventual durable contexts; CLIversion alone is not model proof.",
+    "Launch only through launch_checked with the frozen per-condition evidence manifest; no resume across conditions."
+  ],
+  "input_sizes": {
+    "packet-17": {
+      "prompt_sha256": "49d02c4a046995e4eab53dbcb27008e4ee93ebd16153245d2848041257e14cc6",
+      "bytes": 47141,
+      "characters": 46755,
+      "whitespace_tokens": 5288,
+      "utf8_bytes_div4_proxy": 11785.2,
+      "exact_token_count": null
+    },
+    "packet-42": {
+      "prompt_sha256": "ce6536b8ff83ee5b0cc7ba77838d5918511101ff6a029a7565437b4d033245e5",
+      "bytes": 49494,
+      "characters": 49076,
+      "whitespace_tokens": 5649,
+      "utf8_bytes_div4_proxy": 12373.5,
+      "exact_token_count": null
+    }
+  },
+  "preparation_history": [
+    "Initial system Python invocation could not import pydantic; no preflight/inference ran. Shared existing dependency interpreter then completed preparation and both byte-coverage preflights."
+  ],
+  "cli": {
+    "binary": "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+    "version": "0.159.0"
+  }
+}

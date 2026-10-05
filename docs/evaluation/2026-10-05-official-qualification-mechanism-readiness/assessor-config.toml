@@ -1,0 +1,28 @@
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
+approval_policy = "never"
+sandbox_mode = "read-only"
+web_search = "disabled"
+project_doc_max_bytes = 0
+developer_instructions = "Assess only the supplied synthetic records using their supplied scientific context. No external evidence or tools."
+[features]
+skip_host_skill_discovery = true
+code_mode = { enabled = false }
+shell_tool = false
+unified_exec = false
+view_image = false
+apps = false
+plugins = false
+skill_search = false
+multi_agent = false
+multi_agent_v2 = false
+browser_use = false
+browser_use_external = false
+browser_use_full_cdp_access = false
+computer_use = false
+image_generation = false
+in_app_browser = false
+skill_mcp_dependency_install = false
+tool_suggest = false
+sleep_tool = false
+goals = false

@@ -1,0 +1,737 @@
+Assess each supplied synthetic trial record under the supplied RoB2 assignment-effect context. For each case, answer only its named signaling question using that question’s allowed options. Activation answers are fixed solely to make the target question active; do not reassess them. Use the stated facts and context; explain your evidence-based inference and limits. Do not invent missing procedures or outcomes. Return one JSON object with an assessments array in the presented case order; each item must contain case_id, question_id, answer, rationale and limitations. No domain or overall judgment is requested. Treat cases separately.
+
+OFFICIAL GENERAL RESPONSE CONTEXT (22 August 2019, physical page3, section1.1 including1.1.1)
+1.1   Signalling questions
+Inclusion of signalling questions within each domain of bias is a key feature of RoB 2. Signalling questions aim
+to elicit information relevant to an assessment of risk of bias. They seek to be reasonably factual in nature.
+Responses to these questions feed into algorithms we have developed to guide users of the tool to judgements
+about the risk of bias.
+The response options for the signalling questions are:
+     (1)  Yes;
+    (2) Probably yes;
+     (3) Probably no;
+    (4) No;
+    (5) No information;
+To maximize the signalling questions’ simplicity and clarity, they are phrased such that a response of ‘Yes’ may
+be indicative of either a low or high risk of bias, depending on the most natural way to ask the question.
+Responses of ‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do responses of ‘No’ and
+‘Probably no’. The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence is available in
+relation to the signalling question; the ‘Probably’ versions would typically imply that a judgement has been made.
+If review authors calculate measures of agreement (e.g. kappa statistics) for the answers to the signalling
+questions, we recommend treating ‘Yes’ and ‘Probably yes’ as the same response and ‘No’ and ‘Probably no’ as
+the same response.
+The ‘No information’ response should be used only when both (i) insufficient details are reported to permit a
+response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these details it would be unreasonable to
+respond ‘Probably yes’ or ‘Probably no’ in the circumstances of the trial. For example, in the context of a large
+trial run by an experienced clinical trials unit, absence of specific information about generation of the
+randomization sequence, in a paper published in a journal with rigorously enforced word count limits, is likely
+to result in a response of ‘Probably yes’ rather than ‘No information’ to the signalling question about sequence
+generation. The implications for risk of bias judgements of a ‘No information’ response to a signalling question
+differ according to the purpose of the question. If the question seeks to identify evidence of a problem, then ‘No
+information’ corresponds to no evidence of that problem. If the question relates to an item that is expected to
+be reported (such as whether any participants were lost to follow up), then the absence of information leads to
+concerns about there being a problem.
+For signalling questions that are answered only if the response to a previous question implies that they are
+required, a response option ‘Not applicable’ is available. Signalling questions should be answered independently:
+the answer to one question should not affect answers to other questions in the same or other domains other
+than through determining which subsequent questions are answered.
+
+1.1.1    Free-text boxes alongside signalling questions
+The tool provides space for free text alongside the signalling question. In some instances, when the same
+information is likely to be used to answer more than one question, one text box covers more than one question.
+These boxes should be used to provide support for the answer to each signalling question. Brief direct
+quotations from the text of the study report should be used whenever possible.
+
+
+
+GUIDANCE
+{
+  "randomization": {
+    "domain_id": "domain:randomization",
+    "official_guidance": {
+      "sections": [
+        {
+          "question_ids": [
+            "sq:randomization:sequence"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 17, Box 4, signalling question 1.1",
+          "excerpt": "Answer ‘Yes’ if a random component was used in the sequence generation process. Examples include computer-generated random numbers; reference to a random number table; coin tossing; shuffling cards or envelopes; throwing dice; or drawing lots. Answer ‘No’ if no random element was used in generating the allocation sequence or the sequence is predictable. Answer ‘No information’ if the only information about randomization methods is a statement that the study is randomized."
+        },
+        {
+          "question_ids": [
+            "sq:randomization:concealment"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 17, Box 4, signalling question 1.2",
+          "excerpt": "Answer ‘Yes’ if the trial used any form of remote or centrally administered method to allocate interventions to participants, where the process of allocation is controlled by an external unit or organization, independent of the enrolment personnel. Answer ‘Yes’ if envelopes or drug containers were used appropriately. Answer ‘No’ if there is reason to suspect that the enrolling investigator or the participant had knowledge of the forthcoming allocation."
+        },
+        {
+          "question_ids": [
+            "sq:randomization:baseline-imbalance"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance pp. 17-18, Box 4, signalling question 1.3",
+          "excerpt": "Note that differences that are compatible with chance do not lead to a risk of bias. Answer ‘No’ if no imbalances are apparent or if any observed imbalances are compatible with chance. Answer ‘Yes’ if there are imbalances that indicate problems with the randomization process, including substantial differences between intervention group sizes, a substantial excess in statistically significant differences beyond that expected by chance, or imbalance in one or more key prognostic factors very unlikely to be due to chance. Answer ‘No information’ when there is no useful baseline information available."
+        }
+      ],
+      "complete": true,
+      "next_cursor": null
+    },
+    "response_framework": {
+      "version": "22 August 2019",
+      "source_locator": "Full guidance p. 3, sections 1.1 and 1.1.1",
+      "response_options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "firm_evidence_rule": "The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence is available in relation to the signalling question.",
+      "probable_judgment_rule": "The ‘Probably’ versions would typically imply that a judgement has been made. ‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do ‘No’ and ‘Probably no’.",
+      "no_information_rule": "Use ‘No information’ only when both (i) insufficient details are reported to permit a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the circumstances of the trial.",
+      "independence_rule": "Signalling questions should be answered independently: the answer to one question should not affect answers to other questions in the same or other domains other than through determining which subsequent questions are answered.",
+      "quotation_rule": "Brief direct quotations from the text of the study report should be used whenever possible to support the answer."
+    },
+    "questions": [
+      {
+        "id": "sq:randomization:sequence",
+        "wording": "Was the allocation sequence random?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "Answer ‘Yes’ if a random component was used in the sequence generation process. Examples include computer-generated random numbers; reference to a random number table; coin tossing; shuffling cards or envelopes; throwing dice; or drawing lots. Answer ‘No’ if no random element was used in generating the allocation sequence or the sequence is predictable. Answer ‘No information’ if the only information about randomization methods is a statement that the study is randomized.",
+        "source_locator": "Full guidance p. 17, Box 4, signalling question 1.1",
+        "bias_construct": "Whether a random component was used to generate the allocation sequence.",
+        "decision_rule": "Answer yes when a random component was used; answer no when no random element was used or the sequence is predictable. A statement that the study is randomized alone supports no_information.",
+        "evidence_needed": [
+          "The sequence-generation method, such as computer random numbers, a random number table, coin tossing, or minimization with a random element."
+        ],
+        "no_information_rule": "Answer no_information when the only information about randomization methods is that the study is randomized. Do not turn missing reporting into proof that the sequence was non-random.",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "A random component was used in sequence generation."
+          },
+          {
+            "answer": "no",
+            "text": "No random element was used, or the sequence was predictable."
+          },
+          {
+            "answer": "no_information",
+            "text": "The report only states that the study is randomized."
+          }
+        ],
+        "considerations": [
+          "Minimization should generally be considered random when it includes a random element.",
+          "Sequence generation asks how the allocation sequence was produced; concealment asks whether forthcoming assignments were hidden before enrolment and assignment; baseline imbalance asks whether the resulting groups suggest a randomization problem. Evidence for one does not answer the others.",
+          "The baseline-imbalance answer must not change this answer.",
+          "Use the returned query suggestions or wording from the report to locate the sequence method. A truncated search does not establish that the method is absent."
+        ],
+        "invalid_shortcuts": [
+          "underwent randomization",
+          "was called randomized",
+          "had balanced groups",
+          "was centrally registered"
+        ],
+        "query_suggestions": [
+          {
+            "query": "computer generated random numbers",
+            "mode": "all",
+            "source_role": "protocol",
+            "purpose": "computer sequence generation"
+          },
+          {
+            "query": "randomly permuted blocks",
+            "mode": "phrase",
+            "source_role": "protocol",
+            "purpose": "randomized block sequence"
+          },
+          {
+            "query": "minimization",
+            "mode": "any",
+            "source_role": "protocol",
+            "purpose": "minimization sequence method"
+          },
+          {
+            "query": "random number table",
+            "mode": "phrase",
+            "source_role": "protocol",
+            "purpose": "random sequence method"
+          },
+          {
+            "query": "coin tossing",
+            "mode": "phrase",
+            "source_role": null,
+            "purpose": "physical random sequence method"
+          }
+        ]
+      },
+      {
+        "id": "sq:randomization:concealment",
+        "wording": "Was the allocation sequence concealed until participants were enrolled and assigned to interventions?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "Answer ‘Yes’ if the trial used any form of remote or centrally administered method to allocate interventions to participants, where the process of allocation is controlled by an external unit or organization, independent of the enrolment personnel. Answer ‘Yes’ if envelopes or drug containers were used appropriately. Answer ‘No’ if there is reason to suspect that the enrolling investigator or the participant had knowledge of the forthcoming allocation.",
+        "source_locator": "Full guidance p. 17, Box 4, signalling question 1.2"
+      },
+      {
+        "id": "sq:randomization:baseline-imbalance",
+        "wording": "Did baseline differences between intervention groups suggest a problem with the randomization process?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "Note that differences that are compatible with chance do not lead to a risk of bias. Answer ‘No’ if no imbalances are apparent or if any observed imbalances are compatible with chance. Answer ‘Yes’ if there are imbalances that indicate problems with the randomization process, including substantial differences between intervention group sizes, a substantial excess in statistically significant differences beyond that expected by chance, or imbalance in one or more key prognostic factors very unlikely to be due to chance. Answer ‘No information’ when there is no useful baseline information available.",
+        "source_locator": "Full guidance pp. 17-18, Box 4, signalling question 1.3"
+      }
+    ]
+  },
+  "missing": {
+    "domain_id": "domain:missing",
+    "official_guidance": {
+      "sections": [
+        {
+          "question_ids": [
+            "sq:missing:data-available"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+          "excerpt": "‘Nearly all’ should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data."
+        },
+        {
+          "question_ids": [
+            "sq:missing:evidence-unbiased"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+          "excerpt": "Evidence that the result was not biased by missing outcome data may come from analysis methods that correct for bias, or sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data."
+        },
+        {
+          "question_ids": [
+            "sq:missing:true-value-dependent"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 45, Box 8, signalling question 3.3",
+          "excerpt": "If loss to follow up, or withdrawal from the study, could be related to participants’ health status, then it is possible that missingness in the outcome was influenced by its true value. However, if all missing outcome data occurred for documented reasons that are unrelated to the outcome then the risk of bias due to missing outcome data will be low."
+        },
+        {
+          "question_ids": [
+            "sq:missing:likely-dependent"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4",
+          "excerpt": "This question distinguishes between situations in which (i) missingness could depend on its true value and (ii) it is likely that missingness depended on its true value. Five reasons for answering ‘Yes’ are differences between intervention groups in the proportions of missing outcome data; reported reasons that provide evidence that missingness depends on its true value; reasons that differ between intervention groups; trial circumstances; and censoring when participants stop or change their assigned intervention."
+        }
+      ],
+      "complete": true,
+      "next_cursor": null
+    },
+    "response_framework": {
+      "version": "22 August 2019",
+      "source_locator": "Full guidance p. 3, sections 1.1 and 1.1.1",
+      "response_options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "firm_evidence_rule": "The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence is available in relation to the signalling question.",
+      "probable_judgment_rule": "The ‘Probably’ versions would typically imply that a judgement has been made. ‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do ‘No’ and ‘Probably no’.",
+      "no_information_rule": "Use ‘No information’ only when both (i) insufficient details are reported to permit a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the circumstances of the trial.",
+      "independence_rule": "Signalling questions should be answered independently: the answer to one question should not affect answers to other questions in the same or other domains other than through determining which subsequent questions are answered.",
+      "quotation_rule": "Brief direct quotations from the text of the study report should be used whenever possible to support the answer."
+    },
+    "questions": [
+      {
+        "id": "sq:missing:data-available",
+        "wording": "Were data for this outcome available for all, or nearly all, participants randomized?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "‘Nearly all’ should be interpreted as that the number of participants with missing outcome data is sufficiently small that their outcomes, whatever they were, could have made no important difference to the estimated effect of intervention. For continuous outcomes, availability of data from 95% of the participants will often be sufficient. Note that imputed data should be regarded as missing data.",
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.1"
+      },
+      {
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "accepted_answers": [
+                "probably_no",
+                "no",
+                "no_information"
+              ],
+              "question_id": "sq:missing:data-available"
+            }
+          ]
+        },
+        "activation_status": "dependent_on_draft_answers",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "A bias-correcting or informative sensitivity analysis indicates the result was not biased."
+          },
+          {
+            "answer": "no",
+            "text": "The available evidence does not show that the result was free from missing-data bias."
+          }
+        ],
+        "bias_construct": "Whether there is evidence that the result was not biased by missing outcome data.",
+        "considerations": [
+          "Imputation alone is not evidence that missing outcome data did not bias the result.",
+          "Availability and mitigation are separate premises: a familiar method name or numerically stable estimate is not enough; the sensitivity analysis must span plausible assumptions relevant to the documented missingness mechanism.",
+          "This question permits complete ascertainment, mechanism-matched reassurance, and legitimate uncertainty. Do not apply a universal percentage threshold in place of a Result-specific impact judgment."
+        ],
+        "decision_rule": "Evidence may come from methods correcting for bias or sensitivity analyses showing little change under plausible assumptions about missingness and true outcome. The assumptions must match the documented missingness mechanism and the approved Result. A comparison that changes group attribution, such as ITT versus as-treated, does not test unobserved outcome values unless the source explicitly establishes that relationship. Last-observation-carried-forward or multiple imputation based only on intervention group should not be assumed to correct bias.",
+        "evidence_needed": [
+          "A bias-correcting analysis or sensitivity analysis with plausible missingness assumptions and its result, including the missingness mechanism it addresses.",
+          "If the source only changes intervention-group attribution or analysis membership, record that distinction; do not describe it as a test of unobserved outcome values without source support."
+        ],
+        "id": "sq:missing:evidence-unbiased",
+        "invalid_shortcuts": [
+          "an ITT analysis",
+          "last observation carried forward",
+          "multiple imputation based only on intervention group"
+        ],
+        "no_information_rule": "No_information is not an allowed response to this question in the parallel-assignment pack. Answer no/probably no when inspected evidence does not establish protection from missing-data bias. No does not assert that bias occurred: retain source coverage limits and unknown missingness mechanisms. Ground the scoped negative answer in inspected Evidence or a valid scoped no-hit receipt; an unsupported limitation alone is insufficient.",
+        "official_guidance": "Evidence that the result was not biased by missing outcome data may come from analysis methods that correct for bias, or sensitivity analyses showing that results are little changed under a range of plausible assumptions about the relationship between missingness in the outcome and its true value. However, imputing the outcome variable, either through methods such as ‘last-observation-carried-forward’ or via multiple imputation based only on intervention group, should not be assumed to correct for bias due to missing outcome data.",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no"
+        ],
+        "query_suggestions": [
+          {
+            "mode": "phrase",
+            "purpose": "missing-data sensitivity analysis",
+            "query": "sensitivity analysis",
+            "source_role": "sap"
+          },
+          {
+            "mode": "all",
+            "purpose": "bias from missing outcomes",
+            "query": "missing data bias",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "missing-data method",
+            "query": "multiple imputation",
+            "source_role": "sap"
+          }
+        ],
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+        "wording": "If N/PN/NI to 3.1: Is there evidence that the result was not biased by missing outcome data?"
+      },
+      {
+        "id": "sq:missing:true-value-dependent",
+        "wording": "If N/PN to 3.2: Could missingness in the outcome depend on its true value?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "accepted_answers": [
+                "probably_no",
+                "no"
+              ],
+              "question_id": "sq:missing:evidence-unbiased"
+            }
+          ]
+        },
+        "official_guidance": "If loss to follow up, or withdrawal from the study, could be related to participants’ health status, then it is possible that missingness in the outcome was influenced by its true value. However, if all missing outcome data occurred for documented reasons that are unrelated to the outcome then the risk of bias due to missing outcome data will be low.",
+        "source_locator": "Full guidance p. 45, Box 8, signalling question 3.3"
+      },
+      {
+        "id": "sq:missing:likely-dependent",
+        "wording": "If Y/PY/NI to 3.3: Is it likely that missingness in the outcome depended on its true value?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "accepted_answers": [
+                "yes",
+                "probably_yes",
+                "no_information"
+              ],
+              "question_id": "sq:missing:true-value-dependent"
+            }
+          ]
+        },
+        "official_guidance": "This question distinguishes between situations in which (i) missingness could depend on its true value and (ii) it is likely that missingness depended on its true value. Five reasons for answering ‘Yes’ are differences between intervention groups in the proportions of missing outcome data; reported reasons that provide evidence that missingness depends on its true value; reasons that differ between intervention groups; trial circumstances; and censoring when participants stop or change their assigned intervention.",
+        "source_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4"
+      }
+    ]
+  },
+  "measurement": {
+    "domain_id": "domain:measurement",
+    "official_guidance": {
+      "sections": [
+        {
+          "question_ids": [
+            "sq:measurement:method-inappropriate"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 54, Box 10, signalling question 4.1",
+          "excerpt": "Answer ‘Yes’ or ‘Probably yes’ if the method of measuring the outcome is inappropriate, for example because it is unlikely to be sensitive to plausible intervention effects or the measurement instrument has been demonstrated to have poor validity."
+        },
+        {
+          "question_ids": [
+            "sq:measurement:differential"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 54, Box 10, signalling question 4.2",
+          "excerpt": "Comparable methods of outcome measurement involve the same measurement methods and thresholds, used at comparable time points. Differences between intervention groups may arise because of ‘diagnostic detection bias’ in the context of passive collection of outcome data, or if an intervention involves additional visits to a healthcare provider."
+        },
+        {
+          "question_ids": [
+            "sq:measurement:assessor-aware"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 54, Box 10, signalling question 4.3",
+          "excerpt": "Answer ‘No’ if outcome assessors were blinded to intervention status. For participant-reported outcomes, the outcome assessor is the study participant."
+        },
+        {
+          "question_ids": [
+            "sq:measurement:influence-possible"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 54, Box 10, signalling question 4.4",
+          "excerpt": "Knowledge of the assigned intervention could influence participant-reported outcomes, observer-reported outcomes involving some judgement, and intervention provider decision outcomes. They are unlikely to influence observer-reported outcomes that do not involve judgement, for example all-cause mortality."
+        },
+        {
+          "question_ids": [
+            "sq:measurement:influence-likely"
+          ],
+          "source_version": "22 August 2019",
+          "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
+          "source_locator": "Full guidance p. 54, Box 10, signalling question 4.5",
+          "excerpt": "This question distinguishes between situations in which knowledge of intervention status could have influenced outcome assessment but there is no reason to believe that it did from those in which knowledge of intervention status was likely to influence outcome assessment. When there are strong levels of belief in either beneficial or harmful effects of the intervention, it is more likely that the outcome was influenced."
+        }
+      ],
+      "complete": true,
+      "next_cursor": null
+    },
+    "response_framework": {
+      "version": "22 August 2019",
+      "source_locator": "Full guidance p. 3, sections 1.1 and 1.1.1",
+      "response_options": [
+        "yes",
+        "probably_yes",
+        "probably_no",
+        "no",
+        "no_information"
+      ],
+      "firm_evidence_rule": "The definitive versions (‘Yes’ and ‘No’) would typically imply that firm evidence is available in relation to the signalling question.",
+      "probable_judgment_rule": "The ‘Probably’ versions would typically imply that a judgement has been made. ‘Yes’ and ‘Probably yes’ have the same implications for risk of bias, as do ‘No’ and ‘Probably no’.",
+      "no_information_rule": "Use ‘No information’ only when both (i) insufficient details are reported to permit a response of ‘Probably yes’ or ‘Probably no’, and (ii) in the absence of these details it would be unreasonable to respond ‘Probably yes’ or ‘Probably no’ in the circumstances of the trial.",
+      "independence_rule": "Signalling questions should be answered independently: the answer to one question should not affect answers to other questions in the same or other domains other than through determining which subsequent questions are answered.",
+      "quotation_rule": "Brief direct quotations from the text of the study report should be used whenever possible to support the answer."
+    },
+    "questions": [
+      {
+        "id": "sq:measurement:method-inappropriate",
+        "wording": "Was the method of measuring the outcome inappropriate?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "Answer ‘Yes’ or ‘Probably yes’ if the method of measuring the outcome is inappropriate, for example because it is unlikely to be sensitive to plausible intervention effects or the measurement instrument has been demonstrated to have poor validity.",
+        "source_locator": "Full guidance p. 54, Box 10, signalling question 4.1"
+      },
+      {
+        "id": "sq:measurement:differential",
+        "wording": "Could measurement or ascertainment of the outcome have differed between intervention groups?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "always_active",
+        "activation": {
+          "kind": "always"
+        },
+        "official_guidance": "Comparable methods of outcome measurement involve the same measurement methods and thresholds, used at comparable time points. Differences between intervention groups may arise because of ‘diagnostic detection bias’ in the context of passive collection of outcome data, or if an intervention involves additional visits to a healthcare provider.",
+        "source_locator": "Full guidance p. 54, Box 10, signalling question 4.2"
+      },
+      {
+        "id": "sq:measurement:assessor-aware",
+        "wording": "If N/PN/NI to 4.1 and 4.2: Were outcome assessors aware of the intervention received by study participants?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "all",
+          "predicates": [
+            {
+              "accepted_answers": [
+                "probably_no",
+                "no",
+                "no_information"
+              ],
+              "question_id": "sq:measurement:method-inappropriate"
+            },
+            {
+              "accepted_answers": [
+                "probably_no",
+                "no",
+                "no_information"
+              ],
+              "question_id": "sq:measurement:differential"
+            }
+          ]
+        },
+        "official_guidance": "Answer ‘No’ if outcome assessors were blinded to intervention status. For participant-reported outcomes, the outcome assessor is the study participant.",
+        "source_locator": "Full guidance p. 54, Box 10, signalling question 4.3"
+      },
+      {
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "accepted_answers": [
+                "yes",
+                "probably_yes",
+                "no_information"
+              ],
+              "question_id": "sq:measurement:assessor-aware"
+            }
+          ]
+        },
+        "activation_status": "dependent_on_draft_answers",
+        "answer_anchors": [
+          {
+            "answer": "yes",
+            "text": "Knowledge of intervention could influence assessment."
+          },
+          {
+            "answer": "no",
+            "text": "The outcome assessment could not be influenced by knowledge of intervention."
+          }
+        ],
+        "bias_construct": "Whether assessment could have been influenced by knowledge of intervention received. Keep assessor awareness separate from the mechanism by which awareness could change a judgement.",
+        "considerations": [
+          "Assess whether knowledge could influence this outcome. Evidence that influence actually occurred belongs to 4.5; its absence does not resolve 4.4.",
+          "Possible influence requires a judgement or reporting pathway through which assessor awareness could matter. Awareness alone is not a measurement difference, and a susceptible outcome does not by itself show that influence was possible in this assessment.",
+          "When a composite mixes objective and subjective components, assess each component's pathway separately, then consider its relative frequency or contribution and the most influential components (Cochrane section 7.1 p. 52). Retain component-specific uncertainty and uncertainty about contributions when the sources do not resolve them; do not automatically transfer possible influence on any subjective component to the whole composite."
+        ],
+        "decision_rule": "Knowledge could influence participant-reported outcomes, observer-reported outcomes involving judgement, and intervention-provider decisions; it is unlikely to influence observer-reported outcomes without judgement, such as all-cause mortality. A standardized instrument does not remove judgment from elicitation, attribution, grading, or assessment.",
+        "evidence_needed": [
+          "Outcome type, assessor role, degree of judgement, and whether knowledge of assignment could change assessment."
+        ],
+        "id": "sq:measurement:influence-possible",
+        "invalid_shortcuts": [
+          "an objective endpoint label",
+          "assessor awareness without outcome type",
+          "participant blinding without identifying the outcome assessor"
+        ],
+        "no_information_rule": "Use no_information when possible influence cannot be determined; this question is conditional on awareness in 4.3.",
+        "official_guidance": "Knowledge of the assigned intervention could influence participant-reported outcomes, observer-reported outcomes involving some judgement, and intervention provider decision outcomes. They are unlikely to influence observer-reported outcomes that do not involve judgement, for example all-cause mortality.",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "query_suggestions": [
+          {
+            "mode": "phrase",
+            "purpose": "participant assessment influence",
+            "query": "participant reported outcome",
+            "source_role": null
+          },
+          {
+            "mode": "phrase",
+            "purpose": "observer judgement influence",
+            "query": "observer reported outcome",
+            "source_role": null
+          }
+        ],
+        "source_locator": "Full guidance p. 54, Box 10, signalling question 4.4",
+        "wording": "If Y/PY/NI to 4.3: Could assessment of the outcome have been influenced by knowledge of intervention received?"
+      },
+      {
+        "id": "sq:measurement:influence-likely",
+        "wording": "If Y/PY/NI to 4.4: Is it likely that assessment of the outcome was influenced by knowledge of intervention received?",
+        "options": [
+          "yes",
+          "probably_yes",
+          "probably_no",
+          "no",
+          "no_information"
+        ],
+        "activation_status": "dependent_on_draft_answers",
+        "activation": {
+          "kind": "rule",
+          "mode": "any",
+          "predicates": [
+            {
+              "accepted_answers": [
+                "yes",
+                "probably_yes",
+                "no_information"
+              ],
+              "question_id": "sq:measurement:influence-possible"
+            }
+          ]
+        },
+        "official_guidance": "This question distinguishes between situations in which knowledge of intervention status could have influenced outcome assessment but there is no reason to believe that it did from those in which knowledge of intervention status was likely to influence outcome assessment. When there are strong levels of belief in either beneficial or harmful effects of the intervention, it is more likely that the outcome was influenced.",
+        "source_locator": "Full guidance p. 54, Box 10, signalling question 4.5"
+      }
+    ]
+  }
+}
+
+TRIAL RECORDS
+[
+  {
+    "case_id": "case-36",
+    "question_id": "sq:measurement:influence-possible",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:measurement:method-inappropriate": "no",
+      "sq:measurement:differential": "no",
+      "sq:measurement:assessor-aware": "yes"
+    },
+    "trial_record": "The selected Result is all-cause death during30days. Outcome collectors knew each participant’s assigned treatment. They recorded occurrence and date of death from routine hospital records and linked civil death registrations; the endpoint did not require deciding whether treatment caused death or whether an event met a severity threshold. The same linkage, follow-up period and definition were used in both groups. The supplied record identifies no differential tracing or misclassification pathway."
+  },
+  {
+    "case_id": "case-71",
+    "question_id": "sq:measurement:influence-possible",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:measurement:method-inappropriate": "no",
+      "sq:measurement:differential": "no",
+      "sq:measurement:assessor-aware": "yes"
+    },
+    "trial_record": "The selected Result is self-reported pain at12weeks. Participants knew their assigned treatment and entered their own0–10rating at home. Software transferred that rating automatically to the trial database. A blinded analyst computed the comparison; neither the participant nor a proxy was masked when deciding which rating to enter. No information establishes how much, if at all, knowledge actually changed the ratings."
+  },
+  {
+    "case_id": "case-82",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A single-centre trial enrolled240adults. Its report says patients were randomized between two treatments. No protocol, assignment list, trial-unit information or contemporary studies by the investigators are supplied. Recruitment and outcome tables contain no information about how assignments were generated."
+  },
+  {
+    "case_id": "case-95",
+    "question_id": "sq:missing:evidence-unbiased",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:missing:data-available": "probably_no"
+    },
+    "trial_record": "The selected Result is12week pain in480randomized adults. At12weeks32of240in one arm and29of240in the other lacked measurements. The analysis carried each missing participant’s most recent pain rating forward; some last ratings were taken atweek2. A second analysis used multiple imputation with treatment group as its only predictor and reported a similar point estimate. No sensitivity analysis varying outcomes after the last observation, validation of the missing-data assumptions, or other information bearing on unobserved12week pain is supplied."
+  },
+  {
+    "case_id": "case-63",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A trial used a central minimisation service to reduce imbalance in age and severity. The supplied configuration chooses the treatment with the smaller imbalance score. When the scores tie, it always assigns the treatment whose code sorts first. Investigators could calculate the next assignment from the current allocation counts and the next participant’s age and severity. No draw is made at either step."
+  },
+  {
+    "case_id": "case-28",
+    "question_id": "sq:missing:evidence-unbiased",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {
+      "sq:missing:data-available": "probably_no"
+    },
+    "trial_record": "The selected Result is the adjusted between-group mean difference in0–10pain at12weeks for all600randomized adults, estimated as−1.00. The two groups of300 have18and20missing12week outcomes. A separate follow-up team could not determine why those individuals missed visits. The primary imputation included baseline pain, disease grade, previous pain measurements and treatment. A prespecified sensitivity analysis independently shifted imputed missing pain scores in each arm from−2to+2points relative to their predicted values, including opposed shifts between arms. The range was elicited before database lock from clinicians using external longitudinal data for patients with the same disease grade and earlier pain trajectories. Reported estimates across that range were−0.74to−1.26, with confidence intervals consistently on the same side of zero. Reasons for the actual losses remain unknown."
+  },
+  {
+    "case_id": "case-47",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A multicentre trial enrolled3200adults. The article calls allocation randomized but gives no sequence-generation method. It was coordinated by a trials unit that had organized twelve multicentre trials; contemporaneous independent audits of that unit describe centrally generated computer-random lists in those other trials. The journal imposed a3000word article limit. No sequence log or algorithm for this trial is available."
+  },
+  {
+    "case_id": "case-19",
+    "question_id": "sq:randomization:sequence",
+    "assessment_target": "Effect of assignment to the specified intervention comparison; answer only the named signaling question.",
+    "activation_answers_supplied": {},
+    "trial_record": "A trial enrolled640adults using a central web allocation service. The methods name minimisation, balancing site, prior treatment and disease grade. The service returned one treatment assignment after each eligible participant was entered. Its executable code, tie-handling settings and sequence-generation log are unavailable."
+  }
+]
