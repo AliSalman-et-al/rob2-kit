@@ -1,0 +1,10 @@
+{
+  "qualified_recovery": true,
+  "two_original_scientific_sessions": true,
+  "two_extra_get_status_only_threads": true,
+  "artifacts": {
+    "old": "eb37d257c030a4331c0ada0632070a94000caf38a3627914fbb562d9e5ad95d4",
+    "new": "3056f2f20560f78d058901d195fb8ab2aab8896711173b09cdef34ed9af89c43"
+  },
+  "ready_for_comparison": true
+}

@@ -1,0 +1,155 @@
+{
+  "old": {
+    "judgment": "high",
+    "answer_vector": {
+      "sq:measurement:method-inappropriate": "no",
+      "sq:measurement:differential": "probably_yes"
+    },
+    "original_session": "01a10987-27d9-7002-bbcf-a1be340ee305",
+    "original_session_cumulative_usage": {
+      "input_tokens": 2577112,
+      "cached_input_tokens": 2410752,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 12634,
+      "reasoning_output_tokens": 7040,
+      "total_tokens": 2589746
+    },
+    "accidental_thread_usage": {
+      "input_tokens": 153401,
+      "cached_input_tokens": 100608,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 598,
+      "reasoning_output_tokens": 227
+    },
+    "usage_policy": "Use latest original cumulative total once, not sum original turn receipts. Extra get_status-only thread is additive launch overhead. Dollar charge unknown.",
+    "rollout_sha256": "f44def04676f90bd6d5686e1ca697c967640ea7cf8fad1fca63a3ee1624572ac",
+    "attempts": [
+      {
+        "prefix": "turn-1",
+        "uncompressed_sha256": "037adc8e8572d1708736e54193298f7f1159e4396b3e2ab293f48f2788104cbe",
+        "gzip_sha256": "9f432ecdacb9ca7a06a50672be4a6f5d4548ad9d35b50cec627f6f3dac5b1add",
+        "reported_turn_usage": [
+          {
+            "input_tokens": 929309,
+            "cached_input_tokens": 837120,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3783,
+            "reasoning_output_tokens": 908
+          }
+        ],
+        "tool_calls": 13
+      },
+      {
+        "prefix": "turn-2",
+        "uncompressed_sha256": "6e9c247f84b28de578ddd0d794c4495de291954a17805d20a362d5cb46e934bc",
+        "gzip_sha256": "ca16f8ce6311d4deb328997249651d387f390de996971851a74ee4685bc63cb0",
+        "reported_turn_usage": [
+          {
+            "input_tokens": 153401,
+            "cached_input_tokens": 100608,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 598,
+            "reasoning_output_tokens": 227
+          }
+        ],
+        "tool_calls": 1
+      },
+      {
+        "prefix": "recovery-3",
+        "uncompressed_sha256": "51d89cf6cf4d5dec25e60c259eca6744505e2ce4a2daa35d59bdd1aa88bf3c74",
+        "gzip_sha256": "9dd7c927019055dc967a15d63d72dac88b75da01c1bb1e4534dbbe03e87603b1",
+        "reported_turn_usage": [
+          {
+            "input_tokens": 2577112,
+            "cached_input_tokens": 2410752,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 12634,
+            "reasoning_output_tokens": 7040
+          }
+        ],
+        "tool_calls": 12
+      }
+    ],
+    "recovery_wall_seconds": 402.99115657806396,
+    "citation_binding_checks": 8,
+    "independent_default_replay": true
+  },
+  "new": {
+    "judgment": "some_concerns",
+    "answer_vector": {
+      "sq:measurement:method-inappropriate": "no",
+      "sq:measurement:differential": "no",
+      "sq:measurement:assessor-aware": "yes",
+      "sq:measurement:influence-possible": "yes",
+      "sq:measurement:influence-likely": "probably_no"
+    },
+    "original_session": "01a10987-6335-7141-a130-ccde2485a3b2",
+    "original_session_cumulative_usage": {
+      "input_tokens": 4124471,
+      "cached_input_tokens": 3912704,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 17102,
+      "reasoning_output_tokens": 7982,
+      "total_tokens": 4141573
+    },
+    "accidental_thread_usage": {
+      "input_tokens": 312361,
+      "cached_input_tokens": 260608,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 576,
+      "reasoning_output_tokens": 87
+    },
+    "usage_policy": "Use latest original cumulative total once, not sum original turn receipts. Extra get_status-only thread is additive launch overhead. Dollar charge unknown.",
+    "rollout_sha256": "9b9a135e740f463ef857f0246e3a2f2d79ef5a7b91e09b1968008a4a2b31b579",
+    "attempts": [
+      {
+        "prefix": "turn-1",
+        "uncompressed_sha256": "3f643c7c53b685ea61bde076abc3434ba38e35720803fa864d94ca7439c235be",
+        "gzip_sha256": "f84ec73e73f72076f1115cd723303ce3adfac55d5adacebfef54d4f40394f537",
+        "reported_turn_usage": [
+          {
+            "input_tokens": 1301368,
+            "cached_input_tokens": 1196800,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5038,
+            "reasoning_output_tokens": 1260
+          }
+        ],
+        "tool_calls": 13
+      },
+      {
+        "prefix": "turn-2",
+        "uncompressed_sha256": "43c6681cc498e3a5919d2fb2508f93e76f111a6ae54b68fef35ed8da10f54c64",
+        "gzip_sha256": "0b01cf0d998a8cd030f188e5e7edfd52f6966cd5623f8e14e50d326ca5eea0d1",
+        "reported_turn_usage": [
+          {
+            "input_tokens": 312361,
+            "cached_input_tokens": 260608,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 576,
+            "reasoning_output_tokens": 87
+          }
+        ],
+        "tool_calls": 1
+      },
+      {
+        "prefix": "recovery-3",
+        "uncompressed_sha256": "dd9476e7e763686d6ea0abe357a9b578c603cd6a5168f6cffb8c8449cd671316",
+        "gzip_sha256": "2de84e5a71f1a28db3268d150a6b8618878210c6438eea6c0b594df9fc67900f",
+        "reported_turn_usage": [
+          {
+            "input_tokens": 4124471,
+            "cached_input_tokens": 3912704,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 17102,
+            "reasoning_output_tokens": 7982
+          }
+        ],
+        "tool_calls": 18
+      }
+    ],
+    "recovery_wall_seconds": 341.65352296829224,
+    "citation_binding_checks": 14,
+    "independent_default_replay": true
+  }
+}

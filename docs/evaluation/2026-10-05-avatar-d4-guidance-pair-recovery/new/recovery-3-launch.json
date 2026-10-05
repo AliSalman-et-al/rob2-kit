@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+    "exec",
+    "resume",
+    "--json",
+    "--skip-git-repo-check",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-o",
+    "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/avatar-d4-guidance-pair/new/recovery-3-final.txt",
+    "01a10987-6335-7141-a130-ccde2485a3b2",
+    "-"
+  ],
+  "started_at": 1791161909.1601532,
+  "protocol": "qualified recovery after TWO accidental extra get_status-only threads; retain overhead",
+  "approval_receipt_sha256": "71b3b16fd5772bdba12dd7ca00bf011ae7dd29bb8b3b2c2ba4fbc1dcfd362d66",
+  "config_sha256": "4f600d9acf8c34731f2308e2696572252f4cd0ec906388db48889bcb03c8300a"
+}

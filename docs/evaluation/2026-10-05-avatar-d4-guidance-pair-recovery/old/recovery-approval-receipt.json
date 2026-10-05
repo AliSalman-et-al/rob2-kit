@@ -1,0 +1,22 @@
+{
+  "acknowledgment": "sha256:405dde739b1adadffadd3de8c085f9856fdee87ca99aa6f0abe86ad269ae47bb",
+  "acknowledgment_record": {
+    "caller": "cli",
+    "identity": "sha256:405dde739b1adadffadd3de8c085f9856fdee87ca99aa6f0abe86ad269ae47bb",
+    "method": "cli",
+    "observed_at": "2026-10-05T00:56:32.665278Z",
+    "purpose": "proposal",
+    "review_identity": "sha256:c200148388b7038f1f47c90ee60f592c0157df368b5086fdee0c32dcd2c7bb63",
+    "workflow_basis": 2
+  },
+  "approved": true,
+  "continuation": {
+    "authority": "host",
+    "domain_id": "domain:randomization",
+    "operation": "get_domain_context",
+    "trial_id": "banovic26-avatar-2024"
+  },
+  "outcome": "success",
+  "phase": "assessment",
+  "state_revision": 4
+}

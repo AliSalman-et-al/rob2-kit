@@ -1,0 +1,229 @@
+{
+  "active_questions": [
+    "sq:measurement:method-inappropriate",
+    "sq:measurement:differential",
+    "sq:measurement:assessor-aware",
+    "sq:measurement:influence-possible",
+    "sq:measurement:influence-likely"
+  ],
+  "answers": [
+    {
+      "answer": "no",
+      "bases": [
+        {
+          "evidence": "sha256:ce45f7ffc86d33f014c0b3ad4496567a0d4436fbc1ef5850c51fbf3dbf92c840",
+          "kind": "direct_support",
+          "source": "Trial End Points\nThe primary end point was a composite of all-cause mortality\nor major adverse cardiovascular events (MACEs) composed of\nacute myocardial infarction, stroke, and unplanned HF hospital-\nization needing intravenous treatment with diuretics or inotro-\npes. Prespecified secondary end points included the following:"
+        },
+        {
+          "evidence": "sha256:8dd4cfe120ba826f0414dd2d4be4ae989456ba71352e008655d436c3ee8f9a78",
+          "kind": "direct_support",
+          "source": "3. DEFINITIONS OF ENDPOINTS\nOperative mortality was defined as death within 30 days of surgery. Cardiovascular mortality\nwas defined as sudden cardiac death, death from myocardial infarction, heart failure,\ncomplications of cardiac surgery or percutaneous coronary intervention, stroke or other\ncardiovascular disease. Sudden cardiac death was defined as either witnessed instantaneous\nunexpected death, or unwitnessed unexpected death, if other causes of death were excluded with\nreasonable certainty. Unplanned hospitalization due to the heart failure was defined as an"
+        },
+        {
+          "evidence": "sha256:120a32483f03e3ad1c90cc432667f8b3588827f57cfcfcb2c8d8e4092549fcd4",
+          "kind": "direct_support",
+          "source": "unplanned urgent admission for the management of congestive heart failure lasting at least 24\nhours. Acute myocardial infarction was defined as detection of rise and/or fall of cardiac\nbiomarkers (preferably high-sensitive troponin) with at least one value above the 99th percentile\nof the URL together with evidence of myocardial ischemia with at least one of the following:\n\u2022 Symptoms of ischemia\n\u2022 ECG changes indicative of new ischemia (new ST-T changes or new left bundle branch\nblock [LBBB])\n\u2022 Development of pathological Q waves in the ECG\nPeriprocedural Acute myocardial infarction was defined as > 10 fold in increase in high sensitive\nTroponin.\nStroke was defined as an acute symptomatic episode of neurological dysfunction attributed to a\nvascular cause, sub-classified as follows:\n\u2022 Ischemic stroke is defined as an acute symptomatic episode of focal cerebral, spinal, or\n\u2022 retinal dysfunction caused by an infarction of central nervous system tissue\n\u2022 Hemorrhagic stroke is defined as an acute symptomatic episode of focal or global\ncerebral or spinal dysfunction caused by a non-traumatic intra-parenchymal, intra-\nventricular, or subarachnoid hemorrhage\n\u2022 Undetermined stroke is defined as a stroke with insufficient information to allow\ncategorization as Ischemic or Hemorrhagic as defined above"
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The approved outcome is a time-to-first composite of death, MI, stroke, or unplanned HF hospitalization. The report and supplement specify clinically relevant criteria for HF admission, biomarker rise/fall with ischemic evidence for MI, and an acute vascular neurologic episode for stroke. These methods are appropriate for identifying the defined clinical events; no source indicates an invalid or insensitive instrument.",
+      "question_id": "sq:measurement:method-inappropriate",
+      "unknowns": []
+    },
+    {
+      "answer": "no",
+      "bases": [
+        {
+          "evidence": "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba",
+          "kind": "direct_support",
+          "source": "All patients were followed according to the protocol every\n6 months with the in-person visits at the participating study\ncenter. For any event that was registered, the medical records\nwere asked for and reviewed. Adverse clinical events were\nadjudicated by the DSMB per protocol definitions.9,10 DSMB\nmembers were not blinded to the treatment allocation during\nevents review. They adjudicated the events by consensus."
+        },
+        {
+          "evidence": "sha256:5e265546a712dd3c5c63e3af8a75bb2b711b12a86dcc0429f2d36274a20f446c",
+          "kind": "direct_support",
+          "source": "Follow-Up and End Points\nAlthough enrollment was lower than expected, the num-\nber of prespecified events (35) was reached in Octo-\nber 2020 because of longer follow-up. Accordingly,\nthe DSMB advised stopping enrollment on November\n1, 2020. Data collection, including follow-up, was com-\npleted in May 2021. The overall median follow-up of all\npatients was 32 months, 28 months in the early surgery\ngroup and 35 months in the conservative treatment\ngroup. Contact with 1 patient in the early surgery group\nwas lost before scheduled aortic valve replacement. This\npatient was analyzed in the intention-to-treat analysis as\nbeing alive at the latest follow-up."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The report says all patients had protocol follow-up every six months with in-person center visits; registered events prompted medical-record review and adverse clinical events were adjudicated under protocol definitions. It does not report different thresholds or assessment schedules by randomized group. Although early SAVR entailed surgery, the approved events are acute clinical events and the report gives no evidence that this created a differential detection route.",
+      "question_id": "sq:measurement:differential",
+      "unknowns": [
+        "Unscheduled contacts and event ascertainment between scheduled visits by arm are not detailed; common scheduled follow-up and record review are the available description."
+      ]
+    },
+    {
+      "answer": "yes",
+      "bases": [
+        {
+          "evidence": "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba",
+          "kind": "direct_support",
+          "source": "All patients were followed according to the protocol every\n6 months with the in-person visits at the participating study\ncenter. For any event that was registered, the medical records\nwere asked for and reviewed. Adverse clinical events were\nadjudicated by the DSMB per protocol definitions.9,10 DSMB\nmembers were not blinded to the treatment allocation during\nevents review. They adjudicated the events by consensus."
+        }
+      ],
+      "counterevidence": [],
+      "justification": "The report states that the DSMB adjudicated adverse clinical events and that DSMB members were not blinded to treatment allocation during event review. The event adjudicators were therefore aware of assignment.",
+      "question_id": "sq:measurement:assessor-aware",
+      "unknowns": []
+    },
+    {
+      "answer": "yes",
+      "bases": [
+        {
+          "evidence": "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba",
+          "kind": "direct_support",
+          "source": "All patients were followed according to the protocol every\n6 months with the in-person visits at the participating study\ncenter. For any event that was registered, the medical records\nwere asked for and reviewed. Adverse clinical events were\nadjudicated by the DSMB per protocol definitions.9,10 DSMB\nmembers were not blinded to the treatment allocation during\nevents review. They adjudicated the events by consensus."
+        },
+        {
+          "evidence": "sha256:120a32483f03e3ad1c90cc432667f8b3588827f57cfcfcb2c8d8e4092549fcd4",
+          "kind": "direct_support",
+          "source": "unplanned urgent admission for the management of congestive heart failure lasting at least 24\nhours. Acute myocardial infarction was defined as detection of rise and/or fall of cardiac\nbiomarkers (preferably high-sensitive troponin) with at least one value above the 99th percentile\nof the URL together with evidence of myocardial ischemia with at least one of the following:\n\u2022 Symptoms of ischemia\n\u2022 ECG changes indicative of new ischemia (new ST-T changes or new left bundle branch\nblock [LBBB])\n\u2022 Development of pathological Q waves in the ECG\nPeriprocedural Acute myocardial infarction was defined as > 10 fold in increase in high sensitive\nTroponin.\nStroke was defined as an acute symptomatic episode of neurological dysfunction attributed to a\nvascular cause, sub-classified as follows:\n\u2022 Ischemic stroke is defined as an acute symptomatic episode of focal cerebral, spinal, or\n\u2022 retinal dysfunction caused by an infarction of central nervous system tissue\n\u2022 Hemorrhagic stroke is defined as an acute symptomatic episode of focal or global\ncerebral or spinal dysfunction caused by a non-traumatic intra-parenchymal, intra-\nventricular, or subarachnoid hemorrhage\n\u2022 Undetermined stroke is defined as a stroke with insufficient information to allow\ncategorization as Ischemic or Hemorrhagic as defined above"
+        },
+        {
+          "evidence": "sha256:198e719ce22458c958ea4da22725b43bbce4048ec17a51a0724dd32cf457398a",
+          "kind": "context",
+          "source": "Table 4. Number of MACEs\n\nGroup\nConservative\n Early surgery\nPrimary end point (all-cause death + MACE)\n All-cause death\n16\n9\n Heart failure\n7\n1\n AMI\n2\n1\n Stroke\n1\n2\n Total\n26\n13"
+        },
+        {
+          "evidence": "sha256:34638f1b2d2fc6af8b32b6d897160d6aed6f73bd5864750dbebda557a07df13e",
+          "kind": "context",
+          "source": "Table 4. Number of MACEs\n\nGroup\nConservative\n Early surgery\nPrimary end point (all-cause death + MACE)\n All-cause death\n16\n9\n Heart failure\n7\n1\n AMI\n2\n1\n Stroke\n1\n2\n Total\n26\n13\n Total MACEs (including repeated MACEs)\n All-cause death\n16\n9\n Heart Failure\n10\n3\n AMI\n4\n1\n Stroke\n3\n3\n Total\n33\n16\nAMI indicates acute myocardial infarction; and MACE, major adverse cardio-\nvascular event."
+        }
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 3,
+          "implication": "Table 4 reports 25 all-cause deaths among 39 first composite events, so most events were objective deaths; this limits how far possible influence on nonfatal-event judgment transfers to the composite result."
+        }
+      ],
+      "justification": "Because adjudicators knew assignment, their judgments about whether some nonfatal events met clinical criteria\u2014particularly HF hospitalization and ischemic or neurologic event definitions\u2014could be influenced by that knowledge. This is a possible pathway, not evidence that it occurred. The composite also contains objectively determined all-cause death, which limits transfer to the overall result.",
+      "question_id": "sq:measurement:influence-possible",
+      "unknowns": [
+        "The report does not describe whether assignment knowledge affected nonfatal event classification."
+      ]
+    },
+    {
+      "answer": "probably_no",
+      "bases": [
+        {
+          "evidence": "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba",
+          "kind": "context",
+          "source": "All patients were followed according to the protocol every\n6 months with the in-person visits at the participating study\ncenter. For any event that was registered, the medical records\nwere asked for and reviewed. Adverse clinical events were\nadjudicated by the DSMB per protocol definitions.9,10 DSMB\nmembers were not blinded to the treatment allocation during\nevents review. They adjudicated the events by consensus."
+        },
+        {
+          "evidence": "sha256:8dd4cfe120ba826f0414dd2d4be4ae989456ba71352e008655d436c3ee8f9a78",
+          "kind": "context",
+          "source": "3. DEFINITIONS OF ENDPOINTS\nOperative mortality was defined as death within 30 days of surgery. Cardiovascular mortality\nwas defined as sudden cardiac death, death from myocardial infarction, heart failure,\ncomplications of cardiac surgery or percutaneous coronary intervention, stroke or other\ncardiovascular disease. Sudden cardiac death was defined as either witnessed instantaneous\nunexpected death, or unwitnessed unexpected death, if other causes of death were excluded with\nreasonable certainty. Unplanned hospitalization due to the heart failure was defined as an"
+        },
+        {
+          "evidence": "sha256:120a32483f03e3ad1c90cc432667f8b3588827f57cfcfcb2c8d8e4092549fcd4",
+          "kind": "context",
+          "source": "unplanned urgent admission for the management of congestive heart failure lasting at least 24\nhours. Acute myocardial infarction was defined as detection of rise and/or fall of cardiac\nbiomarkers (preferably high-sensitive troponin) with at least one value above the 99th percentile\nof the URL together with evidence of myocardial ischemia with at least one of the following:\n\u2022 Symptoms of ischemia\n\u2022 ECG changes indicative of new ischemia (new ST-T changes or new left bundle branch\nblock [LBBB])\n\u2022 Development of pathological Q waves in the ECG\nPeriprocedural Acute myocardial infarction was defined as > 10 fold in increase in high sensitive\nTroponin.\nStroke was defined as an acute symptomatic episode of neurological dysfunction attributed to a\nvascular cause, sub-classified as follows:\n\u2022 Ischemic stroke is defined as an acute symptomatic episode of focal cerebral, spinal, or\n\u2022 retinal dysfunction caused by an infarction of central nervous system tissue\n\u2022 Hemorrhagic stroke is defined as an acute symptomatic episode of focal or global\ncerebral or spinal dysfunction caused by a non-traumatic intra-parenchymal, intra-\nventricular, or subarachnoid hemorrhage\n\u2022 Undetermined stroke is defined as a stroke with insufficient information to allow\ncategorization as Ischemic or Hemorrhagic as defined above"
+        },
+        {
+          "evidence": "sha256:198e719ce22458c958ea4da22725b43bbce4048ec17a51a0724dd32cf457398a",
+          "kind": "inference",
+          "source": "Table 4. Number of MACEs\n\nGroup\nConservative\n Early surgery\nPrimary end point (all-cause death + MACE)\n All-cause death\n16\n9\n Heart failure\n7\n1\n AMI\n2\n1\n Stroke\n1\n2\n Total\n26\n13"
+        }
+      ],
+      "counterevidence": [
+        {
+          "basis_index": 0,
+          "implication": "DSMB adjudicators were unblinded, and the nonfatal component definitions involve clinical judgment; this supports the possibility considered in 4.4, although it does not establish likely influence."
+        },
+        {
+          "basis_index": 2,
+          "implication": "DSMB adjudicators were unblinded, and the nonfatal component definitions involve clinical judgment; this supports the possibility considered in 4.4, although it does not establish likely influence."
+        }
+      ],
+      "justification": "Although nonfatal event adjudication could be influenced, the report gives protocol-based event definitions and consensus adjudication, and the primary-event counts show all-cause death was the largest component (25 of 39 first events). There is no report evidence that knowledge actually affected event decisions. On balance, influence on the selected composite is not likely, while acknowledging unblinded adjudication and the nonfatal events.",
+      "question_id": "sq:measurement:influence-likely",
+      "unknowns": [
+        "Whether unblinded adjudicators' knowledge affected any nonfatal event classification is not reported."
+      ]
+    }
+  ],
+  "decision": {
+    "adjudication": null,
+    "adopted": "some_concerns",
+    "authority": "algorithm",
+    "contract": "rob2-kit.domain.reasoned-adjudication.v1",
+    "proposed": "some_concerns",
+    "trace_authority": "proposed_algorithm"
+  },
+  "domain_id": "domain:measurement",
+  "driver_questions": [
+    "sq:measurement:influence-likely"
+  ],
+  "evidence_sufficiency": {
+    "claims": [
+      {
+        "evidence": [
+          "sha256:ce45f7ffc86d33f014c0b3ad4496567a0d4436fbc1ef5850c51fbf3dbf92c840",
+          "sha256:8dd4cfe120ba826f0414dd2d4be4ae989456ba71352e008655d436c3ee8f9a78",
+          "sha256:120a32483f03e3ad1c90cc432667f8b3588827f57cfcfcb2c8d8e4092549fcd4"
+        ],
+        "question_id": "sq:measurement:method-inappropriate",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba",
+          "sha256:5e265546a712dd3c5c63e3af8a75bb2b711b12a86dcc0429f2d36274a20f446c"
+        ],
+        "question_id": "sq:measurement:differential",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba"
+        ],
+        "question_id": "sq:measurement:assessor-aware",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba",
+          "sha256:120a32483f03e3ad1c90cc432667f8b3588827f57cfcfcb2c8d8e4092549fcd4",
+          "sha256:198e719ce22458c958ea4da22725b43bbce4048ec17a51a0724dd32cf457398a",
+          "sha256:34638f1b2d2fc6af8b32b6d897160d6aed6f73bd5864750dbebda557a07df13e"
+        ],
+        "question_id": "sq:measurement:influence-possible",
+        "search_receipts": [],
+        "status": "supported",
+        "unresolved_premises": []
+      },
+      {
+        "evidence": [
+          "sha256:ceae45ffcb2545d52c4c5393a0b4a7e9e4c907cc284b29e4f98b6ad2f250d5ba",
+          "sha256:8dd4cfe120ba826f0414dd2d4be4ae989456ba71352e008655d436c3ee8f9a78",
+          "sha256:120a32483f03e3ad1c90cc432667f8b3588827f57cfcfcb2c8d8e4092549fcd4",
+          "sha256:198e719ce22458c958ea4da22725b43bbce4048ec17a51a0724dd32cf457398a"
+        ],
+        "question_id": "sq:measurement:influence-likely",
+        "search_receipts": [],
+        "status": "unresolved",
+        "unresolved_premises": []
+      }
+    ],
+    "identity": "sha256:594c367c777e9687741f210b1d9e999c2bd500d5965fa7298f7c216be5f99c9c"
+  },
+  "identity": "sha256:678daf548a68970f19e30a9605004d1d6518884c5e903261899c7d998e0b731b",
+  "inactive_questions": [],
+  "judgment": "some_concerns",
+  "observed_at": "2026-10-05T01:03:55.025071+00:00",
+  "result_identity": "sha256:3e12973075b8ef7b205e9ea021b8aebf098ef7e31c709b3c82194e126a74cad2",
+  "revision_basis": null,
+  "search_accounts": [],
+  "supersedes": null,
+  "trace": [
+    "measurement.some_concerns"
+  ],
+  "trial_id": "banovic26-avatar-2024"
+}

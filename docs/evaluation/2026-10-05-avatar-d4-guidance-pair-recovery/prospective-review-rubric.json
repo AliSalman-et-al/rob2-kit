@@ -1,0 +1,15 @@
+{
+  "purpose": "Prospective review rubric before D4 outputs inspected",
+  "source_scope": "actual Code supplied2022 report,2021endoffollowup; not casefilenameyear",
+  "criteria": {
+    "4.1": "measurement validity/sensitivity distinct from treatmentchoice and eventsubjectivity",
+    "4.2": "compare actual surveillance/thresholds/opportunities; infer differences only through explicit approvedevent pathway",
+    "4.3": "identify clinicaldecision maker and adjudication reviewer; do not equate unblindedreview with all evidence subjective",
+    "4.4": "specific judgment/clinicaldecision pathway; objectivedeath component does not establish allcomponentsimmune",
+    "4.5": "weigh comparator,careproviderinterest,independentreview,definitions and timing; absence of actualinfluenceproof alone is not NI; possibilityalone is not likely",
+    "composite": "relative component frequency/contribution and influentialcomponents; distinguish allreportedcomponentoccurrences from firsteventcomposite contributions; uncertaincontributiondoesnotassumedominance",
+    "citations": "exactquote/source/page and claimmodality; counts/definitions/rolesconflicts preserved",
+    "interpretation": "neither arm judged by gold; labelingagreement insufficient; any positive/negative claim limitedtoonecase"
+  },
+  "source_scope_verified": "MainPDF1,4,7:157randomized78/79;followupMay2021;ITTprimaryHR0.46CI0.23\u20130.90;Table3distinctsecondarycomponentHRs; no signaling answers supplied to sessions"
+}

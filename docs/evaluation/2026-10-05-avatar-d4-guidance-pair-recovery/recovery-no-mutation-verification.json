@@ -1,0 +1,44 @@
+{
+  "old": {
+    "original_session": "01a10987-27d9-7002-bbcf-a1be340ee305",
+    "extra_session": "01a1098a-7983-7fe0-a0a0-7a1762dea2d6",
+    "unchanged_status_head": {
+      "phase": "proposal",
+      "state_revision": 3,
+      "next_action": {
+        "operation": "researcher_review",
+        "authority": "researcher",
+        "reference": "sha256:c200148388b7038f1f47c90ee60f592c0157df368b5086fdee0c32dcd2c7bb63",
+        "purpose": "proposal"
+      },
+      "authoritative_wording": "Proposal Review pending: the researcher may accept this source-reported candidate or ask the model to choose another candidate; no Trial is assessable until approval."
+    },
+    "canonical_state_sha256": "5be00e97570afd1ccf33e8793e9aab7e4890cba679ae40fcd2f69e9ee4041b98",
+    "review_identity": "sha256:c200148388b7038f1f47c90ee60f592c0157df368b5086fdee0c32dcd2c7bb63",
+    "failed_thread_tools": [
+      "get_status"
+    ],
+    "no_scientific_records": true
+  },
+  "new": {
+    "original_session": "01a10987-6335-7141-a130-ccde2485a3b2",
+    "extra_session": "01a1098a-8124-7081-8786-e7eb33208cd5",
+    "unchanged_status_head": {
+      "phase": "proposal",
+      "state_revision": 3,
+      "next_action": {
+        "operation": "researcher_review",
+        "authority": "researcher",
+        "reference": "sha256:c13448c4c9f0cd301464027ae94d66a35b49032a6f2c36bc727749e5d8d7d72d",
+        "purpose": "proposal"
+      },
+      "authoritative_wording": "Proposal Review pending: the researcher may accept this source-reported candidate or ask the model to choose another candidate; no Trial is assessable until approval."
+    },
+    "canonical_state_sha256": "d97c8a4b1a1cdcc119e23dd40a7ed70f1508fd8f0aa37336062e7922ccfad9c8",
+    "review_identity": "sha256:c13448c4c9f0cd301464027ae94d66a35b49032a6f2c36bc727749e5d8d7d72d",
+    "failed_thread_tools": [
+      "get_status"
+    ],
+    "no_scientific_records": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "manifest_sha256": "20432d945cdb7a55327a573701124d605d05b731f2aabb552b207a9ad2c80b82",
+  "input_sha256": "c851761d29eb8823c2a303e35213954fb06f5a451f949823a70595ab40f86171",
+  "evidence_bundle_sha256": "d76aa962f0d44cba0cd3782ea42f647d8feee57eeaf1a7a327d36de2ba910bf0",
+  "required_window_count": 33,
+  "supplied_window_count": 33,
+  "required_image_count": 0,
+  "supplied_image_count": 0,
+  "scope": "declared research-design coverage only; no semantic sufficiency claim"
+}

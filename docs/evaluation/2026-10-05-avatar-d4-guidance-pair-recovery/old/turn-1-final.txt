@@ -1,0 +1,10 @@
+## Proposal Review — AVATAR Circulation 2022
+
+**Selected Result:** The primary intention-to-treat comparison of early surgical aortic valve replacement versus conservative management for time to first occurrence of all-cause death, acute myocardial infarction, stroke, or unplanned hospitalization for heart failure.
+
+- **Population:** All 157 randomized patients: 78 assigned to early surgery and 79 to conservative management.
+- **Follow-up:** Data collection completed in May 2021.
+- **Reported effect:** Hazard ratio **0.46** (95% CI **0.23–0.90**).
+- **Relation:** Exact. The separately reported all-cause death and heart-failure hospitalization results are secondary outcomes and were not selected.
+
+I submitted and saved this Result through the native Proposal workflow. The Proposal Review is pending. Please approve it or direct a correction. After approval, I’ll assess and commit only Domain 4, as requested.

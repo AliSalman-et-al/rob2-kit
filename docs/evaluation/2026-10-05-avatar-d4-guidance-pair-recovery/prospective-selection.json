@@ -1,0 +1,23 @@
+{
+  "case": "banovic26-avatar-2024",
+  "selected_before_prior_answers_or_gold_inspection": true,
+  "selection_basis": "readable supplied main article and supplement; mixed death/MI/stroke/unplanned HF hospitalization composite; early SAVR versus conservative-care comparator; source feasibility and assessor/component reasoning",
+  "not_exposed_development": "only original Code Oct1 baseline exposure inventory found; excludes Abbasi2012 Bendix2000 Attal2021 Hundscheid2022 and repeatedly developed cases",
+  "target": "primary ITT time-to-first composite hazard ratio for early SAVR versus conservative management in 157 randomized patients, supplied Circulation2022 report ending May2021; no long-term2024 substitution",
+  "sources": {
+    "circ_circulationaha-2021-057639_supp1.pdf": "e7f7319bafb190be1b589f47e2cf4d2b6f8badfa9b5a91822cb04e2f27ec34de",
+    "CIRCULATIONAHA.121.057639.pdf": "dd643e8a0fc65605457c9a030145c67c4d87c43095476bd2b3440008f8513fab",
+    "sources.toml": "b7c356e5d0ebdb6feeaf3d17030b03f132d2ad32c640a19b176f49898cce0184"
+  },
+  "sessions": 2,
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "runtime_commit": "7d8ef2b93d9882a8a6eed1072942da4d5a2185c0",
+  "old_guidance_source": "431422ce9ec0cf3ea3c7ac71a187cc89172b3769",
+  "new_guidance_source": "7d8ef2b93d9882a8a6eed1072942da4d5a2185c0",
+  "sole_intervention": "old versus corrected D4 contextual-likelihood and composite-weighting cards/reference; same runtime/tools/target/source bytes",
+  "no_domain_adjudication": true,
+  "account_first": "unused opt-in",
+  "output_freeze_before_comparison": true,
+  "limits": "single diagnostic case; no accuracy-driven retries; two sessions only"
+}
