@@ -3105,6 +3105,16 @@ class CompanionRequestData(PublicModel):
 class CompanionAcquisitionData(PublicModel):
     candidate_identity: Identity | None
     capture: dict[str, Any]
+    matching_active_source_ids: tuple[SourceHandle, ...] = Field(
+        default=(),
+        exclude_if=lambda value: not value,
+        description=(
+            "Active Sources in this Trial with exactly the captured document's byte hash. "
+            "Their bodies can be read through existing handles. A match is not an independent "
+            "document or proof of applicability, prespecification, or historical capture; "
+            "the new capture and explicit admission remain separate."
+        ),
+    )
     document_staged: StrictBool
     admitted_to_active_batch: Literal[False]
     document_read: Literal[False]

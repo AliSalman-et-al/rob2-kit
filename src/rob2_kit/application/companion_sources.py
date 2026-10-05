@@ -158,6 +158,11 @@ def _acquire_companion_locked(
             state,
             candidate_identity=candidate["identity"],
             capture=candidate["capture"],
+            matching_active_source_ids=[
+                source_handle(str(active["id"]))
+                for active in trial["sources"]
+                if active["sha256"] == candidate["capture"].get("sha256")
+            ],
             document_staged=True,
             admitted_to_active_batch=False,
             document_read=False,
@@ -203,6 +208,11 @@ def _acquire_companion_locked(
         state,
         candidate_identity=candidate["identity"],
         capture=capture,
+        matching_active_source_ids=[
+            source_handle(str(active["id"]))
+            for active in trial["sources"]
+            if active["sha256"] == capture.get("sha256")
+        ],
         document_staged=True,
         admitted_to_active_batch=False,
         document_read=False,

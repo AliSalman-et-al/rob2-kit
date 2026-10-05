@@ -58,6 +58,15 @@ restriction. Supported probable judgments need no numerical bound or formal
 sensitivity analysis; a small or balanced count alone is not the explanation.
 Negligible impact does not make an inappropriate analysis appropriate.
 
+If using a quantitative impact illustration, retain the actual affected arm,
+its denominator, the assumed outcome bounds and the direction of the contrast.
+Distinguish the instrument's possible bounds from the observed sample range.
+A bound for an unspecified arm cannot establish whether the reported contrast
+could reverse. A clinical importance threshold alone does not settle impact on
+the estimated result: explain the relationship to the reported effect and
+conclusion. Keep such calculations conditional on their source-supported counts
+and assumptions; they are not observed outcomes or mandatory for a probable answer.
+
 Support each conduct-chain proposition with source facts and any stated
 inference. A passage supporting one proposition does not settle the others.
 

@@ -656,3 +656,65 @@ def test_concurrent_acquisition_does_not_duplicate_public_fetch(assessed, monkey
         workspace, reference, _state(workspace)["revision"]
     )
     assert recovered["candidate_identity"] == receipt["candidate_identity"] and len(calls) == 1
+
+
+def test_acquisition_reports_existing_byte_identical_source_without_admission(
+    tmp_path, monkeypatch
+):
+    document = pdf("Same protocol NCT00000001")
+    original_workspace = support._workspace
+
+    def with_existing_protocol(path, requested_outcome="requested outcome"):
+        root = original_workspace(path, requested_outcome)
+        main = root / "input/trial/main.txt"
+        main.write_text(main.read_text() + "Companion protocol " + URL + "\n")
+        (root / "input/trial/zexisting.pdf").write_bytes(document)
+        return root
+
+    monkeypatch.setattr(support, "_workspace", with_existing_protocol)
+    workspace, _, _ = support._assessment_workspace(tmp_path)
+    sources = _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+    main = next(source for source in sources if source["label"] == "main.txt")
+    existing = next(source for source in sources if source["label"] == "zexisting.pdf")
+    original_client = httpx.Client
+    requests = []
+
+    def respond(request):
+        requests.append(str(request.url))
+        return httpx.Response(200, content=document)
+
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: [(2, 1, 6, "", ("8.8.8.8", 443))])
+    monkeypatch.setattr(
+        companion.httpx,
+        "Client",
+        lambda **kw: original_client(transport=httpx.MockTransport(respond), **kw),
+    )
+    before = _state(workspace)
+    arguments = {
+        "reference": {
+            "trial_id": "trial",
+            "source_id": main["id"],
+            "page": 1,
+            "citation": "Companion protocol " + URL,
+            "linkage_rationale": "Explicit reference; applicability unknown",
+            "requested_role": "protocol",
+            "locator_kind": "url",
+            "locator": URL,
+        },
+        "expected_revision": before["revision"],
+    }
+    acquired = _call(workspace, "acquire_companion_source", arguments)
+    assert acquired["outcome"] == "success", acquired
+    data = acquired["data"]
+    assert data["matching_active_source_ids"] == [existing["id"]]
+    assert data["document_staged"] and not data["document_read"]
+    assert not data["admitted_to_active_batch"]
+    candidate = workspace / ".rob2-kit/companion_candidates" / data["candidate_identity"][7:]
+    assert (candidate / "candidate.pdf").read_bytes() == document
+    after = _state(workspace)
+    for field in ["batch", "proposal", "domain_records"]:
+        assert after.get(field, {}) == before.get(field, {})
+    arguments["expected_revision"] = after["revision"]
+    recovered = _call(workspace, "acquire_companion_source", arguments)
+    assert recovered["data"] == data
+    assert requests == [URL]

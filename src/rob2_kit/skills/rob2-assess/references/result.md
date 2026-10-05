@@ -128,6 +128,12 @@ scientific fields in the complete card; omit `effect_measure`, `estimate`, and
 }
 ```
 
+Keep `target.comparison_groups` and `reported.group_values` limited to the
+requested comparison. Other arms can remain in the cited Source and context,
+but do not add them to the assessment target merely for completeness. A requested
+joint comparison can include multiple arms; this is not a two-arm restriction.
+The saved card, not a narrower verbal summary, defines the groups assessed.
+
 For an unavailable Result, use one selection with `candidate: null`, a concrete
 source-grounded missing fact and `scope_rationale` explaining why it prevents a
 complete candidate. Use an intake-condition basis only when the

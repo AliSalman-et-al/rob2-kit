@@ -1,0 +1,326 @@
+{
+  "boundary": "Verbatim bodies and local completed-event bindings. Body comparison is separate from independent verification of private chronology and PDF bytes. No risk-label interpretation added. Physical/projected pages, not printed footer numbering.",
+  "passages": [
+    {
+      "id": "castoldi-2020-followup-and-exclusion",
+      "case": "castoldi-2020",
+      "source_label": "0363546520914936.pdf",
+      "original_code_source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+      "original_code_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/.rob2-kit/derivative.sqlite3",
+      "actual_run_source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+      "raw_pdf_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/castoldi-2020/0363546520914936.pdf",
+      "raw_pdf_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+      "extraction_sql": "SELECT text FROM pages WHERE source_id=? AND page=?",
+      "actual_projection_database": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/workspace-run/.rob2-kit/derivative.sqlite3",
+      "page": 4,
+      "start_line": 3,
+      "end_line": 20,
+      "original_code_full_page_text_sha256": "dfed7a24704504e08e571241aa68cf031cd64c9739541756ff93f4f392d8350e",
+      "actual_full_page_matches_original_code": true,
+      "numbered_excerpt": "3|At a mean 19.4 years (range, 19-20.2 years) after ACLR,\n4|80 patients (81 knees; 67%) were available for follow-up.\n5|One patient underwent a total knee replacement 18 years\n6|after the ACLR and was excluded from the analysis. A total\n7|of 41 patients (34%) were lost to follow-up; 79 patients (80\n8|knees) completed the patient-reported outcomes question-\n9|naire; and 43 patients (36%) underwent a clinical evalua-\n10|tion. Standard radiographs were obtained in 45 patients\n11|(37%), and laximetry data were available for 42 patients\n12|(35%)\n13|(Figure\n14|2).\n15|Preoperative\n16|characteristics\n17|of\n18|the\n19|patients available for follow-up were not statistically dif-\n20|ferent from patients lost to follow-up (Table 3).",
+      "numbered_excerpt_sha256": "de7bd776ea73f664fd2064fb9bc21d782c75daa92e94e03dc5e60207181aa45b",
+      "completed_delivery_references": [
+        {
+          "stage": "proposal",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/proposal-events.jsonl",
+          "event_sha256": "c2361ae3d7730f8eb930939c5cfbd4f5d0cefc897e322d27c7fa4f146c98e319",
+          "jsonl_line": 20,
+          "returned_start_line": 1,
+          "returned_end_line": 160,
+          "excerpt_overlap": [
+            3,
+            20
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "f702a4ae0b0d722dbb9c5d2e93f7a3e3bd787afd9ca255c95d40442a758566a1",
+          "jsonl_line": 10,
+          "returned_start_line": 1,
+          "returned_end_line": 160,
+          "excerpt_overlap": [
+            3,
+            20
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "f702a4ae0b0d722dbb9c5d2e93f7a3e3bd787afd9ca255c95d40442a758566a1",
+          "jsonl_line": 110,
+          "returned_start_line": 3,
+          "returned_end_line": 30,
+          "excerpt_overlap": [
+            3,
+            20
+          ]
+        }
+      ],
+      "interpretation": null
+    },
+    {
+      "id": "castoldi-2020-table4",
+      "case": "castoldi-2020",
+      "source_label": "0363546520914936.pdf",
+      "original_code_source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+      "original_code_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/castoldi-2020/.rob2-kit/derivative.sqlite3",
+      "actual_run_source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+      "raw_pdf_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/castoldi-2020/0363546520914936.pdf",
+      "raw_pdf_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+      "extraction_sql": "SELECT text FROM pages WHERE source_id=? AND page=?",
+      "actual_projection_database": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/workspace-run/.rob2-kit/derivative.sqlite3",
+      "page": 5,
+      "start_line": 83,
+      "end_line": 120,
+      "original_code_full_page_text_sha256": "965bc7424c9a46fcec497ff5757e29cbc7f2ad69bb6a582be5b5d1190d9bd029",
+      "actual_full_page_matches_original_code": true,
+      "numbered_excerpt": "83|TABLE 4\n84|Results of Functional Scores and Sports Practice at Last Follow-up (n = 80)a\n85|Mean (Range) or No. (%)\n86|All Patients (n = 80)\n87|BTB (n = 42)\n88|BTB-LET (n = 38)\n89|P Valueb\n90|Subjective IKDC\n91|81.8 (42.5-100)\n92|81.1 (42.5-100)\n93|82.4 (55.2-100)\n94|.7\n95|Lysholm\n96|88.3 (42-100)\n97|86.6 (42-100)\n98|90.3 (67-100)\n99|.2\n100|Forgotten knee\n101|30 (37.5)\n102|16 (38)\n103|14 (37)\n104|.91\n105|Sports participation\n106|Pivoting sports\n107|54 (67.5)\n108|28 (66.7)\n109|26 (68.5)\n110| .99\n111|Nonpivoting sports\n112|21 (26)\n113|11 (26)\n114|10 (26)\n115|No sports\n116|5 (6)\n117|3 (7)\n118|2 (5)\n119|aBTB, bone-patellar tendon-bone graft; IKDC, International Knee Documentation Committee; LET, lateral extra-articular tenodesis.\n120|bBTB vs BTB-LET.",
+      "numbered_excerpt_sha256": "97c6d89ea68d011e029a90b037d934000150a3d89f6de875515ccbab0e3e96eb",
+      "completed_delivery_references": [
+        {
+          "stage": "proposal",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/proposal-events.jsonl",
+          "event_sha256": "c2361ae3d7730f8eb930939c5cfbd4f5d0cefc897e322d27c7fa4f146c98e319",
+          "jsonl_line": 22,
+          "returned_start_line": 43,
+          "returned_end_line": 123,
+          "excerpt_overlap": [
+            83,
+            120
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "f702a4ae0b0d722dbb9c5d2e93f7a3e3bd787afd9ca255c95d40442a758566a1",
+          "jsonl_line": 12,
+          "returned_start_line": 40,
+          "returned_end_line": 123,
+          "excerpt_overlap": [
+            83,
+            120
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "f702a4ae0b0d722dbb9c5d2e93f7a3e3bd787afd9ca255c95d40442a758566a1",
+          "jsonl_line": 110,
+          "returned_start_line": 41,
+          "returned_end_line": 120,
+          "excerpt_overlap": [
+            83,
+            120
+          ]
+        }
+      ],
+      "interpretation": null
+    },
+    {
+      "id": "ashar-2022-primary-definition-and-analysis",
+      "case": "ashar-2022",
+      "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "original_code_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "original_code_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/ashar-2022/.rob2-kit/derivative.sqlite3",
+      "actual_run_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "raw_pdf_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "raw_pdf_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+      "extraction_sql": "SELECT text FROM pages WHERE source_id=? AND page=?",
+      "actual_projection_database": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/workspace-run/.rob2-kit/derivative.sqlite3",
+      "page": 4,
+      "start_line": 5,
+      "end_line": 58,
+      "original_code_full_page_text_sha256": "4cfeebf28e075528bd664bddbb6947ae899519d2902c944536275efb502ec839",
+      "actual_full_page_matches_original_code": true,
+      "numbered_excerpt": "5|Clinical Measures\n6|The primary outcome was average pain over the last week on\n7|a numerical rating scale from 0 to 10 from the Brief Pain\n8|Inventory Short Form, assessed at the 1-month postbaseline\n9|session. We also calculated the proportion of participants re-\n10|porting pain reduction of 30% or more, pain reduction of 50%\n11|or more, and a pain score of 0 or 1, indicating a pain-free or\n12|nearly pain-free state. Secondary outcomes included pain in-\n13|terference (Oswestry Disability Index); Patient-Reported Out-\n14|come Measurement Information System (PROMIS) short forms\n15|for depression, anxiety, anger, and sleep quality; and the Posi-\n16|tiveandNegativeAffectScale(measuredetailsintheeMethods\n17|in Supplement 2).\n18|We considered 3 measures of pain beliefs as potential me-\n19|diators: (1) the Tampa Scale of Kinesiophobia (TSK-11), assess-\n20|ing belief that pain indicates injury and fear of movement;\n21|(2) the Pain Catastrophizing Scale (PCS); and (3) the Survey\n22|of Pain Attitudes Emotion subscale (SOPA-Emotion), assess-\n23|ing beliefs that stress and negative emotion increase pain. Ad-\n24|verse events were recorded when participants spontane-\n25|ously reported them to study personnel. Baseline pain was\n26|computed as the average score from 2 prerandomization\n27|assessments (eligibility session and pretreatment fMRI\n28|session).\n29|Neuroimaging Measures\n30|Structural T1 and multiband blood oxygenation level-\n31|dependent functional imaging was conducted on a 3-T\n32|Siemens Prisma Fit MRI scanner with standard fMRI prepro-\n33|cessing (eMethods in Supplement 2). During fMRI, partici-\n34|pants completed (1) an evoked back pain task with a series of\n35|randomly ordered trials distending the back to 1 of 4 intensity\n36|levels and (2) a spontaneous pain scan in which participants\n37|rested and rated ongoing pain once per minute (design de-\n38|tails in the eMethods in Supplement 2; fMRI data quality mea-\n39|sures shown in eFigures 6 and 7 in Supplement 2). Partici-\n40|pants rated pain during scanning on a visual analog scale from\n41|0 (no pain) to 100 (worst pain imaginable).\n42|Statistical Analyses\n43|Intent-to-treat analyses (including all randomized patients)\n44|were performed for the primary outcome with a mixed-\n45|effects model (fitlme, MATLAB 2020a), including 2 group ×\n46|time interactions (PRT vs placebo × posttreatment vs pretreat-\n47|ment and PRT vs usual care × posttreatment vs pretreat-\n48|ment), covariates for age and sex, and a random intercept per\n49|participant. Treatment response rates for 30% or greater re-\n50|duction in pain, 50% or greater reduction in pain, and a pain-\n51|free or nearly pain-free state at posttreatment and 1-year fol-\n52|low-up were based on all randomized patients; those missing\n53|datawereconsiderednonresponders.Forfollow-uptimepoints\n54|and secondary outcomes, we calculated Hedges g for the PRT\n55|vs placebo and PRT vs usual care comparisons. Follow-up time\n56|points were analyzed individually, testing group differences\n57|in change from baseline to each time points. The placebo vs\n58|usual care comparison will be reported elsewhere.",
+      "numbered_excerpt_sha256": "434be5d2faf694d176f3946d90ac3db5d2d57ab70aa615a2bec3d11b76643e14",
+      "completed_delivery_references": [
+        {
+          "stage": "proposal-recovery",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/proposal-recovery-events.jsonl",
+          "event_sha256": "6cb8d746e602bb340b357306ebc11c11b2ce0c216502fcc3d122ce650f1db701",
+          "jsonl_line": 22,
+          "returned_start_line": 1,
+          "returned_end_line": 75,
+          "excerpt_overlap": [
+            5,
+            58
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "6d1bb000af5a49542521bf658330a0a3cf5342888ac4db050d9d3934eec23e33",
+          "jsonl_line": 12,
+          "returned_start_line": 1,
+          "returned_end_line": 70,
+          "excerpt_overlap": [
+            5,
+            58
+          ]
+        }
+      ],
+      "interpretation": null
+    },
+    {
+      "id": "ashar-2022-table2-primary",
+      "case": "ashar-2022",
+      "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "original_code_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "original_code_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/ashar-2022/.rob2-kit/derivative.sqlite3",
+      "actual_run_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "raw_pdf_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "raw_pdf_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+      "extraction_sql": "SELECT text FROM pages WHERE source_id=? AND page=?",
+      "actual_projection_database": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/workspace-run/.rob2-kit/derivative.sqlite3",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 73,
+      "original_code_full_page_text_sha256": "3da5297f09e9952af359141f8b13388a6b74b8e02066d3112aea17642d515941",
+      "actual_full_page_matches_original_code": true,
+      "numbered_excerpt": "1|Table 2. Primary and Secondary Clinical Outcomes\n2|Between-group differencesa\n3|Mean (SD)\n4|PRT vs\n5|placebo, g (SE)b\n6|P\n7|value\n8|PRT vs\n9|usual care, g (SE)b\n10|P\n11|value\n12|PRT\n13|Placebo\n14|Usual care\n15|Primary outcome\n16|Pain intensity (0-10)\n17|Baseline\n18|4.22 (1.21)\n19|4.16 (1.33)\n20|3.91 (1.24)\n21|NA\n22|NA\n23|NA\n24|NA\n25|Posttreatment\n26|1.18 (1.24)\n27|2.84 (1.64)\n28|3.13 (1.45)\n29|-1.14 (0.24)\n30|<.001\n31|-1.75 (0.24)\n32|<.001\n33|At 1 mo\n34|1.26 (1.77)\n35|2.91 (1.97)\n36|3.07 (1.63)\n37|-0.83 (0.27)\n38|<.001\n39|-1.24 (0.29)\n40|<.001\n41|At 2 mo\n42|1.59 (1.92)\n43|3.06 (1.89)\n44|3.00 (1.86)\n45|-0.84 (0.28)\n46|.001\n47|-1.03 (0.28)\n48|<.001\n49|At 3 mo\n50|1.54 (1.68)\n51|3.21 (2.02)\n52|3.27 (1.95)\n53|-0.93 (0.23)\n54|<.001\n55|-1.35 (0.25)\n56|<.001\n57|At 6 mo\n58|1.39 (1.48)\n59|2.68 (2.08)\n60|2.95 (1.93)\n61|-0.74 (0.23)\n62|.001\n63|-1.14 (0.26)\n64|<.001\n65|At 12 mo\n66|1.51 (1.59)\n67|2.79 (1.78)\n68|3.00 (1.77)\n69|-0.70 (0.21)\n70|.001\n71|-1.05 (0.24)\n72|<.001\n73|Secondary outcome",
+      "numbered_excerpt_sha256": "044696e5112df94b7cb62d2e5740a0631322617467962a51fa855caadaec9bf9",
+      "completed_delivery_references": [
+        {
+          "stage": "proposal-recovery",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/proposal-recovery-events.jsonl",
+          "event_sha256": "6cb8d746e602bb340b357306ebc11c11b2ce0c216502fcc3d122ce650f1db701",
+          "jsonl_line": 26,
+          "returned_start_line": 1,
+          "returned_end_line": 373,
+          "excerpt_overlap": [
+            1,
+            73
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "6d1bb000af5a49542521bf658330a0a3cf5342888ac4db050d9d3934eec23e33",
+          "jsonl_line": 14,
+          "returned_start_line": 1,
+          "returned_end_line": 373,
+          "excerpt_overlap": [
+            1,
+            73
+          ]
+        }
+      ],
+      "interpretation": null
+    },
+    {
+      "id": "ashar-2022-table2-footnotes",
+      "case": "ashar-2022",
+      "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "original_code_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "original_code_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/ashar-2022/.rob2-kit/derivative.sqlite3",
+      "actual_run_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "raw_pdf_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "raw_pdf_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+      "extraction_sql": "SELECT text FROM pages WHERE source_id=? AND page=?",
+      "actual_projection_database": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/workspace-run/.rob2-kit/derivative.sqlite3",
+      "page": 7,
+      "start_line": 359,
+      "end_line": 364,
+      "original_code_full_page_text_sha256": "3da5297f09e9952af359141f8b13388a6b74b8e02066d3112aea17642d515941",
+      "actual_full_page_matches_original_code": true,
+      "numbered_excerpt": "359|Abbreviations: NA, not applicable; PROMIS, Patient-Reported Outcome\n360|Measurement Information System; PRT, pain reprocessing therapy.\n361|a Effect sizes show the group difference in change from baseline (group × time\n362|interaction), including all available data at the follow-up time point and\n363|corresponding baseline data for effect size computation.\n364|bHedges g and SE estimated with bootstrapping procedure.",
+      "numbered_excerpt_sha256": "846ffcdb802a4a92d34ec197fa18fbc4e73b71fbc83fa745ec36679b5d7d29c8",
+      "completed_delivery_references": [
+        {
+          "stage": "proposal-recovery",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/proposal-recovery-events.jsonl",
+          "event_sha256": "6cb8d746e602bb340b357306ebc11c11b2ce0c216502fcc3d122ce650f1db701",
+          "jsonl_line": 26,
+          "returned_start_line": 1,
+          "returned_end_line": 373,
+          "excerpt_overlap": [
+            359,
+            364
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "6d1bb000af5a49542521bf658330a0a3cf5342888ac4db050d9d3934eec23e33",
+          "jsonl_line": 14,
+          "returned_start_line": 1,
+          "returned_end_line": 373,
+          "excerpt_overlap": [
+            359,
+            364
+          ]
+        }
+      ],
+      "interpretation": null
+    },
+    {
+      "id": "ashar-2022-observed-counts-and-estimates",
+      "case": "ashar-2022",
+      "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "original_code_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "original_code_projection_database": "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/ashar-2022/.rob2-kit/derivative.sqlite3",
+      "actual_run_source_id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+      "raw_pdf_path": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022/jamapsychiatry_ashar_2021_oi_210060.pdf",
+      "raw_pdf_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+      "extraction_sql": "SELECT text FROM pages WHERE source_id=? AND page=?",
+      "actual_projection_database": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/workspace-run/.rob2-kit/derivative.sqlite3",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 22,
+      "original_code_full_page_text_sha256": "95240f538c4bcc99c468ee7cd489d0c4862dd34c2c6112dfc8a966f7f39653bf",
+      "actual_full_page_matches_original_code": true,
+      "numbered_excerpt": "1|ment. Five participants dropped out prior to initiating PRT and\n2|1 had an unrelated medical emergency. Of 51 participants\n3|randomized to placebo, 44 (86%) received the treatment,\n4|all of whom completed the posttreatment assessment. Of\n5|the 50 participants randomized to usual care, 47 (94%) com-\n6|pleted the posttreatment assessment (Figure 1).\n7|Twenty patients in the PRT group had preexisting spinal\n8|imaging, all of which showed at least 1 spinal anomaly (me-\n9|dian of 4 findings per patient; eTable 1 in Supplement 2) as-\n10|sessed by a physician (H.S.) as not causal of pain (eMethods\n11|and eAppendix 1 in Supplement 2).61\n12|Clinical Outcomes\n13|Patients randomized to PRT reported substantial reductions\n14|in pain intensity at posttreatment compared with both con-\n15|trol groups, with a mean (SD) pain score of 1.18 (1.24) in the\n16|PRT group, 2.84 (1.64) in the placebo group, and 3.13 (1.45) in\n17|the usual care group (Figure 2; Table 2). Patients in the PRT\n18|group reported a pain reduction of 1.79 (on the 0 to 10\n19|numerical rating scale) relative to placebo (t137.63 = 6.06;\n20|P < .001; g, -1.14; 95% CI, -1.65 to -0.71) and reported a\n21|pain reduction of 2.40 relative to the usual care group\n22|(t135.69 = 8.13; P < .001; g, -1.74; 95% CI, -2.28 to -1.32).",
+      "numbered_excerpt_sha256": "c03a8e4424e1181849ec5021919e4fb9c96d31906d8285bab703a80e8aa03c65",
+      "completed_delivery_references": [
+        {
+          "stage": "proposal-recovery",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/proposal-recovery-events.jsonl",
+          "event_sha256": "6cb8d746e602bb340b357306ebc11c11b2ce0c216502fcc3d122ce650f1db701",
+          "jsonl_line": 26,
+          "returned_start_line": 1,
+          "returned_end_line": 172,
+          "excerpt_overlap": [
+            1,
+            22
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "6d1bb000af5a49542521bf658330a0a3cf5342888ac4db050d9d3934eec23e33",
+          "jsonl_line": 14,
+          "returned_start_line": 1,
+          "returned_end_line": 172,
+          "excerpt_overlap": [
+            1,
+            22
+          ]
+        },
+        {
+          "stage": "assessment",
+          "event_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/ashar-2022-sol-low-full-assessment-20261005/assessment-events.jsonl",
+          "event_sha256": "6d1bb000af5a49542521bf658330a0a3cf5342888ac4db050d9d3934eec23e33",
+          "jsonl_line": 167,
+          "returned_start_line": 1,
+          "returned_end_line": 30,
+          "excerpt_overlap": [
+            1,
+            22
+          ]
+        }
+      ],
+      "interpretation": null
+    }
+  ],
+  "castoldi_figure2": {
+    "physical_page": 4,
+    "exact_delivered_png_path": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/castoldi-2020-sol-low-full-assessment-20261005/article-p04-audit.png",
+    "png_sha256": "5c5d82d4d9953102bf4d6899969f7089e76c4b32d5a4d038d41c44f01a785f6f",
+    "original_delivery_stage": "proposal",
+    "original_event_jsonl_line": 29,
+    "visual_evidence_locator_file": "../visual-source-locators.json",
+    "reproduction": "Decode image data from result.content in item.completed render_page at proposal-events.jsonl line29; require SHA2565c5d82d4d9953102bf4d6899969f7089e76c4b32d5a4d038d41c44f01a785f6f. Original full page is retained without edits; Figure2 at lower-left."
+  }
+}
