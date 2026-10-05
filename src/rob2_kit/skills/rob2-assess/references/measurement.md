@@ -15,7 +15,9 @@ returned question cards are authoritative. Apply this ordered audit:
    uncertainty guidance.
 7. For all-cause mortality, distinguish establishing death from judging
    progression, symptoms, or cause of death.
-8. For composite outcomes, consider every component that can determine the event.
+8. For composite outcomes, inspect the components and their relative frequency or
+   contribution to the approved composite; weigh risk from the most influential
+   components (Cochrane section 7.1, p. 52).
 9. When a passage discusses several outcomes, use only the premise that applies
    to the approved outcome and state any inference or unresolved link.
 
@@ -30,9 +32,16 @@ Keep validity, detection opportunity, assessor identity, assessor awareness,
 possible influence, and likely influence as separate propositions. A
 standardized instrument can still involve judgment in elicitation, attribution,
 grading, or assessment. For a mixed objective and subjective composite,
-preserve component-specific Evidence and uncertainty: reassurance for an
-objective component does not override an unresolved or influenced subjective
-component.
+preserve component-specific Evidence and uncertainty, then weigh each component
+by its relative frequency or contribution and consider the most influential
+components. Objective components do not prove that a subjective component is
+unbiased; an unresolved or influenced subjective component does not automatically
+determine the whole composite judgment. Dominant objective components and
+dominant susceptible components can support different appraisals. If the source
+does not establish contributions, preserve that uncertainty instead of assuming
+which component dominates. Do not assign High merely because any component is
+subjective: awareness, possible influence and likely influence still require
+separate appraisal.
 
 Tie monitoring to the selected endpoint. Additional appointments for toxicity
 monitoring do not establish differential measurement of all-cause mortality
@@ -61,3 +70,10 @@ the same trial report when it gives treatment-duration or disease-control median
 window. These are neutral contrasts: assess suitability, differential detection,
 assessor identity and awareness, susceptibility, and likely influence separately.
 Open-label status or an endpoint class does not supply an answer.
+
+For a mixed-composite paired premise check, hold the component definitions and
+assessor circumstances fixed, and compare source-supported predominance of
+objective events with predominance of events requiring susceptible judgment.
+Keep component-level concerns visible in both; their contribution to the
+composite appraisal differs. Unknown contributions do not establish either
+predominance. This contrast supplies no automatic signaling answer or risk label.

@@ -3004,8 +3004,20 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value == expected:
         return True
+    pre_composite = {
+        **expected,
+        "content_hash": "sha256:16088e4005a849ccc1f60af170f9ad3fa976856cb100106c2b200003d5d20698",
+    }
+    if value == pre_composite:
+        return True
     expected.pop("domain_judgment_contract")
     if value == expected:
+        return True
+    pre_adjudication = {
+        **expected,
+        "content_hash": "sha256:16088e4005a849ccc1f60af170f9ad3fa976856cb100106c2b200003d5d20698",
+    }
+    if value == pre_adjudication:
         return True
     prior = {
         **expected,
@@ -3019,6 +3031,7 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
     # These exact historical descriptors are also retained by the dependency-free
     # verifier. Guidance edits change the computed pack hash, not result semantics.
     prior_guidance = (
+        ("v0.9", "16088e4005a849ccc1f60af170f9ad3fa976856cb100106c2b200003d5d20698"),
         ("v0.9", "49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1"),
         ("v0.9", "2a11301824d7fa0a2f773d0fd75985ad03a2dca2a2cd7107e7376f46cdb8905a"),
         ("v0.9", "d66cd4805702afc472ec980fe1c64446bcc97e6da0eb8730a8edc243c70a532a"),

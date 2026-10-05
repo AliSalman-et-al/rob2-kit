@@ -608,3 +608,34 @@ def test_d45_likelihood_allows_contextual_inference_without_proof_of_influence()
     assert (
         guidance.official.source_locator == "Full guidance p. 54, Box 10, signalling question 4.5"
     )
+
+
+def test_mixed_composite_guidance_weighs_contributions_without_automatic_high() -> None:
+    # Cochrane section 7.1 p52: contribution matters, alongside each pathway.
+    for question in (
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely",
+    ):
+        text = _guidance_text((question,))
+        assert "relative frequency or contribution" in text
+        assert "most influential components" in text
+        assert "p. 52" in text
+    likelihood = _guidance_text(("sq:measurement:influence-likely",))
+    assert "do not automatically assign high" in likelihood
+    assert "dominant objective components and dominant susceptible components" in likelihood
+    assert "if contribution is unknown" in likelihood
+    assert "assessor awareness and likelihood of influence remain separate premises" in likelihood
+    assert "without overriding likely influence or unresolved evidence" not in likelihood
+
+
+def test_delivered_measurement_reference_preserves_mixed_composite_qualification() -> None:
+    from rob2_kit.application.guidance import read_guidance
+
+    text = read_guidance("references/measurement.md")["content"].casefold()
+    assert "relative frequency or contribution" in text
+    assert "most influential" in text
+    assert "does not automatically" in text
+    assert "do not assign high merely" in text
+    assert "unknown contributions do not establish either" in text
+    assert "awareness, possible influence and likely influence" in text

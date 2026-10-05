@@ -46,7 +46,7 @@ def _rule(mode: Literal["any", "all"], *predicates: ActivationPredicate) -> Cond
 _GUIDANCE_VERSION = "22 August 2019"
 _GUIDANCE_SOURCE_SHA256 = "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670"
 _OPERATIONAL_GUIDANCE_ID = "rob2-kit.parallel-assignment.question-guidance"
-_OPERATIONAL_GUIDANCE_VERSION = "1.0.11"
+_OPERATIONAL_GUIDANCE_VERSION = "1.0.12"
 _OPERATIONAL_ATTRIBUTION = "rob2-kit maintainers"
 
 _OFFICIAL_ELABORATIONS = {
@@ -489,7 +489,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         "Answer yes or probably yes when the method is unlikely to be sensitive to plausible intervention effects or the instrument has demonstrated poor validity. Validity and sensitivity are distinct from detection opportunity, assessor identity or awareness, and whether knowledge influenced assessment. Do not assess whether choosing the outcome itself was sensible.",
         (
             "The measurement method's sensitivity to plausible effects and evidence of instrument validity for this outcome.",
-            "For a mixed objective and subjective composite, inspect each component that can determine the approved event; objective components do not establish validity or influence conclusions for a subjective component.",
+            "For a mixed objective and subjective composite, inspect component-specific measurement methods and their relative frequency or contribution to the approved composite. Cochrane section 7.1 p. 52 directs the risk assessment to take account of the most influential components; an objective component does not establish validity for a subjective component, and a subjective component alone does not determine the composite judgment.",
         ),
         "Use no_information when appropriateness of the measurement method cannot be determined.",
         (
@@ -577,7 +577,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Assess whether knowledge could influence this outcome. Evidence that influence actually occurred belongs to 4.5; its absence does not resolve 4.4.",
             "Possible influence requires a judgement or reporting pathway through which assessor awareness could matter. Awareness alone is not a measurement difference, and a susceptible outcome does not by itself show that influence was possible in this assessment.",
-            "When a composite mixes objective and subjective components, assess each component's pathway separately and retain uncertainty where a component-specific link is unresolved.",
+            "When a composite mixes objective and subjective components, assess each component's pathway separately, then consider its relative frequency or contribution and the most influential components (Cochrane section 7.1 p. 52). Retain component-specific uncertainty and uncertainty about contributions when the sources do not resolve them; do not automatically transfer possible influence on any subjective component to the whole composite.",
         ),
         (
             "an objective endpoint label",
@@ -603,7 +603,7 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
         (
             "Possible influence without reason to believe it occurred maps differently from likely influence.",
             "Weigh reasons for and against likely influence, including subconscious expectations. No-treatment or usual-care comparators may raise concern relative to another active intervention; a care provider assessing their own treatment may have an interest in its success. Independent assessment, an independent interviewer, or a long interval with intervening treatments may reduce concern. These are contextual considerations, not automatic answers; keep likelihood separate from mere possibility, measurement susceptibility and detection opportunity.",
-            "Objective components can provide valid reassurance for those components without overriding likely influence or unresolved Evidence for subjective components in the same Result.",
+            "For a composite, weigh component-specific likelihood and counterevidence in light of relative frequency or contribution and the most influential components (Cochrane section 7.1 p. 52). Preserve concerns about a subjective component, but do not automatically assign High because one component is subjective or could be influenced. Dominant objective components and dominant susceptible components can support different composite appraisals; source-supported contribution, assessor awareness and likelihood of influence remain separate premises. If contribution is unknown, state that limit rather than assume dominance.",
         ),
         ("assessor awareness alone", "absence of documented influence or strong beliefs alone", "an objective endpoint label", "an ITT analysis"),
     ),
