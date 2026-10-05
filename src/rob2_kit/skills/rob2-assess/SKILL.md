@@ -19,6 +19,10 @@ For an explicit protocol/SAP reference found during an approved open Trial,
 call `acquire_companion_source` with its Source handle, page, exact citation,
 locator, linkage rationale and current revision. This uses bounded public access
 and returns a staged candidate; it does not admit or deliver the PDF pages.
+Put the reference fields inside the `reference` object; only `expected_revision`
+is beside it. `reference.citation` must be a contiguous literal page quote, without
+line-number prefixes, explanatory prose, or joined excerpts. Keep the page in
+`reference.page` and your explanation in `reference.linkage_rationale`.
 If capture succeeds, call `admit_companion_source` with that candidate identity,
 the same named Trial and the new current revision. It appends immutable Other
 Sources in the existing assessment and preserves the old Sources and answers.

@@ -182,6 +182,13 @@ of eligible alternatives do not answer the selection question by themselves.
 
 For an explicit protocol/SAP DOI or public PDF reference found during an approved
 open Trial, call `acquire_companion_source(reference={...}, expected_revision=...)`.
+All reference fields belong inside `reference`; only `expected_revision` is beside
+it. `citation` is a contiguous literal quote from the supplied page, without
+`read_pages` line-number prefixes, page/line annotations, explanatory prose, or
+semicolons joining separate excerpts. Put the page in `reference.page` and any
+explanation in `reference.linkage_rationale`. For a verified NCT registry Source,
+the exact filename field line can satisfy the supported CDN-filename case; do not
+append a constructed URL to the quote.
 Use the native source_id handle, page, exact citation, linkage_rationale,
 requested_role (protocol/sap), locator_kind (url/doi), locator and optional
 registry_id. The complete DOI or URL, including query/version, must be present in
