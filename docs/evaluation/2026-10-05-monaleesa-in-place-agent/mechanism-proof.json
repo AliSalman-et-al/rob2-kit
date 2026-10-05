@@ -1,0 +1,369 @@
+{
+  "acquisitions": [
+    {
+      "admitted_to_active_batch": false,
+      "byte_count": 2140172,
+      "candidate_identity": "sha256:d8eea6ab9fca1e0050fb5a8f8ea874250c37f70d2c4c9da1425f7e1b842e0377",
+      "document_read": false,
+      "document_staged": true,
+      "page_count": 185,
+      "reference": {
+        "citation": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_002.pdf\"",
+        "linkage_rationale": "The captured registry record for NCT02422615 lists this Study Protocol document; applicability to the approved PFS comparison and timing remain to be assessed.",
+        "locator": "https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/Prot_002.pdf",
+        "locator_kind": "url",
+        "page": 1,
+        "registry_id": "NCT02422615",
+        "requested_role": "protocol",
+        "source_id": "sh_66d5f59d731fe912",
+        "trial_id": "monaleesa-3"
+      },
+      "requested_role": "protocol",
+      "sha256": "sha256:dc5024cff94eab9d730932f6f6c703ba2298465efc6d7b1b277a027922965a46",
+      "source_url": "https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/Prot_002.pdf"
+    },
+    {
+      "admitted_to_active_batch": false,
+      "byte_count": 2238633,
+      "candidate_identity": "sha256:5b65d47afa8b10d1dfdbbcd0f7d1b060fc7753cacca7d94bf93f0e517e09e756",
+      "document_read": false,
+      "document_staged": true,
+      "page_count": 106,
+      "reference": {
+        "citation": "documentSection.largeDocumentModule.largeDocs[1].filename: \"SAP_003.pdf\"",
+        "linkage_rationale": "The captured registry record for NCT02422615 lists this Statistical Analysis Plan document; applicability to the approved PFS comparison and timing remain to be assessed.",
+        "locator": "https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/SAP_003.pdf",
+        "locator_kind": "url",
+        "page": 1,
+        "registry_id": "NCT02422615",
+        "requested_role": "sap",
+        "source_id": "sh_66d5f59d731fe912",
+        "trial_id": "monaleesa-3"
+      },
+      "requested_role": "sap",
+      "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+      "source_url": "https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/SAP_003.pdf"
+    }
+  ],
+  "admission_count": 2,
+  "agent_read_windows": {
+    "sh_4d540ec810479a32": [
+      {
+        "end_line": 95,
+        "numbered_text_sha256": "219e34e2b36882e2e9298214d81d1b5b7ae6da2edc7f4879802d38bb9cf42dab",
+        "page": 1,
+        "passage_ref": "eh_45652807b3d42464",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 117,
+        "numbered_text_sha256": "0ab55c8595e81ed5d6e0679dcccce9e3df9f915b24842ec3d5d680b78e17fc3c",
+        "page": 2,
+        "passage_ref": "eh_450090c428c627a4",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 288,
+        "numbered_text_sha256": "6180c17d854046748acd383d4e81914cf4bf075c93f268722530178642562065",
+        "page": 3,
+        "passage_ref": "eh_b1feb85e556db1c6",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 18,
+        "numbered_text_sha256": "237e8080c3ba012743ecb05b74e1217a18162faeb380342b00b5163a0ea75f0e",
+        "page": 4,
+        "passage_ref": "eh_9b3b01cc85c38473",
+        "start_line": 1,
+        "truncated": true
+      },
+      {
+        "end_line": 143,
+        "numbered_text_sha256": "79dc29e59671fe6a0c12412cf70dff2daea8fb05b2011610411371f1856b9040",
+        "page": 4,
+        "passage_ref": "eh_9ae14b77d9ccdc63",
+        "start_line": 19,
+        "truncated": false
+      },
+      {
+        "end_line": 199,
+        "numbered_text_sha256": "b84f6f0e9bbf1193fe009ef9e096ffc6a6aa045def785c06bd5efa1565b40717",
+        "page": 5,
+        "passage_ref": "eh_058dc000673abcb7",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 184,
+        "numbered_text_sha256": "8d4e8554592292ba65767a84244e72b12c4e3ae9ba7888fc560345c6c92dbcaf",
+        "page": 6,
+        "passage_ref": "eh_328bcef6f61694ed",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 18,
+        "numbered_text_sha256": "0b9aedb770f2786799d52cd026e8a531a67a386930e0e540d0af289e8e178490",
+        "page": 7,
+        "passage_ref": "eh_abb6e72727f14684",
+        "start_line": 1,
+        "truncated": true
+      },
+      {
+        "end_line": 250,
+        "numbered_text_sha256": "6cd672c3a47c08fbf2a1c9acd7c70317fb3fca8b16eb683ad2c23d002651caae",
+        "page": 7,
+        "passage_ref": "eh_42de11ce08b141c6",
+        "start_line": 19,
+        "truncated": false
+      },
+      {
+        "end_line": 52,
+        "numbered_text_sha256": "0eddc3993b91738269eadb9fc0330eb23290843584d68f572f409408da7b9440",
+        "page": 8,
+        "passage_ref": "eh_48888c678b616db4",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 91,
+        "numbered_text_sha256": "876abe22a588c83404561a0887a74bf718bddada3977b5ef52129153d1af86d4",
+        "page": 9,
+        "passage_ref": "eh_82c394e675a3496e",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 9,
+        "numbered_text_sha256": "0d36c9faf180551ccf35af47d61c80da608f3045835cc79f5ee93ad6ae6355e9",
+        "page": 10,
+        "passage_ref": "eh_6845643a371e92cb",
+        "start_line": 1,
+        "truncated": false
+      }
+    ],
+    "sh_63ff48d02f7cd186": [
+      {
+        "end_line": 23,
+        "numbered_text_sha256": "fb5a5c0643caf0b6c2cf66cea29f03405e77a0e11c5ae8278924bd6c920bd8d8",
+        "page": 1,
+        "passage_ref": "eh_b32a48ffbb19d97f",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 73,
+        "numbered_text_sha256": "ce2c0a12a7d655c44cdd87768f97eb56283d4cc9c53fc77b2d56c341605f80b0",
+        "page": 31,
+        "passage_ref": "eh_af0ed588bba87125",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 70,
+        "numbered_text_sha256": "d47464808a7b6512a6b03d904f5bc55579a4e513ac354aba2b0a396c31752332",
+        "page": 35,
+        "passage_ref": "eh_4c482f99669e69ac",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 78,
+        "numbered_text_sha256": "e61e8d686ff8b67ce946de187319bc3bddc89bdccd4594c2d7b55c5b56288fa2",
+        "page": 65,
+        "passage_ref": "eh_349b497dce7ee737",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 48,
+        "numbered_text_sha256": "7d0df9a05333458c103861d60fd2839a2216adf265319a9c543c1747b0be4c62",
+        "page": 66,
+        "passage_ref": "eh_5774c8cb23886e4a",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 47,
+        "numbered_text_sha256": "25561c176b062abfab18a2fb146f1808423e662920bf02f16bea941271e76d76",
+        "page": 68,
+        "passage_ref": "eh_c44a13c6db25705b",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 37,
+        "numbered_text_sha256": "c4a664e57e53a8b1cba08436e222bd75f0c846ba7c7fc4df4d245d3cd46a7326",
+        "page": 91,
+        "passage_ref": "eh_8d80098c9481224f",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 22,
+        "numbered_text_sha256": "24192fb8d1c7100b21550c349350e47565b264bbc475cc34a36c74120b466798",
+        "page": 36,
+        "passage_ref": "eh_6d0d1fb5f2a525ab",
+        "start_line": 1,
+        "truncated": false
+      }
+    ],
+    "sh_66d5f59d731fe912": [
+      {
+        "end_line": 263,
+        "numbered_text_sha256": "e9b81dda0239dcf38d7fb332b4157a57194a5532e8008e6d1f1c7dc0c2c02a58",
+        "page": 1,
+        "passage_ref": "eh_7e7197b2ca7cffb6",
+        "start_line": 1,
+        "truncated": true
+      },
+      {
+        "end_line": 103,
+        "numbered_text_sha256": "09b750d127342ea5fb22b7d17245a412513eefd5476767645a0cb75b30244f38",
+        "page": 1,
+        "passage_ref": "eh_2c0dc981788f8ffa",
+        "start_line": 78,
+        "truncated": false
+      },
+      {
+        "end_line": 1436,
+        "numbered_text_sha256": "3ed6b0f07af1e42fb83c211c000b1570620c7494a0f7408682ce7f4ffb28eed7",
+        "page": 1,
+        "passage_ref": "eh_88350f5f63e449f9",
+        "start_line": 1422,
+        "truncated": false
+      }
+    ],
+    "sh_96d557c6e8787ff4": [
+      {
+        "end_line": 48,
+        "numbered_text_sha256": "f78eeb052c49ee23ccac9c7b6fdc5e8c265b3fb6d880959f80a245783194d732",
+        "page": 14,
+        "passage_ref": "eh_506e0ae05e79fa3b",
+        "start_line": 1,
+        "truncated": false
+      },
+      {
+        "end_line": 16,
+        "numbered_text_sha256": "b8c682f1610f6a29494186844d8f5ea52f56ae25d98fa1d26ffd6c5e60367a97",
+        "page": 21,
+        "passage_ref": "eh_dae8a42e7a5c2f1a",
+        "start_line": 1,
+        "truncated": true
+      },
+      {
+        "end_line": 43,
+        "numbered_text_sha256": "59d1332e655c6837bdebd7bb94e909a67ddc4607cb4a6e1ad1469d30bea3e400",
+        "page": 21,
+        "passage_ref": "eh_0f680affc0016980",
+        "start_line": 17,
+        "truncated": false
+      },
+      {
+        "end_line": 48,
+        "numbered_text_sha256": "cffb4b84d125c26eef41ddddbfb4ac779501fbe1e351f79cf661229154719ed4",
+        "page": 125,
+        "passage_ref": "eh_463e9f12014539a7",
+        "start_line": 1,
+        "truncated": false
+      }
+    ]
+  },
+  "approved_Result_identity_preserved": true,
+  "batch_history_count": 2,
+  "classification": "development-exposed mechanism/scientific-warrant diagnostic; no accuracy/generalization or cleanOct1 replay",
+  "continuations": 0,
+  "errors": {
+    "acquire_reference_schema_validation": 1,
+    "all_preserved_in_private_receipts": true,
+    "citation_binding_guard_rejections": 2,
+    "read_window_out_of_bounds": 2
+  },
+  "full_benchmark": false,
+  "independent_science_audit": "pending; no adjudication or default label change",
+  "initial_sessions": 1,
+  "initial_trial_reviews": 0,
+  "model_profiles": [
+    {
+      "effort": "medium",
+      "model": "gpt-6-luna"
+    }
+  ],
+  "new_PDF_reading": "Bounded windows only, not complete documents",
+  "new_Source_count": 4,
+  "new_capture_JSON_Source_reading": "No explicit read_pages call; capture metadata was returned by acquisition",
+  "original_Source_records_preserved": true,
+  "outputs_freeze_sha256": "84f3395add383456c4a5f0b4dfb537e0c4948c4a29e6afa0a8a8b373184fdc25",
+  "public_fetch_transport": "Production public fetcher, no mock or arbitrary crawling",
+  "recorded_D5_judgment": "some_concerns",
+  "recorded_answers": [
+    {
+      "answer": "probably_yes",
+      "question_id": "sq:selection:prespecified-analysis"
+    },
+    {
+      "answer": "no",
+      "question_id": "sq:selection:multiple-measurements"
+    },
+    {
+      "answer": "no_information",
+      "question_id": "sq:selection:multiple-analyses"
+    }
+  ],
+  "session_id": "01a10b1c-a626-71b3-93bc-f5b8dca73cba",
+  "source_context": {
+    "applicable_plan_PDF_admitted": false,
+    "approved_proposal_identity": "sha256:f22852118a087ccec02b46e040d87cff16a92e62785b912704f93435f48d4836",
+    "approved_revision": 4,
+    "article_sha256": "fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+    "article_source": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/monaleesa-3/JCO.2018.78.9909.pdf",
+    "code_sha": "aaf8314644bc8d026745ec9dfc21efc959889acc",
+    "created_at_utc": "2026-10-05T08:04:31.037904+00:00",
+    "domain_answers_present": false,
+    "host_preparation_not_agent_delivery": true,
+    "initial_trial_reviews": 0,
+    "installed_package": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/installed-wheel-admission-20261005/venv/lib/python3.13/site-packages/rob2_kit/__init__.py",
+    "registry_original_capture_at": "2026-10-04T21:30:10.222595Z",
+    "registry_replay_not_Oct1": true,
+    "registry_sha256": "352434cdcad5b9e7b40d62afb14b20a5c44e4fc139b7823cee2f9682d16779e1",
+    "source_count": 2,
+    "wheel_sha256": "aa8c602e4fd238f1ba3c6189b5e66f2bc5742d8f349408986fcc7c2157730f7e"
+  },
+  "stopping": {
+    "accepted_D5_observed": true,
+    "continuations": 0,
+    "elapsed_seconds": 447.0222034250037,
+    "initial_sessions": 1,
+    "no_operator_science_feedback": true,
+    "reason": "accepted D5 checkpoint reached",
+    "returncode": 0,
+    "session_id": "01a10b1c-a626-71b3-93bc-f5b8dca73cba"
+  },
+  "terminal_trial_reviews": 0,
+  "tool_counts": {
+    "acquire_companion_source": 5,
+    "admit_companion_source": 2,
+    "get_domain_context": 8,
+    "get_status": 1,
+    "read_guidance": 3,
+    "read_pages": 9,
+    "save_domain_judgment": 1,
+    "search_sources_batch": 2
+  },
+  "usage": {
+    "cost_note": "No verified current pricing; token usage is observed, dollars unknown. Reasoning tokens are a subset of output.",
+    "cost_usd": null,
+    "missing_durable_usage": false,
+    "response_count": 31,
+    "uncached_input_tokens": 161392,
+    "usage": {
+      "cached_input_tokens": 2446592,
+      "input_tokens": 2607984,
+      "output_tokens": 14801,
+      "reasoning_output_tokens": 9091
+    }
+  }
+}
