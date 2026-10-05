@@ -2460,7 +2460,14 @@ def current_batch() -> str:
         "ordinary paragraphs, table headers/cells in order, and footnotes as a synthetic page-1 "
         "text projection; that is not Word pagination and does not extract all embedded content. "
         "Legacy .doc remains unsupported. Image-only PDFs remain renderable through render_page "
-        "even when they have no searchable text."
+        "even when they have no searchable text. Decide registry-document acquisition before "
+        "this first capture: for exact named Trials, acquire_registry_documents=true lets the "
+        "assessing agent obtain official linked protocol/SAP PDFs through this tool. Omission "
+        "uses the dossier setting; a registry filename alone does not mean its PDF was captured. "
+        "This adds current Sources, not historical replay. An existing Batch cannot enable it "
+        "later; request_companion_source then records a host handoff only. Read acquired content "
+        "and its provenance before relying on it; capture or plan dates do not prove early "
+        "prespecification, applicability or conduct."
     ),
     annotations=_INTAKE,
     output_schema=output_schema("prepare_batch"),

@@ -1,0 +1,21 @@
+{
+  "fixture": "New prospective source-access fixture; main PDF byte-identical to requested Code dossier, October4 registry bytes reused explicitly; no old benchmark replay",
+  "article_sha256": "fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+  "registry_sha256": "sha256:352434cdcad5b9e7b40d62afb14b20a5c44e4fc139b7823cee2f9682d16779e1",
+  "native_handoff_changes_canonical_state": false,
+  "handoff_fetches_or_admits": false,
+  "handoff_root_source_count": 2,
+  "mid_batch_acquisition_choice_change_rejected": true,
+  "public_pdf_sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+  "public_page_count": 106,
+  "public_source_url": "https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/SAP_003.pdf",
+  "identity_relation": "unverified",
+  "applicability": "unverified",
+  "stage_document_staged": true,
+  "stage_admitted": false,
+  "stage_host_read": false,
+  "fresh_workspace_requires_intake_review_and_host_route": true,
+  "initial_workspace_or_answers_changed": false,
+  "model_calls": 0,
+  "public_fetches": 1
+}

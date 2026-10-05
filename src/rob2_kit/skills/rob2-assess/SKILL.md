@@ -23,13 +23,21 @@ current assessment need not restart or pause for this optional reference; contin
 with existing Sources and honestly bounded unknowns. Missing optional documents
 do not determine NI or any judgment.
 
-Before initial intake, optional `prepare_batch(acquire_registry_documents=true,
-trial_labels=[...])` captures current official registry-linked protocol/SAP PDFs
-for exact named Trials with supplied NCT identifiers. False disables acquisition;
-omission preserves host manifest settings. Default dossiers stay unchanged. This
-adds current evidence, not historical replay, and cannot refresh an existing Batch.
-Read acquired Sources separately through their returned handles; capture and
-metadata dates do not establish comprehension or pre-unblinding finalization.
+Decide source acquisition before the first intake. When protocol/SAP evidence is
+relevant and exact Trial labels are supplied, the assessing agent can call
+`prepare_batch(acquire_registry_documents=true, trial_labels=[...])` to obtain
+official registry-linked PDFs for supplied NCT identifiers without an operator
+rebuilding the dossier. This is optional; false disables acquisition and omission
+uses the manifest setting. A returned registry filename is not a captured PDF.
+Default dossiers stay unchanged. This adds current evidence, not historical
+replay, so retain frozen-source settings for a replay or controlled comparison.
+An existing Batch cannot enable this choice later. For a mid-assessment reference,
+the companion handoff above remains host-only; do not claim that requesting it
+fetched, admitted or read the document. Missing optional material does not itself
+determine NI or risk. Read acquired content and provenance, match its comparison,
+population, outcome and version to the approved Result, and distinguish embedded
+historical plans from later updates. Capture, upload and cover dates do not prove
+pre-unblinding finalization or actual conduct.
 
 The server owns workflow state, identities, and deterministic RoB 2 logic. You
 own source interpretation, Result selection, Evidence selection, and signalling

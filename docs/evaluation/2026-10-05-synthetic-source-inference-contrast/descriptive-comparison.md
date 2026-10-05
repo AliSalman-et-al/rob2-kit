@@ -93,3 +93,8 @@ reviewer merely because it sounds useful, or infer model benefit from a typed
 information-preservation change alone. No new paid run, full benchmark,
 production-default change or contrastive-prompt adoption follows from this
 comparison.
+
+Status after parent review: the contrastive-prompt hypothesis is closed for now.
+No adoption or further same-mechanism paid tests are planned. The next audit
+moves to companion evidence acquisition rather than repeating the completed
+missingness architecture investigation without new evidence.

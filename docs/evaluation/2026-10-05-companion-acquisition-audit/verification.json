@@ -1,0 +1,21 @@
+{
+  "public_fetcher_calls": 1,
+  "MCP_source_access_fixture": "prospective, not benchmark replay",
+  "companion_workflow_tests": {
+    "passed": 2,
+    "seconds": 11.06
+  },
+  "release_contract_tests": {
+    "initial_stale_metadata_failure": true,
+    "final_passed": 6,
+    "seconds": 11.69
+  },
+  "all_tool_input_output_schema_hashes_unchanged": true,
+  "ruff": "passed",
+  "diff_check": "passed",
+  "original_Code_file_hashes_rechecked": true,
+  "model_calls": 0,
+  "benchmark_runs": 0,
+  "in_place_admission_shipped": false,
+  "source_acquisition_defaults_changed": false
+}

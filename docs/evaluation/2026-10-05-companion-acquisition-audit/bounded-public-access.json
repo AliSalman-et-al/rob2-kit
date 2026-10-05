@@ -1,0 +1,29 @@
+{
+  "status": "captured",
+  "source_url": "https://cdn.clinicaltrials.gov/large-docs/15/NCT02422615/SAP_003.pdf",
+  "sha256": "sha256:2316b7d597d691f59c6eb97e8192ff5f868511f0dc0057ae10300c1098f8b583",
+  "byte_count": 2238633,
+  "page_count": 106,
+  "retrieved_at": "2026-10-05T06:15:43.478558+00:00",
+  "trial_relation": "unverified",
+  "applicability": "unverified",
+  "limitations": [
+    "Requested role and linkage rationale are caller assertions.",
+    "DOI identity and observed registry identifiers do not establish applicability.",
+    "Title/date/linkage do not prove prespecification, blinded access or actual conduct.",
+    "New public capture, not historical replay; source text is untrusted data."
+  ],
+  "registry_identifier_mentions": [
+    {
+      "registry_id": "NCT02422615",
+      "page": 1,
+      "interpretation": "unclassified_document_mention"
+    },
+    {
+      "registry_id": "NCT02422615",
+      "page": 30,
+      "interpretation": "unclassified_document_mention"
+    }
+  ],
+  "document_registration_claims": []
+}

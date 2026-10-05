@@ -1,0 +1,204 @@
+{
+  "Code_case": "benchmark-luna6-medium-2026-10-01/cases/monaleesa-3",
+  "approved_result": {
+    "applicability": {
+      "design": "individual_parallel",
+      "evidence": [
+        "eh_450090c428c627a4"
+      ],
+      "rationale": "Patients were individually randomly assigned 2:1 to two parallel treatment groups."
+    },
+    "bindings": [
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/effect_measure"
+        },
+        "value_digest": "sha256:a4bea3550bf18d2a74f82806e42462b3c6e2490106d1bd14656852318bde02de"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/estimate"
+        },
+        "value_digest": "sha256:c673ae58f96a967b65b435eeb465ad88d86293efc880eca70de5f15fdf6262e6"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/precision"
+        },
+        "value_digest": "sha256:32a15348ea78c6caa8a0b54a6778f0798fac1d6577e07ca97442ad55eacc199c"
+      },
+      {
+        "evidence_index": 1,
+        "field": {
+          "path": "/reported/endpoint/name"
+        },
+        "value_digest": "sha256:f7a9b9fe05e841550843fa600f28bbf57461e2aa128a72153d87b142e158d5fc"
+      }
+    ],
+    "clarity": {
+      "analysis_population": "specified",
+      "comparison_groups": "specified",
+      "effect_measure": "specified",
+      "eligible_result_choice": "specified",
+      "measurement": "specified",
+      "outcome_definition": "specified",
+      "source_table_meaning": "specified",
+      "time_point": "specified"
+    },
+    "evidence": [
+      {
+        "handle": "eh_450090c428c627a4",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_45652807b3d42464",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_a81c3fd70ae8e320",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_b1feb85e556db1c6",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_c70d01c2d6ccae39",
+        "kind": "narrative"
+      },
+      {
+        "handle": "eh_e3a8c4ed18751db9",
+        "kind": "narrative"
+      }
+    ],
+    "kind": "assessable",
+    "relation": "exact",
+    "relation_rationale": "This is the trial's prespecified primary locally assessed PFS comparison in the randomized population: progression or death from randomization, assessed locally by radiology using RECIST 1.1, comparing ribociclib plus fulvestrant with placebo plus fulvestrant at the first PFS analysis/data cutoff. The article reports the requested group medians and hazard ratio. Follow-up continued until progression, death, withdrawal, or loss to follow-up.",
+    "reported": {
+      "analysis_population": "Full analysis set comprising all randomly assigned patients (484 assigned ribociclib plus fulvestrant and 242 assigned placebo plus fulvestrant); 210 and 151 PFS events, respectively, at data cutoff.",
+      "effect_measure": "Hazard ratio",
+      "endpoint": {
+        "definition": null,
+        "name": "locally assessed progression-free survival"
+      },
+      "estimate": "0.593",
+      "form": "comparative_effect",
+      "group_values": [],
+      "precision": "95% CI, 0.480 to 0.732"
+    },
+    "requested_outcome": "investigator-assessed progression-free survival",
+    "target": {
+      "comparison_groups": [
+        {
+          "assignment": "Ribociclib plus fulvestrant",
+          "id": "ribociclib_fulvestrant"
+        },
+        {
+          "assignment": "Placebo plus fulvestrant",
+          "id": "placebo_fulvestrant"
+        }
+      ],
+      "effect_of_interest": "assignment",
+      "intended_analysis_population": "All randomized participants in the comparison groups",
+      "intended_effect_measure": "Hazard ratio",
+      "measurement": {
+        "method": "Local radiology assessment of PFS according to RECIST version 1.1; progression or death from any cause, censoring event-free participants at last adequate tumor assessment.",
+        "metric": "investigator-assessed progression-free survival"
+      },
+      "outcome_definition": "investigator-assessed progression-free survival",
+      "time_point_or_window": {
+        "description": "From randomization until first documented progression or death; first PFS analysis/data cutoff (median follow-up 20.4 months).",
+        "kind": "described"
+      }
+    },
+    "trial_id": "monaleesa-3"
+  },
+  "captured_sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_4d540ec810479a32cbdd16c0b5dc94347493b347e1b1a2a9e4fda038c98d6699",
+      "label": "JCO.2018.78.9909.pdf",
+      "logical_path": "JCO.2018.78.9909.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 10,
+      "projection_hash": "sha256:57ecea29c839fb850373c3faf6c2733eb0d2625245fcc23aa3a58a9b3ab79dcf",
+      "role": "main_article",
+      "sha256": "sha256:fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154",
+      "trial_id": "monaleesa-3"
+    },
+    {
+      "declared_role": null,
+      "id": "source_eed15037ff550a1c34611c31341f4e3ed775fe602024db5fb07aea8e471b4066",
+      "label": "ClinicalTrials.gov NCT02422615",
+      "logical_path": "registry/NCT02422615.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:59fed2602f937cbb9767908736d7e5e6b6acf36d12355b78f6af620c754d7285",
+      "role": "registry",
+      "sha256": "sha256:73860752212a02a01453c0be0a10fc63909dc4ba070348e356dcb83d8f80773f",
+      "trial_id": "monaleesa-3"
+    }
+  ],
+  "explicit_registry_locators": [
+    {
+      "line": 60,
+      "text": "documentSection.largeDocumentModule.largeDocs[0].filename: \"Prot_002.pdf\""
+    },
+    {
+      "line": 69,
+      "text": "documentSection.largeDocumentModule.largeDocs[1].filename: \"SAP_003.pdf\""
+    }
+  ],
+  "delivered_locator_receipts": [
+    {
+      "file": "turn-1.jsonl",
+      "jsonl_line": 22,
+      "item_id": "item_10",
+      "tool": "read_pages",
+      "completed": true
+    }
+  ],
+  "D5_warrants": [
+    {
+      "question_id": "sq:selection:prespecified-analysis",
+      "answer": "no_information",
+      "justification": "The reported result corresponds to the report's description of the primary local PFS endpoint and planned analysis. However, neither that correspondence nor the later registry metadata establishes that an applicable detailed analysis plan was finalized before investigators had access to unblinded outcome data. Neither yes nor no is supported.",
+      "unknowns": [
+        "Whether the SAP covered this exact comparison, population, analysis, and effect estimate.",
+        "When the applicable plan was finalized and when unblinded PFS data became available to investigators."
+      ],
+      "counterevidence": []
+    },
+    {
+      "question_id": "sq:selection:multiple-measurements",
+      "answer": "no_information",
+      "justification": "Local assessment was clearly the reported primary measure, and central review was described as supportive and was also reported. But without the applicable plan, I cannot establish whether these were all eligible measurements or whether there were other time points/definitions. The available sources do not show result-driven selection, nor do they establish that only one eligible measurement existed.",
+      "unknowns": [
+        "The complete protocol/SAP-defined set of eligible PFS measures, time points, and assessor methods."
+      ],
+      "counterevidence": []
+    },
+    {
+      "question_id": "sq:selection:multiple-analyses",
+      "answer": "no_information",
+      "justification": "The report's stated analysis methods and event threshold are compatible with a planned analysis, but they do not show the complete set of eligible models, populations, censoring approaches, or effect estimates. Multiple analyses are possible for a time-to-event outcome, yet no evidence indicates that the reported analysis was selected based on its result. With the plan unavailable, no_information is appropriate.",
+      "unknowns": [
+        "Which analyses were prespecified and whether all eligible analyses were reported.",
+        "Whether the exact analysis intentions were finalized before unblinded results were available."
+      ],
+      "counterevidence": []
+    }
+  ],
+  "original_file_sha256": {
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/monaleesa-3/.rob2-kit/finalized/ed37fe22a346506497450a9aa369cb14f6ae6547179e20490fb5f27123f926bf.rob2.zip": "9b62f3c9a8e6ec090d965954a2f34047bdf244d76d4292eed8674177105c435c",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/monaleesa-3/turn-1.jsonl": "f66d19917af7b732561a9d2ea185cfeb0dc91955ce8d49691ab374e03c50505b",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/benchmark-luna6-medium-2026-10-01/cases/monaleesa-3/turn-2.jsonl": "d01f668e875d0d3ad56302cc460ac48587a9c466f427561b789ac29865009e09",
+    "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/monaleesa-3/JCO.2018.78.9909.pdf": "fa86370c010715282654f37753a94aaaaa83ee7f3fe5666d45302e45b8322154"
+  },
+  "interpretation": "Available registry-linked document not captured/read; not proof D5 NI wrong or all NI cases lack sources. Current tool absent from historical runtime is not counted as a failed historical call."
+}

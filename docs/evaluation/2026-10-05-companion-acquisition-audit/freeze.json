@@ -1,0 +1,11 @@
+{
+  "files": {
+    "Code-case-evidence.json": "91d9c3fb429a51b28a9f84c8357d61201eb5ab163d9513aba84a1c7987ff4ad3",
+    "README.md": "65d43434e76e1d331e9fd404373cb474a43061824226164aca1d7a53237b9ba4",
+    "bounded-public-access.json": "c5610a21a594b91ede374335e8f13aaddd95dbe069aa192bbe3f15e7d8b8be28",
+    "prospective-admission-summary.json": "35ffc5dd4d1ae7aa54f9b6da90cccd90be77d0482dffa3cc046f4445b1358d21",
+    "summary.json": "4c70088a17429d509d49c0f8e1934dabb4de0b112cc66e0e6dd7b4ae833c993a",
+    "verification.json": "15180ed7debf996910e4cbc09ebd752a74bcbcf497bc38c28d0313bf5137b9d2"
+  },
+  "scope": "Metadata/warrants/provenance and bounded deterministic checks; no private PDF or account telemetry"
+}
