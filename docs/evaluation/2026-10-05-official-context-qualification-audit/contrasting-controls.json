@@ -1,0 +1,58 @@
+[
+  {
+    "id": "randomization-circumstantial",
+    "question": "sq:randomization:sequence",
+    "facts": "Report states randomized; experienced trial unit and reporting circumstances support an inference, but exact sequence method is unreported.",
+    "qualification": "A probable answer may be reasonable; do not impose NI from the randomized label alone or an explicit-method prerequisite.",
+    "source": "Box4 question1.1 p17 and section1.1 p3"
+  },
+  {
+    "id": "randomization-uninformative",
+    "question": "sq:randomization:sequence",
+    "facts": "Only randomized is reported; no credible source facts or trial circumstances support a probable inference.",
+    "qualification": "NI remains appropriate. Missing reporting is not evidence of a nonrandom sequence.",
+    "source": "Box4 question1.1 p17"
+  },
+  {
+    "id": "minimization-general",
+    "question": "sq:randomization:sequence",
+    "facts": "Minimization is reported; no evidence establishes a deterministic or predictable procedure.",
+    "qualification": "Official guidance generally treats minimization as random; separate documentation of its random element is not a prerequisite.",
+    "source": "Box4 question1.1 p17"
+  },
+  {
+    "id": "minimization-known-nonrandom",
+    "question": "sq:randomization:sequence",
+    "facts": "Source explicitly establishes predictable allocation or absence of a random element.",
+    "qualification": "Do not let the general minimization inference override contrary method evidence.",
+    "source": "Box4 question1.1 p17"
+  },
+  {
+    "id": "sensitivity-unknown-mechanism",
+    "question": "sq:missing:evidence-unbiased",
+    "facts": "Missingness mechanism is unknown; sensitivity analyses show little change across a defensible range of plausible relationships between missingness and true outcomes for the exact result.",
+    "qualification": "Reassurance can be appraised despite unknown actual mechanism; judge plausibility and results, without automatically awarding Yes.",
+    "source": "Box8 question3.2 p45"
+  },
+  {
+    "id": "imputation-not-reassurance",
+    "question": "sq:missing:evidence-unbiased",
+    "facts": "Report uses LOCF or multiple imputation based only on intervention group, without plausible-range sensitivity evidence.",
+    "qualification": "A method label alone is not evidence that missing-data bias was corrected.",
+    "source": "Box8 question3.2 p45"
+  },
+  {
+    "id": "uninfluenced-mortality",
+    "question": "sq:measurement:influence-possible",
+    "facts": "Unblinded observer determines all-cause death without judgement; no distinct measurement or ascertainment problem is identified.",
+    "qualification": "Official unlikely-influence qualification remains available; No/ProbablyNo need not prove influence logically impossible.",
+    "source": "Box10 question4.4 p54"
+  },
+  {
+    "id": "judgement-outcome",
+    "question": "sq:measurement:influence-possible",
+    "facts": "Aware participant reports pain, or aware observer makes a judgement in assessing recovery.",
+    "qualification": "Possible influence remains applicable; do not transfer the mortality qualification to judgement-based assessment or confuse possibility with4.5 likelihood.",
+    "source": "Box10 question4.4 p54"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "qualification_tests": "3 passed; includes actual native MCP paginated/merged context delivery and preserved positive/negative source qualifications",
+  "compatibility_tests": "initial1failure/3pass due stale standalone pin; after exact-pin/history repair4passed",
+  "type_check": "ty check src tests docs/release passed",
+  "ruff": "changed Python files passed",
+  "question_contract_preserved": "All22 question wording/options/dependencies match frozen before contract",
+  "result_evidence_preserved": "All5 live neutral Result and Evidence projections unchanged; response framework/guidance/traps/comparison cards unchanged",
+  "model_calls": 0,
+  "behavioral_gain_tested": false,
+  "no_official_only_D3_rollout": true
+}

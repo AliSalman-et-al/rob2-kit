@@ -158,7 +158,7 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.9",
-    "content_hash": "sha256:f62648b7c4401cb68abf1c9d34ac28d44a232b9c01a697ddac6b11adc4c8b9d2",
+    "content_hash": "sha256:b7da8a956f8c35edb26a62681561ce8f2c6849259dcd97fbad88df4973aa89a1",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -183,6 +183,14 @@ _CONDITIONAL_SCIENTIFIC_PACK = {
     **_SCIENTIFIC_PACK,
     "domain_judgment_contract": _DOMAIN_JUDGMENT_CONTRACT,
     "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
+}
+_PRE_QUALIFICATION_PACK = {
+    **_CONDITIONAL_SCIENTIFIC_PACK,
+    "content_hash": "sha256:8d4d6c3e8e7c54dbe7b99ca4cd1fe6a11763dbc3c2bdcf4d28045c8ad4f1d814",
+}
+_PRE_PROBABLE_CHRONOLOGY_PACK = {
+    **_CONDITIONAL_SCIENTIFIC_PACK,
+    "content_hash": "sha256:f62648b7c4401cb68abf1c9d34ac28d44a232b9c01a697ddac6b11adc4c8b9d2",
 }
 _PRE_D5_ELIGIBILITY_SCOPE_PACK = {
     **_CONDITIONAL_SCIENTIFIC_PACK,
@@ -4904,6 +4912,8 @@ def verify(path: Path) -> tuple[bool, str]:
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,
+                _PRE_QUALIFICATION_PACK,
+                _PRE_PROBABLE_CHRONOLOGY_PACK,
                 _PRE_D5_ELIGIBILITY_SCOPE_PACK,
                 _PRE_ADMISSION_ASSESSOR_PACK,
                 _PRE_COMPOSITE_WEIGHTING_PACK,

@@ -3170,6 +3170,22 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value == expected:
         return True
+    # Exact predecessor guidance pins retain their original contract shape.
+    if value in (
+        {
+            **expected,
+            "content_hash": (
+                "sha256:8d4d6c3e8e7c54dbe7b99ca4cd1fe6a11763dbc3c2bdcf4d28045c8ad4f1d814"
+            ),
+        },
+        {
+            **expected,
+            "content_hash": (
+                "sha256:f62648b7c4401cb68abf1c9d34ac28d44a232b9c01a697ddac6b11adc4c8b9d2"
+            ),
+        },
+    ):
+        return True
     pre_d5_eligibility = {
         **expected,
         "content_hash": "sha256:bbf29393fa164107d096edf5fcdf58e08a379ab626534d01ea97b7028620b015",

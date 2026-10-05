@@ -1,0 +1,156 @@
+[
+  {
+    "question_id": "sq:randomization:sequence",
+    "domain": "randomization",
+    "official_locator": "Full guidance p. 17, Box 4, signalling question 1.1",
+    "finding": "Fixed categorical NI exception loss and minimization random-element prerequisite; restored complete official1.1 elaboration.",
+    "changed": true
+  },
+  {
+    "question_id": "sq:randomization:concealment",
+    "domain": "randomization",
+    "official_locator": "Full guidance p. 17, Box 4, signalling question 1.2",
+    "finding": "Remote/central independence and appropriate envelope/container safeguards align; probable framework retained. No additional demonstrated conflict.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:randomization:baseline-imbalance",
+    "domain": "randomization",
+    "official_locator": "Full guidance pp. 17-18, Box 4, signalling question 1.3",
+    "finding": "Chance differences, intended ratio, excessive similarity and independence retained; no baseline backfilling process questions.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:deviations:participants-aware",
+    "domain": "deviations",
+    "official_locator": "Full guidance p. 28, Box 6, signalling question 2.1",
+    "finding": "Awareness/side-effect inference distinct from treatment completion; probable allowance retained.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:deviations:personnel-aware",
+    "domain": "deviations",
+    "official_locator": "Full guidance p. 28, Box 6, signalling question 2.2",
+    "finding": "Allocation-concealment inference and carer identity retained; not merely outcome-assessor awareness.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:deviations:context-deviations",
+    "domain": "deviations",
+    "official_locator": "Full guidance p. 28, Box 6, signalling question 2.3",
+    "finding": "Protocol inconsistency and trial-context cause retained, including ordinary/nonprotocol permitted care distinction.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:deviations:affected-outcome",
+    "domain": "deviations",
+    "official_locator": "Full guidance p. 28, Box 6, signalling question 2.4",
+    "finding": "Conditional outcome-impact appraisal retained; no demonstrated independent contradiction.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:deviations:balanced",
+    "domain": "deviations",
+    "official_locator": "Full guidance p. 29, Box 6, signalling question 2.5",
+    "finding": "Balance applies to identified deviations rather than baseline sizes; no demonstrated contradiction.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:deviations:appropriate-analysis",
+    "domain": "deviations",
+    "official_locator": "Full guidance p. 29, Box 6, signalling question 2.6",
+    "finding": "Appropriate ITT/mITT missing-data exclusions and eligible/ineligible distinction already in local context; source excerpt abridged, not a missing operative qualification.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:deviations:substantial-impact",
+    "domain": "deviations",
+    "official_locator": "Full guidance p. 29, Box 6, signalling question 2.7",
+    "finding": "No precise percentage rule, prognostic/rare-outcome impact and probable allowance retained.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:missing:data-available",
+    "domain": "missing",
+    "official_locator": "Full guidance p. 45, Box 8, signalling question 3.1",
+    "finding": "All randomized, imputed missing, outcome-specific nearly-all appraisal and legitimate probable inference retained; no universal threshold.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:missing:evidence-unbiased",
+    "domain": "missing",
+    "official_locator": "Full guidance p. 45, Box 8, signalling question 3.2",
+    "finding": "Fixed documented-mechanism prerequisite; retained plausible assumptions/result-specific appraisal and imputation negative controls.",
+    "changed": true
+  },
+  {
+    "question_id": "sq:missing:true-value-dependent",
+    "domain": "missing",
+    "official_locator": "Full guidance p. 45, Box 8, signalling question 3.3",
+    "finding": "Health-related possibility versus documented unrelated loss retained; actual missingness distinct from merely excluded observed data.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:missing:likely-dependent",
+    "domain": "missing",
+    "official_locator": "Full guidance pp. 45-46, Box 8, signalling question 3.4",
+    "finding": "Five likelihood considerations and relevant-characteristic analysis retained; possible versus likely distinct. No demonstrated further contradiction.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:measurement:method-inappropriate",
+    "domain": "measurement",
+    "official_locator": "Full guidance p. 54, Box 10, signalling question 4.1",
+    "finding": "Measurement validity/sensitivity distinct from whether chosen outcome sensible; prespecified usual No/PN qualifier present in local context.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:measurement:differential",
+    "domain": "measurement",
+    "official_locator": "Full guidance p. 54, Box 10, signalling question 4.2",
+    "finding": "Methods/thresholds/timing/detection pathways retained, with outcome-specific visit-schedule controls.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:measurement:assessor-aware",
+    "domain": "measurement",
+    "official_locator": "Full guidance p. 54, Box 10, signalling question 4.3",
+    "finding": "Participant/provider/observer identity and masking distinct; decision-maker versus adjudicator preserved.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:measurement:influence-possible",
+    "domain": "measurement",
+    "official_locator": "Full guidance p. 54, Box 10, signalling question 4.4",
+    "finding": "Fixed impossibility requirement in No anchor; restored complete official4.4 elaboration.",
+    "changed": true
+  },
+  {
+    "question_id": "sq:measurement:influence-likely",
+    "domain": "measurement",
+    "official_locator": "Full guidance p. 54, Box 10, signalling question 4.5",
+    "finding": "Strong-belief/contextual likelihood retained; no direct-proof prerequisite; possible versus likely separate.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:selection:prespecified-analysis",
+    "domain": "selection",
+    "official_locator": "Full guidance p. 63, Box 11, signalling question 5.1",
+    "finding": "Earlier date-proof conflict already repaired; probable inference, applicability and unrelated-change qualifications retained.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:selection:multiple-measurements",
+    "domain": "selection",
+    "official_locator": "Full guidance pp. 63-64, Box 11, signalling question 5.2",
+    "finding": "Review-eligible alternatives/result-based choice retained; missing plan alone not selection.",
+    "changed": false
+  },
+  {
+    "question_id": "sq:selection:multiple-analyses",
+    "domain": "selection",
+    "official_locator": "Full guidance pp. 64-65, Box 11, signalling question 5.3",
+    "finding": "Eligible analyses, unrelated inconsistency and insufficient intentions retained; no forced severity.",
+    "changed": false
+  }
+]

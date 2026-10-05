@@ -1,0 +1,433 @@
+[
+  {
+    "id": "sq:randomization:sequence",
+    "wording": "Was the allocation sequence random?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:randomization:concealment",
+    "wording": "Was the allocation sequence concealed until participants were enrolled and assigned to interventions?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:randomization:baseline-imbalance",
+    "wording": "Did baseline differences between intervention groups suggest a problem with the randomization process?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:deviations:participants-aware",
+    "wording": "Were participants aware of their assigned intervention during the trial?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:deviations:personnel-aware",
+    "wording": "Were carers and people delivering the interventions aware of participants' assigned intervention during the trial?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:deviations:context-deviations",
+    "wording": "If Y/PY/NI to 2.1 or 2.2: Were there deviations from the intended intervention that arose because of the trial context?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "yes",
+            "probably_yes",
+            "no_information"
+          ],
+          "question_id": "sq:deviations:participants-aware"
+        },
+        {
+          "accepted_answers": [
+            "yes",
+            "probably_yes",
+            "no_information"
+          ],
+          "question_id": "sq:deviations:personnel-aware"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:deviations:affected-outcome",
+    "wording": "If Y/PY to 2.3: Were these deviations likely to have affected the outcome?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "yes",
+            "probably_yes"
+          ],
+          "question_id": "sq:deviations:context-deviations"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:deviations:balanced",
+    "wording": "If Y/PY/NI to 2.4: Were these deviations from intended intervention balanced between groups?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "yes",
+            "probably_yes",
+            "no_information"
+          ],
+          "question_id": "sq:deviations:affected-outcome"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:deviations:appropriate-analysis",
+    "wording": "Was an appropriate analysis used to estimate the effect of assignment to intervention?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:deviations:substantial-impact",
+    "wording": "If N/PN/NI to 2.6: Was there potential for a substantial impact (on the result) of the failure to analyse participants in the group to which they were randomized?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "question_id": "sq:deviations:appropriate-analysis"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:missing:data-available",
+    "wording": "Were data for this outcome available for all, or nearly all, participants randomized?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:missing:evidence-unbiased",
+    "wording": "If N/PN/NI to 3.1: Is there evidence that the result was not biased by missing outcome data?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "question_id": "sq:missing:data-available"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:missing:true-value-dependent",
+    "wording": "If N/PN to 3.2: Could missingness in the outcome depend on its true value?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "probably_no",
+            "no"
+          ],
+          "question_id": "sq:missing:evidence-unbiased"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:missing:likely-dependent",
+    "wording": "If Y/PY/NI to 3.3: Is it likely that missingness in the outcome depended on its true value?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "yes",
+            "probably_yes",
+            "no_information"
+          ],
+          "question_id": "sq:missing:true-value-dependent"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:measurement:method-inappropriate",
+    "wording": "Was the method of measuring the outcome inappropriate?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:measurement:differential",
+    "wording": "Could measurement or ascertainment of the outcome have differed between intervention groups?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:measurement:assessor-aware",
+    "wording": "If N/PN/NI to 4.1 and 4.2: Were outcome assessors aware of the intervention received by study participants?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "all",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "question_id": "sq:measurement:method-inappropriate"
+        },
+        {
+          "accepted_answers": [
+            "probably_no",
+            "no",
+            "no_information"
+          ],
+          "question_id": "sq:measurement:differential"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:measurement:influence-possible",
+    "wording": "If Y/PY/NI to 4.3: Could assessment of the outcome have been influenced by knowledge of intervention received?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "yes",
+            "probably_yes",
+            "no_information"
+          ],
+          "question_id": "sq:measurement:assessor-aware"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:measurement:influence-likely",
+    "wording": "If Y/PY/NI to 4.4: Is it likely that assessment of the outcome was influenced by knowledge of intervention received?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "rule",
+      "mode": "any",
+      "predicates": [
+        {
+          "accepted_answers": [
+            "yes",
+            "probably_yes",
+            "no_information"
+          ],
+          "question_id": "sq:measurement:influence-possible"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sq:selection:prespecified-analysis",
+    "wording": "Were the data that produced this result analysed in accordance with a pre-specified analysis plan that was finalized before unblinded outcome data were available for analysis?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:selection:multiple-measurements",
+    "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible outcome measurements (e.g. scales, definitions, time points) within the outcome domain?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  },
+  {
+    "id": "sq:selection:multiple-analyses",
+    "wording": "Is the numerical result being assessed likely to have been selected, on the basis of the results, from multiple eligible analyses of the data?",
+    "options": [
+      "yes",
+      "probably_yes",
+      "probably_no",
+      "no",
+      "no_information"
+    ],
+    "activation": {
+      "kind": "always"
+    }
+  }
+]
