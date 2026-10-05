@@ -1,0 +1,12 @@
+{
+  "reviewer": "/root/blind_warrant_review",
+  "kind": "isolated AI collaboration agent, not human or benchmark CLI",
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "low",
+  "verification": "fork_turns=none; inherited root profile; no separate CLI durable-profile receipt",
+  "packet": "/home/ali/Documents/Codex/2026-10-02/task-4/anonymous-warrant-review-20261005-v2/",
+  "packet_freeze_sha256": "2b940963fb54bbe181c50269fcadc9646b44f02fadcfa3b62f7eeb08241d4a38",
+  "locked_scores_file": "locked-scores.json",
+  "locked_scores_sha256": "4b65d1efbfc4f11af2ca1b5de65316c28bff4882a24c644bdf49d68c0729fdde",
+  "operator_unblinding": "Operator opened mapping before lock; reviewer remained blind; scores unchanged."
+}

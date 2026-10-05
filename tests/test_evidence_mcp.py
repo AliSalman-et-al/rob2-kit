@@ -2394,7 +2394,7 @@ def test_read_pages_budget_includes_pending_assessment_context_cursor(tmp_path: 
         for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
         if item["label"] == "supplement.txt"
     )
-    request = {
+    request: dict[str, object] = {
         "trial_id": "trial",
         "windows": [{"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1000}],
     }
@@ -3132,7 +3132,10 @@ def test_historical_anchor_recipe_receipt_remains_verifiable(tmp_path: Path) -> 
             "SELECT payload FROM search_sessions WHERE identity=?", (result["session_id"],)
         ).fetchone()[0]
     )
-    spec = {**current_session["spec"], "candidate_version": "rob2-kit.search-candidates.v0.9"}
+    spec: dict[str, Any] = {
+        **current_session["spec"],
+        "candidate_version": "rob2-kit.search-candidates.v0.9",
+    }
     identity = _identity(spec)
     source_id = spec["sources"][0]["id"]
     candidates = _session_candidates(
