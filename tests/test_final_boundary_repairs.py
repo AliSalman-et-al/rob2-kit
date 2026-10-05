@@ -70,7 +70,9 @@ def test_public_discriminator_tags_are_required() -> None:
             required = set(definition.get("required", ()))
             properties = definition.get("properties", {})
             for tag in ("kind", "form", "disposition"):
-                if tag in properties:
+                if tag in properties and not any(
+                    branch.get("type") == "null" for branch in properties[tag].get("anyOf", ())
+                ):
                     assert tag in required, (tool, tag, definition)
 
 

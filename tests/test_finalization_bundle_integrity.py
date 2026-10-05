@@ -318,7 +318,7 @@ def test_probable_limitation_domain_basis_finalizes_after_derivative_restart(
         "The requested outcome was not reported; only an alternate endpoint was measured; "
         "death ascertainment; end of follow-up; assigned to intervention; assigned to control; "
         "randomized population; risk ratio; The requested outcome was measured in the "
-        "analyzed population.; risk; 1; events; 2.\n" + "context\n" * 12 + "requested outcome\n",
+        "analyzed population.; risk; 1; events; 2.\n" + "context\n" * 200 + "requested outcome\n",
         encoding="utf-8",
     )
     evidence = _prepared_evidence(workspace)

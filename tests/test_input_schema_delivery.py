@@ -51,6 +51,7 @@ def test_wire_input_fields_are_self_contained_while_outputs_stay_shared() -> Non
     assert {frozenset(item["required"]) for item in objects} == {
         frozenset({"source_id", "page", "start_line", "end_line"}),
         frozenset({"delivery_receipt", "region", "transcription"}),
+        frozenset({"source_id", "page", "selected_text"}),
     }
     assert all(item["additionalProperties"] is False for item in objects)
     assert citation["additionalProperties"] is False

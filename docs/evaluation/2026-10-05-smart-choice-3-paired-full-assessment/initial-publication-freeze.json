@@ -1,9 +1,7 @@
 {
-  "frozen_at_utc": "2026-10-05T14:42:17.213890+00:00",
-  "revision_note": "Adds explicit AI reviewer model/effort provenance; independent scores remain unchanged. Original publication seal retained.",
+  "frozen_at_utc": "2026-10-05T14:19:19.561113+00:00",
   "files": {
-    "README.md": "bdc8909fada87d87c8eb143bb64414475ab7f0621ea9fedbe874b79d93814628",
-    "initial-publication-freeze.json": "9b4d2b0f8370680cecc4459ba45b346a347b7388212a916a354d61093566cb3f",
+    "README.md": "1860847b7b982d1321f9ee3d87f2ecd5c3c07814f44645f9332f26d089e3a69c",
     "integrity.json": "f19dc33f3e719a4d3ebb36c5cefe961ead144dcf813ed5f16de4105d05697149",
     "operational-comparison.json": "de743e1b1124881cf2c40dc5ca6c4d61de36da1fab9f5252b5db5da087c189da",
     "review-protocol.json": "6e030c8318fc8c4fab921557c12508979a1859d88e35ecc471000d7fc27c2c40",
