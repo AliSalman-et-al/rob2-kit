@@ -1,0 +1,10 @@
+{
+  "frozen_at_utc": "2026-10-05T15:02:38.371273+00:00",
+  "files": {
+    "README.md": "9e910bf778f55089cc5c9f5587a0e39f0244caafd57667a64bf74587e81bb83c",
+    "assessments-projection.json": "df337d3377fc72512f4d7eb76c43fc88fcb685e8d74217d000b3917126c982d4",
+    "corpus-declaration.json": "b8a96cc5b93d4d8ac95f0eeb1a86f890bf714b227f3e0c1ae4443516cf45cc40",
+    "operational-integrity.json": "c0974383d4bc8eefa3aee67839e82d30fd96e78d18764b75e9aa8e8afcc913b6",
+    "research-criteria.json": "7813217f2fc0465e00b5f7649e81123a91b813efd7fc815dfc7942d0b1964d9d"
+  }
+}

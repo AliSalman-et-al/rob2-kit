@@ -620,7 +620,9 @@ the saved overall judgment.
   correction is a new save, not a transport retry.
 - To revise a pending Trial's saved Domain, name the current checkpoint in
   `supersedes` and use the closed `new_evidence`, `self_correction`, or
-  `mechanical_repair` revision basis. A mechanical repair must include its
+  `mechanical_repair` revision basis. `self_correction` requires `rationale`,
+  for example `{"kind":"self_correction","rationale":"The prior citation omitted a relevant passage."}`.
+  A mechanical repair must include its
   `repair_id` or codes; do not use researcher coaching as a revision basis.
 - Handle the current error, repair, or required recovery first. Complete the
   current pagination sequence. After successful validation, execute its returned

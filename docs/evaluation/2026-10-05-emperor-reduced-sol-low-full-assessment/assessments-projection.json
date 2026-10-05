@@ -1,0 +1,1003 @@
+[
+  {
+    "domain_id": "domain:deviations",
+    "judgment": "low",
+    "answers": [
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:29b34cf34456c56d099dfb833dc28b9893230f68669921b8478e870d93253556",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 41,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "evidence": "sha256:704624c116c6c840f6d5d930c60a16a8b7588505ad93523f8f59549825cdd9ce",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 40,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "evidence": "sha256:94f6a891d6d022e3a7ece98af2cde684d6e515cb9eadb9ecbefd574f054c7150",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 64,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The report's conduct and safety account and protocol blinding procedures support a probable judgment; planned emergency code breaks do not establish actual widespread awareness.",
+            "unresolved_premise": "Individual awareness is not fully documented."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The reported double-blind placebo trial and protocol's matching placebo and patient blinding support probable lack of participant awareness. More genital infections with empagliflozin could potentially reveal treatment but do not establish that participants recognized assignment.",
+        "question_id": "sq:deviations:participants-aware",
+        "unknowns": [
+          "Actual emergency unblinding frequency and participant recognition of treatment-specific effects are not established."
+        ]
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:29b34cf34456c56d099dfb833dc28b9893230f68669921b8478e870d93253556",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 41,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "evidence": "sha256:94f6a891d6d022e3a7ece98af2cde684d6e515cb9eadb9ecbefd574f054c7150",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 64,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "Inspected protocol and report support blinded delivery; permission for exceptional code breaks does not establish general awareness.",
+            "unresolved_premise": "Individual personnel code breaks remain unquantified."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "Investigators and trial personnel were intended to remain blinded with restricted code access, and the report describes double-blind conduct. Independent DMC access is not awareness by intervention-delivery personnel.",
+        "question_id": "sq:deviations:personnel-aware",
+        "unknowns": [
+          "Actual emergency unblinding frequency is not established."
+        ]
+      },
+      {
+        "answer": "yes",
+        "bases": [
+          {
+            "evidence": "sha256:6b753b691b49277fc319b75376c87ce092caddcd173e4b9301a7959729eeebaf",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 99,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:925c991b545e6f357d576ade250513247ef81509b98c6942a394857b60c16969",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 105,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:18c3df8a1b597725f1459520622bb7641c88e0d7c2bf88d2928ef4011d92cee4",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 137,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:c930e0bfc4d6e1fda3a0b391cf1da50f917359e6dca023544b302fbdff438e8e",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 8,
+              "start_line": 4,
+              "end_line": 9,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The primary analysis includes all randomized patients through planned follow-up in their assigned groups, with follow-up regardless of adherence. Table 2 uses both randomized denominators. Four never-treated placebo patients were excluded only from safety analyses, not this efficacy Result; treatment stopping did not restrict the primary analysis.",
+        "question_id": "sq:deviations:appropriate-analysis",
+        "unknowns": []
+      }
+    ],
+    "revision_basis": {
+      "kind": "self_correction",
+      "rationale": "Attach the actual report passage stating exclusion of four never-treated placebo patients from safety analyses; the existing efficacy-analysis conclusion is unchanged."
+    }
+  },
+  {
+    "domain_id": "domain:measurement",
+    "judgment": "low",
+    "answers": [
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:6bd175af0b63085a29e2cf4987ce9e7a55a7cfa948dbea3f0100ca884f680389",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 21,
+              "start_line": 1,
+              "end_line": 51,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:a5f43e1cf067ddb6de0265e54034557b86f41af165e12d5fda8bfe2a789c50d0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 22,
+              "start_line": 1,
+              "end_line": 56,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:82138e0f89d77581880ce82808cdb098c7c7fbf2b7e20d20a46fc34515a348fd",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 23,
+              "start_line": 1,
+              "end_line": 55,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:8c15a91e4e2f5bb6699e8bee2481bd9f0bca9e072d0d804c0812b24239f27289",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 24,
+              "start_line": 1,
+              "end_line": 56,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:18c3df8a1b597725f1459520622bb7641c88e0d7c2bf88d2928ef4011d92cee4",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 137,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          }
+        ],
+        "counterevidence": [],
+        "justification": "Clinical event ascertainment and central adjudication are suitable for death and worsening-HF hospitalization. HF admission requires symptoms, duration, intensified therapy and committee attribution; cardiovascular death uses cause-specific categories. Hospitalization is influential (246 versus 342 patients) and involves provider decisions, but that susceptibility is not an invalid or insensitive measurement method. Clinical expertise where records are limited leaves some classification uncertainty, without evidence of an unsuitable method.",
+        "question_id": "sq:measurement:method-inappropriate",
+        "unknowns": []
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:6bd175af0b63085a29e2cf4987ce9e7a55a7cfa948dbea3f0100ca884f680389",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 21,
+              "start_line": 1,
+              "end_line": 51,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:a5f43e1cf067ddb6de0265e54034557b86f41af165e12d5fda8bfe2a789c50d0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 22,
+              "start_line": 1,
+              "end_line": 56,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:29b34cf34456c56d099dfb833dc28b9893230f68669921b8478e870d93253556",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 41,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The report describes common outcome visits every 2\u20133 months, continued follow-up regardless of adherence, and blinded adjudication under common criteria for both groups. No arm-specific detection pathway is apparent for these clinical events; differences in event frequency do not establish different measurement.",
+        "question_id": "sq:measurement:differential",
+        "unknowns": []
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:29b34cf34456c56d099dfb833dc28b9893230f68669921b8478e870d93253556",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 41,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:94f6a891d6d022e3a7ece98af2cde684d6e515cb9eadb9ecbefd574f054c7150",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 1,
+              "start_line": 1,
+              "end_line": 64,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:a5f43e1cf067ddb6de0265e54034557b86f41af165e12d5fda8bfe2a789c50d0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 22,
+              "start_line": 1,
+              "end_line": 56,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The reported blinded conduct and inspected protocol safeguards support a probable judgment while preserving exceptional or outside-provider uncertainty.",
+            "unresolved_premise": "Individual provider awareness is not fully documented."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The CEC actually adjudicated events blinded. For hospitalization, care providers making admission/treatment decisions are also relevant assessors: reported double-blind placebo conduct and investigator blinding support probable lack of assignment knowledge at that stage. Committee masking alone is not used to infer provider masking.",
+        "question_id": "sq:measurement:assessor-aware",
+        "unknowns": [
+          "Blinding of every outside treating clinician and individual emergency code breaks is not established."
+        ]
+      }
+    ],
+    "revision_basis": null
+  },
+  {
+    "domain_id": "domain:missing",
+    "judgment": "low",
+    "answers": [
+      {
+        "answer": "probably_yes",
+        "bases": [
+          {
+            "evidence": "sha256:698bc9cc27841bbec1d5461cea305ab931b00e5cb817869cd174aacfd0214707",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 28,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:925c991b545e6f357d576ade250513247ef81509b98c6942a394857b60c16969",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 7,
+              "start_line": 1,
+              "end_line": 105,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:18c3df8a1b597725f1459520622bb7641c88e0d7c2bf88d2928ef4011d92cee4",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 137,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The outcome-specific CONSORT explanation and reported follow-up accounting establish the small extent; exact patient-level timelines are unnecessary for this calibrated probable availability judgment.",
+            "unresolved_premise": "Exact missing follow-up timing and outcome-dependent loss remain unresolved."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "Outcome-specific accounting defines incomplete follow-up as missing vital-status or hospitalization information before planned treatment end in patients without a prior adjudicated primary event: 22 empagliflozin and 20 placebo. This is about 1.1% of 3730, against 823 first events and a 101-event arm difference. Continued ascertainment after stopping treatment and the small, similar incomplete fractions support probable near-complete availability unlikely to importantly change the estimated assignment effect. These event counts contextualize impact, not a mathematical bound on the Cox HR; vital status alone is not used as composite ascertainment.",
+        "missing_data": {
+          "conflicts": [],
+          "rows": [
+            {
+              "analyzed": 1863,
+              "basis": [
+                "sha256:698bc9cc27841bbec1d5461cea305ab931b00e5cb817869cd174aacfd0214707",
+                "sha256:925c991b545e6f357d576ade250513247ef81509b98c6942a394857b60c16969",
+                "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+                "sha256:18c3df8a1b597725f1459520622bb7641c88e0d7c2bf88d2928ef4011d92cee4"
+              ],
+              "eligible": null,
+              "event_count": 361,
+              "event_definition": "First adjudicated cardiovascular death or heart-failure hospitalization",
+              "excluded": null,
+              "exclusions": [],
+              "imputed": null,
+              "missing": 22,
+              "missing_bounds": {
+                "kind": "exact",
+                "lower": 22,
+                "upper": 22
+              },
+              "missing_fraction": 0.011808910359634998,
+              "observed": 1841,
+              "randomized": 1863,
+              "result_identity": "sha256:d57df09b1daf30f27b167e1847e498b6dac68fe656f44f2b68c47edd1c414dd4",
+              "scope": {
+                "arm": "empagliflozin",
+                "population": "All randomized participants",
+                "time_point": "Through planned treatment-period end, cutoff April 29, 2020",
+                "unit": "participants"
+              },
+              "semantics": {
+                "censoring": {
+                  "count": 22,
+                  "kind": "loss_to_follow_up",
+                  "reason": "Incomplete primary-endpoint follow-up"
+                },
+                "population_role": "randomized",
+                "post_randomization_exclusions": []
+              },
+              "treated": null
+            },
+            {
+              "analyzed": 1867,
+              "basis": [
+                "sha256:698bc9cc27841bbec1d5461cea305ab931b00e5cb817869cd174aacfd0214707",
+                "sha256:925c991b545e6f357d576ade250513247ef81509b98c6942a394857b60c16969",
+                "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+                "sha256:18c3df8a1b597725f1459520622bb7641c88e0d7c2bf88d2928ef4011d92cee4"
+              ],
+              "eligible": null,
+              "event_count": 462,
+              "event_definition": "First adjudicated cardiovascular death or heart-failure hospitalization",
+              "excluded": null,
+              "exclusions": [],
+              "imputed": null,
+              "missing": 20,
+              "missing_bounds": {
+                "kind": "exact",
+                "lower": 20,
+                "upper": 20
+              },
+              "missing_fraction": 0.010712372790573112,
+              "observed": 1847,
+              "randomized": 1867,
+              "result_identity": "sha256:d57df09b1daf30f27b167e1847e498b6dac68fe656f44f2b68c47edd1c414dd4",
+              "scope": {
+                "arm": "placebo",
+                "population": "All randomized participants",
+                "time_point": "Through planned treatment-period end, cutoff April 29, 2020",
+                "unit": "participants"
+              },
+              "semantics": {
+                "censoring": {
+                  "count": 20,
+                  "kind": "loss_to_follow_up",
+                  "reason": "Incomplete primary-endpoint follow-up"
+                },
+                "population_role": "randomized",
+                "post_randomization_exclusions": []
+              },
+              "treated": null
+            }
+          ]
+        },
+        "question_id": "sq:missing:data-available",
+        "unknowns": [
+          "Individual censoring times and all reasons for incomplete follow-up are not available in the inspected disposition account."
+        ]
+      }
+    ],
+    "revision_basis": null
+  },
+  {
+    "domain_id": "domain:randomization",
+    "judgment": "low",
+    "answers": [
+      {
+        "answer": "yes",
+        "bases": [
+          {
+            "evidence": "sha256:704624c116c6c840f6d5d930c60a16a8b7588505ad93523f8f59549825cdd9ce",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 40,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The applicable protocol specifies a computer-generated random sequence; the report describes actual stratified permuted-block randomization through an interactive-response system.",
+        "question_id": "sq:randomization:sequence",
+        "unknowns": []
+      },
+      {
+        "answer": "yes",
+        "bases": [
+          {
+            "evidence": "sha256:704624c116c6c840f6d5d930c60a16a8b7588505ad93523f8f59549825cdd9ce",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 40,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "evidence": "sha256:29b34cf34456c56d099dfb833dc28b9893230f68669921b8478e870d93253556",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 41,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          }
+        ],
+        "counterevidence": [],
+        "justification": "Assignment of eligible patients was made in blinded fashion through IRT, with the code kept secret by Clinical Trial Support. The reported use of the interactive-response system supports concealment until assignment.",
+        "question_id": "sq:randomization:concealment",
+        "unknowns": []
+      },
+      {
+        "answer": "no",
+        "bases": [
+          {
+            "evidence": "sha256:ab03d374f4a4e473450d981cb2174908172523096712b657a3d1901b00a5cf0b",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 4,
+              "start_line": 4,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:7aa58316c2e8c6e6035409f679a611c654282bdff137b9ad5c4e718495f08fd6",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 46,
+              "end_line": 71,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          }
+        ],
+        "counterevidence": [],
+        "justification": "Arm sizes are 1863 and 1867 under 1:1 allocation. Age, NYHA class, renal function, diabetes, NT-proBNP and background treatment are similar; modest differences in ejection fraction and medication use are compatible with chance and do not suggest failed randomization.",
+        "question_id": "sq:randomization:baseline-imbalance",
+        "unknowns": []
+      }
+    ],
+    "revision_basis": null
+  },
+  {
+    "domain_id": "domain:selection",
+    "judgment": "some_concerns",
+    "answers": [
+      {
+        "answer": "no_information",
+        "bases": [
+          {
+            "evidence": "sha256:dc18e8c32a3393f29f05fc29744214f1075a1d3e30f479d927feab5f68bc75f9",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 232,
+              "start_line": 1,
+              "end_line": 25,
+              "source_label": "nejmoa2022190_protocol.pdf",
+              "source_sha256": "sha256:d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b"
+            }
+          },
+          {
+            "evidence": "sha256:513cf5d589a7eaaff0071133be996d6413c2b289045949daae9d2eaf8d54a413",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 265,
+              "start_line": 1,
+              "end_line": 46,
+              "source_label": "nejmoa2022190_protocol.pdf",
+              "source_sha256": "sha256:d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b"
+            }
+          },
+          {
+            "evidence": "sha256:8987ca90f5a233a8fca9b271640600f20a96fd2e20622815d77a49249b0cb983",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 11,
+              "start_line": 1,
+              "end_line": 41,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:8638a635ca2d137b05b72f3ea5c87e967e5e640a3bafea51572eecc7630d2a61",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 68,
+              "start_line": 1,
+              "end_line": 93,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:61364d2ec93de52c703c78f2533a9b5e69fca312dbfe8d72cf3b2c8dd12ca4b0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 69,
+              "start_line": 1,
+              "end_line": 84,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:119b0234daf1b57784f37afbb2cbb03bde32e48ed741b7643420f822e8921337",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 70,
+              "start_line": 6,
+              "end_line": 84,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:d12c0cdf0ce88c7d0aff3dd55bbdcaca4689354fb68e5ee8817564b2c276dc43",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 36,
+              "start_line": 1,
+              "end_line": 46,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:f816395df5cec551dd813d106329874436b748d2dbc6dfa9e5133d29d4297429",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 37,
+              "start_line": 1,
+              "end_line": 35,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:6ea46ecbce6ec40df1a76757b399bf3690eceffdf5827ae8e6ad80e0c226fccf",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 360,
+              "start_line": 1,
+              "end_line": 34,
+              "source_label": "nejmoa2022190_protocol.pdf",
+              "source_sha256": "sha256:d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b"
+            }
+          },
+          {
+            "evidence": "sha256:6b753b691b49277fc319b75376c87ce092caddcd173e4b9301a7959729eeebaf",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 99,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:29b34cf34456c56d099dfb833dc28b9893230f68669921b8478e870d93253556",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 41,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked protocol: Prot_000.pdf",
+              "source_sha256": "sha256:7bbf7ba09e7a8feb9280c97455f85efd73b11344a4ad2842d9e8c62aeed425ee"
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "Original and final SAP methods, history and signatures, protocol blinding and reported conduct were inspected. Database-lock search identified intended safeguards and analysis rules, not an actual access date; current registry posting and capture dates cannot resolve historical access.",
+            "unresolved_premise": "Chronology and primary-analysis impact of late clarifications remain unresolved."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The February 2017 signed SAP specifies the same comparison, randomized-set first-event composite and adjusted Cox HR, but originally includes all follow-up through trial completion and continuous LVEF. The October 2019 revision excludes protocol close-out follow-up and changes LVEF to categories, with stated clinical-design reasons; the final planned treatment-phase estimand matches the approved report. June 19, 2020 signatures and history record further censoring clarifications and COVID sensitivity additions after the April 29 cutoff. Intended masking until database lock and authors' fidelity attestation do not establish actual investigator access timing or fully resolve correspondence of the late censoring clarification. This supports neither a firm/probable early-finalization conclusion nor a claim of late or results-driven planning.",
+        "question_id": "sq:selection:prespecified-analysis",
+        "unknowns": [
+          "Actual investigator unblinded-access date relative to material SAP revisions.",
+          "Whether June censoring clarifications changed the primary calculation or only clarified prior intentions."
+        ]
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:513cf5d589a7eaaff0071133be996d6413c2b289045949daae9d2eaf8d54a413",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 265,
+              "start_line": 1,
+              "end_line": 46,
+              "source_label": "nejmoa2022190_protocol.pdf",
+              "source_sha256": "sha256:d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b"
+            }
+          },
+          {
+            "evidence": "sha256:31fc1b52385ad758cecc5b89771f51fcd989cdc195a65ebb82319667424f4832",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 12,
+              "start_line": 1,
+              "end_line": 47,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:20170938e7a3583fd8ffb5272b059750cab0e18d953e52de4438193953393913",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 39,
+              "start_line": 1,
+              "end_line": 51,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:c4753b0d0a81144ec0a379392cc819422c7fe067869d3c69f344d873879934a0",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 3,
+              "start_line": 1,
+              "end_line": 104,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:18c3df8a1b597725f1459520622bb7641c88e0d7c2bf88d2928ef4011d92cee4",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 6,
+              "start_line": 1,
+              "end_line": 137,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:8987ca90f5a233a8fca9b271640600f20a96fd2e20622815d77a49249b0cb983",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 11,
+              "start_line": 1,
+              "end_line": 41,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "The applicable primary designation and planned alternatives were compared with the article and Table S3; the primary designation predates enrollment, supporting a probable judgment without claiming exhaustive alternative reporting.",
+            "unresolved_premise": "Complete reporting of every alternative measurement is not established."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "The first adjudicated CV-death/HF-hospitalization composite was designated primary from the original plan and is fully reported. Investigator-defined events, stricter HHF criteria and longer follow-up are planned alternatives, rather than being ruled ineligible merely by the selected Result. Reported choice follows the designated primary measurement, and the close-out-window change has a stated clinical-practice rationale. These facts support probably no results-based measurement selection, while not proving every alternative was reported.",
+        "question_id": "sq:selection:multiple-measurements",
+        "unknowns": [
+          "Estimates for all investigator-defined, strict-criteria and extended-follow-up alternatives are not established in the inspected publication."
+        ]
+      },
+      {
+        "answer": "probably_no",
+        "bases": [
+          {
+            "evidence": "sha256:513cf5d589a7eaaff0071133be996d6413c2b289045949daae9d2eaf8d54a413",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 265,
+              "start_line": 1,
+              "end_line": 46,
+              "source_label": "nejmoa2022190_protocol.pdf",
+              "source_sha256": "sha256:d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b"
+            }
+          },
+          {
+            "evidence": "sha256:63080d47c616fd2dd17daa4d8ddd6c4f9544d6a6943c30eac07c989e3775b9a9",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 266,
+              "start_line": 1,
+              "end_line": 46,
+              "source_label": "nejmoa2022190_protocol.pdf",
+              "source_sha256": "sha256:d73f775614c8e4355bd4cf1f6eda4508015e05b88080e1f35c55f70583513e7b"
+            }
+          },
+          {
+            "evidence": "sha256:f816395df5cec551dd813d106329874436b748d2dbc6dfa9e5133d29d4297429",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 37,
+              "start_line": 1,
+              "end_line": 35,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:20170938e7a3583fd8ffb5272b059750cab0e18d953e52de4438193953393913",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 39,
+              "start_line": 1,
+              "end_line": 51,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "evidence": "sha256:945cbde44963a7378c45ca42ae0188d1ba6c24e06651469e719665980dbe1de6",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 35,
+              "start_line": 1,
+              "end_line": 69,
+              "source_label": "nejmoa2022190_appendix.pdf",
+              "source_sha256": "sha256:690c2ba8b5ed2e8c2159879d5e3d4fa517f82943d292cddab407faa60e559d36"
+            }
+          },
+          {
+            "evidence": "sha256:6b753b691b49277fc319b75376c87ce092caddcd173e4b9301a7959729eeebaf",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 5,
+              "start_line": 1,
+              "end_line": 99,
+              "source_label": "NEJMoa2022190.pdf",
+              "source_sha256": "sha256:34d586864f4cd4cabd82ea379fde277091eeb6cdd253bb30c3f8003e4f77b85d"
+            }
+          },
+          {
+            "evidence": "sha256:8987ca90f5a233a8fca9b271640600f20a96fd2e20622815d77a49249b0cb983",
+            "kind": "indirect_support",
+            "locator": {
+              "kind": "narrative",
+              "page": 11,
+              "start_line": 1,
+              "end_line": 41,
+              "source_label": "Current registry-linked sap: SAP_001.pdf",
+              "source_sha256": "sha256:566f9c6e57a2e0631b29e2191c05069ccf580abcf285ef0aa336392f68f19b37"
+            }
+          },
+          {
+            "kind": "limitation",
+            "stopping_rationale": "Original/final analysis methods and alternatives and actual Table S3 results were inspected. The original primary designation and several reported alternative estimates support a probable selection judgment, without claiming complete reporting or proven prespecification of each revision.",
+            "unresolved_premise": "Some planned analysis estimates and revision chronology remain unverified."
+          }
+        ],
+        "counterevidence": [],
+        "justification": "An adjusted randomized-set Cox HR was primary in the original plan and remains the reported primary analysis. Alternatives include unadjusted Cox, competing-risk, imputation, treatment-limited and extended-follow-up analyses and added covariates. Table S3 actually reports unadjusted, imputed and Fine\u2013Gray primary-composite estimates, all near 0.75; this is evidence of reported alternatives, not proof that all were reported. The prior primary hierarchy, stated reasons for covariate/window changes and corroborating reported estimates support probably no result-based selection rather than an inference based solely on absence of documented selection.",
+        "question_id": "sq:selection:multiple-analyses",
+        "unknowns": [
+          "Results of every planned treatment-limited, extended-follow-up and additional-covariate analysis are not established in the inspected report.",
+          "Timing of access relative to SAP revisions remains unresolved as in 5.1."
+        ]
+      }
+    ],
+    "revision_basis": null
+  }
+]

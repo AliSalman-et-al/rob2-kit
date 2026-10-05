@@ -125,3 +125,30 @@ def test_argument_error_supplies_correct_shape_without_saving_or_coercing(
     assert isinstance(example.bases[0].evidence, str)
     assert "counterevidence[].evidence is a nonempty handle list" in text
     assert _state(workspace) == before
+
+
+def test_revision_argument_error_returns_revision_grammar_without_answer_reconstruction(
+    tmp_path: Path,
+) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_submission(_domain_draft("trial", "domain:randomization", revision, evidence))
+    draft["revision_basis"] = {"kind": "self_correction", "reason": "PRIVATE scientific rationale"}
+    before = _state(workspace)
+
+    async def call():
+        os.environ["ROB2_WORKSPACE"] = str(workspace)
+        async with Client(mcp) as client:
+            return await client.call_tool("save_domain_judgment", draft, raise_on_error=False)
+
+    result = asyncio.run(call())
+    assert result.is_error
+    text = "\n".join(item.text for item in result.content if hasattr(item, "text"))
+    assert "/revision_basis/self_correction/rationale" in text
+    assert "PRIVATE scientific rationale" not in text
+    recovery = json.loads(text.split(" Argument recovery: ", 1)[1])
+    schema = recovery["revision_basis_schemas"]["self_correction"]
+    assert set(schema["required"]) == {"kind", "rationale"}
+    assert schema["additionalProperties"] is False
+    assert "minimal_answer_schema" not in recovery
+    assert "Complete answer syntax example" not in text
+    assert _state(workspace) == before

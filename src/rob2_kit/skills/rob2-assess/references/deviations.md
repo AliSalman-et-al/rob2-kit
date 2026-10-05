@@ -33,6 +33,14 @@ inappropriate assignment-effect analysis; keep that issue distinct for Domain
 3. If an analysis defect activates the impact question, consider outcome rarity
 and prognostic exclusions as well as the percentage affected.
 
+When distinguishing efficacy from safety populations, cite the reported inclusion
+or exclusion rule for each population separately. A randomized denominator does
+not support a claim about why a different analysis excluded participants. Keep
+premature treatment stopping with continued outcome follow-up distinct from the
+planned end of the approved analysis window; neither alone proves that observed
+outcomes were inappropriately omitted. Compare the actual reported rule with the
+approved assignment Result and its window.
+
 First distinguish omission solely because the selected outcome is missing from
 an independent analysis restriction, reassignment, or omission of observed data.
 Fewer analyzed than randomized does not establish which mechanism occurred.

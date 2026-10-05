@@ -118,13 +118,16 @@ from rob2_kit.workflow_models import (
     ExpectedRevision,
     GroupResultValue,
     Identity,
+    MechanicalRepairRevision,
     MissingDataRow,
+    NewEvidenceRevision,
     NormalizedCoordinate,
     PageNumber,
     ProposalDraft,
     ProposalSelection,
     QuestionId,
     ResultClarity,
+    SelfCorrectionRevision,
     SourceHandle,
     StrictModel,
     TerminalRequest,
@@ -300,19 +303,32 @@ class _InputSchemaDelivery(Middleware):
                 }
                 for item in cause.errors(include_url=False, include_input=False)
             ]
-            recovery = {
-                "minimal_answer_schema": _construction_schema(DomainSaveAnswer, minimal_answer=True)
-            }
+            recovery: dict[str, Any] = {}
+            answer_help = ""
+            if any(defect["path"].startswith("/answers") for defect in defects):
+                recovery["minimal_answer_schema"] = _construction_schema(
+                    DomainSaveAnswer, minimal_answer=True
+                )
+                answer_help = (
+                    " Complete answer syntax example (not a recommended answer or real Evidence): "
+                    + json.dumps(_DOMAIN_ANSWER_EXAMPLE)
+                    + " bases[].evidence is one handle string; counterevidence[].evidence is a "
+                    "nonempty handle list paired with implication."
+                )
             if any("/missing_data" in defect["path"] for defect in defects):
                 recovery["missing_data_row_schema"] = _construction_schema(MissingDataRow)
+            if any(defect["path"].startswith("/revision_basis") for defect in defects):
+                recovery["revision_basis_schemas"] = {
+                    "new_evidence": _construction_schema(NewEvidenceRevision),
+                    "self_correction": _construction_schema(SelfCorrectionRevision),
+                    "mechanical_repair": _construction_schema(MechanicalRepairRevision),
+                }
             raise ToolError(
                 "invalid_tool_arguments: no assessment was submitted or saved. "
                 + json.dumps(defects)
-                + " Complete answer syntax example (not a recommended answer or real Evidence): "
-                + json.dumps(_DOMAIN_ANSWER_EXAMPLE)
-                + " bases[].evidence is one handle string; counterevidence[].evidence is a "
-                "nonempty handle list paired with implication. Preserve your scientific "
-                "choices and reasoning; correct only the reported construction errors."
+                + answer_help
+                + " Preserve your scientific choices and reasoning; correct only the reported "
+                "construction errors."
                 + " Argument recovery: "
                 + json.dumps(recovery, separators=(",", ":"))
             ) from error

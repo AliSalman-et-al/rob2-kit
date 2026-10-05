@@ -47,6 +47,15 @@ Sources and bounded page windows support no reasonable inference, document
 that limit instead of treating an empty Source group or a no-hit search as
 evidence of missing outcomes.
 
+For a time-to-first-event composite, reconcile the report's definition of incomplete
+follow-up with component-specific missing status. A dated, adjudicated qualifying
+first event can establish that participant's primary event observation even if later
+vital status is unknown. Later follow-up may still matter for a mortality or recurrent-
+event Result. Do not add overlapping component-status and composite-follow-up
+counts or transfer them to another endpoint. Retain the definition and overlap
+uncertainty before supplying observed counts; this distinction supplies no automatic
+answer or risk label.
+
 ## Reconcile availability
 
 Keep these quantities distinct for each arm and time point:
