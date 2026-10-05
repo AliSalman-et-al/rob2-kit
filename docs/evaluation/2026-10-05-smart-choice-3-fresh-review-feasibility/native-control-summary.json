@@ -1,0 +1,15 @@
+{
+  "model_calls": 0,
+  "historical_copy_unchanged_by_status_guidance": true,
+  "original_first_review_receipt_exactly_reproduced": false,
+  "original_post_first_review_state_byte_identical": true,
+  "review_control_copy_revision": 10,
+  "historical_copy_revision": 9,
+  "runtime_python": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/smart-choice-3-five-domain-preparation-20261005/venv/bin/python",
+  "original_wheel_sha256": "3f62dad90b9999e3114280cb77aad0313b3b57c27609e468e5eeae6a527f4760",
+  "native_tool_count": 22,
+  "original_tool_catalog_exactly_equal": true,
+  "receipt_difference_paths": [
+    "/data/review_page/stable_recovery/cursor"
+  ]
+}

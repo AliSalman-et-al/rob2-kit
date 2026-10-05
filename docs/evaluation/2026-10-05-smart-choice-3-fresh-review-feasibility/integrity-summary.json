@@ -1,0 +1,15 @@
+{
+  "model_calls": 0,
+  "revision": 9,
+  "immutable_canonical_payloads_verified": 45,
+  "source_bound_derivative_evidence_verified": 80,
+  "dependency_versions": {
+    "rob2-kit": "0.11.0",
+    "fastmcp": "4.0.3",
+    "mcp": "2.1.1",
+    "pydantic": "2.13.4",
+    "pymupdf": "1.28.2",
+    "httpx": "0.28.1"
+  },
+  "runtime_file_manifest_sha256": "400f22cde088cdf9d570246e632f8a136c48cdf24693aecdc12d4b007be9560b"
+}
