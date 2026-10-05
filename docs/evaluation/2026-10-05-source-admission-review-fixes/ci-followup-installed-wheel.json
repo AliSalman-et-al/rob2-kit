@@ -1,0 +1,30 @@
+{
+  "after_admission_companion_action": {
+    "operation": "read_pages",
+    "pages": [
+      1
+    ],
+    "source_id": "sh_db69d0e8bbe82f59",
+    "trial_id": "trial"
+  },
+  "after_admission_head_action": "review_trial",
+  "after_read_domain_context": "domain:selection recovered from current inventory",
+  "after_rereview_head_action": "close_trial",
+  "benchmark_calls": 0,
+  "catalog_schema_description_contract": "exact generated manifest and stdio _verify_client passed",
+  "independent_review_go_claimed": false,
+  "installed_package": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/installed-wheel-admission-20261005/venv/lib/python3.13/site-packages/rob2_kit/__init__.py",
+  "model_calls": 0,
+  "new_tools": [
+    "acquire_companion_source",
+    "admit_companion_source"
+  ],
+  "offline_fetch_requests": 2,
+  "offline_fetch_requests_note": "Cumulative log across two preserved proofs; this proof made one request.",
+  "route": "Installed CLI public stdio MCP; workflow network transport only mocked to real SAP bytes",
+  "source_format_note": "Final checkout adds only a line break to the already proven input annotation.",
+  "source_import_fallback": false,
+  "staged_status_recovery_action": "admit_companion_source",
+  "tool_idempotent": false,
+  "wheel_sha256": "aa8c602e4fd238f1ba3c6189b5e66f2bc5742d8f349408986fcc7c2157730f7e"
+}

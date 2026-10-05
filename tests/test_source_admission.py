@@ -181,6 +181,10 @@ def test_admitted_history_exports_verify_and_rehashed_tampering_is_rejected(
 
     archive = archive_sources(workspace)
     assert verify_source_archive(workspace / archive["path"])
+    def remove_source_history(canonical: dict[str, object]) -> None:
+        canonical.pop("source_admissions")
+        canonical.pop("batch_history")
+
     for index, mutate in enumerate(
         [
             lambda c: c["batch_history"][0]["trials"][0]["sources"].clear(),
@@ -189,7 +193,7 @@ def test_admitted_history_exports_verify_and_rehashed_tampering_is_rejected(
             ),
             lambda c: c["trial_reviews"]["trial"].pop("trial_inventory_identity"),
             lambda c: c["source_admissions"].clear(),
-            lambda c: (c.pop("source_admissions"), c.pop("batch_history")),
+            remove_source_history,
         ]
     ):
         target = tmp_path / f"tampered-{index}.zip"

@@ -256,6 +256,8 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
             "read_guidance": 2,
             "get_status": 2,
             "request_companion_source": 2,
+            "acquire_companion_source": 3,
+            "admit_companion_source": 3,
             "list_sources": 2,
             "search_sources": 2,
             "search_sources_batch": 2,

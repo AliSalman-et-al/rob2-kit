@@ -39,6 +39,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
         "get_status",
         "save_working_checkpoint",
         "request_companion_source",
+        "acquire_companion_source",
+        "admit_companion_source",
         "list_sources",
         "search_sources",
         "search_sources_batch",
@@ -62,7 +64,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     assert all(
         tool.annotations is not None
         and tool.annotations.destructive_hint is False
-        and tool.annotations.idempotent_hint is True
+        and tool.annotations.idempotent_hint
+        is (tool.name not in {"acquire_companion_source", "admit_companion_source"})
         for tool in tools
     )
     assert all(
@@ -94,7 +97,8 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     # provenance from the public output. D3 semantics, Source coverage,
     # premise records, and stable-context recovery are deliberate additions to
     # that surface; continuation payloads themselves no longer repeat it.
-    assert total_bytes < 635_000
+    # Two companion operations and durable typed status recovery add 18 KB.
+    assert total_bytes < 660_000
 
     by_name = {tool.name: tool for tool in tools}
     search_annotations = by_name["search_sources"].annotations
