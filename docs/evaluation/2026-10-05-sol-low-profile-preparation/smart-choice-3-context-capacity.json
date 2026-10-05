@@ -1,0 +1,72 @@
+{
+  "trial": "smart-choice-3",
+  "model": "gpt-6.1-sol",
+  "effort": "low",
+  "catalog_default_context_tokens": 272000,
+  "catalog_max_context_tokens": 872000,
+  "effective_context_percent": 95,
+  "effective_default_capacity_tokens": 258400,
+  "context_expansion_configured": false,
+  "tokenizer_package": "tiktoken0.12.0",
+  "tokenizers_are_proxies_not_verified_model_tokenizer": true,
+  "native_tool_count": 22,
+  "input_function_declarations_utf8_bytes": 152822,
+  "raw_MCP_catalog_utf8_bytes": 1472222,
+  "prompt_render_text_utf8_bytes": 11654,
+  "native_function_declarations_proxy_tokens": {
+    "o200k_base": 33425,
+    "cl100k_base": 32534
+  },
+  "offline_prompt_render_text_proxy_tokens": {
+    "o200k_base": 2479,
+    "cl100k_base": 2506
+  },
+  "initial_text_plus_input_functions_proxy_tokens": {
+    "o200k_base": 35904,
+    "cl100k_base": 35040
+  },
+  "all_linked_guidance_proxy_tokens": {
+    "o200k_base": 25904,
+    "cl100k_base": 25947
+  },
+  "initial_plus_all_linked_guidance_proxy_tokens": {
+    "o200k_base": 61808,
+    "cl100k_base": 60987
+  },
+  "all_available_source_text_proxy_tokens": {
+    "o200k_base": 72866,
+    "cl100k_base": 74856
+  },
+  "all_source_text_is_injected_into_initial_prompt": false,
+  "private_bundle_contains_images": false,
+  "source_pages_available": 114,
+  "explicit_planning_allowances_tokens": {
+    "subsequent_selected_source_text_and_replies": 50000,
+    "image_planning": 12000,
+    "output_and_reasoning": 24000,
+    "unmeasured_CLI_and_wire_overhead": 16000
+  },
+  "planning_total_proxy_tokens": {
+    "o200k_base": 163808,
+    "cl100k_base": 162987
+  },
+  "planning_headroom_proxy_tokens": {
+    "o200k_base": 94592,
+    "cl100k_base": 95413
+  },
+  "planning_fits_default_effective_context": true,
+  "caveats": [
+    "Actual provider input encoding, tool routing, system instruction tokens and image tokens are not verified by these proxies",
+    "Debug prompt renderer includes ancestor instructions which the existing paid launcher suppresses with --ignore-rules; it is not an exact paid request body",
+    "Tool declaration projection excludes outputSchema and formatting; actual CLI/model tool routing must be checked from the authorized run",
+    "Tool acquisition/reading is incremental; available corpus size is not instantaneous or cumulative billed input",
+    "Long full-source reading or repeated replies can exhaust any finite context; actual compaction/context events and warrants must be audited",
+    "No paid response exists, so actual gpt-6.1-sol/low execution is not yet durably observed"
+  ],
+  "pricing": {
+    "verified_exact_profile_prices": false,
+    "estimated_dollars": null,
+    "relative_price_vs_Luna_claim": null,
+    "note": "Authorized model catalog provides no verifiable billing rate for this profile; no price or model-name mapping is guessed. Low reasoning is a setting, not a guarantee of lower cost or better science. No service-tier override is requested."
+  }
+}

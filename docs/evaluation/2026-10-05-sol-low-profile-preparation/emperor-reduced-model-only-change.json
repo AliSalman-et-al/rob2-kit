@@ -1,0 +1,45 @@
+{
+  "trial": "emperor-reduced",
+  "original_preparation": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/emperor-reduced-full-preparation-20261005",
+  "original_model": "gpt-6-luna",
+  "original_effort": "medium",
+  "prospective_model": "gpt-6.1-sol",
+  "prospective_effort": "low",
+  "original_full_assessment_seed_used": false,
+  "fresh_review_fork_used": false,
+  "state_revision": 4,
+  "no_prior_domain_answers_or_reviews": true,
+  "scientific_inputs_byte_identical": {
+    "prompt.txt": "e9c47c05df7ef9147892df2c200e2dbb5c4cd4c0be2d010de77f8eec98257033",
+    "operational-instructions.txt": "5e79b4c611496e10cea1b32f0e0ad6fd25be4a0d84a4c68a061718c317f3afe4",
+    "evidence-manifest.json": "cc73ac14f19e79d6dba40388223cd76d036dc2e3d2faa3b69d5fb8cd2c43eec1",
+    "native-evidence.bundle": "5313cf3ce8fd082317f439acc2cb61ec98123fdbdcfd9636e0e54e515a2be7cd",
+    "approved-seed-state.json": "377209076d21b56ebf868dfb77bec19edebd311c61b23482207b472c6f4f3a5b",
+    "private-criteria.json": "7813217f2fc0465e00b5f7649e81123a91b813efd7fc815dfc7942d0b1964d9d",
+    "prospective-selection.json": "f7c3f0afadb8f7db41240fbc1be499b8d6a61710497b71a357ace4a134bf61d6",
+    "prospective-source-locked-candidate.json": "5552abeae0b392170bf43209df5ab4f7c776a5a77dbd18b8cba60fe981fe600d",
+    "corpus-declaration.json": "b8a96cc5b93d4d8ac95f0eeb1a86f890bf714b227f3e0c1ae4443516cf45cc40",
+    "approval-authority.json": "5ccd7dce7ff1f94f28006561214b8f958b12f2b92c39138ffb552914aa21601d"
+  },
+  "installed_runtime_python": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/emperor-reduced-full-preparation-20261005/venv/bin/python",
+  "runtime_package": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/emperor-reduced-full-preparation-20261005/venv/lib/python3.13/site-packages/rob2_kit",
+  "wheel_sha256": "dff38f0192d103069786f274ee23a588ece6e5c6e33263160056fb4f8e2696c6",
+  "original_implementation_sha": "f578f030f933e8ad371e7b64872e6cf65a14adcc",
+  "configuration_changes": {
+    "model": {
+      "before": "gpt-6-luna",
+      "after": "gpt-6.1-sol"
+    },
+    "model_reasoning_effort": {
+      "before": "medium",
+      "after": "low"
+    },
+    "ROB2_WORKSPACE": {
+      "before": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/emperor-reduced-full-preparation-20261005/workspace-run",
+      "after": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/emperor-reduced-sol-low-preparation-20261005/workspace-run",
+      "reason": "disposable seed isolation; canonical state identical"
+    }
+  },
+  "launcher_changes": "model/effort and isolated paths; original runtime byte guard replaces checkout HEAD guard, keeping original supervision/usage/stall controls",
+  "paid_launch_authorized": false
+}
