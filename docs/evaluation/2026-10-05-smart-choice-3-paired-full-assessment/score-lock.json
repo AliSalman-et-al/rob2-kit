@@ -1,0 +1,8 @@
+{
+  "locked_at_utc": "2026-10-05T14:16:47.836817+00:00",
+  "locked_scores_sha256": "4b65d1efbfc4f11af2ca1b5de65316c28bff4882a24c644bdf49d68c0729fdde",
+  "input_hashes_verified": 17,
+  "reviewer_identity_mapping_withheld_until_lock": true,
+  "operator_prelock_mapping_access": true,
+  "procedural_departure": "Operator accidentally opened private mapping before score lock; reviewer remained isolated, no identities, telemetry or scientific hints supplied, no scores changed."
+}

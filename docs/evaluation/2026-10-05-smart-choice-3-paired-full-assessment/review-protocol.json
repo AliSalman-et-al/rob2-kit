@@ -1,0 +1,27 @@
+{
+  "scope": "Prospectively defined anonymous A/B Source-warrant comparison of two full assessments on one exposed case",
+  "criteria_origin": "Unchanged original frozen full-assessment private scientific criteria; no expected clinical judgment",
+  "reviewer_input": "Anonymous signaling answers/justifications/unknowns and exact citation bodies/coordinates, common approved Result and complete frozen Source text and original guidance. No model labels, telemetry, tool counts, raw traces, prior independent-review findings, algorithmic judgments or arm mapping.",
+  "score_scale": {
+    "0": "Unsupported or contradicted; wrong Source binding, substituted scope, or a material premise without a warrant",
+    "1": "Some relevant support but material ambiguity, incomplete inference or uncertainty inadequately bounded",
+    "2": "Defensible Source-grounded warrant with appropriate limitations; minor unresolved gaps",
+    "3": "Clear scoped Source warrant and appropriate handling of relevant uncertainty and counterevidence"
+  },
+  "score_units": "Each active signaling answer; separately Domain-level citation fidelity, Result scope, inference/materiality, chronology/plan correspondence and uncertainty/counterevidence. Nonapplicable dimensions explicitly NA, never zero.",
+  "requirements": [
+    "Review each arm independently before comparing",
+    "Cite physical Source page/lines for each material finding and score",
+    "Separate a Source saying a method was planned from evidence it was performed",
+    "Do not infer complete observations from ITT inclusion",
+    "Preserve source conflicts and timing/version uncertainty; no expected clinical label",
+    "Distinguish structural identity/algorithmic checks from scientific entailment",
+    "Mark absent inspected evidence rather than guess from trial familiarity",
+    "Return scores and warrants as locked artifact before model labels/telemetry/mapping are revealed"
+  ],
+  "mapping_policy": "Random A/B assignment generated privately after raw outputs are sealed; mapping not in reviewer packet. No reveal until reviewer score artifact hashed/locked.",
+  "history_policy": "Final committed answer sets are the primary comparison; revision/citation history and observed actual delivery are analyzed separately after score lock, without giving prior AI audit opinions to reviewer.",
+  "paid_limits": "Exactly one authorized Sol full-assessment session. Independent-review packet preparation does not authorize another benchmark session. Paid benchmark work stops after that outcome.",
+  "no_accuracy_or_superiority_claim": true,
+  "not_model_input": true
+}

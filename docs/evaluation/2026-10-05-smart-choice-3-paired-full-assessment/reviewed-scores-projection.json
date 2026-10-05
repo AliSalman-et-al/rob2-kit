@@ -1,0 +1,1331 @@
+{
+  "review_status": "scores_locked_before_identity_telemetry_or_mapping",
+  "review_date": "2026-10-05",
+  "scope": "Independent anonymous source-warrant review of final active answer sets, one exposed case",
+  "score_scale": {
+    "0": "Unsupported or contradicted; wrong Source binding, substituted scope, or a material premise without a warrant",
+    "1": "Some relevant support but material ambiguity, incomplete inference or uncertainty inadequately bounded",
+    "2": "Defensible Source-grounded warrant with appropriate limitations; minor unresolved gaps",
+    "3": "Clear scoped Source warrant and appropriate handling of relevant uncertainty and counterevidence"
+  },
+  "blinding": {
+    "external_material_consulted": false,
+    "mapping_inferred": false,
+    "history_or_delivery_reviewed": false,
+    "inputs_modified": false
+  },
+  "input_sha256": {
+    "common-result.json": "fe3e8e5c9437a02d3e49df3803848f529f7a1a21a7cace5098feaf9fbb254956",
+    "packet-freeze.json": "2b940963fb54bbe181c50269fcadc9646b44f02fadcfa3b62f7eeb08241d4a38",
+    "review-protocol.json": "3a7bf1c413b11d60ac5d63d39376736cd4fe4af0ba82cc73577f573fa3642e8d",
+    "assessment-A.json": "6561fc72b5e0636b7b57a253421d68d4c0c154fa3c76699821faf953c6c3db45",
+    "sources.json": "95a89ad14b97d775c53900beb7afa70dc08634e67abd2f54b19d14fa19747c28",
+    "assessment-B.json": "784079842510dfaa8b913678edd35e9d6ab31029e1266fb319ec6b2166e51850",
+    "README.md": "5773055ea51175cea3888286ea31a7d74958f0702730d3a8f3832f22b65c4f9a",
+    "guidance/SKILL.md": "50b407553eefd2d2600328ad41b1967cba7db3a105d27d94984b69fab969703e",
+    "guidance/references/missing.md": "5a9e2d560daf123dbd9fc6c4fd1ae08f8524f0a3d3231e19c1f5ededf8f086af",
+    "guidance/references/selection.md": "457ac84ed912e492bfd7a255eb87d26ce5f49a5add9a4f49d5d604bf2e20d402",
+    "guidance/references/result-account.md": "d4ba3b7f1c66f0a5443dcd0c8706c405df3b5eaec160b5abb562f4a99f0087f3",
+    "guidance/references/evidence.md": "4b45a2be5a9e103cdb9965fe2ba2b60b218ae0d3e9827676cd4ed4da19fcbb29",
+    "guidance/references/codex.md": "2e79c28653d03f597d9aaab313a4731a6a46c6552fe75e465cb091ac0c66d019",
+    "guidance/references/deviations.md": "19a52431b1ba65bd628e42c89c434c184e0b8274022b845dc5dc6d2d84991f7a",
+    "guidance/references/result.md": "39ee6194ebcb85b06033854372084b84b403dbb93a2a23ad26d0dae0ba120959",
+    "guidance/references/randomization.md": "a1b74f4caba7089c707a0f2233e41d57e8e154a974e216fb38e3979504a8956f",
+    "guidance/references/read-main-report.md": "0c4231261927f467b69c58ffa9557b58ca19cad4d78d57fb4c9665a990eb4435",
+    "guidance/references/measurement.md": "b8b3194ceb99fb029df341ae85a95de6ab540653761235fdc19fe1a3c0154b6d"
+  },
+  "physical_evidence_ledger": {
+    "masking": {
+      "source": "S2",
+      "physical_page": 3,
+      "start_line": 62,
+      "end_line": 72
+    },
+    "adjudication": {
+      "source": "S2",
+      "physical_page": 3,
+      "start_line": 43,
+      "end_line": 51
+    },
+    "surveillance": {
+      "source": "S2",
+      "physical_page": 3,
+      "start_line": 77,
+      "end_line": 87
+    },
+    "endpoint": {
+      "source": "S2",
+      "physical_page": 3,
+      "start_line": 94,
+      "end_line": 105
+    },
+    "itt_report": {
+      "source": "S2",
+      "physical_page": 4,
+      "start_line": 65,
+      "end_line": 79
+    },
+    "flow": {
+      "source": "S2",
+      "physical_page": 4,
+      "start_line": 102,
+      "end_line": 145
+    },
+    "completion": {
+      "source": "S2",
+      "physical_page": 5,
+      "start_line": 24,
+      "end_line": 38
+    },
+    "followup_events": {
+      "source": "S2",
+      "physical_page": 6,
+      "start_line": 6,
+      "end_line": 35
+    },
+    "baseline_all": {
+      "source": "S2",
+      "physical_page": 5,
+      "start_line": 85,
+      "end_line": 216
+    },
+    "baseline_A": {
+      "source": "S2",
+      "physical_page": 5,
+      "start_line": 84,
+      "end_line": 108
+    },
+    "wrong_completion_citation": {
+      "source": "S2",
+      "physical_page": 5,
+      "start_line": 117,
+      "end_line": 145
+    },
+    "deviations": {
+      "source": "S1",
+      "physical_page": 27,
+      "start_line": 3,
+      "end_line": 30
+    },
+    "medications": {
+      "source": "S1",
+      "physical_page": 28,
+      "start_line": 11,
+      "end_line": 76
+    },
+    "ordinary_care": {
+      "source": "S2",
+      "physical_page": 10,
+      "start_line": 127,
+      "end_line": 132
+    },
+    "prescribing": {
+      "source": "S2",
+      "physical_page": 10,
+      "start_line": 56,
+      "end_line": 68
+    },
+    "itt_plan": {
+      "source": "S1",
+      "physical_page": 66,
+      "start_line": 17,
+      "end_line": 37
+    },
+    "concealment_plan_A": {
+      "source": "S1",
+      "physical_page": 58,
+      "start_line": 17,
+      "end_line": 23
+    },
+    "concealment_plan_B": {
+      "source": "S1",
+      "physical_page": 48,
+      "start_line": 23,
+      "end_line": 27
+    },
+    "sap_identity": {
+      "source": "S1",
+      "physical_page": 88,
+      "start_line": 3,
+      "end_line": 19
+    },
+    "sap_primary": {
+      "source": "S1",
+      "physical_page": 95,
+      "start_line": 12,
+      "end_line": 43
+    },
+    "sap_endpoint": {
+      "source": "S1",
+      "physical_page": 96,
+      "start_line": 6,
+      "end_line": 33
+    },
+    "sap_censor": {
+      "source": "S1",
+      "physical_page": 98,
+      "start_line": 4,
+      "end_line": 14
+    },
+    "report_censor": {
+      "source": "S2",
+      "physical_page": 4,
+      "start_line": 86,
+      "end_line": 89
+    },
+    "table_window": {
+      "source": "S2",
+      "physical_page": 6,
+      "start_line": 149,
+      "end_line": 156
+    },
+    "dates": {
+      "source": "S2",
+      "physical_page": 5,
+      "start_line": 13,
+      "end_line": 21
+    },
+    "blind_analysis": {
+      "source": "S2",
+      "physical_page": 4,
+      "start_line": 50,
+      "end_line": 64
+    },
+    "pp_result": {
+      "source": "S2",
+      "physical_page": 6,
+      "start_line": 41,
+      "end_line": 45
+    },
+    "restricted_sens": {
+      "source": "S2",
+      "physical_page": 8,
+      "start_line": 4,
+      "end_line": 7
+    },
+    "restricted_sens_method": {
+      "source": "S2",
+      "physical_page": 7,
+      "start_line": 10,
+      "end_line": 13
+    },
+    "missing_method": {
+      "source": "S1",
+      "physical_page": 18,
+      "start_line": 36,
+      "end_line": 39
+    },
+    "recruitment_conflict": {
+      "source": "S2",
+      "physical_page": 10,
+      "start_line": 69,
+      "end_line": 74
+    }
+  },
+  "arms": {
+    "A": {
+      "independent_answer_scores": [
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:participants-aware",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "Explicit performed masking report establishes participant awareness.",
+          "physical_evidence": [
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:personnel-aware",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "Explicit unmasked investigator statement reasonably applies to personnel delivering these medications.",
+          "physical_evidence": [
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:context-deviations",
+          "original_answer": "no_information",
+          "score": 2,
+          "rationale": "Reason categories do not establish a trial-context cause; NI is defensibly bounded. It omits additional reassuring actual medication-use and physician-discretion evidence, which permits a probable negative inference but does not compel it.",
+          "physical_evidence": [
+            "deviations",
+            "flow",
+            "medications",
+            "ordinary_care",
+            "prescribing"
+          ],
+          "original_citation_ids": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "Performed ITT statement and assigned-group flow counts corroborate the plan; PP exclusions are separate. Planned assignment analysis alone would be insufficient, but the report supplies conduct.",
+          "physical_evidence": [
+            "itt_report",
+            "flow",
+            "itt_plan"
+          ],
+          "original_citation_ids": [
+            "C4",
+            "C5"
+          ]
+        },
+        {
+          "domain_id": "domain:measurement",
+          "question_id": "sq:measurement:method-inappropriate",
+          "original_answer": "no",
+          "score": 3,
+          "rationale": "Standard MI/stroke definitions, active surveillance, blinded event classification and all-patient vital-status checks warrant an appropriate MACCE method.",
+          "physical_evidence": [
+            "endpoint",
+            "adjudication",
+            "surveillance"
+          ],
+          "original_citation_ids": [
+            "C6",
+            "C7"
+          ]
+        },
+        {
+          "domain_id": "domain:measurement",
+          "question_id": "sq:measurement:differential",
+          "original_answer": "no",
+          "score": 2,
+          "rationale": "Common reported visit/surveillance procedures support the negative answer. Their equality does not fully establish equal unscheduled testing or referral, and the answer does not retain that residual uncertainty. No actual differential MACCE detection is demonstrated.",
+          "physical_evidence": [
+            "surveillance",
+            "endpoint",
+            "adjudication",
+            "prescribing"
+          ],
+          "original_citation_ids": [
+            "C8",
+            "C9",
+            "C6"
+          ]
+        },
+        {
+          "domain_id": "domain:measurement",
+          "question_id": "sq:measurement:assessor-aware",
+          "original_answer": "no",
+          "score": 3,
+          "rationale": "The committee that classifies reported MACCE events was independently blinded. This does not claim that unmasked investigators collected every possible event without influence.",
+          "physical_evidence": [
+            "adjudication",
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C6"
+          ]
+        },
+        {
+          "domain_id": "domain:missing",
+          "question_id": "sq:missing:data-available",
+          "original_answer": "probably_yes",
+          "score": 1,
+          "rationale": "Relevant follow-up and censoring passages exist, and the stated completion counts are true elsewhere in the source. However C10, designated direct support, is a baseline risk-factor passage rather than completion evidence. Nearly complete one-year assessment does not establish nearly complete composite ascertainment for the HR window; the 62 early incomplete participants are appreciable relative to 220 reported events. The caveat bounds some uncertainty but does not explain negligible potential material impact. ITT inclusion is not observation.",
+          "physical_evidence": [
+            "wrong_completion_citation",
+            "completion",
+            "flow",
+            "followup_events",
+            "report_censor"
+          ],
+          "original_citation_ids": [
+            "C10",
+            "C11",
+            "C12"
+          ]
+        },
+        {
+          "domain_id": "domain:randomization",
+          "question_id": "sq:randomization:sequence",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "The actual report specifies computer-generated blocks of four and stratification; random generation is directly warranted.",
+          "physical_evidence": [
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C13"
+          ]
+        },
+        {
+          "domain_id": "domain:randomization",
+          "question_id": "sq:randomization:concealment",
+          "original_answer": "probably_yes",
+          "score": 2,
+          "rationale": "Actual web allocation plus planned consent-before-randomization supports a probable inference, with access safeguards correctly unknown. Consent order is planned rather than independently confirmed conduct; web delivery alone is not concealment proof.",
+          "physical_evidence": [
+            "masking",
+            "concealment_plan_A"
+          ],
+          "original_citation_ids": [
+            "C14",
+            "C15"
+          ]
+        },
+        {
+          "domain_id": "domain:randomization",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "original_answer": "no",
+          "score": 2,
+          "rationale": "Cited group sizes and key enrollment risks are close and support the negative inference; the selected citation covers only part of the full baseline table. Full table inspection corroborates the inference without making balance proof of concealment.",
+          "physical_evidence": [
+            "baseline_A",
+            "baseline_all"
+          ],
+          "original_citation_ids": [
+            "C16"
+          ]
+        },
+        {
+          "domain_id": "domain:selection",
+          "question_id": "sq:selection:prespecified-analysis",
+          "original_answer": "probably_yes",
+          "score": 1,
+          "rationale": "Applicable dated SAP and matching ITT/endpoint/model provide relevant support; A appropriately calls timing inferred. But blinded recruitment analysis does not establish all investigator access before SAP finalization, and matching choices ignores the material added three-year cap and table overall-period wording. The claim of reported-plan correspondence is incomplete.",
+          "physical_evidence": [
+            "sap_identity",
+            "sap_primary",
+            "sap_endpoint",
+            "dates",
+            "blind_analysis",
+            "sap_censor",
+            "report_censor",
+            "table_window",
+            "recruitment_conflict"
+          ],
+          "original_citation_ids": [
+            "C17",
+            "C18",
+            "C19",
+            "C20",
+            "C21"
+          ]
+        },
+        {
+          "domain_id": "domain:selection",
+          "question_id": "sq:selection:multiple-measurements",
+          "original_answer": "no",
+          "score": 2,
+          "rationale": "Primary composite definition matches and component endpoints are distinct secondary outcomes. Calling this one eligible measurement is somewhat stronger than the supplied review hierarchy permits; the approved chosen result alone cannot retrospectively exclude all alternatives. No evidence of result-driven measurement selection is established.",
+          "physical_evidence": [
+            "sap_endpoint",
+            "endpoint",
+            "table_window"
+          ],
+          "original_citation_ids": [
+            "C19",
+            "C7"
+          ]
+        },
+        {
+          "domain_id": "domain:selection",
+          "question_id": "sq:selection:multiple-analyses",
+          "original_answer": "probably_no",
+          "score": 1,
+          "rationale": "Correctly distinguishes planned ITT/PP and cites actual reported sensitivity estimates, with generic uncertainty. It does not address the specific censoring-rule discrepancy or whether alternatives under those rules were eligible and selected; general agreement and absence of an indication do not resolve that material issue.",
+          "physical_evidence": [
+            "sap_primary",
+            "sap_endpoint",
+            "itt_report",
+            "pp_result",
+            "restricted_sens",
+            "sap_censor",
+            "report_censor",
+            "table_window"
+          ],
+          "original_citation_ids": [
+            "C22",
+            "C23",
+            "C21",
+            "C24",
+            "C25"
+          ]
+        }
+      ],
+      "domain_dimensions": [
+        {
+          "domain_id": "domain:deviations",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Literal citations support masking, categorized departures, and the reported ITT; planned assignment definition is corroborated by conduct.",
+              "physical_evidence": [
+                "masking",
+                "deviations",
+                "itt_report",
+                "flow",
+                "itt_plan"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "Maintains assignment effect and distinct PP sensitivity, without treating protocol violations as missing events.",
+              "physical_evidence": [
+                "flow",
+                "itt_report"
+              ]
+            },
+            "inference_materiality": {
+              "score": 2,
+              "rationale": "NI is bounded but actual medication-use and discretionary ordinary-care evidence are omitted.",
+              "physical_evidence": [
+                "deviations",
+                "medications",
+                "ordinary_care"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": 3,
+              "rationale": "Plan definition is not the only warrant; actual ITT and flow corroborate performed assignment analysis.",
+              "physical_evidence": [
+                "itt_plan",
+                "itt_report",
+                "flow"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 2,
+              "rationale": "Unknown trial-context causes preserved; relevant reassuring ordinary-care evidence receives limited consideration.",
+              "physical_evidence": [
+                "deviations",
+                "ordinary_care",
+                "prescribing"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:measurement",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Citations accurately bind adjudication, definitions, surveillance and vital status.",
+              "physical_evidence": [
+                "adjudication",
+                "endpoint",
+                "surveillance"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "Assessors and definitions concern MACCE, with death verification kept outcome-specific.",
+              "physical_evidence": [
+                "endpoint",
+                "adjudication"
+              ]
+            },
+            "inference_materiality": {
+              "score": 2,
+              "rationale": "Validity and assessor identification are strong; definitive equal-detection conclusion exceeds reported shared procedures slightly.",
+              "physical_evidence": [
+                "surveillance",
+                "masking"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": "NA",
+              "rationale": "These answers use reported performed ascertainment, not a disputed historical plan-to-report comparison.",
+              "physical_evidence": [
+                "adjudication",
+                "surveillance"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 2,
+              "rationale": "No demonstrated differential detection, but absent unscheduled-testing frequencies not retained.",
+              "physical_evidence": [
+                "surveillance",
+                "prescribing"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:missing",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 1,
+              "rationale": "C10 is literally accurate but is baseline risk factors, not direct completion support. C11/C12 support duration/events/censoring; claimed completion counts occur elsewhere and are absent from the answer bases.",
+              "physical_evidence": [
+                "wrong_completion_citation",
+                "completion",
+                "followup_events",
+                "report_censor"
+              ]
+            },
+            "result_scope": {
+              "score": 1,
+              "rationale": "One-year completion is not nearly complete composite observation across the selected HR window; caveat partly retains distinction.",
+              "physical_evidence": [
+                "completion",
+                "report_censor",
+                "table_window"
+              ]
+            },
+            "inference_materiality": {
+              "score": 1,
+              "rationale": "98.9% completion is not connected to endpoint rarity or negligible potential material impact. ITT inclusion cannot repair that gap.",
+              "physical_evidence": [
+                "flow",
+                "followup_events",
+                "completion"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": "NA",
+              "rationale": "No historical prespecification claim is made in this active availability answer. Censoring interpretation is scored under scope and inference.",
+              "physical_evidence": [
+                "report_censor"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 1,
+              "rationale": "Full-window enumeration uncertainty stated, but actual early loss and event rarity not weighed.",
+              "physical_evidence": [
+                "flow",
+                "followup_events"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:randomization",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "All passages are literal; sequence is conducted, consent/order passage is planned and scope identifiable.",
+              "physical_evidence": [
+                "masking",
+                "concealment_plan_A",
+                "baseline_A"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "All randomized comparison groups and their enrollment factors retained.",
+              "physical_evidence": [
+                "baseline_A",
+                "masking"
+              ]
+            },
+            "inference_materiality": {
+              "score": 2,
+              "rationale": "Remote web inference and partial baseline citation leave minor gaps, bounded probable concealment.",
+              "physical_evidence": [
+                "masking",
+                "concealment_plan_A",
+                "baseline_all"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": 2,
+              "rationale": "Consent-before-allocation sequence comes from future-tense protocol; report confirms web allocation but not every safeguard.",
+              "physical_evidence": [
+                "concealment_plan_A",
+                "masking"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 2,
+              "rationale": "Access unknowns explicitly retained; broader baseline table not selected as support.",
+              "physical_evidence": [
+                "masking",
+                "baseline_A",
+                "baseline_all"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:selection",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Literal SAP identity, endpoint/model and actual sensitivity citations are accurate; accurate quotes do not settle omitted discrepancy.",
+              "physical_evidence": [
+                "sap_identity",
+                "sap_primary",
+                "sap_endpoint",
+                "pp_result",
+                "restricted_sens"
+              ]
+            },
+            "result_scope": {
+              "score": 1,
+              "rationale": "Claims correspondence omit the planned versus reported censoring and overall-period conflict in the common Result.",
+              "physical_evidence": [
+                "sap_censor",
+                "report_censor",
+                "table_window"
+              ]
+            },
+            "inference_materiality": {
+              "score": 1,
+              "rationale": "Blind pooled recruitment analysis and date give partial support, but do not resolve access or result-selection across censoring choices.",
+              "physical_evidence": [
+                "blind_analysis",
+                "dates",
+                "sap_censor",
+                "report_censor"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": 1,
+              "rationale": "Version date correctly found but plan finalization/access remains unknown and added cap is not compared.",
+              "physical_evidence": [
+                "sap_identity",
+                "dates",
+                "sap_censor",
+                "report_censor"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 1,
+              "rationale": "Generic access/unreported-model caveats miss specific censoring conflict and the report\u2019s contradictory account of sample-size extension prespecification.",
+              "physical_evidence": [
+                "blind_analysis",
+                "recruitment_conflict",
+                "sap_censor",
+                "report_censor"
+              ]
+            }
+          }
+        }
+      ],
+      "answer_score_summary": {
+        "sum": 31,
+        "possible": 42,
+        "active_answer_count": 14,
+        "interpretation": "Descriptive only; unequal active paths mean raw sums are not comparable performance measures."
+      }
+    },
+    "B": {
+      "independent_answer_scores": [
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:participants-aware",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "Explicit report establishes that participants were unmasked.",
+          "physical_evidence": [
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:personnel-aware",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "Report establishes unmasked investigators and allocated medication delivery.",
+          "physical_evidence": [
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:context-deviations",
+          "original_answer": "probably_no",
+          "score": 3,
+          "rationale": "Probable negative inference uses actual medication-use data, ordinary discretionary later care and bounded unknown individual reasons. Acknowledges allocation-related prescribing possibility without equating it with prohibited, trial-caused MACCE-relevant deviation.",
+          "physical_evidence": [
+            "deviations",
+            "medications",
+            "ordinary_care",
+            "prescribing"
+          ],
+          "original_citation_ids": [
+            "C2",
+            "C3",
+            "C4",
+            "C5"
+          ]
+        },
+        {
+          "domain_id": "domain:deviations",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "Report and flow corroborate all randomized assigned-group ITT counts and distinct PP exclusions. No observation-completeness inference is required.",
+          "physical_evidence": [
+            "itt_report",
+            "flow",
+            "table_window"
+          ],
+          "original_citation_ids": [
+            "C6",
+            "C7"
+          ]
+        },
+        {
+          "domain_id": "domain:measurement",
+          "question_id": "sq:measurement:method-inappropriate",
+          "original_answer": "probably_no",
+          "score": 3,
+          "rationale": "Appropriateness inference combines reported active surveillance, definitions, independent adjudication and vital-status checks with actual component frequencies. Death contributes many events; it does not imply all first composite events were deaths.",
+          "physical_evidence": [
+            "surveillance",
+            "endpoint",
+            "adjudication",
+            "followup_events"
+          ],
+          "original_citation_ids": [
+            "C1",
+            "C7"
+          ]
+        },
+        {
+          "domain_id": "domain:measurement",
+          "question_id": "sq:measurement:differential",
+          "original_answer": "probably_no",
+          "score": 3,
+          "rationale": "Common reported surveillance and probable rather than definitive inference are appropriately limited by unknown unscheduled testing frequencies. No source establishes actual differential ascertainment.",
+          "physical_evidence": [
+            "surveillance",
+            "endpoint",
+            "followup_events"
+          ],
+          "original_citation_ids": [
+            "C1",
+            "C7"
+          ]
+        },
+        {
+          "domain_id": "domain:measurement",
+          "question_id": "sq:measurement:assessor-aware",
+          "original_answer": "no",
+          "score": 3,
+          "rationale": "Correctly distinguishes unmasked event collectors from blinded committee classification of reported MACCE. Does not substitute committee blinding for complete event capture.",
+          "physical_evidence": [
+            "adjudication",
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:missing",
+          "question_id": "sq:missing:data-available",
+          "original_answer": "probably_no",
+          "score": 3,
+          "rationale": "Distinguishes randomized/analyzed counts, early completion, administrative shortening, vital status and composite observation. Comparison of 62 early incomplete participants with 220 events gives a defensible qualitative materiality concern, not a quantified HR bias estimate; full-window loss timing remains unknown.",
+          "physical_evidence": [
+            "flow",
+            "completion",
+            "followup_events",
+            "endpoint",
+            "report_censor"
+          ],
+          "original_citation_ids": [
+            "C6",
+            "C8",
+            "C1",
+            "C7"
+          ]
+        },
+        {
+          "domain_id": "domain:missing",
+          "question_id": "sq:missing:evidence-unbiased",
+          "original_answer": "no",
+          "score": 3,
+          "rationale": "Censoring and reported PP/restricted-follow-up estimates are correctly distinguished from evidence addressing unobserved MACCE under plausible informative loss. No mandatory sensitivity-method rule is imposed; the inspected analyses do not demonstrate absence of that bias.",
+          "physical_evidence": [
+            "missing_method",
+            "report_censor",
+            "pp_result",
+            "restricted_sens_method",
+            "restricted_sens"
+          ],
+          "original_citation_ids": [
+            "C9",
+            "C6",
+            "C10",
+            "C11"
+          ]
+        },
+        {
+          "domain_id": "domain:missing",
+          "question_id": "sq:missing:true-value-dependent",
+          "original_answer": "probably_yes",
+          "score": 2,
+          "rationale": "Withdrawal/loss and incomplete nonfatal event recovery make dependence possible. Individual health-related reasons are unknown, so the proposed worsening-health mechanism is inference, not an observed cause. The answer explicitly distinguishes possibility from demonstrated dependence, though supporting circumstances are limited.",
+          "physical_evidence": [
+            "flow",
+            "endpoint"
+          ],
+          "original_citation_ids": [
+            "C6",
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:missing",
+          "question_id": "sq:missing:likely-dependent",
+          "original_answer": "probably_no",
+          "score": 2,
+          "rationale": "Similar early loss proportions, follow-up duration and death linkage supply relevant counterevidence and unknown timing/reasons are retained. Equal loss rates alone cannot distinguish informative from noninformative censoring, particularly for nonfatal components; probable negative inference remains defensible with a substantive gap.",
+          "physical_evidence": [
+            "flow",
+            "followup_events",
+            "endpoint"
+          ],
+          "original_citation_ids": [
+            "C6",
+            "C7",
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:randomization",
+          "question_id": "sq:randomization:sequence",
+          "original_answer": "yes",
+          "score": 3,
+          "rationale": "Actual report directly states computer-generated block randomization with stratification.",
+          "physical_evidence": [
+            "masking"
+          ],
+          "original_citation_ids": [
+            "C1"
+          ]
+        },
+        {
+          "domain_id": "domain:randomization",
+          "question_id": "sq:randomization:concealment",
+          "original_answer": "probably_yes",
+          "score": 3,
+          "rationale": "Matches performed web allocation to explicitly planned independent organization, preserves the unconfirmed conduct of independence and unknown safeguards, and uses only a probable conclusion. Planned independence is supporting context rather than asserted implementation.",
+          "physical_evidence": [
+            "masking",
+            "concealment_plan_B"
+          ],
+          "original_citation_ids": [
+            "C1",
+            "C12"
+          ]
+        },
+        {
+          "domain_id": "domain:randomization",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "original_answer": "no",
+          "score": 3,
+          "rationale": "Complete reported baseline table supports near balance in important prognostic features. Differences are interpreted as compatible with chance, not used to prove randomization fidelity.",
+          "physical_evidence": [
+            "baseline_all"
+          ],
+          "original_citation_ids": [
+            "C8"
+          ]
+        },
+        {
+          "domain_id": "domain:selection",
+          "question_id": "sq:selection:prespecified-analysis",
+          "original_answer": "no_information",
+          "score": 3,
+          "rationale": "Separates SAP applicability/content/date, actual reported analysis, unblinded access and unexplained three-year cap. NI retains rather than repairs the discrepancy; this is not evidence that the cap was result-driven.",
+          "physical_evidence": [
+            "sap_identity",
+            "sap_primary",
+            "sap_endpoint",
+            "sap_censor",
+            "dates",
+            "report_censor",
+            "table_window"
+          ],
+          "original_citation_ids": [
+            "C13",
+            "C14",
+            "C15",
+            "C16",
+            "C6"
+          ]
+        },
+        {
+          "domain_id": "domain:selection",
+          "question_id": "sq:selection:multiple-measurements",
+          "original_answer": "probably_no",
+          "score": 2,
+          "rationale": "Primary planned composite and reported components support probable absence of result-driven measurement selection. Related composites are acknowledged, but eligibility is not fully defined by independent review criteria. Allocating the specific censoring discrepancy to analyses is reasonable.",
+          "physical_evidence": [
+            "sap_endpoint",
+            "endpoint",
+            "table_window"
+          ],
+          "original_citation_ids": [
+            "C15",
+            "C1",
+            "C7"
+          ]
+        },
+        {
+          "domain_id": "domain:selection",
+          "question_id": "sq:selection:multiple-analyses",
+          "original_answer": "no_information",
+          "score": 3,
+          "rationale": "Specific planned/report censoring alternatives and table wording are retained; NI distinguishes unexplained correspondence from established result-driven selection. Does not pretend restricted-population sensitivities give both censoring-rule results. Eligibility is described as potential rather than settled.",
+          "physical_evidence": [
+            "sap_primary",
+            "sap_censor",
+            "report_censor",
+            "table_window",
+            "pp_result",
+            "restricted_sens"
+          ],
+          "original_citation_ids": [
+            "C14",
+            "C16",
+            "C6",
+            "C7"
+          ]
+        }
+      ],
+      "domain_dimensions": [
+        {
+          "domain_id": "domain:deviations",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Broad but exact source windows contain the relevant performed facts and reported care context.",
+              "physical_evidence": [
+                "masking",
+                "deviations",
+                "medications",
+                "ordinary_care"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "Assignment ITT remains the target; PP violations and later treatment do not redefine it.",
+              "physical_evidence": [
+                "flow",
+                "itt_report"
+              ]
+            },
+            "inference_materiality": {
+              "score": 3,
+              "rationale": "Uses permitted ordinary care and actual adherence as grounds for a probable, not compelled, negative context judgment.",
+              "physical_evidence": [
+                "medications",
+                "ordinary_care",
+                "prescribing"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": 3,
+              "rationale": "Report documents ordinary discretionary care; historical plan is not substituted for performed analysis.",
+              "physical_evidence": [
+                "ordinary_care",
+                "itt_report",
+                "flow"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 3,
+              "rationale": "Unknown individual reasons and allocation-related prescribing explicitly considered without inventing trial cause.",
+              "physical_evidence": [
+                "deviations",
+                "prescribing"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:measurement",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Full source quotes are exact and include actual definitions, surveillance and adjudication.",
+              "physical_evidence": [
+                "adjudication",
+                "endpoint",
+                "surveillance"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "Composite components, death linkage and final classification kept separate.",
+              "physical_evidence": [
+                "endpoint",
+                "followup_events",
+                "adjudication"
+              ]
+            },
+            "inference_materiality": {
+              "score": 3,
+              "rationale": "Probable shared-detection inference with unknown unscheduled testing is appropriately bounded.",
+              "physical_evidence": [
+                "surveillance",
+                "followup_events"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": "NA",
+              "rationale": "Uses reported ascertainment conduct; no disputed historical plan correspondence proposition.",
+              "physical_evidence": [
+                "adjudication",
+                "surveillance"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 3,
+              "rationale": "Acknowledges collector versus committee distinction and unscheduled-testing uncertainty.",
+              "physical_evidence": [
+                "masking",
+                "adjudication",
+                "surveillance"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:missing",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Citations contain actual early withdrawal/loss, duration/events, vital status and sensitivity evidence.",
+              "physical_evidence": [
+                "flow",
+                "completion",
+                "followup_events",
+                "endpoint",
+                "restricted_sens"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "Maintains full HR-window uncertainty and distinct analyzed/completed/composite-observed quantities.",
+              "physical_evidence": [
+                "flow",
+                "completion",
+                "report_censor"
+              ]
+            },
+            "inference_materiality": {
+              "score": 2,
+              "rationale": "Availability and unbiasedness warranted; possibility-versus-likelihood judgments use plausible but unobserved reasons and limited reassurance from balanced loss.",
+              "physical_evidence": [
+                "flow",
+                "followup_events",
+                "endpoint"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": "NA",
+              "rationale": "No claim about when the plan was finalized; report/method comparison concerns handling losses, scored under scope/inference.",
+              "physical_evidence": [
+                "missing_method",
+                "report_censor"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 3,
+              "rationale": "Retains unknown loss reasons/timing and distinguishes similar loss, death linkage and population sensitivities from complete composite observation or proven noninformative censoring.",
+              "physical_evidence": [
+                "flow",
+                "endpoint",
+                "restricted_sens"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:randomization",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Full conducted allocation and baseline passages are literal; planned independence attributed as plan.",
+              "physical_evidence": [
+                "masking",
+                "concealment_plan_B",
+                "baseline_all"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "Whole randomized comparison and prognostic baseline population preserved.",
+              "physical_evidence": [
+                "baseline_all"
+              ]
+            },
+            "inference_materiality": {
+              "score": 3,
+              "rationale": "Random generation and balance are direct/report-grounded; concealment remains explicitly probable with safeguards unknown.",
+              "physical_evidence": [
+                "masking",
+                "concealment_plan_B",
+                "baseline_all"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": 3,
+              "rationale": "Planned independent operation supports inference but its implementation is expressly unconfirmed.",
+              "physical_evidence": [
+                "concealment_plan_B",
+                "masking"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 3,
+              "rationale": "Access and actual independence limitations retained without treating balance as a guarantee.",
+              "physical_evidence": [
+                "concealment_plan_B",
+                "masking",
+                "baseline_all"
+              ]
+            }
+          }
+        },
+        {
+          "domain_id": "domain:selection",
+          "dimensions": {
+            "citation_fidelity": {
+              "score": 3,
+              "rationale": "Exact windows contain SAP identity, primary model, censoring, actual report cap and table period.",
+              "physical_evidence": [
+                "sap_identity",
+                "sap_primary",
+                "sap_censor",
+                "report_censor",
+                "table_window"
+              ]
+            },
+            "result_scope": {
+              "score": 3,
+              "rationale": "Retains exact ITT HR, separate PP sensitivity and competing window wording.",
+              "physical_evidence": [
+                "itt_report",
+                "table_window",
+                "pp_result",
+                "report_censor"
+              ]
+            },
+            "inference_materiality": {
+              "score": 2,
+              "rationale": "Specific NI warrants are strong; eligible measurement alternatives still incompletely specified by an independent review hierarchy.",
+              "physical_evidence": [
+                "sap_endpoint",
+                "table_window",
+                "sap_censor",
+                "report_censor"
+              ]
+            },
+            "chronology_plan_correspondence": {
+              "score": 3,
+              "rationale": "Separates version date/content from finalization/access and actual unexplained cap; does not assert result-driven change.",
+              "physical_evidence": [
+                "sap_identity",
+                "dates",
+                "sap_censor",
+                "report_censor"
+              ]
+            },
+            "uncertainty_counterevidence": {
+              "score": 3,
+              "rationale": "Censoring conflict and unknown timing/rationale explicitly retained; NI does not mean a demonstrated adverse selection mechanism. Pooled blind analysis can reassure about that analysis but cannot date all investigator access.",
+              "physical_evidence": [
+                "sap_censor",
+                "report_censor",
+                "table_window",
+                "blind_analysis"
+              ]
+            }
+          }
+        }
+      ],
+      "answer_score_summary": {
+        "sum": 48,
+        "possible": 51,
+        "active_answer_count": 17,
+        "interpretation": "Descriptive only; unequal active paths mean raw sums are not comparable performance measures."
+      }
+    }
+  },
+  "source_warrant_comparison": {
+    "citation_fidelity": {
+      "observed_support": "Every A and B quote and answer citation body was mechanically matched to the actual numbered Source coordinate; no text mismatch was found. This checks literal fidelity, not scientific entailment. A missing-data C10 is a substantive irrelevant-premise binding despite literal fidelity. B uses broader passages that contain the relevant premises.",
+      "physical_evidence": [
+        "wrong_completion_citation",
+        "completion"
+      ]
+    },
+    "result_scope": {
+      "observed_support": "Both maintain assignment ITT MACCE. B more explicitly separates completion from full composite observation and retains SAP/report/table window conflict. A includes useful caveats but its availability and plan-match warrants do not carry these distinctions far enough.",
+      "physical_evidence": [
+        "flow",
+        "completion",
+        "followup_events",
+        "sap_censor",
+        "report_censor",
+        "table_window"
+      ]
+    },
+    "inference_materiality": {
+      "observed_support": "Neither high completion nor low loss automatically determines the answer. B compares loss with rare-event frequency; A does not justify negligible potential impact. Both have reasonable web-concealment inferences; B better bounds equal-detection inference. B likely-dependence remains weaker than its availability reasoning because similar loss rates do not establish noninformative loss.",
+      "physical_evidence": [
+        "flow",
+        "followup_events",
+        "masking",
+        "concealment_plan_B",
+        "surveillance"
+      ]
+    },
+    "chronology_plan_correspondence": {
+      "observed_support": "SAP version 1.3 date and matching primary content are observed. Finalization before investigator access and timing/rationale of the cap are not established. A records access unknown but does not confront the specific cap; B does. Report pooled-analysis reassurance is scoped and not proof of all earlier outcome access. The recruitment account also says extension criteria were not prespecified, while other text describes prespecified criteria, so no complete chronology is inferred.",
+      "physical_evidence": [
+        "sap_identity",
+        "sap_primary",
+        "sap_censor",
+        "report_censor",
+        "blind_analysis",
+        "recruitment_conflict",
+        "dates"
+      ]
+    },
+    "uncertainty_counterevidence": {
+      "observed_support": "A NI for context-caused deviations is a defensible bounded judgment; B probable no is also defensible because ordinary discretionary care and actual medication use supply additional reassurance. Their different polarity is not itself a score difference. B preserves more specific window and ascertainment uncertainty; both lack individual loss reasons. Empty counterevidence arrays were not mechanically penalized where relevant limitations are present in prose.",
+      "physical_evidence": [
+        "deviations",
+        "medications",
+        "ordinary_care",
+        "prescribing",
+        "flow",
+        "table_window"
+      ]
+    },
+    "clinical_label_preferences": "No expected or preferred clinical risk label was used. Scores reward scoped support and bounded inference, not severity, agreement or NI by default. No labels were repaired or recalculated.",
+    "comparison_conclusion": "For this packet, B has stronger source warrants in missing-data availability and selection chronology/window correspondence. Both have strong masking, performed assignment-analysis and blinded-adjudication warrants. This is a case-specific observation, not an accuracy or model-superiority claim."
+  },
+  "limits": [
+    "Only final active answer sets and frozen packet content were reviewed; no identities, telemetry, revision history, actual-delivery traces, external trial knowledge or web sources were consulted.",
+    "A has 14 active answers and B has 17; inactive branches are not scored as missing or zero. Domain dimensions marked NA are excluded, not zero.",
+    "Original packaged guidance was used as interpretation context. The packet does not expose the original runtime official question-card wording, options or algorithmic activation receipts; no claim of algorithmic correctness is made.",
+    "Review used numbered frozen text projections, not original PDF layout or participant-level data. Literal coordinate checks do not establish scientific entailment.",
+    "No exact number of unavailable composite observations through the HR window, reasons/timing for each loss, first unblinded access date, or estimate under both censoring rules was established.",
+    "Potential missing-event materiality is qualitative, not a quantitative corrected HR or a claim actual bias occurred.",
+    "A single exposed case cannot establish model superiority; no aggregate winner or model accuracy estimate is justified."
+  ],
+  "projection_note": "Source text omitted for compact publication. Scores/rationales and coordinates unchanged; original locked review is preserved privately with SHA-256 recorded separately."
+}
