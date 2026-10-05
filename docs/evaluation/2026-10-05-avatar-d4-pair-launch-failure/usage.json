@@ -1,0 +1,70 @@
+{
+  "old": {
+    "1": {
+      "thread_id": "01a10987-27d9-7002-bbcf-a1be340ee305",
+      "usage": [
+        {
+          "input_tokens": 929309,
+          "cached_input_tokens": 837120,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3783,
+          "reasoning_output_tokens": 908
+        }
+      ],
+      "complete": true,
+      "tool_count": 13,
+      "log_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/avatar-d4-guidance-pair/old/turn-1.jsonl",
+      "sha256": "037adc8e8572d1708736e54193298f7f1159e4396b3e2ab293f48f2788104cbe"
+    },
+    "2": {
+      "thread_id": "01a1098a-7983-7fe0-a0a0-7a1762dea2d6",
+      "usage": [
+        {
+          "input_tokens": 153401,
+          "cached_input_tokens": 100608,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 598,
+          "reasoning_output_tokens": 227
+        }
+      ],
+      "complete": true,
+      "tool_count": 1,
+      "log_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/avatar-d4-guidance-pair/old/turn-2.jsonl",
+      "sha256": "6e9c247f84b28de578ddd0d794c4495de291954a17805d20a362d5cb46e934bc"
+    }
+  },
+  "new": {
+    "1": {
+      "thread_id": "01a10987-6335-7141-a130-ccde2485a3b2",
+      "usage": [
+        {
+          "input_tokens": 1301368,
+          "cached_input_tokens": 1196800,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 5038,
+          "reasoning_output_tokens": 1260
+        }
+      ],
+      "complete": true,
+      "tool_count": 13,
+      "log_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/avatar-d4-guidance-pair/new/turn-1.jsonl",
+      "sha256": "3f643c7c53b685ea61bde076abc3434ba38e35720803fa864d94ca7439c235be"
+    },
+    "2": {
+      "thread_id": "01a1098a-8124-7081-8786-e7eb33208cd5",
+      "usage": [
+        {
+          "input_tokens": 312361,
+          "cached_input_tokens": 260608,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 576,
+          "reasoning_output_tokens": 87
+        }
+      ],
+      "complete": true,
+      "tool_count": 1,
+      "log_path": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/avatar-d4-guidance-pair/new/turn-2.jsonl",
+      "sha256": "43c6681cc498e3a5919d2fb2508f93e76f111a6ae54b68fef35ed8da10f54c64"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "reason": "Wrong CLI module failed approval; dependent resume mistakenly launched with empty session identifier; Codex opened a fresh thread. No further paid work authorized within original two-session design.",
+  "original_session": "01a10987-6335-7141-a130-ccde2485a3b2",
+  "invalid_session": "01a1098a-8124-7081-8786-e7eb33208cd5",
+  "known_usage": [
+    {
+      "input_tokens": 312361,
+      "cached_input_tokens": 260608,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 576,
+      "reasoning_output_tokens": 87
+    }
+  ],
+  "pending_usage_unknown": false,
+  "tools": [
+    "get_status"
+  ],
+  "at": 1791161489.0695949
+}
