@@ -16,6 +16,15 @@ from typing import Any, cast
 
 from pydantic import ValidationError
 
+from ..logic.adjudication import (
+    DOMAIN_JUDGMENT_CONTRACT,
+    LEGACY_DOMAIN_JUDGMENT_CONTRACT,
+    valid_domain_contract,
+    valid_domain_decision,
+)
+from ..logic.adjudication import (
+    domain_evidence_ids as _domain_evidence_ids,
+)
 from ..logic.aggregation import (
     AGGREGATION_CONTRACT,
     LEGACY_AGGREGATION_CONTRACT,
@@ -2412,34 +2421,6 @@ def _valid_proposal_gate(
     )
 
 
-def _domain_evidence_ids(record: object) -> set[str]:
-    if not isinstance(record, dict) or not isinstance(record.get("answers"), list):
-        return set()
-    answer_basis_ids = {
-        basis.get("evidence")
-        for answer in record["answers"]
-        if isinstance(answer, dict) and isinstance(answer.get("bases"), list)
-        for basis in answer["bases"]
-        if isinstance(basis, dict) and isinstance(basis.get("evidence"), str)
-    }
-    missing_data_ids = {
-        evidence_identity
-        for answer in record["answers"]
-        if isinstance(answer, dict)
-        for row in (answer.get("missing_data") or {}).get("rows", [])
-        if isinstance(row, dict) and isinstance(row.get("basis"), list)
-        for evidence_identity in row["basis"]
-        if isinstance(evidence_identity, str)
-    }
-    nested_ids = {
-        value
-        for answer in record["answers"]
-        for basis in answer.get("bases", [])
-        for value in (basis.get("working_observation", {}).get("count_evidence") or {}).values()
-    }
-    return answer_basis_ids | missing_data_ids | nested_ids
-
-
 def _domain_identity_fields(
     record: dict[str, Any], *, legacy_semantics: bool = False
 ) -> tuple[str, ...]:
@@ -2463,6 +2444,8 @@ def _domain_identity_fields(
         fields.append("evidence_sufficiency")
     if not legacy_semantics and "result_identity" in record:
         fields.append("result_identity")
+    if not legacy_semantics and "decision" in record:
+        fields.append("decision")
     return tuple(fields)
 
 
@@ -2680,6 +2663,11 @@ def _valid_overall_receipt(
             "driver_questions",
             "driver_answers",
             "evidence_sufficiency",
+            *(
+                {"decision"}
+                if "decision" in records.get(f"{trial_id}:{item.get('domain_id')}", {})
+                else set()
+            ),
         }:
             return False
         domain_id = item.get("domain_id")
@@ -2688,6 +2676,7 @@ def _valid_overall_receipt(
             not isinstance(record, dict)
             or item.get("checkpoint") != record.get("identity")
             or item.get("judgment") != record.get("judgment")
+            or item.get("decision") != record.get("decision")
             or item.get("trace") != record.get("trace")
             or item.get("driver_questions") != record.get("driver_questions", [])
             or item.get("evidence_sufficiency") != record.get("evidence_sufficiency")
@@ -2994,6 +2983,7 @@ def _scientific_contract_descriptor() -> dict[str, Any]:
     if official_version != SCIENTIFIC_PACK.provenance.version:
         raise ValueError("scientific pack has inconsistent official source provenance")
     return {
+        "domain_judgment_contract": DOMAIN_JUDGMENT_CONTRACT,
         "aggregation_contract": AGGREGATION_CONTRACT,
         "id": SCIENTIFIC_PACK.id,
         "version": SCIENTIFIC_PACK.version,
@@ -3014,12 +3004,22 @@ def _valid_scientific_contract_descriptor(value: object) -> bool:
         return False
     if isinstance(value, dict) and value == expected:
         return True
+    expected.pop("domain_judgment_contract")
+    if value == expected:
+        return True
+    prior = {
+        **expected,
+        "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1",
+    }
+    if value == prior:
+        return True
     expected.pop("aggregation_contract")
     if value == expected:
         return True
     # These exact historical descriptors are also retained by the dependency-free
     # verifier. Guidance edits change the computed pack hash, not result semantics.
     prior_guidance = (
+        ("v0.9", "49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1"),
         ("v0.9", "2a11301824d7fa0a2f773d0fd75985ad03a2dca2a2cd7107e7376f46cdb8905a"),
         ("v0.9", "d66cd4805702afc472ec980fe1c64446bcc97e6da0eb8730a8edc243c70a532a"),
         ("v0.9", "d6ff8a6af60f92a9f810f24f1264303a8fa90d0ac1d600ed66a37be9eefa6623"),
@@ -3141,6 +3141,10 @@ def _assessment_summary(state: dict[str, Any]) -> dict[str, dict[str, Any]]:
             "aggregation": snapshot.get("aggregation"),
             "overall": snapshot["overall"],
             "domains": dict(snapshot["domain_judgments"]),
+            "domain_decisions": {
+                domain.id: state["domain_records"][f"{trial_id}:{domain.id}"].get("decision")
+                for domain in SCIENTIFIC_PACK.domains
+            },
             "overall_trace": list(snapshot.get("overall_trace", ())),
             "overall_driver_domains": list(snapshot.get("overall_driver_domains", ())),
             "overall_receipt": snapshot.get("overall_receipt"),
@@ -3455,6 +3459,17 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
         "snapshot_history_records": state.get("snapshot_history_records", {}),
         "terminals": state.get("terminals", {}),
         "scientific_pack": _scientific_contract_descriptor(),
+        "legacy_domain_checkpoints": {
+            "contract": LEGACY_DOMAIN_JUDGMENT_CONTRACT,
+            "identities": sorted(
+                {
+                    record["identity"]
+                    for records in state.get("domain_history_records", {}).values()
+                    for record in records
+                    if "decision" not in record
+                }
+            ),
+        },
         "legacy_aggregation_snapshots": {
             "contract": LEGACY_AGGREGATION_CONTRACT,
             "identities": sorted(
@@ -3996,6 +4011,9 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
             canonical_shapes.update(
                 {shape | {"legacy_aggregation_snapshots"} for shape in tuple(canonical_shapes)}
             )
+            canonical_shapes.update(
+                {shape | {"legacy_domain_checkpoints"} for shape in tuple(canonical_shapes)}
+            )
             if not isinstance(canonical_value, dict) or set(canonical_value) not in (
                 *canonical_shapes,
             ):
@@ -4003,6 +4021,13 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
             scientific_pack = canonical_value.get("scientific_pack")
             if not _valid_scientific_contract_descriptor(scientific_pack):
                 return fail()
+            if not valid_domain_contract(canonical_value):
+                return fail()
+            decision_history = {
+                item["identity"]: item
+                for records in canonical_value["domain_history_records"].values()
+                for item in records
+            }
             aggregation_history = canonical_value.get("snapshot_history_records")
             if not isinstance(aggregation_history, dict) or any(
                 not isinstance(records, list) for records in aggregation_history.values()
@@ -4529,7 +4554,13 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         or set(item["active_questions"]) != derived
                         or set(item["active_questions"]) | set(item["inactive_questions"])
                         != allowed
-                        or item.get("judgment") != judgment
+                        or not valid_domain_decision(
+                            item,
+                            judgment,
+                            decision_history,
+                            evidence_by_identity,
+                            scientific_pack["content_hash"],
+                        )
                     ):
                         return fail()
                     accounts = item["search_accounts"]
@@ -4911,8 +4942,15 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                         ):
                             return fail()
                         judgment = local_domain_judgment(domain.id, answer_map)
-                        if record.get("judgment") != judgment:
+                        if not valid_domain_decision(
+                            record,
+                            judgment,
+                            decision_history,
+                            evidence_by_identity,
+                            scientific_pack["content_hash"],
+                        ):
                             return fail()
+                        judgment = record["judgment"]
                         expected_checkpoints.append(str(record.get("identity")))
                         expected_judgments[domain.id] = judgment
                     if (

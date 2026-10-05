@@ -157,15 +157,29 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.9",
-    "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1",
+    "content_hash": "sha256:16088e4005a849ccc1f60af170f9ad3fa976856cb100106c2b200003d5d20698",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
     },
 }
 _CONDITIONAL_AGGREGATION_CONTRACT = "rob2-kit.overall.cochrane-conditional.v1"
+_DOMAIN_JUDGMENT_CONTRACT = "rob2-kit.domain.reasoned-adjudication.v1"
+_PRE_DOMAIN_ADJUDICATION_PACK = {
+    **_SCIENTIFIC_PACK,
+    "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
+}
+_PRE_D45_CONTEXTUAL_LEGACY_PACK = {
+    **_SCIENTIFIC_PACK,
+    "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1",
+}
+_PRE_D45_CONTEXTUAL_PACK = {
+    **_PRE_DOMAIN_ADJUDICATION_PACK,
+    "content_hash": "sha256:49ab9cec765faabfe3bed3f170587176105d7c539a21ffa5da54ee6c2f86c5e1",
+}
 _CONDITIONAL_SCIENTIFIC_PACK = {
     **_SCIENTIFIC_PACK,
+    "domain_judgment_contract": _DOMAIN_JUDGMENT_CONTRACT,
     "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
 }
 _PRE_D3_INDIRECT_EVIDENCE_PACK = {
@@ -2118,6 +2132,137 @@ def _contains_forbidden_paths(value: object, field: str | None = None) -> bool:
     return False
 
 
+def _valid_domain_decision(
+    record: dict[str, Any],
+    proposed: str,
+    history: dict[str, Any],
+    evidence: dict[str, Any],
+    pack_identity: str,
+) -> bool:
+    """Independently verify adopted labels and unchanged source-bound assessments."""
+    if "decision" not in record:
+        return record.get("judgment") == proposed
+    decision = record.get("decision")
+    if not isinstance(decision, dict) or set(decision) != {
+        "contract",
+        "proposed",
+        "adopted",
+        "authority",
+        "trace_authority",
+        "adjudication",
+    }:
+        return False
+    if (
+        decision["contract"] != _DOMAIN_JUDGMENT_CONTRACT
+        or decision["trace_authority"] != "proposed_algorithm"
+        or decision["proposed"] != proposed
+        or record.get("judgment") != decision["adopted"]
+    ):
+        return False
+    try:
+        _proposal, expected_trace, drivers = _domain_evaluation(
+            record["domain_id"], {item["question_id"]: item["answer"] for item in record["answers"]}
+        )
+    except (KeyError, TypeError, ValueError):
+        return False
+    if record.get("trace") != [expected_trace] or record.get("driver_questions") != drivers:
+        return False
+    adopted = decision["adopted"]
+    if adopted not in {"low", "some_concerns", "high"}:
+        return False
+    adjudication = decision["adjudication"]
+    if adjudication is None:
+        return decision["authority"] == "algorithm" and adopted == proposed
+    if not isinstance(adjudication, dict) or set(adjudication) != {
+        "result_identity",
+        "domain_id",
+        "checkpoint_identity",
+        "pack_identity",
+        "judgment",
+        "rationale",
+        "assessor",
+        "evidence",
+        "counterevidence",
+    }:
+        return False
+    if any(
+        not isinstance(adjudication.get(key), str) or not adjudication[key].strip()
+        for key in ("rationale", "assessor")
+    ):
+        return False
+    support = adjudication["evidence"]
+    counters = adjudication["counterevidence"]
+    if (
+        not isinstance(support, list)
+        or not support
+        or any(
+            not (isinstance(item, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", item) is not None)
+            for item in support
+        )
+        or len(set(support)) != len(support)
+        or not isinstance(counters, list)
+    ):
+        return False
+    for point in counters:
+        if (
+            not isinstance(point, dict)
+            or set(point) != {"evidence", "implication"}
+            or not (
+                isinstance(point["evidence"], str)
+                and re.fullmatch(r"sha256:[0-9a-f]{64}", point["evidence"]) is not None
+            )
+            or not isinstance(point["implication"], str)
+            or not point["implication"].strip()
+        ):
+            return False
+    parent = history.get(adjudication["checkpoint_identity"])
+    if not isinstance(parent, dict):
+        return False
+    parent_evidence = _domain_evidence_ids(parent)
+    return (
+        decision["authority"] == "host"
+        and adopted != proposed
+        and adjudication["judgment"] == adopted
+        and adjudication["result_identity"] == record.get("result_identity")
+        and adjudication["domain_id"] == record.get("domain_id")
+        and adjudication["pack_identity"] == pack_identity
+        and parent.get("identity")
+        == record.get("supersedes")
+        == adjudication["checkpoint_identity"]
+        and parent.get("trial_id") == record.get("trial_id")
+        and parent.get("domain_id") == record.get("domain_id")
+        and parent.get("result_identity") == record.get("result_identity")
+        and parent.get("answers") == record.get("answers")
+        and all(
+            item in parent_evidence
+            and evidence.get(item, {}).get("trial_id") == record.get("trial_id")
+            for item in [*support, *(point["evidence"] for point in counters)]
+        )
+    )
+
+
+def _valid_domain_contract(canonical: dict[str, Any]) -> bool:
+    history = canonical.get("domain_history_records")
+    if not isinstance(history, dict) or any(
+        not isinstance(items, list) for items in history.values()
+    ):
+        return False
+    flattened = [item for items in history.values() for item in items if isinstance(item, dict)]
+    if (
+        canonical.get("scientific_pack", {}).get("domain_judgment_contract")
+        == _DOMAIN_JUDGMENT_CONTRACT
+    ):
+        return canonical.get("legacy_domain_checkpoints") == {
+            "contract": "rob2-kit.domain.algorithm-only.v1",
+            "identities": sorted(
+                {item["identity"] for item in flattened if "decision" not in item}
+            ),
+        }
+    return "legacy_domain_checkpoints" not in canonical and all(
+        "decision" not in item for item in flattened
+    )
+
+
 def _domain_identity_fields(
     record: dict[str, object], *, legacy_semantics: bool = False
 ) -> tuple[str, ...]:
@@ -2139,6 +2284,8 @@ def _domain_identity_fields(
         fields.append("evidence_sufficiency")
     if not legacy_semantics and "result_identity" in record:
         fields.append("result_identity")
+    if not legacy_semantics and "decision" in record:
+        fields.append("decision")
     return tuple(fields)
 
 
@@ -3061,6 +3208,12 @@ def _valid_overall_receipt(
             "driver_questions",
             "driver_answers",
             "evidence_sufficiency",
+            *(
+                {"decision"}
+                if isinstance(records.get(f"{trial_id}:{item.get('domain_id')}"), dict)
+                and "decision" in cast(dict, records[f"{trial_id}:{item.get('domain_id')}"])
+                else set()
+            ),
         }:
             return False
         domain_id = item.get("domain_id")
@@ -3083,7 +3236,11 @@ def _valid_overall_receipt(
         if (
             item.get("checkpoint") != record.get("identity")
             or item.get("judgment") != record.get("judgment")
-            or item.get("judgment") != expected_judgment
+            or (
+                record.get("decision", {}).get("proposed", record.get("judgment"))
+                != expected_judgment
+            )
+            or item.get("decision") != record.get("decision")
             or item.get("trace") != record.get("trace")
             or item.get("trace") != [expected_trace]
             or record.get("driver_questions") != expected_questions
@@ -4550,12 +4707,18 @@ def verify(path: Path) -> tuple[bool, str]:
             canonical_shapes.update(
                 {shape | {"legacy_aggregation_snapshots"} for shape in tuple(canonical_shapes)}
             )
+            canonical_shapes.update(
+                {shape | {"legacy_domain_checkpoints"} for shape in tuple(canonical_shapes)}
+            )
             if not isinstance(canonical, dict) or set(canonical) not in canonical_shapes:
                 return False, "canonical envelope is not closed"
             scientific_pack = canonical.get("scientific_pack")
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,
+                _PRE_DOMAIN_ADJUDICATION_PACK,
+                _PRE_D45_CONTEXTUAL_PACK,
+                _PRE_D45_CONTEXTUAL_LEGACY_PACK,
                 _PRE_D3_INDIRECT_EVIDENCE_PACK,
                 _PRE_D27_MECHANISM_WARRANT_PACK,
                 _PRE_D31_IMPACT_WARRANT_PACK,
@@ -4578,6 +4741,13 @@ def verify(path: Path) -> tuple[bool, str]:
                 _OLDER_SCIENTIFIC_PACK,
             ):
                 return False, "scientific pack descriptor differs"
+            if not _valid_domain_contract(canonical):
+                return False, "domain judgment contract differs"
+            decision_history = {
+                item["identity"]: item
+                for records in canonical["domain_history_records"].values()
+                for item in records
+            }
             aggregation_history = canonical.get("snapshot_history_records")
             if not isinstance(aggregation_history, dict) or any(
                 not isinstance(records, list) for records in aggregation_history.values()
@@ -4591,7 +4761,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     if isinstance(item, dict) and "aggregation" not in item
                 }
             )
-            if scientific_pack == _CONDITIONAL_SCIENTIFIC_PACK:
+            if scientific_pack.get("aggregation_contract") == _CONDITIONAL_AGGREGATION_CONTRACT:
                 if canonical.get("legacy_aggregation_snapshots") != {
                     "contract": "rob2-kit.overall.count-policy.v1",
                     "identities": unmarked,
@@ -4950,7 +5120,9 @@ def verify(path: Path) -> tuple[bool, str]:
                     expected_domain_fields.add("result_identity")
                 if isinstance(record, dict):
                     expected_domain_fields.update(
-                        key for key in ("driver_questions", "evidence_sufficiency") if key in record
+                        key
+                        for key in ("driver_questions", "evidence_sufficiency", "decision")
+                        if key in record
                     )
                 if (
                     not isinstance(record, dict)
@@ -5233,7 +5405,7 @@ def verify(path: Path) -> tuple[bool, str]:
                     if isinstance(item, dict):
                         item_expected_fields.update(
                             key
-                            for key in ("driver_questions", "evidence_sufficiency")
+                            for key in ("driver_questions", "evidence_sufficiency", "decision")
                             if key in item
                         )
                     if (
@@ -5271,7 +5443,13 @@ def verify(path: Path) -> tuple[bool, str]:
                     if (
                         item["active_questions"] != expected_active
                         or item["inactive_questions"] != expected_inactive
-                        or item.get("judgment") != judgment
+                        or not _valid_domain_decision(
+                            item,
+                            judgment,
+                            decision_history,
+                            proposal_evidence,
+                            scientific_pack["content_hash"],
+                        )
                     ):
                         return False, "Domain history semantics are invalid"
                     accounts = item["search_accounts"]
@@ -5643,8 +5821,15 @@ def verify(path: Path) -> tuple[bool, str]:
                         if len(answer_map) != len(answers):
                             return False, f"Domain judgment inputs are malformed: {trial_id}"
                         expected = _domain_judgment(domain_id, answer_map)
-                        if record.get("judgment") != expected:
+                        if not _valid_domain_decision(
+                            record,
+                            expected,
+                            decision_history,
+                            proposal_evidence,
+                            scientific_pack["content_hash"],
+                        ):
                             return False, f"Domain judgment mismatch: {trial_id}:{domain_id}"
+                        expected = record["judgment"]
                         expected_judgments[domain_id] = expected
                     snapshot_judgments = snapshot.get("domain_judgments")
                     checkpoints = snapshot.get("checkpoints")

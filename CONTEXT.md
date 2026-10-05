@@ -404,8 +404,16 @@ Awareness is separate from susceptibility to influence; mixed-outcome passages
 require an explicit premise link or a stated inference/unresolved link.
 
 A **Domain checkpoint** is an immutable, content-addressed record of the active
-answers, inactive questions, Evidence uses, search accounts, deterministic
-judgment, and evaluation trace. The first save has no revision basis.
+answers, inactive questions, Evidence uses, search accounts, proposed/adopted
+judgments, and the proposed algorithm evaluation trace. The first save has no revision basis.
+
+An optional explicit host adjudication under ADR 0040 binds an unchanged saved
+checkpoint, exact Result/Domain, scientific pack and its immutable answer Evidence.
+It records why the default misrepresents material bias, the adopted label, assessor
+attribution and source-linked counterevidence. Omission preserves the proposal.
+Answers and evaluator drivers remain unchanged; their trace is proposed-only.
+Changed answers require a new checkpoint and cannot inherit adjudication. Both
+verifiers check these bindings; structural validity does not prove the rationale.
 
 While the Trial remains open, the model may replace an active checkpoint only
 by naming its exact `supersedes` identity and one closed revision basis:
@@ -422,11 +430,11 @@ to coach an answer; disagreement requires discard and a fresh run.
 
 Five active Domain checkpoints produce an **AssessmentSnapshot** and make the
 Trial `reviewable`; the Trial is still correctable until closed. The server
-computes the overall judgment at the fifth checkpoint using the retained
-deterministic policy in ADR 0035; the model does not submit or override that
-aggregation. Its automatic escalation for multiple Some concerns Domains is a
-local policy: Cochrane guidance additionally qualifies escalation by whether
-the combination substantially lowers confidence in the Result.
+proposes the overall judgment at the fifth checkpoint from adopted Domain labels
+under ADR 0039. Multiple Some concerns escalate to High only with an explicit
+Result/checkpoint-bound cumulative-concerns assessment that concludes their
+combination substantially lowers confidence. Historical unmarked snapshots
+retain ADR 0035 semantics solely for verification.
 `review_trial` binds the approved Result and
 pack-ordered checkpoint identities to an assessed or typed terminal outcome.
 The server rejects closure when that review is stale. `close_trial` accepts only

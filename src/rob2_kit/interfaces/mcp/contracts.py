@@ -31,6 +31,7 @@ from rob2_kit.workflow_models import (
     ComparativeEffectResult,
     CumulativeConcernsAssessment,
     DomainCounterevidence,
+    DomainDecision,
     DomainId,
     EvidenceHandle,
     GroupBoundValuesResult,
@@ -2487,6 +2488,7 @@ class DriverAnswer(PublicModel):
 
 
 class OverallDriver(PublicModel):
+    decision: DomainDecision | None = None
     domain_id: DomainId
     checkpoint: Identity
     judgment: Judgment
@@ -2569,6 +2571,7 @@ class CheckpointSearchAccount(SearchReceipt):
 
 
 class Checkpoint(PublicModel):
+    decision: DomainDecision | None = None
     identity: Identity
     trial_id: TrialId
     domain_id: DomainId
@@ -2587,6 +2590,7 @@ class Checkpoint(PublicModel):
 
 
 class DomainCheckpointSummary(PublicModel):
+    decision: DomainDecision | None = None
     identity: Identity
     trial_id: TrialId
     domain_id: DomainId
@@ -2721,6 +2725,7 @@ ReviewEvidenceExpansion = Annotated[
 
 
 ReviewDetailField = Literal[
+    "domain_adjudication",
     "review_reason",
     "review_facts",
     "result",
@@ -2837,6 +2842,7 @@ class ReviewAnswerFinding(PublicModel):
 
 
 class ReviewDomainFinding(PublicModel):
+    decision: DomainDecision | None = None
     domain_id: DomainId
     checkpoint_identity: Identity
     judgment: Judgment
@@ -2955,6 +2961,7 @@ class Artifact(PublicModel):
 
 
 class AssessmentSummary(PublicModel):
+    domain_decisions: dict[DomainId, DomainDecision | None] = Field(default_factory=dict)
     aggregation: OverallAggregationDecision | None = None
     overall: Judgment
     domains: dict[DomainId, Judgment] = Field(min_length=5, max_length=5)
@@ -3268,12 +3275,13 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
     checkpoint = data.get("checkpoint")
     if tool == "save_domain_judgment" and isinstance(checkpoint, dict):
         data["checkpoint"] = {
-            key: checkpoint[key]
+            key: checkpoint.get(key)
             for key in (
                 "identity",
                 "trial_id",
                 "domain_id",
                 "judgment",
+                "decision",
                 "driver_questions",
                 "evidence_sufficiency",
             )

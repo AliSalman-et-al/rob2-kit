@@ -696,6 +696,7 @@ def _review_domain_findings(
                     "domain_id": domain.id,
                     "checkpoint_identity": record["identity"],
                     "judgment": record.get("judgment"),
+                    "decision": record.get("decision"),
                     "answers": answer_findings,
                     "premise_checkpoint_identity": premise_checkpoint_identity,
                     "premise_records": domain_premises,

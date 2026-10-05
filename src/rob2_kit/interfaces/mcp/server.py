@@ -101,6 +101,7 @@ from rob2_kit.interfaces.mcp.contracts import PublicCompanionReference
 from rob2_kit.models import canonical_json_bytes
 from rob2_kit.workflow_models import (
     CumulativeConcernsAssessment,
+    DomainAdjudication,
     DomainId,
     DomainRevisionBasis,
     DomainSaveAnswer,
@@ -855,10 +856,27 @@ def _review_summary(
                 "domain_id",
                 "checkpoint_identity",
                 "judgment",
+                "decision",
                 "premise_checkpoint_identity",
             )
             if key in domain
         }
+        decision = domain.get("decision")
+        if selector is None and isinstance(decision, dict) and decision.get("adjudication"):
+            preview_decision = json.loads(json.dumps(decision))
+            adoption = preview_decision["adjudication"]
+            clipped = False
+            for field in ("rationale", "assessor"):
+                adoption[field], truncated = _review_preview_text(adoption[field], preview_chars)
+                clipped = clipped or truncated
+            adoption["counterevidence"], truncated = _review_preview_array(
+                "counterevidence", adoption["counterevidence"], preview_chars
+            )
+            clipped = clipped or truncated or len(adoption["evidence"]) > 1
+            adoption["evidence"] = adoption["evidence"][:1]
+            if clipped:
+                deferred.add("domain_adjudication")
+                summary_domain["decision"] = preview_decision
         if domain.get("premise_records"):
             deferred.add("premise_records")
         if domain.get("investigation") is not None:
@@ -4334,10 +4352,18 @@ def save_domain_judgment(
             },
         ),
     ] = None,
+    adjudication: Annotated[
+        DomainAdjudication | None,
+        Field(
+            description="Optional explicit departure for an unchanged saved checkpoint; "
+            "omission preserves the deterministic proposal."
+        ),
+    ] = None,
 ) -> ToolResult:
     def submit() -> dict[str, Any]:
         resolved = _resolve_domain_sources(_workspace(), trial_id, answers)
         draft = {
+            "adjudication": adjudication.model_dump(mode="json") if adjudication else None,
             "trial_id": trial_id,
             "domain_id": domain_id,
             "expected_revision": expected_revision,

@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-05",
+  "base_commit": "334c592cbd895b2cbf14a0d1e524759bab0c25a3",
+  "official_guidance": {
+    "title": "RoB 2 guidance, 22 August 2019",
+    "sha256": "a9e9c4fdc4be2d29b5c0a1a6b828e09f2014a34f6d5c302a532f6153ea0fd670",
+    "permission_locations": "page 4 sections 1.2.1 and 1.2.4; Domain decision tables"
+  },
+  "checks": [
+    {"selection": "domain adjudication lifecycle and public contract surface, final revision", "passed": 6, "seconds": 34.77},
+    {"selection": "domain adjudication and exact pack descriptor compatibility, before review preview refinement", "passed": 7, "seconds": 31.99},
+    {"selection": "bundle verifier historical and tamper coverage", "passed": 11, "seconds": 90.61},
+    {"selection": "domain adjudication, pack compatibility and participant-flow full bundle after Evidence collector reuse", "passed": 7, "deselected": 29, "seconds": 35.13},
+    {"selection": "conditional overall, pack compatibility and adjudication initial integration", "passed": 14, "seconds": 44.14},
+    {"selection": "lean Domain submission in integration run", "passed": 9},
+    {"selection": "ruff changed Python files", "result": "passed"},
+    {"selection": "ty changed production Python files", "result": "passed"},
+    {"selection": "git diff --check", "result": "passed"}
+  ],
+  "failure_review": "Integration failures exposed missing review-summary propagation, missing final typed summary, standalone record field closure and input field descriptions; these were fixed and covered by subsequent passing checks. A stale D1 context in the fixture was refreshed without weakening production staleness checks.",
+  "limits": "Synthetic rationale fixtures test representation and transport, not scientific merit. No paid inference, full benchmark, gold optimization or production-trial re-adjudication. No accuracy or agreement gain claimed. Separate composite-weighting qualification remains outstanding."
+}

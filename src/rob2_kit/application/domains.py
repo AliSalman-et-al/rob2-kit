@@ -6,6 +6,7 @@ from typing import Any, Literal
 
 from pydantic import ValidationError
 
+from ..logic.adjudication import DOMAIN_JUDGMENT_CONTRACT, domain_evidence_ids
 from ..logic.aggregation import aggregation_record
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
 from ..models import ResponseFramework, canonical_json_bytes
@@ -2303,6 +2304,8 @@ def _domain_identity(record: dict[str, Any]) -> str:
     )
     if "result_identity" in record:
         fields = (*fields, "result_identity")
+    if "decision" in record:
+        fields = (*fields, "decision")
     return _identity({key: record[key] for key in fields})
 
 
@@ -2475,6 +2478,7 @@ def _overall_receipt(
                 "checkpoint": record.get("identity"),
                 "judgment": record.get("judgment"),
                 "trace": list(record.get("trace", [])),
+                **({"decision": record["decision"]} if "decision" in record else {}),
                 "driver_questions": driver_questions,
                 "driver_answers": [
                     {
@@ -2830,6 +2834,9 @@ def save_domain_judgment(
                     referenced_handles.update(count["basis"])
         for row in answer.missing_data or ():
             referenced_handles.update(row.basis)
+    if parsed.adjudication is not None:
+        referenced_handles.update(parsed.adjudication.evidence)
+        referenced_handles.update(item.evidence for item in parsed.adjudication.counterevidence)
     if parsed.revision_basis is not None and parsed.revision_basis.kind == "new_evidence":
         referenced_handles.add(parsed.revision_basis.evidence)
     catalog = dict(proposal_catalog)
@@ -3268,6 +3275,72 @@ def save_domain_judgment(
     existing_rows = state.get("domain_records", {})
     key = f"{parsed.trial_id}:{parsed.domain_id}"
     existing_record = existing_rows.get(key)
+    adjudication = None
+    if parsed.adjudication is not None:
+        supplied = parsed.adjudication
+        parent = next(
+            (
+                item
+                for item in state.get("domain_history_records", {}).get(key, [])
+                if item.get("identity") == supplied.checkpoint_identity
+            ),
+            None,
+        )
+        parent_evidence = domain_evidence_ids(parent)
+        adjudication_evidence = [
+            catalog_by_handle.get(handle) or catalog.get(handle) for handle in supplied.evidence
+        ]
+        counterpoints = [
+            catalog_by_handle.get(item.evidence) or catalog.get(item.evidence)
+            for item in supplied.counterevidence
+        ]
+        if (
+            not isinstance(parent, dict)
+            or supplied.result_identity != approved_result_identity
+            or supplied.domain_id != parsed.domain_id
+            or supplied.pack_identity != SCIENTIFIC_PACK.content_hash
+            or parent.get("result_identity") != approved_result_identity
+            or parent.get("answers") != canonical_answers
+            or parsed.supersedes != supplied.checkpoint_identity
+            or supplied.judgment == evaluation.judgment
+            or any(
+                not item
+                or item.get("trial_id") != parsed.trial_id
+                or item.get("identity") not in parent_evidence
+                for item in [*adjudication_evidence, *counterpoints]
+            )
+        ):
+            return _result(
+                "repair",
+                state,
+                repairs=[
+                    _repair(
+                        "/adjudication",
+                        "domain_adjudication_basis_invalid",
+                        "Adjudicate an unchanged saved checkpoint for this exact Result "
+                        "and Domain, "
+                        "name it in supersedes, cite its answer Evidence, and explain a departure "
+                        "from the proposed judgment. Changed answers need a new checkpoint first.",
+                    )
+                ],
+            )
+        adjudication = supplied.model_dump(mode="json")
+        adjudication["evidence"] = list(
+            dict.fromkeys(item["identity"] for item in adjudication_evidence if item)
+        )
+        adjudication["counterevidence"] = [
+            {"evidence": item["identity"], "implication": point.implication}
+            for point, item in zip(supplied.counterevidence, counterpoints, strict=True)
+            if item
+        ]
+    decision = {
+        "contract": DOMAIN_JUDGMENT_CONTRACT,
+        "proposed": evaluation.judgment.value,
+        "adopted": evaluation.judgment.value if adjudication is None else adjudication["judgment"],
+        "authority": "algorithm" if adjudication is None else "host",
+        "trace_authority": "proposed_algorithm",
+        "adjudication": adjudication,
+    }
     if existing_record is None and (
         parsed.supersedes is not None or parsed.revision_basis is not None
     ):
@@ -3305,12 +3378,21 @@ def save_domain_judgment(
         "search_accounts": [search_accounts[key] for key in sorted(search_accounts)],
         "active_questions": active,
         "inactive_questions": [key for key in allowed if key not in active],
-        "judgment": evaluation.judgment.value,
+        "judgment": decision["adopted"],
+        "decision": decision,
         "trace": list(evaluation.trace),
         "driver_questions": list(evaluation.driver_questions),
         "observed_at": datetime.now(UTC).isoformat(),
     }
     record["evidence_sufficiency"] = _evidence_sufficiency(canonical_answers, search_accounts)
+    if (
+        existing_record is not None
+        and "decision" not in existing_record
+        and parsed.adjudication is None
+    ):
+        legacy_candidate = {key: value for key, value in record.items() if key != "decision"}
+        if _domain_identity(legacy_candidate) == existing_record.get("identity"):
+            return _result("success", state, checkpoint=existing_record, retry=True)
     record["identity"] = _domain_identity(record)
     prior_observed_at = _canonical_observed_at(root, record["identity"])
     if prior_observed_at is not None:

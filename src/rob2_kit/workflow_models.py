@@ -29,7 +29,7 @@ from pydantic import (
 )
 from pydantic.functional_validators import AfterValidator
 
-from .models import Answer, canonical_json_bytes
+from .models import Answer, Judgment, canonical_json_bytes
 
 
 class StrictModel(BaseModel):
@@ -2668,7 +2668,63 @@ DomainRevisionBasis = Annotated[
 ]
 
 
+class AdjudicationCounterevidence(StrictModel):
+    evidence: SubmittedEvidenceHandle = Field(
+        description="Countervailing Evidence already bound by the saved answers."
+    )
+    implication: NonBlankText = Field(
+        description="How this source-bound counterpoint bears on adoption."
+    )
+
+
+class CanonicalAdjudicationCounterevidence(AdjudicationCounterevidence):
+    evidence: Identity
+
+
+class DomainAdjudication(StrictModel):
+    """Explicit host judgment about one unchanged, saved Domain assessment."""
+
+    result_identity: Identity = Field(description="Exact approved Result identity.")
+    domain_id: DomainId = Field(description="Domain of the unchanged saved assessment.")
+    checkpoint_identity: Identity = Field(
+        description="Exact unchanged checkpoint also named in supersedes."
+    )
+    pack_identity: Identity = Field(
+        description="Current scientific pack content identity from Domain context."
+    )
+    judgment: Judgment = Field(
+        description="Explicit adopted label differing from the deterministic proposal."
+    )
+    rationale: NonBlankText = Field(
+        description="Why the default misrepresents material bias for this Result."
+    )
+    counterevidence: tuple[AdjudicationCounterevidence, ...] = Field(
+        description="Relevant source-linked counterpoints; use [] when none are identified."
+    )
+    assessor: NonBlankText = Field(
+        description="Host assessor attribution; not researcher approval."
+    )
+    evidence: tuple[SubmittedEvidenceHandle, ...] = Field(
+        min_length=1, description="Supporting Evidence already bound by this checkpoint’s answers."
+    )
+
+
+class CanonicalDomainAdjudication(DomainAdjudication):
+    counterevidence: tuple[CanonicalAdjudicationCounterevidence, ...]
+    evidence: tuple[Identity, ...] = Field(min_length=1)
+
+
+class DomainDecision(StrictModel):
+    contract: Literal["rob2-kit.domain.reasoned-adjudication.v1"]
+    proposed: Judgment
+    adopted: Judgment
+    authority: Literal["algorithm", "host"]
+    trace_authority: Literal["proposed_algorithm"]
+    adjudication: CanonicalDomainAdjudication | None
+
+
 class DomainDraft(StrictModel):
+    adjudication: DomainAdjudication | None = None
     trial_id: TrialId
     domain_id: DomainId
     expected_revision: ExpectedRevision
