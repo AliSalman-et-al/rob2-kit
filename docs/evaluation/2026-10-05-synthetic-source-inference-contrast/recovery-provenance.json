@@ -1,0 +1,50 @@
+{
+  "known_completed_model_responses": 2,
+  "total_initial_session_starts": 3,
+  "qualified_recovery": true,
+  "original_warning_failure_preserved": true,
+  "known_completed_usage": {
+    "input_tokens": 21086,
+    "cached_input_tokens": 0,
+    "output_tokens": 6227,
+    "reasoning_output_tokens": 0
+  },
+  "known_uncached_input_tokens": 21086,
+  "reasoning_is_subset_of_output": true,
+  "original_failed_attempt_usage": "No durable usage; pending/rejected billing unknown",
+  "cost_usd": null,
+  "actual_profiles": [
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "external_tools_configured": false,
+  "observed_tool_calls": 0,
+  "empty_advertised_registry": "not claimed; residual built-in advertisement unknown",
+  "common_config_identical": true,
+  "common_operational_literal_sha256": "7ebc8f3f3883ff1e113d11593f590ad57fa13529d5d68adf72fb53d63c4620d3",
+  "common_operational_file_sha256": "885b1e3374c980006891e79185e65bcb56638db914f4449166b922cd8e1ac366",
+  "original_operational_literal_identical": true,
+  "scientific_design_commit": "758a14adef812c617c04aa544a4765cddd964360",
+  "checker_commit": "2628ef626d53cc51924127bdb9ddb3eabebdc540",
+  "execution_code_commit": "7f0267b1c2ac7bc5330fcd1f6b880703d1737d56",
+  "CLI_version": "0.159.0",
+  "both_raw_freezes_verified": true,
+  "combined_freeze_before_binding_checks_verified": true,
+  "both_mechanical_checks_valid": true,
+  "response_bytes_sorted": [
+    15262,
+    16019
+  ],
+  "response_acceptance_bytes": 24000,
+  "provider_hard_token_cap": null,
+  "semantic_scoring_performed": false,
+  "mapping_disclosed": false,
+  "no_more_paid_work": true,
+  "native_context_limitation": "Fresh session IDs/cwd paths/timestamps differ; identical configuration/operational instruction, frozen scientific user prompts differ solely in review question. Native generic skill/agent instructions are present; no tools used."
+}
