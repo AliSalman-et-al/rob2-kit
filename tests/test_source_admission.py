@@ -745,7 +745,9 @@ def test_acquisition_reports_existing_byte_identical_source_without_admission(
     acquired = _call(workspace, "acquire_companion_source", arguments)
     assert acquired["outcome"] == "success", acquired
     data = acquired["data"]
+    assert data is not None
     if existing_kind == "same":
+        assert existing is not None
         assert data["matching_active_source_ids"] == [existing["id"]]
     else:
         assert "matching_active_source_ids" not in data

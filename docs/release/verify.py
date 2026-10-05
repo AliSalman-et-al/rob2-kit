@@ -38,6 +38,7 @@ def _load_contract() -> dict[str, Any]:
         raise ValueError("public contract version differs")
     expected_order = [
         "read_guidance",
+        "calculate_arithmetic",
         "prepare_batch",
         "get_status",
         "save_working_checkpoint",
