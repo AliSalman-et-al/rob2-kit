@@ -1,0 +1,68 @@
+{
+  "research_question": "Does a sole contrastive review question improve source-to-inference discrimination and dependent reasoning without damaging supported inference?",
+  "input_sha256": "a0b9f64a7acd994b296c351328543ba66c19627bb8ac6c839c44ecc75ff272cf",
+  "required_windows": [
+    {
+      "source_identity": "sh_a1768679ef20c565:a1768679ef20c56536358c840620317e8fa7695c1d50d6e25881b6ab5679f250",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5
+    },
+    {
+      "source_identity": "sh_48868d6e666b2652:48868d6e666b26525fad81bc3282110b767f9ed99a8fb3b7a54574e9f667fcaf",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 6
+    },
+    {
+      "source_identity": "sh_d7bbe2858358278e:d7bbe2858358278e33e4277728635a37815749620c54dd75580258e4a865154c",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5
+    },
+    {
+      "source_identity": "sh_80d30b22a79b7c03:80d30b22a79b7c039f3a92efb09c1078746b411962de40ac4843e62870d53af2",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5
+    }
+  ],
+  "supplied_windows": [
+    {
+      "source_identity": "sh_a1768679ef20c565:a1768679ef20c56536358c840620317e8fa7695c1d50d6e25881b6ab5679f250",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5,
+      "input_start_byte": 2398,
+      "input_end_byte": 3032,
+      "text_sha256": "8916c5a24fec87f66790e9951c3f7a907d95f5745e7c72632c8c91853efacba5"
+    },
+    {
+      "source_identity": "sh_48868d6e666b2652:48868d6e666b26525fad81bc3282110b767f9ed99a8fb3b7a54574e9f667fcaf",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 6,
+      "input_start_byte": 4039,
+      "input_end_byte": 4645,
+      "text_sha256": "0fcef730b25eb1716677f9e697e7230995fe34fc5a879bdd3d32004994c8ea11"
+    },
+    {
+      "source_identity": "sh_d7bbe2858358278e:d7bbe2858358278e33e4277728635a37815749620c54dd75580258e4a865154c",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5,
+      "input_start_byte": 5886,
+      "input_end_byte": 6527,
+      "text_sha256": "d1b3457b8b46e5d3aa28ef4649849c8e8de7ec09dd18b8d8e3f7aa3e4a1d1590"
+    },
+    {
+      "source_identity": "sh_80d30b22a79b7c03:80d30b22a79b7c039f3a92efb09c1078746b411962de40ac4843e62870d53af2",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 5,
+      "input_start_byte": 7534,
+      "input_end_byte": 8168,
+      "text_sha256": "b74b76b35d3d5b0b73dedbedbc94e714db203e72e2ae280c2772a08091c608ab"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "stage": "offline parent review; no paid authorization",
+  "files": {
+    "README.md": "46525719cbf5f0cbedaedb0c8b4261dd0c0354a52049a28dc4e29c6866eae1ad",
+    "contrastive.manifest.json": "40d0f53a1582aace33aa3c0e8a68493766c0c1714a277af2ee503e6155674803",
+    "contrastive.prompt.txt": "a0b9f64a7acd994b296c351328543ba66c19627bb8ac6c839c44ecc75ff272cf",
+    "independent-rubric.md": "c8db28559b60a59ecee1e1addd6d12a81369bef1529aabf1a895cd529f066a86",
+    "offline-verification.json": "c1c50179104f95541b8f33b2864f9a5d8c1ca680514266c4b4d1ab9746d8eada",
+    "ordinary.manifest.json": "c8c80346324b48735fc3a8f7c4d8b1ad073a296b8e12676d3a0973f07d9e30bd",
+    "ordinary.prompt.txt": "c4d1ac3ba5f11ad3fc1237a618a04eb23400dc4a02b74d8c192edd64d1c82fe3",
+    "output.schema.json": "fc5969a07db6760dc2f7bb1224ad95f1f2a45d1549c1ee7173220483e9d3f553",
+    "sole-intervention.diff": "6042cb4c8571f21cfc04c25f35396ae0b95cbcb28105b00bafda6d49e6204587",
+    "sources-and-claims.json": "2df24dd2d196be01dcb840f8281f19bb4adeb0bb193068d2712165eb42b3216a"
+  }
+}
