@@ -1,0 +1,4314 @@
+{
+  "read_pages": [
+    {
+      "call_id": "item_13",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 11,
+      "start_line": 142,
+      "end_line": 156,
+      "line_count": 156,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_e4ae1fad90b8dcbd",
+      "numbered_text_sha256": "72abae7d051a39ac0d446ec29012ed31902eb4e578907afc9538d25256680c64"
+    },
+    {
+      "call_id": "item_13",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 12,
+      "start_line": 1,
+      "end_line": 51,
+      "line_count": 51,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_0ee31d081aea7c4d",
+      "numbered_text_sha256": "20440191dbeeee36b20bcdd8517325c5f7ecc3d59e98e29ba5e308bce823ff4a"
+    },
+    {
+      "call_id": "item_17",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 1,
+      "start_line": 1,
+      "end_line": 99,
+      "line_count": 99,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_b4a9799bad8edb56",
+      "numbered_text_sha256": "7496490442f5338f0e33b0c00f9d65acad2928ade3dac482c88240d2e0fb9514"
+    },
+    {
+      "call_id": "item_17",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 2,
+      "start_line": 1,
+      "end_line": 175,
+      "line_count": 175,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_f03cd4e1300cc044",
+      "numbered_text_sha256": "142bacf5793458d54049c5f8ad910123affb780904350ae2585e2e3ac7e624c9"
+    },
+    {
+      "call_id": "item_17",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 127,
+      "line_count": 127,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_dffd5e3af1f371ec",
+      "numbered_text_sha256": "be5520a1af134285e799c9cded877861faa51c21677a703c3c3c80096b1d5de4"
+    },
+    {
+      "call_id": "item_17",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 4,
+      "start_line": 1,
+      "end_line": 25,
+      "line_count": 146,
+      "truncated": true,
+      "next_start_line": 26,
+      "page_remainder": {
+        "source_id": "sh_1f0972948ff7f02f",
+        "page": 4,
+        "start_line": 26,
+        "end_line": 146
+      },
+      "passage_ref": "eh_b852dd5772d432e2",
+      "numbered_text_sha256": "61a0ee1fd9d5718d8f23e31e4cd54c2ccf664ccfdfdcc4c5a87e24f5abd2bf7a",
+      "remaining_request_windows": [
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 4,
+          "start_line": 26,
+          "end_line": 146
+        },
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216
+        },
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182
+        },
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 7,
+          "start_line": 1,
+          "end_line": 154
+        },
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 8,
+          "start_line": 1,
+          "end_line": 291
+        },
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 139
+        },
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 10,
+          "start_line": 1,
+          "end_line": 135
+        },
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 11,
+          "start_line": 1,
+          "end_line": 141
+        }
+      ]
+    },
+    {
+      "call_id": "item_18",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 4,
+      "start_line": 26,
+      "end_line": 146,
+      "line_count": 146,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_cf08de8987c56164",
+      "numbered_text_sha256": "693a4a018c16afdf550c290900058e336fd063edbf35b3e6bf332872c28f02ae"
+    },
+    {
+      "call_id": "item_18",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 5,
+      "start_line": 1,
+      "end_line": 216,
+      "line_count": 216,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_273c72f9c4bc9d68",
+      "numbered_text_sha256": "f743108aebc81ccd1be0e7b1179fb840cc329cc584f1ae8115ae80cd8fc71700"
+    },
+    {
+      "call_id": "item_19",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 6,
+      "start_line": 1,
+      "end_line": 182,
+      "line_count": 182,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_fe4b47b358f7169e",
+      "numbered_text_sha256": "e87bbf6fe66b909ffd2f9d9f58f297429d342cb1b4b44386594f3ad89eabdcb4"
+    },
+    {
+      "call_id": "item_19",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 7,
+      "start_line": 1,
+      "end_line": 154,
+      "line_count": 154,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_ae2e867e0e2ff8c3",
+      "numbered_text_sha256": "d812ea2e480694cae3cc9917e4e144f450ecf1cf209d1200e6f972ce8b2ec6aa"
+    },
+    {
+      "call_id": "item_20",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 8,
+      "start_line": 1,
+      "end_line": 291,
+      "line_count": 291,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_b41c5415fa01e60d",
+      "numbered_text_sha256": "ddb913e67b207a71e30bba9ca79c92fb65a296118ce5c1a6fb1ef426edbcf3a7"
+    },
+    {
+      "call_id": "item_20",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 9,
+      "start_line": 1,
+      "end_line": 139,
+      "line_count": 139,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_884210c133ba67a3",
+      "numbered_text_sha256": "909436a0421a520e91ab06957238bffa3f3f120b4a6951e8b1c549c1dac5711b"
+    },
+    {
+      "call_id": "item_20",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 10,
+      "start_line": 1,
+      "end_line": 135,
+      "line_count": 135,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_9015e79ed45d2ee5",
+      "numbered_text_sha256": "1ad39bfdc3822c84cd29b91e8b279f74285f75d2812a00eefb623de9f779ea28"
+    },
+    {
+      "call_id": "item_20",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 11,
+      "start_line": 1,
+      "end_line": 43,
+      "line_count": 156,
+      "truncated": true,
+      "next_start_line": 44,
+      "page_remainder": {
+        "source_id": "sh_1f0972948ff7f02f",
+        "page": 11,
+        "start_line": 44,
+        "end_line": 156
+      },
+      "passage_ref": "eh_8459bad876e4d275",
+      "numbered_text_sha256": "c63fdd4f8879af5f43cded56fd63d30c6ae249fcd44808046b15e3521db7a1be",
+      "remaining_request_windows": [
+        {
+          "source_id": "sh_1f0972948ff7f02f",
+          "page": 11,
+          "start_line": 44,
+          "end_line": 141
+        }
+      ]
+    },
+    {
+      "call_id": "item_23",
+      "source_id": "sh_1f0972948ff7f02f",
+      "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+      "page": 11,
+      "start_line": 44,
+      "end_line": 141,
+      "line_count": 156,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": {
+        "source_id": "sh_1f0972948ff7f02f",
+        "page": 11,
+        "start_line": 142,
+        "end_line": 156
+      },
+      "passage_ref": "eh_f9101e3aaa765bd6",
+      "numbered_text_sha256": "7ae353824f1665f60a38bc4d100b861cf56b8b43310255f089f5de70238f0624"
+    },
+    {
+      "call_id": "item_28",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 3,
+      "start_line": 1,
+      "end_line": 64,
+      "line_count": 76,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": {
+        "source_id": "sh_3d18b620c379656d",
+        "page": 3,
+        "start_line": 65,
+        "end_line": 76
+      },
+      "passage_ref": "eh_6432a503a9f85a60",
+      "numbered_text_sha256": "39edc8e239d3aa5ad27edaab195eb8a8e17d403e3ddc1ee2016b9a7ed4867a25"
+    },
+    {
+      "call_id": "item_28",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 44,
+      "start_line": 1,
+      "end_line": 24,
+      "line_count": 24,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_be17e04f5a707647",
+      "numbered_text_sha256": "195f3a4bdc4ea85257cf2cd823b36594b4122fdbcfbff5be4437a73c2a82f6ea"
+    },
+    {
+      "call_id": "item_28",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 45,
+      "start_line": 1,
+      "end_line": 23,
+      "line_count": 23,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_cd73fb7ac25afd41",
+      "numbered_text_sha256": "341f197f9341beee67429d3f96c8a1e2bddbe8dec82d05f55e3b26d9c888045b"
+    },
+    {
+      "call_id": "item_28",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 88,
+      "start_line": 1,
+      "end_line": 28,
+      "line_count": 28,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_3a175748627299a8",
+      "numbered_text_sha256": "f9784e423dbd72aa1ff72ca6abe9a490849fff9cac39b6540a1e97bfbc910a15"
+    },
+    {
+      "call_id": "item_28",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 89,
+      "start_line": 1,
+      "end_line": 46,
+      "line_count": 46,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_4054e73e52f76de3",
+      "numbered_text_sha256": "102a3025a41a9b3b95316cff01026d0e78e040bdd423ce3c284b9011d7b67943"
+    },
+    {
+      "call_id": "item_28",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 90,
+      "start_line": 1,
+      "end_line": 35,
+      "line_count": 35,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_eaa9b48c2e79eb46",
+      "numbered_text_sha256": "05fa1573ac2563826adc4f459531812f446512fe21628a3f80573a5af1bec088"
+    },
+    {
+      "call_id": "item_28",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 91,
+      "start_line": 1,
+      "end_line": 31,
+      "line_count": 31,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_904a215061649fa4",
+      "numbered_text_sha256": "45a99bdc3ba2ed701d8544b6befcc32f2dd02251ddf7fbdab4175ef776626435"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 27,
+      "start_line": 1,
+      "end_line": 28,
+      "line_count": 32,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": {
+        "source_id": "sh_3d18b620c379656d",
+        "page": 27,
+        "start_line": 29,
+        "end_line": 32
+      },
+      "passage_ref": "eh_853545903a716f51",
+      "numbered_text_sha256": "d324e8b2e2e17cb3acbf75640cf24fe764ccc6dcaead306919184201ceb17eb6"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 57,
+      "start_line": 1,
+      "end_line": 50,
+      "line_count": 61,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": {
+        "source_id": "sh_3d18b620c379656d",
+        "page": 57,
+        "start_line": 51,
+        "end_line": 61
+      },
+      "passage_ref": "eh_4999e16c7f49a5f5",
+      "numbered_text_sha256": "f1bd348ec0527e288028a3f8b02bc8d2836cf4bd50c0d93b810d16b55c150abb"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 58,
+      "start_line": 1,
+      "end_line": 44,
+      "line_count": 44,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_23bacf33b9d8f6de",
+      "numbered_text_sha256": "716e3d481ea30685f9e69064949517b29e9bd3d43794c4ba7e2798b7ad36f96d"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 59,
+      "start_line": 1,
+      "end_line": 40,
+      "line_count": 40,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_8e80aa1d4e6a3072",
+      "numbered_text_sha256": "4548ddaf4fc5a40192d0b7856425054e959f6a3ab2ca11a01b1f0554ef86c176"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 65,
+      "start_line": 1,
+      "end_line": 41,
+      "line_count": 41,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_1a4caac59a9d4d88",
+      "numbered_text_sha256": "aed026b1ec05cea18cad6ccdcfa4dd1fd771964cc57b611f42c9bf6e10a8cbdb"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 66,
+      "start_line": 1,
+      "end_line": 42,
+      "line_count": 42,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_126498f62ace6834",
+      "numbered_text_sha256": "a4daf758a2669f49cabd758c4dd0c5af701d3266c8bc233b1365d83e84d71d70"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 95,
+      "start_line": 1,
+      "end_line": 43,
+      "line_count": 43,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": null,
+      "passage_ref": "eh_3030b2158e2542f1",
+      "numbered_text_sha256": "9e703894dd65f2cd682b1f9deb978a8d59adcf4e8d7f1f1268324f8e619c5384"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 96,
+      "start_line": 1,
+      "end_line": 60,
+      "line_count": 94,
+      "truncated": false,
+      "next_start_line": null,
+      "page_remainder": {
+        "source_id": "sh_3d18b620c379656d",
+        "page": 96,
+        "start_line": 61,
+        "end_line": 94
+      },
+      "passage_ref": "eh_9ab15cf26cf13e42",
+      "numbered_text_sha256": "5af93574f568442233a73f06c11347d30fd7abb3934caf411ecc15b01da7ce57"
+    },
+    {
+      "call_id": "item_62",
+      "source_id": "sh_3d18b620c379656d",
+      "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+      "page": 97,
+      "start_line": 1,
+      "end_line": 46,
+      "line_count": 118,
+      "truncated": true,
+      "next_start_line": 47,
+      "page_remainder": {
+        "source_id": "sh_3d18b620c379656d",
+        "page": 97,
+        "start_line": 47,
+        "end_line": 118
+      },
+      "passage_ref": "eh_4cb73c9930016f70",
+      "numbered_text_sha256": "10e4344b157b41d46b2fd79fad7cadd7e9b877aa5a8c4b70b612243b3c39c569",
+      "remaining_request_windows": [
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "page": 97,
+          "start_line": 47,
+          "end_line": 60
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "page": 98,
+          "start_line": 1,
+          "end_line": 60
+        }
+      ]
+    }
+  ],
+  "search_queries_and_hits": [
+    {
+      "call_id": "item_27",
+      "request_index": 0,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "allocation concealment",
+        "mode": "all",
+        "limit": 10,
+        "purpose_domain_id": "domain:randomization"
+      },
+      "outcome": "success",
+      "receipt": "sr_8f902be63b8bf02e",
+      "metadata": {
+        "query": "allocation concealment",
+        "mode": "all",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 0,
+        "truncated": false,
+        "condition": "no_hits",
+        "session_id": "sha256:19e1af8dec0e7bd923e901d7f31fe561248aac9866395fcd72f9ee7d938f8008",
+        "session_handle": "ss_19e1af8dec0e7bd9",
+        "matching_page_count": 0,
+        "candidate_count": 0,
+        "distinct_passage_count": 0,
+        "distinct_page_count": 0,
+        "distinct_source_count": 0,
+        "ranking_complete": true,
+        "returned_rank_start": null,
+        "returned_rank_end": null,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 0,
+            "term_page_counts": [
+              {
+                "term": "allocation",
+                "matching_page_count": 13
+              },
+              {
+                "term": "concealment",
+                "matching_page_count": 0
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": {
+          "code": "no_hits",
+          "mode": "all",
+          "profile": "porter-unicode61-v1",
+          "normalized_term_count": 2,
+          "total_matches": 0,
+          "candidate_count": 0,
+          "returned_count": 0,
+          "detail": "This scoped all query matched no captured text. Inspect the literal heading and leading-page navigation entries below, then read the cited Source pages or reformulate with wording found there. Zero hits establish only that the issued lexical query matched no captured text.",
+          "next_action": {
+            "kind": "navigate",
+            "operation": "list_sources",
+            "trial_id": "smart-choice-3",
+            "source_id": "sh_3d18b620c379656d",
+            "limit": 12,
+            "cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ"
+          },
+          "navigation": {
+            "source_id": "sh_3d18b620c379656d",
+            "source_label": "mmc1.pdf",
+            "logical_path": "mmc1.pdf",
+            "projection_hash": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+            "source_sha256": "sha256:59d0e5792b809e9fb284d6ca802bdd97cd640ad64f4bc2ec485416383b180c5d",
+            "pdf_bookmark_count": 0,
+            "unmapped_pdf_bookmark_count": 0,
+            "navigation_version": "rob2-kit.source-navigation.v0.5",
+            "entries": [
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 1,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "Supplementary appendix This appendix formed part of the original submission and has been peer reviewed. We post it as supplied by the authors. Supplement to: Choi KH, Park YH, Lee J-Y, et al. Efficacy and safety of clopidogrel versus aspirin monotherapy in patients at high risk of subsequent cardiovascular event after",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": null,
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "1",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "1 Clopidogrel versus aspirin monotherapy in high-risk patients after",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 12,
+                      "end_line": 12
+                    }
+                  ]
+                },
+                "text": "On behalf of the SMART-CHOICE 3 Investigators",
+                "page": 2,
+                "start_line": 12,
+                "end_line": 12,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "On behalf of the SMART-CHOICE 3 Investigators",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "2",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "2 Table of Contents Page Investigators and Collaborators",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 3,
+                      "end_line": 3
+                    }
+                  ]
+                },
+                "text": "Table of Contents",
+                "page": 3,
+                "start_line": 3,
+                "end_line": 3,
+                "kind": "contents_lead",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 31,
+                      "end_line": 31
+                    }
+                  ]
+                },
+                "text": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "page": 3,
+                "start_line": 31,
+                "end_line": 31,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 33,
+                      "end_line": 33
+                    }
+                  ]
+                },
+                "text": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 33,
+                "end_line": 33,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 35,
+                      "end_line": 35
+                    }
+                  ]
+                },
+                "text": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 35,
+                "end_line": 35,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 37,
+                      "end_line": 37
+                    }
+                  ]
+                },
+                "text": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "page": 3,
+                "start_line": 37,
+                "end_line": 37,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 39,
+                      "end_line": 39
+                    }
+                  ]
+                },
+                "text": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "page": 3,
+                "start_line": 39,
+                "end_line": 39,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "embedded_version": null
+              }
+            ],
+            "total_entries": 474,
+            "returned_entries": 12,
+            "remaining_entries": 462,
+            "terminal": false,
+            "page_count": 102,
+            "pages_examined": 102,
+            "pages_without_text_projection": [],
+            "unreadable_pages": [],
+            "truncated": true,
+            "next_cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ",
+            "condition": "layout_inspection_available",
+            "render_recovery": [
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 1,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 2,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 3,
+                "inline": true
+              }
+            ],
+            "version_spans": [],
+            "date_spans": []
+          }
+        },
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:randomization",
+        "purpose_question_id": null
+      },
+      "hits": []
+    },
+    {
+      "call_id": "item_27",
+      "request_index": 1,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "statistical analysis plan",
+        "mode": "phrase",
+        "limit": 10,
+        "purpose_domain_id": "domain:selection"
+      },
+      "outcome": "success",
+      "receipt": "sr_eb5548dc8dabda38",
+      "metadata": {
+        "query": "statistical analysis plan",
+        "mode": "phrase",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 3,
+        "truncated": false,
+        "condition": null,
+        "session_id": "sha256:ff122f62b257d9dc7567cb8cdb8e4a47a09aa641839eb6901b5480971a2293d2",
+        "session_handle": "ss_ff122f62b257d9dc",
+        "matching_page_count": 3,
+        "candidate_count": 3,
+        "distinct_passage_count": 3,
+        "distinct_page_count": 3,
+        "distinct_source_count": 1,
+        "ranking_complete": true,
+        "returned_rank_start": 1,
+        "returned_rank_end": 3,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 3,
+            "term_page_counts": [
+              {
+                "term": "statistical",
+                "matching_page_count": 16
+              },
+              {
+                "term": "analysis",
+                "matching_page_count": 26
+              },
+              {
+                "term": "plan",
+                "matching_page_count": 9
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": null,
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:selection",
+        "purpose_question_id": null
+      },
+      "hits": [
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 88,
+          "start_line": 1,
+          "end_line": 21,
+          "rank": 1,
+          "passage_ref": "eh_ba6fcb6db4cfcf91",
+          "candidate_truncated": false,
+          "preview_sha256": "16d0058d2e6298a1950cc79d92b6b1717b4c52b8f89f9159e6d8af66e4a0d808"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 3,
+          "start_line": 57,
+          "end_line": 74,
+          "rank": 2,
+          "passage_ref": "eh_8cec3921b394443c",
+          "candidate_truncated": false,
+          "preview_sha256": "2b47b5b4d1b7d5a6e6c036926dcd8baeb861af1c0e5e2c9d6aee363618e9bed2"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 71,
+          "start_line": 11,
+          "end_line": 17,
+          "rank": 3,
+          "passage_ref": "eh_0aed223f13e48e67",
+          "candidate_truncated": false,
+          "preview_sha256": "ab81ace4ec699d40d48b24677988b880b7c3724c3055d41ed786e89103740468"
+        }
+      ]
+    },
+    {
+      "call_id": "item_27",
+      "request_index": 2,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "MACCE primary endpoint",
+        "mode": "all",
+        "limit": 10,
+        "purpose_domain_id": "domain:selection"
+      },
+      "outcome": "success",
+      "receipt": "sr_cd198be2967a144c",
+      "metadata": {
+        "query": "MACCE primary endpoint",
+        "mode": "all",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 18,
+        "truncated": true,
+        "condition": null,
+        "session_id": "sha256:5c2120ed25e1d17b368629266c2f6639ccfc95904961cec3bc3d1c5d5b83eba6",
+        "session_handle": "ss_5c2120ed25e1d17b",
+        "matching_page_count": 18,
+        "candidate_count": 26,
+        "distinct_passage_count": 26,
+        "distinct_page_count": 18,
+        "distinct_source_count": 1,
+        "ranking_complete": true,
+        "returned_rank_start": 1,
+        "returned_rank_end": 10,
+        "next_cursor": "sc_5c2120ed25e1d17b_10",
+        "exhausted": false,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 18,
+            "term_page_counts": [
+              {
+                "term": "macce",
+                "matching_page_count": 21
+              },
+              {
+                "term": "primary",
+                "matching_page_count": 27
+              },
+              {
+                "term": "endpoint",
+                "matching_page_count": 32
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": null,
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:selection",
+        "purpose_question_id": null
+      },
+      "hits": [
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 24,
+          "start_line": 1,
+          "end_line": 8,
+          "rank": 1,
+          "passage_ref": "eh_99a70a8b417e8cfc",
+          "candidate_truncated": false,
+          "preview_sha256": "dbd5c82b19f882983cf821ca412aae139c885c10f5a3fe433c0e41146a9dca80"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 9,
+          "start_line": 1,
+          "end_line": 17,
+          "rank": 2,
+          "passage_ref": "eh_5bef1325d52a423d",
+          "candidate_truncated": false,
+          "preview_sha256": "2b7e5dbca444c80dcdde76e880e887589ab53e6a02717f3f181ade0070aabadd"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 9,
+          "start_line": 26,
+          "end_line": 41,
+          "rank": 3,
+          "passage_ref": "eh_a6eeebb4c0bd836d",
+          "candidate_truncated": false,
+          "preview_sha256": "263813c87ed25ac1e73241a354a93d5c2729b040b101399900b71ad14752f53c"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 22,
+          "start_line": 1,
+          "end_line": 9,
+          "rank": 4,
+          "passage_ref": "eh_eba1352a9075cc18",
+          "candidate_truncated": false,
+          "preview_sha256": "6792428c57f16ff49629b42d901835f794559139d88d42cac6a133c3b59a7f1c"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 94,
+          "start_line": 12,
+          "end_line": 18,
+          "rank": 5,
+          "passage_ref": "eh_b5429cf52185e8b4",
+          "candidate_truncated": false,
+          "preview_sha256": "36e2e6dd2d233313aa0c6489bf8e4d2767423d0c4c0424f31cf91e49109a9b2c"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 94,
+          "start_line": 17,
+          "end_line": 22,
+          "rank": 6,
+          "passage_ref": "eh_95d041fc9cc548f7",
+          "candidate_truncated": false,
+          "preview_sha256": "8e2c6985dd0512ea2b38c7ddccbdf31a900f3344d192d803a4f30b082978259d"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 94,
+          "start_line": 23,
+          "end_line": 32,
+          "rank": 7,
+          "passage_ref": "eh_19e73f5c779f8ce3",
+          "candidate_truncated": false,
+          "preview_sha256": "082f630e93a74601b69f7a96b0b41599a9660dd4f1ba289ae291701296e11d0c"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 18,
+          "start_line": 12,
+          "end_line": 20,
+          "rank": 8,
+          "passage_ref": "eh_27c1a8ebbf1a5998",
+          "candidate_truncated": false,
+          "preview_sha256": "9bd29f3c0cd403f3b0437feeb925c964a34ad66b708d5ee6f89b1ab70ca9e484"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 18,
+          "start_line": 21,
+          "end_line": 30,
+          "rank": 9,
+          "passage_ref": "eh_5802c084e4521790",
+          "candidate_truncated": false,
+          "preview_sha256": "ce9a1a28f64d5ab825dd1ee3546d240b015d559c8fbf79951593980fb8bec690"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 26,
+          "start_line": 1,
+          "end_line": 10,
+          "rank": 10,
+          "passage_ref": "eh_9639177487247818",
+          "candidate_truncated": false,
+          "preview_sha256": "cc330c555ae80e416274b11d4adacc1bf8f6487560e7a94504aaa6037673d39b"
+        }
+      ]
+    },
+    {
+      "call_id": "item_27",
+      "request_index": 3,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "sealed envelope",
+        "mode": "any",
+        "limit": 10,
+        "purpose_domain_id": "domain:randomization"
+      },
+      "outcome": "success",
+      "receipt": "sr_2f02f970018f7742",
+      "metadata": {
+        "query": "sealed envelope",
+        "mode": "any",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 0,
+        "truncated": false,
+        "condition": "no_hits",
+        "session_id": "sha256:ea031070591617ec50b3e40bc09bc65edd057e0063819d3ec65da669a3d94f21",
+        "session_handle": "ss_ea031070591617ec",
+        "matching_page_count": 0,
+        "candidate_count": 0,
+        "distinct_passage_count": 0,
+        "distinct_page_count": 0,
+        "distinct_source_count": 0,
+        "ranking_complete": true,
+        "returned_rank_start": null,
+        "returned_rank_end": null,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 0,
+            "term_page_counts": [
+              {
+                "term": "sealed",
+                "matching_page_count": 0
+              },
+              {
+                "term": "envelope",
+                "matching_page_count": 0
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": {
+          "code": "no_hits",
+          "mode": "any",
+          "profile": "porter-unicode61-v1",
+          "normalized_term_count": 2,
+          "total_matches": 0,
+          "candidate_count": 0,
+          "returned_count": 0,
+          "detail": "This scoped any query matched no captured text. Inspect the literal heading and leading-page navigation entries below, then read the cited Source pages or reformulate with wording found there. Zero hits establish only that the issued lexical query matched no captured text.",
+          "next_action": {
+            "kind": "navigate",
+            "operation": "list_sources",
+            "trial_id": "smart-choice-3",
+            "source_id": "sh_3d18b620c379656d",
+            "limit": 12,
+            "cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ"
+          },
+          "navigation": {
+            "source_id": "sh_3d18b620c379656d",
+            "source_label": "mmc1.pdf",
+            "logical_path": "mmc1.pdf",
+            "projection_hash": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+            "source_sha256": "sha256:59d0e5792b809e9fb284d6ca802bdd97cd640ad64f4bc2ec485416383b180c5d",
+            "pdf_bookmark_count": 0,
+            "unmapped_pdf_bookmark_count": 0,
+            "navigation_version": "rob2-kit.source-navigation.v0.5",
+            "entries": [
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 1,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "Supplementary appendix This appendix formed part of the original submission and has been peer reviewed. We post it as supplied by the authors. Supplement to: Choi KH, Park YH, Lee J-Y, et al. Efficacy and safety of clopidogrel versus aspirin monotherapy in patients at high risk of subsequent cardiovascular event after",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": null,
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "1",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "1 Clopidogrel versus aspirin monotherapy in high-risk patients after",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 12,
+                      "end_line": 12
+                    }
+                  ]
+                },
+                "text": "On behalf of the SMART-CHOICE 3 Investigators",
+                "page": 2,
+                "start_line": 12,
+                "end_line": 12,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "On behalf of the SMART-CHOICE 3 Investigators",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "2",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "2 Table of Contents Page Investigators and Collaborators",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 3,
+                      "end_line": 3
+                    }
+                  ]
+                },
+                "text": "Table of Contents",
+                "page": 3,
+                "start_line": 3,
+                "end_line": 3,
+                "kind": "contents_lead",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 31,
+                      "end_line": 31
+                    }
+                  ]
+                },
+                "text": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "page": 3,
+                "start_line": 31,
+                "end_line": 31,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 33,
+                      "end_line": 33
+                    }
+                  ]
+                },
+                "text": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 33,
+                "end_line": 33,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 35,
+                      "end_line": 35
+                    }
+                  ]
+                },
+                "text": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 35,
+                "end_line": 35,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 37,
+                      "end_line": 37
+                    }
+                  ]
+                },
+                "text": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "page": 3,
+                "start_line": 37,
+                "end_line": 37,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 39,
+                      "end_line": 39
+                    }
+                  ]
+                },
+                "text": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "page": 3,
+                "start_line": 39,
+                "end_line": 39,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "embedded_version": null
+              }
+            ],
+            "total_entries": 474,
+            "returned_entries": 12,
+            "remaining_entries": 462,
+            "terminal": false,
+            "page_count": 102,
+            "pages_examined": 102,
+            "pages_without_text_projection": [],
+            "unreadable_pages": [],
+            "truncated": true,
+            "next_cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ",
+            "condition": "layout_inspection_available",
+            "render_recovery": [
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 1,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 2,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 3,
+                "inline": true
+              }
+            ],
+            "version_spans": [],
+            "date_spans": []
+          }
+        },
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:randomization",
+        "purpose_question_id": null
+      },
+      "hits": []
+    },
+    {
+      "call_id": "item_61",
+      "request_index": 0,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "web based randomisation",
+        "mode": "phrase",
+        "limit": 10,
+        "purpose_domain_id": "domain:randomization"
+      },
+      "outcome": "success",
+      "receipt": "sr_b4c1312d731f123f",
+      "metadata": {
+        "query": "web based randomisation",
+        "mode": "phrase",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 0,
+        "truncated": false,
+        "condition": "no_hits",
+        "session_id": "sha256:665eab762442de5ff853ff19ec5f37e89fc85040d35ec2c728cdff00f497eb1a",
+        "session_handle": "ss_665eab762442de5f",
+        "matching_page_count": 0,
+        "candidate_count": 0,
+        "distinct_passage_count": 0,
+        "distinct_page_count": 0,
+        "distinct_source_count": 0,
+        "ranking_complete": true,
+        "returned_rank_start": null,
+        "returned_rank_end": null,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 0,
+            "term_page_counts": [
+              {
+                "term": "web",
+                "matching_page_count": 7
+              },
+              {
+                "term": "based",
+                "matching_page_count": 16
+              },
+              {
+                "term": "randomisation",
+                "matching_page_count": 14
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": {
+          "code": "no_hits",
+          "mode": "phrase",
+          "profile": "porter-unicode61-v1",
+          "normalized_term_count": 3,
+          "total_matches": 0,
+          "candidate_count": 0,
+          "returned_count": 0,
+          "detail": "This scoped phrase query matched no captured text. Inspect the literal heading and leading-page navigation entries below, then read the cited Source pages or reformulate with wording found there. Zero hits establish only that the issued lexical query matched no captured text.",
+          "next_action": {
+            "kind": "navigate",
+            "operation": "list_sources",
+            "trial_id": "smart-choice-3",
+            "source_id": "sh_3d18b620c379656d",
+            "limit": 12,
+            "cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ"
+          },
+          "navigation": {
+            "source_id": "sh_3d18b620c379656d",
+            "source_label": "mmc1.pdf",
+            "logical_path": "mmc1.pdf",
+            "projection_hash": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+            "source_sha256": "sha256:59d0e5792b809e9fb284d6ca802bdd97cd640ad64f4bc2ec485416383b180c5d",
+            "pdf_bookmark_count": 0,
+            "unmapped_pdf_bookmark_count": 0,
+            "navigation_version": "rob2-kit.source-navigation.v0.5",
+            "entries": [
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 1,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "Supplementary appendix This appendix formed part of the original submission and has been peer reviewed. We post it as supplied by the authors. Supplement to: Choi KH, Park YH, Lee J-Y, et al. Efficacy and safety of clopidogrel versus aspirin monotherapy in patients at high risk of subsequent cardiovascular event after",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": null,
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "1",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "1 Clopidogrel versus aspirin monotherapy in high-risk patients after",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 12,
+                      "end_line": 12
+                    }
+                  ]
+                },
+                "text": "On behalf of the SMART-CHOICE 3 Investigators",
+                "page": 2,
+                "start_line": 12,
+                "end_line": 12,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "On behalf of the SMART-CHOICE 3 Investigators",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "2",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "2 Table of Contents Page Investigators and Collaborators",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 3,
+                      "end_line": 3
+                    }
+                  ]
+                },
+                "text": "Table of Contents",
+                "page": 3,
+                "start_line": 3,
+                "end_line": 3,
+                "kind": "contents_lead",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 31,
+                      "end_line": 31
+                    }
+                  ]
+                },
+                "text": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "page": 3,
+                "start_line": 31,
+                "end_line": 31,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 33,
+                      "end_line": 33
+                    }
+                  ]
+                },
+                "text": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 33,
+                "end_line": 33,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 35,
+                      "end_line": 35
+                    }
+                  ]
+                },
+                "text": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 35,
+                "end_line": 35,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 37,
+                      "end_line": 37
+                    }
+                  ]
+                },
+                "text": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "page": 3,
+                "start_line": 37,
+                "end_line": 37,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 39,
+                      "end_line": 39
+                    }
+                  ]
+                },
+                "text": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "page": 3,
+                "start_line": 39,
+                "end_line": 39,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "embedded_version": null
+              }
+            ],
+            "total_entries": 474,
+            "returned_entries": 12,
+            "remaining_entries": 462,
+            "terminal": false,
+            "page_count": 102,
+            "pages_examined": 102,
+            "pages_without_text_projection": [],
+            "unreadable_pages": [],
+            "truncated": true,
+            "next_cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ",
+            "condition": "layout_inspection_available",
+            "render_recovery": [
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 1,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 2,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 3,
+                "inline": true
+              }
+            ],
+            "version_spans": [],
+            "date_spans": []
+          }
+        },
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:randomization",
+        "purpose_question_id": null
+      },
+      "hits": []
+    },
+    {
+      "call_id": "item_61",
+      "request_index": 1,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "allocation sequence",
+        "mode": "all",
+        "limit": 10,
+        "purpose_domain_id": "domain:randomization"
+      },
+      "outcome": "success",
+      "receipt": "sr_59977cf1f6f1dab5",
+      "metadata": {
+        "query": "allocation sequence",
+        "mode": "all",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 0,
+        "truncated": false,
+        "condition": "no_hits",
+        "session_id": "sha256:7ad60ce4f1bf3aba04203bc9d2f083820703da1af04dfd1bee603a79bbb74796",
+        "session_handle": "ss_7ad60ce4f1bf3aba",
+        "matching_page_count": 0,
+        "candidate_count": 0,
+        "distinct_passage_count": 0,
+        "distinct_page_count": 0,
+        "distinct_source_count": 0,
+        "ranking_complete": true,
+        "returned_rank_start": null,
+        "returned_rank_end": null,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 0,
+            "term_page_counts": [
+              {
+                "term": "allocation",
+                "matching_page_count": 13
+              },
+              {
+                "term": "sequence",
+                "matching_page_count": 1
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": {
+          "code": "no_hits",
+          "mode": "all",
+          "profile": "porter-unicode61-v1",
+          "normalized_term_count": 2,
+          "total_matches": 0,
+          "candidate_count": 0,
+          "returned_count": 0,
+          "detail": "This scoped all query matched no captured text. Inspect the literal heading and leading-page navigation entries below, then read the cited Source pages or reformulate with wording found there. Zero hits establish only that the issued lexical query matched no captured text.",
+          "next_action": {
+            "kind": "navigate",
+            "operation": "list_sources",
+            "trial_id": "smart-choice-3",
+            "source_id": "sh_3d18b620c379656d",
+            "limit": 12,
+            "cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ"
+          },
+          "navigation": {
+            "source_id": "sh_3d18b620c379656d",
+            "source_label": "mmc1.pdf",
+            "logical_path": "mmc1.pdf",
+            "projection_hash": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+            "source_sha256": "sha256:59d0e5792b809e9fb284d6ca802bdd97cd640ad64f4bc2ec485416383b180c5d",
+            "pdf_bookmark_count": 0,
+            "unmapped_pdf_bookmark_count": 0,
+            "navigation_version": "rob2-kit.source-navigation.v0.5",
+            "entries": [
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 1,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "Supplementary appendix This appendix formed part of the original submission and has been peer reviewed. We post it as supplied by the authors. Supplement to: Choi KH, Park YH, Lee J-Y, et al. Efficacy and safety of clopidogrel versus aspirin monotherapy in patients at high risk of subsequent cardiovascular event after",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": null,
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "1",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "1 Clopidogrel versus aspirin monotherapy in high-risk patients after",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "1",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 2,
+                      "start_line": 12,
+                      "end_line": 12
+                    }
+                  ]
+                },
+                "text": "On behalf of the SMART-CHOICE 3 Investigators",
+                "page": 2,
+                "start_line": 12,
+                "end_line": 12,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "On behalf of the SMART-CHOICE 3 Investigators",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 1
+                    }
+                  ]
+                },
+                "text": "2",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 1,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 1,
+                      "end_line": 5
+                    }
+                  ]
+                },
+                "text": "2 Table of Contents Page Investigators and Collaborators",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 5,
+                "kind": "page_excerpt",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 3,
+                      "end_line": 3
+                    }
+                  ]
+                },
+                "text": "Table of Contents",
+                "page": 3,
+                "start_line": 3,
+                "end_line": 3,
+                "kind": "contents_lead",
+                "date_kind": null,
+                "logical_section": "2",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 31,
+                      "end_line": 31
+                    }
+                  ]
+                },
+                "text": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "page": 3,
+                "start_line": 31,
+                "end_line": 31,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 33,
+                      "end_line": 33
+                    }
+                  ]
+                },
+                "text": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 33,
+                "end_line": 33,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 35,
+                      "end_line": 35
+                    }
+                  ]
+                },
+                "text": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "page": 3,
+                "start_line": 35,
+                "end_line": 35,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 37,
+                      "end_line": 37
+                    }
+                  ]
+                },
+                "text": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "page": 3,
+                "start_line": 37,
+                "end_line": 37,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S4. Landmark Analysis for the Primary Endpoint",
+                "embedded_version": null
+              },
+              {
+                "read_action": {
+                  "operation": "read_pages",
+                  "trial_id": "smart-choice-3",
+                  "windows": [
+                    {
+                      "source_id": "sh_3d18b620c379656d",
+                      "page": 3,
+                      "start_line": 39,
+                      "end_line": 39
+                    }
+                  ]
+                },
+                "text": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "page": 3,
+                "start_line": 39,
+                "end_line": 39,
+                "kind": "heading_candidate",
+                "date_kind": null,
+                "logical_section": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+                "embedded_version": null
+              }
+            ],
+            "total_entries": 474,
+            "returned_entries": 12,
+            "remaining_entries": 462,
+            "terminal": false,
+            "page_count": 102,
+            "pages_examined": 102,
+            "pages_without_text_projection": [],
+            "unreadable_pages": [],
+            "truncated": true,
+            "next_cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ",
+            "condition": "layout_inspection_available",
+            "render_recovery": [
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 1,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 2,
+                "inline": true
+              },
+              {
+                "operation": "render_page",
+                "trial_id": "smart-choice-3",
+                "source_id": "sh_3d18b620c379656d",
+                "page": 3,
+                "inline": true
+              }
+            ],
+            "version_spans": [],
+            "date_spans": []
+          }
+        },
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:randomization",
+        "purpose_question_id": null
+      },
+      "hits": []
+    },
+    {
+      "call_id": "item_61",
+      "request_index": 2,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "Table S1 Protocol Deviations",
+        "mode": "all",
+        "limit": 10,
+        "purpose_domain_id": "domain:deviations"
+      },
+      "outcome": "success",
+      "receipt": "sr_8b9c250685997ed2",
+      "metadata": {
+        "query": "Table S1 Protocol Deviations",
+        "mode": "all",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 2,
+        "truncated": false,
+        "condition": null,
+        "session_id": "sha256:e016823d1fe45b479700e7d44df1ffa6c16630979247f25c9a5acfb071c30d20",
+        "session_handle": "ss_e016823d1fe45b47",
+        "matching_page_count": 2,
+        "candidate_count": 2,
+        "distinct_passage_count": 2,
+        "distinct_page_count": 2,
+        "distinct_source_count": 1,
+        "ranking_complete": true,
+        "returned_rank_start": 1,
+        "returned_rank_end": 2,
+        "next_cursor": null,
+        "exhausted": true,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 2,
+            "term_page_counts": [
+              {
+                "term": "table",
+                "matching_page_count": 31
+              },
+              {
+                "term": "s1",
+                "matching_page_count": 3
+              },
+              {
+                "term": "protocol",
+                "matching_page_count": 34
+              },
+              {
+                "term": "deviations",
+                "matching_page_count": 10
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": null,
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:deviations",
+        "purpose_question_id": null
+      },
+      "hits": [
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 27,
+          "start_line": 1,
+          "end_line": 28,
+          "rank": 1,
+          "passage_ref": "eh_853545903a716f51",
+          "candidate_truncated": false,
+          "preview_sha256": "aaccb61ca7930d414566af64486afdfc8adc0bf4bc3a4facf2b7100aa46a3f6d"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 3,
+          "start_line": 38,
+          "end_line": 52,
+          "rank": 2,
+          "passage_ref": "eh_56a302083d55e108",
+          "candidate_truncated": false,
+          "preview_sha256": "2859d24921f972be3d71af3c92be8f670af3e978105c5cf1a114c600c9dbe1e0"
+        }
+      ]
+    },
+    {
+      "call_id": "item_61",
+      "request_index": 3,
+      "request": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d",
+        "query": "primary endpoint analysis",
+        "mode": "all",
+        "limit": 10,
+        "purpose_domain_id": "domain:selection"
+      },
+      "outcome": "success",
+      "receipt": "sr_afd03d4d9938aa92",
+      "metadata": {
+        "query": "primary endpoint analysis",
+        "mode": "all",
+        "profile": "porter-unicode61-v1",
+        "total_matches": 11,
+        "truncated": true,
+        "condition": null,
+        "session_id": "sha256:329822f3580c7a8a9ce23878e25f42b607ee972a700d54bb2133a056e5e5838a",
+        "session_handle": "ss_329822f3580c7a8a",
+        "matching_page_count": 11,
+        "candidate_count": 20,
+        "distinct_passage_count": 20,
+        "distinct_page_count": 11,
+        "distinct_source_count": 1,
+        "ranking_complete": true,
+        "returned_rank_start": 1,
+        "returned_rank_end": 10,
+        "next_cursor": "sc_329822f3580c7a8a_10",
+        "exhausted": false,
+        "term_feedback": [
+          {
+            "source_id": "sh_3d18b620c379656d",
+            "page_count": 102,
+            "query_matching_page_count": 11,
+            "term_page_counts": [
+              {
+                "term": "primary",
+                "matching_page_count": 27
+              },
+              {
+                "term": "endpoint",
+                "matching_page_count": 32
+              },
+              {
+                "term": "analysis",
+                "matching_page_count": 26
+              }
+            ]
+          }
+        ],
+        "term_feedback_truncated": false,
+        "term_feedback_sources_truncated": false,
+        "diagnostic": null,
+        "spelling_suggestions": [],
+        "spelling_suggestions_incomplete": false,
+        "purpose_domain_id": "domain:selection",
+        "purpose_question_id": null
+      },
+      "hits": [
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 24,
+          "start_line": 1,
+          "end_line": 8,
+          "rank": 1,
+          "passage_ref": "eh_99a70a8b417e8cfc",
+          "candidate_truncated": false,
+          "preview_sha256": "dbd5c82b19f882983cf821ca412aae139c885c10f5a3fe433c0e41146a9dca80"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 95,
+          "start_line": 9,
+          "end_line": 17,
+          "rank": 2,
+          "passage_ref": "eh_b37056422820237e",
+          "candidate_truncated": false,
+          "preview_sha256": "900586fa9cd046a9571e44e881ef9436163df1fc3a8bf255f0901b95d49eeaa6"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 95,
+          "start_line": 29,
+          "end_line": 37,
+          "rank": 3,
+          "passage_ref": "eh_6b31bedd29b9ef55",
+          "candidate_truncated": false,
+          "preview_sha256": "6e593b69d58bec44fd97f36ca2f6c0cb449bd02d21c533f4ec6f104c1648b0e9"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 95,
+          "start_line": 39,
+          "end_line": 43,
+          "rank": 4,
+          "passage_ref": "eh_b4580cf5632af6e9",
+          "candidate_truncated": false,
+          "preview_sha256": "e024aa26398b89953ccd48fd19c943c8dacc087768c428a7e20e5b2b1e9db857"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 69,
+          "start_line": 1,
+          "end_line": 22,
+          "rank": 5,
+          "passage_ref": "eh_1876d4e8cbdba22c",
+          "candidate_truncated": false,
+          "preview_sha256": "4f857b4f7fee44db45915ea03b9c72329c4684163101e681386c338f385daec0"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 69,
+          "start_line": 24,
+          "end_line": 35,
+          "rank": 6,
+          "passage_ref": "eh_e7047e1e974bbf47",
+          "candidate_truncated": false,
+          "preview_sha256": "ea9a0f3017975e192f5157fad47efa404f3d998217d6c356c12dcdb68b11c934"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 69,
+          "start_line": 60,
+          "end_line": 72,
+          "rank": 7,
+          "passage_ref": "eh_b53356ed804a7ac7",
+          "candidate_truncated": false,
+          "preview_sha256": "d0821245b45eb19cd0fbaa6589272748ca5d9abb74fcdd6fbca55a85018cf840"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 66,
+          "start_line": 5,
+          "end_line": 19,
+          "rank": 8,
+          "passage_ref": "eh_336b390d42f6f523",
+          "candidate_truncated": false,
+          "preview_sha256": "8768034a87c08bab73c9ae4827a643ca3b03ed5d551184e741dec3a96eaf02e7"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 66,
+          "start_line": 34,
+          "end_line": 42,
+          "rank": 9,
+          "passage_ref": "eh_ac23eeb53c3daeb1",
+          "candidate_truncated": false,
+          "preview_sha256": "4d11e112534ef9c2fcef0ebc2f2b5b84ac9ff25a625feaf5fd5522da4a75228b"
+        },
+        {
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 67,
+          "start_line": 4,
+          "end_line": 8,
+          "rank": 10,
+          "passage_ref": "eh_6895dde1f72e99d9",
+          "candidate_truncated": false,
+          "preview_sha256": "e024aa26398b89953ccd48fd19c943c8dacc087768c428a7e20e5b2b1e9db857"
+        }
+      ]
+    }
+  ],
+  "domain_context_deliveries": [
+    {
+      "call_id": "item_15",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:randomization"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 3,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "654308b8e9d975d92bba870039d4036a8e1cbbf2841042dd9b2d7a1ff6fe1467",
+        "state_revision": 4,
+        "next_cursor": "dcp2.021f87f0ac9b42e2bc2e27441f1ed843.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_22",
+      "request": {
+        "cursor": "dcp2.021f87f0ac9b42e2bc2e27441f1ed843.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 3,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 2,
+        "snapshot_digest": "654308b8e9d975d92bba870039d4036a8e1cbbf2841042dd9b2d7a1ff6fe1467",
+        "state_revision": 4,
+        "next_cursor": "dcp2.021f87f0ac9b42e2bc2e27441f1ed843.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_24",
+      "request": {
+        "cursor": "dcp2.021f87f0ac9b42e2bc2e27441f1ed843.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 3,
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "654308b8e9d975d92bba870039d4036a8e1cbbf2841042dd9b2d7a1ff6fe1467",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_31",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:measurement"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": "dcp2.e52be906c7ef45209df66abf1ea4de0c.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_29",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:deviations"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "3a203a65e5921ccb4044335ab716946874ce2cc8ed88e7c33636dc86cb14f780",
+        "state_revision": 4,
+        "next_cursor": "dcp2.80850824350e4fcab9c262f6f632f152.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_30",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:missing"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": "dcp2.f9998fa363824e979e5530907fdc3605.1"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_32",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:selection"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "2a9fcd499720ff4bb0a2a71830c49ae13393502cc9f0f2dbdca7df2a8f54dcc0",
+        "state_revision": 4,
+        "next_cursor": "dcp2.6fa4c9c492674b42a9c2cc0ff93fc8cc.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_33",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:randomization"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 3,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "a45a19aca6a33c8a204594480527e4e14b15492fe7dbe4395c90b061e04874e5",
+        "state_revision": 4,
+        "next_cursor": "dcp2.2af2050a835a407cac8a609398bf7e6a.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_34",
+      "request": {
+        "cursor": "dcp2.2af2050a835a407cac8a609398bf7e6a.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 3,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 2,
+        "snapshot_digest": "a45a19aca6a33c8a204594480527e4e14b15492fe7dbe4395c90b061e04874e5",
+        "state_revision": 4,
+        "next_cursor": "dcp2.2af2050a835a407cac8a609398bf7e6a.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_35",
+      "request": {
+        "cursor": "dcp2.2af2050a835a407cac8a609398bf7e6a.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 3,
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "a45a19aca6a33c8a204594480527e4e14b15492fe7dbe4395c90b061e04874e5",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_36",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:deviations"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "3a203a65e5921ccb4044335ab716946874ce2cc8ed88e7c33636dc86cb14f780",
+        "state_revision": 4,
+        "next_cursor": "dcp2.a7f60cc65182414a9cea7404978bcc47.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_37",
+      "request": {
+        "cursor": "dcp2.a7f60cc65182414a9cea7404978bcc47.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 4,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 6,
+        "snapshot_digest": "3a203a65e5921ccb4044335ab716946874ce2cc8ed88e7c33636dc86cb14f780",
+        "state_revision": 4,
+        "next_cursor": "dcp2.a7f60cc65182414a9cea7404978bcc47.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_38",
+      "request": {
+        "cursor": "dcp2.a7f60cc65182414a9cea7404978bcc47.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 4,
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "3a203a65e5921ccb4044335ab716946874ce2cc8ed88e7c33636dc86cb14f780",
+        "state_revision": 4,
+        "next_cursor": "dcp2.a7f60cc65182414a9cea7404978bcc47.3"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_39",
+      "request": {
+        "cursor": "dcp2.a7f60cc65182414a9cea7404978bcc47.3"
+      },
+      "context_page": {
+        "index": 3,
+        "count": 4,
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "snapshot_digest": "3a203a65e5921ccb4044335ab716946874ce2cc8ed88e7c33636dc86cb14f780",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_40",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:missing"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": "dcp2.bfa876de705b4e609b167d6fd2c00862.1"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_41",
+      "request": {
+        "cursor": "dcp2.bfa876de705b4e609b167d6fd2c00862.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 4,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 3,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": "dcp2.bfa876de705b4e609b167d6fd2c00862.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_42",
+      "request": {
+        "cursor": "dcp2.bfa876de705b4e609b167d6fd2c00862.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 4,
+        "section": "evidence",
+        "item_start": 0,
+        "item_count": 5,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": "dcp2.bfa876de705b4e609b167d6fd2c00862.3"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        },
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_43",
+      "request": {
+        "cursor": "dcp2.bfa876de705b4e609b167d6fd2c00862.3"
+      },
+      "context_page": {
+        "index": 3,
+        "count": 4,
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_44",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:measurement"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": "dcp2.00801a754d574b418b3cda182ea0e14e.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_45",
+      "request": {
+        "cursor": "dcp2.00801a754d574b418b3cda182ea0e14e.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 4,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": "dcp2.00801a754d574b418b3cda182ea0e14e.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_46",
+      "request": {
+        "cursor": "dcp2.00801a754d574b418b3cda182ea0e14e.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 4,
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": "dcp2.00801a754d574b418b3cda182ea0e14e.3"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_47",
+      "request": {
+        "cursor": "dcp2.00801a754d574b418b3cda182ea0e14e.3"
+      },
+      "context_page": {
+        "index": 3,
+        "count": 4,
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_48",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:selection"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "2a9fcd499720ff4bb0a2a71830c49ae13393502cc9f0f2dbdca7df2a8f54dcc0",
+        "state_revision": 4,
+        "next_cursor": "dcp2.df9b9d3200894adc8ad92ede94b35b99.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_49",
+      "request": {
+        "cursor": "dcp2.df9b9d3200894adc8ad92ede94b35b99.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 4,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 2,
+        "snapshot_digest": "2a9fcd499720ff4bb0a2a71830c49ae13393502cc9f0f2dbdca7df2a8f54dcc0",
+        "state_revision": 4,
+        "next_cursor": "dcp2.df9b9d3200894adc8ad92ede94b35b99.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_50",
+      "request": {
+        "cursor": "dcp2.df9b9d3200894adc8ad92ede94b35b99.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 4,
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "2a9fcd499720ff4bb0a2a71830c49ae13393502cc9f0f2dbdca7df2a8f54dcc0",
+        "state_revision": 4,
+        "next_cursor": "dcp2.df9b9d3200894adc8ad92ede94b35b99.3"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_51",
+      "request": {
+        "cursor": "dcp2.df9b9d3200894adc8ad92ede94b35b99.3"
+      },
+      "context_page": {
+        "index": 3,
+        "count": 4,
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "snapshot_digest": "2a9fcd499720ff4bb0a2a71830c49ae13393502cc9f0f2dbdca7df2a8f54dcc0",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_52",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:missing"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": "dcp2.437ac3e74a954df492347a34a19b2590.1"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_53",
+      "request": {
+        "cursor": "dcp2.437ac3e74a954df492347a34a19b2590.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 4,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 3,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": "dcp2.437ac3e74a954df492347a34a19b2590.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_54",
+      "request": {
+        "cursor": "dcp2.437ac3e74a954df492347a34a19b2590.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 4,
+        "section": "evidence",
+        "item_start": 0,
+        "item_count": 5,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": "dcp2.437ac3e74a954df492347a34a19b2590.3"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        },
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_55",
+      "request": {
+        "cursor": "dcp2.437ac3e74a954df492347a34a19b2590.3"
+      },
+      "context_page": {
+        "index": 3,
+        "count": 4,
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "snapshot_digest": "33031fd01e123c24e277ec8993804fdda07cd9d13d953453d7936d6ee22b590e",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_56",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:measurement"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": "dcp2.653de032304f4c189093a077752a6fb6.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        }
+      ]
+    },
+    {
+      "call_id": "item_57",
+      "request": {
+        "cursor": "dcp2.653de032304f4c189093a077752a6fb6.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 4,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": "dcp2.653de032304f4c189093a077752a6fb6.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_58",
+      "request": {
+        "cursor": "dcp2.653de032304f4c189093a077752a6fb6.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 4,
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 4,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": "dcp2.653de032304f4c189093a077752a6fb6.3"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_59",
+      "request": {
+        "cursor": "dcp2.653de032304f4c189093a077752a6fb6.3"
+      },
+      "context_page": {
+        "index": 3,
+        "count": 4,
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "snapshot_digest": "be2abc1a1caa68f26acd90f530fb442172b4b0520c8d824eb1fcc6c425a6b002",
+        "state_revision": 4,
+        "next_cursor": null
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_80",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:deviations"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "599f7665f3db9cfa23d2175eae701527f7353bfac6343ddf6f64b9c1b72e5f44",
+        "state_revision": 10,
+        "next_cursor": "dcp2.14391f8b779d4f458ad2767c3828e9d8.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:08b2638bc44174113733d59ac95876a028bcf55cf6f162eb9ac4c4dc31176c43",
+          "handle": "eh_08b2638bc4417411",
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 27,
+          "start_line": 3,
+          "end_line": 28,
+          "quote_present": true,
+          "quote_sha256": "df36dfb063a50e2ddba07027aa2c8903d018aacb602b1707ade68fbf9cb66730"
+        }
+      ]
+    },
+    {
+      "call_id": "item_82",
+      "request": {
+        "trial_id": "smart-choice-3",
+        "domain_id": "domain:deviations"
+      },
+      "context_page": {
+        "index": 0,
+        "count": 4,
+        "section": "complete",
+        "item_start": 0,
+        "item_count": 0,
+        "snapshot_digest": "599f7665f3db9cfa23d2175eae701527f7353bfac6343ddf6f64b9c1b72e5f44",
+        "state_revision": 10,
+        "next_cursor": "dcp2.bd446f9abe854d69ad1090aa48031f8b.1"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:08b2638bc44174113733d59ac95876a028bcf55cf6f162eb9ac4c4dc31176c43",
+          "handle": "eh_08b2638bc4417411",
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 27,
+          "start_line": 3,
+          "end_line": 28,
+          "quote_present": true,
+          "quote_sha256": "df36dfb063a50e2ddba07027aa2c8903d018aacb602b1707ade68fbf9cb66730"
+        }
+      ]
+    },
+    {
+      "call_id": "item_83",
+      "request": {
+        "cursor": "dcp2.bd446f9abe854d69ad1090aa48031f8b.1"
+      },
+      "context_page": {
+        "index": 1,
+        "count": 4,
+        "section": "questions",
+        "item_start": 1,
+        "item_count": 6,
+        "snapshot_digest": "599f7665f3db9cfa23d2175eae701527f7353bfac6343ddf6f64b9c1b72e5f44",
+        "state_revision": 10,
+        "next_cursor": "dcp2.bd446f9abe854d69ad1090aa48031f8b.2"
+      },
+      "evidence_delivered": []
+    },
+    {
+      "call_id": "item_84",
+      "request": {
+        "cursor": "dcp2.bd446f9abe854d69ad1090aa48031f8b.2"
+      },
+      "context_page": {
+        "index": 2,
+        "count": 4,
+        "section": "evidence",
+        "item_start": 1,
+        "item_count": 9,
+        "snapshot_digest": "599f7665f3db9cfa23d2175eae701527f7353bfac6343ddf6f64b9c1b72e5f44",
+        "state_revision": 10,
+        "next_cursor": "dcp2.bd446f9abe854d69ad1090aa48031f8b.3"
+      },
+      "evidence_delivered": [
+        {
+          "identity": "sha256:273c72f9c4bc9d68ce7d5f1ccc1b5e3f09e293b2143c28773bb26ecf131bbc11",
+          "handle": "eh_273c72f9c4bc9d68",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 1,
+          "end_line": 216,
+          "quote_present": true,
+          "quote_sha256": "c687732a42e00867d1c90b6271593dfebfa969434ce66caecaf5f9af93e849b7"
+        },
+        {
+          "identity": "sha256:b4a9799bad8edb5622b8b69cf76247a368da6665fdd261e0686a005bc5bd704d",
+          "handle": "eh_b4a9799bad8edb56",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 1,
+          "start_line": 1,
+          "end_line": 99,
+          "quote_present": true,
+          "quote_sha256": "8e920fbde450a904ebd5de8309872edac0ddf073f7ecf855be754f8f31fdd4b3"
+        },
+        {
+          "identity": "sha256:c821a920585c2e7f4384df0400d678e1f1c15a95b5a4cd1bb847fd2139815931",
+          "handle": "eh_c821a920585c2e7f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 1,
+          "end_line": 145,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:dffd5e3af1f371ec6586a34cd01eef9e4f8d677e056b82ca27d3e2c15a180529",
+          "handle": "eh_dffd5e3af1f371ec",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 1,
+          "end_line": 127,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:fe4b47b358f7169ecddd42a1474c674aed9023aea8885036795c3eadd116249c",
+          "handle": "eh_fe4b47b358f7169e",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 6,
+          "start_line": 1,
+          "end_line": 182,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:2d92522fb1504296e4926d09fa4ab03b4b9625e48b32e102e55e26248f93fe12",
+          "handle": "eh_2d92522fb1504296",
+          "source_id": "sh_3d18b620c379656d",
+          "canonical_source_id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "page": 66,
+          "start_line": 17,
+          "end_line": 23,
+          "quote_present": false,
+          "quote_sha256": null
+        },
+        {
+          "identity": "sha256:4514789d92adfc4323ad42354ed73beef4052034fff48aae1ab853c054095c0a",
+          "handle": "eh_4514789d92adfc43",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 5,
+          "start_line": 140,
+          "end_line": 145,
+          "quote_present": true,
+          "quote_sha256": "5bc04d128bbc44f8cf8ba95d2cb950f6b0dba63d8eafa6f4a276311160c4af68"
+        },
+        {
+          "identity": "sha256:531063b3ddcbfe6936796532fe409d6101310a9739fc5ae36b44814ce5e3a26b",
+          "handle": "eh_531063b3ddcbfe69",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 4,
+          "start_line": 65,
+          "end_line": 67,
+          "quote_present": true,
+          "quote_sha256": "1f9594bb14ebc8a1cda4ae67ffc48c777408cda7163794c55cb012e2bc4556de"
+        },
+        {
+          "identity": "sha256:f0456b4a8454fd4f1e0c6c9e1c87506c44f2e78758aee3d8be9044544f2c36ad",
+          "handle": "eh_f0456b4a8454fd4f",
+          "source_id": "sh_1f0972948ff7f02f",
+          "canonical_source_id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "page": 3,
+          "start_line": 67,
+          "end_line": 72,
+          "quote_present": false,
+          "quote_sha256": null
+        }
+      ]
+    },
+    {
+      "call_id": "item_85",
+      "request": {
+        "cursor": "dcp2.bd446f9abe854d69ad1090aa48031f8b.3"
+      },
+      "context_page": {
+        "index": 3,
+        "count": 4,
+        "section": "comparison_cards",
+        "item_start": 0,
+        "item_count": 1,
+        "snapshot_digest": "599f7665f3db9cfa23d2175eae701527f7353bfac6343ddf6f64b9c1b72e5f44",
+        "state_revision": 10,
+        "next_cursor": null
+      },
+      "evidence_delivered": []
+    }
+  ],
+  "navigation_deliveries": [
+    {
+      "call_id": "item_25",
+      "arguments": {
+        "trial_id": "smart-choice-3"
+      },
+      "inventory_identity": "sha256:4792fab1dfebc002bfe36224893f24264c11d5ebfa9c51d97fac6fe6b341e761",
+      "sources": [
+        {
+          "id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "label": "S0140-6736-25-00449-0.pdf",
+          "logical_path": "S0140-6736-25-00449-0.pdf",
+          "role": "main_article",
+          "origin": "local_dossier",
+          "sha256": "sha256:ae10aef04ced3ca2b6433f9df5b4aaaa4728cd7e8e304939b406a9c805f2e345",
+          "projection_hash": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+          "page_count": 12
+        },
+        {
+          "id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "label": "mmc1.pdf",
+          "logical_path": "mmc1.pdf",
+          "role": "supplement",
+          "origin": "local_dossier",
+          "sha256": "sha256:59d0e5792b809e9fb284d6ca802bdd97cd640ad64f4bc2ec485416383b180c5d",
+          "projection_hash": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+          "page_count": 102
+        }
+      ],
+      "navigation": null,
+      "note": "Metadata/literal navigation is discovery, not a reading receipt."
+    },
+    {
+      "call_id": "item_26",
+      "arguments": {
+        "trial_id": "smart-choice-3",
+        "source_id": "sh_3d18b620c379656d"
+      },
+      "inventory_identity": "sha256:4792fab1dfebc002bfe36224893f24264c11d5ebfa9c51d97fac6fe6b341e761",
+      "sources": [
+        {
+          "id": "source_1f0972948ff7f02f4fa6b2747c698991fb85ee303589b157cddc77a66dd83a4b",
+          "label": "S0140-6736-25-00449-0.pdf",
+          "logical_path": "S0140-6736-25-00449-0.pdf",
+          "role": "main_article",
+          "origin": "local_dossier",
+          "sha256": "sha256:ae10aef04ced3ca2b6433f9df5b4aaaa4728cd7e8e304939b406a9c805f2e345",
+          "projection_hash": "sha256:d6e9c5e487dddbd5e152587314fde6afb703dac55f03b1be7982cf494436ef5b",
+          "page_count": 12
+        },
+        {
+          "id": "source_3d18b620c379656dbf6e6eabb3536d6bdf2d4a7536b811aa950301afb6acc6fa",
+          "label": "mmc1.pdf",
+          "logical_path": "mmc1.pdf",
+          "role": "supplement",
+          "origin": "local_dossier",
+          "sha256": "sha256:59d0e5792b809e9fb284d6ca802bdd97cd640ad64f4bc2ec485416383b180c5d",
+          "projection_hash": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+          "page_count": 102
+        }
+      ],
+      "navigation": {
+        "source_id": "sh_3d18b620c379656d",
+        "source_label": "mmc1.pdf",
+        "logical_path": "mmc1.pdf",
+        "projection_hash": "sha256:88c9a1735ee05c5190fcb8284e40114204309b448949c0c21f910111bf4bb687",
+        "source_sha256": "sha256:59d0e5792b809e9fb284d6ca802bdd97cd640ad64f4bc2ec485416383b180c5d",
+        "pdf_bookmark_count": 0,
+        "unmapped_pdf_bookmark_count": 0,
+        "navigation_version": "rob2-kit.source-navigation.v0.5",
+        "entries": [
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 1,
+                  "start_line": 1,
+                  "end_line": 5
+                }
+              ]
+            },
+            "text": "Supplementary appendix This appendix formed part of the original submission and has been peer reviewed. We post it as supplied by the authors. Supplement to: Choi KH, Park YH, Lee J-Y, et al. Efficacy and safety of clopidogrel versus aspirin monotherapy in patients at high risk of subsequent cardiovascular event after",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 5,
+            "kind": "page_excerpt",
+            "date_kind": null,
+            "logical_section": null,
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 2,
+                  "start_line": 1,
+                  "end_line": 1
+                }
+              ]
+            },
+            "text": "1",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 1,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "1",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 2,
+                  "start_line": 1,
+                  "end_line": 5
+                }
+              ]
+            },
+            "text": "1 Clopidogrel versus aspirin monotherapy in high-risk patients after",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 5,
+            "kind": "page_excerpt",
+            "date_kind": null,
+            "logical_section": "1",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 2,
+                  "start_line": 12,
+                  "end_line": 12
+                }
+              ]
+            },
+            "text": "On behalf of the SMART-CHOICE 3 Investigators",
+            "page": 2,
+            "start_line": 12,
+            "end_line": 12,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "On behalf of the SMART-CHOICE 3 Investigators",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 1,
+                  "end_line": 1
+                }
+              ]
+            },
+            "text": "2",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 1,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "2",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 1,
+                  "end_line": 5
+                }
+              ]
+            },
+            "text": "2 Table of Contents Page Investigators and Collaborators",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 5,
+            "kind": "page_excerpt",
+            "date_kind": null,
+            "logical_section": "2",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 3,
+                  "end_line": 3
+                }
+              ]
+            },
+            "text": "Table of Contents",
+            "page": 3,
+            "start_line": 3,
+            "end_line": 3,
+            "kind": "contents_lead",
+            "date_kind": null,
+            "logical_section": "2",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 31,
+                  "end_line": 31
+                }
+              ]
+            },
+            "text": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+            "page": 3,
+            "start_line": 31,
+            "end_line": 31,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "Figure S1. Histogram of DAPT Duration Before Randomisation",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 33,
+                  "end_line": 33
+                }
+              ]
+            },
+            "text": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+            "page": 3,
+            "start_line": 33,
+            "end_line": 33,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "Figure S2. Cumulative Incidence of MACCE at 3 Years in the Per-Protocol Population",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 35,
+                  "end_line": 35
+                }
+              ]
+            },
+            "text": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+            "page": 3,
+            "start_line": 35,
+            "end_line": 35,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "Figure S3. Cumulative Incidence of BARC 3 or 5 Bleeding at 3 Years in the Per-Protocol Population",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 37,
+                  "end_line": 37
+                }
+              ]
+            },
+            "text": "Figure S4. Landmark Analysis for the Primary Endpoint",
+            "page": 3,
+            "start_line": 37,
+            "end_line": 37,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "Figure S4. Landmark Analysis for the Primary Endpoint",
+            "embedded_version": null
+          },
+          {
+            "read_action": {
+              "operation": "read_pages",
+              "trial_id": "smart-choice-3",
+              "windows": [
+                {
+                  "source_id": "sh_3d18b620c379656d",
+                  "page": 3,
+                  "start_line": 39,
+                  "end_line": 39
+                }
+              ]
+            },
+            "text": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+            "page": 3,
+            "start_line": 39,
+            "end_line": 39,
+            "kind": "heading_candidate",
+            "date_kind": null,
+            "logical_section": "Figure S5. Subgroup Analysis for Major Bleeding at 3 Years",
+            "embedded_version": null
+          }
+        ],
+        "total_entries": 474,
+        "returned_entries": 12,
+        "remaining_entries": 462,
+        "terminal": false,
+        "page_count": 102,
+        "pages_examined": 102,
+        "pages_without_text_projection": [],
+        "unreadable_pages": [],
+        "truncated": true,
+        "next_cursor": "sn1.eyJvZmZzZXQiOjEyLCJwcm9qZWN0aW9uX2hhc2giOiJzaGEyNTY6ODhjOWExNzM1ZWUwNWM1MTkwZmNiODI4NGU0MDExNDIwNDMwOWI0NDg5NDljMGMyMWY5MTAxMTFiZjRiYjY4NyIsInNvdXJjZV9pZCI6InNvdXJjZV8zZDE4YjYyMGMzNzk2NTZkYmY2ZTZlYWJiMzUzNmQ2YmRmMmQ0YTc1MzZiODExYWE5NTAzMDFhZmI2YWNjNmZhIiwidmVyc2lvbiI6InJvYjIta2l0LnNvdXJjZS1uYXZpZ2F0aW9uLnYwLjUifQ",
+        "condition": "layout_inspection_available",
+        "render_recovery": [
+          {
+            "operation": "render_page",
+            "trial_id": "smart-choice-3",
+            "source_id": "sh_3d18b620c379656d",
+            "page": 1,
+            "inline": true
+          },
+          {
+            "operation": "render_page",
+            "trial_id": "smart-choice-3",
+            "source_id": "sh_3d18b620c379656d",
+            "page": 2,
+            "inline": true
+          },
+          {
+            "operation": "render_page",
+            "trial_id": "smart-choice-3",
+            "source_id": "sh_3d18b620c379656d",
+            "page": 3,
+            "inline": true
+          }
+        ],
+        "version_spans": [],
+        "date_spans": []
+      },
+      "note": "Metadata/literal navigation is discovery, not a reading receipt."
+    }
+  ],
+  "render_page_calls": 0,
+  "coverage_note": "Actual successful agent tool responses only; excludes host preparation/preflight. Read/search/context/navigation are distinct. Overlap is not necessarily complete coverage; search previews and navigation metadata are not full page reading."
+}

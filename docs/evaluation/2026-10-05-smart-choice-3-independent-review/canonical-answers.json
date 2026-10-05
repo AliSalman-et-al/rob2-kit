@@ -1,0 +1,150 @@
+[
+  {
+    "domain_id": "domain:deviations",
+    "judgment": "some_concerns",
+    "proposed": "some_concerns",
+    "adopted": "some_concerns",
+    "answers": [
+      {
+        "question_id": "sq:deviations:participants-aware",
+        "answer": "yes",
+        "justification": "This is explicitly a randomized open-label trial; participants were not masked to assignment.",
+        "unknowns": [],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:deviations:personnel-aware",
+        "answer": "yes",
+        "justification": "The report states that study investigators were not masked to allocation, supporting awareness by intervention personnel.",
+        "unknowns": [],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:deviations:context-deviations",
+        "answer": "no_information",
+        "justification": "The supplement categorizes protocol violations as patient preference, clinician judgment, prescription error, and prior non-DES implantation; the participant-flow account reports follow-up loss separately. These categories do not establish that changes inconsistent with the intervention protocol were caused by the trial context.",
+        "unknowns": [
+          "Whether any protocol-inconsistent intervention changes were caused by trial engagement or trial personnel."
+        ],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:deviations:appropriate-analysis",
+        "answer": "yes",
+        "justification": "The selected result uses the ITT analysis: randomized participants are analyzed in their assigned groups regardless of whether correct treatment was administered or crossover occurred. The per-protocol result is a separate sensitivity analysis.",
+        "unknowns": [],
+        "counterevidence": []
+      }
+    ]
+  },
+  {
+    "domain_id": "domain:measurement",
+    "judgment": "low",
+    "proposed": "low",
+    "adopted": "low",
+    "answers": [
+      {
+        "question_id": "sq:measurement:method-inappropriate",
+        "answer": "no",
+        "justification": "MACCE combines all-cause death, myocardial infarction defined by the Fourth Universal Definition, and stroke defined by stated clinical criteria. Events were independently adjudicated by a blinded committee using defined criteria, and vital status was cross-checked against the national insurance system. These methods are appropriate for this hard-event composite.",
+        "unknowns": [],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:measurement:differential",
+        "answer": "no",
+        "justification": "Both groups had the same scheduled follow-up intervals and active surveillance for clinical events, with telephone interviews if in-person visits were unavailable. Vital status was cross-checked for all participants and the event committee was independent and blinded. Open-label treatment does not establish a group difference in MACCE ascertainment under these shared procedures.",
+        "unknowns": [],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:measurement:assessor-aware",
+        "answer": "no",
+        "justification": "The relevant event assessors were the independent clinical event adjudication committee, which reviewed all reported primary and secondary events in a blinded manner; discrepancies were resolved by discussion and majority vote.",
+        "unknowns": [],
+        "counterevidence": []
+      }
+    ]
+  },
+  {
+    "domain_id": "domain:missing",
+    "judgment": "low",
+    "proposed": "low",
+    "adopted": "low",
+    "answers": [
+      {
+        "question_id": "sq:missing:data-available",
+        "answer": "probably_yes",
+        "justification": "Primary endpoint assessment at ≥1 year was completed in 5444/5506 participants (98.9%; 2722/2752 and 2722/2754), and median follow-up was about 2.3 years. The selected analysis included all randomized participants and censored participants without an event at last known contact or 3 years. This supports nearly complete useful follow-up for the time-to-event estimate, without proving complete observation through the full potential window.",
+        "unknowns": [
+          "Arm-specific follow-up and censoring beyond the ≥1-year assessment are not fully enumerated; event-free participants were censored at last known contact."
+        ],
+        "counterevidence": []
+      }
+    ]
+  },
+  {
+    "domain_id": "domain:randomization",
+    "judgment": "low",
+    "proposed": "low",
+    "adopted": "low",
+    "answers": [
+      {
+        "question_id": "sq:randomization:sequence",
+        "answer": "yes",
+        "justification": "The report specifies computer-generated permuted blocks of size four with 1:1 assignment, a random component in sequence generation.",
+        "unknowns": [],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:randomization:concealment",
+        "answer": "probably_yes",
+        "justification": "Allocation was performed through a web-based randomization program supplied by S-Soft after eligibility and consent, which supports remote allocation before assignment. The sources do not explicitly identify who controlled access to the system or state concealment safeguards, so the inference remains probable.",
+        "unknowns": [
+          "The report does not state whether the enrolling personnel could access forthcoming assignments or identify the operator controlling the web-based system."
+        ],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:randomization:baseline-imbalance",
+        "answer": "no",
+        "justification": "The randomized groups were nearly equal in size and the reported baseline characteristics, including key enrollment risks, were closely balanced; no pattern suggests a randomization problem.",
+        "unknowns": [],
+        "counterevidence": []
+      }
+    ]
+  },
+  {
+    "domain_id": "domain:selection",
+    "judgment": "low",
+    "proposed": "low",
+    "adopted": "low",
+    "answers": [
+      {
+        "question_id": "sq:selection:prespecified-analysis",
+        "answer": "probably_yes",
+        "justification": "The captured SAP identifies this SMART-CHOICE 3 comparison and was dated 30 March 2023. It specifies the MACCE composite, ITT primary analysis, stratified Cox HR with 95% CI, and timing one year after last enrollment. The reported result matches these choices. The plan date preceded final enrollment (31 July 2023); the report says the interim blind analysis had no treatment-group analyses and describes no interim analyses by group. Together these support, but do not directly establish, that the plan was finalized before investigators could access unblinded outcome data.",
+        "unknowns": [
+          "The sources do not directly state when the SAP was finalized relative to investigators' first possible access to unblinded outcome data."
+        ],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:selection:multiple-measurements",
+        "answer": "no",
+        "justification": "The SAP specifies one primary outcome measurement: time to MACCE, defined as the composite of all-cause death, MI, or stroke. The report uses this definition for the approved Result. The separately listed component outcomes are distinct secondary endpoints, not alternative eligible measurements of the primary MACCE result.",
+        "unknowns": [],
+        "counterevidence": []
+      },
+      {
+        "question_id": "sq:selection:multiple-analyses",
+        "answer": "probably_no",
+        "justification": "The SAP identifies ITT as the primary analysis and per-protocol as exploratory sensitivity analysis, and specifies the stratified Cox model. The report presents the ITT result, the PP sensitivity estimate, and complete-follow-up sensitivity results. Although alternative analyses were possible, the report does not indicate that the approved estimate was selected because of its result; the reported plan and analyses support a probable judgment against result-driven selection.",
+        "unknowns": [
+          "The report does not enumerate every possible model or adjustment set considered, and absence of such reporting cannot prove no unreported analysis occurred."
+        ],
+        "counterevidence": []
+      }
+    ]
+  }
+]
