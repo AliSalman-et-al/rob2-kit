@@ -1,0 +1,11 @@
+# Inline copied quotes in existing submissions
+
+The existing Domain source-reference union accepted handles, line ranges and delivered visual references, but not copied quotes. A quote required a select_text_evidence roundtrip and handle copying. The union now also accepts `{source_id, page, selected_text}`. It resolves through the same reviewed application matcher with delivered_page_only=True; no parser, alias, tool or semantic validation was added.
+
+Lean bases, role-wrapped citations, counterevidence and existing working-account source references share this resolver. Old range/handle/visual paths remain intact. The server converts a successful quote to the existing Evidence identity before ordinary scientific/canonical validation. Literal binding does not certify an answer's warrant. Incorrect Source/page, ambiguous, undelivered and numeric-hyphen-forgery inputs fail before canonical mutation; a rejected draft may still create disposable derivative selections for earlier valid inputs, as with existing reference resolution.
+
+Offline native submission controls use invented source text. They check canonical state unchanged after each rejection, successful lean and annotated quote bases, counterevidence mapping, working-observation annotation and the same Evidence identity as a legacy range. Existing submission, working-checkpoint and result-account controls exercise preserved paths. No frozen assessment, Source or answer was changed.
+
+The public contract was regenerated. The official installed-wheel verifier completed with exit0 in a fresh environment with child PYTHONPATH removed. Installed wheel SHA256: `0d7ed208d6a2e34701a8612d4cd11e8c3a89c269f98f06d33f22a7596309d776`. No model calls or scientific improvement claim.
+
+Validation: 52 existing lean-submission, working-checkpoint and result-account tests passed. The new inline control initially used wire-field names for canonical role/counterevidence storage; those test assertions were corrected to the existing `kind` and `basis_index` representation, and its focused rerun passed. Nine contract/release-manifest checks passed. Ruff, typing and diff checks passed. Failed test attempts remain available; the broader run is not reported as wholly green.

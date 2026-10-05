@@ -4866,12 +4866,14 @@ def source_reference_resolver(
     workspace: str | Path, trial_id: str
 ) -> Callable[["DomainSourceReference"], str]:
     """Reuse existing text/visual selectors for compact current-Trial references."""
-    from ..workflow_models import VisualEvidenceReference, WorkingSourceRange
+    from ..workflow_models import SourceQuoteReference, VisualEvidenceReference, WorkingSourceRange
     from .source_handles import resolve_source_handle
 
-    handles: dict[WorkingSourceRange | VisualEvidenceReference, str] = {}
+    handles: dict[WorkingSourceRange | SourceQuoteReference | VisualEvidenceReference, str] = {}
 
-    def resolve(reference: str | WorkingSourceRange | VisualEvidenceReference) -> str:
+    def resolve(
+        reference: str | WorkingSourceRange | SourceQuoteReference | VisualEvidenceReference,
+    ) -> str:
         if isinstance(reference, str):
             return reference
         if reference not in handles:
@@ -4896,14 +4898,24 @@ def source_reference_resolver(
                 )
             else:
                 source_id = resolve_source_handle(workspace, trial_id, reference.source_id)
-                selected = select_text_evidence_by_lines(
-                    workspace,
-                    trial_id,
-                    source_id,
-                    reference.page,
-                    reference.start_line,
-                    reference.end_line,
-                )
+                if isinstance(reference, SourceQuoteReference):
+                    selected = select_text_evidence(
+                        workspace,
+                        trial_id,
+                        source_id,
+                        reference.page,
+                        reference.selected_text,
+                        delivered_page_only=True,
+                    )
+                else:
+                    selected = select_text_evidence_by_lines(
+                        workspace,
+                        trial_id,
+                        source_id,
+                        reference.page,
+                        reference.start_line,
+                        reference.end_line,
+                    )
             handles[reference] = selected["evidence"]["handle"]
         return handles[reference]
 

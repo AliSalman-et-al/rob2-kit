@@ -145,7 +145,20 @@ class VisualEvidenceReference(StrictModel):
         return self
 
 
-DomainSourceReference = SubmittedEvidenceHandle | WorkingSourceRange | VisualEvidenceReference
+class SourceQuoteReference(StrictModel):
+    """A copied literal from a delivered physical page, resolved by the server."""
+
+    source_id: SourceHandle = Field(description="Exact current-Trial Source handle.")
+    page: PageNumber = Field(description="1-based physical Source page.")
+    selected_text: NonBlankText = Field(
+        description="Unique contiguous unnumbered literal quote copied from read_pages. "
+        "Presentation normalization only; no paraphrase or automatic page relocation."
+    )
+
+
+DomainSourceReference = (
+    SubmittedEvidenceHandle | WorkingSourceRange | SourceQuoteReference | VisualEvidenceReference
+)
 
 
 class WorkingObservationScope(StrictModel):
@@ -2454,7 +2467,8 @@ class DomainEvidenceCitation(StrictModel):
         "No scope, source entailment or answer is inferred by the server.",
     )
     evidence: DomainSourceReference = Field(
-        description="Selected handle, exact text range, or delivered visual-region transcription."
+        description="Selected handle, exact text range, copied delivered quote, "
+        "or visual-region transcription."
     )
     role: Literal["direct_support", "indirect_support", "contradiction", "context", "inference"] = (
         Field(description="Scientific relationship of the inspected Evidence to this question.")
@@ -2477,7 +2491,8 @@ class DomainCounterpoint(StrictModel):
 
     evidence: tuple[DomainSourceReference, ...] = Field(
         min_length=1,
-        description="Selected handles, exact text ranges or delivered visual references.",
+        description="Selected handles, exact text ranges, copied delivered quotes "
+        "or visual references.",
     )
     implication: NonBlankText = Field(
         description="How the cited passages together limit or challenge the answer."
@@ -2505,7 +2520,8 @@ class DomainSaveAnswer(StrictModel):
     )
     bases: tuple[DomainEvidenceCitation | DomainSourceReference, ...] = Field(
         default=(),
-        description="Lean support: handles, exact text ranges or delivered visual references "
+        description="Lean support: handles, exact text ranges, copied delivered quotes "
+        "or visual references "
         "assert supporting "
         "facts, saved as indirect_support. Use full citations for other roles or annotations. "
         "Source resolution does not establish entailment or change an answer.",

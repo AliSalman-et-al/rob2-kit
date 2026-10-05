@@ -485,6 +485,11 @@ statement need not invent counts. The server retains provenance and derives only
 scope-matched arithmetic. Use the existing preview when reconciliation helps;
 follow [Reconcile availability](references/missing.md#reconcile-availability).
 
+Inline bases and counterevidence may cite a copied quote using `source_id`,
+physical `page` and `selected_text`, without line coordinates or a separate
+selection call. The quote must be unique on that page and fully delivered by
+`read_pages`; successful binding does not establish claim entailment.
+
 Supply the complete draft and current expected revision to `save_domain_judgment`.
 If its response is lost, retry the identical request with the original revision;
 the same accepted checkpoint is returned. A changed draft is a correction and

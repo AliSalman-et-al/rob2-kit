@@ -238,7 +238,8 @@ Evidence handle strings or exact text ranges from numbered `read_pages` output:
   "answer": "probably_yes",
   "bases": [
     "eh_0123456789abcdef",
-    {"source_id": "sh_0123456789abcdef", "page": 2, "start_line": 5, "end_line": 9}
+    {"source_id": "sh_0123456789abcdef", "page": 2, "start_line": 5, "end_line": 9},
+    {"source_id": "sh_0123456789abcdef", "page": 2, "selected_text": "Literal contiguous text copied from read_pages."}
   ],
   "justification": "Explain the source-supported inference for this Result.",
   "unknowns": ["State the material unresolved fact."],
@@ -256,7 +257,14 @@ explicit; all active questions and the normal validation rules still apply.
 
 For context, contradiction, an explicit support role or an annotation, retain the
 full `{evidence: reference, role, working_observation?}` citation. Its reference may
-also be a text range or a delivered visual reference. A visual reference is:
+also be a text range, copied quote or delivered visual reference. A copied quote
+uses `source_id`, physical `page` and `selected_text`, with no line fields. Copy
+the unnumbered literal from delivered `read_pages` text; the server requires a
+unique match on that page and complete delivered coverage. An ambiguous, wrong-page,
+undelivered or changed-value quote is rejected. This proves literal binding, not
+that the passage warrants the claim. No separate selection call is needed.
+
+A visual reference is:
 
 ```json
 {

@@ -23,13 +23,17 @@ FACTS = [
 ]
 
 
-def workspace_with_facts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def workspace_with_facts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, additional_source: str | None = None
+):
     original = support._workspace
 
     def create(path: Path, requested_outcome: str = "requested outcome") -> Path:
         workspace = original(path, requested_outcome)
         main = workspace / "input/trial/main.txt"
         main.write_text(main.read_text() + "\n".join(FACTS) + "\n")
+        if additional_source is not None:
+            (workspace / "input/trial/quotes.txt").write_text(additional_source)
         return workspace
 
     monkeypatch.setattr(support, "_workspace", create)
@@ -214,3 +218,101 @@ def test_lean_keeps_canonical_active_path_and_uncertainty_checks(
     assert saved["outcome"] == "repair", saved
     assert not _state(workspace).get("domain_records")
     assert _state(workspace)["revision"] == revision
+
+
+def test_inline_copied_quotes_reuse_reviewed_selector_and_preserve_canonical_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspace, evidence, revision = workspace_with_facts(
+        tmp_path,
+        monkeypatch,
+        "Unread unique fact.\nRepeated.\nRepeated.\nRisk 1 3 years.\nDose 50 69 mg.\n",
+    )
+    source = evidence["source_id"]
+    context = support._call(
+        workspace,
+        "get_domain_context",
+        {
+            "trial_id": "trial",
+            "domain_id": "domain:deviations",
+        },
+    )
+    assert context["outcome"] == "success"
+    drafted = support._domain_draft("trial", "domain:deviations", revision, evidence)
+    before = _state(workspace)
+    for quote, page in [(FACTS[0], 2), (FACTS[0].replace("ordinary", "extraordinary"), 1)]:
+        bad = {**drafted, "answers": [dict(item) for item in drafted["answers"]]}
+        bad["answers"][0]["bases"] = [{"source_id": source, "page": page, "selected_text": quote}]
+        rejected = support._call(workspace, "save_domain_judgment", bad)
+        assert rejected["outcome"] != "success"
+        assert _state(workspace) == before
+    extra = next(
+        item
+        for item in support._call(workspace, "list_sources", {"trial_id": "trial"})["data"][
+            "sources"
+        ]
+        if item["label"] == "quotes.txt"
+    )
+
+    def reject_extra(quote: str, expected: str) -> None:
+        bad = {**drafted, "answers": [dict(item) for item in drafted["answers"]]}
+        bad["answers"][0]["bases"] = [
+            {
+                "source_id": extra["id"],
+                "page": 1,
+                "selected_text": quote,
+            }
+        ]
+        rejected = support._call(workspace, "save_domain_judgment", bad)
+        assert rejected["outcome"] != "success"
+        assert expected in str(rejected)
+        assert _state(workspace) == before
+
+    reject_extra("Unread unique fact.", "not fully delivered")
+    support._call(
+        workspace,
+        "read_pages",
+        {
+            "trial_id": "trial",
+            "source_id": extra["id"],
+            "pages": [1],
+        },
+    )
+    reject_extra("Repeated.", "ambiguous")
+    reject_extra("Risk 1-3 years.", "not an exact")
+    reject_extra("Dose 50-69 mg.", "not an exact")
+    ranged = support._call(
+        workspace,
+        "select_text_evidence",
+        {
+            "trial_id": "trial",
+            **reference(evidence, 2),
+        },
+    )["data"]["evidence"]
+    quote_ref = {"source_id": source, "page": 1, "selected_text": FACTS[0]}
+    drafted["answers"][0]["bases"] = [
+        {
+            "evidence": quote_ref,
+            "role": "context",
+            "working_observation": {
+                "text": "Assignments were known; the quoted passage reports usual care."
+            },
+        }
+    ]
+    drafted["answers"][0]["counterevidence"] = [
+        {
+            "evidence": [quote_ref],
+            "implication": "Usual care limits an inference of trial-context deviations.",
+        }
+    ]
+    drafted["answers"][1]["bases"] = [quote_ref]
+    saved = support._call(workspace, "save_domain_judgment", drafted)
+    assert saved["outcome"] == "success", saved
+    record = _state(workspace)["domain_records"]["trial:domain:deviations"]
+    first = record["answers"][0]
+    assert first["bases"][0]["evidence"] == ranged["identity"]
+    assert first["bases"][0]["source"] == FACTS[0]
+    assert first["bases"][0]["kind"] == "context"
+    assert first["counterevidence"][0]["basis_index"] == 0
+    assert record["answers"][1]["bases"][0]["evidence"] == ranged["identity"]
