@@ -1,0 +1,13 @@
+{
+  "files": {
+    "common-sources-and-claims.json": "2df24dd2d196be01dcb840f8281f19bb4adeb0bb193068d2712165eb42b3216a",
+    "evaluation-U.binding.json": "4a51db41b2e3c8cfc7c86b36c0db143357c5c193a527438f236fc14446d925c2",
+    "evaluation-U.response.json": "4dd75b7807a8d5511e938a95072a368dc4bfcbb60e5e816b399d194ea8606c64",
+    "evaluation-V.binding.json": "94588d53c3a1e6980096f4980e56895b52aa7db4b00c40fb0b0827a6c7ef9617",
+    "evaluation-V.response.json": "898dfbc0643af0ce47731802e9c5633360110d0955b649a21639339f702bf784",
+    "independent-rubric.md": "c8db28559b60a59ecee1e1addd6d12a81369bef1529aabf1a895cd529f066a86"
+  },
+  "raw_model_responses_unchanged": true,
+  "mapping_withheld_until_scores_locked": true,
+  "scope": "Published evaluator files only; private source freeze and excluded private README remain unchanged."
+}

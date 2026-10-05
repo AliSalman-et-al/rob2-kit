@@ -1,0 +1,7 @@
+{
+  "valid": true,
+  "claims": 13,
+  "references": 13,
+  "response_sha256": "4dd75b7807a8d5511e938a95072a368dc4bfcbb60e5e816b399d194ea8606c64",
+  "scope": "Frozen synthetic structure/provenance only; no semantics or application"
+}
