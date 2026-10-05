@@ -66,7 +66,12 @@ historical search-account revisions and exports; candidate-byte tampering; and
 rehashed inventory/provenance/review-history tampering in both verifiers.
 Existing finalization, bounded-context, reading, search-cache, workspace, authority,
 Source-handle, working-checkpoint and release tests provide compatibility checks.
-Validation counts are recorded separately after the last checks complete.
+[Validation receipts](verification.json) record the overlapping test sets: 6 new
+admission tests; 104 compatibility tests (2 skips); 94 finalization/context/reading/
+search tests; 45 post-fix continuation/review tests; 6 release checks; and 3 Source
+archive controls. Ruff, changed-file type checks and diff checks pass. The
+[actual Oct 1 Code MONALEESA bundle](historical-Code-bundle.json) also passes both
+verifiers unchanged. These are workflow checks, not accuracy measurements.
 
 This is an explicitly Result-fixed admission route. ADR0030 allows Result mapping
 changes only before researcher approval; this change does not create a post-approval

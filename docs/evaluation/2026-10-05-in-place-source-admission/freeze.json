@@ -1,0 +1,9 @@
+{
+  "files": {
+    "README.md": "a475e20b46e0a55d0d58dd3e558cf1cab0b93a810947f27a6a231a04fd287a0a",
+    "historical-Code-bundle.json": "d454b77fc01e91c8951269cbba07a52113fed4fedf3a8df0088dacf9ecbb6c04",
+    "real-source-proof.json": "286ae03667f864d2696bf5e220fd45b59ad843eca744a2aa4d7b49005264a1f2",
+    "verification.json": "d0ce74659b05561372b9d1c081d255ba6feab5208e7add38e8b4928b794fed69"
+  },
+  "scope": "Public workflow evidence metadata, no private PDF/source excerpts or account telemetry"
+}
