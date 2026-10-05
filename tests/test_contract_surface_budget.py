@@ -35,6 +35,7 @@ def test_public_output_surface_is_closed_and_within_budget() -> None:
     tools = asyncio.run(mcp.list_tools())
     assert tuple(tool.name for tool in tools) == (
         "read_guidance",
+        "calculate_arithmetic",
         "prepare_batch",
         "get_status",
         "save_working_checkpoint",

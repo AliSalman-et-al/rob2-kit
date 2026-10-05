@@ -21,6 +21,7 @@ SUPPORTED_SERVERS = frozenset({"rob2"})
 DOCUMENTED_TOOLS = frozenset(
     {
         "read_guidance",
+        "calculate_arithmetic",
         "finalize_batch",
         "close_trial",
         "get_domain_context",

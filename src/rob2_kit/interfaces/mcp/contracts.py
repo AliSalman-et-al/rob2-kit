@@ -3074,6 +3074,21 @@ class FinalizeData(PublicModel):
     retry: StrictBool = False
 
 
+class ArithmeticData(PublicModel):
+    outcome: Literal["success"]
+    expression: str
+    inputs: dict[str, str]
+    units: str | None
+    assumptions: tuple[str, ...]
+    result: str
+    precision: Literal[28]
+    rounding: Literal["ROUND_HALF_EVEN"]
+    precision_semantics: str
+    inexact: StrictBool
+    rounded: StrictBool
+    distinction: str
+
+
 class GuidanceData(PublicModel):
     document: str
     content: str
@@ -3136,6 +3151,7 @@ DataByTool: Final = {
     "prepare_batch": PrepareData,
     "get_status": StatusData,
     "read_guidance": GuidanceData,
+    "calculate_arithmetic": ArithmeticData,
     "save_working_checkpoint": SaveWorkingCheckpointData,
     "request_companion_source": CompanionRequestData,
     "acquire_companion_source": CompanionAcquisitionData,
@@ -3429,6 +3445,8 @@ def _condition(tool: str, value: dict[str, Any]) -> dict[str, Any]:
 
 
 def normalize(tool: str, value: dict[str, Any]) -> dict[str, Any]:
+    if tool == "calculate_arithmetic":
+        return ArithmeticData.model_validate(value).model_dump(mode="json")
     value = public_source_references(value)
     outcome = str(value.get("outcome", "success"))
     head = PublicHead.model_validate(_head(value)).model_dump(mode="json")
@@ -3471,6 +3489,8 @@ def normalize(tool: str, value: dict[str, Any]) -> dict[str, Any]:
 
 
 def output_schema(name: str) -> dict[str, Any]:
+    if name == "calculate_arithmetic":
+        return ArithmeticData.model_json_schema()
     schema = TypeAdapter(
         _receipt(
             DataByTool[name],
@@ -3484,6 +3504,8 @@ def output_schema(name: str) -> dict[str, Any]:
 
 
 def validate_output(name: str, value: dict[str, Any]) -> dict[str, Any]:
+    if name == "calculate_arithmetic":
+        return ArithmeticData.model_validate(value).model_dump(mode="json")
     return _clean_public(
         TypeAdapter(
             _receipt(

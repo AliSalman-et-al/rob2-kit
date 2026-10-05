@@ -1,0 +1,14 @@
+{
+  "sha256": {
+    "README.md": "dfd7d0e3df6918085eb742e38115170c4812e134ae75d453f02c24991533d305",
+    "capability-evidence.json": "d7d55c5669539b23d0961e7f7e7ba7b71d4bc4f80a6c65b94d57080c289dd12d",
+    "offline-examples.json": "d29e1fc47885bad0c3710bf8d5f81a7322eef3f6fd99721437d8131c5700bd34",
+    "schema-compatibility.json": "a2a2143c04f6343f6dedabe1cc0f39a426c89e11879a28c40b5ec8c4005567c0"
+  },
+  "source_files": {
+    "src/rob2_kit/application/arithmetic.py": "0589799e2977709be6ca731af8e28e2ba149fc3c13088378cb24b28490807a4c",
+    "src/rob2_kit/interfaces/mcp/server.py": "996abb25a27b712306a40b52d5361dd1c0b1fec8e8d82908ed76ce1929041aec",
+    "src/rob2_kit/interfaces/mcp/contracts.py": "430a30b070af16560c056ec0ebe410ac73f70c63af7597e7840cbb573ecf4963",
+    "tests/test_arithmetic.py": "681e3b525aa7f99fec47294d6a450ead01fa587a0c1351870d37167389669571"
+  }
+}

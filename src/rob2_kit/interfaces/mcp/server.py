@@ -138,7 +138,7 @@ from rob2_kit.workflow_models import (
     WorkingCheckpointDraft,
 )
 
-from .contracts import SearchBatchRequest, normalize, output_schema, validate_output
+from .contracts import ArithmeticData, SearchBatchRequest, normalize, output_schema, validate_output
 
 mcp = FastMCP(
     "rob2-kit",
@@ -2461,6 +2461,54 @@ def read_guidance(
         }
 
     return _invoke("read_guidance", operation)
+
+
+@mcp.tool(
+    name="calculate_arithmetic",
+    title="Calculate decimal arithmetic",
+    description="Optional stateless arithmetic: decimal numbers, named inputs, + - * / and "
+    "parentheses. No workspace access or Evidence creation. Returns exact inputs and decimal "
+    "result; annotations do not validate source selection, units, assumptions or inference.",
+    annotations=_READ_ONLY,
+    output_schema=output_schema("calculate_arithmetic"),
+)
+def calculate_arithmetic(
+    expression: Annotated[
+        StrictStr,
+        Field(
+            min_length=1, max_length=512, description="Decimal expression; at most 64 AST nodes."
+        ),
+    ],
+    inputs: Annotated[
+        dict[str, StrictStr] | None,
+        Field(
+            max_length=16, description="Optional named decimal strings, at most 64 characters each."
+        ),
+    ] = None,
+    units: Annotated[
+        StrictStr | None,
+        Field(
+            max_length=200,
+            description="Caller-declared units; no conversion or dimensional validation.",
+        ),
+    ] = None,
+    assumptions: Annotated[
+        list[StrictStr] | None,
+        Field(
+            max_length=8, description="Optional caller assumptions, at most 200 characters each."
+        ),
+    ] = None,
+) -> ToolResult:
+    from rob2_kit.application.arithmetic import calculate_arithmetic as calculate
+
+    try:
+        data = ArithmeticData.model_validate(
+            calculate(expression, inputs or {}, units, assumptions or ())
+        )
+    except ValueError as error:
+        raise ToolError(str(error)) from error
+    # A numerical scratch result has no workflow head, state, source identity or ledger.
+    return ToolResult(structured_content=data.model_dump(mode="json"))
 
 
 @mcp.resource(

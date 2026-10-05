@@ -1,0 +1,86 @@
+{
+  "cases": [
+    {
+      "case": "castoldi-2020",
+      "trace_sha256": "f702a4ae0b0d722dbb9c5d2e93f7a3e3bd787afd9ca255c95d40442a758566a1",
+      "config_sha256": "75b7de0faeac80cec33737a526a1178abc5c100aa325b3eced907d00c2e685b9",
+      "launcher_sha256": "47688531aa6d0f65c866d102f35830c6ff116a5d27d07864fbe29c1428b158a2",
+      "disabled_features": [
+        "shell_tool",
+        "unified_exec",
+        "code_mode"
+      ],
+      "supervisor": "Only rob2 MCP calls accepted; non-native item types rejected",
+      "canonical_submissions": [
+        {
+          "event_line": 41,
+          "question_id": "sq:deviations:substantial-impact",
+          "answer": "probably_no",
+          "justification": "The established independent exclusion affects one TKA patient. This is prognostically adverse and could shift the small numerical difference, but the endpoint is a bounded continuous 0\u2013100 score, with approximately 40 observations per arm and a cited clinically important difference of 10 points. Even an extreme single score would change that arm mean by only about two points, making a substantial clinical impact unlikely. The many unavailable outcomes are not assumed to be independent analysis exclusions and are assessed separately in D3.",
+          "unknowns": [
+            "TKA patient's score is unknown; this does not rule out a change in the direction of the small contrast."
+          ]
+        },
+        {
+          "event_line": 45,
+          "question_id": "sq:deviations:substantial-impact",
+          "answer": "probably_no",
+          "justification": "The independent exclusion affects one prognostically adverse TKA patient. A bounded continuous 0\u2013100 endpoint with approximately 40 per arm limits an extreme single observation's mean impact to about two points, compared with the cited 10-point clinically important difference. It could change the small contrast's direction but substantial clinical impact is unlikely. The many unavailable questionnaires are separately assessed in D3, not assumed independent analysis restrictions.",
+          "unknowns": [
+            "Excluded patient's score unknown."
+          ]
+        }
+      ]
+    },
+    {
+      "case": "ashar-2022",
+      "trace_sha256": "6d1bb000af5a49542521bf658330a0a3cf5342888ac4db050d9d3934eec23e33",
+      "config_sha256": "ca8604d052f47cffb37c04bb4f719828655af9cd3633c964ff23beb660ba23d3",
+      "launcher_sha256": "47688531aa6d0f65c866d102f35830c6ff116a5d27d07864fbe29c1428b158a2",
+      "disabled_features": [
+        "shell_tool",
+        "unified_exec",
+        "code_mode"
+      ],
+      "supervisor": "Only rob2 MCP calls accepted; non-native item types rejected",
+      "canonical_submissions": [
+        {
+          "event_line": 80,
+          "question_id": "sq:missing:data-available",
+          "answer": "no",
+          "justification": "Posttreatment assessment and outcome-specific registry counts establish 44/50 PRT and 47/50 usual-care observed outcomes. Six and three missing scores on a 0\u201310 scale could materially alter the means: at extreme values PRT could rise from 1.18 to 2.24 and usual care fall from 3.13 to 2.94, substantially attenuating the observed 1.95-point difference. This is a scale-bound illustration, not an imputed Result.",
+          "unknowns": [
+            "Actual unobserved pain scores."
+          ]
+        }
+      ]
+    }
+  ],
+  "offline_decimal_checks": {
+    "castoldi": {
+      "assumptions": [
+        "Reported means treated as exact despite rounding",
+        "One omitted value belongs to BTB according to Figure 2",
+        "Model-assumed 0\u2013100 score limits, not validated here",
+        "42 BTB observed values and comparable LET mean; patient/knee and ascertainment ambiguity not resolved"
+      ],
+      "BTB_mean_if_added_score_0": "79.21395348837209302325581395",
+      "BTB_mean_if_added_score_100": "81.53953488372093023255813953",
+      "LET_minus_BTB_lower": "0.86046511627906976744186047",
+      "LET_minus_BTB_upper": "3.18604651162790697674418605",
+      "added_score_required_for_equal_means": "137.0"
+    },
+    "ashar": {
+      "assumptions": [
+        "Means treated as exact",
+        "44/50 PRT and47/50 usual observed",
+        "Missing PRTscores10 and usualscores0 on assumed0\u201310scale, not actual observations"
+      ],
+      "PRT_extreme_mean": "2.2384",
+      "usual_extreme_mean": "2.9422",
+      "usual_minus_PRT_extreme_gap": "0.7038",
+      "observed_usual_minus_PRT_gap": "1.95"
+    }
+  },
+  "conclusion": "Native-only hosts have no general arithmetic execution affordance. Castoldi failure is not proven caused by this restriction; Ashar succeeds under same restrictions. No model run or answer change."
+}

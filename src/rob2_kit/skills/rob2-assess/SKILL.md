@@ -12,6 +12,11 @@ return their own further links. Resource-capable clients can also read
 `rob2://guidance/SKILL` or `rob2://guidance/<reference basename>`.
 These instructions are separate from captured Trial Sources and Evidence.
 
+`calculate_arithmetic` optionally executes bounded decimal `+ - * /` expressions
+with parentheses and named numeric inputs. Declare units and assumptions when
+useful; verify source values, arm assignment and denominators yourself. Its result
+is scratch arithmetic, not Evidence or a scientific judgment. No answer requires it.
+
 Drive the complete assessment through the public rob2-kit tools, not shell
 commands.
 

@@ -252,6 +252,10 @@ def test_every_public_tool_publishes_closed_input_and_output_schemas() -> None:
             assert all("items" in array or "prefixItems" in array for array in arrays)
         output = cast(dict[str, Any], tool.output_schema)
         assert output["type"] == "object"
+        if tool.name == "calculate_arithmetic":
+            assert output["properties"]["outcome"]["const"] == "success"
+            assert "result" in output["required"] and "head" not in output["properties"]
+            continue
         expected_outcomes = {
             "read_guidance": 2,
             "get_status": 2,
