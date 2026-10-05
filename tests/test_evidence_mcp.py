@@ -93,6 +93,49 @@ def test_native_quote_selection_requires_delivered_text_and_preserves_range_iden
     assert _state(workspace)["revision"] == 1
 
 
+def test_native_quote_preserves_numeric_hyphens_and_source_line_wraps(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/hyphens.txt").write_text(
+        "Risk 1 3 years.\nDose 50 69 mg.\nChange 3 points.\n"
+        "A multi-\nstage procedure.\nRange 50-\n69 mg.\n"
+        "Repeated multistage.\nRepeated multi-\nstage.\n"
+        "follow-up\nfollow-\nup\n"
+    )
+    _call(workspace, "prepare_batch", {"requested_outcome": "outcome", "expected_revision": 0})
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "hyphens.txt"
+    )
+    args = {"trial_id": "trial", "source_id": source["id"], "page": 1}
+    _call(workspace, "read_pages", {"trial_id": "trial", "source_id": source["id"], "pages": [1]})
+    for quote in (
+        "Risk 1-3 years.",
+        "Dose 50-69 mg.",
+        "Change -3 points.",
+        "Range 5069 mg.",
+    ):
+        rejected = _call(workspace, "select_text_evidence", {**args, "selected_text": quote})
+        assert rejected["outcome"] != "success"
+        assert "not an exact page selection" in json.dumps(rejected)
+    for quote, raw in (
+        ("A multistage procedure.", "A multi-\nstage procedure."),
+        ("A multi-stage procedure.", "A multi-\nstage procedure."),
+        ("A multi-\nstage procedure.", "A multi-\nstage procedure."),
+        ("Range 50-69 mg.", "Range 50-\n69 mg."),
+    ):
+        selected = _call(workspace, "select_text_evidence", {**args, "selected_text": quote})
+        assert selected["data"]["evidence"]["quote"] == raw
+    rejected = _call(
+        workspace, "select_text_evidence", {**args, "selected_text": "Repeated multistage."}
+    )
+    assert rejected["outcome"] != "success"
+    assert "ambiguous" in json.dumps(rejected)
+    rejected = _call(workspace, "select_text_evidence", {**args, "selected_text": "follow-up"})
+    assert rejected["outcome"] != "success"
+    assert "ambiguous" in json.dumps(rejected)
+
+
 def test_native_quote_selection_rejects_coverage_gaps_and_wrong_physical_page(
     tmp_path: Path,
 ) -> None:
@@ -2323,6 +2366,74 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
     )
     assert selected["outcome"] == "success"
     assert selected["data"]["evidence"]["quote"] == source_text
+
+
+def test_read_pages_budget_includes_pending_assessment_context_cursor(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path)
+    (workspace / "input/trial/supplement.txt").write_text("\n".join("é" * 30 for _ in range(1000)))
+    evidence = _prepared_evidence(workspace)
+    proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
+    assert proposed["outcome"] == "review_required"
+    _review(workspace)
+    too_small = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 4096},
+    )
+    assert too_small["outcome"] == "condition"
+    assert "domain_context_header_oversized" in json.dumps(too_small)
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 16384},
+    )
+    assert context["outcome"] == "success", context
+    assert context["data"]["context_page"]["next_cursor"] is not None
+    source = next(
+        item
+        for item in _call(workspace, "list_sources", {"trial_id": "trial"})["data"]["sources"]
+        if item["label"] == "supplement.txt"
+    )
+    request = {
+        "trial_id": "trial",
+        "windows": [{"source_id": source["id"], "page": 1, "start_line": 1, "end_line": 1000}],
+    }
+    first = _call(workspace, "read_pages", request)
+    assert first["outcome"] == "success"
+    continuation = first["head"]["next_action"]
+    assert continuation["cursor"] == context["data"]["context_page"]["next_cursor"]
+    assert continuation["max_response_bytes"] == 16384
+    wire_bytes = len(
+        json.dumps(
+            {
+                "content": [],
+                "structured_content": {
+                    key: value for key, value in first.items() if key != "_image_content"
+                },
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode()
+    )
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("ROB2_WORKSPACE", str(workspace))
+        assert (
+            mcp_server._read_pages_transport_bytes(
+                {"outcome": "success", **first["data"]}, mcp_server._get_status_head(workspace)
+            )
+            == wire_bytes
+        )
+    assert 23_000 < wire_bytes <= 24_000
+    assert first["data"]["remaining_windows"]
+
+    internal_id = resolve_source_handle(workspace, "trial", source["id"])
+    with sqlite3.connect(workspace / ".rob2-kit/derivative.sqlite3") as connection:
+        assert (
+            connection.execute(
+                "SELECT MAX(end_line) FROM page_reads WHERE source_id=?", (internal_id,)
+            ).fetchone()[0]
+            == first["data"]["pages"][0]["returned_end_line"]
+        )
 
 
 def test_read_pages_packs_request_order_and_returns_remaining_windows(tmp_path: Path) -> None:

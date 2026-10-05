@@ -1225,19 +1225,51 @@ def _project_review_trial(
     return fragment
 
 
+def _enrich_response_head(
+    tool: str, value: dict[str, Any], current: dict[str, Any]
+) -> dict[str, Any]:
+    """Apply the same current head and context recovery for packing and delivery."""
+    value = {
+        **value,
+        "phase": current.get("phase", "empty"),
+        "state_revision": current.get("state_revision", 0),
+        "continuation": value.get(
+            "continuation", current.get("continuation", current.get("next_action"))
+        ),
+        "authoritative_wording": current.get("authoritative_wording"),
+    }
+    continuation = value.get("continuation")
+    if (
+        tool != "get_domain_context"
+        and isinstance(continuation, dict)
+        and continuation.get("operation") == "get_domain_context"
+    ):
+        trial_id = continuation.get("trial_id")
+        domain_id = continuation.get("domain_id")
+        if isinstance(trial_id, str) and isinstance(domain_id, str):
+            root = _root(_workspace())
+            delivery = _domain_context_delivery(root, trial_id, domain_id, None)
+            if (
+                delivery is not None
+                and not delivery.get("complete")
+                and isinstance(delivery.get("next_cursor"), str)
+                and delivery.get("preview_scope") is None
+                and delivery.get("basis_identity")
+                == _domain_context_basis_identity(_state(root), trial_id, domain_id, None, root)
+            ):
+                value["continuation"] = {
+                    **continuation,
+                    "cursor": delivery["next_cursor"],
+                    "max_response_bytes": delivery["page_size"],
+                }
+    return value
+
+
 def _read_pages_transport_bytes(value: dict[str, Any], head: dict[str, Any]) -> int:
     """Measure the serialized envelope that the read_pages caller receives."""
 
     visible = {key: item for key, item in value.items() if key != "_read_coverage"}
-    enriched = {
-        **visible,
-        "phase": head.get("phase", "empty"),
-        "state_revision": head.get("state_revision", 0),
-        "continuation": visible.get(
-            "continuation", head.get("continuation", head.get("next_action"))
-        ),
-        "authoritative_wording": head.get("authoritative_wording"),
-    }
+    enriched = _enrich_response_head("read_pages", visible, head)
     normalized = _validate_response("read_pages", normalize("read_pages", enriched))
     _compact_read_pages_response(normalized)
     return len(
@@ -1771,13 +1803,7 @@ def _content(
     value = _public_source_references(value)
     if tool != "get_status":
         current = _get_status_head(_workspace())
-        value = {
-            **value,
-            "phase": current.get("phase", "empty"),
-            "state_revision": current.get("state_revision", 0),
-            "continuation": value.get("continuation", current.get("continuation")),
-            "authoritative_wording": current.get("authoritative_wording"),
-        }
+        value = _enrich_response_head(tool, value, current)
     if tool == "save_domain_judgment":
         for defect in value.get("repairs", []):
             if "answer_path" in defect:
@@ -1794,30 +1820,6 @@ def _content(
                         "No checkpoint was saved."
                     ),
                 )
-    continuation = value.get("continuation")
-    if (
-        tool != "get_domain_context"
-        and isinstance(continuation, dict)
-        and continuation.get("operation") == "get_domain_context"
-    ):
-        trial_id = continuation.get("trial_id")
-        domain_id = continuation.get("domain_id")
-        if isinstance(trial_id, str) and isinstance(domain_id, str):
-            root = _root(_workspace())
-            delivery = _domain_context_delivery(root, trial_id, domain_id, None)
-            if (
-                delivery is not None
-                and not delivery.get("complete")
-                and isinstance(delivery.get("next_cursor"), str)
-                and delivery.get("preview_scope") is None
-                and delivery.get("basis_identity")
-                == _domain_context_basis_identity(_state(root), trial_id, domain_id, None, root)
-            ):
-                value["continuation"] = {
-                    **continuation,
-                    "cursor": delivery["next_cursor"],
-                    "max_response_bytes": delivery["page_size"],
-                }
     normalized = _validate_response(tool, normalize(tool, value))
     if tool == "get_domain_context":
         # Validate the compact public variant as well as the application

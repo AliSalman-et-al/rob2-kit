@@ -4415,79 +4415,96 @@ def select_text_evidence(
     if not normalized_selection:
         raise ValueError(invalid_selection)
 
-    def matches(page_text: str) -> tuple[str, list[tuple[int, int]], list[int]]:
+    def matches(page_text: str) -> list[tuple[int, int]]:
         normalized_text, spans = _normalized_with_spans(page_text)
-        starts: list[int] = []
-        offset = 0
-        while True:
-            start = normalized_text.find(normalized_selection, offset)
-            if start < 0:
-                break
-            starts.append(start)
-            offset = start + 1
-        if starts:
-            return page_text, spans, starts
 
-        # Search and Evidence share line-wrap dehyphenation, but a model may
-        # copy a semantic spelling such as ``multi-stage`` where the raw page
-        # has ``multi-\nstage``. Retry only against the non-dehyphenated page
-        # stream, where a hyphen-plus-line-break becomes a space. This does not
-        # make ordinary punctuation optional. Unwrapped words and paraphrases
-        # still fail.
+        def occurrences(
+            stream: str, needle: str, mapping: list[tuple[int, int]]
+        ) -> list[tuple[int, int]]:
+            found: list[tuple[int, int]] = []
+            offset = 0
+            while True:
+                position = stream.find(needle, offset)
+                if position < 0:
+                    break
+                found.append((mapping[position][0], mapping[position + len(needle) - 1][1]))
+                offset = position + 1
+            return found
+
+        primary = occurrences(normalized_text, normalized_selection, spans)
+        if primary and not delivered_page_only:
+            return primary
         wrapped_text, wrapped_spans = _normalized_text_with_spans(
             page_text, dehyphenate_line_ends=False
         )
         wrapped_selection, _ = _normalized_text_with_spans(
             selected_text, dehyphenate_line_ends=False
         )
+        hyphens = [match.start() for match in re.finditer(r"(?<=\w)-(?=\w)", wrapped_selection)]
+        if not hyphens:
+            return primary
         line_wrap_selection = re.sub(r"(?<=\w)-(?=\w)", " ", wrapped_selection)
-        if line_wrap_selection == wrapped_selection:
-            return page_text, spans, starts
+        fallback: list[tuple[int, int]] = []
         offset = 0
         while True:
-            start = wrapped_text.find(line_wrap_selection, offset)
-            if start < 0:
+            position = wrapped_text.find(line_wrap_selection, offset)
+            if position < 0:
                 break
-            starts.append(start)
-            offset = start + 1
-        if starts:
-            return page_text, wrapped_spans, starts
-        return page_text, spans, starts
+            # Native matching permits a typed semantic hyphen only where the
+            # Source itself contains a physical hyphen followed by a line break.
+            # Plain spaces cannot warrant inserted punctuation or numeric ranges.
+            if not delivered_page_only or all(
+                re.fullmatch(
+                    r"[-\u00ad][^\S\r\n]*\r?\n\s*",
+                    page_text[slice(*wrapped_spans[position + index])],
+                )
+                for index in hyphens
+            ):
+                fallback.append(
+                    (
+                        wrapped_spans[position][0],
+                        wrapped_spans[position + len(line_wrap_selection) - 1][1],
+                    )
+                )
+            offset = position + 1
+        # Different presentation streams may identify the same physical passage.
+        # Native uniqueness includes all allowed streams, not only the first hit.
+        return sorted(set(primary + fallback)) if delivered_page_only else fallback
 
     if page <= source["page_count"]:
-        text, spans, starts = matches(pages[page - 1])
+        text = pages[page - 1]
+        selections = matches(text)
     else:
-        text, spans, starts = "", [], []
+        text, selections = "", []
     # Models occasionally carry the printed page label forward instead of the
     # 1-based source page index.  A unique exact match elsewhere in this same
     # verified projection is still unambiguous evidence: canonicalize to the
     # actual page rather than making the caller rediscover the page number.
-    if not starts and not delivered_page_only:
-        candidates: list[tuple[int, list[tuple[int, int]], list[int]]] = []
+    if not selections and not delivered_page_only:
+        candidates: list[tuple[int, list[tuple[int, int]]]] = []
         occurrence_count = 0
         for candidate_page, candidate_text in enumerate(pages, 1):
             if candidate_page == page and page <= source["page_count"]:
                 continue
-            _, candidate_spans, candidate_starts = matches(candidate_text)
-            occurrence_count += len(candidate_starts)
-            if candidate_starts:
-                candidates.append((candidate_page, candidate_spans, candidate_starts))
+            candidate_selections = matches(candidate_text)
+            occurrence_count += len(candidate_selections)
+            if candidate_selections:
+                candidates.append((candidate_page, candidate_selections))
         if occurrence_count == 1:
-            page, spans, starts = candidates[0]
+            page, selections = candidates[0]
             text = pages[page - 1]
     # Caller supplied offsets are a second, unstable interpretation of page
     # text.  The server finds the one normalized occurrence and rejects ambiguity.
-    if not starts:
+    if not selections:
         raise ValueError(invalid_selection)
-    if len(starts) != 1:
+    if len(selections) != 1:
         if delivered_page_only:
             raise ValueError(
                 f"selected text is ambiguous on physical page {page}; copy a longer unique "
                 "contiguous quote with distinguishing context from read_pages"
             )
         raise ValueError("selected text is ambiguous; select a unique passage")
-    start = spans[starts[0]][0]
-    end = spans[starts[0] + len(normalized_selection) - 1][1]
+    start, end = selections[0]
     start_line, end_line, _raw_start, _raw_end = _line_bounds(text, start, end)
     if delivered_page_only:
         state = _state(root)

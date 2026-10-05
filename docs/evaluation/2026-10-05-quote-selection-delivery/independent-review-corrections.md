@@ -1,0 +1,11 @@
+# Corrections following independent implementation review
+
+The initial checkpoint 4ed7a2c's focused tests missed three important cases. Its construction and estimator claims require these qualifications; its original controls and frozen scientific records remain unchanged.
+
+1. The inherited legacy semantic-hyphen fallback could accept a user-inserted numeric range against plain Source spaces, e.g. Source `Risk 1 3 years.` versus quote `Risk 1-3 years.`. Native fallback now requires each substituted hyphen to correspond to an actual Source hyphen/soft hyphen followed by a physical line break. Ordinary spaces do not warrant hyphens. Numeric ranges and negative values cannot be invented; canonical numeric line-wrap hyphens remain preserved.
+2. Matching previously returned primary hits before checking fallback hits. Native matching now collects distinct canonical raw start/end occurrences across every permitted stream, deduplicates only identical physical spans and then checks uniqueness. Mixed literal `follow-up` and Source `follow-` plus newline `up` is ambiguous. Legacy internal matching order and permissive fallback are retained for historical callers; the new safeguards apply to the native delivered-page route.
+3. Packing and final delivery shared compaction but not final head enrichment. A pending assessment context cursor and page-size recovery could be added after estimation, taking a near-limit receipt over 24,000 bytes. Estimation and final delivery now share the current-head/context-recovery routine. The final byte guard and post-fit coverage commit remain intact; the limit is unchanged.
+
+Offline native controls cover changed numeric ranges and negative values, genuine word/numeric line wraps, primary-plus-fallback ambiguity, legacy quote paths, and an assessment read near 24,000 bytes with a pending context cursor following a too-small-context recovery. The assessment test checks estimator/wire equality, remaining-window recovery and coverage only through the delivered end line. No model calls, trial-answer corrections or scientific gain claim accompany these fixes.
+
+Validation: 44 focused native/internal quote and read-pages tests passed; Ruff, type checks and diff checks passed. This supersedes the narrower initial coverage claim. No updated installed-wheel release-verifier claim is made for this correction checkpoint.
