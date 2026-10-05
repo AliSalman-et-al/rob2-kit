@@ -1,0 +1,56 @@
+{
+  "method": "Parsed JSON exact equality; field hashes use sorted compact UTF-8 JSON.",
+  "raw_captures": [
+    {
+      "filename": "before-rendered-contexts.json",
+      "sha256": "e43fe137dd7a50923cd1c50c7a5ee4997092d7ce2095694cbf6b44f7c43a8853"
+    },
+    {
+      "filename": "after-rendered-contexts.json",
+      "sha256": "0ea27485ce542cd7db45b89e80062f9e7094a687e24edb9b0d1bbcfa850be245"
+    }
+  ],
+  "equal_fields_by_domain": {
+    "randomization": {
+      "result": "0999085cc178faca5379dc31454df85bcd01865a0e939fe1da4959a0042a0a56",
+      "evidence": "b720c057e0d2bdd0f7828edd9c83eb70bc9a0cf22f2a1c443dd78e8011e14e8c",
+      "response_framework": "caaa1139a66cb56b1d9a3c8712ed6ebbe183c42fd42e81c09b1025c215b51dbd",
+      "guidance": "df7fd9be3799f052217e6dee0bd407cd595b6de2332505c1696c92dbfe3190e1",
+      "traps": "9667b29f3d326f9f235e77ceb09e07a4d1bfa48b6141bf12ce190dfdadc80ae5",
+      "comparison_cards": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "deviations": {
+      "result": "0999085cc178faca5379dc31454df85bcd01865a0e939fe1da4959a0042a0a56",
+      "evidence": "b720c057e0d2bdd0f7828edd9c83eb70bc9a0cf22f2a1c443dd78e8011e14e8c",
+      "response_framework": "caaa1139a66cb56b1d9a3c8712ed6ebbe183c42fd42e81c09b1025c215b51dbd",
+      "guidance": "df7fd9be3799f052217e6dee0bd407cd595b6de2332505c1696c92dbfe3190e1",
+      "traps": "9667b29f3d326f9f235e77ceb09e07a4d1bfa48b6141bf12ce190dfdadc80ae5",
+      "comparison_cards": "40c54603ebb9757976782e22efe70e7e27d83f53162717677bb137e3b6e45731"
+    },
+    "missing": {
+      "result": "0999085cc178faca5379dc31454df85bcd01865a0e939fe1da4959a0042a0a56",
+      "evidence": "b720c057e0d2bdd0f7828edd9c83eb70bc9a0cf22f2a1c443dd78e8011e14e8c",
+      "response_framework": "caaa1139a66cb56b1d9a3c8712ed6ebbe183c42fd42e81c09b1025c215b51dbd",
+      "guidance": "df7fd9be3799f052217e6dee0bd407cd595b6de2332505c1696c92dbfe3190e1",
+      "traps": "9667b29f3d326f9f235e77ceb09e07a4d1bfa48b6141bf12ce190dfdadc80ae5",
+      "comparison_cards": "c8eca70eba35ee746b650ca6e3ed5ba186ff0044f93874a3f7a33499894b2b2e"
+    },
+    "measurement": {
+      "result": "0999085cc178faca5379dc31454df85bcd01865a0e939fe1da4959a0042a0a56",
+      "evidence": "b720c057e0d2bdd0f7828edd9c83eb70bc9a0cf22f2a1c443dd78e8011e14e8c",
+      "response_framework": "caaa1139a66cb56b1d9a3c8712ed6ebbe183c42fd42e81c09b1025c215b51dbd",
+      "guidance": "df7fd9be3799f052217e6dee0bd407cd595b6de2332505c1696c92dbfe3190e1",
+      "traps": "9667b29f3d326f9f235e77ceb09e07a4d1bfa48b6141bf12ce190dfdadc80ae5",
+      "comparison_cards": "2e7ed25d90f154d756f72c58f8bf69e4a898a047cc60abf5147186a770fa4e8b"
+    },
+    "selection": {
+      "result": "0999085cc178faca5379dc31454df85bcd01865a0e939fe1da4959a0042a0a56",
+      "evidence": "b720c057e0d2bdd0f7828edd9c83eb70bc9a0cf22f2a1c443dd78e8011e14e8c",
+      "response_framework": "caaa1139a66cb56b1d9a3c8712ed6ebbe183c42fd42e81c09b1025c215b51dbd",
+      "guidance": "df7fd9be3799f052217e6dee0bd407cd595b6de2332505c1696c92dbfe3190e1",
+      "traps": "9667b29f3d326f9f235e77ceb09e07a4d1bfa48b6141bf12ce190dfdadc80ae5",
+      "comparison_cards": "b28eea1dcde83cd6c0e1b8e9b585e034f35e050ba0cea45df0001b77908cdaf4"
+    }
+  },
+  "limitation": "Public field hashes bind private captures; reproduction requires those captures. Published scientific snapshots omit Result/Evidence."
+}

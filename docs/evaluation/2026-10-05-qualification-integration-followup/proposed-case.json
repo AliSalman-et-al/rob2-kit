@@ -1,0 +1,39 @@
+{
+  "status": "proposal-only-no-paid-launch",
+  "case": "dapa-hf",
+  "source_repository": "/home/ali/Documents/Code/rob2-kit-benchmark",
+  "source_repository_commit": "d04473df4a07a3117f3171df2d8471ec0defd522",
+  "source_files": {
+    "NEJMoa1911303.pdf": "fa73636e3b883f1c17d4e5883384e8d289073c776fa981476927d03280f6d600",
+    "nejmoa1911303_appendix.pdf": "be3782e5cce018dba47c85f09b394cd847ff8c3adf5cf8ddb6280c72a4fe3568",
+    "nejmoa1911303_data-sharing.pdf": "f973ddbb5e095ad851ce570cd091afde85fabff9a0cf4a729a0f9dbe3cdef853",
+    "nejmoa1911303_disclosures.pdf": "dd2e45dbc916f040c9e8a8859f20e3e6be2fe56637b8101677ebdef6b244bdf2",
+    "nejmoa1911303_protocol.pdf": "2aaa0770fb33dd19335299ad3582779c3ff98125dd6b720b04092d69b01ad053",
+    "sources.toml": "4c9957d8be37c01a58acc3f99dac231daa472bfcfd68e4c579c2656d394b8c62"
+  },
+  "pages": 480,
+  "model": "gpt-6-luna",
+  "effort": "medium",
+  "model_verification": "Actual run_human_benchmark.py lines 67,88-89 and Oct1 protocol explicitly match. Launch and durable session verification still required.",
+  "target": "Primary time-to-first worsening heart failure (hospitalization or urgent IV-therapy visit) or cardiovascular death, randomized population, dapagliflozin versus placebo, primary Cox HR 0.74 (95% CI 0.65 to 0.85); median follow-up is descriptive, not an invented fixed horizon.",
+  "workflow": [
+    "fresh intake with original local dossier and frozen Oct1 registry record",
+    "agent source discovery and proposal",
+    "operator verifies Result scope only; no scientific label/rationale coaching",
+    "continue complete D1-D5, review, closure and native finalization",
+    "freeze source delivery, all tool inputs/outputs, durable model/usage and bundle before scientific audit",
+    "independent source-grounded rationale audit; no accuracy-based retry"
+  ],
+  "development_exposure": "DAPA-HF sources, Oct1 logs and source delivery have already been audited during development; not held-out. No benchmark reference labels will be model-visible.",
+  "scope_limits": [
+    "D1 explicit computerized/block allocation may not exercise circumstantial-only inference.",
+    "D3.1 may reasonably skip D3.2; incomplete primary follow-up is 14 versus20, not only two unknown vital-status patients or all-randomized analyzed.",
+    "Blinded adjudication may skip D4.4; no substitute endpoint or changed masking to force activation.",
+    "Therefore one realistic workflow tests integration and source-grounding, not isolated causal superiority of all three qualifications."
+  ],
+  "offline_controls": "Existing eight neutral contrasting controls in official-context-qualification-audit; native delivered text assertions already pass. No trial outcomes or new model-free labels manufactured.",
+  "paid_launch": false,
+  "sessions_proposed": 1,
+  "full_benchmark": false,
+  "merge": false
+}

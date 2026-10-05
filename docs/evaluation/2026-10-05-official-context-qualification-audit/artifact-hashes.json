@@ -1,12 +1,14 @@
 {
-  "docs/evaluation/2026-10-05-official-context-qualification-audit/README.md": "11db207d44d6ce3ed298396bba2a08a561e3ae959481c9bb17793298439ef967",
+  "docs/evaluation/2026-10-05-official-context-qualification-audit/README.md": "b5f44cd456f466ad0d27f26c9982ee40ecdf3a119a40684f6dbb205a7398b08d",
   "docs/evaluation/2026-10-05-official-context-qualification-audit/after-rendered-scientific-contexts.json": "66c98aa0de5225c4c8c0167dd1116814ed98a4d7a63cdc77c088613f6a98c77a",
   "docs/evaluation/2026-10-05-official-context-qualification-audit/audit-matrix.json": "172e33c547bcdc9308a2d556f78fbee82a772b81ff81cfc88801dbe2f14b3f0d",
   "docs/evaluation/2026-10-05-official-context-qualification-audit/before-rendered-scientific-contexts.json": "61856a5bbe4917722a667fb38736081c120a86c6de3f4ffea3d035d8c7751860",
+  "docs/evaluation/2026-10-05-official-context-qualification-audit/context-equality-receipt.json": "2a85de1fe0f9c767d4ecf064ed312811892e7e6b83107949a14683a0d4aa4f17",
   "docs/evaluation/2026-10-05-official-context-qualification-audit/contrasting-controls.json": "fdd2dfce06f0317e2f6a8afdaf664d8e95109d216dcd382dffdbecc25e854e2b",
   "docs/evaluation/2026-10-05-official-context-qualification-audit/official-source-provenance.json": "4b2d1d557013c5cfef6a099c751c9b7e9c00a48f5a19cae571b71f1cb43faf82",
   "docs/evaluation/2026-10-05-official-context-qualification-audit/rendered-context-diff.json": "95cd8714bc7ad356e0151519a3e105204a0b881dc87308af5b08b8269bb59d52",
   "docs/evaluation/2026-10-05-official-context-qualification-audit/validation.json": "c8014fbdeabf33a7a717af3034e4ec97bc1773f2cc5c5efd10b3795f35fa79f1",
+  "docs/evaluation/2026-10-05-official-context-qualification-audit/verify_context_equality.py": "1de25f611a87a7c9f112076a82cd6af7fbaebe82f9b23361be8b3fbccbc4e7a0",
   "tests/fixtures/official-guidance-audit-2019/elaborations.json": "5455df90f0cdee224dae3b5d4bba4edcfd37a357f440157d17acdaa8ec982b2d",
   "tests/fixtures/official-guidance-audit-2019/question-contract-before.json": "d581882521d95f6668706c52c16f9761fbc27977fbbe52d597b1e73a125d8b8f"
 }

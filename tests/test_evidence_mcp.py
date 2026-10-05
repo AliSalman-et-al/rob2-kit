@@ -2370,7 +2370,9 @@ def test_read_pages_returns_bounded_line_windows_with_continuation(tmp_path: Pat
 
 def test_read_pages_budget_includes_pending_assessment_context_cursor(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path)
-    (workspace / "input/trial/supplement.txt").write_text("\n".join("é" * 30 for _ in range(1000)))
+    (workspace / "input/trial/supplement.txt").write_text(
+        "\n".join("é" * 30 for _ in range(1000)), encoding="utf-8"
+    )
     evidence = _prepared_evidence(workspace)
     proposed = _call(workspace, "save_proposal", _proposal_args(workspace, [_result(evidence)]))
     assert proposed["outcome"] == "review_required"
