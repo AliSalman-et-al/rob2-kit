@@ -1,0 +1,19 @@
+{
+  "files": {
+    "audit_delivery.py": "973a291236a741245acab4650c1b4ffe8227ab6a1ad9458b7d69ebf6333c3c52",
+    "existing-structures.json": "3090068bfb85ed223789d182759c352be84b981177f35eebcc2164a83dc5340d",
+    "delivery-audit.json": "60a208640da10d0c845db3c665b29cdbeb488bb548d573add0e52cd47d2ce688",
+    "reproduction-check.json": "3ec13dd65b9855be2a279174de85bea2eac7d8fdf89bb600c032ee328419f756",
+    "README.md": "77cb06bd2f97a9ca2cb4658a3f6bab6c8eea54d3faeb21d7416462ba7e01b2c8"
+  },
+  "private_files": {
+    "delivery-audit.json": "60a208640da10d0c845db3c665b29cdbeb488bb548d573add0e52cd47d2ce688",
+    "dapa-hf-private-detail.json": "2a3451e03a661e76d14dd447de3f29435e5a299b342e13b14d74a8459bf75a3d",
+    "canvas-program-private-detail.json": "8924d8c3d66125f0e25a54a71c9497441f25348ea20ffd988a7bce582d4f006c",
+    "pioneer-6-private-detail.json": "c7a80555814569d2cc46879067ba2b73b83fc78a28d35bdac2c1419a99a01364",
+    "emperor-reduced-private-detail.json": "6754cc7a6edcf9a1fc4bf989b0d0357e7268ba622e7bfc0a4057b1a6a7892a33",
+    "reproduction-check.json": "3ec13dd65b9855be2a279174de85bea2eac7d8fdf89bb600c032ee328419f756"
+  },
+  "no_paid_call": true,
+  "no_production_change": true
+}

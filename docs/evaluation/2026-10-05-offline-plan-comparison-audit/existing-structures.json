@@ -1,0 +1,21 @@
+{
+  "implementation_commit": "4471287e10c44901aad87305faf5c9ff03aabd08",
+  "comparison_card": "src/rob2_kit/application/domains.py:_comparison_cards",
+  "existing_D5_support": [
+    "source-addressable passage groups for every captured source, even unselected supplements",
+    "exact target / reported result / relation displayed together",
+    "analysis_plan, correspondence, amendment and unblinded_access slots",
+    "plan_applicability proposition compares calculation/population/window/effect, not labels alone",
+    "prompt explicitly compares planned/reported methods with timing and reason",
+    "negative controls: unrelated method labels, unknown versus late access, result-driven choice, embedded versus separate plan"
+  ],
+  "source_guide": "src/rob2_kit/skills/rob2-assess/references/selection.md",
+  "guide_support": [
+    "original/amended content and chronology separate",
+    "captured registry not historical intent",
+    "future-tense safeguards not definitive implementation facts",
+    "supported probable inference needs no exact timestamps"
+  ],
+  "sufficiency_authority": "Host owns relevance/materiality/inference. Source/reading receipts do not establish sufficiency (ADR0032).",
+  "mechanism_test_scope": "Supplied question contexts and source text, not native comparison-card/MCP delivery; cannot show current cards fail."
+}
