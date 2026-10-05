@@ -33,6 +33,7 @@ DOCUMENTED_TOOLS = frozenset(
         "reason_domain_assessment",
         "reason_proposal",
         "request_proposal_approval",
+        "request_companion_source",
         "request_trial_terminal",
         "save_domain_judgment",
         "save_working_checkpoint",

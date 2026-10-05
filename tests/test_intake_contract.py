@@ -963,6 +963,7 @@ def test_save_domain_judgment_schema_is_closed_and_typed() -> None:
         "answers",
         "supersedes",
         "revision_basis",
+        "adjudication",
     }
     draft = schema
     assert draft["additionalProperties"] is False

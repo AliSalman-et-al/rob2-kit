@@ -1,0 +1,86 @@
+{
+  "focused_passes": {
+    "focused-contracts.xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "3",
+      "tests": "132",
+      "time": "21.786",
+      "timestamp": "2026-10-05T07:09:20.492314+05:00",
+      "hostname": "alayna-ThinkPad-T440s"
+    },
+    "focused-finalization.xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "2",
+      "skipped": "0",
+      "tests": "30",
+      "time": "207.530",
+      "timestamp": "2026-10-05T07:10:18.252661+05:00",
+      "hostname": "alayna-ThinkPad-T440s"
+    },
+    "focused-finalization-repair.xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "2",
+      "time": "27.511",
+      "timestamp": "2026-10-05T07:14:18.253505+05:00",
+      "hostname": "alayna-ThinkPad-T440s"
+    },
+    "focused-policy-delivery.xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "14",
+      "time": "30.688",
+      "timestamp": "2026-10-05T07:17:07.933741+05:00",
+      "hostname": "alayna-ThinkPad-T440s"
+    }
+  },
+  "format": "192 files already formatted",
+  "lint": "All checks passed",
+  "types": "All checks passed (src tests docs/release)",
+  "diff_check": "passed",
+  "offline_installed_wheel_verification": {
+    "exit_code": 0,
+    "UV_OFFLINE": "1",
+    "PYTHONPATH": "removed",
+    "coverage": [
+      "installed MCP contract",
+      "packaged skill",
+      "proposal approval",
+      "process restart",
+      "all five Domains",
+      "Trial closure",
+      "finalization",
+      "product verifier",
+      "standalone verifier"
+    ],
+    "log": "wheel-final.log.gz"
+  },
+  "scientific_pack": {
+    "version": "2019.1",
+    "hash": "sha256:f62648b7c4401cb68abf1c9d34ac28d44a232b9c01a697ddac6b11adc4c8b9d2",
+    "content_unchanged": true,
+    "operational_guidance_version": "1.0.14"
+  },
+  "remaining_test_failures": [],
+  "comprehensive_rerun": false,
+  "accuracy_claim": false,
+  "offline_wheel_initial_build": {
+    "exit_code": 0,
+    "wheel": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/integration-b09fb0f/dist/rob2_kit-0.11.0-py3-none-any.whl",
+    "sha256": "sha256:862a9d724fc5acf45668d4af1e002364b350539d845ec87dedc16b23372a151f"
+  },
+  "offline_wheel_build": {
+    "exit_code": 0,
+    "wheel": "/home/ali/Documents/Codex/2026-10-02/task-4/diagnostics/integration-b09fb0f/dist/rob2_kit-0.11.0-py3-none-any.whl",
+    "sha256": "sha256:58da0194e8254d7ac2f42ba17b189b95ae45e46fe9f5c7d123da174ccec74c11",
+    "log": "build-final.log.gz"
+  },
+  "policy_delivery_repair": "review_trial description aligned with existing conditional overall aggregation; no scoring changes"
+}

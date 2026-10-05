@@ -41,6 +41,7 @@ def _load_contract() -> dict[str, Any]:
         "prepare_batch",
         "get_status",
         "save_working_checkpoint",
+        "request_companion_source",
         "list_sources",
         "search_sources",
         "search_sources_batch",
@@ -81,7 +82,9 @@ def _load_contract() -> dict[str, Any]:
         raise ValueError("public tool description is missing")
     if any(item["destructive"] or not item["idempotent"] for item in value["tools"]):
         raise ValueError("public tool safety annotations differ")
-    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != ["rob2://guidance/{name}"]:
+    if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != [
+        "rob2://guidance/{name}"
+    ]:
         raise ValueError("public resource catalog differs")
     if set(value["resource_descriptions"]) != {"rob2://current-batch"} or not all(
         isinstance(description, str) and description.strip()

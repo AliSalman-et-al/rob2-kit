@@ -205,7 +205,7 @@ def test_measurement_reference_keeps_ordered_outcome_specific_audit() -> None:
         "influence is possible or likely, explain the mechanism",
         "all-cause mortality, distinguish establishing death from judging progression, "
         "symptoms, or cause of death",
-        "composite outcomes, consider every component that can determine the event",
+        "composite outcomes, inspect the components and their relative frequency or",
         "passage discusses several outcomes, use only the premise that applies to the "
         "approved outcome and state any inference or unresolved link",
     )

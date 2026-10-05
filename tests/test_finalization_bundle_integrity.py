@@ -150,11 +150,13 @@ def _convert_group_bound_result_to_legacy(canonical: dict[str, Any]) -> None:
         latest_proposal["identity"] = proposal["identity"]
         latest["review"] = json.loads(json.dumps(review))
         latest["acknowledgment"] = json.loads(json.dumps(acknowledgment))
-    _strip_result_bound_domain_lineage(canonical)
+    _rewrite_legacy_domain_lineage(canonical)
 
 
-def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
-    """Model pre-v0.8 records, which predate Result-bound Domain identities."""
+def _rewrite_legacy_domain_lineage(
+    canonical: dict[str, Any], *, legacy_semantics: bool = True
+) -> None:
+    """Remove newer decision markers and rebind the historical checkpoint lineage."""
     domain_fields = (
         "trial_id",
         "domain_id",
@@ -172,8 +174,20 @@ def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
         legacy_records = []
         for record in records:
             old_identity = record["identity"]
-            record.pop("result_identity", None)
-            record["identity"] = _identity({field: record[field] for field in domain_fields})
+            record.pop("decision", None)
+            if legacy_semantics:
+                record.pop("result_identity", None)
+            fields = domain_fields + (
+                ()
+                if legacy_semantics
+                else tuple(
+                    field
+                    for field in ("driver_questions", "evidence_sufficiency", "result_identity")
+                    if field in record
+                )
+            )
+            record["supersedes"] = identity_map.get(record["supersedes"], record["supersedes"])
+            record["identity"] = _identity({field: record[field] for field in fields})
             identity_map[old_identity] = record["identity"]
             legacy_records.append(record)
         canonical["domain_history_records"][key] = legacy_records
@@ -189,7 +203,11 @@ def _strip_result_bound_domain_lineage(canonical: dict[str, Any]) -> None:
             snapshot["checkpoints"] = [
                 identity_map.get(identity, identity) for identity in snapshot["checkpoints"]
             ]
-            snapshot.pop("result_identity", None)
+            if legacy_semantics:
+                snapshot.pop("result_identity", None)
+            for driver in snapshot["overall_receipt"]["drivers"]:
+                driver.pop("decision", None)
+                driver["checkpoint"] = identity_map.get(driver["checkpoint"], driver["checkpoint"])
             snapshot["identity"] = _identity(
                 {field: value for field, value in snapshot.items() if field != "identity"}
             )
@@ -626,6 +644,10 @@ def test_finalize_response_projects_frozen_assessment_summary_and_retry(
     expected = {
         "trial": {
             "aggregation": snapshot["aggregation"],
+            "domain_decisions": {
+                domain.id: _state(tmp_path)["domain_records"][f"trial:{domain.id}"]["decision"]
+                for domain in SCIENTIFIC_PACK.domains
+            },
             "overall": snapshot["overall"],
             "domains": snapshot["domain_judgments"],
             "overall_trace": snapshot["overall_trace"],
@@ -688,6 +710,7 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
     official_version, official_sha256 = next(iter(official_sources))
     assert descriptor == {
         "aggregation_contract": "rob2-kit.overall.cochrane-conditional.v1",
+        "domain_judgment_contract": "rob2-kit.domain.reasoned-adjudication.v1",
         "id": SCIENTIFIC_PACK.id,
         "version": SCIENTIFIC_PACK.version,
         "content_hash": SCIENTIFIC_PACK.content_hash,
@@ -703,7 +726,10 @@ def test_finalized_bundle_binds_the_scientific_contract(tmp_path: Path) -> None:
 def _historical_count_fixture(canonical: dict[str, Any]) -> None:
     """Construct the historical schema before testing historical pack pins."""
     canonical.pop("legacy_aggregation_snapshots")
+    canonical.pop("legacy_domain_checkpoints")
     canonical["scientific_pack"].pop("aggregation_contract")
+    canonical["scientific_pack"].pop("domain_judgment_contract")
+    _rewrite_legacy_domain_lineage(canonical, legacy_semantics=False)
     for trial_id, historical in canonical["snapshot_history_records"].items():
         for snapshot in historical:
             snapshot.pop("aggregation")

@@ -605,7 +605,12 @@ _GUIDANCE: dict[str, QuestionGuidance] = {
             "Weigh reasons for and against likely influence, including subconscious expectations. For intervention-provider decision outcomes such as hospitalization, assessment is usually likely to be influenced when the care provider making the decision knows the intervention (Cochrane section 7.1 p. 52); appraise that decision pathway and its circumstances, rather than only later committee classification. No-treatment or usual-care comparators may raise concern relative to another active intervention; a care provider assessing their own treatment may have an interest in its success. Independent assessment, an independent interviewer, or a long interval with intervening treatments may reduce concern. These are contextual considerations, not automatic answers; keep likelihood separate from mere possibility, measurement susceptibility and detection opportunity.",
             "For a composite, weigh component-specific likelihood and counterevidence in light of relative frequency or contribution and the most influential components (Cochrane section 7.1 p. 52). Preserve concerns about a subjective component, but do not automatically assign High because one component is subjective or could be influenced. Dominant objective components and dominant susceptible components can support different composite appraisals; source-supported contribution, assessor awareness and likelihood of influence remain separate premises. If contribution is unknown, state that limit rather than assume dominance.",
         ),
-        ("assessor awareness alone", "absence of documented influence or strong beliefs alone", "an objective endpoint label", "an ITT analysis"),
+        (
+            "assessor awareness alone",
+            "absence of documented influence or strong beliefs alone",
+            "an objective endpoint label",
+            "an ITT analysis",
+        ),
     ),
     "sq:selection:prespecified-analysis": _guidance(
         "Full guidance p. 63, Box 11, signalling question 5.1",

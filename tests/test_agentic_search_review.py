@@ -45,6 +45,7 @@ def test_review_payload_retains_explicit_attribution_summary() -> None:
     state = {
         "proposal": {"payload": {"results": [{"trial_id": "trial", "kind": "assessable"}]}},
         "domain_records": _records({"kind": "mechanical_repair", "repair_id": "repair-1"}),
+        "snapshots": {"trial": {}},
     }
 
     payload = _review_payload(state, "trial", "assessed", None, [])

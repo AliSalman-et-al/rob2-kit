@@ -7,6 +7,7 @@ import json
 import runpy
 import zipfile
 from pathlib import Path
+from typing import Any
 
 import pytest
 from support.rob2 import (
@@ -66,7 +67,7 @@ def test_domain_adjudication_lifecycle_binding_review_export_and_tampering(tmp_p
         "get_domain_context",
         {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 131072},
     )
-    draft = {
+    draft: dict[str, Any] = {
         **original,
         "expected_revision": revision,
         "supersedes": parent["identity"],
