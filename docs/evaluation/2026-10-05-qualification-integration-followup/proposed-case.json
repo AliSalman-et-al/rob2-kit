@@ -1,21 +1,18 @@
 {
   "status": "proposal-only-no-paid-launch",
-  "case": "dapa-hf",
+  "case": "attal-2016",
   "source_repository": "/home/ali/Documents/Code/rob2-kit-benchmark",
   "source_repository_commit": "d04473df4a07a3117f3171df2d8471ec0defd522",
   "source_files": {
-    "NEJMoa1911303.pdf": "fa73636e3b883f1c17d4e5883384e8d289073c776fa981476927d03280f6d600",
-    "nejmoa1911303_appendix.pdf": "be3782e5cce018dba47c85f09b394cd847ff8c3adf5cf8ddb6280c72a4fe3568",
-    "nejmoa1911303_data-sharing.pdf": "f973ddbb5e095ad851ce570cd091afde85fabff9a0cf4a729a0f9dbe3cdef853",
-    "nejmoa1911303_disclosures.pdf": "dd2e45dbc916f040c9e8a8859f20e3e6be2fe56637b8101677ebdef6b244bdf2",
-    "nejmoa1911303_protocol.pdf": "2aaa0770fb33dd19335299ad3582779c3ff98125dd6b720b04092d69b01ad053",
-    "sources.toml": "4c9957d8be37c01a58acc3f99dac231daa472bfcfd68e4c579c2656d394b8c62"
+    "S1474-4422-16-00017-X.pdf": "cb7fd1374b740b844ae053295fbf0d0388d140567bde316e338c20e397be0ac6",
+    "mmc1.pdf": "e63bea1e506d6327a21df15c2d667bb67341470fdc12dcdd0d9b11f08d7e0453",
+    "sources.toml": "ed3399607ec75ab73011e26d69a25b6a134846f156de82814900a3c10d5173ab"
   },
-  "pages": 480,
-  "model": "gpt-6-luna",
-  "effort": "medium",
-  "model_verification": "Actual run_human_benchmark.py lines 67,88-89 and Oct1 protocol explicitly match. Launch and durable session verification still required.",
-  "target": "Primary time-to-first worsening heart failure (hospitalization or urgent IV-therapy visit) or cardiovascular death, randomized population, dapagliflozin versus placebo, primary Cox HR 0.74 (95% CI 0.65 to 0.85); median follow-up is descriptive, not an invented fixed horizon.",
+  "pages": 27,
+  "model": "gpt-6.1-sol",
+  "effort": "low",
+  "model_verification": "Supersedes historical Luna profile. Disabled launcher.json and isolated config.toml pin exact gpt-6.1-sol/low; offline preflight verifies both. Actual live durable profile must match before accepting any future run.",
+  "target": "Change from baseline in self-reported mean weekly pain intensity over 24 weeks after first administration: botulinum toxin A versus placebo, primary longitudinal mixed-model treatment effect. Agent must establish exact reported estimate/CI and randomized versus analyzed population from source; no prefilled result or label.",
   "workflow": [
     "fresh intake with original local dossier and frozen Oct1 registry record",
     "agent source discovery and proposal",
@@ -24,16 +21,18 @@
     "freeze source delivery, all tool inputs/outputs, durable model/usage and bundle before scientific audit",
     "independent source-grounded rationale audit; no accuracy-based retry"
   ],
-  "development_exposure": "DAPA-HF sources, Oct1 logs and source delivery have already been audited during development; not held-out. No benchmark reference labels will be model-visible.",
+  "development_exposure": "Selected after bounded source inspection of Attal 2016, Levin 2011 and AVATAR local Code dossiers; Attal article p3-4 and appendix p13-15 now development-exposed. Historical Attal judgments were not used to select the case.",
   "scope_limits": [
-    "D1 explicit computerized/block allocation may not exercise circumstantial-only inference.",
-    "D3.1 may reasonably skip D3.2; incomplete primary follow-up is 14 versus20, not only two unknown vital-status patients or all-randomized analyzed.",
-    "Blinded adjudication may skip D4.4; no substitute endpoint or changed masking to force activation.",
-    "Therefore one realistic workflow tests integration and source-grounding, not isolated causal superiority of all three qualifications."
+    "D1 independent pharmacist and randomly assigned blocks provide sequence circumstances, but are not randomized-label-only or minimization controls.",
+    "D3 reported LOCF and sensitivity comparisons require examining assumptions, differential dropout and exact primary result; reported MAR and absence of baseline association do not independently establish absence of MNAR bias.",
+    "D4 participant pain and possible unmasking exercise preservation of judgment-outcome susceptibility, not the observer all-cause mortality exception. Do not force awareness or question activation.",
+    "No single selected case directly isolates all three corrections; complementary offline contrasts remain necessary.",
+    "68 randomized versus66 analyzed in article flow requires exact Result scope and D2 review; imputed observations are not observed outcome data."
   ],
   "offline_controls": "Existing eight neutral contrasting controls in official-context-qualification-audit; native delivered text assertions already pass. No trial outcomes or new model-free labels manufactured.",
   "paid_launch": false,
   "sessions_proposed": 1,
   "full_benchmark": false,
-  "merge": false
+  "merge": false,
+  "selection_rationale": "Attal supplies actual primary-outcome sensitivity analyses and missingness/unmasking evidence in27pages. DAPA480pages has explicit allocation/blinded adjudication and may skip D3.2, so repeated DAPA is only familiar integration control and is not the smallest informative qualification case. No desired judgment used."
 }

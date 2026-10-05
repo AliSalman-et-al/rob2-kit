@@ -1,4 +1,8 @@
 {
-  "docs/evaluation/2026-10-05-qualification-integration-followup/README.md": "75a9a1fe8c0b03bfed22201a35782d0df7a09848ad4aa0aefaa52014618d24ec",
-  "docs/evaluation/2026-10-05-qualification-integration-followup/proposed-case.json": "770cf4d0800c4f16bdd06e5d13e7c674a5bd160430ad738cf38f0b630783ce6a"
+  "docs/evaluation/2026-10-05-qualification-integration-followup/README.md": "983c5b2226b2b69426d61481ce4956b8febcec4a9b9dc8372431269996bdb0c1",
+  "docs/evaluation/2026-10-05-qualification-integration-followup/check_profile.py": "8c0e37e6b7919858cc976d627f318dff03a2e769851408dcc5fea53ddc784e57",
+  "docs/evaluation/2026-10-05-qualification-integration-followup/config.toml": "6d538b608e47e9eb2eb56f2b0503c837a8f246f0208106e59c82adac5cdc1a64",
+  "docs/evaluation/2026-10-05-qualification-integration-followup/launcher.json": "face946c52b33573555cd6824fc49d0e9d8d9192e2fc4cabc350e307440af259",
+  "docs/evaluation/2026-10-05-qualification-integration-followup/profile-readiness.json": "53755a1f7a1d96aa4807676bd991c47e874c59a2cdf8f9856c1a0dad66563cd7",
+  "docs/evaluation/2026-10-05-qualification-integration-followup/proposed-case.json": "54b557ae7fcfdf2efeac60daae006cb860095593d1e15dde304f0f4a11ac9284"
 }
