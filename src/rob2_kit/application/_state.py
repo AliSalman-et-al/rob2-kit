@@ -529,14 +529,25 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
         profile_row = connection.execute(
             "SELECT value FROM search_projection_meta WHERE name='profile'"
         ).fetchone()
+        inventory_row = connection.execute(
+            "SELECT value FROM search_projection_meta WHERE name='inventory'"
+        ).fetchone()
         fts_valid = (
             fts_columns == {"source_id", "page", "raw_text", "normalized_text"}
             and profile_row is not None
             and profile_row[0] == _SEARCH_PROFILE
         )
-    rebuild_pages = not existing
+    # Admission commits canonical inventory before its disposable cache transaction.
+    # A missing/old marker recovers that crash window from immutable captured bytes.
+    inventory_changed = bool(_state(root).get("source_admissions")) and (
+        inventory_row is None or inventory_row[0] != batch.get("identity")
+    )
+    rebuild_pages = not existing or inventory_changed
     rebuild_search = (
-        not fts_valid or version_row is None or version_row[0] != _SEARCH_DERIVATIVE_VERSION
+        inventory_changed
+        or not fts_valid
+        or version_row is None
+        or version_row[0] != _SEARCH_DERIVATIVE_VERSION
     )
     if existing and indexed and not rebuild_search:
         return
@@ -629,6 +640,10 @@ def _rebuild_derivative_if_needed(root: Path) -> None:
             "INSERT OR REPLACE INTO source_index(source_id,batch_id,trial_id,payload) "
             "VALUES (?,?,?,?)",
             sources,
+        )
+        connection.execute(
+            "INSERT OR REPLACE INTO search_projection_meta(name,value) VALUES ('inventory',?)",
+            (batch_identity,),
         )
 
 

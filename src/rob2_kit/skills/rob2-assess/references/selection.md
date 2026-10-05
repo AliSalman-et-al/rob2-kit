@@ -180,28 +180,39 @@ chronology, or result dependence; document availability, dates, and the existenc
 of eligible alternatives do not answer the selection question by themselves.
 
 
-For an explicit protocol/SAP DOI or public PDF reference found in a supplied
-Source, call `request_companion_source(reference={...})`. Use the native source_id
-handle returned by list_sources, page, exact citation, linkage_rationale,
+For an explicit protocol/SAP DOI or public PDF reference found during an approved
+open Trial, call `acquire_companion_source(reference={...}, expected_revision=...)`.
+Use the native source_id handle, page, exact citation, linkage_rationale,
 requested_role (protocol/sap), locator_kind (url/doi), locator and optional
-registry_id. The entire normalized DOI token or exact URL, including query/version,
-must be present in the supplied page and citation. Quoted exact NCT-scoped CDN
-filenames from a verified registry Source are also supported. Image-only references
-need textual recovery first; do not invent or truncate a citation.
+registry_id. The complete DOI or URL, including query/version, must be present in
+the supplied page and citation. Exact NCT-scoped CDN filenames from a verified
+registry Source are also supported. Image-only references require textual recovery;
+do not invent or truncate a citation.
 
-The receipt states reference_recorded, document_staged, admitted_to_active_batch
-and document_read separately. It records the reference only and returns structured
-host handoff arguments; no acquisition has occurred. The host can use
-`rob2 stage-companion --workspace CURRENT --reference REQUEST --output NEW
---registry-policy POLICY` with a fresh workspace. `require-offline-replay` rejects
-input allowing live registry refresh; `retain-input-settings` explicitly retains
-those settings. The receipt lists input versions, captured Sources omitted from
-input and registry refresh possibilities. Copying input is not necessarily the
-original captured corpus plus one document. It preserves the original ledger;
-inline active-Batch Source insertion is unsupported. Candidate and capture
-provenance are declared other in the new workspace, which needs normal intake and
-review. The current assessment can continue without this optional document; lack
-of acquisition does not force NI or any judgment.
+Successful acquisition stages immutable bytes/provenance and returns a
+candidate_identity. It does not admit or deliver PDF pages. Explicitly call
+`admit_companion_source(trial_id=..., candidate_identity=..., expected_revision=...)`
+to append the PDF and provenance as Other Sources in that same open assessment.
+Read the new Source handles through `read_pages`. Match the exact Result's
+comparison, population, outcome, analysis and plan version before relying on the
+content. Capture metadata and dates are not prespecification or conduct proof.
+Restart target search/context and reorient working notes after inventory change;
+old Source coordinates retain their meaning but do not cover the new document.
+Revise affected Domain checkpoints through their explicit evidence/self-correction
+lineage and repeat target Trial review. Other Trials' reviews remain current.
+
+Admission preserves the approved Result; it cannot change its scope or labels.
+If the new document changes the Result mapping, surface the conflict for explicit
+researcher-authorized scope review. The current authority contract has no
+post-approval Result replacement gate. Fresh Proposal Review is a separate
+prospective assessment, not preservation or authority to copy answers.
+
+Before approval, or for a separately intended prospective dossier,
+`request_companion_source` remains an optional reference-only host handoff. It does
+not fetch, admit or read. The host `stage-companion` route requires a fresh workspace
+and an explicit registry policy; input copying need not preserve the captured
+corpus. Inspect its transfer receipt and perform normal intake/Proposal Review.
+An unavailable optional document does not force NI or any judgment.
 
 Only vetted ClinicalTrials.gov CDN, PLOS journals and PMC HTTPS PDFs are supported.
 DOIs use exact Crossref metadata and one advertised supported PDF link; missing,

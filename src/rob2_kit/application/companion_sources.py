@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import shutil
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -62,7 +64,76 @@ def _open_trial(root: Path, trial_id: str, expected_revision: int) -> tuple[dict
     return state, trial
 
 
+@contextmanager
+def _acquisition_lock(root: Path):
+    """One bounded acquisition at a time; OS release also covers process death."""
+    with internal_path(root, "companion-acquisition.lock").open("a+b") as stream:
+        if os.name == "nt":
+            import msvcrt
+
+            if stream.tell() == 0:
+                stream.write(b"\0")
+                stream.flush()
+            stream.seek(0)
+            try:
+                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError as error:
+                raise ValueError(
+                    "companion acquisition in progress; recover get_status after completion"
+                ) from error
+            try:
+                yield
+            finally:
+                stream.seek(0)
+                msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            try:
+                fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError as error:
+                raise ValueError(
+                    "companion acquisition in progress; recover get_status after completion"
+                ) from error
+            try:
+                yield
+            finally:
+                fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
+
+
+def captured_companions(root: Path, state: dict) -> list[dict]:
+    sources = {
+        s["id"]: s for t in (state.get("batch") or {}).get("trials", []) for s in t["sources"]
+    }
+    with _db(root, "canonical.sqlite3") as connection:
+        identities = [
+            row[0]
+            for row in connection.execute(
+                "SELECT identity FROM canonical_records WHERE kind='companion_candidate' "
+                "ORDER BY rowid"
+            )
+        ]
+    candidates = []
+    for identity in identities:
+        candidate = _read(root, f"companion_candidate:{identity}")
+        if not isinstance(candidate, dict):
+            continue
+        parent = sources.get(candidate["reference"]["source_id"])
+        if parent is not None and parent["sha256"] == candidate["parent_source_sha256"]:
+            candidates.append(candidate)
+    return candidates
+
+
 def acquire_companion_source(
+    workspace: str | Path, reference: CompanionReference, expected_revision: int
+) -> dict:
+    root = _root(workspace)
+    _open_trial(root, reference.trial_id, expected_revision)
+    with _acquisition_lock(root):
+        return _acquire_companion_locked(root, reference, expected_revision)
+
+
+def _acquire_companion_locked(
     workspace: str | Path,
     reference: CompanionReference,
     expected_revision: int,
@@ -72,6 +143,25 @@ def acquire_companion_source(
     state, trial = _open_trial(root, reference.trial_id, expected_revision)
     reference = _canonical_reference(root, reference)
     source, _ = _validated_reference(root, reference)
+    for candidate in captured_companions(root, state):
+        if candidate["reference"] != reference.model_dump():
+            continue
+        if any(
+            a["candidate"]["identity"] == candidate["identity"]
+            for a in state.get("source_admissions", [])
+        ):
+            raise ValueError(
+                "companion already admitted; recover get_status and read its Source handles"
+            )
+        return _result(
+            "success",
+            state,
+            candidate_identity=candidate["identity"],
+            capture=candidate["capture"],
+            document_staged=True,
+            admitted_to_active_batch=False,
+            document_read=False,
+        )
     content, capture = _acquire(reference)
     if content is None:
         return _result(
@@ -242,6 +332,10 @@ def admit_companion_source(
                 for t in batch["trials"]
                 for s in t["sources"]
             ],
+        )
+        connection.execute(
+            "INSERT OR REPLACE INTO search_projection_meta(name,value) VALUES ('inventory',?)",
+            (batch["identity"],),
         )
     return _result(
         "success",

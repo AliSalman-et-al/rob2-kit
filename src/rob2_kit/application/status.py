@@ -4,7 +4,7 @@ from typing import Any
 from ..packs import SCIENTIFIC_PACK
 from ._state import _ensure, _result, _root, _state
 from .contracts import COUNTERS
-from .evidence import _evidence_catalog, main_report_reading_status
+from .evidence import _evidence_catalog, main_report_reading_status, source_reading_status
 from .result_scope import result_scope_review
 from .working import investigation_projection, working_checkpoint_status
 
@@ -210,6 +210,58 @@ def get_status(workspace: str | Path, *, include_evidence_text: bool = False) ->
         if isinstance(active_record, dict)
         else None
     )
+    from .companion_sources import captured_companions
+    from .source_handles import source_handle
+
+    companions = []
+    for candidate in captured_companions(root, state):
+        trial_id = candidate["trial_id"]
+        admission = next(
+            (
+                a
+                for a in state.get("source_admissions", [])
+                if a["candidate"]["identity"] == candidate["identity"]
+            ),
+            None,
+        )
+        admitted = admission is not None
+        source_ids = admission["source_ids"] if admitted else []
+        reading = source_reading_status(root, trial_id) if admitted else {}
+        open_trial = state.get("phase") == "assessment" and dispositions.get(trial_id) in {
+            "pending",
+            "reviewable",
+        }
+        if not open_trial:
+            continue
+        companions.append(
+            {
+                "candidate_identity": candidate["identity"],
+                "trial_id": trial_id,
+                "document_staged": True,
+                "admitted_to_active_batch": admitted,
+                "source_ids": [source_handle(s) for s in source_ids],
+                "reading_status": reading.get(source_ids[0], "unread")
+                if admitted
+                else "not_admitted",
+                "next_action": (
+                    {
+                        "operation": "read_pages",
+                        "trial_id": trial_id,
+                        "source_id": source_handle(source_ids[0]),
+                        "pages": [1],
+                    }
+                    if admitted and reading.get(source_ids[0]) != "read_complete"
+                    else {
+                        "operation": "admit_companion_source",
+                        "trial_id": trial_id,
+                        "candidate_identity": candidate["identity"],
+                        "expected_revision": state["revision"],
+                    }
+                    if not admitted and open_trial
+                    else None
+                ),
+            }
+        )
     return _result(
         "success",
         state,
@@ -231,6 +283,7 @@ def get_status(workspace: str | Path, *, include_evidence_text: bool = False) ->
             else []
         ),
         main_report_reading=main_report_reading,
+        companion_sources=companions,
         scope_review=(
             result_scope_review((state.get("proposal") or {}).get("payload", {}).get("results", []))
             if state.get("phase") == "proposal"

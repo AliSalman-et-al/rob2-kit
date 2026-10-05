@@ -563,6 +563,8 @@ def _valid_batch(batch: object) -> bool:
 
 def _valid_source_history(canonical: dict, hash_identity: Callable[[object], str]) -> bool:
     """Authenticate append-only inventory versions and their acquisition provenance."""
+    if not _valid_batch(canonical.get("batch")):
+        return False
     history = canonical.get("batch_history")
     admissions = canonical.get("source_admissions")
     if history is None and admissions is None:

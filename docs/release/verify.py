@@ -82,7 +82,12 @@ def _load_contract() -> dict[str, Any]:
         raise ValueError("public tool title is missing")
     if any(not item["description"].strip() for item in value["tools"]):
         raise ValueError("public tool description is missing")
-    if any(item["destructive"] or not item["idempotent"] for item in value["tools"]):
+    if any(
+        item["destructive"]
+        or item["idempotent"]
+        != (item["name"] not in {"acquire_companion_source", "admit_companion_source"})
+        for item in value["tools"]
+    ):
         raise ValueError("public tool safety annotations differ")
     if value["resources"] != ["rob2://current-batch"] or value["resource_templates"] != [
         "rob2://guidance/{name}"

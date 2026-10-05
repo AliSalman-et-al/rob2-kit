@@ -340,6 +340,13 @@ _INTAKE = ToolAnnotations(
     read_only_hint=False, destructive_hint=False, idempotent_hint=True, open_world_hint=True
 )
 
+_COMPANION_ACQUISITION = ToolAnnotations(
+    read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=True
+)
+_COMPANION_ADMISSION = ToolAnnotations(
+    read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False
+)
+
 # Keep every read_pages response small enough for clients with conservative
 # tool-result limits.  The application still owns the complete captured
 # projection; this is only a transport window.
@@ -2631,8 +2638,12 @@ def request_companion_source(
         "Returns immutable staged bytes/provenance and candidate_identity; no Source admission "
         "or reading occurs. Failed access admits nothing. Dates, role hints and identifier "
         "mentions do not prove applicability, prespecification or actual conduct."
+        " Exact stale-revision retries are rejected. Recover a lost receipt through "
+        "get_status.companion_sources, which supplies staged/admitted state and an executable "
+        "admit/read action. Identical staged references reuse immutable candidates without "
+        "network access; concurrent acquisition is rejected while another fetch is active."
     ),
-    annotations=_INTAKE,
+    annotations=_COMPANION_ACQUISITION,
     output_schema=output_schema("acquire_companion_source"),
 )
 def acquire_companion_source(
@@ -2657,8 +2668,12 @@ def acquire_companion_source(
         "search/context/working currency, preserving unaffected Trials. Returns new source "
         "handles; read_pages is still required. No Result, scope, signaling answer or judgment "
         "is changed. A material Result mapping change requires explicit researcher scope review."
+        " Exact stale-revision retries are rejected. Recover a lost receipt through "
+        "get_status.companion_sources, which supplies staged/admitted state and an executable "
+        "admit/read action. Identical staged references reuse immutable candidates without "
+        "network access; concurrent acquisition is rejected while another fetch is active."
     ),
-    annotations=_MUTATION,
+    annotations=_COMPANION_ADMISSION,
     output_schema=output_schema("admit_companion_source"),
 )
 def admit_companion_source(

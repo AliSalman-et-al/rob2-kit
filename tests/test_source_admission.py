@@ -451,3 +451,189 @@ def test_acquisition_checks_revision_and_open_trial_before_public_access(assesse
     closed = _call(workspace, "acquire_companion_source", request)
     assert closed["outcome"] == "condition", closed
     assert public_pdf == []
+
+
+def test_restart_recovers_admission_derivatives_after_postcommit_failure(
+    assessed, public_pdf, monkeypatch
+):
+    from rob2_kit.application.evidence import read_pages, render_page
+    from rob2_kit.application.source_handles import source_handle
+
+    workspace = assessed
+    identity = acquire(workspace)
+    before = deepcopy(_state(workspace))
+    original_db = companion._db
+
+    def fail_derivative(root, name):
+        if name == "derivative.sqlite3":
+            raise OSError("injected postcommit derivative failure")
+        return original_db(root, name)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(companion, "_db", fail_derivative)
+        with pytest.raises(OSError, match="injected postcommit"):
+            companion.admit_companion_source(workspace, "trial", identity, before["revision"])
+    committed = deepcopy(_state(workspace))
+    assert committed["revision"] == before["revision"] + 1
+    assert len(committed["source_admissions"]) == 1
+    old = committed["batch"]["trials"][0]["sources"][0]
+    new = committed["batch"]["trials"][0]["sources"][-2]
+    for source in (old, new):
+        assert read_pages(workspace, "trial", source["id"], [1])["pages"]
+        assert search_sources(
+            workspace, "trial", "outcome" if source is old else "Plan", source_id=source["id"]
+        )["hits"]
+    assert render_page(workspace, "trial", new["id"], 1)["outcome"] == "success"
+    # Restart public route also sees exact readable handles without replaying admission.
+    assert (
+        _call(
+            workspace,
+            "read_pages",
+            {"trial_id": "trial", "source_id": source_handle(new["id"]), "pages": [1]},
+        )["outcome"]
+        == "success"
+    )
+    assert _state(workspace) == committed
+    with pytest.raises(ValueError, match="already admitted"):
+        companion.admit_companion_source(workspace, "trial", identity, committed["revision"])
+    assert _state(workspace) == committed
+
+
+def test_precommit_failure_preserves_canonical_assessment(assessed, public_pdf, monkeypatch):
+    workspace = assessed
+    identity = acquire(workspace)
+    before = deepcopy(_state(workspace))
+
+    def fail_commit(*args, **kwargs):
+        raise OSError("injected precommit failure")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(companion, "_commit_records", fail_commit)
+        with pytest.raises(OSError, match="injected precommit"):
+            companion.admit_companion_source(workspace, "trial", identity, before["revision"])
+    assert _state(workspace) == before
+    old = before["batch"]["trials"][0]["sources"][0]
+    from rob2_kit.application.evidence import read_pages
+
+    assert read_pages(workspace, "trial", old["id"], [1])["pages"]
+
+
+def test_rehashed_semantic_lineage_tamper_and_malformed_legacy_are_invalid(
+    assessed, public_pdf, tmp_path
+):
+    from rob2_kit.application._state import _identity
+    from rob2_kit.application.finalization import _valid_batch
+
+    workspace = assessed
+    identity = acquire(workspace)
+    admit(workspace, identity)
+    artifact = _finalize_assessment(workspace, _state(workspace)["revision"])["data"]["artifact"]
+    path = workspace / artifact["path"]
+
+    def forge_predecessor(canonical):
+        previous = canonical["batch_history"][0]
+        trial = previous["trials"][0]
+        trial["requested_outcome"] = "A different historical assessment target"
+        trial["identity"] = _identity({k: v for k, v in trial.items() if k != "identity"})
+        previous["identity"] = _identity({k: v for k, v in previous.items() if k != "identity"})
+        admission = canonical["source_admissions"][0]
+        admission["previous_batch_identity"] = previous["identity"]
+        admission["identity"] = _identity({k: v for k, v in admission.items() if k != "identity"})
+        assert _valid_batch(previous)  # All ordinary nested identities are now consistent.
+
+    target = tmp_path / "semantic-lineage-tamper.zip"
+    _rewrite_rehashed(path, target, forge_predecessor)
+    assert not verify_bundle(target)
+    assert _standalone_verify(target).returncode != 0
+    for index, malformed in enumerate(
+        [
+            lambda c: c["batch"].update(trials=[None]),
+            lambda c: c["batch"]["trials"][0].update(sources=[None]),
+        ]
+    ):
+
+        def mutate(canonical):
+            canonical.pop("batch_history")
+            canonical.pop("source_admissions")
+            malformed(canonical)
+
+        target = tmp_path / f"malformed-legacy-{index}.zip"
+        _rewrite_rehashed(path, target, mutate)
+        assert not verify_bundle(target)
+        assert _standalone_verify(target).returncode != 0
+
+
+def test_lost_receipt_status_recovers_without_refetch_or_read_claim(assessed, public_pdf):
+    workspace = assessed
+    identity = acquire(workspace)
+    staged = _call(workspace, "get_status", {})["data"]["companion_sources"][0]
+    assert staged["candidate_identity"] == identity and not staged["admitted_to_active_batch"]
+    revision = _state(workspace)["revision"]
+    assert acquire(workspace) == identity  # Same exact reference at fresh revision, no new network.
+    assert len(public_pdf) == 1 and _state(workspace)["revision"] == revision
+    action = staged["next_action"]
+    assert action["operation"] == "admit_companion_source"
+    _call(workspace, action["operation"], {k: v for k, v in action.items() if k != "operation"})
+    admitted = _call(workspace, "get_status", {})["data"]["companion_sources"][0]
+    assert admitted["admitted_to_active_batch"] and admitted["reading_status"] == "unread"
+    action = admitted["next_action"]
+    assert action["operation"] == "read_pages"
+    _call(workspace, action["operation"], {k: v for k, v in action.items() if k != "operation"})
+    assert (
+        _call(workspace, "get_status", {})["data"]["companion_sources"][0]["reading_status"]
+        == "read_complete"
+    )
+
+
+def test_concurrent_acquisition_does_not_duplicate_public_fetch(assessed, monkeypatch):
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+
+    from rob2_kit.application.contracts import WorkflowConflict
+
+    workspace = assessed
+    source = _state(workspace)["batch"]["trials"][0]["sources"][0]
+    reference = companion.CompanionReference(
+        trial_id="trial",
+        source_id=source["id"],
+        page=1,
+        citation="Companion protocol " + URL,
+        linkage_rationale="Fixture reference",
+        requested_role="sap",
+        locator_kind="url",
+        locator=URL,
+    )
+    started, release = threading.Event(), threading.Event()
+    calls = []
+
+    def fetch(ref):
+        calls.append(ref)
+        started.set()
+        assert release.wait(5)
+        data = pdf("Plan content")
+        return data, {
+            "reference": ref.model_dump(),
+            "status": "captured",
+            "source_role": "other",
+            "sha256": "sha256:" + __import__("hashlib").sha256(data).hexdigest(),
+            "page_count": 1,
+        }
+
+    monkeypatch.setattr(companion, "_acquire", fetch)
+    revision = _state(workspace)["revision"]
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(companion.acquire_companion_source, workspace, reference, revision)
+        assert started.wait(5)
+        try:
+            with pytest.raises(ValueError, match="in progress"):
+                companion.acquire_companion_source(workspace, reference, revision)
+        finally:
+            release.set()
+        receipt = future.result(timeout=5)
+    assert len(calls) == 1
+    with pytest.raises(WorkflowConflict):
+        companion.acquire_companion_source(workspace, reference, revision)
+    recovered = companion.acquire_companion_source(
+        workspace, reference, _state(workspace)["revision"]
+    )
+    assert recovered["candidate_identity"] == receipt["candidate_identity"] and len(calls) == 1

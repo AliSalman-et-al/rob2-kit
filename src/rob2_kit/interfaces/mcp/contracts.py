@@ -941,7 +941,32 @@ class TrialReviewSummary(PublicModel):
     )
 
 
+class AdmitCompanionRecoveryAction(PublicModel):
+    operation: Literal["admit_companion_source"]
+    trial_id: TrialId
+    candidate_identity: Identity
+    expected_revision: NonNegativeInt
+
+
+class ReadCompanionRecoveryAction(PublicModel):
+    operation: Literal["read_pages"]
+    trial_id: TrialId
+    source_id: SourceHandle
+    pages: tuple[PositiveInt, ...]
+
+
+class CompanionSourceStatus(PublicModel):
+    candidate_identity: Identity
+    trial_id: TrialId
+    document_staged: Literal[True]
+    admitted_to_active_batch: StrictBool
+    source_ids: tuple[SourceHandle, ...]
+    reading_status: Literal["not_admitted", "unread", "partially_read", "read_complete"]
+    next_action: AdmitCompanionRecoveryAction | ReadCompanionRecoveryAction | None
+
+
 class StatusData(PublicModel):
+    companion_sources: tuple[CompanionSourceStatus, ...] = ()
     scope_review: tuple[ResultScopeReview, ...] = ()
     trial_dispositions: dict[
         TrialId,
@@ -3285,6 +3310,7 @@ def _payload(tool: str, value: dict[str, Any]) -> dict[str, Any]:
                 "conditions",
                 "trial_review",
                 "scope_review",
+                "companion_sources",
             )
             if key in value
         }
