@@ -19,6 +19,7 @@ from pydantic import ValidationError
 from ..logic.adjudication import (
     DOMAIN_JUDGMENT_CONTRACT,
     LEGACY_DOMAIN_JUDGMENT_CONTRACT,
+    require_current_adjudication_pack,
     valid_domain_contract,
     valid_domain_decision,
 )
@@ -3635,6 +3636,8 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    if state.get("phase") != "finalized":
+        require_current_adjudication_pack(state, SCIENTIFIC_PACK.content_hash)
     if state.get("phase") == "finalized":
         artifact = state.get("artifact")
         if (

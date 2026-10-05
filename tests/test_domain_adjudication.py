@@ -109,6 +109,14 @@ def test_domain_adjudication_lifecycle_binding_review_export_and_tampering(tmp_p
     assert adopted["data"]["checkpoint"]["decision"] == current["decision"]
     assert _call(workspace, "save_domain_judgment", draft)["data"]["retry"] is True
 
+    recovered = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization"},
+    )
+    assert recovered["outcome"] == "success", recovered
+    assert recovered["data"]["decision"] == current["decision"]
+
     # Complete the other domains with Low defaults so the adopted High alone drives overall.
     revision = adopted["head"]["state_revision"]
     paths = {
@@ -238,9 +246,13 @@ def test_answer_revision_drops_adjudication_and_rejects_stale_parent(tmp_path: P
     assert adopted["outcome"] == "success", adopted
     current = _state(workspace)["domain_records"]["trial:domain:randomization"]
     assert current["judgment"] == "low"
-    _call(
-        workspace, "get_domain_context", {"trial_id": "trial", "domain_id": "domain:randomization"}
+    context = _call(
+        workspace,
+        "get_domain_context",
+        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 131072},
     )
+    assert context["outcome"] == "success", context
+    assert context["data"]["decision"] == current["decision"]
     revision = adopted["head"]["state_revision"]
     for domain in SCIENTIFIC_PACK.domains[1:]:
         saved_domain = _call(
@@ -339,3 +351,38 @@ def test_identical_unmarked_checkpoint_retry_preserves_historical_record(
     assert retried["outcome"] == "success", retried
     assert retried["data"]["retry"] is True
     assert _state(workspace) == before
+
+
+def test_prior_pack_adjudication_workspace_fails_explicitly_without_history_rewrite(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from types import SimpleNamespace
+
+    from rob2_kit.application import finalization
+
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
+    saved = _call(workspace, "save_domain_judgment", draft)
+    parent = _state(workspace)["domain_records"]["trial:domain:randomization"]
+    _call(workspace, "get_domain_context", {"domain_id": "domain:randomization"})
+    draft.update(
+        expected_revision=saved["head"]["state_revision"],
+        supersedes=parent["identity"],
+        revision_basis={"kind": "self_correction", "rationale": "Source-bound host adoption"},
+        adjudication=_adjudication(parent, evidence["handle"]),
+    )
+    adopted = _call(workspace, "save_domain_judgment", draft)
+    assert adopted["outcome"] == "success", adopted
+    before = _state(workspace)
+    # Simulate installing a later pack, not editing a historical checkpoint.
+    later = SimpleNamespace(content_hash="sha256:" + "f" * 64)
+    monkeypatch.setattr(domains, "SCIENTIFIC_PACK", later)
+    monkeypatch.setattr(finalization, "SCIENTIFIC_PACK", later)
+    for operation in (
+        lambda: domains.get_domain_context(workspace, domain_id="domain:randomization"),
+        lambda: domains.save_domain_judgment(workspace, draft),
+        lambda: finalization.finalize_batch(workspace, before["revision"]),
+    ):
+        with pytest.raises(ValueError, match="adjudication_pack_migration_unsupported"):
+            operation()
+        assert _state(workspace) == before

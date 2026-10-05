@@ -38,3 +38,20 @@ and measurement reference do not explicitly supply official p.52 weighting by
 component frequency/contribution and the most influential components. Mixed
 subjective composites are not automatically High. That qualification is not
 silently inferred from this adjudication capability and is not amended here.
+
+Independent review found that Domain context did not expose the new decision;
+that recovery omission is now fixed in the application projection, native typed
+contract and wire field order. Tests assert exact rationale/label recovery,
+including a long rationale with the existing larger context response budget.
+Mixed-pack workspace continuation is explicitly unsupported and rejected before
+Domain work or new finalization, preserving history and offering pinned-version
+or fresh-workspace recovery. A simulated later-pack test checks all three entry
+points and unchanged state; historical completed bundles remain compatible.
+
+Recovery/version follow-up validation: adjudication lifecycle, long context and
+review rationale conservation, authentic historical retry, and explicit later-pack
+no-mutation boundary: **4 passed in 44.88s**. Earlier public context contract controls:
+**6 passed in 36.84s**. Descriptor/public-contract combined run: ten controls passed;
+its new boundary fixture initially supplied an invalid revision-basis scalar and
+Evidence object rather than a handle. That fixture was corrected, with all four
+lifecycle tests subsequently passing. Final Ruff, ty and diff checks passed.

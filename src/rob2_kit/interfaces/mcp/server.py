@@ -392,6 +392,7 @@ def _compact_domain_context_transport(value: dict[str, Any]) -> dict[str, Any]:
             "completion_rule",
             "working_checkpoint",
             "current_checkpoint",
+            "decision",
             "coverage",
             "pack",
             "official_guidance",

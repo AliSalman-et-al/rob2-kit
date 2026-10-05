@@ -2054,6 +2054,14 @@ class DomainContextData(PublicModel):
         default=None,
         description="Exact active checkpoint identity, when this Domain has been saved before.",
     )
+    decision: DomainDecision | None = Field(
+        default=None,
+        description=(
+            "Exact active checkpoint proposed/adopted decision and source-bound host rationale. "
+            "Trace authority remains the deterministic proposal; historical unmarked checkpoints "
+            "have no decision envelope."
+        ),
+    )
     guidance: tuple[str, ...] = ()
     response_framework: ResponseFramework | None = None
     traps: tuple[str, ...] = ()

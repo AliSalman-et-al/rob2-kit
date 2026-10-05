@@ -6,7 +6,11 @@ from typing import Any, Literal
 
 from pydantic import ValidationError
 
-from ..logic.adjudication import DOMAIN_JUDGMENT_CONTRACT, domain_evidence_ids
+from ..logic.adjudication import (
+    DOMAIN_JUDGMENT_CONTRACT,
+    domain_evidence_ids,
+    require_current_adjudication_pack,
+)
 from ..logic.aggregation import aggregation_record
 from ..logic.evaluator import active_questions, evaluate_domain, evaluate_overall
 from ..models import ResponseFramework, canonical_json_bytes
@@ -2656,6 +2660,7 @@ def save_domain_judgment(
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    require_current_adjudication_pack(state, SCIENTIFIC_PACK.content_hash)
     try:
         parsed = draft if isinstance(draft, DomainDraft) else DomainDraft.model_validate(draft)
     except ValidationError as error:
@@ -3765,6 +3770,7 @@ def get_domain_context(
     root = _root(workspace)
     _ensure(root)
     state = _state(root)
+    require_current_adjudication_pack(state, SCIENTIFIC_PACK.content_hash)
     requested_preview = preview_missing_data
     if state.get("phase") not in {"assessment", "ready_to_finalize"}:
         raise ValueError("Domain work is not active")
@@ -4500,6 +4506,7 @@ def get_domain_context(
             existing.get("evidence_sufficiency") if isinstance(existing, dict) else None
         ),
         "current_checkpoint": checkpoint_identity,
+        "decision": existing.get("decision") if isinstance(existing, dict) else None,
         "guidance": [
             (
                 "Answer every initially active question plus each dependent question whose "

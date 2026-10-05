@@ -11,6 +11,19 @@ DOMAIN_JUDGMENT_CONTRACT = "rob2-kit.domain.reasoned-adjudication.v1"
 LEGACY_DOMAIN_JUDGMENT_CONTRACT = "rob2-kit.domain.algorithm-only.v1"
 
 
+def require_current_adjudication_pack(state: dict[str, Any], pack_identity: str) -> None:
+    """Mixed-pack adjudication history has no supported migration; never rewrite it."""
+    for history in state.get("domain_history_records", {}).values():
+        for record in history:
+            adjudication = (record.get("decision") or {}).get("adjudication")
+            if adjudication and adjudication.get("pack_identity") != pack_identity:
+                raise ValueError(
+                    "adjudication_pack_migration_unsupported: preserve this workspace and "
+                    "continue with its pinned prior pack, or start a fresh assessment workspace; "
+                    "mixed-pack adjudication history cannot be exported under the current pack"
+                )
+
+
 def domain_evidence_ids(record: object) -> set[str]:
     if not isinstance(record, dict) or not isinstance(record.get("answers"), list):
         return set()

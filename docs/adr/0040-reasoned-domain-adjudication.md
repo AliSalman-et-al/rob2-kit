@@ -51,3 +51,18 @@ are integrity bindings, not external signatures authenticating an assessor.
 This is representational fidelity. There is no default model exhortation to
 adjudicate, researcher gate, new assessment engine, trial-specific rule, or
 accuracy claim. Paid evaluation and automatic adoption are outside this change.
+
+## Pack changes and recovery
+
+Domain context includes the exact active decision, including proposed/adopted
+labels and the source-bound rationale. Its existing bounded header delivery may
+require the advertised larger response budget for a long rationale; it does not
+silently discard that decision.
+
+Continuing an adjudicated workspace across a different pack hash is unsupported.
+Domain context/save and new finalization explicitly reject mixed-pack adjudication
+history without modifying it. Preserve and continue that workspace with its pinned
+prior code/pack, or start a fresh assessment workspace. This is a format boundary,
+not an assertion that guidance changes invalidate the science of the old judgment.
+Untouched finalized bundles remain verifiable against their exact historical
+pack descriptor. No migration or historical rewrite is performed.
