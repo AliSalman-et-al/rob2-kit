@@ -1,0 +1,26 @@
+{
+  "castoldi-2020": [
+    {
+      "evidence_identity": "sha256:241c22831518a92a0c0dd60adc614df2949dd33817b40639a9fe464d524f4657",
+      "source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+      "render": {
+        "identity": "sha256:b12cc54be45199f64fd66a291d89c366bcf8a8b01ecd4c1610bb0598df6314ac",
+        "page": 4,
+        "png_sha256": "sha256:5c5d82d4d9953102bf4d6899969f7089e76c4b32d5a4d038d41c44f01a785f6f",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82"
+      },
+      "delivery_receipt": "sha256:a5070030b253850404c6a97f9400274515b8c46336c7281ae58e50944b056593",
+      "region": [
+        0.05,
+        0.46,
+        0.49,
+        0.74
+      ],
+      "model_transcription": "Figure 2. Flowchart for follow-up. 121 included knees branches to group BTB: 61 knees, and group BTB-LET: 60 knees. BTB branch: 18 lost to FU, 1 TKA; 42 patients at FU; 42 questionnaires, 23 clinical exams; 23 radiographic assessments; 22 TELOS. BTB-LET branch: 22 lost to FU; 38 patients at FU; 38 questionnaires, 20 clinical exams; 22 radiographic assessments; 20 TELOS. BTB, bone-patellar tendon-bone graft; FU, follow-up; LET, lateral extra-articular tenodesis; TKA, total knee arthroplasty.",
+      "model_uncertainty": "The diagram changes units from included knees to patients at follow-up; narrative distinguishes 79 patients and 80 knees. No equivalence is inferred.",
+      "audit": "Implementation agent viewed the exact delivered PNG; Figure2 places18losses+1TKA inBTB,22losses inBTB-LET. This is source reading, not independent human review."
+    }
+  ],
+  "ashar-2022": []
+}

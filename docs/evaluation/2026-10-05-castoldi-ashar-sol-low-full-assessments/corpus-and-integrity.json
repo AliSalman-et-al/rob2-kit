@@ -1,0 +1,255 @@
+{
+  "castoldi-2020": {
+    "original_code_dossier": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/castoldi-2020",
+    "original_files": {
+      "sources.toml": "42732d6137f4828e7a06181c3f3223f8c8bbf431248a7783ce6fbff89b2a9c15",
+      "0363546520914936.pdf": "8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695"
+    },
+    "original_pdf_pages": 8,
+    "initial_sources": [
+      {
+        "declared_role": "main_article",
+        "id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+        "label": "0363546520914936.pdf",
+        "logical_path": "0363546520914936.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 8,
+        "projection_hash": "sha256:9c4e2b082d85b9a2d3b1d99581cf6a85fdb19ddc578af1fa917c54a7959f26eb",
+        "role": "main_article",
+        "sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+        "trial_id": "castoldi-2020"
+      }
+    ],
+    "final_sources": [
+      {
+        "declared_role": "main_article",
+        "id": "source_7b5a135d4d9913eed5da68f5b79ce5a90d7b4977c02c65ac731f72d6b3c99b82",
+        "label": "0363546520914936.pdf",
+        "logical_path": "0363546520914936.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 8,
+        "projection_hash": "sha256:9c4e2b082d85b9a2d3b1d99581cf6a85fdb19ddc578af1fa917c54a7959f26eb",
+        "role": "main_article",
+        "sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+        "trial_id": "castoldi-2020"
+      }
+    ],
+    "registry_descriptor": {
+      "kind": "not_found",
+      "query": "undeclared",
+      "retrieved_at": "2026-10-05T17:51:08.686217Z"
+    },
+    "original_registry_raw_capture_available": false,
+    "source_exposure": "Original October1 campaign exposure plus preparation screening and now this development run; not held-out",
+    "overall": "high",
+    "aggregation": {
+      "adopted": "high",
+      "assessment": null,
+      "assessment_status": "omitted",
+      "authority": "algorithm",
+      "contract": "rob2-kit.overall.cochrane-conditional.v1",
+      "proposed": "high",
+      "rule": "overall.any_high"
+    },
+    "initial_runtime_freeze_sha256": "a54e409967ae9459b701ed9c0af8520839b09744860b5788535941c87580bf49",
+    "output_freeze_sha256": "70c6a955e4dc07a39497c23ef55afaa5a72cd2ecf257b89b81e956bbfe2de025",
+    "final_bundle_sha256": "79024e66cdc37bdfa25129058c93b14a9c28451860602b18759c9824a2214fd5",
+    "captured_source_archive_sha256": "628e3535f68111c76506efaede84f9c3e75645b28994cc4650fb8d3f67e04e5a"
+  },
+  "ashar-2022": {
+    "original_code_dossier": "/home/ali/Documents/Code/rob2-kit-benchmark/rob2-meta-set-full-2026-09-29/trials/ashar-2022",
+    "original_files": {
+      "jamapsychiatry_ashar_2021_oi_210060.pdf": "2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+      "jamapsychiatry-e212669-s001.pdf": "b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+      "jamapsychiatry-e212669-s002.pdf": "82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+      "sources.toml": "30d2f5c558d686b8da56b3f522ca47c2221ba2ae7f53602601259f78e6b923fc",
+      "jamapsychiatry-e212669-s003.pdf": "5918f01fe93f64f4c2cd7ecaa1d1bc2b8d14a6cb30c41d4a52accd3112c6251a"
+    },
+    "original_pdf_pages": 108,
+    "initial_sources": [
+      {
+        "declared_role": "supplement",
+        "id": "source_ee5ee64c3c0ee274f750556cd7d0ba755efe18eb8913f74da22cc385eb7c8fc2",
+        "label": "jamapsychiatry-e212669-s001.pdf",
+        "logical_path": "jamapsychiatry-e212669-s001.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 44,
+        "projection_hash": "sha256:3f95b3c3c250f8ffa8f43c398f2de0d87832e8b312ccf2cc158c92d22e19de15",
+        "role": "supplement",
+        "sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "supplement",
+        "id": "source_59bf520ca4a1a7c3923f4dc05a8cfc993535b56ae075524914384e04b966d91d",
+        "label": "jamapsychiatry-e212669-s002.pdf",
+        "logical_path": "jamapsychiatry-e212669-s002.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 52,
+        "projection_hash": "sha256:54b84c2ce4ea82154594f0c4c6ab976f2f1e78b00db4ed9c9aa83b3ffc66f628",
+        "role": "supplement",
+        "sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "supplement",
+        "id": "source_e58eb9c30bff53a6c501814aedf01e2b4c38d4b50c40657b9af2eeeb985ec02e",
+        "label": "jamapsychiatry-e212669-s003.pdf",
+        "logical_path": "jamapsychiatry-e212669-s003.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 1,
+        "projection_hash": "sha256:092fa1fa5ccfa164168fd8a30ba7399bec76d4272b6fe2c92022040ac8a99702",
+        "role": "supplement",
+        "sha256": "sha256:5918f01fe93f64f4c2cd7ecaa1d1bc2b8d14a6cb30c41d4a52accd3112c6251a",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "main_article",
+        "id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+        "label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+        "logical_path": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 11,
+        "projection_hash": "sha256:2de21d53219448bfba5181e6fa05bb7f0c2e381a22efe3de880adbda5708f8f0",
+        "role": "main_article",
+        "sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": null,
+        "id": "source_be1485c0eeef6d51deceb9cc9be48e21a52438a3c7109e38cefbdcbd0ce733f2",
+        "label": "ClinicalTrials.gov NCT03294148",
+        "logical_path": "registry/NCT03294148.json",
+        "media_type": "application/json",
+        "origin": "registry",
+        "page_count": 1,
+        "projection_hash": "sha256:0f639112e1029a2ad936d0bf53506c919226adc647e57042cb130289d03063fc",
+        "role": "registry",
+        "sha256": "sha256:c70b4ec0ddc6a5221ae3e3bfbfdafa07f3d17becad41ee99a88a1dea75b2096e",
+        "trial_id": "ashar-2022"
+      }
+    ],
+    "final_sources": [
+      {
+        "declared_role": "supplement",
+        "id": "source_ee5ee64c3c0ee274f750556cd7d0ba755efe18eb8913f74da22cc385eb7c8fc2",
+        "label": "jamapsychiatry-e212669-s001.pdf",
+        "logical_path": "jamapsychiatry-e212669-s001.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 44,
+        "projection_hash": "sha256:3f95b3c3c250f8ffa8f43c398f2de0d87832e8b312ccf2cc158c92d22e19de15",
+        "role": "supplement",
+        "sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "supplement",
+        "id": "source_59bf520ca4a1a7c3923f4dc05a8cfc993535b56ae075524914384e04b966d91d",
+        "label": "jamapsychiatry-e212669-s002.pdf",
+        "logical_path": "jamapsychiatry-e212669-s002.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 52,
+        "projection_hash": "sha256:54b84c2ce4ea82154594f0c4c6ab976f2f1e78b00db4ed9c9aa83b3ffc66f628",
+        "role": "supplement",
+        "sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "supplement",
+        "id": "source_e58eb9c30bff53a6c501814aedf01e2b4c38d4b50c40657b9af2eeeb985ec02e",
+        "label": "jamapsychiatry-e212669-s003.pdf",
+        "logical_path": "jamapsychiatry-e212669-s003.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 1,
+        "projection_hash": "sha256:092fa1fa5ccfa164168fd8a30ba7399bec76d4272b6fe2c92022040ac8a99702",
+        "role": "supplement",
+        "sha256": "sha256:5918f01fe93f64f4c2cd7ecaa1d1bc2b8d14a6cb30c41d4a52accd3112c6251a",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "main_article",
+        "id": "source_8db8064af966a4527f177387c3dd606806d38cc06522569dbee95a4411356411",
+        "label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+        "logical_path": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+        "media_type": "application/pdf",
+        "origin": "local_dossier",
+        "page_count": 11,
+        "projection_hash": "sha256:2de21d53219448bfba5181e6fa05bb7f0c2e381a22efe3de880adbda5708f8f0",
+        "role": "main_article",
+        "sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": null,
+        "id": "source_be1485c0eeef6d51deceb9cc9be48e21a52438a3c7109e38cefbdcbd0ce733f2",
+        "label": "ClinicalTrials.gov NCT03294148",
+        "logical_path": "registry/NCT03294148.json",
+        "media_type": "application/json",
+        "origin": "registry",
+        "page_count": 1,
+        "projection_hash": "sha256:0f639112e1029a2ad936d0bf53506c919226adc647e57042cb130289d03063fc",
+        "role": "registry",
+        "sha256": "sha256:c70b4ec0ddc6a5221ae3e3bfbfdafa07f3d17becad41ee99a88a1dea75b2096e",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "other",
+        "id": "source_ea5cbd2048ec48d9fd78e8a1a8f6f822d2cee05724056b3a7334d54fc2cb8a9a",
+        "label": "companions/44195156829af137526f6cf228492889c28b4f3a1c1db4f6c91e5ab0f4ca291c/candidate.pdf",
+        "logical_path": "companions/44195156829af137526f6cf228492889c28b4f3a1c1db4f6c91e5ab0f4ca291c/candidate.pdf",
+        "media_type": "application/pdf",
+        "origin": "cited_public_document",
+        "page_count": 44,
+        "projection_hash": "sha256:3f95b3c3c250f8ffa8f43c398f2de0d87832e8b312ccf2cc158c92d22e19de15",
+        "role": "other",
+        "sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+        "trial_id": "ashar-2022"
+      },
+      {
+        "declared_role": "other",
+        "id": "source_c821d4d03f7469dfbf9fc92b2ab556236158f213967988ae7e70a2ea2925f117",
+        "label": "companions/44195156829af137526f6cf228492889c28b4f3a1c1db4f6c91e5ab0f4ca291c/capture.json",
+        "logical_path": "companions/44195156829af137526f6cf228492889c28b4f3a1c1db4f6c91e5ab0f4ca291c/capture.json",
+        "media_type": "application/json",
+        "origin": "cited_public_document",
+        "page_count": 1,
+        "projection_hash": "sha256:045016f3ea24eb87b1b43be7d8f870e8d34e8b65c60ad7faf46bc14429b6ad4b",
+        "role": "other",
+        "sha256": "sha256:9cbf9db0d4a4bd55c309b10749721d10d07d64f303a41a967f60f8a8ff1cf654",
+        "trial_id": "ashar-2022"
+      }
+    ],
+    "registry_descriptor": {
+      "kind": "matched",
+      "registry_id": "NCT03294148",
+      "retrieved_at": "2026-10-05T17:52:01.654739Z",
+      "title": "Mind-body Treatments for Chronic Back Pain",
+      "url": "https://clinicaltrials.gov/study/NCT03294148"
+    },
+    "original_registry_raw_capture_available": false,
+    "source_exposure": "Original October1 campaign exposure plus preparation screening and now this development run; not held-out",
+    "overall": "high",
+    "aggregation": {
+      "adopted": "high",
+      "assessment": null,
+      "assessment_status": "omitted",
+      "authority": "algorithm",
+      "contract": "rob2-kit.overall.cochrane-conditional.v1",
+      "proposed": "high",
+      "rule": "overall.any_high"
+    },
+    "initial_runtime_freeze_sha256": "a5bfc4f5f763660fa64fe2d54dbf083f8acdcd389bcc748cab3ce9daf3ffcab4",
+    "output_freeze_sha256": "1718f629c49196ec051e1c14509073edab5f57238d92196c41167a8ee40547ac",
+    "final_bundle_sha256": "2587192dc458e8cc5cb79f954d3130057f8a995e27703624e7a6483fef836173",
+    "captured_source_archive_sha256": "8d77e910ee58e4d0ba1b40f8d55e9e7dddafc14ad1a4e0a669bc18a811047be4"
+  }
+}

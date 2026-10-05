@@ -1,0 +1,217 @@
+{
+  "castoldi-2020": {
+    "stages": {
+      "proposal": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10d31-3158-7e30-a00d-39b37ee04ea3",
+        "elapsed_seconds": 142.52567326597637,
+        "finalized_batch_observed": false,
+        "initial_sessions": 1,
+        "continuations": 0,
+        "no_operator_science_feedback": true
+      },
+      "assessment": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10d31-3158-7e30-a00d-39b37ee04ea3",
+        "elapsed_seconds": 470.6706921850564,
+        "finalized_batch_observed": true,
+        "initial_sessions": 0,
+        "continuations": 1,
+        "no_operator_science_feedback": true
+      }
+    },
+    "elapsed_seconds_all_stages": 613.1963654510328,
+    "new_initial_sessions": 1,
+    "same_session_scope_and_technical_continuations": 1,
+    "exact_model_profile_verified": true,
+    "durable_profiles": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      }
+    ],
+    "durable_response_count": 45,
+    "usage": {
+      "input_tokens": 4582033,
+      "cached_input_tokens": 4118656,
+      "output_tokens": 15122,
+      "reasoning_output_tokens": 723
+    },
+    "uncached_input_tokens": 463377,
+    "cost_usd": null,
+    "completed_native_calls": 83,
+    "conditions_and_failed_calls": [
+      {
+        "stage": "proposal",
+        "jsonl_line": 39,
+        "operation": "save_working_checkpoint",
+        "status": "failed",
+        "condition": null,
+        "error_text": [
+          "20 validation errors for call[save_working_checkpoint]\ncheckpoint.observations.0.sources\n  Field required [type=missing, input_value={'source_id': 'sh_7b5a135... exclusions described.'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.0.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_7b5a135d4d9913ee', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.0.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.0.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=58, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.0.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=81, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.sources\n  Field required [type=missing, input_value={'source_id': 'sh_7b5a135... IKDC test not stated.'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.1.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_7b5a135d4d9913ee', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=19, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=78, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.sources\n  Field required [type=missing, input_value={'source_id': 'sh_7b5a135...omized arm comparison.'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.2.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_7b5a135d4d9913ee', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=4, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=30, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.sources\n  Field required [type=missing, input_value={'source_id': 'sh_7b5a135...on. No SD/CI reported.\"}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.3.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_7b5a135d4d9913ee', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=5, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=83, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=120, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+        ]
+      },
+      {
+        "stage": "assessment",
+        "jsonl_line": 112,
+        "operation": "save_domain_judgment",
+        "status": "completed",
+        "condition": {
+          "code": "domain_context_delivery_stale",
+          "detail": "The approved Result, RoB 2 pack, current Domain checkpoint, or preview changed. Restart get_domain_context before submitting this assessment.",
+          "recovery": null
+        },
+        "error_text": []
+      }
+    ],
+    "verification_checks": [
+      {
+        "check": "installed-product-bundle",
+        "returncode": 0
+      },
+      {
+        "check": "standalone-bundle",
+        "returncode": 0
+      },
+      {
+        "check": "archive-captured-sources",
+        "returncode": 0
+      },
+      {
+        "check": "installed-product-source-archive",
+        "returncode": 0
+      }
+    ]
+  },
+  "ashar-2022": {
+    "stages": {
+      "proposal": {
+        "returncode": 0,
+        "reason": "unexpected MCP server",
+        "session_id": "01a10d32-4111-7823-93b9-439fa7cb8771",
+        "elapsed_seconds": 16.267268991970923,
+        "finalized_batch_observed": false,
+        "initial_sessions": 1,
+        "continuations": 0,
+        "no_operator_science_feedback": true
+      },
+      "proposal-recovery": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10d32-4111-7823-93b9-439fa7cb8771",
+        "elapsed_seconds": 207.39814386400394,
+        "finalized_batch_observed": false,
+        "initial_sessions": 0,
+        "continuations": 1,
+        "no_operator_science_feedback": true
+      },
+      "proposal-scope-correction": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10d32-4111-7823-93b9-439fa7cb8771",
+        "elapsed_seconds": 56.83518851804547,
+        "finalized_batch_observed": false,
+        "initial_sessions": 0,
+        "continuations": 1,
+        "no_operator_science_feedback": true
+      },
+      "assessment": {
+        "returncode": 0,
+        "reason": null,
+        "session_id": "01a10d32-4111-7823-93b9-439fa7cb8771",
+        "elapsed_seconds": 607.2256925929687,
+        "finalized_batch_observed": true,
+        "initial_sessions": 0,
+        "continuations": 1,
+        "no_operator_science_feedback": true
+      }
+    },
+    "elapsed_seconds_all_stages": 887.726293966989,
+    "new_initial_sessions": 1,
+    "same_session_scope_and_technical_continuations": 3,
+    "exact_model_profile_verified": true,
+    "durable_profiles": [
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      },
+      {
+        "model": "gpt-6.1-sol",
+        "effort": "low"
+      }
+    ],
+    "durable_response_count": 75,
+    "usage": {
+      "input_tokens": 8395913,
+      "cached_input_tokens": 7991808,
+      "output_tokens": 18672,
+      "reasoning_output_tokens": 589
+    },
+    "uncached_input_tokens": 404105,
+    "cost_usd": null,
+    "completed_native_calls": 118,
+    "conditions_and_failed_calls": [
+      {
+        "stage": "proposal-recovery",
+        "jsonl_line": 62,
+        "operation": "save_working_checkpoint",
+        "status": "failed",
+        "condition": null,
+        "error_text": [
+          "20 validation errors for call[save_working_checkpoint]\ncheckpoint.observations.0.sources\n  Field required [type=missing, input_value={'text': 'Selected posttr...ine': 1, 'end_line': 22}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.0.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_8db8064af966a452', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.0.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=5, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.0.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.0.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=22, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.sources\n  Field required [type=missing, input_value={'text': 'Requested measu...ine': 5, 'end_line': 58}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.1.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_8db8064af966a452', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=4, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=5, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.1.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=58, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.sources\n  Field required [type=missing, input_value={'text': 'Protocol permit...ne': 14, 'end_line': 46}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.2.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_ee5ee64c3c0ee274', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=8, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=14, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.2.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=46, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.sources\n  Field required [type=missing, input_value={'text': 'Usual-care comp...ine': 3, 'end_line': 32}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\ncheckpoint.observations.3.source_id\n  Extra inputs are not permitted [type=extra_forbidden, input_value='sh_59bf520ca4a1a7c3', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.page\n  Extra inputs are not permitted [type=extra_forbidden, input_value=2, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.start_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=3, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden\ncheckpoint.observations.3.end_line\n  Extra inputs are not permitted [type=extra_forbidden, input_value=32, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.13/v/extra_forbidden"
+        ]
+      },
+      {
+        "stage": "assessment",
+        "jsonl_line": 128,
+        "operation": "acquire_companion_source",
+        "status": "completed",
+        "condition": {
+          "code": "invalid_request",
+          "detail": "locator must be explicitly present in the cited reference"
+        },
+        "error_text": []
+      }
+    ],
+    "verification_checks": [
+      {
+        "check": "installed-product-bundle",
+        "returncode": 0
+      },
+      {
+        "check": "standalone-bundle",
+        "returncode": 0
+      },
+      {
+        "check": "archive-captured-sources",
+        "returncode": 0
+      },
+      {
+        "check": "installed-product-source-archive",
+        "returncode": 0
+      }
+    ]
+  }
+}

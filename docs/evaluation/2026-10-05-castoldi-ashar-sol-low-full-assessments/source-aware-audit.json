@@ -1,0 +1,75 @@
+{
+  "reviewer": "Implementation agent; not independent human validation",
+  "rubric": "Frozen prospective-generalization-preparation evaluation_rubric, applied without label targets",
+  "human_reference_alignment": "unestablished; exact accuracy excluded",
+  "cases": {
+    "castoldi-2020": {
+      "criteria": {
+        "scope": "supported",
+        "source_warrants": "material_defect",
+        "D2_interpretation": "unresolved",
+        "D3_interpretation": "supported",
+        "D4_interpretation": "unresolved",
+        "D5_interpretation": "unresolved",
+        "uncertainty_and_alternatives": "supported",
+        "operational_record": "supported"
+      },
+      "source_warrant_defect": "D2.7 reversal subclaim conflicts with Figure2 TKA arm under the model stated bounds. Domain-label consequence not established.",
+      "domains": {
+        "D1": "Block randomization supports probable sequence; unblinded does not establish preassignment concealment. Table2 balance is counterevidence, not sequence proof.",
+        "D2": "Independent postrandomization TKA restriction distinguished from missing-only omissions. Substantial-impact inference is clinically contextual but quantitative reversal subclaim is unsupported; MCID alone cannot settle impact.",
+        "D3": "About one-third incomplete, Table3 baseline comparisons not MNAR protection, likely dependence NI. Official algorithm High is not proof of dependence. Native self-correction preserves observed-count uncertainty.",
+        "D4": "Participant assessor is correct; independent recorder does not mask patient. Long interval/two active treatments support a qualified PN inference, not source-established absence of influence.",
+        "D5": "Plan/report and earlier unpublished followups leave uncertainty. Primary designation/joint scales could permit more reassuring interpretation of5.2; lack of exhaustive hierarchy is not automatically NI."
+      },
+      "critical_sources": [
+        "Original article physical2 design/randomization",
+        "physical3 outcome definition/statistics",
+        "physical4 narrative and Figure2, exact PNG5c5d82d4d9953102bf4d6899969f7089e76c4b32d5a4d038d41c44f01a785f6f",
+        "physical5 Tables3/4",
+        "physical7 limitations"
+      ],
+      "conditional_TKA_calculation": {
+        "assumptions": [
+          "Table4 means treated as exact despite rounding",
+          "One excluded value belongs to BTB as Figure2 indicates",
+          "0–100 bounds assumed by model, not newly source-validated by audit",
+          "n42 BTB andn38 LET are compatible comparable observations; patient/knee ambiguity preserved"
+        ],
+        "BTB_mean_lower": 79.21395348837208,
+        "BTB_mean_upper": 81.53953488372093,
+        "LET_minus_BTB_lower": 0.8604651162790731,
+        "LET_minus_BTB_upper": 3.1860465116279215,
+        "direction_reversal": false
+      }
+    },
+    "ashar-2022": {
+      "criteria": {
+        "scope": "supported",
+        "source_warrants": "supported",
+        "D2_interpretation": "supported",
+        "D3_interpretation": "supported",
+        "D4_interpretation": "unresolved",
+        "D5_interpretation": "unresolved",
+        "uncertainty_and_alternatives": "supported",
+        "operational_record": "supported"
+      },
+      "scope_boundary_failure": "Initial placebo inclusion corrected only before scope approval; current approved target remains PRT versus usual care.",
+      "domains": {
+        "D1": "Actual minimization/personnel-separation source supports random sequence and probable concealment; exact predictability/access remains unknown.",
+        "D2": "Protocol mITT intent not equated with actual omission of observed values. Available means distinguished from interaction model; non-initiation alone not trial-context-caused deviation.",
+        "D3": "Selected continuous means, endpoint-specific44/50 and47/50. Bound illustration is numerically consistent; unrelated emergency explicitly weighed. NI likely-dependence does not affirm MNAR.",
+        "D4": "Actual participant notification, same REDCap procedures and immediate differential expectations support probable reporting influence. Genuine pain relief not reclassified as bias; size of reporting component unresolved.",
+        "D5": "Conditional single-item rule withr≈.90 and all timepoints supports5.2PN despite unknown chronology.5.1/5.3NI are conservative: joint reporting may also support more reassuring5.3 interpretation; no complete hierarchy prerequisite or inferred favorable selection."
+      },
+      "critical_sources": [
+        "Original main physical3–5 flow/methods/means",
+        "main physical7 Table2",
+        "original protocol physical1/8/37 version/conditional measure/analysis/interim provision",
+        "original conduct supplement physical2/4/5/15 stream procedures/minimization/notification/correlation/expectations",
+        "current registry physical1 lines640–673 endpoint counts and means",
+        "byte-identical captured protocol body and capture provenance, not independent corroboration"
+      ]
+    }
+  }
+}

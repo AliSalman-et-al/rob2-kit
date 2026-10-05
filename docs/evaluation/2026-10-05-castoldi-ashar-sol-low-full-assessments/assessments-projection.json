@@ -1,0 +1,1805 @@
+{
+  "castoldi-2020": [
+    {
+      "domain_id": "domain:deviations",
+      "judgment": "some_concerns",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact"
+      ],
+      "inactive_questions": [
+        "sq:deviations:affected-outcome",
+        "sq:deviations:balanced"
+      ],
+      "driver_questions": [
+        "sq:deviations:substantial-impact"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "answer": "probably_yes",
+          "justification": "Unblinded allocation plus additional gracilis harvest and extended incision support probable participant knowledge; consent and masking are not described.",
+          "unknowns": [
+            "Participant masking and retention of knowledge are unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:50b199c59a03e47593d3c345a6fe22ac5e853c8e53ad417b77e7ed6c342be1ea",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 118
+              }
+            },
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "answer": "yes",
+          "justification": "Surgeons performed the additional tendon passage and fixation in the assigned LET group and necessarily knew the procedure they delivered.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:context-deviations",
+          "answer": "probably_no",
+          "justification": "Assigned surgery is described as delivered. Later revisions and meniscal treatment address clinical problems as could occur in ordinary care; no evidence links them to trial-context-caused prohibited care. Relevant deviations are probably absent, with limited reporting of rehabilitation.",
+          "unknowns": [
+            "Rehabilitation, adherence and protocol permissions unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:50b199c59a03e47593d3c345a6fe22ac5e853c8e53ad417b77e7ed6c342be1ea",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 118
+              }
+            },
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:8e64521a9003659feff034d2478d0a30673189cebec182ca20e49c073ba3ff0f",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 39
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Surgical Technique, follow-up, subsequent procedures and full article read; rehabilitation/crossover/deviation query returned no hits; only article captured.",
+              "unresolved_premise": "Unreported context-caused deviations cannot be excluded."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "answer": "no",
+          "justification": "One eligible randomized patient was explicitly excluded because of later TKA, an independent postrandomization clinical restriction. Other missing-only omissions are assessed in D3 and do not alone establish inappropriate assignment analysis. No reassignment is reported.",
+          "unknowns": [
+            "TKA patient's IKDC ascertainment and bilateral dependence handling unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:substantial-impact",
+          "answer": "probably_no",
+          "justification": "The independent exclusion affects one prognostically adverse TKA patient. A bounded continuous 0–100 endpoint with approximately 40 per arm limits an extreme single observation's mean impact to about two points, compared with the cited 10-point clinically important difference. It could change the small contrast's direction but substantial clinical impact is unlikely. The many unavailable questionnaires are separately assessed in D3, not assumed independent analysis restrictions.",
+          "unknowns": [
+            "Excluded patient's score unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            },
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:c3270115d0a40074538a2850f0001d1ce2bab93a6969b71061eb1c6fc7503d3a",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 6,
+                "start_line": 1,
+                "end_line": 133
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:deviations",
+        "stage": "assessment",
+        "line": 45,
+        "order": 39,
+        "revision": 6
+      }
+    },
+    {
+      "domain_id": "domain:measurement",
+      "judgment": "some_concerns",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:measurement:influence-likely"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:measurement:method-inappropriate",
+          "answer": "probably_no",
+          "justification": "The primary outcome is measured using the named subjective IKDC questionnaire, directed at patient-perceived knee function. The report's 10-point clinically important difference and worse scores in failed grafts support sensitivity to relevant knee status. This supports probable suitability without claiming the report demonstrates formal validation.",
+          "unknowns": [
+            "Questionnaire version/language and formal validity study not specified."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:differential",
+          "answer": "probably_no",
+          "justification": "An examiner independent from the original surgeon recorded questionnaires for the cohort at the same long-term postoperative window. Both arms' questionnaire scores are reported. On-site versus questionnaire-only assessment applies to both and no arm-specific IKDC elicitation difference is indicated; radiograph/clinical-exam differences concern other endpoints.",
+          "unknowns": [
+            "Exact mode of remote questionnaires and arm-specific timing not reported."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:69327a655a489f1c239ffc09a17f3f2b7f3988a6bcbd6c3d1225b4dcc1308ffc",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 48
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:assessor-aware",
+          "answer": "probably_yes",
+          "justification": "The participant is the assessor of subjective IKDC, regardless of the independent recorder. Unblinded assignment and additional tendon harvest/extended incision support probable knowledge of received surgery; retention of that knowledge 19 years later is not directly documented.",
+          "unknowns": [
+            "Participant masking and later recollection unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:50b199c59a03e47593d3c345a6fe22ac5e853c8e53ad417b77e7ed6c342be1ea",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 118
+              }
+            },
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:influence-possible",
+          "answer": "yes",
+          "justification": "Patients judge their own knee function on the subjective questionnaire. Knowledge of the additional stabilization procedure could change symptom/function ratings through expectations even when the recorder is independent.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:influence-likely",
+          "answer": "probably_no",
+          "justification": "Both groups received active BTB reconstruction; assessment occurred approximately 19 years later, after substantial lived functional experience and sometimes further surgery, and an independent examiner recorded outcomes. Those circumstances reduce the likelihood that original assignment expectations drove ratings. The investigators' belief in rotational stabilization does not establish participant beliefs or interviewer prompting. Influence remains possible, but probably not likely for this late comparison.",
+          "unknowns": [
+            "Participant expectations and questionnaire interview details are unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            },
+            {
+              "evidence": "sha256:50b199c59a03e47593d3c345a6fe22ac5e853c8e53ad417b77e7ed6c342be1ea",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 118
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Outcome Evaluation, surgical methods and full report inspected; blinded/independent search supplies no additional participant expectations or masking information. No other Sources.",
+              "unresolved_premise": "Assignment-related expectations at late assessment."
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:measurement",
+        "stage": "assessment",
+        "line": 75,
+        "order": 54,
+        "revision": 8
+      }
+    },
+    {
+      "domain_id": "domain:missing",
+      "judgment": "high",
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "no",
+          "justification": "Questionnaires were completed by 79 patients/80 knees from 120 patients/121 randomized knees at the reported late window. This establishes materially incomplete ascertainment: about one third lacked follow-up, enough for their outcomes to change the 1.3-point observed mean contrast. Whether the excluded TKA patient's score was collected is unknown; 80 is the reported questionnaire-completer/analysis count, not a proven exhaustive count of all observed scores. No exact missing count is asserted.",
+          "unknowns": [
+            "Inconsistent 40/41 loss counts and patient/knee units; TKA patient's ascertainment unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            },
+            {
+              "evidence": "sha256:50b199c59a03e47593d3c345a6fe22ac5e853c8e53ad417b77e7ed6c342be1ea",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 118
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "answer": "no",
+          "justification": "Available-case comparison, baseline comparisons of retained versus lost patients and reported power do not establish protection from outcome-dependent missingness. Statistics/results contain no bias-correcting or informative sensitivity analysis; no reassurance is established within the captured report.",
+          "unknowns": [
+            "Missingness reasons and unobserved scores unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Statistics, follow-up, Table 3 and discussion read; sensitivity/imputation query has no hits. No additional Sources.",
+              "unresolved_premise": "Protection against missing-data bias not established."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "answer": "probably_yes",
+          "justification": "Long-term questionnaire participation can plausibly depend on knee symptoms and function: symptomatic patients may seek follow-up or avoid it, while recovered patients may disengage. The report confirms substantial loss and willingness-based on-site participation. Dependence is possible, not established; baseline similarity does not exclude later symptom-dependent participation.",
+          "unknowns": [
+            "Reasons for lost questionnaire follow-up are not given."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            },
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "answer": "no_information",
+          "justification": "No reasons for loss or longitudinal outcome information for those lost establish whether worse or better knee function actually drove questionnaire nonresponse. Figure 2 shows somewhat different loss proportions but without mechanism, and retained-versus-lost baseline differences are not clearly compelling. These facts support possible dependence, not a reasonable conclusion that it was likely or unlikely.",
+          "unknowns": [
+            "Outcome-related reasons and arm-specific symptom status of those lost unknown."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Table 3 reports no statistically significant measured baseline differences between retained and lost groups; this gives limited reassurance but does not resolve dependence on later function."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            },
+            {
+              "evidence": "sha256:241c22831518a92a0c0dd60adc614df2949dd33817b40639a9fe464d524f4657",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "figure",
+                "page": null,
+                "start_line": null,
+                "end_line": null
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Follow-up narrative, Figure 2, Table 3 and discussion limitations inspected; sole full report supplies no loss reasons. TKA exclusion does not establish missing measurements for other patients.",
+              "unresolved_premise": "Likelihood of true-value-dependent questionnaire nonresponse."
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:missing",
+        "stage": "assessment",
+        "line": 127,
+        "order": 79,
+        "revision": 11
+      }
+    },
+    {
+      "domain_id": "domain:randomization",
+      "judgment": "some_concerns",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:randomization:concealment"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:randomization:sequence",
+          "answer": "probably_yes",
+          "justification": "The report specifies block randomization, beyond a randomized label, supporting a probable random sequence within blocks. It does not describe the random generator; balance is not used as proof.",
+          "unknowns": [
+            "Random component and block sizes are not described."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:50b199c59a03e47593d3c345a6fe22ac5e853c8e53ad417b77e7ed6c342be1ea",
+              "kind": "inference",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 118
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Full Study Design section and report were read; randomization search found no further procedure. Only this article is captured.",
+              "unresolved_premise": "Exact sequence generation remains unreported."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:randomization:concealment",
+          "answer": "no_information",
+          "justification": "'Unblinded block randomization at inclusion' does not distinguish lack of concealment before assignment from lack of masking afterwards. No mechanism or personnel access is described, so neither probable concealment nor probable foreknowledge is established.",
+          "unknowns": [
+            "Preassignment allocation access and safeguards are unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:50b199c59a03e47593d3c345a6fe22ac5e853c8e53ad417b77e7ed6c342be1ea",
+              "kind": "context",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 118
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Study Design and full article inspected; no further concealment procedure or companion Source is available.",
+              "unresolved_premise": "Whether forthcoming assignments were hidden."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:randomization:baseline-imbalance",
+          "answer": "no",
+          "justification": "Table 2 shows near-equal arm sizes and similar age, sex, sports participation, tibial slope and meniscal status. Observed differences are compatible with chance and do not suggest failed randomization.",
+          "unknowns": [
+            "Baseline subjective IKDC is not reported."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:0504885fdf114accf6af3f7f576ece50ec26f599564e0947d879619672d7338d",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 160
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:randomization",
+        "stage": "assessment",
+        "line": 24,
+        "order": 29,
+        "revision": 5
+      }
+    },
+    {
+      "domain_id": "domain:selection",
+      "judgment": "some_concerns",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "no_information",
+          "justification": "The report names subjective IKDC as primary and describes the performed tests and power calculation, but no applicable dated analysis intentions establish finalization before unblinded outcome access. Neither correspondence nor chronology can be inferred from the Methods location or primary label.",
+          "unknowns": [
+            "Applicable plan content and timing relative to unblinded outcome access are unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "context",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "context",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Outcome Evaluation, Statistics, results tables, full article and reference list inspected. Only the main article is captured; protocol/registration/prespecified query returned no hits and no explicit protocol/SAP reference was located.",
+              "unresolved_premise": "Applicable plan content and timing relative to unblinded outcome access are unknown."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "no_information",
+          "justification": "Table 4 reports IKDC, Lysholm and forgotten knee measures at the late visit; earlier follow-ups were presented but not published because of loss. That multiplicity/nonpublication does not establish result-driven selection of the approved 19-year subjective IKDC. The request names a scale/window but supplies no independent review hierarchy defining eligible alternatives. Without prospective intentions, selection among eligible measurements remains unresolved.",
+          "unknowns": [
+            "Prospective measurement intentions and independently defined eligible alternative measurements are unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "context",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "context",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Outcome Evaluation, Statistics, results tables, full article and reference list inspected. Only the main article is captured; protocol/registration/prespecified query returned no hits and no explicit protocol/SAP reference was located.",
+              "unresolved_premise": "Prospective measurement intentions and independently defined eligible alternative measurements are unknown."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "no_information",
+          "justification": "Continuous scores were compared by t or Mann-Whitney tests depending on normality, but the IKDC-specific test and prospective analysis rule are not established. Alternative adjustment or missing-data strategies were possible; no Source shows which eligible alternatives were conducted or why this analysis was reported. Lack of a plan does not prove favorable-result selection.",
+          "unknowns": [
+            "Prespecified IKDC analysis, eligible alternatives, actual alternatives performed and reporting reasons are unknown."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:10c8ea5acb46dae41b1f3bc2e83e42ace1d9b52d69a6bb9e9b375368511d4934",
+              "kind": "context",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 109
+              }
+            },
+            {
+              "evidence": "sha256:6255147336a427ddbb6fe315eac28225f40cbe9bd7e37ddecdc856046f10b07a",
+              "kind": "context",
+              "locator": {
+                "source_label": "0363546520914936.pdf",
+                "source_sha256": "sha256:8ac1fdc4bfdf61e2c858f9d73fb00f441a11bf99010aa9e5419712c5be07e695",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 43,
+                "end_line": 123
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Outcome Evaluation, Statistics, results tables, full article and reference list inspected. Only the main article is captured; protocol/registration/prespecified query returned no hits and no explicit protocol/SAP reference was located.",
+              "unresolved_premise": "Prespecified IKDC analysis, eligible alternatives, actual alternatives performed and reporting reasons are unknown."
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:selection",
+        "stage": "assessment",
+        "line": 94,
+        "order": 63,
+        "revision": 9
+      }
+    }
+  ],
+  "ashar-2022": [
+    {
+      "domain_id": "domain:deviations",
+      "judgment": "low",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis"
+      ],
+      "inactive_questions": [
+        "sq:deviations:affected-outcome",
+        "sq:deviations:balanced",
+        "sq:deviations:substantial-impact"
+      ],
+      "driver_questions": [],
+      "answers": [
+        {
+          "question_id": "sq:deviations:participants-aware",
+          "answer": "yes",
+          "justification": "The conduct supplement explicitly reports patient notification of group assignment. Participants therefore knew whether assigned PRT or usual care.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:25818626f761a8cc75940288dea56f4e82080094dd2914e050c931dafad8bc86",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 31
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:personnel-aware",
+          "answer": "probably_yes",
+          "justification": "Named experienced therapists delivered individualized PRT including personalized reconceptualization and guided reappraisal; this strongly implies they knew they were delivering the assigned PRT. Masking research assistants does not mask delivery personnel.",
+          "unknowns": [
+            "No explicit delivery-personnel awareness statement."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:ea2b09319561fd8b8a6fb2038be3054a88f4fb12a7e2a7fc9b4d5fb2a70eae52",
+              "kind": "inference",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 114
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:context-deviations",
+          "answer": "probably_no",
+          "justification": "Sampled PRT sessions showed high fidelity. Five patients did not initiate and one stopped for an unrelated medical emergency; non-initiation alone does not establish a trial-context cause. Usual-care workbook access occurred only after the selected endpoint, as intended. The inspected intervention and conduct sections support probably no trial-context-caused protocol-inconsistent deviation rather than interpreting intended treatment differences as deviations.",
+          "unknowns": [
+            "Reasons for the five PRT non-initiations and complete monitoring of additional usual-care treatments are not reported."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:ea2b09319561fd8b8a6fb2038be3054a88f4fb12a7e2a7fc9b4d5fb2a70eae52",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 114
+              }
+            },
+            {
+              "evidence": "sha256:9b1a836651c466a779be70f54b00c4f526086be9f265d8841d51fadbbf64bd7c",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 172
+              }
+            },
+            {
+              "evidence": "sha256:89d576bd0f54883fbe479077a9a93362eb8b965accf4ad927ceb7d40601ae30c",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 10
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Inspected main intervention/flow sections, supplement fidelity/procedure sections and all-source new-treatments search. No described trial-context mechanism warrants an affirmative inference; ordinary non-initiation remains plausible.",
+              "unresolved_premise": "A trial-specific cause for non-initiation or prohibited cointerventions is not established."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:deviations:appropriate-analysis",
+          "answer": "probably_yes",
+          "justification": "Selected means include all available participants, reported in randomized arms, with denominators matching posttreatment assessments. There is no reported reassignment or exclusion of recorded outcomes; this probably represents an appropriate missing-outcome-only modified ITT analysis for D2. The distinct all-randomized interaction model is not substituted for these means. Missing outcomes are assessed in D3.",
+          "unknowns": [
+            "Individual-level confirmation that no observed values were omitted is unavailable."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 3,
+              "implication": "Protocol allowed modified ITT excluding patients unable/unwilling to initiate; this plan does not establish that such a restriction was applied to observed values in the selected available-participant means."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:436622f82e6fd1908777679299e11e4fbad2666e9f55a9e7dc3a3db28942def6",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "ClinicalTrials.gov NCT03294148",
+                "source_sha256": "sha256:c70b4ec0ddc6a5221ae3e3bfbfdafa07f3d17becad41ee99a88a1dea75b2096e",
+                "kind": "narrative",
+                "page": 1,
+                "start_line": 640,
+                "end_line": 673
+              }
+            },
+            {
+              "evidence": "sha256:ea2b09319561fd8b8a6fb2038be3054a88f4fb12a7e2a7fc9b4d5fb2a70eae52",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 114
+              }
+            },
+            {
+              "evidence": "sha256:9b1a836651c466a779be70f54b00c4f526086be9f265d8841d51fadbbf64bd7c",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 172
+              }
+            },
+            {
+              "evidence": "sha256:9abc901e83b38c631516fc3d17bf315178a79e24c0f5adb5b58cd6c43031434c",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s001.pdf",
+                "source_sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+                "kind": "narrative",
+                "page": 8,
+                "start_line": 14,
+                "end_line": 46
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:deviations",
+        "stage": "assessment",
+        "line": 55,
+        "order": 62,
+        "revision": 8
+      }
+    },
+    {
+      "domain_id": "domain:measurement",
+      "judgment": "high",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:measurement:influence-likely"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:measurement:method-inappropriate",
+          "answer": "no",
+          "justification": "The weekly-average BPI numerical pain rating is an endorsed clinical pain measure and matches the approved subjective pain endpoint. Choosing a single item raises a selection question, not evidence of an inappropriate method.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:daedc9f83399df6b95731ced26089b89380b03b00d49cbb182f29dff69c8d313",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 31
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:differential",
+          "answer": "no",
+          "justification": "Both streams used identical assessment procedures; all pre/post measures were collected in REDCap with participants alone in the testing room. Therapy contacts do not create a different opportunity to capture this scheduled rating.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:25818626f761a8cc75940288dea56f4e82080094dd2914e050c931dafad8bc86",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 31
+              }
+            },
+            {
+              "evidence": "sha256:0149d6bfe79f9f132a0298d58d5f1f5c08bd2b9c0c5cd3df4133a0f0e383ea7e",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 32
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:assessor-aware",
+          "answer": "yes",
+          "justification": "Participants provided the subjective pain rating and are the outcome assessors. They were notified of assignment. Concealment from research assistants does not mask participant self-assessment.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:25818626f761a8cc75940288dea56f4e82080094dd2914e050c931dafad8bc86",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 31
+              }
+            },
+            {
+              "evidence": "sha256:1bc76e2015ba4e16beabf82e1b31e4f868c93dd8d54468a053bf6f38f529150c",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 75
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:influence-possible",
+          "answer": "yes",
+          "justification": "The source establishes a retrospective subjective pain rating, which can be influenced by knowledge of treatment and expectations about improvement.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:1bc76e2015ba4e16beabf82e1b31e4f868c93dd8d54468a053bf6f38f529150c",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 75
+              }
+            },
+            {
+              "evidence": "sha256:e5c8328653b21a12a45d08170ec9c2418358319dcee05d8b2dbe5d18759aa2f4",
+              "kind": "inference",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 15,
+                "start_line": 1,
+                "end_line": 32
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:measurement:influence-likely",
+          "answer": "probably_yes",
+          "justification": "PRT explicitly promotes expectation that pain can be substantially reduced or eliminated, whereas usual care receives no additional treatment before the endpoint. At immediate posttreatment subjective weekly rating, this strong differential expectation probably affects retrospective appraisal/reporting. This is a probable reporting mechanism, not an assertion that therapeutic pain relief is bias or that observed effects are entirely explained by reporting.",
+          "unknowns": [
+            "The extent of expectation-related reporting influence, distinct from genuine pain improvement, cannot be quantified."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Completion without investigators present reduces direct prompting but does not mask participants' assignment or expectations."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:e5c8328653b21a12a45d08170ec9c2418358319dcee05d8b2dbe5d18759aa2f4",
+              "kind": "inference",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 15,
+                "start_line": 1,
+                "end_line": 32
+              }
+            },
+            {
+              "evidence": "sha256:ea2b09319561fd8b8a6fb2038be3054a88f4fb12a7e2a7fc9b4d5fb2a70eae52",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 3,
+                "start_line": 1,
+                "end_line": 114
+              }
+            },
+            {
+              "evidence": "sha256:25818626f761a8cc75940288dea56f4e82080094dd2914e050c931dafad8bc86",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 31
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:measurement",
+        "stage": "assessment",
+        "line": 109,
+        "order": 88,
+        "revision": 10
+      }
+    },
+    {
+      "domain_id": "domain:missing",
+      "judgment": "high",
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:missing:data-available",
+          "answer": "no",
+          "justification": "Posttreatment assessment and outcome-specific registry counts establish 44/50 PRT and 47/50 usual-care observed outcomes. Six and three missing scores on a 0–10 scale could materially alter the means: at extreme values PRT could rise from 1.18 to 2.24 and usual care fall from 3.13 to 2.94, substantially attenuating the observed 1.95-point difference. This is a scale-bound illustration, not an imputed Result.",
+          "unknowns": [
+            "Actual unobserved pain scores."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:436622f82e6fd1908777679299e11e4fbad2666e9f55a9e7dc3a3db28942def6",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "ClinicalTrials.gov NCT03294148",
+                "source_sha256": "sha256:c70b4ec0ddc6a5221ae3e3bfbfdafa07f3d17becad41ee99a88a1dea75b2096e",
+                "kind": "narrative",
+                "page": 1,
+                "start_line": 640,
+                "end_line": 673
+              }
+            },
+            {
+              "evidence": "sha256:9b1a836651c466a779be70f54b00c4f526086be9f265d8841d51fadbbf64bd7c",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 172
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:evidence-unbiased",
+          "answer": "no",
+          "justification": "Selected means are all-available-participant summaries. The inspected analysis sections provide no missingness-adjusted version or sensitivity reassurance for these means. A different mixed-effects interaction model and nonresponder assignment for binary response endpoints do not demonstrate freedom from bias for this selected continuous Result.",
+          "unknowns": [
+            "Bias magnitude and missingness mechanism."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:436622f82e6fd1908777679299e11e4fbad2666e9f55a9e7dc3a3db28942def6",
+              "kind": "context",
+              "locator": {
+                "source_label": "ClinicalTrials.gov NCT03294148",
+                "source_sha256": "sha256:c70b4ec0ddc6a5221ae3e3bfbfdafa07f3d17becad41ee99a88a1dea75b2096e",
+                "kind": "narrative",
+                "page": 1,
+                "start_line": 640,
+                "end_line": 673
+              }
+            },
+            {
+              "evidence": "sha256:1bc76e2015ba4e16beabf82e1b31e4f868c93dd8d54468a053bf6f38f529150c",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 75
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Read main analysis/flow and supplement clinical analysis sections, protocol analysis plan and registry endpoint; all-source sensitivity search found unrelated sensitivity terminology. This is bounded absence of reassurance, not proof of bias.",
+              "unresolved_premise": "No Result-specific missing-data reassurance was located."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:true-value-dependent",
+          "answer": "probably_yes",
+          "justification": "Five PRT participants never initiated treatment and lacked posttreatment assessment, while three usual-care assessments are missing without stated reasons. Pain severity, improvement or perceived need for treatment could plausibly affect engagement and outcome reporting. Not all loss has documented outcome-unrelated reasons, so dependence is possible.",
+          "unknowns": [
+            "Reasons for non-initiation and usual-care missing assessments."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "One PRT loss was an unrelated medical emergency, supporting an outcome-unrelated cause for that loss but not all nine."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:9b1a836651c466a779be70f54b00c4f526086be9f265d8841d51fadbbf64bd7c",
+              "kind": "inference",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 172
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:missing:likely-dependent",
+          "answer": "no_information",
+          "justification": "Missingness differs (12% versus 6%), but five PRT losses preceded treatment and one was an unrelated emergency. The modest rate difference and incomplete reasons do not establish likely dependence on unobserved pain, nor do they justify likely independence. Preserve uncertainty.",
+          "unknowns": [
+            "Outcome-related reasons for eight losses; relationship of baseline/true posttreatment pain to loss."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:9b1a836651c466a779be70f54b00c4f526086be9f265d8841d51fadbbf64bd7c",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 172
+              }
+            },
+            {
+              "evidence": "sha256:436622f82e6fd1908777679299e11e4fbad2666e9f55a9e7dc3a3db28942def6",
+              "kind": "context",
+              "locator": {
+                "source_label": "ClinicalTrials.gov NCT03294148",
+                "source_sha256": "sha256:c70b4ec0ddc6a5221ae3e3bfbfdafa07f3d17becad41ee99a88a1dea75b2096e",
+                "kind": "narrative",
+                "page": 1,
+                "start_line": 640,
+                "end_line": 673
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Inspected main flow/results, supplement methods and registry flow/outcome sections; missing/withdrawal searches provide no outcome-related explanation for these selected arms. Further certainty would require participant-level reasons.",
+              "unresolved_premise": "Likelihood of outcome-dependent loss remains unresolved."
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:missing",
+        "stage": "assessment",
+        "line": 80,
+        "order": 74,
+        "revision": 9
+      }
+    },
+    {
+      "domain_id": "domain:randomization",
+      "judgment": "low",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [],
+      "answers": [
+        {
+          "question_id": "sq:randomization:sequence",
+          "answer": "yes",
+          "justification": "The conduct supplement reports imbalance-minimization at both randomization stages. Official guidance generally treats minimization as random, absent evidence of a deterministic predictable implementation.",
+          "unknowns": [
+            "Implementation-level random tie handling is not reported."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:25818626f761a8cc75940288dea56f4e82080094dd2914e050c931dafad8bc86",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 31
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:randomization:concealment",
+          "answer": "probably_yes",
+          "justification": "Assignment was handled by YA, who had no patient contact during collection, and concealed from collecting research assistants; within-study assignment followed baseline. Together these suggest separation from enrolling/assessing personnel and probably concealed forthcoming assignment. This is an inference, not proof from assessor masking alone.",
+          "unknowns": [
+            "Access controls and whether enrollment personnel could predict minimization assignments are not explicitly reported."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:25818626f761a8cc75940288dea56f4e82080094dd2914e050c931dafad8bc86",
+              "kind": "inference",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 31
+              }
+            },
+            {
+              "evidence": "sha256:0149d6bfe79f9f132a0298d58d5f1f5c08bd2b9c0c5cd3df4133a0f0e383ea7e",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 32
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Read conduct randomization and procedure sections and protocol minimization section; all-source concealed search returns only the conduct description. The personnel separation supports a probable judgment while retaining the gap.",
+              "unresolved_premise": "Exact pre-assignment access safeguards remain unreported."
+            }
+          ]
+        },
+        {
+          "question_id": "sq:randomization:baseline-imbalance",
+          "answer": "no",
+          "justification": "PRT/usual-care randomized sizes are 50/50; age 42.6/41.3, women 58%/54%, pain duration 10.7/10.5 years and baseline pain 4.22/3.91 with SD 1.21/1.24 show differences compatible with chance. The complete baseline characteristics do not suggest failed randomization.",
+          "unknowns": [],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:9b1a836651c466a779be70f54b00c4f526086be9f265d8841d51fadbbf64bd7c",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 5,
+                "start_line": 1,
+                "end_line": 172
+              }
+            },
+            {
+              "evidence": "sha256:f24454b75032b9ea8267f45efdca1fb6c09c03c0c64b62aba324f78bd5a75604",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 373
+              }
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:randomization",
+        "stage": "assessment",
+        "line": 33,
+        "order": 51,
+        "revision": 7
+      }
+    },
+    {
+      "domain_id": "domain:selection",
+      "judgment": "some_concerns",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "inactive_questions": [],
+      "driver_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "question_id": "sq:selection:prespecified-analysis",
+          "answer": "no_information",
+          "justification": "Applicable v4.4 plans PRT versus pooled waitlist, conditional BPI item choice, ~5-week posttreatment endpoint, mixed models and ITT with possible exclusions. Report uses single weekly item, one month postbaseline and reports available-observation means alongside a separate all-randomized interaction model. This broadly matches the endpoint but does not establish a detailed prospective plan for these descriptive means. Version Sept5 2018 falls during enrollment (start Aug2017, completion Nov2018); planned interim analysis is not evidence it occurred. Neither earlier content nor actual unblinded access timing is established. Current posting/upload dates cannot resolve that chronology.",
+          "unknowns": [
+            "Earlier plan versions and timing of analysis finalization relative to investigator access to unblinded outcomes.",
+            "Exact correspondence of five-week planned window and reported one-month window, and prospective specification of available-case means."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 6,
+              "implication": "Report says no major protocol changes after commencement, but does not date these analysis intentions or establish complete correspondence."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:97767b4fc2e262599b73dfc2cb2d57db1a872166b252a53d4e3a73b4327dd880",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s001.pdf",
+                "source_sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+                "kind": "narrative",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 70
+              }
+            },
+            {
+              "evidence": "sha256:54d073050ee24cbfda0d0c633f49d48950feb43893ef5c6c2ee757138c49c4f3",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s001.pdf",
+                "source_sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+                "kind": "narrative",
+                "page": 1,
+                "start_line": 1,
+                "end_line": 54
+              }
+            },
+            {
+              "evidence": "sha256:61571fa08e9ed2bf94adf9d6a59e6f5e133f5c78b0499338af4516611af5938d",
+              "kind": "context",
+              "locator": {
+                "source_label": "ClinicalTrials.gov NCT03294148",
+                "source_sha256": "sha256:c70b4ec0ddc6a5221ae3e3bfbfdafa07f3d17becad41ee99a88a1dea75b2096e",
+                "kind": "narrative",
+                "page": 1,
+                "start_line": 433,
+                "end_line": 447
+              }
+            },
+            {
+              "evidence": "sha256:e82a2744b47b232096f95d066f76f13526ad721410393182b272099334117d28",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s001.pdf",
+                "source_sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+                "kind": "narrative",
+                "page": 37,
+                "start_line": 35,
+                "end_line": 49
+              }
+            },
+            {
+              "evidence": "sha256:1bc76e2015ba4e16beabf82e1b31e4f868c93dd8d54468a053bf6f38f529150c",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 75
+              }
+            },
+            {
+              "evidence": "sha256:f24454b75032b9ea8267f45efdca1fb6c09c03c0c64b62aba324f78bd5a75604",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 373
+              }
+            },
+            {
+              "evidence": "sha256:0149d6bfe79f9f132a0298d58d5f1f5c08bd2b9c0c5cd3df4133a0f0e383ea7e",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 2,
+                "start_line": 1,
+                "end_line": 32
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Read applicable analysis section and version, report methods/results, registry dates and interim provision; searched plans/amendments and interim conduct. Registry-linked acquisition is byte-identical to captured protocol and supplies no earlier plan or access chronology.",
+              "unresolved_premise": "Prospective timing and exact analysis correspondence"
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-measurements",
+          "answer": "probably_no",
+          "justification": "Within weekly pain intensity, the protocol explicitly permits using the weekly-average item instead of four-item BPI mean if strongly correlated. Supplement supplies that justification (r about .90 each timepoint), rather than selecting on comparative favorability. Table2 reports the primary posttreatment value and all stated subsequent followups, rather than only a favorable visit. Thus result-driven selection among these measurements is probably absent. Imaging pain ratings concern evoked/current pain rather than the requested weekly-average state; no review hierarchy beyond the requested endpoint/window was supplied.",
+          "unknowns": [
+            "Timing of the conditional measurement rule and exact numerical definition of 'highly correlated' are unresolved.",
+            "Broader review eligibility of other pain measurements is not supplied."
+          ],
+          "counterevidence": [],
+          "bases": [
+            {
+              "evidence": "sha256:97767b4fc2e262599b73dfc2cb2d57db1a872166b252a53d4e3a73b4327dd880",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s001.pdf",
+                "source_sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+                "kind": "narrative",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 70
+              }
+            },
+            {
+              "evidence": "sha256:daedc9f83399df6b95731ced26089b89380b03b00d49cbb182f29dff69c8d313",
+              "kind": "indirect_support",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s002.pdf",
+                "source_sha256": "sha256:82799709a5ea8b2b94986af21718bcbd4f0568c4bf0a772cbc23dfbf851ff160",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 31
+              }
+            },
+            {
+              "evidence": "sha256:f24454b75032b9ea8267f45efdca1fb6c09c03c0c64b62aba324f78bd5a75604",
+              "kind": "direct_support",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 373
+              }
+            }
+          ]
+        },
+        {
+          "question_id": "sq:selection:multiple-analyses",
+          "answer": "no_information",
+          "justification": "Possible analyses include mixed models, modified ITT/per-protocol populations, adjusted change effects and available final means. The paper reports final means and change effects together, which establishes multiplicity without result-driven selection. Plan detail and independent eligibility criteria do not establish the complete eligible analysis set or a prospective hierarchy for these means; neither likely selection nor its absence can reasonably be inferred.",
+          "unknowns": [
+            "Complete eligible analysis set, reporting hierarchy, and reasons for reporting particular analysis variants."
+          ],
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Final values and change effects are both reported; this is not evidence that unfavorable variants were suppressed."
+            }
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:97767b4fc2e262599b73dfc2cb2d57db1a872166b252a53d4e3a73b4327dd880",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry-e212669-s001.pdf",
+                "source_sha256": "sha256:b9ccda1adf33c41e46a529cc83549274234dbedc239c49acacb46f3c5ad2331c",
+                "kind": "narrative",
+                "page": 8,
+                "start_line": 1,
+                "end_line": 70
+              }
+            },
+            {
+              "evidence": "sha256:1bc76e2015ba4e16beabf82e1b31e4f868c93dd8d54468a053bf6f38f529150c",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 4,
+                "start_line": 1,
+                "end_line": 75
+              }
+            },
+            {
+              "evidence": "sha256:f24454b75032b9ea8267f45efdca1fb6c09c03c0c64b62aba324f78bd5a75604",
+              "kind": "context",
+              "locator": {
+                "source_label": "jamapsychiatry_ashar_2021_oi_210060.pdf",
+                "source_sha256": "sha256:2a95c0e47c2fb0b24b6ad9c0469a8c5c9fbb5ca6274dcf9e30fbc7ae618365cf",
+                "kind": "narrative",
+                "page": 7,
+                "start_line": 1,
+                "end_line": 373
+              }
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Applicable protocol and registry-linked identical document, article methods/Table2 and supplement were inspected. Available plan lacks detailed choices needed to resolve eligible alternatives; no observed result-dependent choice was identified.",
+              "unresolved_premise": "Result-dependent analysis selection"
+            }
+          ]
+        }
+      ],
+      "accepted_commit": {
+        "domain_id": "domain:selection",
+        "stage": "assessment",
+        "line": 152,
+        "order": 109,
+        "revision": 13
+      }
+    }
+  ]
+}
