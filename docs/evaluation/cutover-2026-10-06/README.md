@@ -42,6 +42,12 @@ translation in the expectation. The existing full-content assertion now compares
 raw UTF-8 decoded bytes. A negative control reproduced the mismatch, the corrected
 CRLF control passed, and all four runner tests passed. The runner and source bytes
 are unchanged. See [byte-recovery receipt](windows-reference-byte-recovery.json).
+A later Windows job at `81a5d52` reproduced an ownership-fixture barrier timeout.
+The fixture now creates/resolves its shared parent before the controlled exclusive
+workspace claim. Timeouts, the one-winner/one-exact-rejection assertions and source-byte
+checks are unchanged. Twenty repeated controls and all 23 RSI-script tests passed;
+a bypassed ownership guard was rejected. This is fixture isolation, not a claim of a
+proven production defect. See [ownership fixture receipt](windows-ownership-fixture-recovery.json).
 Required checks must pass on the final PR head before merge.
 
 ## Fixed cases and recoveries

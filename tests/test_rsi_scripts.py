@@ -617,7 +617,10 @@ def test_concurrent_workspace_preparation_has_one_atomic_owner(
         ),
         encoding="utf-8",
     )
-    workspace = (tmp_path / "run" / "workspace").resolve()
+    # Keep parent creation/resolution outside the controlled ownership race.
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    workspace = (run_dir / "workspace").resolve()
     barrier = threading.Barrier(2)
     original_mkdir = Path.mkdir
 
