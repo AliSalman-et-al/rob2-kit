@@ -590,6 +590,7 @@ def test_historical_bundle_without_trial_closure_fields_stays_verifiable(
     canonical = json.loads(files["canonical.json"])
     canonical.pop("trial_reviews")
     canonical.pop("trial_closures")
+    canonical.pop("report_format", None)
     files["canonical.json"] = json.dumps(
         canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     ).encode()

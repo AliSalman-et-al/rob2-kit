@@ -475,9 +475,14 @@ replay the same scientific and integrity invariants independently.
 New static reports project the approved Result, saved Domain answers and warrants,
 unresolved premises, proposed/adopted judgments, and local selected-Evidence links
 from Canonical records. Algorithm routes describe derivations, not empirical
-findings; a recorded No information driver remains explicitly unresolved. Both
-verifiers reproduce the report from its Canonical inputs and still recognize the
-historical aggregate-only HTML. Existing valid artifacts are not rewritten.
+findings; an included No information answer remains explicitly unresolved without
+asserting that it determined the judgment. New exports bind
+`report_format: rob2-kit.human-report.v1` into the Canonical bundle identity. Both
+verifiers require that format's exact report; unmarked historical bundles retain
+their aggregate-only HTML. Result, Domain and Evidence identities are unchanged;
+the format marker changes the bundle identity. Existing valid artifacts are not
+rewritten. Replacing the report or stripping its marker cannot retain that bundle
+identity. Hashes do not authenticate provenance against wholesale re-identification.
 
 Result semantics v0.9 allow an explicitly null group statistic when its meaning
 is not identified in the Source. Values, units, and endpoint identifiers remain

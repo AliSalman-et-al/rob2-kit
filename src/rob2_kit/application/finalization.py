@@ -3667,9 +3667,9 @@ def _human_report(canonical: dict[str, Any], claims: dict[str, Any]) -> str:
                 for answer in record["answers"]
             ):
                 parts.append(
-                    "<p>An algorithm driver answer is No information. The proposed judgment "
-                    "is the recorded rule's response to unresolved information, not evidence "
-                    "establishing that premise.</p>"
+                    "<p>The recorded algorithm route includes a No information answer. "
+                    "That premise remains unresolved; the route is not empirical evidence "
+                    "establishing it.</p>"
                 )
             parts.append(
                 details(
@@ -3836,6 +3836,7 @@ def _bundle(root: Path, state: dict[str, Any]) -> dict[str, Any]:
             visual_files[path] = png
     canonical_proposal = {**proposal, "evidence": evidence}
     canonical = {
+        "report_format": "rob2-kit.human-report.v1",
         "batch": state.get("batch"),
         "proposal": canonical_proposal,
         "proposal_review": proposal_review,
@@ -4034,7 +4035,8 @@ def finalize_batch(workspace: str | Path, expected_revision: ExpectedRevision) -
             )
         # A process can terminate after the canonical state commit and before
         # the final path is made durable.  Rebuild the content-addressed file
-        # from the committed final state; this does not create a new identity.
+        # from the committed final state and current presentation format. Scientific
+        # records retain their identities; a format upgrade changes the bundle identity.
         rebuilt = _bundle(root, state)
         if rebuilt != artifact:
             state = _commit_records(
@@ -4413,6 +4415,9 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                     shape | {"batch_history", "source_admissions"}
                     for shape in tuple(canonical_shapes)
                 }
+            )
+            canonical_shapes.update(
+                {shape | {"report_format"} for shape in tuple(canonical_shapes)}
             )
             if not isinstance(canonical_value, dict) or set(canonical_value) not in (
                 *canonical_shapes,
@@ -5456,7 +5461,15 @@ def verify_bundle(path: str | Path, diagnostic: dict[str, object] | None = None)
                 + json.dumps(claims, sort_keys=True)
                 + "</pre></body></html>"
             )
-            if report not in {legacy_report, _human_report(canonical_value, claims)}:
+            report_format = canonical_value.get("report_format")
+            if "report_format" in canonical_value and report_format != "rob2-kit.human-report.v1":
+                return fail()
+            expected_report = (
+                _human_report(canonical_value, claims)
+                if report_format == "rob2-kit.human-report.v1"
+                else legacy_report
+            )
+            if report != expected_report:
                 return fail()
             proposal = canonical_value.get("proposal") or {}
             proposal_review = canonical_value.get("proposal_review")

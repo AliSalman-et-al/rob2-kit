@@ -4913,9 +4913,9 @@ def _human_report(canonical: dict[str, Any], claims: dict[str, Any]) -> str:
                 for answer in record["answers"]
             ):
                 parts.append(
-                    "<p>An algorithm driver answer is No information. The proposed judgment "
-                    "is the recorded rule's response to unresolved information, not evidence "
-                    "establishing that premise.</p>"
+                    "<p>The recorded algorithm route includes a No information answer. "
+                    "That premise remains unresolved; the route is not empirical evidence "
+                    "establishing it.</p>"
                 )
             parts.append(
                 details(
@@ -5077,6 +5077,9 @@ def verify(path: Path) -> tuple[bool, str]:
                     shape | {"batch_history", "source_admissions"}
                     for shape in tuple(canonical_shapes)
                 }
+            )
+            canonical_shapes.update(
+                {shape | {"report_format"} for shape in tuple(canonical_shapes)}
             )
             if not isinstance(canonical, dict) or set(canonical) not in canonical_shapes:
                 return False, "canonical envelope is not closed"
@@ -6274,7 +6277,15 @@ def verify(path: Path) -> tuple[bool, str]:
                 + json.dumps(claims, sort_keys=True)
                 + "</pre></body></html>"
             )
-            if report not in {legacy_report, _human_report(canonical, claims)}:
+            report_format = canonical.get("report_format")
+            if "report_format" in canonical and report_format != "rob2-kit.human-report.v1":
+                return False, "unsupported report format"
+            expected_report = (
+                _human_report(canonical, claims)
+                if report_format == "rob2-kit.human-report.v1"
+                else legacy_report
+            )
+            if report != expected_report:
                 return False, "report does not match canonical assessment"
             verification = json.loads(archive.read("verification.json"))
             if (

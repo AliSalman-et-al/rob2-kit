@@ -59,6 +59,7 @@ def _rewrite_rehashed(
     canonical = json.loads(files["canonical.json"])
     mutate(canonical)
     if legacy_report:
+        canonical.pop("report_format", None)
         # Historical Result conversion must also use its historical presentation,
         # rather than retain a new report bound to the unconverted Result.
         files["report.html"] = (
