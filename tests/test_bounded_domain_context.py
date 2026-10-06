@@ -1474,3 +1474,42 @@ def test_question_scoped_discoveries_keep_their_premises_without_hiding_evidence
     )["data"]["pages"][0]["numbered_text"]
     assert "Ascertainment was incomplete" in adjacent
     assert "An unrelated neutral passage" in adjacent
+
+
+def test_declared_unknowns_survive_production_context_pages_and_recovery(tmp_path: Path) -> None:
+    workspace, evidence, revision = _assessment_workspace(tmp_path)
+    draft = _domain_draft("trial", "domain:randomization", revision, evidence)
+    gap = "Outcome availability among excluded participants remains unknown."
+    question_id = draft["answers"][0]["question_id"]
+    draft["answers"][0]["unknowns"] = [gap]
+    saved = _call(workspace, "save_domain_judgment", draft)
+    assert saved["outcome"] == "success"
+    expected = next(
+        c
+        for c in saved["data"]["checkpoint"]["evidence_sufficiency"]["claims"]
+        if c["question_id"] == question_id
+    )
+    assert expected["declared_unknowns"] == [gap]
+    first, _ = _wire_context(
+        workspace,
+        {"trial_id": "trial", "domain_id": "domain:randomization", "max_response_bytes": 32_768},
+        drain=False,
+    )
+    pages = [first]
+    while pages[-1]["data"]["context_page"]["next_cursor"]:
+        page, _ = _wire_context(
+            workspace, {"cursor": pages[-1]["data"]["context_page"]["next_cursor"]}, drain=False
+        )
+        pages.append(page)
+    assert len(pages) > 1
+    summaries = [
+        p["data"]["evidence_sufficiency"] for p in pages if "evidence_sufficiency" in p["data"]
+    ]
+    assert summaries
+    assert any(expected in summary["claims"] for summary in summaries)
+    recovered, _ = _wire_context(
+        workspace,
+        {"cursor": first["data"]["context_page"]["stable_recovery"]["cursor"]},
+        drain=False,
+    )
+    assert recovered["data"]["evidence_sufficiency"] == first["data"]["evidence_sufficiency"]
