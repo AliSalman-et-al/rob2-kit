@@ -1,0 +1,359 @@
+{
+  "branch": "improve/scientific-premise-20261002",
+  "preserved_head": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+  "pending_before": 33,
+  "pending_after": [
+    {
+      "conclusion": "",
+      "databaseId": 37430691063,
+      "event": "pull_request",
+      "headBranch": "improve/scientific-premise-20261002",
+      "headSha": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+      "status": "queued",
+      "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37430691063",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 37430684969,
+      "event": "push",
+      "headBranch": "improve/scientific-premise-20261002",
+      "headSha": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+      "status": "queued",
+      "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37430684969",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 37420729922,
+      "event": "pull_request",
+      "headBranch": "improve/scientific-premise-20261002",
+      "headSha": "eac96f15617e0cbefd43e9cfc0fdde8ed501f384",
+      "status": "in_progress",
+      "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37420729922",
+      "workflowName": "CI"
+    }
+  ],
+  "cancellation_requests": [
+    {
+      "id": 37430572730,
+      "head_sha": "0c56881168ea07ae851e85e9056c8b4deb44c9ab",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37430572730 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37430566924,
+      "head_sha": "0c56881168ea07ae851e85e9056c8b4deb44c9ab",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37430566924 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37430224012,
+      "head_sha": "3bfeddadd425f543193dd888ead19f432a83f74a",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37430224012 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37430218791,
+      "head_sha": "3bfeddadd425f543193dd888ead19f432a83f74a",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37430218791 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37429862771,
+      "head_sha": "d5cbba593162ed6a986242a479d12af9a7eef469",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37429862771 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37429858114,
+      "head_sha": "d5cbba593162ed6a986242a479d12af9a7eef469",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37429858114 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37429661876,
+      "head_sha": "0f01e1b496aa3b2c618e00d27d7f37d7df7c66b6",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37429661876 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37429656173,
+      "head_sha": "0f01e1b496aa3b2c618e00d27d7f37d7df7c66b6",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37429656173 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37428258584,
+      "head_sha": "94bcf5ddb7b2a5c0e2efd081aeacebc17f719410",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37428258584 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37428254463,
+      "head_sha": "94bcf5ddb7b2a5c0e2efd081aeacebc17f719410",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37428254463 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37427363805,
+      "head_sha": "840e3d450eabda7b52376db62d8f0176a16c860f",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37427363805 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37427358895,
+      "head_sha": "840e3d450eabda7b52376db62d8f0176a16c860f",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37427358895 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37426924822,
+      "head_sha": "74cc04a18e744c5658dfbaad7fcc13ffff81b2f4",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37426924822 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37426920388,
+      "head_sha": "74cc04a18e744c5658dfbaad7fcc13ffff81b2f4",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37426920388 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37425526150,
+      "head_sha": "13cf5a45cd0fe8485f3b7fde4e607047266e3744",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37425526150 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37425520958,
+      "head_sha": "13cf5a45cd0fe8485f3b7fde4e607047266e3744",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37425520958 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37424772007,
+      "head_sha": "c51076cf316cd36d815796e47ae8fe4677a93d92",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37424772007 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37424766908,
+      "head_sha": "c51076cf316cd36d815796e47ae8fe4677a93d92",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37424766908 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37424259543,
+      "head_sha": "a7090b507c755dc5b38f0481b074fcafbbfc52fa",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37424259543 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37424255305,
+      "head_sha": "a7090b507c755dc5b38f0481b074fcafbbfc52fa",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37424255305 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423848352,
+      "head_sha": "92b7fca7ff4b94450804b307896cf0469af89bb8",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423848352 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423842641,
+      "head_sha": "92b7fca7ff4b94450804b307896cf0469af89bb8",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423842641 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423682115,
+      "head_sha": "d57679b45d71c20479fe5bde19bf4106a2748f51",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423682115 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423676511,
+      "head_sha": "d57679b45d71c20479fe5bde19bf4106a2748f51",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423676511 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423163000,
+      "head_sha": "fc27ba53501ca84145bab64878c3793b54922aab",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423163000 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423156616,
+      "head_sha": "fc27ba53501ca84145bab64878c3793b54922aab",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423156616 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423086637,
+      "head_sha": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423086637 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37423082771,
+      "head_sha": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37423082771 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37422013439,
+      "head_sha": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37422013439 submitted.\n",
+      "stderr": ""
+    },
+    {
+      "id": 37422009773,
+      "head_sha": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Cannot cancel a workflow run that is completed\n"
+    },
+    {
+      "id": 37420729922,
+      "head_sha": "eac96f15617e0cbefd43e9cfc0fdde8ed501f384",
+      "event": "pull_request",
+      "old_status": "queued",
+      "returncode": 0,
+      "stdout": "\u2713 Request to cancel workflow 37420729922 submitted.\n",
+      "stderr": ""
+    }
+  ],
+  "accepted_requests": 30,
+  "already_completed_race": [
+    {
+      "id": 37422009773,
+      "head_sha": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+      "event": "push",
+      "old_status": "queued",
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "Cannot cancel a workflow run that is completed\n"
+    }
+  ],
+  "latest_head_runs_preserved": [
+    {
+      "conclusion": "",
+      "databaseId": 37430691063,
+      "event": "pull_request",
+      "headBranch": "improve/scientific-premise-20261002",
+      "headSha": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+      "status": "queued",
+      "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37430691063",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "",
+      "databaseId": 37430684969,
+      "event": "push",
+      "headBranch": "improve/scientific-premise-20261002",
+      "headSha": "d77b16fe85f2265a3b393d49d9dde54ab0b2baec",
+      "status": "queued",
+      "url": "https://github.com/AliSalman-et-al/rob2-kit/actions/runs/37430684969",
+      "workflowName": "CI"
+    }
+  ],
+  "history_deleted": false,
+  "unrelated_branches_cancelled": false,
+  "workflow_change": "Same CI workflow/ref concurrency, cancel-in-progress true. Push and PR refs remain separate, so latest PR checks are not cancelled by a push event. Triggers, all jobs/matrices and permissions unchanged.",
+  "yaml_semantic_check": "PASS: parsed workflow minus concurrency exactly equals previous workflow",
+  "service_or_quota_blocker": "No specific service/quota error established; latest-head status recorded as observed, not claimed green.",
+  "raw_receipt_sha256": "6bbc778b87c89fa60d62a05b70c392ec1e8d355a594d9be83e33d667f2a42a8d",
+  "raw_api_list_discrepancy": "Direct gh api list returned older completed runs and resulted in zero mutations; cleanup instead used gh run list with exact headBranch checks. Both raw snapshots retained."
+}

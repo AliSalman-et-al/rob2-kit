@@ -1,0 +1,317 @@
+{
+  "case": "sanctuary",
+  "scope_only_approval": {
+    "authority": "Existing user-authorized host scope review only",
+    "review_reference": "sha256:822c02e0bab763dd4ea71916b55a84b44c52590b2a04f001c8822728cb11ea52",
+    "proposed_results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_43a3ee31216192bb",
+            "eh_4354f35da1c681ae"
+          ],
+          "rationale": "Part 1 individually randomized 48 patients 1:1:1:1 in parallel to placebo or three felzartamab regimens; Part 2 was open-label and is excluded from this comparative target."
+        },
+        "bindings": [
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:21e915a12c9077e63dcf2296c4a2896a0e0477334b71bfa97f4d2a5f1fa82011"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/0/statistic"
+            },
+            "value_digest": "sha256:a16c6bd4645ced8208354c0e710b319936d15491ab0b63dc810df3cc81977136"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/0/value"
+            },
+            "value_digest": "sha256:195b8f218c22ea53a0151e8a483e6d0d0447ad2a2a7dd78d1bf2fe4141b7a5e0"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/0/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/1/statistic"
+            },
+            "value_digest": "sha256:a16c6bd4645ced8208354c0e710b319936d15491ab0b63dc810df3cc81977136"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/1/value"
+            },
+            "value_digest": "sha256:f9dead03b968c6650031f840d0d05a55f0d55074cba4e70624232d8122893990"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/1/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/2/statistic"
+            },
+            "value_digest": "sha256:a16c6bd4645ced8208354c0e710b319936d15491ab0b63dc810df3cc81977136"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/2/value"
+            },
+            "value_digest": "sha256:93bf4c7d36719e0f020c62ad1be9a037dfb1e80df434c2091f061813dac47a17"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/2/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/3/statistic"
+            },
+            "value_digest": "sha256:a16c6bd4645ced8208354c0e710b319936d15491ab0b63dc810df3cc81977136"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/3/value"
+            },
+            "value_digest": "sha256:a147065fb57f0b48a8d9a33ece89f4e948bf144f36ea4aa17c60e91021e53569"
+          },
+          {
+            "evidence_index": 6,
+            "field": {
+              "path": "/reported/group_values/3/unit"
+            },
+            "value_digest": "sha256:aae8bbcde3fba4cd9c3423d6f894dd67997cd58dc943ca18b93ea0e218496af9"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "conflicting",
+          "comparison_groups": "specified",
+          "effect_measure": "conflicting",
+          "eligible_result_choice": "unclear",
+          "measurement": "specified",
+          "outcome_definition": "specified",
+          "source_table_meaning": "conflicting",
+          "time_point": "specified"
+        },
+        "evidence": [
+          {
+            "handle": "eh_0f8c050ebdacda93",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_2898c817bf73ab05",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_4354f35da1c681ae",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_43a3ee31216192bb",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_8e91fc9589658bbf",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_cd9d1ddd194c1430",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_cfa5fc66ff97b205",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_d774750358f599c5",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_e1c263e2123e1a57",
+            "kind": "narrative"
+          }
+        ],
+        "kind": "assessable",
+        "relation": "narrower",
+        "relation_rationale": "The article's month-9 LS percentage-change profile supplies every requested randomized dose-versus-placebo comparison without selecting the most favorable dose or inventing pooling. Its narrative reports reductions versus placebo of 6.8% (95% CI: -47.5%, 33.9%), 7.1% (95% CI: -51.3%, 37.1%), and 23.8% (95% CI: -65.7%, 18.1%) for 2-, 5-, and 9-dose regimens respectively; the positive reduction wording and signed intervals are retained without reinterpretation as ratio reductions. The selected group-bound tuple is the article's signed LS percentage changes. PPS restrictions make it narrower than all randomized Part 1 patients. The 24-month contrasts, absolute g/g changes in Table S3, and open-label Japanese Part 2 do not replace the 9-month comparative result. Current registry FAS log-ratio analysis is a material competing analysis, not historical replay or confirmation of the article model. No unique primary dose contrast is designated in the inspected sources; historical absence versus designation of a primary outcome remains unresolved despite the article/current registry primary labels.",
+        "reported": {
+          "analysis_population": "Article efficacy PPS: Part 1 n=41 (placebo 12, 2-dose 11, 5-dose 8, 9-dose 10), after seven exposure-based exclusions; observations after prohibited therapy were excluded. Month-9 counts total 39 (placebo 10, 2-dose 11, 5-dose 8, 9-dose 10). This is not all 48 randomized patients, and these counts do not prove complete ascertainment or all model inputs.",
+          "endpoint": {
+            "definition": null,
+            "name": "UPCR"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "placebo",
+              "statistic": "least-squares mean",
+              "unit": "%",
+              "value": "-5.7"
+            },
+            {
+              "group_id": "felzartamab_2dose",
+              "statistic": "least-squares mean",
+              "unit": "%",
+              "value": "-12.5"
+            },
+            {
+              "group_id": "felzartamab_5dose",
+              "statistic": "least-squares mean",
+              "unit": "%",
+              "value": "-12.8"
+            },
+            {
+              "group_id": "felzartamab_9dose",
+              "statistic": "least-squares mean",
+              "unit": "%",
+              "value": "-29.5"
+            }
+          ]
+        },
+        "requested_outcome": "Change from baseline in 24-hour urine protein-to-creatinine ratio at 9 months, felzartamab vs placebo",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "Part 1 placebo",
+              "id": "placebo"
+            },
+            {
+              "assignment": "Part 1 felzartamab 2-dose regimen",
+              "id": "felzartamab_2dose"
+            },
+            {
+              "assignment": "Part 1 felzartamab 5-dose regimen",
+              "id": "felzartamab_5dose"
+            },
+            {
+              "assignment": "Part 1 felzartamab 9-dose regimen",
+              "id": "felzartamab_9dose"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Dose-specific differences in least-squares mean percentage change versus placebo; no pooled felzartamab effect specified",
+          "measurement": {
+            "method": "Change from baseline in 24-hour urine protein-to-creatinine ratio, expressed as percentage change; baseline is the mean of screening and predose measurements.",
+            "metric": "Change from baseline in 24-hour urine protein-to-creatinine ratio at 9 months, felzartamab vs placebo"
+          },
+          "outcome_definition": "Change from baseline in 24-hour urine protein-to-creatinine ratio at 9 months, felzartamab vs placebo",
+          "time_point_or_window": {
+            "description": "9 months after first dose, 3 months after the 6-month treatment period",
+            "kind": "quantified",
+            "unit": "months",
+            "value": "9"
+          }
+        },
+        "trial_id": "sanctuary"
+      }
+    ],
+    "no_domain_feedback": true,
+    "no_source_or_result_rewrite": true,
+    "source_review": [
+      "Original main physical pages 2\u20134: randomized Part 1 48 across placebo/2/5/9-dose arms; 9-month 24h UPCR is source-designated primary. Article efficacy PPS 41 and n39 at month9; seven exposure exclusions and prohibited-therapy observations excluded. No all-randomized observation claim.",
+      "Rendered original supplement physical page19 Table S2 confirms signed month9 profile -5.7,-12.5,-12.8,-29.5 and n10/11/8/10. Methods describe LS means/MMRM while row says Mean(SD); source-table/statistic conflict retained, not resolved by host.",
+      "Article page4 explicitly reports dose-versus-placebo reductions 6.8/7.1/23.8 with respective CIs; current registry FAS/log analysis, absolute g/g Table S3 and month24 alternatives retained. All dose contrasts kept without pooling or selecting most favorable. Historical designation/timing not inferred."
+    ]
+  },
+  "continuation_freeze": {
+    "same_session": "01a11022-c949-72f0-a053-89e8f7f981ea",
+    "scope_only_approval": true,
+    "no_science_feedback": true,
+    "coverage": {
+      "passed": true,
+      "manifest_sha256": "e7b7523e70ca3c7481d2e3f6a9a0440eab8f4f01bd4d63fc280980f8e05a8244",
+      "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+      "evidence_bundle_sha256": "1defdc1fdc2e7d05ffe5b04d74a5fac08d0238a6f9f4b760219d703f166a3415",
+      "required_window_count": 44,
+      "supplied_window_count": 44,
+      "required_image_count": 0,
+      "supplied_image_count": 0,
+      "scope": "declared research-design coverage only; no semantic sufficiency claim"
+    },
+    "files": {
+      "scope-approval.json": "0d46b17a0a7fb3acb741767a98dc6fee977ec9b13b008ef3702b4303b7e3206e",
+      "approved-seed-state.json": "b8fb5f76af44057e252829222f4289f8aa8df22105de80afb8c2ecefee0b7d19",
+      "assessment-prompt.txt": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+      "assessment-evidence-manifest.json": "e7b7523e70ca3c7481d2e3f6a9a0440eab8f4f01bd4d63fc280980f8e05a8244",
+      "assessment-native-evidence.bundle": "1defdc1fdc2e7d05ffe5b04d74a5fac08d0238a6f9f4b760219d703f166a3415",
+      "assessment-empty-text-recovery.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "run_stage.py": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+      "home/config.toml": "d99dde4dd1a1664c7bb29a928e1561d389e0ccd667b49e05dc66ccaec4eae2fd"
+    }
+  },
+  "launch": {
+    "command": [
+      "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+      "exec",
+      "resume",
+      "01a11022-c949-72f0-a053-89e8f7f981ea",
+      "--strict-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "-m",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"medium\"",
+      "--json",
+      "-o",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/sanctuary/assessment-final.txt",
+      "-"
+    ],
+    "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/sanctuary/workspace-run",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "config_sha256": "d99dde4dd1a1664c7bb29a928e1561d389e0ccd667b49e05dc66ccaec4eae2fd",
+    "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+    "manifest_sha256": "e7b7523e70ca3c7481d2e3f6a9a0440eab8f4f01bd4d63fc280980f8e05a8244",
+    "input_sha256": "23b2a59ea47627964a0bd21d5928b47801f7bb5e10676bc402e29c20c1823469",
+    "environment_keys": [
+      "CODEX_HOME",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LC_CTYPE",
+      "LOGNAME",
+      "NO_COLOR",
+      "PATH",
+      "ROB2_WORKSPACE",
+      "SHELL",
+      "TEMP",
+      "TERM",
+      "TMP",
+      "TMPDIR",
+      "USER",
+      "XDG_RUNTIME_DIR"
+    ],
+    "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+    "started_at_utc": "2026-10-06T07:42:43.381507+00:00",
+    "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+    "authorized_new_sessions": 1
+  },
+  "runtime_stratum": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "no_source_or_result_rewrite": true,
+  "no_domain_feedback_provided": true
+}
