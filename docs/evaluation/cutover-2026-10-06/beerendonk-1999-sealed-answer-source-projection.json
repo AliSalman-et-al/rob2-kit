@@ -1,0 +1,1632 @@
+{
+  "case": "beerendonk-1999",
+  "purpose": "Sealed answers and selected evidence/source accesses for independent material-warrant review; adopted Domain/overall labels withheld. Structural verification is not scientific support certification.",
+  "artifact_sha256": "2d649844d5701f11431661dadc4b23cbf0f75a5df30e8053e140746c0dfc0903",
+  "session_sha256": "d72bf9024e44746f6ac12e32b6e9885cc233256cd4d54e5f44681c0c9f35cb07",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "runtime_strata": {
+    "initial_runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+    "freeze": "7355c4c original first two; 2a4f9fe amended remaining eight",
+    "host_recovery": false,
+    "same_session_idle_recovery": false,
+    "all_original_attempts_retained": true
+  },
+  "approved_result": {
+    "results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_7298e685c3c803ed"
+          ],
+          "rationale": "119 women were assigned individually to normal or sodium-restricted diets using restricted randomization; the two parallel diet groups were followed through one IVF-ET cycle."
+        },
+        "bindings": [
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:025745315547497c15ace034ebd769156c579df5ec858787f3e55bae397670af"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/0/statistic"
+            },
+            "value_digest": "sha256:38050f399064fe821caae2bcd3a25a4667b240a5ea59bcc5612e4bc6ee16fb2e"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/0/value"
+            },
+            "value_digest": "sha256:c3ce1da6c01f0cc713aa228bd8f76cc9d5f52a5d195f1701a5eacd2556334b7a"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/0/unit"
+            },
+            "value_digest": "sha256:9bee2ca6bd71fc9ad193ff7f2634735c695d27aa3dbf2cd8aef5c98a8390a375"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/1/statistic"
+            },
+            "value_digest": "sha256:38050f399064fe821caae2bcd3a25a4667b240a5ea59bcc5612e4bc6ee16fb2e"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/1/value"
+            },
+            "value_digest": "sha256:3d8c513f34a6705e4e5b43b5e7df3efb89025ff931eac64d807d61f5b96013a5"
+          },
+          {
+            "evidence_index": 2,
+            "field": {
+              "path": "/reported/group_values/1/unit"
+            },
+            "value_digest": "sha256:9bee2ca6bd71fc9ad193ff7f2634735c695d27aa3dbf2cd8aef5c98a8390a375"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "specified",
+          "comparison_groups": "specified",
+          "effect_measure": "unclear",
+          "eligible_result_choice": "unclear",
+          "measurement": "specified",
+          "outcome_definition": "specified",
+          "source_table_meaning": "specified",
+          "time_point": "specified"
+        },
+        "evidence": [
+          {
+            "handle": "eh_57ea7ca1aeecaf03",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_7298e685c3c803ed",
+            "kind": "narrative"
+          },
+          {
+            "delivery_receipt": "sha256:4b536079e68fa258e1213611c5331626896d2e7925cd7008de17595cb5e35136",
+            "handle": "eh_78c09dd0663a8622",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.11,
+              0.325,
+              0.91,
+              0.85
+            ],
+            "render_identity": "sha256:05b4547eee121e4586a329e2c76b1370ad371aa8758a04473f4b981f661ea1ff",
+            "transcription": "Table 3 The estimated mean (SEM) of state anxiety scores at each point of measurement by sodium diet, infertility, number of IVF-ET cycle and pregnancy, using a repeated measurement model. Columns n, Baseline, Luteal phase, pG*, pTG**. Sodium diet: pG 0.13, pTG 0.48. Restricted n 36: Baseline 38.9 (2.3), Luteal phase 44.2 (2.4). Normal n 33: Baseline 36.2 (2.0), Luteal phase 39.7 (2.1). Infertility: pG 0.93, pTG 0.61. Primary n 43: 37.1 (1.8), 42.2 (1.9). Secondary n 26: 38.1 (2.5), 41.7 (2.7). Number of cycle: pG 0.83, pTG 0.25. First n 44: 38.1 (2.1), 40.9 (2.2). Repeat n 25: 37.1 (2.2), 43.0 (2.4). Pregnancy: pG 0.27, pTG 0.03. Conception n 13: 37.4 (3.1), 45.6 (3.2). No conception n 56: 37.8 (1.5), 38.3 (1.6). *pG, p value for test (of hypothesis) for between groups effect. **pTG, p value for test (of hypothesis) for time-by-group interaction effect. The mean increase (SEM) in time is 1.8 (0.7) (p = 0.01). Table 4 The estimated mean (SEM) of trait anxiety scores at each point of measurement by sodium diet, infertility, number of IVF-ET cycle and pregnancy, using a repeated measurement model. Columns n, Baseline, Luteal phase, pG*, pTG**. Sodium diet: pG 0.25, pTG 0.46. Restricted n 36: Baseline 35.3 (2.0), Luteal phase 38.1 (2.2). Normal n 33: Baseline 33.2 (1.8), Luteal phase 34.9 (2.0). Infertility: pG 0.34, pTG 0.76. Primary n 43: 35.3 (1.6), 37.8 (1.8). Secondary n 26: 32.2 (2.2), 35.2 (2.4). Number of cycle: pG 0.25, pTG 0.69. First n 44: 33.1 (1.9), 35.0 (2.1). Repeat n 25: 35.5 (2.0), 38.0 (2.2). Pregnancy: pG 0.82, pTG < 0.01. Conception n 13: 33.2 (2.7), 38.3 (3.0). No conception n 56: 35.4 (1.3), 34.7 (1.4). *pG, p value for test (of hypothesis) for between groups effect. **pTG, p value for test (of hypothesis) for time-by-group interaction effect. The mean increase (SEM) in time is 0.4 (0.2) (p = 0.03)."
+          },
+          {
+            "handle": "eh_92ffd795c61b9908",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_bb88e60b56af21ca",
+            "kind": "narrative"
+          }
+        ],
+        "kind": "assessable",
+        "relation": "component",
+        "relation_rationale": "No unique exact scalar Result is established for the requested state-and-trait family, and no primary is designated. The paper reports separate state (Table 3) and trait (Table 4) analyses at baseline and luteal phase. Provisional component for explicit scope approval: Table 3 luteal-phase state anxiety scores, estimated mean (SEM) 44.2 (2.4) restricted versus 39.7 (2.1) normal. This is a component of the requested outcome family and occasion set; it is also limited to compliant cycle completers. The broader requested target is retained explicitly, not equated to this component. State baseline means are 38.9 (2.3) versus 36.2 (2.0); state pG=0.13 tests the between-group effect across occasions and pTG=0.48 tests time-by-group interaction, neither a luteal-only p value. Equally eligible competing trait component: baseline 35.3 (2.0) versus 33.2 (1.8), luteal 38.1 (2.2) versus 34.9 (2.0), pG=0.25 and pTG=0.46. There is no source-grounded basis to designate either outcome or occasion primary, and this provisional choice requires explicit host scope approval. The native card cannot combine repeated per-arm values into one joint family card; no joint estimate is invented. The ANOVA includes infertility, cycle number and postrandomization conception; p values are not effect estimates or evidence of equivalence.",
+        "reported": {
+          "analysis_population": "69 cycle completers with adequate compliance to assigned diet: 36 sodium restricted and 33 normal, from 119 randomized (57 restricted, 62 normal). 50 excluded from analysis, mainly cycle cancellations, also diet noncompliance or unknown compliance. Repeated-measurement ANOVA includes diet, primary/secondary infertility, first/repeat cycle and conception/no conception; least-squares subclass means. Not an all-randomized analysis.",
+          "endpoint": {
+            "definition": null,
+            "name": "state anxiety scores"
+          },
+          "form": "group_bound_values",
+          "group_values": [
+            {
+              "group_id": "restricted",
+              "statistic": "estimated mean (SEM)",
+              "unit": "scores",
+              "value": "44.2 (2.4)"
+            },
+            {
+              "group_id": "normal",
+              "statistic": "estimated mean (SEM)",
+              "unit": "scores",
+              "value": "39.7 (2.1)"
+            }
+          ]
+        },
+        "requested_outcome": "State and trait anxiety (Spielberger STAI) during an IVF-ET procedure with vs without dietary sodium restriction (no primary is designated)",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "Dietary sodium restriction, advised intake \u226420 mmol sodium/day, from randomization until pregnancy test or menstruation",
+              "id": "restricted"
+            },
+            {
+              "assignment": "Normal sodium diet, ad libitum sodium intake",
+              "id": "normal"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Assignment effect of sodium restriction versus normal intake on STAI state and trait anxiety; provisional reported component is luteal-phase state-anxiety group means from the repeated-measurement model, not a reported difference estimate.",
+          "measurement": {
+            "method": "Spielberger STAI state and trait anxiety, separately scored from 20 to 80; neither is designated primary.",
+            "metric": "State and trait anxiety (Spielberger STAI) during an IVF-ET procedure with vs without dietary sodium restriction (no primary is designated)"
+          },
+          "outcome_definition": "State and trait anxiety (Spielberger STAI) during an IVF-ET procedure with vs without dietary sodium restriction (no primary is designated)",
+          "time_point_or_window": {
+            "description": "During the IVF-ET procedure: baseline immediately before randomization (about 10 days before ovarian stimulation) and luteal phase 12 days after ovum pick-up, before pregnancy-test knowledge. Provisional reported component: luteal-phase state anxiety estimated means from the two-occasion model.",
+            "kind": "described"
+          }
+        },
+        "trial_id": "beerendonk-1999"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "label": "01674829909075582.pdf",
+      "logical_path": "01674829909075582.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 7,
+      "projection_hash": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "role": "main_article",
+      "sha256": "sha256:28b0f081ea84de41a82b55d2ff4cb07f34155e37475b02751220b66885c6dcff",
+      "trial_id": "beerendonk-1999"
+    }
+  ],
+  "questions": [
+    {
+      "domain_id": "domain:deviations",
+      "checkpoint_identity": "sha256:31f4887f5729f5dcc30ef1517e059906c6dd6cf3876f208004e6244c0a0be253",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis",
+        "sq:deviations:substantial-impact"
+      ],
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Patients were not informed about the possible role of sodium restriction on coping skills; this conceals the hypothesis, not their assigned intervention."
+            }
+          ],
+          "justification": "Women implemented either an advised sodium-restricted diet or normal ad libitum intake following dietician instructions. They therefore knew the diet they were assigned during the period producing the luteal state-anxiety scores. Concealing the coping hypothesis does not conceal the actual diet.",
+          "question_id": "sq:deviations:participants-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Professional dieticians delivered instructions for sodium restriction versus normal intake and compliance was assessed against assigned diet. Intervention-delivery personnel probably knew allocation. The report does not establish blinding of all other IVF staff.",
+          "question_id": "sq:deviations:personnel-aware",
+          "unknowns": [
+            "Awareness of other IVF carers is not described."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "inference"
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Table 1 reports six women with no diet compliance and four with unknown compliance, while follicle-based cancellations were protocol-defined. These facts establish adherence issues and planned clinical stopping criteria, but do not say whether nonadherence or additional care arose from recruitment, disappointment with allocation, or trial-personnel behaviour. Awareness alone is not proof of a trial-context deviation, and its absence is also not established.",
+          "question_id": "sq:deviations:context-deviations",
+          "unknowns": [
+            "Causes of nonadherence and any non-protocol co-interventions attributable to the trial context."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Diet/Randomization/Psychological tests methods, Table 1 and Discussion were inspected in the sole captured article. They specify compliance criteria and cancellations but not causes of adherence departures; no protocol or additional conduct Source is captured.",
+              "unresolved_premise": "Trial-context causation of deviations remains unknown."
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "Authors claim similar possible selection bias across diet groups; this does not establish that a compliant-completer analysis estimates the randomized assignment effect."
+            }
+          ],
+          "justification": "The diet analysis explicitly retains only cycle completers with adequate assigned-diet compliance. Ten exclusions are attributed to no or unknown diet compliance (restricted 6, normal 4), so this is an adherence-restricted analysis rather than an assignment analysis merely excluding missing outcomes. The other cycle-related unavailable outcomes are considered separately in D3. Retained women remain labelled by assignment, but compliance selection is inappropriate for the assignment effect. Including conception as a postrandomization model factor is an additional unresolved estimand concern, not a correction for selection.",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "unknowns": [
+            "Whether any compliance-excluded women had measured luteal STAI and the detailed model parameterization."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6",
+              "kind": "direct_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Noncompliance counts are small compared with cycle-related dropouts and present in both arms. The authors' similar-selection claim is reassuring context but does not rule out substantial impact of adherence-based selection on the assignment contrast."
+            },
+            {
+              "basis_index": 3,
+              "implication": "Noncompliance counts are small compared with cycle-related dropouts and present in both arms. The authors' similar-selection claim is reassuring context but does not rule out substantial impact of adherence-based selection on the assignment contrast."
+            }
+          ],
+          "justification": "There is probable potential for substantial impact from selecting on postassignment diet compliance: ten women were excluded for absent/unknown compliance, six of 57 restricted and four of 62 normal. This is a material portion of the randomized sample for a continuous anxiety outcome, and adherence to a burdensome dietary intervention may select women by coping-related characteristics relevant to anxiety. A compliant-completer model does not adjust for this selection. This is a judgment about potential, not proof of bias, and does not count all 50 exclusions as observed-outcome adherence exclusions; most cycle-related absent measurements belong to D3.",
+          "question_id": "sq:deviations:substantial-impact",
+          "unknowns": [
+            "Actual STAI values and prognostic characteristics of the compliance-excluded women, overlap with missing measurements, and magnitude/direction of bias."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Table 1, compliant-completer population description and repeated-measurement methods contain the analysis exclusions but no all-randomized or adherence-adjusted estimate; the captured inventory offers no additional analysis Source.",
+              "unresolved_premise": "Magnitude and direction of adherence-selection bias cannot be quantified."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:measurement",
+      "checkpoint_identity": "sha256:9252f749c55f29285e4bb6f6462b91edb1b3986361a7ff39c5da0612d45fb06f",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible",
+        "sq:measurement:influence-likely"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "The selected state-anxiety component is measured with the Spielberger STAI state scale, explicitly intended to assess anxiety at a given moment, with 20 items and a 20-80 score range. This is a suitable established construct measure for the luteal occasion; no poor validity or inability to detect plausible differences is reported. This does not establish trial-specific psychometric performance.",
+          "question_id": "sq:measurement:method-inappropriate",
+          "unknowns": [
+            "Trial-specific reliability, item completeness and scoring checks are not described."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de",
+              "kind": "inference"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "The same STAI and baseline/luteal schedule are described for study women in both diet groups: luteal testing at 12 days after ovum pick-up before pregnancy-test knowledge. The Discussion states all women filled the inventory within 30 minutes of the fourth luteal-support hCG injection. There is no described arm-specific instrument, threshold or extra measurement opportunity. Clinical-cycle missingness is assessed in D3; potential self-report influence from knowing the diet is assessed in 4.3-4.5.",
+          "question_id": "sq:measurement:differential",
+          "unknowns": [
+            "Individual timing adherence and questionnaire administration details by arm."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:e1fad331de506388c02c511ea3271232924a558ea8135f74cdc5718897542901",
+              "kind": "inference"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "The coping hypothesis was withheld, but diet assignment itself was apparent to participants."
+            }
+          ],
+          "justification": "Women themselves filled out the STAI, so they are the outcome assessors for this participant-reported state anxiety. They knew the diet they implemented after dietary instructions; blinding of a scorer or interviewer would not blind these assessors.",
+          "question_id": "sq:measurement:assessor-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:e1fad331de506388c02c511ea3271232924a558ea8135f74cdc5718897542901",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Withholding the proposed coping benefit and pregnancy-test result reduces specific expectation cues, but does not make subjective self-assessment immune to diet knowledge."
+            }
+          ],
+          "justification": "STAI state anxiety requires subjective judgments of how a participant feels. Knowledge of following sodium restriction versus normal intake could influence those judgments or their reporting. A standardized score and withholding pregnancy-test knowledge do not eliminate this susceptibility.",
+          "question_id": "sq:measurement:influence-possible",
+          "unknowns": [
+            "Magnitude and direction of any knowledge-related reporting influence."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "context"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Participants necessarily knew their diet. Pilot participants had reported better coping under restriction, but their reported beliefs cannot be transferred to this trial's women as established strong expectations."
+            }
+          ],
+          "justification": "The investigators explicitly did not inform patients of the hypothesized role of sodium restriction in coping. With a common STAI schedule before pregnancy-test knowledge, the captured conduct gives no particular reason to judge strong diet-related expectations or reporting cues likely to distort the state-anxiety assessment. Possible influence remains, so this is not a claim of blinded or objectively measured anxiety. Actual effects of the diet on felt anxiety are part of the outcome, distinct from measurement distortion.",
+          "question_id": "sq:measurement:influence-likely",
+          "unknowns": [
+            "Participants' individual beliefs about diet and any subtle administration cues; actual reporting influence was not measured."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The Psychological tests, Diet, Introduction and Discussion sections were inspected in the sole captured report; the explicit withholding of the coping hypothesis supports a probable judgment but does not prove absence of reporting influence.",
+              "unresolved_premise": "Participant beliefs and direct evidence of reporting distortion remain unknown."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:38fe092f7d028fda187a7f269d1141a33fb106f729d836507d46384f1fc3eddb",
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "The Discussion explicitly states that a high percentage of luteal state/trait scores could not be collected because cycles were cancelled. Thus luteal state data were not available for all or nearly all randomized women. The 69 analysed compliant completers and 50 total analysis exclusions corroborate major attrition but do not define the exact observed-outcome count: some compliance exclusions may have measured scores. Baseline availability does not establish luteal availability.",
+          "missing_data": {
+            "conflicts": [],
+            "rows": [
+              {
+                "analyzed": 36,
+                "basis": [
+                  "sha256:cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd",
+                  "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+                  "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775"
+                ],
+                "eligible": null,
+                "endpoint": "state anxiety scores",
+                "event_count": null,
+                "excluded": 21,
+                "exclusions": [
+                  "Cycle-related dropouts and no/unknown diet compliance; do not equate all exclusions with missing STAI."
+                ],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 57
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 57,
+                "result_identity": "sha256:9e9bdfaa75029242bacfadf522d79ac0169fd82a5410e0b37585fa4a373a0a5c",
+                "scope": {
+                  "arm": "restricted",
+                  "population": "All women randomized to sodium-restricted diet in this trial",
+                  "time_point": "Luteal state anxiety assessment, 12 days after ovum pick-up",
+                  "unit": "women"
+                },
+                "treated": null
+              },
+              {
+                "analyzed": 33,
+                "basis": [
+                  "sha256:cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd",
+                  "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+                  "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775"
+                ],
+                "eligible": null,
+                "endpoint": "state anxiety scores",
+                "event_count": null,
+                "excluded": 29,
+                "exclusions": [
+                  "Cycle-related dropouts and no/unknown diet compliance; do not equate all exclusions with missing STAI."
+                ],
+                "imputed": null,
+                "missing": null,
+                "missing_bounds": {
+                  "kind": "bound",
+                  "lower": 0,
+                  "upper": 62
+                },
+                "missing_fraction": null,
+                "observed": null,
+                "randomized": 62,
+                "result_identity": "sha256:9e9bdfaa75029242bacfadf522d79ac0169fd82a5410e0b37585fa4a373a0a5c",
+                "scope": {
+                  "arm": "normal",
+                  "population": "All women randomized to normal sodium diet in this trial",
+                  "time_point": "Luteal state anxiety assessment, 12 days after ovum pick-up",
+                  "unit": "women"
+                },
+                "treated": null
+              }
+            ]
+          },
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Exact arm-specific observed luteal STAI counts and availability among compliance-excluded women."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd",
+              "kind": "direct_support"
+            },
+            {
+              "evidence": "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Table 1, Patient characteristics, Table 3 and the visually inspected Discussion identify substantial failed collection and analysis exclusions but do not enumerate observed outcomes separately. No additional participant-flow Source is captured.",
+              "unresolved_premise": "Exact luteal observation counts remain unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "The authors' claim that possible selection bias affected both diet groups similarly is relevant reassurance but rests on baseline comparisons, not evidence that luteal missingness left the selected Result unbiased."
+            },
+            {
+              "basis_index": 1,
+              "implication": "The authors' claim that possible selection bias affected both diet groups similarly is relevant reassurance but rests on baseline comparisons, not evidence that luteal missingness left the selected Result unbiased."
+            }
+          ],
+          "justification": "There is no reported analysis demonstrating that the selected luteal state-anxiety result is robust to plausible outcomes in cancelled cycles. Authors rely on a non-significant diet-by-dropout interaction in baseline characteristics to claim similar possible selection bias. That baseline comparison neither recovers missing luteal scores nor tests their plausible impact on the diet contrast. The reported repeated-measurement model uses only compliant completers and supplies no missing-outcome correction or sensitivity result.",
+          "question_id": "sq:missing:evidence-unbiased",
+          "unknowns": [
+            "Unreported missing-outcome analyses, if any, and outcomes among cancelled cycles."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Statistical methods, Results drop-out analysis and Discussion were fully inspected; no sensitivity or missing-outcome adjustment is reported in this sole captured Source. This is not a claim that every missing-data method must be reported.",
+              "unresolved_premise": "No demonstrated robustness to plausible missing luteal scores is available."
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Follicle-based cancellations were protocol-defined, not documented refusals to report anxiety; this limits certainty but does not make clinical-course missingness unrelated to anxiety."
+            }
+          ],
+          "justification": "Missing luteal scores follow cancellation for clinical IVF-course reasons, including poor/excessive follicular response and failed fertilization. The clinical course can affect anxiety as well as whether the scheduled measurement is obtained. Dropouts already had higher mean baseline state anxiety (40.8 versus 37.8), and the authors suggest high anxiety may predispose to cancellation. These source facts make dependence of missingness on underlying luteal state anxiety plausible; this is not inferred solely from the fraction excluded.",
+          "question_id": "sq:missing:true-value-dependent",
+          "unknowns": [
+            "Actual luteal anxiety in cancelled cycles and exact overlap of clinical causes with outcome missingness."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:2aa1e8900b77c32c4689e28f7e7895e837bfd21da52f89fb694c4a83dba9f034",
+              "kind": "inference"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Authors describe selection bias as similar across arms, and the baseline state-anxiety difference is not conventionally significant. These limit certainty but do not establish independence of missing luteal values or robustness of the diet result."
+            },
+            {
+              "basis_index": 3,
+              "implication": "Authors describe selection bias as similar across arms, and the baseline state-anxiety difference is not conventionally significant. These limit certainty but do not establish independence of missing luteal values or robustness of the diet result."
+            }
+          ],
+          "justification": "For state anxiety during an IVF procedure, clinical cycle failure/cancellation is likely to distinguish the emotional course from that of continuing women, and the report documents a higher baseline state-anxiety tendency among dropouts and explicitly links high state anxiety to cancellation. Combined with substantial failed luteal collection, these are reasonable grounds for probable dependence on the unobserved anxiety values, beyond a merely hypothetical measurement failure. The repeated-measurement analysis does not account for cancelled participants or their baseline anxiety to explain this relation. The p=0.11 baseline comparison is suggestive, not proof; no direction or magnitude of bias in the diet contrast is asserted.",
+          "question_id": "sq:missing:likely-dependent",
+          "unknowns": [
+            "Whether and how strongly missingness depended on luteal state anxiety, exact arm-specific missingness proportions, and bias direction/magnitude."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:2aa1e8900b77c32c4689e28f7e7895e837bfd21da52f89fb694c4a83dba9f034",
+              "kind": "inference"
+            },
+            {
+              "evidence": "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The relevant clinical dropout reasons, baseline dropout comparison and Discussion were inspected; missing values cannot be recovered from the captured article and no additional follow-up Source is available.",
+              "unresolved_premise": "Dependence is a probable clinical/source-based inference rather than a measured association with the unavailable luteal values."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:randomization",
+      "checkpoint_identity": "sha256:61804f7658324f9099fe0361ae092d64e57fc0c7a7091567b5cef137fe5fb014",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "The methods specify restricted randomization of 119 women to the two diets and cite a medical-statistics text (reference 14), rather than merely calling the trial randomized. This makes a chance-based restricted sequence probable, without establishing its generator or block details. There is no reported deterministic assignment rule.",
+          "question_id": "sq:randomization:sequence",
+          "unknowns": [
+            "Sequence generator, block sizes and implementation are not described."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "inference"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The full main report, Randomization subsection and reference 14 were inspected. The cited reference is a general statistics textbook, not trial-specific conduct; no additional methods Source is captured.",
+              "unresolved_premise": "Exact sequence-generation procedure remains unknown."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "The Randomization subsection identifies restricted randomization but gives no procedure preventing foreknowledge before enrolment and assignment. The captured report supplies no central service, envelopes, independent allocator or evidence of open allocation; neither probable concealment nor probable failure can reasonably be inferred for this trial.",
+          "question_id": "sq:randomization:concealment",
+          "unknowns": [
+            "Concealment mechanism and recruiter access to forthcoming assignments."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:e41774769c5c6e8e34faeb695bd66066843e4b4d81a4b2b008cec517a257f441",
+              "stopping_rationale": "Inspected the complete main report and its Randomization/Setting sections; a scoped search for concealed/envelopes/allocation/sequence found no text. Source inventory contains only this article, with no trial-specific protocol or SAP.",
+              "unresolved_premise": "Whether forthcoming allocation was concealed is unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [],
+          "justification": "Table 2 includes all 57 restricted and 62 normal randomized women, not just completers. Age 32.3 versus 32.8, infertility duration 4.3 versus 4.0, state anxiety 40.1 versus 38.5 and trait anxiety 36.7 versus 34.0 show modest differences compatible with chance. There is no substantial excess of significant differences or marked group-size imbalance suggesting failed randomization. This does not establish concealment.",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "unknowns": [
+            "Complete randomized-arm distribution of other prognostic factors and intended allocation ratio are not supplied."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:2aa1e8900b77c32c4689e28f7e7895e837bfd21da52f89fb694c4a83dba9f034",
+              "kind": "inference"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Table 2 was visually inspected with its all-randomized denominators; Patient characteristics mostly describes the 69 completers, so it is not used to infer full-arm balance.",
+              "unresolved_premise": "Baseline balance for prognostic factors beyond Table 2 is incompletely reported."
+            }
+          ]
+        }
+      ],
+      "search_accounts": [
+        {
+          "batch_identity": "sha256:fada3001f94e19a75f3f0d35784e7280c1e022070975e2a961a7331ca95a3850",
+          "candidate_count": 0,
+          "condition": "no_hits",
+          "exhausted": true,
+          "handle": "sr_e41774769c5c6e8e",
+          "hits": [],
+          "identity": "sha256:e41774769c5c6e8e34faeb695bd66066843e4b4d81a4b2b008cec517a257f441",
+          "limit": 10,
+          "matching_page_count": 0,
+          "mode": "any",
+          "next_cursor": null,
+          "normalized_query": "concealed envelopes allocation sequence",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": "domain:randomization",
+          "purpose_question_id": null,
+          "query": "concealed envelopes allocation sequence",
+          "ranking_complete": true,
+          "returned_candidates": [],
+          "returned_material": 0,
+          "returned_rank_end": null,
+          "returned_rank_start": null,
+          "session_handle": "ss_4fe5b5a9a7d10282",
+          "session_id": "sha256:4fe5b5a9a7d10282f590604c8b652a55edf9d1561ef597d299a4d1819e6604dc",
+          "sources": [
+            {
+              "id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+              "projection_hash": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615"
+            }
+          ],
+          "total_matches": 0,
+          "trial_id": "beerendonk-1999",
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "domain_id": "domain:selection",
+      "checkpoint_identity": "sha256:c588eefe6fc0262efaa07513d18d26de6c361e52b569ccb394af5463187fec14",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "The publication describes the repeated-measurement ANOVA and least-squares means that produced the state/luteal result, but does not establish an analysis plan finalized before access to unblinded anxiety data. Ethical approval, the 1992-1995 parent-trial dates and reference to an ovarian-stimulation protocol do not establish prespecification of this anxiety analysis. No applicable plan or registry Source is captured. Reference 13 concerns renin/prorenin during stimulation, not an explicitly identified anxiety SAP; the report contains no supported public protocol/SAP URL or DOI for native acquisition.",
+          "question_id": "sq:selection:prespecified-analysis",
+          "unknowns": [
+            "Pre-unblinding analysis intentions, their finalization and amendments, applicable version, and timing of investigator access to unblinded outcomes."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:e07a5a4702eca9197ee27691def5ccc94a653d91ce7f42a0eb1c0d35f69ecaff",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:3c1f2ee7d203ebdc453c46541f6bb2c0a056a7c3eb3e60f3acd151b07e3ff23c",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "The full article, Statistical methods, Setting and reference list were inspected, along with the Source inventory. Only the original article is captured; no explicit eligible protocol/SAP locator permits native companion acquisition. This is a bounded evidence limit, not proof that a plan never existed.",
+              "unresolved_premise": "Whether this Result followed pre-unblinding analysis intentions remains unknown."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Both state and trait results at both stated occasions are reported, including nonsignificant diet tests; this weighs against demonstrated selective measurement reporting but cannot establish all original intentions."
+            }
+          ],
+          "justification": "State and trait STAI at baseline and luteal phase are all described and displayed in Tables 3 and 4, which is reassuring against selectively hiding these named measurements. However, no primary is designated and prospective measurement intentions are unavailable, so additional eligible scales, occasions or measurement choices cannot be established. The approved state/luteal component is a host scope choice, not evidence that trialists selected it by significance. The source does not support a yes/probably-yes claim of result-based selection, nor sufficiently complete intentions to establish absence under the official guidance.",
+          "question_id": "sq:selection:multiple-measurements",
+          "unknowns": [
+            "Complete intended eligible measurements and whether any additional measurements were collected but omitted."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:78c09dd0663a8622d7958ddb3ee0f456fcc9212b8adea2924f428b8843b44bcd",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Psychological tests, Results and Tables 3-4 were inspected; they cover the named measures but the sole captured article supplies no prospective complete measurement plan.",
+              "unresolved_premise": "Completeness of eligible measurement intentions and result-based selection cannot be resolved."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "The report gives nonsignificant diet group and interaction tests alongside significant time/conception findings; this is not evidence of suppressing a known eligible diet analysis."
+            },
+            {
+              "basis_index": 2,
+              "implication": "The report gives nonsignificant diet group and interaction tests alongside significant time/conception findings; this is not evidence of suppressing a known eligible diet analysis."
+            }
+          ],
+          "justification": "The selected means come from repeated-measurement ANOVA with diet, infertility, cycle number and conception. Tables distinguish group and time-by-group tests and provide baseline/luteal subclass means. Eligible alternatives could include unadjusted, baseline-adjusted or change analyses and different covariate/population choices, but the report does not say they were actually performed or chosen by their results. Without analysis intentions, it is unresolved whether this model was selected among multiple eligible analyses. The footnote mean-increase discrepancy and postrandomization conception factor are retained as analysis uncertainties, not evidence that investigators selected a favourable result.",
+          "question_id": "sq:selection:multiple-analyses",
+          "unknowns": [
+            "All intended/performed eligible analyses, model weighting/coding, and whether choices were made after examining results."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:e07a5a4702eca9197ee27691def5ccc94a653d91ce7f42a0eb1c0d35f69ecaff",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:78c09dd0663a8622d7958ddb3ee0f456fcc9212b8adea2924f428b8843b44bcd",
+              "kind": "context"
+            },
+            {
+              "evidence": "sha256:92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6",
+              "kind": "context"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Statistical methods and both anxiety results tables were inspected; no SAP, additional trial report or model-comparison history is captured. A missing plan or a mathematically unreconciled footnote does not itself establish selective analysis.",
+              "unresolved_premise": "Result-based selection among eligible analyses remains unresolved."
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    }
+  ],
+  "selected_evidence": {
+    "2aa1e8900b77c32c4689e28f7e7895e837bfd21da52f89fb694c4a83dba9f034": {
+      "delivery_receipt": "sha256:7be6e16196c47a4b18a8540e2ae65ca9ab01c0b063d56538ea81342a65ca52d2",
+      "handle": "eh_2aa1e8900b77c32c",
+      "identity": "sha256:2aa1e8900b77c32c4689e28f7e7895e837bfd21da52f89fb694c4a83dba9f034",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.11,
+        0.65,
+        0.9,
+        0.86
+      ],
+      "render": {
+        "identity": "sha256:fc59697bbc9ce74cd7ccf6abde73b0cd76ea2acb162a83f7b6649d836338062a",
+        "page": 4,
+        "png_sha256": "sha256:43803726daeeed05804a79146aa2e1836d52dbf9295aee7ff835bb4a9b0757ac",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e"
+      },
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "transcription": "Table 2 The estimated mean (SEM) of age, duration of infertility and STAI scores at baseline by groups according to sodium diet and drop-out rate. Columns n, Age (years), Duration of infertility (years), State anxiety, Trait anxiety. Sodium diet Restricted: n 57, 32.3 (0.5), 4.3 (0.4), 40.1 (1.4), 36.7 (1.2). Normal: n 62, 32.8 (0.5), 4.0 (0.4), 38.5 (1.3), 34.0 (1.1). p value: 0.46, 0.55, 0.39, 0.09. Drop-out Yes: n 50, 32.0 (0.5), 4.2 (0.4), 40.8 (1.4), 35.8 (1.2). No: n 69, 33.2 (0.4), 4.1 (0.3), 37.8 (1.2), 34.9 (1.0). p value: 0.07, 0.81, 0.11, 0.57. p is level of significance for differences between subclasses, using analysis of variance.",
+      "trial_id": "beerendonk-1999"
+    },
+    "3c1f2ee7d203ebdc453c46541f6bb2c0a056a7c3eb3e60f3acd151b07e3ff23c": {
+      "end": 2183,
+      "end_line": 55,
+      "handle": "eh_3c1f2ee7d203ebdc",
+      "identity": "sha256:3c1f2ee7d203ebdc453c46541f6bb2c0a056a7c3eb3e60f3acd151b07e3ff23c",
+      "kind": "narrative",
+      "page": 7,
+      "quote": "13. Beercndonk CCM. Dcrkx FHM,\nSchcllekens APM,\nd al. The influence of dieary sodium restriction on\nrenal and ovarian rcnin and prorenin production\n1247-53\n12. Boivin J, T & h JE. Impact of the in vim0 fertili-\nduring ovarian stimulation. Hum Reprod 1996;11:\n956-61\n14. Petrie A. Lcc~~re\nNotes on Medical Statistics. Oxford:\nBlackwell Scientific, 1987,195",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 1828,
+      "start_line": 45,
+      "trial_id": "beerendonk-1999"
+    },
+    "57ea7ca1aeecaf035ff1f0160df60c53cc6c7d17de0158296f14edfdba1c3482": {
+      "end": 3467,
+      "end_line": 74,
+      "handle": "eh_57ea7ca1aeecaf03",
+      "identity": "sha256:57ea7ca1aeecaf035ff1f0160df60c53cc6c7d17de0158296f14edfdba1c3482",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "J Psychosom Obsfet Gynecoll999;20:97-103\nThe influence of dietary sodium\nrestriction on anxiety levels during an\nin uitro fertilization procedure\nC. Beerendonk', J. Hendrikrz, H. Scheepet9, D. Braat', J. Merkus', B. Oostdam' and R van D0p5\n'Department of Obstetrics and Gynecology, University Hospital Nijmegen, Nijmegen;\n2Department of Medical Statistics, Catholic University of Nijmegen, Nijmegen; 3Department\nof Obstetrics and Gynecology, Leyenburg Hospital, 's-Gravenhagc; 'Department of Clinical\nPsychology, St. Elisabeth Hospital, Vcnra~ sDepartment of Obstetrics and Gynecology Catharina\nHospital, Eindhoven, The Netherlands\nKey words: ANXIETY, CONCEPTION,\nSODIUM. INFERTILITY,\nIVF-ET\nABSTRACT\nIn this randomized stu&,\ninpi(enccs of diefaty sodium\nrertrirtion as an independentfoctor on anxiefy laolr of\nwomen participating in an in vitrofktiliurthn-embryo\ntransfk (WF-E7') procedure were investigated. Anxiety\nlevels of 119 women were mcanrred m'ng thc Spielberger\nState and 7iait Anxiety Inventory. Data of 69 women\nremainedfor analysis. Drop-outs, mainly due to CVJC\ncancellatwm, tended to have higher mean state amkty\nscorn compared with women who continued (p = 0.11).\nBias by selection a f d both dirt groupc in similar\nproportiom. State as well as trait anxiety scores increased\nsignijcantly (p = 0.01, and p = 0.03, tr.spatiudy) f i m\nbaseline @ejon ovarian stimulation) to the point of\nmeasurement in the luteal phase. No sign$cant d@rences\nin this mean increase w m o\nb\nd\n between the two diet\ngroups. l7u signijcdy higher mean innrase in state and\ntrait anxiety in conceiving women was striking compared\nwith those who did not conceive (p = 0.03 and p < 0.01,\nrespectively). We conclude that dietary sodium restriction\ndoes not lower anxiety levelr during an IW-ET\nprocedurt. Anxiep levels incmase more from baseline\n(bejore ovarian stimulation) to the luteal phase in\nconceiving than in nonconceiving women. The inpuence of\nconceptwn on anxiety levels needifirtther investigation.\nINTRODUCTION\nMany studies have been performed on biomedical\naspects of in vitro fertilization and embryo transfer\n(IVF-ET) during the last decades. In recent years\nthe interest for psychological dynamics during\nIVF-ET has increased'-''.\nIn general, no pre-existent psychopathology is\nobserved in IVF-ET participants'\".\nTherefore,\nstress should rather be seen as a result than as a\ncause of infertiliv, and infertility treatment is a\nstress factor in iuelfi'. Stress, infertility and\ninfertility treatment coexist and do influence each\nother. Stress and an increased vulnerability to stress\nduring an IVF-ET procedure seem to predispose to\na poor outcome**9. Anxiety is the most common\ndistressing emotional state suffered by IVF-ET\nparticipants2. The state anxiety level, as determined\nby the Spielbergcr State and Trait Anxiety Inventory\n(STAI), is a function of the effectiveness of coping\nwith stress during an W-ET Procedure'O.\nIVF-ET treatment causes significant physical dis-\ncomfort, which is associated with emotional reac-\ntions**.\nDuring a pilot study on the role of dietary\nsodium restriction and renal and ovarian (pro)renin\nproduction during ovarian stim~lation'~, women\nCorrespondence: Dr C. Beerendonk, Department of Obstetrics md Gpemlogy. University Hospital Nijmegen. PO Box 9101,6500\nHB Nijmegen, The Netherlands\n97\nJ Psychosom Obstet Gynaecol Downloaded from informahealthcare.com by The University of Manchester on 11/18/14\nFor personal use only.",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "beerendonk-1999"
+    },
+    "7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd": {
+      "end": 2818,
+      "end_line": 73,
+      "handle": "eh_7298e685c3c803ed",
+      "identity": "sha256:7298e685c3c803ed2117ed8694d0ee04ac26eddc4ad2ff436e368faaa16e43cd",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "Anxiety during IVF-ET\n&mndonk d al.\nwho underwent a repeat IvF-ET cycle found that\nthey could cope better with the stress of an W E T\nprocedure while on a sodium restricted diet. These\nwomen also reported kss abdomin?l discjomfbrt\nand bloating, especi?lly in the luted p&.\nFluid\nmention mi& bereduced duringthe luted phase\nof an IVF-ET cycle by sodium rcstrictiorL The\ndecrease in physical dircomtbrt culcxpl;rinthe\nmore convenient fwling and a greater ability to\ncope with stress. Another possible explanation for\nthe phenommon could be the distnaion of the\nmind by the sodium restricted diet. To study the\ninfluence of a dictaxy sodium restriction as an\nindependent htor on anxiety levels in a larger\ngroup of W E T patients, the present radomkd\nstudy was undertaka.\nMETHOD\nSetting\nThe prcsent study was performed within the scope\nof a large ovarian hypersthulation syndrome\n(OHSS)\nprevention triaL This trial took place from\nJanuary 1992 to Januaxy 1995 and was #\nby\nthe hospital ethical committee. Consent was\nobtained from each patient. All women who\nentered the OHSS prevention trial participated in\nthe present study The wvivl stimulation protocol\nfor the IVF-ET procedure has been descrii\np r t v i ~ ~ s l p\n(Figurr 1).\nRandomization\nOne hundred and nineteen participants were\nassigned to a normal sodium diet or a sodium\nrestricted diet by a restricted randomization\nmethod14. The data of50 of these women could not\nbe used for a d y s i i mainly because they did not\ncomplete their cycle (dropouts, see ?ible 1).\nDiet\nThe sodium restricted diet was started 10 days\nbefore the start of ovarian stimulation (moment of\nmdomhtion) and it was continued until the end\nof the lvFET cycle (pregnancy test or menstru-\nation). In the n o d sodium diet the Na+-intzke\nwas OdJdJaUm and in the sodium restricted diet the\nadvised intake was s 2Ommol Na+ per day. Dietary\ninstructions were given by professional dieticians.\nTb check the compliance with the wiped diet\nmeasured twice; first at the time of randomization\nand next in the l u d phase, 6 days afkr the ovum\npick-up (URINE 1 and 2 in Figure 1). The compli-\nance with the sodium restricted diet was considered\nluted phase was <7 and/or this ratio (URINE 2)\nwas less than 50% of the sodiudcrutinine ratio at\nthe time of randomization (URINE 1). Women\nassigned to the normal sodium diet, who met the\ncriteria for compliance with the sodium restricted\ndiet, were considered as non-complianL\nthe sodium/crtltinine ratio in urine samples was\nadequate when the Jodium/Q#tininc ratio in the\n1\nT STAI-1\nt URINE-1\nT STAI-2\nt URINE-2\nFigure 1 lime tabk and ovarian stimulation protocol\n98\nJ o u d of Psychosormtic Obstetrics and Gynecology\nJ Psychosom Obstet Gynaecol Downloaded from informahealthcare.com by The University of Manchester on 11/18/14\nFor personal use only.",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "beerendonk-1999"
+    },
+    "78c09dd0663a8622d7958ddb3ee0f456fcc9212b8adea2924f428b8843b44bcd": {
+      "delivery_receipt": "sha256:4b536079e68fa258e1213611c5331626896d2e7925cd7008de17595cb5e35136",
+      "handle": "eh_78c09dd0663a8622",
+      "identity": "sha256:78c09dd0663a8622d7958ddb3ee0f456fcc9212b8adea2924f428b8843b44bcd",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.11,
+        0.325,
+        0.91,
+        0.85
+      ],
+      "render": {
+        "identity": "sha256:05b4547eee121e4586a329e2c76b1370ad371aa8758a04473f4b981f661ea1ff",
+        "page": 5,
+        "png_sha256": "sha256:135e0dff04a74949a4dc78a4c759a48da06f060d7d39b31021ca08676ff72126",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e"
+      },
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "transcription": "Table 3 The estimated mean (SEM) of state anxiety scores at each point of measurement by sodium diet, infertility, number of IVF-ET cycle and pregnancy, using a repeated measurement model. Columns n, Baseline, Luteal phase, pG*, pTG**. Sodium diet: pG 0.13, pTG 0.48. Restricted n 36: Baseline 38.9 (2.3), Luteal phase 44.2 (2.4). Normal n 33: Baseline 36.2 (2.0), Luteal phase 39.7 (2.1). Infertility: pG 0.93, pTG 0.61. Primary n 43: 37.1 (1.8), 42.2 (1.9). Secondary n 26: 38.1 (2.5), 41.7 (2.7). Number of cycle: pG 0.83, pTG 0.25. First n 44: 38.1 (2.1), 40.9 (2.2). Repeat n 25: 37.1 (2.2), 43.0 (2.4). Pregnancy: pG 0.27, pTG 0.03. Conception n 13: 37.4 (3.1), 45.6 (3.2). No conception n 56: 37.8 (1.5), 38.3 (1.6). *pG, p value for test (of hypothesis) for between groups effect. **pTG, p value for test (of hypothesis) for time-by-group interaction effect. The mean increase (SEM) in time is 1.8 (0.7) (p = 0.01). Table 4 The estimated mean (SEM) of trait anxiety scores at each point of measurement by sodium diet, infertility, number of IVF-ET cycle and pregnancy, using a repeated measurement model. Columns n, Baseline, Luteal phase, pG*, pTG**. Sodium diet: pG 0.25, pTG 0.46. Restricted n 36: Baseline 35.3 (2.0), Luteal phase 38.1 (2.2). Normal n 33: Baseline 33.2 (1.8), Luteal phase 34.9 (2.0). Infertility: pG 0.34, pTG 0.76. Primary n 43: 35.3 (1.6), 37.8 (1.8). Secondary n 26: 32.2 (2.2), 35.2 (2.4). Number of cycle: pG 0.25, pTG 0.69. First n 44: 33.1 (1.9), 35.0 (2.1). Repeat n 25: 35.5 (2.0), 38.0 (2.2). Pregnancy: pG 0.82, pTG < 0.01. Conception n 13: 33.2 (2.7), 38.3 (3.0). No conception n 56: 35.4 (1.3), 34.7 (1.4). *pG, p value for test (of hypothesis) for between groups effect. **pTG, p value for test (of hypothesis) for time-by-group interaction effect. The mean increase (SEM) in time is 0.4 (0.2) (p = 0.03).",
+      "trial_id": "beerendonk-1999",
+      "uncertainty": "Extracted text misreads Table 4 no-conception n as 55; rendered table reads 56. Mean-increase footnotes do not equal simple differences of the displayed marginal means; no reconciliation is assumed."
+    },
+    "889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775": {
+      "delivery_receipt": "sha256:e8a5e344f262457aedec0e00e7d607e2180bb1bcd17b2380edb44af551e0fecd",
+      "handle": "eh_889f8dcc1ffc3833",
+      "identity": "sha256:889f8dcc1ffc3833bd74b4bafa94ca03c7a0dc3121e634973ec3a43b14fb9775",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.1,
+        0.085,
+        0.9,
+        0.29
+      ],
+      "render": {
+        "identity": "sha256:d0f9fb8f11eef0c284228a9a8015748ed5a95b65e7e5d1f4f6aa28b76273106d",
+        "page": 3,
+        "png_sha256": "sha256:5a3d22dd9729241681b4b7c51f463af47c9f9c9168102761e953fe28acf91165",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e"
+      },
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "transcription": "Table 1 Reasons for dropping out of the study by diet regime and total. Columns Reason for drop-out, Sodium restricted n = 57, Normal sodium n = 62, Total n = 119. >20 preovulatory follicles*: 5, 5, 10 (8.4%). <4 preovulatory follicles*: 5, 10, 15 (12.6%). Cycle disturbances: 3, 4, 7 (5.9%). Failed fertilization: 2, 4, 6 (5.0%). Personal reasons: 0, 2, 2 (1.7%). No compliance with diet: 3, 3, 6 (5.0%). Compliance with diet unknown: 3, 1, 4 (3.4%). Total: 21, 29, 50 (42.0%). *These criteria were laid down in the current IVF-ET protocol.",
+      "trial_id": "beerendonk-1999"
+    },
+    "8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de": {
+      "end": 2364,
+      "end_line": 85,
+      "handle": "eh_8a53d7892305882d",
+      "identity": "sha256:8a53d7892305882d7256c59deec0999161ea2c7c3e77d076c9979bab7b3632de",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Psychological tests\nTo assess the psychological effem, the Spielberger\nState and Trait Anxiety Inventory (STAI) was\nusedY6J7.\nThese tests evaluate the level of anxiety at\na certain moment (state) and the level of anxiety\none generally feels (trait). The inventory consists of\n20 items with a range of possible scores fiom 20 to\n80, for state anxiety as well as for trait anxiety. The\ntests were performed at baseline (just before the\ntime of randomization, about 10 days before the\nstart of the cycle) and in the luted phase of the\nIVF-ET cycle (12 days after ovum pick-up), before\nthe patient was aware of being pregnant or not\n(STM 1 and STM 2 in Figure 1). The outcome of\nthe pregnancy test thus could not interfere with the\nSTM scores. Patients were not informed about the\npossible role of dietary sodium restriction on\ncoping skills.",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 1526,
+      "start_line": 67,
+      "trial_id": "beerendonk-1999"
+    },
+    "92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6": {
+      "end": 3524,
+      "end_line": 132,
+      "handle": "eh_92ffd795c61b9908",
+      "identity": "sha256:92ffd795c61b99083e0865e70cd9fca829f5399bc7d4a5c6c0010f33c5d4bab6",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "RESULTS\nDrop-oat\nAnalysis of variance was performed to test\nthe group accolding to sodium diet d\nto drop-\nout (nble 2) The uL;llysis d e d\nthat the drop-\ndifkenccs at tnsctine (randomization) for age,\nduration of infertility and the STAI scores be-\nouts tended to have higher mean state anxiety\nscores compvcd with the women that continued\n(p = 0.11). The mean trait anxiety scores in women\nwith a sodium restricted diet tended to be higher\ncompared with women with a normal sodium diet\n(p = 0.09), but this was indep4-t of dropout.\nAlso, no signiscvlt W'nce\nfor age d\nduration\nof infertility were found between diet groups,\nout p u p s at baseline. Because interaction by the\ndropout group was never statistically s i w a n t\n(p > 0.45), wc conclude that in this study possible\nbiasbysekaionatlkted both dietgro ups in similar\nproportions.\nThe effkct of dieting was studied in the 69\nwomen who completed the cycle with adequate\ncomplivlce to the assigned diet only In thk popu-\nlation h e women (14%) of the sodium rcsbicted\ndiet p u p and eight women (24%) of the normal\nsodium diet group became pregnant (p = 036), so\nthe outcome of W E T trial was not signi6candy\n?fftctcdbydiet.\nbetween dropoutPw~-~-dv-\nState anxiety\nThc reputed measurement vulysis d\nc\nd\n that\non a-\nthe state anxiety i\nn\nd\n\nsignSandy\n(p=O.Ol)\nh m basehe (randomization) to the\nsccond point of measurement in the luted phase\n(mle 3). on avenge the incruse of state anxiety in\nboth diet groups was similar. Though state miety\nin women with a sodium restricted diet was higher\ncompared with women with a normal sodium diet\nat both points of measurement, this was not statis-\ntically significant (Q = 0.13). In other words, the\npossible difkence at the time of randomization\nwas similar to the diffucnce at the second point of\nmeasurement. Independent of this, the mean\nincrease in state varietywas significvltlyhigher in\nwomen who conceived compared to thoscwho did\nnot conceive (p=O.O3).\nFurthermore, no signifi-\ncant difhcnccs were found as a result of either the\nkind of infertility @rimuy/secondary) or the\nnumber of the IVF-ET cycle.\nWt anxiety\nConctmingthe trait m x i q the reputed measure-\nment amlysis rcvakd that on average the tiait\nanxiety also increased signifiuntly (p 5 0.03) fiom\nthe moment of rando&on\nto the second point\nof measurement ('Eble 4). Ho~evcr, the mean\ninatue in time was sigdcantly higher in women\nwho conceived compared with women who did not\nconceive. As shown in 'Wle 4 the man trait\nanxiety in women who conceived was lower at\nbaseline (randomization) and higher near the\npregnancy test compared with the women who did\nnot conceive (pcO.01). No further significant\ndi&nnces wcre fbund as a result of either diet, the\nkind of infertility @rirn?ry.sccondary) or the\nnumber ofthe IVF-ET cycle.\nnble 2 The estimated man (SEM) of age, duration of infertility and STAI scores at bascline by pups according to\nsodium dktuldmdrapour~e\nU\nAgr6-d\nDumcion of\nS W\nTmir\nwi9m.J anrig.\nanricty\nSodium did\nRcsaicted\n57\n323 (0.5)\n43 (0.4)\n40.1 (1.4)\n36.7 (1.2)\nN o d\n62\n328 (0.5)\n4.0 (0.4)\n38.5 (13)\n34.0 (1.1)\np value\n0.46\n0.55\n039\n0.09\nDIppoUt\nYeS\n50\n320 (0.5)\n4.2 (0.4)\n40.8 (1.4)\n35.8 (1.2)\nN o\n69\n33.2 (0.4)\n4.1 (03)\n37.8 (1.2)\n34.9 (1.0)\np value\n0.07\n0.81\n0.11\n0.57\np is level of si@ance\nfor di&rencoJ bctwccn subclasses, using vufysir ofvvirnce\n100\nJ o d\nOrPsychosomatic Obstetrics and Gynecology\nJ Psychosom Obstet Gynaecol Downloaded from informahealthcare.com by The University of Manchester on 11/18/14\nFor personal use only.",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "beerendonk-1999"
+    },
+    "bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59": {
+      "end": 3679,
+      "end_line": 114,
+      "handle": "eh_bb88e60b56af21ca",
+      "identity": "sha256:bb88e60b56af21ca81c0ae2429c8597c451570bec775c9bd8a9a3707f0c5aa59",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Anxiety duting M-ET\nB d o n k et al.\nTable 1 Reasons for dropping out of the study by diet regime and total\nSodium rrmiaed\nNormal sodium\nTotal\nReasonfor drop-out\nn=57\nn=62\nn=119\n> 20 preovulatory follicles*\n5\n5\n10 ( 8.4%)\n< 4 preovulatory follicles*\n5\n10\n15 (12.6%)\nFailed fertilization\n2\n4\n6 ( 5.0%)\nPersonal reasons\n0\n2\n2 ( 1.7%)\nCycle disturbances\n3\n4\n7 ( 5.9%)\nNo compliance with diet\nCompliance with diet unknown\n3\n3\n3\n1\n6 ( 5.0%)\n4 ( 3.4%)\nTotal\n21\n29\n50 (42.0%)\nThese criteria were laid down in the current IVF-ET protocol\nPatient characteristics\nThe data of 69 women who completed their cycles\nwith adequate compliance to the assigned diet\nremained for analysis: 36 women were assigned to a\nsodium restricted diet and 33 women to a n o d\nsodium diet. The mean age was 332 (estimated\nmean (SEM) 0.4) years. The mean duration of\ninfertility was 4.1 (SEM 0.4) years. Forty-three\n(62%) of the women were primary infertile. Forty-\nfour (64%) women were enrolled in their first\nIVF-ET cycle. The indications for IVF-ET were:\ntubal disease (n = 23), endometriosis (n = 1 l), male\nfactor (n = ll), idiopathic (n = 10) and combined\nfactors (n = 14).\nSixty-four women were Caucasian (93%), three\nwere Black women and two were Asian. The\nmajority of the women had at least secondary\neducation. Fifiy-six women (81%) were employed\noutdoors. Most women were employed in sales and\nadministrative support occupations (n = 22, 39%)\nor in service occupations '(n = 16, 2%). Thirteen\nwomen (23%) were professionals or had a high\nstatus\nPsychological tests\nTo assess the psychological effem, the Spielberger\nState and Trait Anxiety Inventory (STAI) was\nusedY6J7.\nThese tests evaluate the level of anxiety at\na certain moment (state) and the level of anxiety\none generally feels (trait). The inventory consists of\n20 items with a range of possible scores fiom 20 to\n80, for state anxiety as well as for trait anxiety. The\ntests were performed at baseline (just before the\ntime of randomization, about 10 days before the\nstart of the cycle) and in the luted phase of the\nIVF-ET cycle (12 days after ovum pick-up), before\nthe patient was aware of being pregnant or not\n(STM 1 and STM 2 in Figure 1). The outcome of\nthe pregnancy test thus could not interfere with the\nSTM scores. Patients were not informed about the\npossible role of dietary sodium restriction on\ncoping skills.\nStatistical methods\nThe moment of randomization is indicated as\nbaseline (before ovarian stimulation). Tmway\nanalysis of variance (ANOVA)\nmodels were used to\ntest the effect of sodium diet and drop-out on age,\nduration of infertility and the STAI scores,\nrespectively, for statistical significance. The\ndependent variables were age, duration of infertility\nand the STAI scores at baseline, respectively. The\nindependent variables were sodium diet (restricted,\nn o d ) and dropout (yes, no). The interaction\nterm between sodium diet and dropout was also\nincluded in the model. For evaluation the least-\nsquares means of the subclasses were assessed\".\nThe effect of sodium diet on the STAI scores\nduring the cycle was analyzed using a repeated\nmeasurement design in an ANOVA model. The\ndependent variables were the state score and the\ntrait score, respectively. The independent variables\nwere sodium diet (restricted, normal), infertility\n(primary, secondary), number of lVF-ET cycles\n(first, repeat) and pregnancy (conception, no\nconception). Here also, for evaluation the least-\nsquares means of the subclasses were assessed'8.\nJournal of Psychosomatic Obstetrics and Gynecology\n99\nJ Psychosom Obstet Gynaecol Downloaded from informahealthcare.com by The University of Manchester on 11/18/14\nFor personal use only.",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "beerendonk-1999"
+    },
+    "cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd": {
+      "delivery_receipt": "sha256:b56e6b79c11b4c39d8356fb7e5bed1411ff7556b759047a2237273924c7f9ced",
+      "handle": "eh_cd452baa207bc481",
+      "identity": "sha256:cd452baa207bc481c31ae947a5ef385127392861d5eed398a3afa56d54b241dd",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.52,
+        0.24,
+        0.92,
+        0.5
+      ],
+      "render": {
+        "identity": "sha256:a2ac38ef3bab91716a82b3f25959e51d3ecae63fb5664200f2cb6e6a7d8b71dd",
+        "page": 6,
+        "png_sha256": "sha256:6890b26c52bf76fbda9ea0bd5bd74eeb04f3f42a9e75cf1897c5f21466f4bf21",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e"
+      },
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "transcription": "A high percentage of state and trait anxiety scores in the luteal phase could not be collected because of cancellation of the IVF-ET cycle. Only a small proportion of the drop-outs were due to non-compliance with the diet. The criteria for cancellation of the cycle are laid down in the current IVF-ET protocol. Analysis of the data of the drop-outs demonstrated that possible bias by selection affected both diet groups in similar proportions. The tendency to higher mean state anxiety scores (baseline, p = 0.11) of the drop-outs compared to the scores of the women that completed their cycle suggests that high state anxiety levels may predispose to cancellation of the IVF-ET treatment. This finding confirms the effect of stress on infertility and infertility treatment as assumed by several authors before.",
+      "trial_id": "beerendonk-1999"
+    },
+    "e07a5a4702eca9197ee27691def5ccc94a653d91ce7f42a0eb1c0d35f69ecaff": {
+      "end": 3492,
+      "end_line": 110,
+      "handle": "eh_e07a5a4702eca919",
+      "identity": "sha256:e07a5a4702eca9197ee27691def5ccc94a653d91ce7f42a0eb1c0d35f69ecaff",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Statistical methods\nThe moment of randomization is indicated as\nbaseline (before ovarian stimulation). Tmway\nanalysis of variance (ANOVA)\nmodels were used to\ntest the effect of sodium diet and drop-out on age,\nduration of infertility and the STAI scores,\nrespectively, for statistical significance. The\ndependent variables were age, duration of infertility\nand the STAI scores at baseline, respectively. The\nindependent variables were sodium diet (restricted,\nn o d ) and dropout (yes, no). The interaction\nterm between sodium diet and dropout was also\nincluded in the model. For evaluation the least-\nsquares means of the subclasses were assessed\".\nThe effect of sodium diet on the STAI scores\nduring the cycle was analyzed using a repeated\nmeasurement design in an ANOVA model. The\ndependent variables were the state score and the\ntrait score, respectively. The independent variables\nwere sodium diet (restricted, normal), infertility\n(primary, secondary), number of lVF-ET cycles\n(first, repeat) and pregnancy (conception, no\nconception). Here also, for evaluation the least-\nsquares means of the subclasses were assessed'8.",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 2365,
+      "start_line": 86,
+      "trial_id": "beerendonk-1999"
+    },
+    "e1fad331de506388c02c511ea3271232924a558ea8135f74cdc5718897542901": {
+      "end": 369,
+      "end_line": 9,
+      "handle": "eh_e1fad331de506388",
+      "identity": "sha256:e1fad331de506388c02c511ea3271232924a558ea8135f74cdc5718897542901",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "luted phase hCG. Also, all women filled out the\nSpielberger Invcnany withii an in&\nof less than\n30 mins from the fiurth luted support hCG\ninjection (peak hCG level after intramuscular\n;Idrrmuse?tion: 6 hour#@). Udortunately we did\nnot estimate hCG levels in blood at that time to\nthat the hCG kvcls in women who conceived were\nhigher than in women who did not conceive.",
+      "source_id": "source_accf3146dba93a67506379ce451191b7184a128b158ed36f12661876a584ff7e",
+      "source_version": "sha256:8e48f896122e87c696ef2c114ebaf5b828f2724f0169014f707c02d8d31b8615",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "beerendonk-1999"
+    }
+  },
+  "source_and_guidance_access": [
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "windows": [
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 74
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 73
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 114
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 132
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 143
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 109
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "windows": [
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 6,
+            "start_line": 67,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 109
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "source_id": "sh_accf3146dba93a67",
+        "page": 5
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "windows": [
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 74
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 73
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 114
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 132
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 143
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 109
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "windows": [
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 6,
+            "start_line": 63,
+            "end_line": 97
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 109
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5a457071cb8e4de38e7a545479f7df4b.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5a457071cb8e4de38e7a545479f7df4b.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5a457071cb8e4de38e7a545479f7df4b.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.5a457071cb8e4de38e7a545479f7df4b.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "source_id": "sh_accf3146dba93a67",
+        "page": 4
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "source_id": "sh_accf3146dba93a67",
+        "page": 3
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "source_id": "sh_accf3146dba93a67",
+        "query": "concealed envelopes allocation sequence",
+        "mode": "any",
+        "purpose_domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "domain_id": "domain:deviations"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.1476a0b6a605484a9418862c42ba148f.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.1476a0b6a605484a9418862c42ba148f.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.1476a0b6a605484a9418862c42ba148f.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.1476a0b6a605484a9418862c42ba148f.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.1476a0b6a605484a9418862c42ba148f.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "source_id": "sh_accf3146dba93a67",
+        "page": 6
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "domain_id": "domain:missing"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.085e8ae6c6dd4cc7ab1676cbdb41bdc0.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.085e8ae6c6dd4cc7ab1676cbdb41bdc0.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.085e8ae6c6dd4cc7ab1676cbdb41bdc0.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.085e8ae6c6dd4cc7ab1676cbdb41bdc0.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "domain_id": "domain:measurement"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.66729f9be7de4112bbb113620dd621a9.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.66729f9be7de4112bbb113620dd621a9.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.66729f9be7de4112bbb113620dd621a9.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.66729f9be7de4112bbb113620dd621a9.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "windows": [
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 3,
+            "start_line": 67,
+            "end_line": 85
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 9
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "domain_id": "domain:selection"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f44ee684fa1f4e7890c95da85ef748c0.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f44ee684fa1f4e7890c95da85ef748c0.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f44ee684fa1f4e7890c95da85ef748c0.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f44ee684fa1f4e7890c95da85ef748c0.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.f44ee684fa1f4e7890c95da85ef748c0.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "beerendonk-1999",
+        "windows": [
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 3,
+            "start_line": 86,
+            "end_line": 110
+          },
+          {
+            "source_id": "sh_accf3146dba93a67",
+            "page": 7,
+            "start_line": 45,
+            "end_line": 55
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 59,
+    "tokens": {
+      "input_tokens": 7310762,
+      "cached_input_tokens": 6904320,
+      "output_tokens": 22504,
+      "reasoning_output_tokens": 3796
+    },
+    "dollars": null
+  },
+  "review_focus": "Assess exact target/result matching and source entailment, official interpretation, material mechanisms and warranted uncertainty. Identify material defects with locators; do not score preferred labels.",
+  "raw_seal": "diagnostics/final-medium-verifier-cutover-20261006/cases/beerendonk-1999/scientific-review-seal"
+}

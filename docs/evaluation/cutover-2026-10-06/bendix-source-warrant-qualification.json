@@ -1,0 +1,17 @@
+{
+  "case": "bendix-1996",
+  "status": "Parent-relayed completed independent source review; consequential overconfidence flagged for scientific adjudication",
+  "question_id": "sq:deviations:appropriate-analysis",
+  "original_answer": "no",
+  "original_justification": "The 45-person treatment analysis is restricted to completers returning at follow-up; two nonstarters and seven dropouts are expressly excluded, including two contactable patients. This is a naive completion-based restriction, not simply an analysis omitting missing outcomes. It is inappropriate for the all-randomized assignment effect.",
+  "original_unknowns": [
+    "Which of the contacted excluded patients had ascertained workability is unknown; contact alone does not prove outcome observation."
+  ],
+  "source_locator": "Original benchmark report physicalp6/printedp67 lines83\u201394; only2of9 nonstarters/dropouts contactable and therefore excluded.",
+  "qualification": "Known exclusion/contact does not establish observed workability outcomes were discarded. The answer itself records actual outcome observation for the two as unknown, so definitive naive-completion-restriction versus missing-only characterization overstates its warrant. Official Box6Q2.6 distinguishes missing-only omission.",
+  "consequence": "Operational pass remains separate from material reasoning error/uncertainty. Do not count D2 mechanism as fully supported or all9 exclusions as a certified separate D2 mechanism. Preserve original answers; no preferred replacement label. D3 concerns independently supported.",
+  "product_defect_or_new_gate_established": false,
+  "preferred_label_required": false,
+  "answers_changed": false,
+  "artifact_sha256": "d25fdb8754e3398a4bdaf91d075b323f7885a370f63bf090489333af27f54965"
+}

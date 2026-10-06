@@ -1,0 +1,47 @@
+{
+  "case": "chua-2022",
+  "proposal_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10ff5-0002-70d3-8522-ad2a90815323",
+    "elapsed_seconds": 203.0986728189746,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "scope_review_reference": "sha256:e21ae1116742f68034261f49db77e7ec9b2f0114c56d185306d8271835ec5966",
+  "scope_relation": "narrower",
+  "source_review": [
+    {
+      "source_id": "source_ab74cf546ed17772332f3e1572e0bd2376f2b92fc94eee6c08b14d1b48e8bcf3",
+      "source_sha256": "e5d602621f33d65b7955d694d380fea1cd0968f0aeec8e87e127fc55291382a1",
+      "pages": [
+        1,
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "checked": "Native renderedp8Table2 primaryfirst-attempt ITTmedian difference0CI0\u20134.0P.138 withmedians100(96,100)vs100(91,100),97/93. Articlep3\u20134:192randomized97/95;2controlexclusions DNRestablishedafterrandomization andoperating-roomintubation; reportedITT190. Firstattemptwindow paralyticadministrationthroughETCO2ifsuccessful orsecondattemptstartiffailed. PP0CI0\u20131.0P.061, all-attempt ITT0CI0\u20134.0P.072 andposthocadjustedfirstquartile5.5CI1.5\u20139.5 are competingResults explicitlyretained, not selected."
+    },
+    {
+      "source_id": "source_ffc67037a8e931188d36faa19db1981fc7f6eda38f63de221a8604f185966a9d",
+      "source_sha256": "9e2be0c938c8272b21af59a4d780be92f39a1c918ef8eb1891bc41ad11c2d992",
+      "pages": [
+        1
+      ],
+      "checked": "Currentdatedregistrycapture usesparalytic-to-ETCO2window upto45minutes andfirstinsertioninto oropharynx; failedattemptstoppingrule/historicalequivalence not established. Preservetimeclarityconflict andcurrentaugmentationstatus."
+    }
+  ],
+  "retained_qualifiers": [
+    "Narrower reportedanalysis thanallrandomized target; sourceITTlabel notcompleteobservationproof.",
+    "Primaryfirst-attempt mediandifference retained; nopositive posthocquartile/all-attempt/PPsubstitution.",
+    "Noindependenthistoricalprespecification or exactreferencealignment claim."
+  ],
+  "assessment_running": true,
+  "no_domain_feedback": true,
+  "source_and_result_unchanged": true,
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6"
+}

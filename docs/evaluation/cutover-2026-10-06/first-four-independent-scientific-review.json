@@ -1,0 +1,35 @@
+{
+  "scope": "Completed independent source-aware AI reviews relayed by parent; no accuracy certification or answer changes",
+  "cases": {
+    "albert-2013": {
+      "finding": "No material source contradiction or systematic scientific-rule defect found; defensible with qualifications.",
+      "source_verification": "Original mainPDF/hash, flow andTable3 independentlychecked; one-year7vs14medians andabstractdiscrepancy retained.",
+      "qualifications": "D2separatesmissing-only fromeligibility exclusions; D3relatedlosses supportprobableselection withoutcertifyingbiasdirection."
+    },
+    "sustain-6": {
+      "finding": "No material source contradiction or systematic scientific-rule defect found; defensible with qualifications.",
+      "source_verification": "MainPDFhash andcriticalnumberedrandomization/censoring/SAP/modelpassages match. Operator additionally renderedFigureS1Aand verifiedcounts/transcription againstexactPNGhash.",
+      "qualifications": [
+        "Weakestwarrant D2.4ProbablyNo: smallcontext-specificcounts/inert-placebo cessationmay supportlimitedimpact; ITTaloneisnotreassurance andunknown eventtimingpermitsdisagreement.",
+        "SAP16Marchafterlastvisit15Marchdoesnotproveunblinding; pre-unblindingProbablyYes remainsqualified."
+      ],
+      "review_limit": "Reviewer couldnotindependentlyrenderlargeappendix/protocolbinaries; usedpinnednumberedsourcepassages. This isnotcompleteindependentrawSourceverification."
+    },
+    "bendix-1996": {
+      "finding": "Materialconsequentialsource-warrantoverconfidence inD2.6; scientificadjudicationrequired. Operationalcompletionisnotfullscientificsupport.",
+      "qualification_record": "bendix-source-warrant-qualification.json",
+      "source_verification": "Reviewer verifiedall10narrativewindowsagainstoriginalbenchmarkreadoutputs.",
+      "qualifications": "Contactability/knownexclusion doesnotestablishobservedworkabilitywasdiscarded; missing-onlyversusnaivecompleterrestrictionunresolved. Otherdomainsandexactworkabilitytargetdefensible; D3concerns independentlysupported."
+    },
+    "testing": {
+      "finding": "No materialsource-warrantblockerfound; defensiblewithqualifications.",
+      "source_verification": "Source/visualverificationconfirms preservedpopulation,modelandtimingconflicts andD3/D4qualifications.",
+      "review_limit": "Parentrelayedresult; detailedreviewpacket limits retained byparent. No expertaccuracycertification."
+    }
+  },
+  "answers_changed": false,
+  "preferred_labels_supplied_to_assessors": false,
+  "product_defect_or_new_gate_established": false,
+  "accuracy_gain_claimed": false,
+  "source_corpus": "OriginalCodebenchmark dossiers; currentregistryaugmentation qualified"
+}
