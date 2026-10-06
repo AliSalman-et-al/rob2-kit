@@ -1,0 +1,58 @@
+{
+  "case": "bendix-1996",
+  "runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "proposal_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10fde-1951-7273-ad35-4196f0fb0b49",
+    "elapsed_seconds": 196.46168700797716,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "assessment_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a10fde-1951-7273-ad35-4196f0fb0b49",
+    "elapsed_seconds": 704.2316274710465,
+    "finalized_batch_observed": true,
+    "initial_sessions": 0,
+    "continuations": 1,
+    "no_operator_science_feedback": true
+  },
+  "artifact": "diagnostics/final-medium-verifier-cutover-20261006/cases/bendix-1996/workspace-run/.rob2-kit/finalized/3396eb76be491867354af4e8b12cf57a95f133fcb23a6b221ebb231360b5b04c.rob2.zip",
+  "artifact_sha256": "d25fdb8754e3398a4bdaf91d075b323f7885a370f63bf090489333af27f54965",
+  "product_verifier": true,
+  "standalone_verifier_exit": 0,
+  "source_warrant_review": "pending; structural verification does not certify scientific support",
+  "projection_sha256": "80afe2d0ea85fcedbe0f0f946049481db7f657dd165845e2f97af30ebee2e301",
+  "session_sha256": "ead8aa541ce532f510a612db59b33f4fc7049105fad7b833d8c957cd93787fcc",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 70,
+    "tokens": {
+      "input_tokens": 8459314,
+      "cached_input_tokens": 8149760,
+      "output_tokens": 20897,
+      "reasoning_output_tokens": 2376
+    },
+    "dollars": null
+  },
+  "accuracy_gain_claimed": false,
+  "all_attempts_preserved": true
+}
