@@ -1,0 +1,66 @@
+{
+  "case": "monaleesa-2",
+  "same_session": "01a10ffe-9508-7380-999e-9b5153798e03",
+  "recovery_freeze_commit": "840e3d450eabda7b52376db62d8f0176a16c860f",
+  "initial_idle_attempt_retained": true,
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "recovery_launch": {
+    "command": [
+      "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+      "exec",
+      "resume",
+      "01a10ffe-9508-7380-999e-9b5153798e03",
+      "--strict-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "-m",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"medium\"",
+      "--json",
+      "-o",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/monaleesa-2/technical-proposal-recovery-01/proposal-final.txt",
+      "-"
+    ],
+    "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/monaleesa-2/technical-proposal-recovery-01/workspace-run",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "config_sha256": "41ae7f69b9ae00bd35665751e271c7fc19c93b4728703ab97b59fe0dfbb64d78",
+    "launcher_sha256": "29ee5fc1548c958ff06d296e35a5e1ef2c15eec433d0abdc281752c92bce4267",
+    "manifest_sha256": "94ef420137f9c5a0e7940573fdb59311e5efccb04e6d64b66082b950b36fa6ad",
+    "input_sha256": "e78ee9b9619a8bc3790275c5f5a4e90d9042c9e9fb79793f81d6d6d58b73885b",
+    "environment_keys": [
+      "CODEX_HOME",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LC_CTYPE",
+      "LOGNAME",
+      "NO_COLOR",
+      "PATH",
+      "ROB2_WORKSPACE",
+      "SHELL",
+      "TEMP",
+      "TERM",
+      "TMP",
+      "TMPDIR",
+      "USER",
+      "XDG_RUNTIME_DIR"
+    ],
+    "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+    "started_at_utc": "2026-10-06T07:04:07.168062+00:00",
+    "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+    "authorized_new_sessions": 1
+  },
+  "observable_productive_progress": true,
+  "scientific_results": "Proposal recovery ongoing; no accuracy claim."
+}

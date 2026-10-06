@@ -3,28 +3,28 @@
   "cases": {
     "albert-2013": {
       "finding": "No material source contradiction or systematic scientific-rule defect found; defensible with qualifications.",
-      "source_verification": "Original mainPDF/hash, flow andTable3 independentlychecked; one-year7vs14medians andabstractdiscrepancy retained.",
-      "qualifications": "D2separatesmissing-only fromeligibility exclusions; D3relatedlosses supportprobableselection withoutcertifyingbiasdirection."
+      "source_verification": "Original main PDF/hash, flow and Table 3 independently checked; one-year 7 versus 14 medians and abstract discrepancy retained.",
+      "qualifications": "D2 separates missing-only from eligibility exclusions. D3 related losses support probable selection without certifying bias direction."
     },
     "sustain-6": {
       "finding": "No material source contradiction or systematic scientific-rule defect found; defensible with qualifications.",
-      "source_verification": "MainPDFhash andcriticalnumberedrandomization/censoring/SAP/modelpassages match. Operator additionally renderedFigureS1Aand verifiedcounts/transcription againstexactPNGhash.",
+      "source_verification": "Main PDF hash and critical numbered randomization, censoring, SAP and model passages match. Operator also rendered Figure S1A and verified counts/transcription against its exact PNG hash.",
       "qualifications": [
-        "Weakestwarrant D2.4ProbablyNo: smallcontext-specificcounts/inert-placebo cessationmay supportlimitedimpact; ITTaloneisnotreassurance andunknown eventtimingpermitsdisagreement.",
-        "SAP16Marchafterlastvisit15Marchdoesnotproveunblinding; pre-unblindingProbablyYes remainsqualified."
+        "Weakest warrant is D2.4 Probably No: small context-specific counts and inert-placebo cessation may support limited impact; ITT alone is not reassurance, and unknown event timing permits disagreement.",
+        "SAP dated 16 March after the last visit on 15 March does not prove unblinding; pre-unblinding Probably Yes remains qualified."
       ],
-      "review_limit": "Reviewer couldnotindependentlyrenderlargeappendix/protocolbinaries; usedpinnednumberedsourcepassages. This isnotcompleteindependentrawSourceverification."
+      "review_limit": "Reviewer could not independently render the large appendix/protocol binaries and used pinned numbered source passages. This is not complete independent verification of every raw Source."
     },
     "bendix-1996": {
-      "finding": "Materialconsequentialsource-warrantoverconfidence inD2.6; scientificadjudicationrequired. Operationalcompletionisnotfullscientificsupport.",
+      "finding": "Material, consequential source-warrant overconfidence in D2.6 requires scientific adjudication. Operational completion does not establish full scientific support.",
       "qualification_record": "bendix-source-warrant-qualification.json",
-      "source_verification": "Reviewer verifiedall10narrativewindowsagainstoriginalbenchmarkreadoutputs.",
-      "qualifications": "Contactability/knownexclusion doesnotestablishobservedworkabilitywasdiscarded; missing-onlyversusnaivecompleterrestrictionunresolved. Otherdomainsandexactworkabilitytargetdefensible; D3concerns independentlysupported."
+      "source_verification": "Reviewer verified all 10 narrative windows against original benchmark read outputs.",
+      "qualifications": "Contactability and known exclusion do not establish observed workability was discarded. Missing-only omission versus naive completer restriction is unresolved. Other Domains and the exact workability target are defensible; D3 concerns are independently supported."
     },
     "testing": {
-      "finding": "No materialsource-warrantblockerfound; defensiblewithqualifications.",
-      "source_verification": "Source/visualverificationconfirms preservedpopulation,modelandtimingconflicts andD3/D4qualifications.",
-      "review_limit": "Parentrelayedresult; detailedreviewpacket limits retained byparent. No expertaccuracycertification."
+      "finding": "No material source-warrant blocker found; defensible with qualifications.",
+      "source_verification": "Source and visual verification confirm preserved population, model and timing conflicts and D3/D4 qualifications.",
+      "review_limit": "Parent relayed the result; detailed review-packet limits remain with the parent. This is not expert accuracy certification."
     }
   },
   "answers_changed": false,

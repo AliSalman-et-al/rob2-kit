@@ -1,0 +1,63 @@
+{
+  "case": "stop-igan",
+  "order": 8,
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "launch": {
+    "command": [
+      "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+      "exec",
+      "--strict-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "-s",
+      "read-only",
+      "-m",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"medium\"",
+      "--json",
+      "-o",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/stop-igan/proposal-final.txt",
+      "-"
+    ],
+    "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/stop-igan/workspace-run",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "config_sha256": "34d458f3f24eaf182746e0904c814a59c37d10b264a9dce2421d0ad2cabb4000",
+    "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+    "manifest_sha256": "6ff14bee297231a971934128b115a7f1e4173fadf2dd87b876def5bf0d721938",
+    "input_sha256": "9c073b0659d12163d5891df6b7be679d86df0ffd3b99854a7fe7b5ea545eb880",
+    "environment_keys": [
+      "CODEX_HOME",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LC_CTYPE",
+      "LOGNAME",
+      "NO_COLOR",
+      "PATH",
+      "ROB2_WORKSPACE",
+      "SHELL",
+      "TEMP",
+      "TERM",
+      "TMP",
+      "TMPDIR",
+      "USER",
+      "XDG_RUNTIME_DIR"
+    ],
+    "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+    "started_at_utc": "2026-10-06T07:05:16.362961+00:00",
+    "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+    "authorized_new_sessions": 1
+  },
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "active_peer": "monaleesa-2 same-session proposal technical recovery",
+  "concurrency": 2,
+  "previous_case": "Chua operationally settled and both verifiers passed",
+  "scientific_results": "Pending; no accuracy gain claimed"
+}
