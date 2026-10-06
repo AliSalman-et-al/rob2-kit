@@ -1,0 +1,2542 @@
+{
+  "case": "stop-igan",
+  "purpose": "Sealed answers and selected evidence/source accesses for independent material-warrant review; adopted Domain/overall labels withheld. Structural verification is not scientific support certification.",
+  "artifact_sha256": "bc939a164ef532327d428dffe41e2c1862c9ca02a63ae610bb6e3b38e00c0812",
+  "session_sha256": "5cdb219863b0233d5f05a9a850a40d73ae4faedcddd1f12cf716b440ea129291",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "runtime_strata": {
+    "initial_runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+    "freeze": "7355c4c original first two; 2a4f9fe amended remaining eight",
+    "host_recovery": false,
+    "same_session_idle_recovery": false,
+    "all_original_attempts_retained": true
+  },
+  "approved_result": {
+    "results": [
+      {
+        "applicability": {
+          "design": "individual_parallel",
+          "evidence": [
+            "eh_bd6333d1a199c071",
+            "eh_acd6ccb5bc52d5f1"
+          ],
+          "rationale": "Individual patients underwent 1:1 allocation to two parallel treatment groups after the run-in phase."
+        },
+        "bindings": [
+          {
+            "evidence_index": 1,
+            "field": {
+              "path": "/reported/effect_measure"
+            },
+            "value_digest": "sha256:312d3130fd0fedd5d745663c3b47bab0e1a0d221bfccf9f461ae4310d4b4d7ab"
+          },
+          {
+            "evidence_index": 1,
+            "field": {
+              "path": "/reported/estimate"
+            },
+            "value_digest": "sha256:de265d6575d0cd5ceb86d34ca2ca54adae4e9d3fa8ecf97d6edb409d3b2c2e35"
+          },
+          {
+            "evidence_index": 1,
+            "field": {
+              "path": "/reported/precision"
+            },
+            "value_digest": "sha256:7b64ac3244d1db4b8775e637bdddceaa3eb32a57c4ca4174b26684e6df09bbce"
+          },
+          {
+            "evidence_index": 1,
+            "field": {
+              "path": "/reported/endpoint/name"
+            },
+            "value_digest": "sha256:0067fc486a4374d0e2a606b48d8dd00c2fb9c49ef9b55c6a044e41352ccec94b"
+          }
+        ],
+        "clarity": {
+          "analysis_population": "specified",
+          "comparison_groups": "specified",
+          "effect_measure": "specified",
+          "eligible_result_choice": "specified",
+          "measurement": "conflicting",
+          "outcome_definition": "conflicting",
+          "source_table_meaning": "specified",
+          "time_point": "specified"
+        },
+        "evidence": [
+          {
+            "handle": "eh_0de73c2be0b51192",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_21852226c5a9fb4c",
+            "kind": "narrative"
+          },
+          {
+            "delivery_receipt": "sha256:18daf46cbbc7ca6ac23769541ae56352626b70afdcc715ffc4b4516b444c7224",
+            "handle": "eh_44d1902eb6d1bc8f",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.11,
+              0.62,
+              0.89,
+              0.91
+            ],
+            "render_identity": "sha256:453e900c4fdecc71cf9a897432c7e52009b4b53f3339e2dbdccda348615fa035",
+            "transcription": "9.2.9 PRIMARY ENDPOINT \u201cIN FULL CLINICAL REMISSION\u201d. The binary variable \u201cIn full clinical remission\u201d is defined as: If CKDepi_mean(V16,V16_2) \u2212 CKDepi_mean(V1,R6) \u2265 5 or proteinuria_g/g \u2265 0.2 then \u201cIn full clinical remission\u201d = 1 (event) and if CKDepi_mean(V16,V16_2) \u2212 CKDepi_mean(V1,R6) < 5 and proteinuria_g/g < 0.2 then \u201cIn full clinical remission\u201d = 0 (no event). CKDepi_mean(V16,V16_2) is the mean of eGFR according CKDepi of visit 36 months and the results of repeated laboratory tests within one week after visit 36 months. CKDepi_mean(V1,R6) is the mean of eGFR according CKDepi of baseline and visit \u22121 week. Calculation of eGFR according CKDepi is described in 9.2.7 and proteinuria in g/g in 9.2.5."
+          },
+          {
+            "handle": "eh_44fd5aba25c4e9a5",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_6d4141338c163b1c",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_81e4f82c556176b3",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_8950343cd623df53",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_acd6ccb5bc52d5f1",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_bd6333d1a199c071",
+            "kind": "narrative"
+          },
+          {
+            "handle": "eh_cdca39f111ea7056",
+            "kind": "narrative"
+          },
+          {
+            "delivery_receipt": "sha256:1ebadf952c734d1dd3e65b3beedd8cfecb5db9d7acf17a68e5bd0c0cb10b0745",
+            "handle": "eh_d33b1a9014bb4e24",
+            "kind": "figure",
+            "provenance": "host_visual",
+            "region": [
+              0.11,
+              0.075,
+              0.825,
+              0.245
+            ],
+            "render_identity": "sha256:d3477365cfcfe4f07a09d14b1bd2445401f4f75117830becf7eb694cd3ea201b",
+            "transcription": "Figure 2, panel A: In Full Clinical Remission. Columns: Subgroup; Supportive Care; Supportive Care plus Immunosuppression; Odds Ratio (95% CI); P Value. Counts are no. of events/total no. Full-analysis set: 4/80; 14/82; 4.82 (1.43\u201316.30); 0.01. Available-case analysis: 4/72; 14/71; 5.38 (1.55\u201318.66); 0.008. Odds-ratio axis ticks: 0.25, 0.5, 1, 2, 5, 10, 20. Below 1: Supportive Care Better; above 1: Supportive Care plus Immunosuppression Better."
+          },
+          {
+            "handle": "eh_fbe78667a87d8333",
+            "kind": "narrative"
+          }
+        ],
+        "kind": "assessable",
+        "relation": "related",
+        "relation_rationale": "Select Figure 2A's full-analysis-set adjusted OR 4.82 (95% CI 1.43\u201316.30), P=0.01, for the reported first hierarchical primary endpoint at 3 years: 14/82 versus 4/80. The report's prose endpoint matches the requested remission construct and time; its logistic model adjusts for baseline eGFR and proteinuria. The non-exact related classification preserves unresolved correspondence because the original protocol used proteinuria <0.2 g/day and measured clearance, later changed to g/g and CKD-EPI eGFR, while SAP section 9.2.9 prints event coding and an end-minus-baseline GFR difference inconsistent with its prose definition. Do not assume which calculation was implemented. Prefer the principal full-analysis result over the available-case sensitivity OR 5.38 (1.55\u201318.66), which excludes missing observations, and over the distinct second primary endpoint eGFR decrease \u226515. The latter is context, not a substitute. All inspected outcome-designation sources expressly list primary endpoints; an absence of a designated primary endpoint is not established. Current registry bytes are dated augmentation, not historical replay.",
+        "reported": {
+          "analysis_population": "Full-analysis set of all 162 randomized patients: 82 immunosuppression plus supportive care and 80 supportive care alone; missing primary endpoint data classified as no remission. This is an analyzed population, not 162 observed endpoint measurements.",
+          "effect_measure": "Odds Ratio",
+          "endpoint": {
+            "definition": null,
+            "name": "In Full Clinical Remission"
+          },
+          "estimate": "4.82",
+          "form": "comparative_effect",
+          "group_values": [],
+          "precision": "1.43\u201316.30"
+        },
+        "requested_outcome": "Full clinical remission at the end of the 3-year trial phase (first of two hierarchical primary end points; second is decrease in eGFR of \u226515 ml/min/1.73 m2)",
+        "target": {
+          "comparison_groups": [
+            {
+              "assignment": "Supportive care plus immunosuppressive therapy, regimen determined by baseline eGFR.",
+              "id": "immunosuppression"
+            },
+            {
+              "assignment": "Supportive care alone.",
+              "id": "supportive"
+            }
+          ],
+          "effect_of_interest": "assignment",
+          "intended_analysis_population": "All randomized participants in the comparison groups",
+          "intended_effect_measure": "Adjusted odds ratio for remission, immunosuppression plus supportive care versus supportive care alone",
+          "measurement": {
+            "method": "Full clinical remission: protein-to-creatinine ratio <0.2 g/g AND decline in CKD-EPI eGFR <5 ml/min/1.73 m2 from randomization baseline.",
+            "metric": "Full clinical remission at the end of the 3-year trial phase (first of two hierarchical primary end points; second is decrease in eGFR of \u226515 ml/min/1.73 m2)"
+          },
+          "outcome_definition": "Full clinical remission at the end of the 3-year trial phase (first of two hierarchical primary end points; second is decrease in eGFR of \u226515 ml/min/1.73 m2)",
+          "time_point_or_window": {
+            "description": "At the final visit at the end of the 3-year randomized trial phase, following the 6-month run-in.",
+            "kind": "quantified",
+            "unit": "years",
+            "value": "3"
+          }
+        },
+        "trial_id": "stop-igan"
+      }
+    ]
+  },
+  "sources": [
+    {
+      "declared_role": "main_article",
+      "id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "label": "NEJMoa1415463.pdf",
+      "logical_path": "NEJMoa1415463.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 12,
+      "projection_hash": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "role": "main_article",
+      "sha256": "sha256:93aaf4b5421589b13bdf849ac81c8ffc09308c99f636641747a517b346a9b2b3",
+      "trial_id": "stop-igan"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_edbcf44982ef91cef73aae37c66600bf4285da7b98512bc8fa6024d83ae264e8",
+      "label": "nejmoa1415463_appendix.pdf",
+      "logical_path": "nejmoa1415463_appendix.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 9,
+      "projection_hash": "sha256:44379f551ef4cd9ec494cf8c81bd199c006b82389d85aef7b38a961a4e25cbf7",
+      "role": "supplement",
+      "sha256": "sha256:34bdf5cb06ec4735981e24b2404994161a98161a9b6477580d04af2fd3d35a0c",
+      "trial_id": "stop-igan"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_0f42e1676e16f87a7a5bf3901a08cf29d62cd4a489be7bba4632f5ccbd8d23e8",
+      "label": "nejmoa1415463_disclosures.pdf",
+      "logical_path": "nejmoa1415463_disclosures.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 52,
+      "projection_hash": "sha256:f653f433d51bf5a29f283156948110b50e70e518445ea75f14c3807e63a2ecfb",
+      "role": "supplement",
+      "sha256": "sha256:a209b7de69e81abcf77f30052375dba14daf6a3f359002749075486768ac5fc0",
+      "trial_id": "stop-igan"
+    },
+    {
+      "declared_role": "supplement",
+      "id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "label": "nejmoa1415463_protocol.pdf",
+      "logical_path": "nejmoa1415463_protocol.pdf",
+      "media_type": "application/pdf",
+      "origin": "local_dossier",
+      "page_count": 188,
+      "projection_hash": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "role": "supplement",
+      "sha256": "sha256:392fc360321b8c00834fe69d9e8227688cb45593e1a6c69e0a56d0cd7d9afa71",
+      "trial_id": "stop-igan"
+    },
+    {
+      "declared_role": null,
+      "id": "source_02a9439a1b7142a87911f6dc9704d6dda2d2d2523282e8a93e46cac7bdb02c5e",
+      "label": "ClinicalTrials.gov NCT00554502",
+      "logical_path": "registry/NCT00554502.json",
+      "media_type": "application/json",
+      "origin": "registry",
+      "page_count": 1,
+      "projection_hash": "sha256:9874d59c2567ee0cf6d648ecff0aed5338dba8f6530a4d0199939c45b479286e",
+      "role": "registry",
+      "sha256": "sha256:abb1cb07d601c1de8f1ce7debfbab042f265a29cdeac8dd5132d46be9006a18f",
+      "trial_id": "stop-igan"
+    }
+  ],
+  "questions": [
+    {
+      "domain_id": "domain:deviations",
+      "checkpoint_identity": "sha256:9a68fb4c3ea51013e649e7031696a2d1a7421c574541e8f927bddff9bf610ee7",
+      "active_questions": [
+        "sq:deviations:participants-aware",
+        "sq:deviations:personnel-aware",
+        "sq:deviations:context-deviations",
+        "sq:deviations:appropriate-analysis"
+      ],
+      "answers": [
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The trial explicitly reports open-label conduct; participants knew whether immunosuppressive drugs were added.",
+          "question_id": "sq:deviations:participants-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:15ccc164fcc67f6a6b57cf1dca79c5649c89e6797be7e0a7495f017dae3bc1b4",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [],
+          "justification": "The open-label regimens were delivered by unblinded clinicians. Objective laboratory endpoints do not blind treatment delivery.",
+          "question_id": "sq:deviations:personnel-aware",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:d8a42980e5233d195016a6aa2e79e7c47e798f2a3f660115be1b3abf35f96779",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:62574e07b9c44cd8219bef265b90d6bfada94cd6d7e8e22f863800d26a897af2",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Supportive care was reported as standardized and the assigned regimens are described, but actual nonadherence, switching and reasons are not adequately reported to distinguish trial-context departures from ordinary clinical changes. The SAP disposition graphic contains planned placeholders, not performed counts. Open-label conduct or toxicity alone cannot establish context-caused deviations.",
+          "question_id": "sq:deviations:context-deviations",
+          "unknowns": [
+            "Whether non-protocol interventions or failures of implementation arose specifically because of trial context."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bd6333d1a199c071ab405cfc7bfdbcb2d47a9a4d96f69ac9e970b63ccb645f65",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:d8a42980e5233d195016a6aa2e79e7c47e798f2a3f660115be1b3abf35f96779",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:d885e2d7edeb2b5c5fed92a1b80f276461483df8e538af8c583765bb3e575717",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:83e4b11e4db586eb21191a6f4291e1b6634c2056961579641e10959a3a7428ed",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Inspected report intervention/results/discussion, appendix contents/time-course description and protocol compliance plus SAP disposition sections; searched cross and deviation wording. Captured plans do not document actual context-caused conduct.",
+              "unresolved_premise": "Actual deviations and their causes remain unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "yes",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "SAP permits exclusions for eligibility violations or absence of postrandomization data, but report's principal result includes all randomized denominators."
+            }
+          ],
+          "justification": "The selected principal result uses all 80 and 82 randomized participants in assigned groups, with missing outcome data classified as failure. It is not the per-protocol sensitivity result. Assignment analysis is appropriate; missing-data assumptions belong to Domain 3. SAP permission for potential exclusions does not demonstrate actual exclusion when reported denominators include all 162.",
+          "question_id": "sq:deviations:appropriate-analysis",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:dd13e304571571eb6378400b60b1ec5d90df78125450138b33f3ae34202599a5",
+              "kind": "context"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:measurement",
+      "checkpoint_identity": "sha256:3408534577da7896e862097ae1749bb52b68edd8b025b7743caa7a6689e9fe2c",
+      "active_questions": [
+        "sq:measurement:method-inappropriate",
+        "sq:measurement:differential",
+        "sq:measurement:assessor-aware",
+        "sq:measurement:influence-possible"
+      ],
+      "answers": [
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Glucocorticoid effects on creatinine generation could overestimate eGFR; reported clearance verification is reassuring generally but its displayed numeric result concerns the second endpoint, not this remission composite."
+            },
+            {
+              "basis_index": 2,
+              "implication": "Printed formula reverses event labels and uses a GFR difference inconsistent with prose; actual programming cannot be inferred."
+            }
+          ],
+          "justification": "Scheduled repeated serum and 24-hour urine laboratory measurements are suitable for the reported biochemical remission construct. No demonstrated instrument failure or insensitivity establishes inappropriate data collection. The SAP coding conflict is real but does not prove that the erroneous printed calculation was implemented. This probable answer does not validate actual coding.",
+          "question_id": "sq:measurement:method-inappropriate",
+          "unknowns": [
+            "Actual implemented composite calculation is unknown; report and plan repeat intervals differ."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bd6333d1a199c071ab405cfc7bfdbcb2d47a9a4d96f69ac9e970b63ccb645f65",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c5841d7e330d5fffd540a492b058c1f1131bfc0769fd3b3fcf8cae6530fb3d6a",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:44d1902eb6d1bc8f45a138a09ab4ba8161a89cd37f406f53a5df8c8d6adad28e",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 3,
+              "implication": "Treatment-dependent creatinine generation can distort the eGFR component even with identical methods; the report's general verification does not establish composite-specific robustness."
+            }
+          ],
+          "justification": "The reported final-visit schedule, thresholds and repeated laboratory methods apply to both randomized arms; this endpoint is scheduled rather than passive diagnosis, so comparable ascertainment is probable. Physiological distortion of creatinine under steroids remains a separate validity concern, not evidence of different testing schedules. Stable-eGFR component counts were 38 in each arm and the reported difference was driven by proteinuria, limiting but not eliminating this concern.",
+          "question_id": "sq:measurement:differential",
+          "unknowns": [
+            "No arm-specific laboratory quality audit or remission reanalysis using clearance is supplied."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bd6333d1a199c071ab405cfc7bfdbcb2d47a9a4d96f69ac9e970b63ccb645f65",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:81e4f82c556176b3b3f27982d5b4e3508901f7c7a6f1be6ef4033ec4de620847",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c5841d7e330d5fffd540a492b058c1f1131bfc0769fd3b3fcf8cae6530fb3d6a",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "This was expressly open-label and investigators assessed laboratory endpoints. Assessor awareness is probable, although the report does not separately describe laboratory technician or analyst masking.",
+          "question_id": "sq:measurement:assessor-aware",
+          "unknowns": [
+            "Masking of individual laboratory personnel and endpoint programmers is not specified."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:d52a08e9a23f63f737ce1600a5efec148b7aad78d2449d12f9426fd015ea7718",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c5841d7e330d5fffd540a492b058c1f1131bfc0769fd3b3fcf8cae6530fb3d6a",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 3,
+              "implication": "The contradictory written calculation prevents certainty about implemented classification; it is not evidence that allocation knowledge altered assessment."
+            }
+          ],
+          "justification": "The reported composite applies fixed numeric thresholds to objectively measured serum and urine values, leaving little observer judgment through which knowledge of allocation could influence classification. Open-label status alone does not establish that laboratory values were influenced. Coding and creatinine physiology uncertainties are retained and do not themselves show knowledge-driven assessment.",
+          "question_id": "sq:measurement:influence-possible",
+          "unknowns": [
+            "Actual coding and laboratory masking remain unresolved."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:bd6333d1a199c071ab405cfc7bfdbcb2d47a9a4d96f69ac9e970b63ccb645f65",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:c5841d7e330d5fffd540a492b058c1f1131bfc0769fd3b3fcf8cae6530fb3d6a",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:44d1902eb6d1bc8f45a138a09ab4ba8161a89cd37f406f53a5df8c8d6adad28e",
+              "kind": "context"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:missing",
+      "checkpoint_identity": "sha256:bf7410105009fb47b04b601b3dc9b36d896ca38b69b2bc7abde85a61bbc4a0e0",
+      "active_questions": [
+        "sq:missing:data-available",
+        "sq:missing:evidence-unbiased",
+        "sq:missing:true-value-dependent",
+        "sq:missing:likely-dependent"
+      ],
+      "answers": [
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "All-available-case denominators establish 72/80 and 71/82 observed remission outcomes, distinct from 76/78 completers and 80/82 analyzed with failure substitution. Missing 8 and 11 outcomes are material relative to 4 and 14 remission events: plausible missing outcomes could alter this odds ratio substantially.",
+          "missing_data": {
+            "conflicts": [],
+            "rows": [
+              {
+                "analyzed": 80,
+                "basis": [
+                  "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+                  "sha256:21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9",
+                  "sha256:8729c3b9982914833e046234c46f364642ab5d8f1d0b370ef94f8b97b9d9b57e"
+                ],
+                "completed": 76,
+                "eligible": null,
+                "event_count": null,
+                "excluded": null,
+                "exclusions": [],
+                "imputed": 8,
+                "missing": 8,
+                "missing_bounds": {
+                  "kind": "exact",
+                  "lower": 8,
+                  "upper": 8
+                },
+                "missing_fraction": 0.1,
+                "observed": 72,
+                "randomized": 80,
+                "result_identity": "sha256:77ba6c761fe6ba81695ec49aee4ccc6138cc76ff8febc637875b051d6a578d27",
+                "scope": {
+                  "arm": "supportive",
+                  "population": "All randomized participants",
+                  "time_point": "36 months",
+                  "unit": "participants"
+                },
+                "treated": null
+              },
+              {
+                "analyzed": 82,
+                "basis": [
+                  "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+                  "sha256:21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9",
+                  "sha256:8729c3b9982914833e046234c46f364642ab5d8f1d0b370ef94f8b97b9d9b57e"
+                ],
+                "completed": 78,
+                "eligible": null,
+                "event_count": null,
+                "excluded": null,
+                "exclusions": [],
+                "imputed": 11,
+                "missing": 11,
+                "missing_bounds": {
+                  "kind": "exact",
+                  "lower": 11,
+                  "upper": 11
+                },
+                "missing_fraction": 0.13414634146341464,
+                "observed": 71,
+                "randomized": 82,
+                "result_identity": "sha256:77ba6c761fe6ba81695ec49aee4ccc6138cc76ff8febc637875b051d6a578d27",
+                "scope": {
+                  "arm": "immunosuppression",
+                  "population": "All randomized participants",
+                  "time_point": "36 months",
+                  "unit": "participants"
+                },
+                "treated": null
+              }
+            ]
+          },
+          "question_id": "sq:missing:data-available",
+          "unknowns": [
+            "Reasons for additional endpoint missingness among reported completers and overlap of missing components are not reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:8729c3b9982914833e046234c46f364642ab5d8f1d0b370ef94f8b97b9d9b57e",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Consistency across reported sensitivity analyses supports some robustness, but significance alone does not exclude bias."
+            }
+          ],
+          "justification": "Failure substitution was planned and available-case results and reported multiple-imputation analyses remain significant. This offers some reassurance but does not establish unbiasedness: missing participants can be remitters, and neither imputation assumptions nor estimates under plausible dependence on remission are provided. The inspected SAP imputation passages specify failure substitution only.",
+          "question_id": "sq:missing:evidence-unbiased",
+          "unknowns": [
+            "Multiple-imputation model, assumptions, estimates and sensitivity to informative missingness are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:81e4f82c556176b3b3f27982d5b4e3508901f7c7a6f1be6ef4033ec4de620847",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "stopping_rationale": "Read report, appendix contents and endpoint tables, final protocol/SAP missing rules; protocol-wide imputation search recovered only failure substitution. Allowed probable judgment preserves the unresolved assumptions.",
+              "unresolved_premise": "The missingness assumptions underlying reported multiple imputation remain unavailable."
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [
+            {
+              "basis_index": 0,
+              "implication": "Reported departures are numerically balanced: one death, one consent withdrawal and two losses in each arm."
+            }
+          ],
+          "justification": "Loss to follow-up and consent withdrawal have unexplained reasons; death precludes the composite final visit, including sepsis in the immunosuppression arm. Health status could therefore influence outcome availability. Additional missing laboratory components among completers also cannot be assumed unrelated to remission.",
+          "question_id": "sq:missing:true-value-dependent",
+          "unknowns": [
+            "Individual reasons and outcome status for losses, withdrawals and extra incomplete composites are unknown."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:8729c3b9982914833e046234c46f364642ab5d8f1d0b370ef94f8b97b9d9b57e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:ec1414860ba40da4bd749f1a748f6677b1488015030136c081a29b25e62773d4",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [],
+          "justification": "Dependence is possible, but evidence does not establish whether it is likely for the missing composite outcomes. Missing fractions differ modestly (10% versus 13.4%); balanced departures and different causes of the two deaths do not resolve the unexplained additional endpoint missingness or the remission distribution among missing participants.",
+          "question_id": "sq:missing:likely-dependent",
+          "unknowns": [
+            "Whether missingness depended on true remission status, and the direction and magnitude of resulting bias."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:8729c3b9982914833e046234c46f364642ab5d8f1d0b370ef94f8b97b9d9b57e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:ec1414860ba40da4bd749f1a748f6677b1488015030136c081a29b25e62773d4",
+              "kind": "indirect_support"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:randomization",
+      "checkpoint_identity": "sha256:1523b1a559fd08f1741e01afc4e06cf3561ad899451898144036a22f961fbdb9",
+      "active_questions": [
+        "sq:randomization:sequence",
+        "sq:randomization:concealment",
+        "sq:randomization:baseline-imbalance"
+      ],
+      "answers": [
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "The report describes covariate-adaptive 1:1 allocation; final protocol specifies Pocock-Simon minimization. Such minimization generally contains a random component, supporting probably yes, while its exact random-element probability is not provided.",
+          "question_id": "sq:randomization:sequence",
+          "unknowns": [
+            "Exact random component and its probability are not reported."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:b949fb5f57c096e4780aad5e90598dddba1745326150c8e6454d99e941fd155b",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:d2c383a9c7cd4b0dda6f6a868dea2f38ab6390ac8bf39e3a114018a0b0861aac",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:2a7025038eaae2a8764ed56af06d870c10fbd867b4887381c445f1e9c0063cff",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_yes",
+          "counterevidence": [],
+          "justification": "Telephone allocation by the study secretary at the Institute of Medical Statistics indicates centralized allocation separate from recruiting sites, probably concealing forthcoming assignments. This is a planned method supported by reported covariate-adaptive allocation, not a documented audit of every assignment.",
+          "question_id": "sq:randomization:concealment",
+          "unknowns": [
+            "No allocation audit or explicit account of recruiter access is available in the inspected randomization section.",
+            "Protocol refers to eligibility for run-in, whereas actual report places randomization after run-in."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:b949fb5f57c096e4780aad5e90598dddba1745326150c8e6454d99e941fd155b",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "no",
+          "counterevidence": [],
+          "justification": "Groups of 80 and 82 are consistent with 1:1 allocation. Baseline renal measures, proteinuria and blood pressure are broadly comparable. Two significant ARB-related differences among many variables are compatible with chance and do not suggest failed randomization.",
+          "question_id": "sq:randomization:baseline-imbalance",
+          "unknowns": [],
+          "bases": [
+            {
+              "evidence": "sha256:681847ec0d5383f7dd11ff80f49fd6c6e4f8de555a91f87b77abadce2f240026",
+              "kind": "indirect_support"
+            }
+          ]
+        }
+      ],
+      "search_accounts": []
+    },
+    {
+      "domain_id": "domain:selection",
+      "checkpoint_identity": "sha256:f1945a6acb0b2d86345e5f6d2c99ec321b6a1989691a467d2270afcd7fa8a2c8",
+      "active_questions": [
+        "sq:selection:prespecified-analysis",
+        "sq:selection:multiple-measurements",
+        "sq:selection:multiple-analyses"
+      ],
+      "answers": [
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 1,
+              "implication": "Detailed matching prose definitions and planned blinded decisions support prespecification but do not resolve chronology or formula conflict."
+            },
+            {
+              "basis_index": 5,
+              "implication": "Detailed matching prose definitions and planned blinded decisions support prespecification but do not resolve chronology or formula conflict."
+            }
+          ],
+          "justification": "The 2007 protocol and 2012 protocol/SAP specify month-36 remission, adjusted logistic analysis and missing-as-failure, broadly corresponding to the reported principal result. However, measurement amendments, repeat interval discrepancies and contradictory SAP calculation prevent establishing complete concordance. A July 2012 date alone does not show finalization before unblinded outcome access in this open-label trial with interim analyses. The planned requirement that amendments be made blinded is not a record of actual amendment decisions. Current 2026 registry bytes cannot establish historical prespecification.",
+          "question_id": "sq:selection:prespecified-analysis",
+          "unknowns": [
+            "Actual amendment timing and analyst access to unblinded outcome data; implemented endpoint coding."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:fbe78667a87d83337460ff77b545fb2d045460a663f3c070f64a70f495857b9b",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:81e4f82c556176b3b3f27982d5b4e3508901f7c7a6f1be6ef4033ec4de620847",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:053310cc22fa52156f860f9bccd257396f378a881ec1e8975c795cc5359a5916",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:8950343cd623df53dc32802a538dc95ad3beb96af9a9c1f6bf22278f86d108d8",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:44d1902eb6d1bc8f45a138a09ab4ba8161a89cd37f406f53a5df8c8d6adad28e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:0de73c2be0b511926cadf9032dfa4208c8f306eec1c6eb1239af7bd2621895bf",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:44fd5aba25c4e9a5fb1418bb447929871749d52723dd6f9dbdfe50c416f21bd8",
+              "kind": "indirect_support"
+            },
+            {
+              "kind": "limitation",
+              "search_receipt": "sha256:316e2c86f10f8566b973e732e91110110ee277e4eb9dd9b75a0c7d8ee6552e9b",
+              "stopping_rationale": "Compared original and final protocol, change summary, dated SAP and its calculation/model sections with the full report and current registry; protocol-wide blind search recovered plans, not actual chronology. These sources permit an uncertainty answer without changing scope.",
+              "unresolved_premise": "Pre-unblinded finalization of the exact measurement and analysis is unresolved."
+            }
+          ]
+        },
+        {
+          "answer": "no_information",
+          "counterevidence": [
+            {
+              "basis_index": 2,
+              "implication": "The final protocol prose matches the reported measurement/time, and changes are disclosed, limiting an allegation of selective choice."
+            },
+            {
+              "basis_index": 4,
+              "implication": "The final protocol prose matches the reported measurement/time, and changes are disclosed, limiting an allegation of selective choice."
+            }
+          ],
+          "justification": "Three-year remission is explicitly primary in the inspected documents; absence of a designated primary outcome is not supported. There are different eligible measurement definitions across versions (protein mass versus ratio, clearance versus CKD-EPI) and inconsistent printed calculations. The change summary documents modifications but does not establish why or when these specific choices were made relative to results. There is insufficient evidence to infer likely result-driven selection or to exclude it.",
+          "question_id": "sq:selection:multiple-measurements",
+          "unknowns": [
+            "Whether alternative remission definitions were calculated and compared; amendment rationale and timing."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:fbe78667a87d83337460ff77b545fb2d045460a663f3c070f64a70f495857b9b",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:8950343cd623df53dc32802a538dc95ad3beb96af9a9c1f6bf22278f86d108d8",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:81e4f82c556176b3b3f27982d5b4e3508901f7c7a6f1be6ef4033ec4de620847",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:44d1902eb6d1bc8f45a138a09ab4ba8161a89cd37f406f53a5df8c8d6adad28e",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9",
+              "kind": "indirect_support"
+            }
+          ]
+        },
+        {
+          "answer": "probably_no",
+          "counterevidence": [
+            {
+              "basis_index": 3,
+              "implication": "Several analyses were performed and some are described only by significance, leaving incomplete reporting; this does not itself show that the principal planned OR was selected on results."
+            }
+          ],
+          "justification": "The principal adjusted logistic OR, baseline covariates and failure substitution correspond to original and final analysis intentions. The report also displays the available-case sensitivity OR, which is larger, and mentions other analyses confirming significance. Thus the selected principal estimate was probably not chosen for being the most favorable analysis. Unreported sensitivity details remain a limitation rather than proof of selection.",
+          "question_id": "sq:selection:multiple-analyses",
+          "unknowns": [
+            "Detailed MI and per-protocol estimates and full implementation record are not available in inspected sources."
+          ],
+          "bases": [
+            {
+              "evidence": "sha256:fbe78667a87d83337460ff77b545fb2d045460a663f3c070f64a70f495857b9b",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:0de73c2be0b511926cadf9032dfa4208c8f306eec1c6eb1239af7bd2621895bf",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:448a2a267b0fd09f5fd8bf892096064fdefe9d75ceeadf7fc625483378c15eee",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+              "kind": "indirect_support"
+            },
+            {
+              "evidence": "sha256:d33b1a9014bb4e24a916dca06e5708ee366011bc330ed661a00c3644f21c3bbf",
+              "kind": "indirect_support"
+            }
+          ]
+        }
+      ],
+      "search_accounts": [
+        {
+          "batch_identity": "sha256:2bb465a96b444bca4f1bd7290d969c97ecd85249a97ff1110e64553cfca9ac12",
+          "candidate_count": 6,
+          "condition": null,
+          "exhausted": true,
+          "handle": "sr_316e2c86f10f8566",
+          "hits": [
+            {
+              "page": 11,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015"
+            },
+            {
+              "page": 77,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015"
+            },
+            {
+              "page": 47,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015"
+            },
+            {
+              "page": 113,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015"
+            },
+            {
+              "page": 32,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015"
+            },
+            {
+              "page": 98,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015"
+            }
+          ],
+          "identity": "sha256:316e2c86f10f8566b973e732e91110110ee277e4eb9dd9b75a0c7d8ee6552e9b",
+          "limit": 15,
+          "matching_page_count": 6,
+          "mode": "prefix",
+          "next_cursor": null,
+          "normalized_query": "blind",
+          "profile": "porter-unicode61-v1",
+          "purpose_domain_id": null,
+          "purpose_question_id": null,
+          "query": "blind",
+          "ranking_complete": true,
+          "returned_candidates": [
+            {
+              "end_line": 52,
+              "page": 11,
+              "rank": 1,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+              "start_line": 44
+            },
+            {
+              "end_line": 52,
+              "page": 77,
+              "rank": 2,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+              "start_line": 44
+            },
+            {
+              "end_line": 24,
+              "page": 47,
+              "rank": 3,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+              "start_line": 16
+            },
+            {
+              "end_line": 31,
+              "page": 113,
+              "rank": 4,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+              "start_line": 23
+            },
+            {
+              "end_line": 39,
+              "page": 32,
+              "rank": 5,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+              "start_line": 31
+            },
+            {
+              "end_line": 39,
+              "page": 98,
+              "rank": 6,
+              "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+              "start_line": 31
+            }
+          ],
+          "returned_material": 6,
+          "returned_rank_end": 6,
+          "returned_rank_start": 1,
+          "session_handle": "ss_d4c11a28b627484f",
+          "session_id": "sha256:d4c11a28b627484fcb72d80e514dbedf40a4514ef45bcffbaacb8adf1df16d61",
+          "sources": [
+            {
+              "id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+              "projection_hash": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0"
+            }
+          ],
+          "total_matches": 6,
+          "trial_id": "stop-igan",
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "selected_evidence": {
+    "053310cc22fa52156f860f9bccd257396f378a881ec1e8975c795cc5359a5916": {
+      "end": 764,
+      "end_line": 36,
+      "handle": "eh_053310cc22fa5215",
+      "identity": "sha256:053310cc22fa52156f860f9bccd257396f378a881ec1e8975c795cc5359a5916",
+      "kind": "narrative",
+      "page": 133,
+      "quote": "TRIAL STATISTICAL ANALYSIS PLAN\nEUDRACT NUMMER: 2007-000871-41\nSTUDIENNUMMER: STOP IGAN\nSTOP_IGAN_TSAP_2012_07_11_V1\n\n1\n\nTRIAL STATISTICAL ANALYSIS PLAN\n\nSUPPORTIVE VERSUS IMMUNOSUPPRESSIVE THERAPY FOR THE\nTREATMENT OF PROGRESSIVE IGA NEPHROPATHY (STOP IGAN)\nRANDOMISED, CONTROLLED CLINICAL TRIAL\nVERSION 1.0, 11.07.2012\n\n\nSponsor\nRWTH Aachen\nCoordinating Investigator\n(LKP gem. \u00a7 40 AMG)\nProf. Dr. J\u00fcrgen Floege\nMedizinische Klinik II\nMedical Faculty at RWTH Aachen University\nPauwelsstr. 30,\n52074 Aachen\nGermany\n\nBiostatistician\nUniv. Prof. Dr. rer. nat. Ralf-Dieter Hilgers\nDept. of Medical Statistics\nMedical Faculty at RWTH Aachen University\nPauwelsstr. 30,\n52057 Aachen\nGermany\nTel.: +49 (0)241 80 89359\nFax: +49 (0)241 80 82501\nE-Mail: rhilgers@ukaachen.de",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "0de73c2be0b511926cadf9032dfa4208c8f306eec1c6eb1239af7bd2621895bf": {
+      "end": 1775,
+      "end_line": 48,
+      "handle": "eh_0de73c2be0b51192",
+      "identity": "sha256:0de73c2be0b511926cadf9032dfa4208c8f306eec1c6eb1239af7bd2621895bf",
+      "kind": "narrative",
+      "page": 172,
+      "quote": "TRIAL STATISTICAL ANALYSIS PLAN\n\nEUDRACT NUMMER: 2007-000871-41\n\n\nSTUDY NUMBER: STOP IGAN\nSTOP_IGAN_TSAP_2012_07_11_V1\n\n40\n\n11.2.3 MODEL III: ANALYSIS OF VARIANCE (ANOVA)\n\nPROC MIXED DATA=...;\nCLASS treatment baseline_GFR baseline_proteinuria;\nMODEL outcome= treatment baseline_GFR baseline_proteinuria / SOLUTION CL;\nRUN;\n\nThe stratification factors baseline_GFR and baseline_proteinuria are documented in\nthe randomisation form.\nResult presentation includes estimates for treatment effect as well as estimated slopes for\nstratification factors, 95 % confidence intervals and p-values of t-statistic.\n\n11.3 STATISTICAL HYPOTHESES\n11.3.1\nPRIMARY ENDPOINTS\n11.3.1.1 PRIMARY ENDPOINT \"IN FULL CLINICAL REMISSION\"\nDEFINITION\nThe first efficacy endpoint is defined as in full clinical remission of the disease. Full clinical\nremission is defined as proteinuria < 0.2 g/g (at the end of the 3 year study period) and stable\nrenal function (GFR loss of < 5 ml/min from baseline GFR at the end of the 3 year study\nperiod). Calculation of endpoint is described in 9.2.9.\nHYPOTHESES\nThe evaluation of the primary endpoint \"in full clinical remission\" implies testing the\nhypothesis\n\nH0:\nRemission rates under both therapies are equal,\npIMMUNOSUPPRESSIVE GROUP = pSUPPORTIVE GROUP\nversus\nH1:\nRemission rates under both therapies are different,\npIMMUNOSUPPRESSIVE GROUP z pSUPPORTIVE GROUP\n\nSTATISTICAL EVALUATION\nThe hypotheses will be tested by means of fitting a logistic regression model to the \"in full\nclinical remission\" rate. Hereby treatment and the two stratification factors (baseline GFR,\nbaseline proteinuria) will serve as model building factors (11.2.1 MODEL I). The test on the\nmain factor therapy will be performed at the significance levels given by the O'Brien Fleming",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "15ccc164fcc67f6a6b57cf1dca79c5649c89e6797be7e0a7495f017dae3bc1b4": {
+      "end": 3629,
+      "end_line": 83,
+      "handle": "eh_15ccc164fcc67f6a",
+      "identity": "sha256:15ccc164fcc67f6a6b57cf1dca79c5649c89e6797be7e0a7495f017dae3bc1b4",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "Study Design\nWe conducted a prospective, open-label, random\nized, controlled clinical trial with a two-group,\nparallel, group-sequential design.13 The protocol\nis available at NEJM.org. All the authors col\nlected the data and vouch for the completeness\nand accuracy of the data and analyses and for\nthe fidelity of the study to the protocol. The",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 3284,
+      "start_line": 76,
+      "trial_id": "stop-igan"
+    },
+    "21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9": {
+      "end": 3554,
+      "end_line": 124,
+      "handle": "eh_21852226c5a9fb4c",
+      "identity": "sha256:21852226c5a9fb4cf605d30ff88ed863b0ff22a797d546bbe1de3b712f0884b9",
+      "kind": "narrative",
+      "page": 7,
+      "quote": "n engl j med 373;23 nejm.org December 3, 2015\n2231\nSupportive Care plus Immunosuppression in IgA Nephropathy\nin the immunosuppression group, 1.15; 95%\nconfidence interval, 0.62 to 2.14; P = 0.66).\nSecondary End Points\nNo significant differences were observed between\nthe supportive-care group and the immunosup\npression group at the end of the trial phase with\nrespect to the mean absolute change in eGFR,\nthe mean annual change in the slope of the re\nciprocal of serum creatinine concentration, the\nnumber of patients with a decrease in the eGFR\nof at least 30 ml per minute per 1.73 m2, and the\nnumber of patients with the onset of end-stage\nrenal disease (Table 2).\nTwelve months after randomization, patients\nin the immunosuppression group had a signifi\ncantly lower mean proteinuria level than did\nthose in the supportive-care group (Table S2). At\nmonth 36, the difference was no longer signifi\ncant. Microhematuria, as assessed by means of\na urine dipstick or sediment test, was noted in\n87% of the patients at baseline (67 in the sup\nportive-care group and 74 in the immunosup\npression group). Among these patients, micro\nhematuria was no longer present in 9 in the\nsupportive-care group and in 24 in the immuno\nsuppression group at the end of the study\n(P = 0.004). In the immunosuppression group,\nmore patients receiving glucocorticoid mono\ntherapy than those receiving combination immu\nnosuppressive therapy had remission of protein\nuria, hematuria, or both (see Table S2 in the\nSupplementary Appendix).\nThe time courses of blood pressure levels,\neGFR, and proteinuria are shown in Figure S1 in\nthe Supplementary Appendix. Values were simi\nlar in the two study groups over the 3-year trial\nphase.\nFigure 2. Primary End Points.\nPanel A shows the first primary end point: full clinical remission at the end of the 3-year trial phase (protein-to-creati\nnine ratio <0.2 [with both protein and creatinine measured in grams] and a decrease in the estimated glomerular filtra\ntion rate [eGFR] of <5 ml per minute per 1.73 m2 of body-surface area from baseline). Panel B shows the second pri\nmary end point: a decrease in the eGFR of at least 15 ml per minute per 1.73 m2 during the trial phase. A subgroup\nanalysis was performed for both end points with the use of a full-analysis set and an available-case analysis set. In\nthe full-analysis set, missing values in all events in all patients who underwent randomization were substituted by\nthe worst clinical case (i.e., no clinical remission and decrease in the eGFR of at least 15 ml per minute per 1.73 m2);\nin the available-case analysis set, only documented events among patients with available data were included in the\nanalysis.\nSupportive Care plus\nImmunosuppression\nBetter\nSupportive Care\nBetter\nSupportive\nCare\nBetter\nFull-analysis set\nAvailable-case analysis\nSupportive\nCare\nSupportive Care plus\nImmunosuppression\nOdds Ratio (95% CI)\nOdds Ratio (95% CI)\nSubgroup\n4.82 (1.43-16.30)\n5.38 (1.55-18.66)\nP Value\n4/80\n4/72\n14/82\n14/71\n0.01\n0.008\nno. of events/total no.\nA In Full Clinical Remission\nSupportive\nCare plus\nImmuno-\nsuppression\nBetter\nFull-analysis set\nAvailable-case analysis\nSupportive\nCare\nSupportive Care plus\nImmunosuppression\nSubgroup\n0.89 (0.44-1.81)\n0.89 (0.41-1.90)\nP Value\n22/80\n18/76\n21/82\n17/78\n0.75\n0.76\nno. of events/total no.\nB eGFR Decrease \u226515 ml/min/1.73 m2\n\n\n\n\n\n\n\n0.5\n0.25\n1\n2\n5\n10\n20\n0.5\n0.25\n1\n2\n5\n10\n20\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "2a7025038eaae2a8764ed56af06d870c10fbd867b4887381c445f1e9c0063cff": {
+      "end": 237,
+      "end_line": 6,
+      "handle": "eh_2a7025038eaae2a8",
+      "identity": "sha256:2a7025038eaae2a8764ed56af06d870c10fbd867b4887381c445f1e9c0063cff",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "of covariate adaptive randomization with respect\nto factors that had the potential to modify the\ntreatment effect (i.e., eGFR and proteinuria).13,16",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 89,
+      "start_line": 4,
+      "trial_id": "stop-igan"
+    },
+    "448a2a267b0fd09f5fd8bf892096064fdefe9d75ceeadf7fc625483378c15eee": {
+      "end": 1491,
+      "end_line": 49,
+      "handle": "eh_448a2a267b0fd09f",
+      "identity": "sha256:448a2a267b0fd09f5fd8bf892096064fdefe9d75ceeadf7fc625483378c15eee",
+      "kind": "narrative",
+      "page": 170,
+      "quote": "TRIAL STATISTICAL ANALYSIS PLAN\n\nEUDRACT NUMMER: 2007-000871-41\n\n\nSTUDY NUMBER: STOP IGAN\nSTOP_IGAN_TSAP_2012_07_11_V1\n\n38\n11\nINFERENTIAL STATISTIC\n11.1 GENERAL COURSE OF ANALYSIS\nThe general course of analysis for primary endpoints is applied for all stages of interim\nanalysis. Interim Analysis will be described in detail in chapter 11.8.\n\nCourse of analysis is defined by:\n1. Stratified analysis,\n2. Sensitive analysis,\na. Permutation test,\nb. Inclusion of interaction term of treatment and stratification factors,\nc. Inclusion of factor sex.\n\nThe steps are described in detail in the next chapter.\n\nApart from given significance levels of interim analysis 95 % confidence intervals will be\ncalculated.\n\n11.2 APPLIED MODELS\nFollowing models will be used to evaluate the different hypotheses:\n11.2.1 MODEL I: LOGISTIC REGRESSION\n11.2.1.1 GENERAL MODEL\n\nPROC LOGISTIC DATA=...;\nCLASS treatment baseline_GFR baseline_proteinuria (REF=FIRST PARAM=REF);\nMODEL outcome=treatment baseline_GFR baseline_proteinuria;\nRUN;\n\nThe stratification factors baseline_GFR and baseline_proteinuria are documented in the\nrandomisation form.\nResult presentation includes estimates for odds ratios, 95 % confidence intervals of odds\nratios and p-values of Wald statistic.\n\n[Extracted table 1]\n|Column 1|Column 2|\n|---|---|\n|PROC LOGISTIC DATA=...;||\n|CLASS treatment baseline GFR baseline proteinuria (REF=FIRST PARAM=REF);<br>_ _||\n|MODEL outcome=treatment baseline GFR baseline proteinuria;<br>_ _||\n|RUN;||",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "44d1902eb6d1bc8f45a138a09ab4ba8161a89cd37f406f53a5df8c8d6adad28e": {
+      "delivery_receipt": "sha256:18daf46cbbc7ca6ac23769541ae56352626b70afdcc715ffc4b4516b444c7224",
+      "handle": "eh_44d1902eb6d1bc8f",
+      "identity": "sha256:44d1902eb6d1bc8f45a138a09ab4ba8161a89cd37f406f53a5df8c8d6adad28e",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.11,
+        0.62,
+        0.89,
+        0.91
+      ],
+      "render": {
+        "identity": "sha256:453e900c4fdecc71cf9a897432c7e52009b4b53f3339e2dbdccda348615fa035",
+        "page": 158,
+        "png_sha256": "sha256:c62eaa12260f65b62036fa79ffa8230d951424fa1a5ae7e2d6d8c554715b7cda",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015"
+      },
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "transcription": "9.2.9 PRIMARY ENDPOINT \u201cIN FULL CLINICAL REMISSION\u201d. The binary variable \u201cIn full clinical remission\u201d is defined as: If CKDepi_mean(V16,V16_2) \u2212 CKDepi_mean(V1,R6) \u2265 5 or proteinuria_g/g \u2265 0.2 then \u201cIn full clinical remission\u201d = 1 (event) and if CKDepi_mean(V16,V16_2) \u2212 CKDepi_mean(V1,R6) < 5 and proteinuria_g/g < 0.2 then \u201cIn full clinical remission\u201d = 0 (no event). CKDepi_mean(V16,V16_2) is the mean of eGFR according CKDepi of visit 36 months and the results of repeated laboratory tests within one week after visit 36 months. CKDepi_mean(V1,R6) is the mean of eGFR according CKDepi of baseline and visit \u22121 week. Calculation of eGFR according CKDepi is described in 9.2.7 and proteinuria in g/g in 9.2.5.",
+      "trial_id": "stop-igan"
+    },
+    "44fd5aba25c4e9a5fb1418bb447929871749d52723dd6f9dbdfe50c416f21bd8": {
+      "end": 33945,
+      "end_line": 370,
+      "handle": "eh_44fd5aba25c4e9a5",
+      "identity": "sha256:44fd5aba25c4e9a5fb1418bb447929871749d52723dd6f9dbdfe50c416f21bd8",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.outcomesModule.secondaryOutcomes[0].timeFrame: \"at the end of the 3 years study period\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].measure: \"GFR loss >=30 ml/min from baseline GFR\"\nprotocolSection.outcomesModule.secondaryOutcomes[1].timeFrame: \"at the end of the 3 year study period\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].measure: \"-Onset of end stage renal disease.\"\nprotocolSection.outcomesModule.secondaryOutcomes[2].timeFrame: \"at the end of the 3 years study period\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].measure: \"Mean annual change in one over serum creatinine concentration\"\nprotocolSection.outcomesModule.secondaryOutcomes[3].timeFrame: \"at the end of the 3 years study period\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].measure: \"Proteinuria at 12 and 36 months\"\nprotocolSection.outcomesModule.secondaryOutcomes[4].timeFrame: \"12 and 36 months\"\nprotocolSection.outcomesModule.secondaryOutcomes[5].measure: \"Disappearance of microhematuria\"\nprotocolSection.outcomesModule.secondaryOutcomes[5].timeFrame: \"at the end of the 3 years study period\"\nprotocolSection.oversightModule.oversightHasDmc: true\nprotocolSection.referencesModule.references[0].citation: \"Alladin A, Hahn D, Hodson EM, Ravani P, Pfister K, Quinn RR, Samuel SM. Immunosuppressive therapy for IgA nephropathy in children. Cochrane Database Syst Rev. 2024 Jun 12;6(6):CD015060. doi: 10.1002/14651858.CD015060.pub2.\"\nprotocolSection.referencesModule.references[0].pmid: \"38864363\"\nprotocolSection.referencesModule.references[0].type: \"DERIVED\"\nprotocolSection.referencesModule.references[1].citation: \"Tunnicliffe DJ, Reid S, Craig JC, Samuels JA, Molony DA, Strippoli GF. Non-immunosuppressive treatment for IgA nephropathy. Cochrane Database Syst Rev. 2024 Feb 1;2(2):CD003962. doi: 10.1002/14651858.CD003962.pub3.\"\nprotocolSection.referencesModule.references[1].pmid: \"38299639\"\nprotocolSection.referencesModule.references[1].type: \"DERIVED\"\nprotocolSection.referencesModule.references[2].citation: \"Rauen T, Eitner F, Fitzner C, Sommerer C, Zeier M, Otte B, Panzer U, Peters H, Benck U, Mertens PR, Kuhlmann U, Witzke O, Gross O, Vielhauer V, Mann JF, Hilgers RD, Floege J; STOP-IgAN Investigators. Intensive Supportive Care plus Immunosuppression in IgA Nephropathy. N Engl J Med. 2015 Dec 3;373(23):2225-36. doi: 10.1056/NEJMoa1415463.\"\nprotocolSection.referencesModule.references[2].pmid: \"26630142\"\nprotocolSection.referencesModule.references[2].type: \"DERIVED\"\nprotocolSection.referencesModule.references[3].citation: \"Yeo SC, Liew A, Barratt J. Emerging therapies in immunoglobulin A nephropathy. Nephrology (Carlton). 2015 Nov;20(11):788-800. doi: 10.1111/nep.12527.\"\nprotocolSection.referencesModule.references[3].pmid: \"26032537\"\nprotocolSection.referencesModule.references[3].type: \"DERIVED\"\nprotocolSection.referencesModule.references[4].citation: \"Eitner F, Ackermann D, Hilgers RD, Floege J. Supportive Versus Immunosuppressive Therapy of Progressive IgA nephropathy (STOP) IgAN trial: rationale and study protocol. J Nephrol. 2008 May-Jun;21(3):284-9.\"\nprotocolSection.referencesModule.references[4].pmid: \"18587715\"\nprotocolSection.referencesModule.references[4].type: \"DERIVED\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.class: \"OTHER\"\nprotocolSection.sponsorCollaboratorsModule.leadSponsor.name: \"RWTH Aachen University\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.oldNameTitle: \"Verena Deserno\"\nprotocolSection.sponsorCollaboratorsModule.responsibleParty.oldOrganization: \"Clinical Trials Centre Aachen\"\nprotocolSection.statusModule.completionDateStruct.date: \"2015-02\"\nprotocolSection.statusModule.completionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.expandedAccessInfo.hasExpandedAccess: false\nprotocolSection.statusModule.lastUpdatePostDateStruct.date: \"2015-09-22\"\nprotocolSection.statusModule.lastUpdatePostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.lastUpdateSubmitDate: \"2015-09-21\"\nprotocolSection.statusModule.overallStatus: \"COMPLETED\"\nprotocolSection.statusModule.primaryCompletionDateStruct.date: \"2015-02\"\nprotocolSection.statusModule.primaryCompletionDateStruct.type: \"ACTUAL\"\nprotocolSection.statusModule.startDateStruct.date: \"2008-02\"\nprotocolSection.statusModule.statusVerifiedDate: \"2015-09\"\nprotocolSection.statusModule.studyFirstPostDateStruct.date: \"2007-11-07\"\nprotocolSection.statusModule.studyFirstPostDateStruct.type: \"ESTIMATED\"\nprotocolSection.statusModule.studyFirstSubmitDate: \"2007-10-29\"\nprotocolSection.statusModule.studyFirstSubmitQcDate: \"2007-11-05\"",
+      "source_id": "source_02a9439a1b7142a87911f6dc9704d6dda2d2d2523282e8a93e46cac7bdb02c5e",
+      "source_version": "sha256:9874d59c2567ee0cf6d648ecff0aed5338dba8f6530a4d0199939c45b479286e",
+      "start": 29348,
+      "start_line": 325,
+      "trial_id": "stop-igan"
+    },
+    "62574e07b9c44cd8219bef265b90d6bfada94cd6d7e8e22f863800d26a897af2": {
+      "end": 1770,
+      "end_line": 39,
+      "handle": "eh_62574e07b9c44cd8",
+      "identity": "sha256:62574e07b9c44cd8219bef265b90d6bfada94cd6d7e8e22f863800d26a897af2",
+      "kind": "narrative",
+      "page": 11,
+      "quote": "One limitation of our trial is its open-label\nnature. Given the complex immunosuppressive\ntreatment regimens, a blinded study did not seem\npossible; however, all end points were based on\nobjectively measured laboratory values that re\nduced the chance for bias. Furthermore, the trial",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 1487,
+      "start_line": 34,
+      "trial_id": "stop-igan"
+    },
+    "681847ec0d5383f7dd11ff80f49fd6c6e4f8de555a91f87b77abadce2f240026": {
+      "end": 4672,
+      "end_line": 160,
+      "handle": "eh_681847ec0d5383f7",
+      "identity": "sha256:681847ec0d5383f7dd11ff80f49fd6c6e4f8de555a91f87b77abadce2f240026",
+      "kind": "narrative",
+      "page": 6,
+      "quote": "n engl j med 373;23 nejm.org December 3, 2015\n2230\nThe new engl and jour nal of medicine\nminute per 1.73 m2), there was no significant\ndifference between the groups (full-analysis set:\n22 of 80 patients [28%] in the supportive-care\ngroup and 21 of 82 [26%] in the immunosup\npression group; Fig. 2B). Similarly, in the analy\nsis of all available cases, 18 of 76 patients (24%)\nin the supportive-care group and 17 of 78 (22%) in\nthe immunosuppression group had a decrease in\nthe eGFR of at least 15 ml per minute per 1.73 m2.\nWhen measured creatinine clearance instead of\neGFR was used to assess this end point, there\nwas also no significant difference between the\nstudy groups (odds ratio for a decrease in creati\nnine clearance of \u226515 ml per minute per 1.73 m2\nCharacteristic\nRun-in Phase\n(N = 337)\nTrial Phase\n(N = 162)\nSupportive Care\n(N = 80)\nSupportive Care plus\nImmunosuppression\n(N = 82)\nFemale sex - %\n24\n19\n24\nSmoker - %\n18\n16\n17\nAge - yr\n43.7\u00b112.8\n45.8\u00b112.5\n42.8\u00b113.1\nBody-mass index\u2020\n27.9\u00b15.3\n28.6\u00b15.3\n27.0\u00b15.0\nBlood pressure - mm Hg\nSystolic\n131\u00b114.0\n127\u00b18.5\n124\u00b19.7\nDiastolic\n81\u00b19.9\n78\u00b17.0\n77\u00b17.0\nSerum creatinine - mg/dl\n1.5\u00b10.6\n1.6\u00b10.6\n1.6\u00b10.7\neGFR - ml/min/1.73 m2\u2021\n61.5\u00b127.3\n57.4\u00b124.9\n61.1\u00b129.0\nCreatinine clearance - ml/min\n76.0\u00b134.7\n76.2\u00b131.0\n76.3\u00b136.4\nUrinary protein excretion rate - g/day\n2.2\u00b11.8\n1.6\u00b10.7\n1.8\u00b10.8\nProtein-to-creatinine ratio\u00a7\n1.4\u00b11.4\n1.0\u00b10.5\n1.1\u00b10.6\nCholesterol - mg/dl\n210.1\u00b148.3\n191.6\u00b140.7\n193.6\u00b145.7\nAntihypertensive drugs - no./patient\n2.3\u00b11.4\n3.0\u00b11.6\n2.8\u00b11.3\nTherapy with RAS-blocking agents - % of patients\n95\n96\n100\nACE inhibitor without ARB\n51\n34\n49\nARB without ACE inhibitor\n19\n30\n15\nACE inhibitor plus ARB\n25\n32\n36\nMaximum daily ACE inhibitor dose\u00b6\n32\n37\n48\nMaximum daily ARB dose\u00b6\n18\n33\n17\nMaximum ACE inhibitor and ARB dose\u00b6\n14\n6\n6\nAldosterone antagonist therapy - % of patients\n1\n0\n4\nStatin therapy - % of patients\n57\n73\n81\n* Plus-minus values are means \u00b1SD. The only significant differences between the supportive-care group and immuno\nsuppression group at the start of the trial phase were angiotensin II-receptor (ARB) without angiotensin-converting-\nenzyme (ACE) inhibitor (30% vs. 15%; P = 0.034 by Fisher's exact test) and maximum daily ARB dose (33% vs. 17%;\nP = 0.025 by Fisher's exact test). All other variables were not significantly different. Information on tonsillectomies per\nformed before the study and fish oil used during the study was not available; however, both are being used infrequently\nin the treatment of IgA nephropathy in Germany. ARB denotes angiotensin II-receptor blocker, and RAS renin-angio\ntensin system.\n\u2020 The body-mass index is the weight in kilograms divided by the square of the height in meters.\n\u2021 The estimated glomerular filtration rate (eGFR) was estimated with the use of the Chronic Kidney Disease Epidemiology\nCollaboration Creatinine Equation.\n\u00a7 For the protein-to-creatinine ratio, both protein and creatinine were measured in grams.\n\u00b6 Patients received the maximum daily dose according to prescribing information.\nTable 1. Patient Characteristics at the Start of the Run-in Phase and at the Start of the Trial Phase.*\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|\n|---|---|---|---|\n|Table 1. Patient Characteristics at the Start of the Run-in Phase and at the Start of the Trial Phase.*||||\n|Run-in Phase Trial Phase<br>Characteristic (N = 337) (N = 162)<br>Supportive Care plus<br>Supportive Care Immunosuppression<br>(N = 80) (N = 82)||||\n|Female sex - %|24|19|24|\n|Smoker - % 18 16 17||||\n|Age - yr|43.7\u00b112.8|45.8\u00b112.5|42.8\u00b113.1|\n|Body-mass index\u2020 27.9\u00b15.3 28.6\u00b15.3 27.0\u00b15.0||||\n|Blood pressure - mm Hg||||\n|Systolic 131\u00b114.0 127\u00b18.5 124\u00b19.7||||\n|Diastolic|81\u00b19.9|78\u00b17.0|77\u00b17.0|\n|Serum creatinine - mg/dl 1.5\u00b10.6 1.6\u00b10.6 1.6\u00b10.7||||\n|eGFR - ml/min/1.73 m2\u2021|61.5\u00b127.3|57.4\u00b124.9|61.1\u00b129.0|\n|Creatinine clearance - ml/min 76.0\u00b134.7 76.2\u00b131.0 76.3\u00b136.4||||\n|Urinary protein excretion rate - g/day|2.2\u00b11.8|1.6\u00b10.7|1.8\u00b10.8|\n|Protein-to-creatinine ratio\u00a7 1.4\u00b11.4 1.0\u00b10.5 1.1\u00b10.6||||\n|Cholesterol - mg/dl|210.1\u00b148.3|191.6\u00b140.7|193.6\u00b145.7|\n|Antihypertensive drugs - no./patient 2.3\u00b11.4 3.0\u00b11.6 2.8\u00b11.3||||\n|Therapy with RAS-blocking agents - % of patients|95|96|100|\n|ACE inhibitor without ARB 51 34 49||||\n|ARB without ACE inhibitor|19|30|15|\n|ACE inhibitor plus ARB 25 32 36||||\n|Maximum daily ACE inhibitor dose\u00b6|32|37|48|\n|Maximum daily ARB dose\u00b6 18 33 17||||\n|Maximum ACE inhibitor and ARB dose\u00b6|14|6|6|\n|Aldosterone antagonist therapy - % of patients 1 0 4||||\n|Statin therapy - % of patients|57|73|81|",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "6d4141338c163b1cfe439b0840325a0aed780788fb88a444ad043b4b1baa729f": {
+      "end": 29347,
+      "end_line": 324,
+      "handle": "eh_6d4141338c163b1c",
+      "identity": "sha256:6d4141338c163b1cfe439b0840325a0aed780788fb88a444ad043b4b1baa729f",
+      "kind": "narrative",
+      "page": 1,
+      "quote": "protocolSection.contactsLocationsModule.locations[0].geoPoint.lon: 6.08342\nprotocolSection.contactsLocationsModule.locations[1].city: \"Augsburg\"\nprotocolSection.contactsLocationsModule.locations[1].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[1].facility: \"2. Medizinische Klinik, Nephrologie, Klinikum Augsburg\"\nprotocolSection.contactsLocationsModule.locations[1].geoPoint.lat: 48.37154\nprotocolSection.contactsLocationsModule.locations[1].geoPoint.lon: 10.89851\nprotocolSection.contactsLocationsModule.locations[2].city: \"Berlin\"\nprotocolSection.contactsLocationsModule.locations[2].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[2].facility: \"Campus Charit\u00e9 Mitte, Medizinische Klinik - Schwerpunkt Nephrologie, Centrum 13\"\nprotocolSection.contactsLocationsModule.locations[2].geoPoint.lat: 52.52437\nprotocolSection.contactsLocationsModule.locations[2].geoPoint.lon: 13.41053\nprotocolSection.contactsLocationsModule.locations[3].city: \"Berlin\"\nprotocolSection.contactsLocationsModule.locations[3].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[3].facility: \"Charit\u00e9 Campus Virchow-Klinikum, Medizinische Klinik / Nephrologie\"\nprotocolSection.contactsLocationsModule.locations[3].geoPoint.lat: 52.52437\nprotocolSection.contactsLocationsModule.locations[3].geoPoint.lon: 13.41053\nprotocolSection.contactsLocationsModule.locations[4].city: \"Berlin\"\nprotocolSection.contactsLocationsModule.locations[4].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[4].facility: \"Helios-Klinikum Berlin-Buch, Nephrologie Charit\u00e9 CCB\"\nprotocolSection.contactsLocationsModule.locations[4].geoPoint.lat: 52.52437\nprotocolSection.contactsLocationsModule.locations[4].geoPoint.lon: 13.41053\nprotocolSection.contactsLocationsModule.locations[5].city: \"Berlin\"\nprotocolSection.contactsLocationsModule.locations[5].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[5].facility: \"St. Joseph Krankenhaus Medizinische Klinik II\"\nprotocolSection.contactsLocationsModule.locations[5].geoPoint.lat: 52.52437\nprotocolSection.contactsLocationsModule.locations[5].geoPoint.lon: 13.41053\nprotocolSection.contactsLocationsModule.locations[6].city: \"Bremen\"\nprotocolSection.contactsLocationsModule.locations[6].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[6].facility: \"Klinikum Bremen-Mitte, Medizinische Klinik III\"\nprotocolSection.contactsLocationsModule.locations[6].geoPoint.lat: 53.07582\nprotocolSection.contactsLocationsModule.locations[6].geoPoint.lon: 8.80717\nprotocolSection.contactsLocationsModule.locations[7].city: \"Cologne\"\nprotocolSection.contactsLocationsModule.locations[7].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[7].facility: \"Uniklinik K\u00f6ln, Klinik IV f\u00fcr Innere Medizin, Nephrologie und Allgemeine Innere Medizin\"\nprotocolSection.contactsLocationsModule.locations[7].geoPoint.lat: 50.93333\nprotocolSection.contactsLocationsModule.locations[7].geoPoint.lon: 6.95\nprotocolSection.contactsLocationsModule.locations[8].city: \"Dresden\"\nprotocolSection.contactsLocationsModule.locations[8].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[8].facility: \"Universit\u00e4tsklinikum Dresden, Medizinische Klinik III, Bereich Nephrologie\"\nprotocolSection.contactsLocationsModule.locations[8].geoPoint.lat: 51.05089\nprotocolSection.contactsLocationsModule.locations[8].geoPoint.lon: 13.73832\nprotocolSection.contactsLocationsModule.locations[9].city: \"D\u00fcsseldorf\"\nprotocolSection.contactsLocationsModule.locations[9].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[9].facility: \"Universit\u00e4tsklinikum D\u00fcsseldorf, Klinik f\u00fcr Nephrologie\"\nprotocolSection.contactsLocationsModule.locations[9].geoPoint.lat: 51.22319\nprotocolSection.contactsLocationsModule.locations[9].geoPoint.lon: 6.77927\nprotocolSection.contactsLocationsModule.locations[10].city: \"Erlangen\"\nprotocolSection.contactsLocationsModule.locations[10].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[10].facility: \"Universit\u00e4tsklinikum Erlangen, Medizinische Klinik IV\"\nprotocolSection.contactsLocationsModule.locations[10].geoPoint.lat: 49.59099\nprotocolSection.contactsLocationsModule.locations[10].geoPoint.lon: 11.00783\nprotocolSection.contactsLocationsModule.locations[11].city: \"Essen\"\nprotocolSection.contactsLocationsModule.locations[11].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[11].facility: \"Universit\u00e4tsklinikum Essen, Klinik f\u00fcr Nieren- und Hochdruckkrankheiten\"\nprotocolSection.contactsLocationsModule.locations[11].geoPoint.lat: 51.45657\nprotocolSection.contactsLocationsModule.locations[11].geoPoint.lon: 7.01228\nprotocolSection.contactsLocationsModule.locations[12].city: \"Freiburg im Breisgau\"\nprotocolSection.contactsLocationsModule.locations[12].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[12].facility: \"Universit\u00e4tsklinikum Freiburg, Innere Medizin IV\"\nprotocolSection.contactsLocationsModule.locations[12].geoPoint.lat: 47.9959\nprotocolSection.contactsLocationsModule.locations[12].geoPoint.lon: 7.85222\nprotocolSection.contactsLocationsModule.locations[13].city: \"Giessen\"\nprotocolSection.contactsLocationsModule.locations[13].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[13].facility: \"Universit\u00e4tsklinikum Gie\u00dfen und Marburg GmbH, Medizinische Klinik und Poliklinik II\"\nprotocolSection.contactsLocationsModule.locations[13].geoPoint.lat: 50.58727\nprotocolSection.contactsLocationsModule.locations[13].geoPoint.lon: 8.67554\nprotocolSection.contactsLocationsModule.locations[14].city: \"G\u00f6ttingen\"\nprotocolSection.contactsLocationsModule.locations[14].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[14].facility: \"Universit\u00e4tsklinikum G\u00f6ttingen, Zentrum Innere Medizin, Abteilung f\u00fcr Nephrologie und Rheumatologie\"\nprotocolSection.contactsLocationsModule.locations[14].geoPoint.lat: 51.53443\nprotocolSection.contactsLocationsModule.locations[14].geoPoint.lon: 9.93228\nprotocolSection.contactsLocationsModule.locations[15].city: \"Hamburg\"\nprotocolSection.contactsLocationsModule.locations[15].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[15].facility: \"Universit\u00e4tsklinikum Hamburg-Eppendorf, 3. Medizinische Klinik und Poliklinik\"\nprotocolSection.contactsLocationsModule.locations[15].geoPoint.lat: 53.55073\nprotocolSection.contactsLocationsModule.locations[15].geoPoint.lon: 9.99302\nprotocolSection.contactsLocationsModule.locations[16].city: \"Hanover\"\nprotocolSection.contactsLocationsModule.locations[16].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[16].facility: \"Medizinische Hochschule Hannover, Abteilung Nephrologie\"\nprotocolSection.contactsLocationsModule.locations[16].geoPoint.lat: 52.37052\nprotocolSection.contactsLocationsModule.locations[16].geoPoint.lon: 9.73322\nprotocolSection.contactsLocationsModule.locations[17].city: \"Heidelberg\"\nprotocolSection.contactsLocationsModule.locations[17].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[17].facility: \"Med. Universit\u00e4tsklinik Heidelberg, Nierenzentrum Heidelberg, Sektion Nephrologie\"\nprotocolSection.contactsLocationsModule.locations[17].geoPoint.lat: 49.40768\nprotocolSection.contactsLocationsModule.locations[17].geoPoint.lon: 8.69079\nprotocolSection.contactsLocationsModule.locations[18].city: \"Jena\"\nprotocolSection.contactsLocationsModule.locations[18].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[18].facility: \"Universit\u00e4tsklinikum Jena, Medizinische Klinik III\"\nprotocolSection.contactsLocationsModule.locations[18].geoPoint.lat: 50.92878\nprotocolSection.contactsLocationsModule.locations[18].geoPoint.lon: 11.5899\nprotocolSection.contactsLocationsModule.locations[19].city: \"Kaiserslautern\"\nprotocolSection.contactsLocationsModule.locations[19].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[19].facility: \"Westpfalz-Klinikum GmbH, Abteilung f\u00fcr Nephrologie und Transplantationsmedizin\"\nprotocolSection.contactsLocationsModule.locations[19].geoPoint.lat: 49.443\nprotocolSection.contactsLocationsModule.locations[19].geoPoint.lon: 7.77161\nprotocolSection.contactsLocationsModule.locations[20].city: \"Magdeburg\"\nprotocolSection.contactsLocationsModule.locations[20].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[20].facility: \"Universit\u00e4tsklinikum Magdeburg, Klinik f\u00fcr Nephrologie, Zentrum f\u00fcr Innere Medizin\"\nprotocolSection.contactsLocationsModule.locations[20].geoPoint.lat: 52.13129\nprotocolSection.contactsLocationsModule.locations[20].geoPoint.lon: 11.63189\nprotocolSection.contactsLocationsModule.locations[21].city: \"Mainz\"\nprotocolSection.contactsLocationsModule.locations[21].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[21].facility: \"Dialysezentrum am Brand\"\nprotocolSection.contactsLocationsModule.locations[21].geoPoint.lat: 49.98185\nprotocolSection.contactsLocationsModule.locations[21].geoPoint.lon: 8.28008\nprotocolSection.contactsLocationsModule.locations[22].city: \"Mannheim\"\nprotocolSection.contactsLocationsModule.locations[22].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[22].facility: \"Universit\u00e4tsklinikum Mannheim, V. Medizinische Klinik\"\nprotocolSection.contactsLocationsModule.locations[22].geoPoint.lat: 49.4891\nprotocolSection.contactsLocationsModule.locations[22].geoPoint.lon: 8.46694\nprotocolSection.contactsLocationsModule.locations[23].city: \"Marburg\"\nprotocolSection.contactsLocationsModule.locations[23].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[23].facility: \"Universit\u00e4tsklinikum Marburg, Klinik f\u00fcr Innere Medizin, Schwerpunkt Nephrologie\"\nprotocolSection.contactsLocationsModule.locations[23].geoPoint.lat: 50.80904\nprotocolSection.contactsLocationsModule.locations[23].geoPoint.lon: 8.77069\nprotocolSection.contactsLocationsModule.locations[24].city: \"M\u00fcnchen\"\nprotocolSection.contactsLocationsModule.locations[24].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[24].facility: \"KfH Nierenzentrum\"\nprotocolSection.contactsLocationsModule.locations[24].geoPoint.lat: 51.60698\nprotocolSection.contactsLocationsModule.locations[24].geoPoint.lon: 13.31243\nprotocolSection.contactsLocationsModule.locations[25].city: \"M\u00fcnchen\"\nprotocolSection.contactsLocationsModule.locations[25].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[25].facility: \"Klinikum der LMU, Nephrologisches Zentrum\"\nprotocolSection.contactsLocationsModule.locations[25].geoPoint.lat: 51.60698\nprotocolSection.contactsLocationsModule.locations[25].geoPoint.lon: 13.31243\nprotocolSection.contactsLocationsModule.locations[26].city: \"M\u00fcnchen\"\nprotocolSection.contactsLocationsModule.locations[26].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[26].facility: \"Klinikum rechts der Isar, Medizinische Klinik II, Abteilung f\u00fcr Nephrologie\"\nprotocolSection.contactsLocationsModule.locations[26].geoPoint.lat: 51.60698\nprotocolSection.contactsLocationsModule.locations[26].geoPoint.lon: 13.31243\nprotocolSection.contactsLocationsModule.locations[27].city: \"M\u00fcnster\"\nprotocolSection.contactsLocationsModule.locations[27].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[27].facility: \"Universit\u00e4tsklinikum M\u00fcnster, Medizinische Klinik und Poliklinik D\"\nprotocolSection.contactsLocationsModule.locations[27].geoPoint.lat: 51.96236\nprotocolSection.contactsLocationsModule.locations[27].geoPoint.lon: 7.62571\nprotocolSection.contactsLocationsModule.locations[28].city: \"Regensburg\"\nprotocolSection.contactsLocationsModule.locations[28].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[28].facility: \"Universit\u00e4tsklinikum Regensburg, Klinik und Poliklinik f\u00fcr Innere Medizin II\"\nprotocolSection.contactsLocationsModule.locations[28].geoPoint.lat: 49.01513\nprotocolSection.contactsLocationsModule.locations[28].geoPoint.lon: 12.10161\nprotocolSection.contactsLocationsModule.locations[29].city: \"Trier\"\nprotocolSection.contactsLocationsModule.locations[29].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[29].facility: \"Krankenhaus der Barmherzigen Br\u00fcder, Abteilung Innere Medizin II\"\nprotocolSection.contactsLocationsModule.locations[29].geoPoint.lat: 49.75565\nprotocolSection.contactsLocationsModule.locations[29].geoPoint.lon: 6.63935\nprotocolSection.contactsLocationsModule.locations[30].city: \"T\u00fcbingen\"\nprotocolSection.contactsLocationsModule.locations[30].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[30].facility: \"Universit\u00e4tsklinikum T\u00fcbingen, Medizinische Klinik IV, Sektion f\u00fcr Nieren- und Hochdruckkrankheiten\"\nprotocolSection.contactsLocationsModule.locations[30].geoPoint.lat: 48.52266\nprotocolSection.contactsLocationsModule.locations[30].geoPoint.lon: 9.05222\nprotocolSection.contactsLocationsModule.locations[31].city: \"Villingen-Schwenningen\"\nprotocolSection.contactsLocationsModule.locations[31].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[31].facility: \"Dialyse-Zentrum Dres.med. PD H. Reichel, Th. Weinreich u. C.\"\nprotocolSection.contactsLocationsModule.locations[31].geoPoint.lat: 48.06226\nprotocolSection.contactsLocationsModule.locations[31].geoPoint.lon: 8.49358\nprotocolSection.contactsLocationsModule.locations[32].city: \"Wiesbaden\"\nprotocolSection.contactsLocationsModule.locations[32].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[32].facility: \"Zentrum f\u00fcr Nieren- und Hochdruckkrankheiten\"\nprotocolSection.contactsLocationsModule.locations[32].geoPoint.lat: 50.08601\nprotocolSection.contactsLocationsModule.locations[32].geoPoint.lon: 8.24435\nprotocolSection.contactsLocationsModule.locations[33].city: \"W\u00fcrzburg\"\nprotocolSection.contactsLocationsModule.locations[33].country: \"Germany\"\nprotocolSection.contactsLocationsModule.locations[33].facility: \"Universit\u00e4tsklinik W\u00fcrzburg, Medizinische Klinik und Poliklinik I\"\nprotocolSection.contactsLocationsModule.locations[33].geoPoint.lat: 49.79391\nprotocolSection.contactsLocationsModule.locations[33].geoPoint.lon: 9.95121\nprotocolSection.contactsLocationsModule.overallOfficials[0].affiliation: \"Medical Clinic II, University Hospital Aachen\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].name: \"Juergen Floege, Prof. Dr.\"\nprotocolSection.contactsLocationsModule.overallOfficials[0].role: \"PRINCIPAL_INVESTIGATOR\"\nprotocolSection.descriptionModule.briefSummary: \"* Evaluation of the efficacy of an immunosuppressive therapy added to a comprehensive supportive therapy to induce a clinical remission in patients at risk for progressive IgAN\"\nprotocolSection.descriptionModule.briefSummary: \"* Investigation of differences between the treatments regarding the number of patients loosing more than 15 ml/min of GFR.\"\nprotocolSection.descriptionModule.detailedDescription: \"The best treatment of glomerular diseases of the kidney is currently not well defined. This study aims to answer if in patients with IgA nephropathy, the most common type of glomerulonephritis an immunosuppressive treatment (with the use of steroids and chemotherapy) added to a supportive treatment is more effective than a supportive treatment alone (with the use of drugs lowering the blood pressure and the urinary protein loss).\"\nprotocolSection.designModule.designInfo.allocation: \"RANDOMIZED\"\nprotocolSection.designModule.designInfo.interventionModel: \"PARALLEL\"\nprotocolSection.designModule.designInfo.maskingInfo.masking: \"NONE\"\nprotocolSection.designModule.designInfo.primaryPurpose: \"TREATMENT\"\nprotocolSection.designModule.enrollmentInfo.count: 148\nprotocolSection.designModule.enrollmentInfo.type: \"ESTIMATED\"\nprotocolSection.designModule.phases[0]: \"PHASE3\"\nprotocolSection.designModule.studyType: \"INTERVENTIONAL\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Inclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Male or female patients from 18-70 years with histologically proven primary IgAN with typical mesangioproliferative features. Diagnosis has to be made by a neuropathologist.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Proteinuria above 0.75 g/day within 12 weeks prior to or at the first visit in the run-in phase (month -6)and presence of at least one further risk factor for the development of end stage renal disease\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" 1. arterial hypertension, defined as ambulatory blood pressure \\\\>140/90 mm Hg or the use of antihypertensive medication or\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" 2. impaired renal function, defined as creatinine clearance or estimated GFR \\\\<90 ml/min.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"Exclusion Criteria:\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Known allergy or intolerance to study medication (except in case of ACE-inhibitor, in which case a change to an angiotensin receptor blocker is possible).\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Women who are pregnant or breastfeeding and women without sufficient contraception.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Any prior immunosuppressive therapy.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Variants of primary IgAN (e.g. rapidly progressive IgAN with crescents in \\\\>50% of glomeruli or minimal change GN with glomerular IgA deposits).\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Significant liver dysfunction (more than three fold increased GPT compared to norm)\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Contraindication for immunosuppressive therapy, like\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * acute or chronic infectious disease incl. hepatitis and HIV positive patients\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * any malignancy\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * leukocytopenia, thrombocytopenia or known allergy against prednisolone, cyclophosphamide or azathioprine\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * active intestinal bleeding, active gastric or duodenal ulcer\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \" * Need of permanent immunosuppression, (e.g. transplanted patients, steroid-dependent inflammatory diseases)\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Secondary IgAN or diseases associated with glomerular deposits of IgA.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Additional other chronic renal disease.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Creatinine clearance below 30 ml/min (mean of 3 measurements).\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Alcohol or drug abuse\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Mental condition rendering the subject unable to understand the nature, scope, and possible consequences of the study\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Subject unlikely to comply with protocol, e.g., uncooperative attitude, inability to return for follow-up visits, and unlikelihood of completing the study\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Participation in a parallel clinical trial or participation in another clinical trial within the last 3 months.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Subjects who are in any state of dependency to the sponsor or the investigators.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Employees of the sponsor or the investigators.\"\nprotocolSection.eligibilityModule.eligibilityCriteria: \"* Subjects who have been committed to an institution by legal or regulatory order.\"\nprotocolSection.eligibilityModule.healthyVolunteers: false\nprotocolSection.eligibilityModule.maximumAge: \"70 Years\"\nprotocolSection.eligibilityModule.minimumAge: \"18 Years\"\nprotocolSection.eligibilityModule.sex: \"ALL\"\nprotocolSection.eligibilityModule.stdAges[0]: \"ADULT\"\nprotocolSection.eligibilityModule.stdAges[1]: \"OLDER_ADULT\"\nprotocolSection.identificationModule.acronym: \"STOP-IgAN\"\nprotocolSection.identificationModule.briefTitle: \"Supportive Versus Immunosuppressive Therapy for the Treatment Of Progressive IgA Nephropathy\"\nprotocolSection.identificationModule.nctId: \"NCT00554502\"\nprotocolSection.identificationModule.officialTitle: \"Supportive Versus Immunosuppressive Therapy for the Treatment Of Progressive IgA Nephropathy\"\nprotocolSection.identificationModule.orgStudyIdInfo.id: \"STOP-IgAN\"\nprotocolSection.identificationModule.organization.class: \"OTHER\"\nprotocolSection.identificationModule.organization.fullName: \"RWTH Aachen University\"\nprotocolSection.outcomesModule.primaryOutcomes[0].measure: \"Patients reaching full clinical remission of their disease\"\nprotocolSection.outcomesModule.primaryOutcomes[0].timeFrame: \"at the end of the 3 year study period.\"\nprotocolSection.outcomesModule.primaryOutcomes[1].measure: \"GFR loss of 15 ml/min or higher from baseline GFR\"\nprotocolSection.outcomesModule.primaryOutcomes[1].timeFrame: \"at the end of the 3 year study period\"\nprotocolSection.outcomesModule.secondaryOutcomes[0].measure: \"-Absolute GFR-change.\"",
+      "source_id": "source_02a9439a1b7142a87911f6dc9704d6dda2d2d2523282e8a93e46cac7bdb02c5e",
+      "source_version": "sha256:9874d59c2567ee0cf6d648ecff0aed5338dba8f6530a4d0199939c45b479286e",
+      "start": 7800,
+      "start_line": 95,
+      "trial_id": "stop-igan"
+    },
+    "81e4f82c556176b3b3f27982d5b4e3508901f7c7a6f1be6ef4033ec4de620847": {
+      "end": 2119,
+      "end_line": 46,
+      "handle": "eh_81e4f82c556176b3",
+      "identity": "sha256:81e4f82c556176b3b3f27982d5b4e3508901f7c7a6f1be6ef4033ec4de620847",
+      "kind": "narrative",
+      "page": 113,
+      "quote": "CLINICAL STUDY PROTOCOL\n\nEUDRACT NUMBER: 2007-000871-41\nVERSION 4.1 13.04.2012\n\nPROTOCOL NUMBER: STOP IGAN\nSTOP_IGAN_PRUEFPLAN_13_04_2012_V4.1\n\nSEITE 44 VON 63\n\n\n10.3 STATISTICAL METHODS\nWe consider the \"baseline value\" of GFR or proteinuria for computations of the primary and\nsecondary endpoints as mean value of the visit -1 week and the baseline visit. Furthermore we\nwill also compute the values at the end of the study period as double measurement on two\ndifferent days within one week of serum creatinine, creatinine clearance and 24h proteinuria. A\ncase with missing baseline GFR or baseline proteinuria will not be observed, because these\nvalues are essential for central randomisation. Cases, where documentation does not allow\nassessment of treatment success, will be defined as treatment failure with respect to the two\nprimary endpoints (not in full clinical remission and GFR loss of more than 15 ml/min).\nSensitivity analysis will be conducted to assess the effect of these substitution rules on the\nresults of the statistical evaluation.\nA subsequent explorative statistical analysis will include the factor sex in the below specified\nstatistical models, to demonstrate possible gender specific efficacy differences.\nThe steering committee may suggest changes in the original statistical evaluation plan e.g.\nreduction of the number of interim analyses. The study group (all physicians) will decide about\nthe acceptance of these changes. However, these decisions will be performed blinded to the\ndata.\n\n10.3.1\nPRIMARY ENDPOINTS\n\nWe will consider two primary endpoints.\n\n10.3.1.1 PRIMARY ENDPOINT \"IN FULL CLINICAL REMISSION\"\nDEFINITION\nThe first efficacy endpoint is defined as in full clinical remission of the disease. Full clinical\nremission is defined as proteinuria < 0.2 g/g and stable renal function (GFR loss of < 5 ml/min\nfrom baseline GFR at the end of the 3 year study period).\nHYPOTHESES\nThe evaluation of the primary endpoint \"in full clinical remission\" implies testing the hypothesis\n\nH0:\nRemission rates under both therapies are equal,\npIMMUNOSUPPRESSIVE GROUP = pSUPPORTIVE GROUP\nversus",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "83e4b11e4db586eb21191a6f4291e1b6634c2056961579641e10959a3a7428ed": {
+      "end": 2482,
+      "end_line": 57,
+      "handle": "eh_83e4b11e4db586eb",
+      "identity": "sha256:83e4b11e4db586eb21191a6f4291e1b6634c2056961579641e10959a3a7428ed",
+      "kind": "narrative",
+      "page": 8,
+      "quote": "These results were achieved with the use of a\npractical trial design that was in accordance\nwith the KDIGO guidelines3 and daily practice\n- namely, withholding immunosuppressive\ntherapy until supportive care had been provided,\nwith increasing doses, for 6 months. In the cur\nrent trial, supportive care was handled in a\nstandardized fashion by the trial investigators.",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 2114,
+      "start_line": 50,
+      "trial_id": "stop-igan"
+    },
+    "8729c3b9982914833e046234c46f364642ab5d8f1d0b370ef94f8b97b9d9b57e": {
+      "end": 1950,
+      "end_line": 47,
+      "handle": "eh_8729c3b998291483",
+      "identity": "sha256:8729c3b9982914833e046234c46f364642ab5d8f1d0b370ef94f8b97b9d9b57e",
+      "kind": "narrative",
+      "page": 5,
+      "quote": "n engl j med 373;23 nejm.org December 3, 2015\n2229\nSupportive Care plus Immunosuppression in IgA Nephropathy\nFigure 1. Eligibility, Enrollment, and Randomization.\nA total of 379 patients with IgA nephropathy were screened for eligibility, of whom 337 entered the 6-month run-in\nphase, during which all patients received supportive care. Among the 309 patients who completed this phase, 165\nstill had proteinuria with urinary protein excretion rates of 0.75 to less than 3.5 g per day, and 106 had proteinuria\nwith urinary protein excretion rates below 0.75 g per day. Among the latter 106 patients, 12 had an increase in uri\nnary protein excretion rates to at least 0.75 g per day during further follow-up. Thus, 177 patients were eligible for\nthe subsequent 3-year randomized trial phase, of whom 162 consented to participate in this phase and were ran\ndomly assigned to either continue supportive care or receive supportive care plus immunosuppressive therapy.\n337 Started run-in phase\n309 Completed run-in phase\n379 Patients were screened\n42 Were excluded\n162 Underwent randomization\n15 Declined to undergo randomization\n28 Dropped out during run-in phase\n17 Were lost to follow-up\n5 Withdrew\n6 Were withdrawn by physician\n38 Were excluded\n23 Had proteinuria >3.5 g/day\n7 Had an eGFR <30 ml/min/1.73 m2\n8 Had a decrease in eGFR >30% and other\nreasons for exclusion\n106 Had a response\n165 Did not have a response\n177 Were eligible for randomization\n4 Were excluded\n1 Died\n1 Withdrew consent\n2 Were lost to follow-up\n4 Were excluded\n1 Died\n1 Withdrew consent\n2 Were lost to follow-up\n12 Had an increase in proteinuria to\n0.75 g/day during further follow-up\n76 Completed study\n78 Completed study\n80 Were assigned to supportive\ncare\n82 Were assigned to supportive\ncare plus immunosuppression\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "8950343cd623df53dc32802a538dc95ad3beb96af9a9c1f6bf22278f86d108d8": {
+      "end": 1262,
+      "end_line": 52,
+      "handle": "eh_8950343cd623df53",
+      "identity": "sha256:8950343cd623df53dc32802a538dc95ad3beb96af9a9c1f6bf22278f86d108d8",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "\nRe:\n14-15463 - Effects of immunosuppression added to optimized supportive\n\ntherapy in IgA nephropathy\n\n\n\n\nSummary of changes in the Clinical Study Protocol\n\n\n1)\nInclusion criterion \"renal biopsy\" was changed: In the amended protocol a\n\nrenal biopsy still constitutes a necessary inclusion criterion, but this is no\n\nlonger restricted to a period of 3 years prior to screening.\n\n2)\nThe threshold of proteinuria inclusion criterion for eligibility was adjusted to\n\n> 0.75 g/d (original protocol version: ! 0.75 g/d).\n\n3)\nA GFR loss > 30% during the run-in phase is defined as drop-out criterion\n\nfor randomization into the 3-year trial phase. In the original protocol, a\n\nGFR loss > 20% during run-in was defined.\n\n4)\nCreatinine excretion is determined in every 24-hour urine collection.\n\n5)\nFor endpoint analyzes, GFR is estimated using the CKD-Epi formula\n\n(instead of creatinine clearance determined from 24-hour urine collection).\n\n6)\nFor endpoint analyses, proteinuria is determined as urinary\n\nprotein/creatinine ratio from a 24-hour urine collection (given as \"g\n\nprotein/g creatinine\"). In the original protocol proteinuria was determined\n\nas \"g/d\".\n\n7)\nDue to a prolonged recruitment period, trial duration was extended by one\n\nyear (until October 2014).",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526": {
+      "end": 5033,
+      "end_line": 108,
+      "handle": "eh_acd6ccb5bc52d5f1",
+      "identity": "sha256:acd6ccb5bc52d5f1423aa71b9902e65eae1d62674313db35c64731dba7782526",
+      "kind": "narrative",
+      "page": 4,
+      "quote": "n engl j med 373;23 nejm.org December 3, 2015\n2228\nThe new engl and jour nal of medicine\nof covariate adaptive randomization with respect\nto factors that had the potential to modify the\ntreatment effect (i.e., eGFR and proteinuria).13,16\nData are presented as means and standard de\nviations for continuous variables and as counts,\npercentages, and odds ratios with 95% confi\ndence intervals for categorical variables. The full-\nanalysis set was used for the primary analyses,\nwith patients with missing data considered to\nhave treatment failure.17 A logistic-regression\nmodel that included two stratification factors\n(baseline eGFR and baseline proteinuria) was\nfitted to the data of the two primary end points.\nThe individual significance level of the two end\npoints was set to 5% according to the hierarchi\ncal order; the significance level was corrected for\nthe group sequential design to 0.0005 at the first\ninterim analysis, 0.0141 at the second interim\nanalysis, and 0.0451 at the final analysis.15,18\nVarious sensitivity analyses were performed with\nthe use of an available-case analysis set, multi\nple-imputation techniques to account for miss\ning observations, and a permutation test.\nSecondary end points were analyzed on the\nbasis of available cases with the use of multi\nvariate models that included two stratification\nfactors (baseline eGFR and baseline proteinuria).\nAdditional details regarding the analyses of the\nsecondary end points are provided in the trial\nstatistical analysis plan (available with the proto\ncol at NEJM.org). Adverse events were analyzed\nby means of Fisher's exact test, except for the\ntotal number of events of infection and serious\nadverse events of infection, for which the Wil\ncoxon signed-rank test was used to determine\nsignificance levels.\nResults\nRun-in Phase and Randomization\nA total of 337 patients entered the run-in phase\nand received supportive care for 6 months (Fig. 1);\n28 patients did not complete the run-in phase.\nAmong the 309 patients who completed the run-\nin phase, 106 had a response to supportive care\n(proteinuria level, <0.75 g of urinary protein ex\ncretion per day after the end of the run-in phase)\nand were not eligible for randomization. A total\nof 38 patients did not meet inclusion criteria or\nmet exclusion criteria at the time of randomiza\ntion. A total of 165 patients had no response at\nthe end of the run-in phase, and of the 106 pa\ntients who had a response to supportive care\nduring the run-in phase, 12 were found to have a\nproteinuria level above 0.75 g per day of urinary\nprotein excretion at a later stage of follow-up;\nthus 177 patients were eligible. Of the 177 eligible\nparticipants, 15 declined to undergo randomiza\ntion, 80 were randomly assigned to the support\nive-care group, and 82 were assigned to the im\nmunosuppression group. Patient characteristics\nare listed in Table 1. In the immunosuppression\ngroup, 55 patients had an eGFR of at least 60 ml\nper minute per 1.73 m2 and received glucocorti\ncoid monotherapy, whereas 27 had an eGFR be\ntween 30 and 59 ml per minute per 1.73 m2 and\nwere treated with the immunosuppressive com\nbination regimen of cyclophosphamide (followed\nby azathioprine) plus prednisolone (see Table S1\nin the Supplementary Appendix).\nPrimary End Points\nThe 3-year trial phase was completed by 76 pa\ntients (95%) in the supportive-care group and by\n78 patients (95%) in the immunosuppression\ngroup. In the full-analysis set, 4 of the 80 pa\ntients (5%) in the supportive-care group, as com\npared with 14 of the 82 patients (17%) in the\nimmunosuppression group, had a full clinical\nremission at the final visit (Fig. 2A). An analysis\nof all available cases yielded similar results -\n4 of 72 patients (6%) in the supportive-care group\nhad a full clinical remission at the final visit, as\ncompared with 14 of 71 (20%) in the immuno\nsuppression group. Additional analyses that in\ncluded a permutation test, multiple imputation\nof missing information, and per-protocol analy\nses confirmed significant differences between\nthe groups. Patients who had a remission had a\nlower mean (\u00b1SD) baseline level of proteinuria\nthan did those who did not have a remission\n(protein-to-creatinine ratio of 0.7\u00b10.3 vs. 1.1\u00b10.6;\nP<0.001 by Welch's t-test). Renal function and\nblood pressure at baseline were similar in these\ngroups. The higher rate of full clinical remission\nin the immunosuppression group than in the\nsupportive-care group was related exclusively to\nthe remission of proteinuria (9 patients in sup\nportive-care group vs. 20 patients in the immu\nnosuppression group); there was no significant\ndifference between the two study groups in the\nnumber of patients with a decrease in the eGFR\nof less than 5 ml per minute per 1.73 m2 during\nthe trial (38 patients in each group).\nWith respect to the second primary end point\n(a decrease in the eGFR of at least 15 ml per\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "b949fb5f57c096e4780aad5e90598dddba1745326150c8e6454d99e941fd155b": {
+      "end": 2434,
+      "end_line": 45,
+      "handle": "eh_b949fb5f57c096e4",
+      "identity": "sha256:b949fb5f57c096e4780aad5e90598dddba1745326150c8e6454d99e941fd155b",
+      "kind": "narrative",
+      "page": 97,
+      "quote": "CLINICAL STUDY PROTOCOL\n\nEUDRACT NUMBER: 2007-000871-41\nVERSION 4.1 13.04.2012\n\nPROTOCOL NUMBER: STOP IGAN\nSTOP_IGAN_PRUEFPLAN_13_04_2012_V4.1\n\nSEITE 28 VON 63\n\n5.2\nADMINISTRATION AND DOSAGE OF STUDY INTERVENTION\nAll patients will receive treatment with an ACE-inhibitor or angiotensin-II receptor blocker\n(ARB) and a statin at the beginning of the study. Patients who have a known intolerance to\nACE-inhibitors or who develop intolerable side-effects of ACE-inhibitors will be switched to an\nARB. Patients who are treated with the maximal dose of an ACE-inhibitor and do not reach\ntarget blood pressure or proteinuria levels will be treated with an ARB in addition to the ACE-\ninhibitor.\nACE-inhibitors will be administered orally in a single daily dose. The dosage will be increased\nup to the manufacturers maximally recommended dose to reach target blood pressure and\nproteinuria levels.\nARBs will be administered orally in a single daily dose. The dosage will be increased up to the\nmanufacturers maximally recommended dose to reach target blood pressure and proteinuria\nlevels.\nStatins will be administered orally in a single daily dose. The dosage will be increased up to\nthe manufacturers maximally recommended dose to reach target cholesterol levels.\nAldosterone escape may be suspected in case the proteinuria starts to rise again despite\ncontinued administration of maximum ACE-inhibitor or ARB dosage. In such cases, an\naldosterone antagonist (e.g. spironolactone 25 mg/day) may be titrated into the medication\nunder close surveillance of serum potassium and creatinine.\nTreatment will be taken for the whole study period of 3 years.\nDosages, routes of administration and treatment periods in case of corticosteroids ,\ncyclophosphamide and/or azathioprine are outlined in 5.1.\n5.3\nRANDOMISATION\nIf a patient is eligible to participate in the run-in phase, the patient will be randomly assigned to\none of the two treatments using telephone randomisation by the study secretary (Institute of\nMedical Statistics, University Hospital Aachen). The randomisation codes are generated using\nminimization (Pocock, Simon [25]), a covariate-adaptive randomisation method, which leads to\nhomogeneous treatment groups with respect to important influence factors, such as:\n\nrenal function (creatinine clearence < 60 ml/min or 60 ml/min [most recent\nmeasurement]);\n\ndegree of proteinuria (> 1.5 or d 1.5 g/24 h [most recent measurement].)",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "bd6333d1a199c071ab405cfc7bfdbcb2d47a9a4d96f69ac9e970b63ccb645f65": {
+      "end": 4999,
+      "end_line": 107,
+      "handle": "eh_bd6333d1a199c071",
+      "identity": "sha256:bd6333d1a199c071ab405cfc7bfdbcb2d47a9a4d96f69ac9e970b63ccb645f65",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "n engl j med 373;23 nejm.org December 3, 2015\n2227\nSupportive Care plus Immunosuppression in IgA Nephropathy\nthe end of the run-in phase entered the 3-year\nstudy phase and were randomly assigned to con\ntinue supportive care alone (supportive-care group)\nor to receive supportive care with the addition of\nimmunosuppressive therapy (immunosuppression\ngroup). Participants whose proteinuria dropped\nbelow 0.75 g of urinary protein excretion per day\nat the end of the run-in phase did not undergo\nrandomization; if proteinuria exceeded the\nthreshold of 0.75 g of urinary protein excretion\nper day in these patients despite supportive care\nduring the randomization phase of the trial, the\npatients were eligible for randomization. At the\nend of the run-in phase, patients who had a\nurinary protein excretion rate above 3.5 g per\nday, an eGFR lower than 30 ml per minute per\n1.73 m2, or a decrease in the eGFR of more than\n30% from the start of the run-in phase were not\nrandomly assigned (dropout criteria).\nPatients randomly assigned to the immuno\nsuppression group who had an eGFR of at least\n60 ml per minute per 1.73 m2 received glucocor\nticoid monotherapy for 6 months (methylpred\nnisolone, administered intravenously at a dose of\n1 g per day for 3 days at the start of months 1,\n3, and 5; and oral prednisolone at a dose of 0.5 mg\nper kilogram per 48 hours on the other days).6,7\nOn the basis of the literature available in 2007,\npatients with an eGFR between 30 and 59 ml per\nminute per 1.73 m2 received cyclophosphamide\nat a dose of 1.5 mg per kilogram per day for\n3 months, followed by azathioprine at a dose of\n1.5 mg per kilogram per day during months 4\nthrough 36, plus oral prednisolone at a dose of\n40 mg per day, tapered to 10 mg per day, over\nthe first 3 months of the study, 10 mg per day\nduring months 4 through 6, and 7.5 mg per day\nduring months 7 through 36.11 All drugs were\nadministered as part of general medical care and\nwere not donated specifically for the trial.\nThe run-in phase included visits at weeks 0,\n4, 8, 16, 20, 23, and 24. At week 24 (defined as\nbaseline), eligible patients underwent random\nization, and study visits occurred at 2 weeks af\nter randomization, once a month thereafter for\n3 months, and then once every 3 months until\nmonth 36. GFR was estimated with the use of\nthe Chronic Kidney Disease Epidemiology Col\nlaboration Creatinine Equation (www.kidney.org/\nprofessionals/KDOQI/gfr_calculator). The level of\nproteinuria was quantified according to 24-hour\nurine collections and was expressed as grams\nper day of urinary protein excretion during the\nrun-in phase, as in most randomized, controlled\ntrials; however, during the randomized, con\ntrolled trial phase, we switched to using the\nprotein-to-creatinine ratio (with both protein\nand creatinine measured in grams), given the\ngreater accuracy of this approach.14 Data that\ndetermined primary end points (i.e., eGFR and\nproteinuria) were confirmed by repeated mea\nsurements after a 2-week interval, and the mean\nvalue of all the measurements was used in the\nanalysis. Patients provided three home measure\nments of blood pressure before each visit. The\nmean of these measurements was recorded. If\nhome measurements were not provided (which\nwas the case for <20% of the patients at each\nsingle visit), office measurements were recorded.\nStudy End Points\nThe two primary end points in hierarchical order\nwere full clinical remission (defined as protein\nuria with a protein-to-creatinine ratio of <0.2\nand stable renal function with a decrease in the\neGFR of <5 ml per minute per 1.73 m2 from the\nbaseline eGFR at the end of the 3-year trial\nphase) and a decrease in the eGFR of at least 15 ml\nper minute per 1.73 m2 from the baseline eGFR.\nSecondary end points were the absolute decrease\nin the eGFR, a decrease in the eGFR of at least\n30 ml per minute per 1.73 m2 from the baseline\neGFR, the need for dialysis (onset of end-stage\nrenal disease), the mean annual change in the\nslope of the reciprocal of serum creatinine con\ncentration, proteinuria at 12 and 36 months, and\ndisappearance of microhematuria as determined\nby means of a dipstick or urinary sediment test.\nStatistical Analysis\nWe calculated that a sample of 74 patients per\ngroup (including a 10% dropout adaptation)\nwould give the study 80% power, at a two-sided\nsignificance level of 5%, to detect rates of full\nclinical remission (the first primary end point)\nof 5% in the supportive-care group and 25% in\nthe immunosuppression group (with these rates\nassumed on the basis of prior randomized, con\ntrolled trials6,11). We used a chi-square test with\ncontinuity correction and adjustment for two\ninterim analyses (after one third and two thirds\nof the cohort had completed the trial).15\nRandomization codes that were used to assign\npatients in a 1:1 ratio were generated by means\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "c5841d7e330d5fffd540a492b058c1f1131bfc0769fd3b3fcf8cae6530fb3d6a": {
+      "end": 2543,
+      "end_line": 55,
+      "handle": "eh_c5841d7e330d5fff",
+      "identity": "sha256:c5841d7e330d5fffd540a492b058c1f1131bfc0769fd3b3fcf8cae6530fb3d6a",
+      "kind": "narrative",
+      "page": 11,
+      "quote": "One limitation of our trial is its open-label\nnature. Given the complex immunosuppressive\ntreatment regimens, a blinded study did not seem\npossible; however, all end points were based on\nobjectively measured laboratory values that re\nduced the chance for bias. Furthermore, the trial\ndesign that included two different immunosup\npressive treatment regimens raises a statistical\npower issue for the data analysis, but this should\nnot be a confounding factor. A second limitation\nis that our end points were based on eGFRs de\nrived from creatinine measurements. Glucocor\nticoids can have long-lasting effects on muscles\nand can reduce the rate of creatinine generation,\nwhich can result in an erroneous assumption of\na higher eGFR. To exclude this possibility, we\nverified our findings using measurements of cre\natinine clearance that are independent of rates of\ncreatinine generation. A third limitation is the\n3-year study duration, which is relatively short,\neven in a population with high-risk IgA nephrop\nathy. Indeed, in prior trials, patients with IgA",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 1487,
+      "start_line": 34,
+      "trial_id": "stop-igan"
+    },
+    "cdca39f111ea705623f75945fa71e7857ca850a6c5313316b5f2163e0d40d32d": {
+      "end": 1934,
+      "end_line": 49,
+      "handle": "eh_cdca39f111ea7056",
+      "identity": "sha256:cdca39f111ea705623f75945fa71e7857ca850a6c5313316b5f2163e0d40d32d",
+      "kind": "narrative",
+      "page": 173,
+      "quote": "TRIAL STATISTICAL ANALYSIS PLAN\n\nEUDRACT NUMMER: 2007-000871-41\n\n\nSTUDY NUMBER: STOP IGAN\nSTOP_IGAN_TSAP_2012_07_11_V1\n\n41\ninterim analysis procedure (k=3 Interim analyses, [10]) to maintain the overall level of 5%\n[11.8].\nTo evaluate the clinical remission over the three year observation period, a dropout case\n(e.g. with a missing three years GFR value) will be considered as not in full clinical remission\n(conservative missing value imputation).\nCalculation of endpoint is described in 9.2.9. Compare table A2, chapter 17, for result\npresentation.\n\n11.3.1.2 PRIMARY ENDPOINT \"GFR LOSS\"\nDEFINITION\nThe second efficacy endpoint is defined as a GFR loss of 15 ml/min or higher from baseline\nGFR at the end of the 3 year study period (GFR loss).\nHYPOTHESES\nThe evaluation of the primary endpoint GFR loss implies testing the hypothesis\n\n\nH0:\nGFR loss rates under both therapies are equal,\npIMMUNOSUPPRESSIVE GROUP = pSUPPORTIVE GROUP\nversus\nH1:\nGFR loss rates under both therapies are different,\npIMMUNOSUPPRESSIVE GROUP z pSUPPORTIVE GROUP\nSTATISTICAL EVALUATION\nIn the case of significantly different GFR-loss rates between the therapies the above\nhypotheses rates will be tested by means of fitting a logistic regression model to the GFR-\nloss rate date (hierarchically ordered test). Hereby treatment and the two stratification factors\n(baseline GFR, baseline proteinuria) will serve as model building factors (11.2.1 MODEL I).\nThe test on the main factor therapy will be performed at the significance levels given by the\nO'Brien Fleming interim analysis procedure (k=3 Interim analysis, [10]) to maintain the overall\nlevel of 5% [11.8].\nCases, where documentation does not allow assessment of treatment success, will be\ndefined as treatment failure (GFR loss of more than 15 ml/min).\nCompare table A2, chapter 17, for result presentation.\n\n11.3.2\nSECONDARY ENDPOINTS\n11.3.2.1 SECONDARY ENDPOINT \"ABSOLUTE GFR CHANGE\"\n\nDEFINITION",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "d2c383a9c7cd4b0dda6f6a868dea2f38ab6390ac8bf39e3a114018a0b0861aac": {
+      "end": 4839,
+      "end_line": 105,
+      "handle": "eh_d2c383a9c7cd4b0d",
+      "identity": "sha256:d2c383a9c7cd4b0dda6f6a868dea2f38ab6390ac8bf39e3a114018a0b0861aac",
+      "kind": "narrative",
+      "page": 3,
+      "quote": "Randomization codes that were used to assign\npatients in a 1:1 ratio were generated by means",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 4747,
+      "start_line": 104,
+      "trial_id": "stop-igan"
+    },
+    "d33b1a9014bb4e24a916dca06e5708ee366011bc330ed661a00c3644f21c3bbf": {
+      "delivery_receipt": "sha256:1ebadf952c734d1dd3e65b3beedd8cfecb5db9d7acf17a68e5bd0c0cb10b0745",
+      "handle": "eh_d33b1a9014bb4e24",
+      "identity": "sha256:d33b1a9014bb4e24a916dca06e5708ee366011bc330ed661a00c3644f21c3bbf",
+      "kind": "figure",
+      "provenance": "host_visual",
+      "region": [
+        0.11,
+        0.075,
+        0.825,
+        0.245
+      ],
+      "render": {
+        "identity": "sha256:d3477365cfcfe4f07a09d14b1bd2445401f4f75117830becf7eb694cd3ea201b",
+        "page": 7,
+        "png_sha256": "sha256:866c6246fcdd594104e1783dcd209d4aacd72b60786845a943906116de9de707",
+        "recipe": "pymupdf-1.5",
+        "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578"
+      },
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "transcription": "Figure 2, panel A: In Full Clinical Remission. Columns: Subgroup; Supportive Care; Supportive Care plus Immunosuppression; Odds Ratio (95% CI); P Value. Counts are no. of events/total no. Full-analysis set: 4/80; 14/82; 4.82 (1.43\u201316.30); 0.01. Available-case analysis: 4/72; 14/71; 5.38 (1.55\u201318.66); 0.008. Odds-ratio axis ticks: 0.25, 0.5, 1, 2, 5, 10, 20. Below 1: Supportive Care Better; above 1: Supportive Care plus Immunosuppression Better.",
+      "trial_id": "stop-igan"
+    },
+    "d52a08e9a23f63f737ce1600a5efec148b7aad78d2449d12f9426fd015ea7718": {
+      "end": 4784,
+      "end_line": 107,
+      "handle": "eh_d52a08e9a23f63f7",
+      "identity": "sha256:d52a08e9a23f63f737ce1600a5efec148b7aad78d2449d12f9426fd015ea7718",
+      "kind": "narrative",
+      "page": 2,
+      "quote": "n engl j med 373;23 nejm.org December 3, 2015\n2226\nThe new engl and jour nal of medicine\nI\ngA nephropathy is the most common\nform of glomerulonephritis.1 Several findings\nsupport the use of immunosuppressive ther\napy to target mesangial IgA deposits and circu\nlating IgA autoantibodies.2\nThe Kidney Disease: Improving Global Out\ncomes (KDIGO) guidelines regarding IgA ne\nphropathy recommend treatment with a blocker\nof the renin-angiotensin system (i.e., an angio\ntensin-converting-enzyme inhibitor or an angio\ntensin II-receptor blocker) in patients who have\nproteinuria with urinary protein excretion of more\nthan 1 g per day.3-5 The KDIGO guidelines also\nsuggest the use of systemic glucocorticoids in\npatients who have a proteinuria level above 1 g of\nurinary protein excretion per day and a glomeru\nlar filtration rate (GFR) higher than 50 ml per\nminute despite supportive care.3 However, the key\nrandomized, controlled trials6-9 on which this\nsuggestion was based have been criticized10\nbecause the blockade of the renin-angiotensin\nsystem either was inconsistent6,7 or was tempo\nrarily halted and then reinitiated at baseline.8,9\nAnother randomized, controlled trial showed that\nimmunosuppressive combination therapy stabi\nlized GFR in patients with an aggressive course\nof IgA nephropathy11; however, in that trial the\nblockade of the renin-angiotensin system was\nalso inconsistent.\nWe tested the hypothesis that immunosup\npressive therapy plus comprehensive supportive\ncare would be superior to supportive care alone\nin patients with IgA nephropathy, with the use\nof two primary end points: full clinical remis\nsion and a decrease in the estimated GFR (eGFR)\nof at least 15 ml per minute per 1.73 m2 of body-\nsurface area after 3 years of follow-up. We first\nenrolled all patients in a run-in phase during\nwhich they received intensive supportive care.12\nAfter this phase, only the patients who were still\nconsidered to be at high risk were randomly as\nsigned to continue supportive care alone or to\nreceive supportive care with the addition of im\nmunosuppressive therapy.\nMethods\nStudy Population\nFrom February 2008 through October 2011, we\nscreened 379 patients with IgA nephropathy at\n32 nephrology centers in Germany (all partici\npating nephrology centers are listed in the Sup\nplementary Appendix, available with the full text\nof this article at NEJM.org). A total of 42 pa\ntients were excluded because of patient or physi\ncian decision, incomplete data, or other reasons,\nand 337 patients were enrolled in the run-in\nphase. The key inclusion criteria were primary\nIgA nephropathy confirmed on biopsy; an age of\n18 to 70 years; and a proteinuria level above 0.75 g\nper day of urinary protein excretion plus arterial\nhypertension (defined by the use of antihyper\ntensive medication or by an ambulatory blood\npressure \u2265140/90 mm Hg), impaired renal func\ntion (defined as an eGFR <90 ml per minute per\n1.73 m2), or both. Major exclusion criteria were\nan eGFR lower than 30 ml per minute per 1.73 m2,\nsecondary and rapidly progressive, crescentic IgA\nnephropathy, other chronic renal diseases, and\nany prior immunosuppressive therapy. Written\ninformed consent was obtained from all partici\npants. The study was approved by the ethics\ncommittee at each participating center.\nStudy Design\nWe conducted a prospective, open-label, random\nized, controlled clinical trial with a two-group,\nparallel, group-sequential design.13 The protocol\nis available at NEJM.org. All the authors col\nlected the data and vouch for the completeness\nand accuracy of the data and analyses and for\nthe fidelity of the study to the protocol. The\ndecision to submit the manuscript for publica\ntion was made by all the authors.\nDuring a 6-month run-in phase, all the pa\ntients received comprehensive supportive care\nthat included blockers of the renin-angiotensin\nsystem to lower blood pressure to a target below\n125/75 mm Hg. If proteinuria remained above\nthe target of 0.75 g per day of urinary protein\nexcretion despite blood-pressure control, the dose\nof renin-angiotensin system blocker was increased\nto the maximum approved daily dose or to the\nhighest dose at which the patient did not have\nunacceptable side effects. Patients received dietary\ncounseling and were advised to quit smoking\nand to avoid nonsteroidal antiinflammatory\ndrugs and other nephrotoxins. Total cholesterol\nlevels were lowered to less than 200 mg per\ndeciliter (5.2 mmol per liter) with the use of\nstatins, if necessary.\nHigh-risk patients who had persistent pro\nteinuria with urinary protein excretion of at least\n0.75 g per day, but lower than 3.5 g per day, at\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "d885e2d7edeb2b5c5fed92a1b80f276461483df8e538af8c583765bb3e575717": {
+      "end": 1512,
+      "end_line": 82,
+      "handle": "eh_d885e2d7edeb2b5c",
+      "identity": "sha256:d885e2d7edeb2b5c5fed92a1b80f276461483df8e538af8c583765bb3e575717",
+      "kind": "narrative",
+      "page": 188,
+      "quote": "TRIAL STATISTICAL ANALYSIS PLAN\n\nEUDRACT NUMMER: 2007-000871-41\n\n\nSTUDY NUMBER: STOP IGAN\nSTOP_IGAN_TSAP_2012_07_11_V1\n\n56\n18\nGRAPHIC DRAFTS\n\n18.1 SUBJECT DISPOSITION\n\n* creatinine clearance\nLost to follow up: n= ...\n\nDeath: n=...\n\nChange of therapy: n= ...\n SAE\n (n=...)\n Dec. of Pract. (n=...)\n\nPer Protocol (n=...)\nNot randomised:\n\nProteinuria < 0.75 g/d (n=...)\n\nGFR- lost > 30% (n=...)\nProteinuria > 3.5 g/d (n=...)\nCreatinine Clearence < 30 ml/min (n=...)\nother reason (n=...)\n...\nImmunsuppression (n=...)\nTherapy really starts:\n n= ...\nTherapy not starts1: n=...\n Dec. of Practitioner (n=...)\n Refusal of patient (n=...)\nDropout before start of therapy: n=...\n Dec. of Practitioner (n=...)\n Refusal of patient (n=...)\nLost to follow up: n= ...\n\nChange of therapy: n= ...\n SAE\n (n=...)\n Dec. of Pract. (n=...)\n\nLost to follow up: n= ...\n\nChange of therapy: n= ...\n SAE\n (n=...)\n Dec. of Pract. (n=...)\nRUN-IN PHASE Start (n=350)\nLost to follow-up (n=...)\n_____________________ (n=...)\n_____________________ (n=...)\n_____________________ (n=...)\n_____________________ (n=...)\n\nRUN-IN PHASE End (n=...)\nRandomisation (n=148)\nSupportive (n=...)\nTherapy really starts:\n n= ...\nTherapy not starts1: n=...\n Dec. of Practitioner (n=...)\n Refusal of patient (n=...)\nDropout before start of therapy: n=...\n Dec. of Practitioner (n=...)\n Refusal of patient (n=...)\nPer Protocol (n=...)\n30ml/min &&\n 60 ml/min (n=...)\nTherapy really starts:\n n= ...\nCC* 60 ml/min (n=...)\nTherapy really starts: n=\nPer Protocol (n=...)",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "d8a42980e5233d195016a6aa2e79e7c47e798f2a3f660115be1b3abf35f96779": {
+      "end": 2572,
+      "end_line": 50,
+      "handle": "eh_d8a42980e5233d19",
+      "identity": "sha256:d8a42980e5233d195016a6aa2e79e7c47e798f2a3f660115be1b3abf35f96779",
+      "kind": "narrative",
+      "page": 98,
+      "quote": "CLINICAL STUDY PROTOCOL\n\nEUDRACT NUMBER: 2007-000871-41\nVERSION 4.1 13.04.2012\n\nPROTOCOL NUMBER: STOP IGAN\nSTOP_IGAN_PRUEFPLAN_13_04_2012_V4.1\n\nSEITE 29 VON 63\nThe random allocation procedure will be carried out in the following way: Immediately after\nfinishing the last run-in phase examination to establish the eligibility of the patient to participate\nto the study phase, the respective centre has to send a fax to the Trial Office providing the\nfollowing data to the randomisation service on the Randomisation Form:\n\nName, mailing address, fax and telephone number of the calling centre\n\nInitials of the patient\n\nPatient's gender\n\nPatient's year of birth\n\nPatient's creatinine clearance [ml/min, most recent measurement]\n\nPatient's degree of proteinuria [g/24h, most recent measurement]\nEach faxed call for randomisation will be processed within two working days by the Trial Office\nby assigning a treatment to the individual patient. The documentation of the baseline\nexamination has to be filled in and returned to the Trial Office within one week. All patients\nfulfilling inclusion criteria that are not included in the study, will be documented in a patient log\nform, stating date, sex, age, diagnosis, proteinuria, serum creatinine, creatinine clearance,\nblood pressure, and reason for non-inclusion. Note that the before mentioned telephone based\nadaptive randomisation procedure applied minimizes concealment bias and confounder bias.\n5.4\nBLINDING\nDue to the kind of intervention, the study has to be performed open-labelled. Because the\nprimary endpoints, i.e. GFR level and proteinuria, are objectively measured, information bias is\nexcluded. Tight monitoring of the patients will protect against attrition bias.\n5.5\nCOMPLIANCE\nGiven the multi-faceted nature of the intervention, compliance can not be monitored by, for\nexample, monitoring drug levels in serum. Limited compliance monitoring is possible via\nmeasurements of blood pressure, blood lipids (in patients taking a statin), typical changes in\nblood counts in patients taking corticosteroids (leukocytosis, relative lymphopenia) and by\nfollowing the number of prescriptions of drugs over time.\n5.6\nPOTENTIAL TREATMENT RISKS\nRisks for participants are estimated to be higher in the immunosuppression group and include\nthe known risks of prolonged corticosteroid therapy as well as of treatment with cytotoxic\nagents: cyclophosphamide and long-term azathioprine therapy. Potential side effects are listed\nin detail in the \"Fachinformation\" of each of the compounds in the appendix. Briefly, significant",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "dd13e304571571eb6378400b60b1ec5d90df78125450138b33f3ae34202599a5": {
+      "end": 1971,
+      "end_line": 49,
+      "handle": "eh_dd13e304571571eb",
+      "identity": "sha256:dd13e304571571eb6378400b60b1ec5d90df78125450138b33f3ae34202599a5",
+      "kind": "narrative",
+      "page": 152,
+      "quote": "TRIAL STATISTICAL ANALYSIS PLAN\n\nEUDRACT NUMMER: 2007-000871-41\n\n\nSTUDY NUMBER: STOP IGAN\nSTOP_IGAN_TSAP_2012_07_11_V1\n\n20\n7\nPOPULATION AND ASSOCIATED ANALYSIS\nAccording to the [ICH Topic E 9] there are two different sets (full analysis set and per\nprotocol set) for the statistical analysis. The full analysis set is described with respect to the\nstudy in the following section.\n\nFull Analysis Set (Intention-to-Treat Sample)\nThe term 'full analysis set' describes the analysis set which is as complete as possible and\nas close as possible to the intention-to-treat ideal of including all randomised subjects.\nPreservation of initial randomisation in analysis is important in preventing bias and in\nproviding a secure foundation for statistical tests. Under many circumstances it may also\nprovide estimates of treatment effects which are more likely to mirror those observed in\nsubsequent practice.\nThe following circumstances lead to excluding randomised subjects from the full analysis set:\n\nfailure to satisfy major entry criteria (eligibility violations):\no Male or female patients from 18-70 years with histologically proven primary IgAN\nwith typical mesangioproliferative features. Diagnosis has to be made by a\nnephropathologist. (at beginning of run-in phase)\n\no 6 months participation in the run-in phase\no 3URWHLQXULD ! PJ G DQG PJ G\no *)5 ORVV GXULQJ WKH PRQWKV UXQ-in phase\n\n\nlack of any data post randomisation.\n\nSubjects who fail to satisfy an entry criterion may be excluded without introducing bias only if:\n\nthe entry criterion was measured prior to randomisation;\n\nthe detection of relevant eligibility violations can be made completely objective;\n\nall subjects receive equal scrutiny for eligibility violations;\n\nall detected violations of the particular entry criterion are excluded.\n\nPotential biases arising from these specific exclusions, or any others, must be addressed.\n\nThe primary analysis will be based on the \"full analysis set\"-population.",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "ec1414860ba40da4bd749f1a748f6677b1488015030136c081a29b25e62773d4": {
+      "end": 4932,
+      "end_line": 150,
+      "handle": "eh_ec1414860ba40da4",
+      "identity": "sha256:ec1414860ba40da4bd749f1a748f6677b1488015030136c081a29b25e62773d4",
+      "kind": "narrative",
+      "page": 8,
+      "quote": "n engl j med 373;23 nejm.org December 3, 2015\n2232\nThe new engl and jour nal of medicine\nAdverse Events\nThe overall numbers of serious adverse events\nwere similar in the two study groups (Table 3,\nand Tables S3 and S4 in the Supplementary Ap\npendix). However, we observed more nonsevere\nand severe events of infection, predominantly of\nthe gastrointestinal and respiratory tracts, in the\nimmunosuppression group, of which 25% were\nconsidered by the investigators to be related to\nthe study treatment. One patient in the support\nive-care group died in a motor vehicle accident,\nand one patient who received cyclophosphamide\nplus glucocorticoid therapy in the immunosup\npression group died of sepsis. We did not ob\nserve more hepatotoxic events or leukopenia in\nthe immunosuppression group than in the sup\nportive-care group, but there was a numerically\nhigher number of malignant neoplasms, im\npaired glucose metabolism, and body-weight gain\nin the immunosuppression group. In the immu\nnosuppression group, events of infection were\nalmost equally distributed between the two im\nmunosuppression subgroups (115 events among\n55 patients receiving glucocorticoid monotherapy\nvs. 59 events among 27 patients receiving the\ncombined immunosuppressive regimen), although\nimpaired glucose tolerance was more common\namong the patients receiving glucocorticoid\nmonotherapy than among those receiving the\ncombined therapy (8 patients vs. 1 patient). The\ntwo cases of malignant neoplasm in the immuno\nsuppression group were observed among the pa\ntients receiving the combined immunosuppres\nsive regimen.\nDiscussion\nWe could not confirm our hypothesis that addi\ntional immunosuppressive therapy would provide\nsubstantial kidney-related benefits in patients\nwith high-risk IgA nephropathy. Although the\naddition of immunosuppressive therapy to sup\nportive care was superior to supportive care\nalone in inducing remission of proteinuria in a\nproportion of patients, there was no significant\ndifference between the two study groups with\nrespect to the second primary end point of de\ncreasing the rate of fast decreases in the eGFR.\nThese results were achieved with the use of a\npractical trial design that was in accordance\nwith the KDIGO guidelines3 and daily practice\n- namely, withholding immunosuppressive\ntherapy until supportive care had been provided,\nwith increasing doses, for 6 months. In the cur\nrent trial, supportive care was handled in a\nstandardized fashion by the trial investigators.\nSecondary End Point\nSupportive Care\n(N = 80)\nSupportive Care plus\nImmunosuppression\n(N = 82)\nOdds Ratio\n(95% CI)\nP Value\nPatients with\nAvailable Data\nEnd-Point\nValue\nPatients with\nAvailable Data\nEnd-Point\nValue\nno.\nmean \u00b1SD\nor no. (%)\nno.\nmean \u00b1SD\nor no. (%)\nAbsolute eGFR change at 36 mo -\nml/min/1.73 m2\n71\n-4.7\u00b112.3\n72\n-4.2\u00b114.1\nNot determined\n0.32\nMean annual change in the slope of\nthe reciprocal of serum creati\nnine concentration - mg/dl\n77\n-0.02\u00b10.06\n74\n-0.01\u00b10.06\nNot determined\n0.60\nAt 12 mo\n67\n0.80\u00b10.67\n59\n0.57\u00b10.53\nNot determined\n0.01\nAt 36 mo\n64\n0.85\u00b10.66\n59\n0.76\u00b10.90\nNot determined\n0.66\neGFR decrease \u226530 ml/min/1.73 m2\n76\n7 (9)\n78\n10 (13)\n1.45 (0.51-4.10)\n0.49\nOnset of end-stage renal disease\n76\n6 (8)\n78\n6 (8)\n0.97 (0.29-3.22)\n0.96\nDisappearance of microhematuria\n55\u2020\n9 (16)\n57\u2020\n24 (42)\n3.73 (1.52-9.14)\n0.004\n* To convert the values for serum creatinine to micromoles per liter, multiply by 88.4.\n\u2020 A total of 67 patients in the supportive-care group and 74 patients in the immunosuppression group had microhematuria at baseline.\nTable 2. Secondary End Points on the Basis of the Analysis of Available Cases at the End of the Trial Phase.*\nThe New England Journal of Medicine is produced by NEJM Group, a division of the Massachusetts Medical Society.\nDownloaded from nejm.org on September 22, 2026.\n\n[Extracted table 1]\n|Column 1|Column 2|Column 3|Column 4|Column 5|Column 6|Column 7|\n|---|---|---|---|---|---|---|\n|Table 2. Secondary End Points on the Basis of the Analysis of Available Cases at the End of the Trial Phase.*|||||||\n|Supportive Care plus<br>Supportive Care Immunosuppression Odds Ratio<br>Secondary End Point (N = 80) (N = 82) (95% CI) P Value<br>Patients with End-Point Patients with End-Point<br>Available Data Value Available Data Value<br>mean \u00b1SD mean \u00b1SD<br>no. or no. (%) no. or no. (%)|||||||\n|Absolute eGFR change at 36 mo -<br>ml/min/1.73 m2|71|-4.7\u00b112.3|72|-4.2\u00b114.1|Not determined|0.32|\n|Mean annual change in the slope of 77 -0.02\u00b10.06 74 -0.01\u00b10.06 Not determined 0.60<br>the reciprocal of serum creati<br>nine concentration - mg/dl|||||||\n|At 12 mo|67|0.80\u00b10.67|59|0.57\u00b10.53|Not determined|0.01|\n|At 36 mo 64 0.85\u00b10.66 59 0.76\u00b10.90 Not determined 0.66|||||||\n|eGFR decrease \u226530 ml/min/1.73 m2|76|7 (9)|78|10 (13)|1.45 (0.51-4.10)|0.49|\n|Onset of end-stage renal disease 76 6 (8) 78 6 (8) 0.97 (0.29-3.22) 0.96|||||||\n|Disappearance of microhematuria|55\u2020|9 (16)|57\u2020|24 (42)|3.73 (1.52-9.14)|0.004|",
+      "source_id": "source_71269d85e17f954f11bbcc8c5f52b1965fe5975458822e1d128909b495fbc578",
+      "source_version": "sha256:895d0ebe64376ba6971a711d489565a4839cc40a4e59b398f50e59c2e3fd41cb",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    },
+    "fbe78667a87d83337460ff77b545fb2d045460a663f3c070f64a70f495857b9b": {
+      "end": 2064,
+      "end_line": 48,
+      "handle": "eh_fbe78667a87d8333",
+      "identity": "sha256:fbe78667a87d83337460ff77b545fb2d045460a663f3c070f64a70f495857b9b",
+      "kind": "narrative",
+      "page": 47,
+      "quote": "CLINICAL STUDY PROTOCOL\n\nEUDRACT NUMBER: 2007-000871-41\nVERSION 1.0 12.11.2007\n\nPROTOCOL NUMBER: STOP IGAN\nSTOP_IGAN_PR\u00dcFPLAN_12_11_07_V1.DOC\n\nSEITE 44 VON 66\ncase with missing baseline GFR or baseline proteinuria will not be observed, because these\nvalues are essential for central randomisation. Cases, where documentation does not allow\nassessment of treatment success, will be defined as treatment failure with respect to the two\nprimary endpoints (not reaching full clinical remission and GFR loss of more than 15 ml/min).\nSensitivity analysis will be conducted to assess the effect of these substitution rules on the\nresults of the statistical evaluation.\nA subsequent explorative statistical analysis will include the factor sex in the below specified\nstatistical models, to demonstrate possible gender specific efficacy differences.\nThe steering committee may suggest changes in the original statistical evaluation plan e.g.\nreduction of the number of interim analyses. The study group (all physicians) will decide about\nthe acceptance of these changes. However, these decisions will be performed blinded to the\ndata.\n\n10.3.1\nPRIMARY ENDPOINTS\n\nWe will consider two primary endpoints.\n\n10.3.1.1 PRIMARY ENDPOINT \"REACHING FULL CLINICAL REMISSION\"\nDEFINITION\nThe first efficacy endpoint is defined as reaching full clinical remission of the disease. Full\nclinical remission is defined as proteinuria < 0.2 g/d and stable renal function (GFR loss of < 5\nml/min from baseline GFR at the end of the 3 year study period).\nHYPOTHESES\nThe evaluation of the primary endpoint \"reaching full clinical remission\" implies testing the\nhypothesis\n\nH0:\nRemission rates under both therapies are equal,\npIMMUNOSUPPRESSIVE GROUP = pSUPPORTIVE GROUP\nversus\nH1:\nRemission rates under both therapies are different,\npIMMUNOSUPPRESSIVE GROUP \u2260 pSUPPORTIVE GROUP\n\n\nSTATISTICAL EVALUATION\nThe hypotheses will be tested by means of fitting a logistic regression model to the \"full clinical\nremission\" rate. Hereby treatment and the two stratification factors (baseline GFR, baseline",
+      "source_id": "source_b90f0fbde940aa5ddb1e7c2177041c4d4ee36eba98ed97f3076e3d4aef45a015",
+      "source_version": "sha256:ef56df5616f53bfac419e04f663fdbdb1bc6298e29482e1e579a2bb0bc3ac5a0",
+      "start": 0,
+      "start_line": 1,
+      "trial_id": "stop-igan"
+    }
+  },
+  "source_and_guidance_access": [
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/result-account.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 70
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 107
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 107
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 108
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 47
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 160
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 124
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 150
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 151
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 152
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 5,
+            "start_line": 14,
+            "end_line": 47
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 160
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 124
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 150
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 151
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 152
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 10,
+            "start_line": 5,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 152
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.32179380dc684ece987796a4d9ebe540.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.32179380dc684ece987796a4d9ebe540.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.32179380dc684ece987796a4d9ebe540.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "query": "randomisation",
+        "mode": "all",
+        "limit": 4
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "central randomisation",
+            "mode": "phrase",
+            "limit": 3
+          },
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "Pocock",
+            "mode": "all",
+            "limit": 3
+          },
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "compliance",
+            "mode": "all",
+            "limit": 3
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "pages": [
+          97,
+          152,
+          153
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_edbcf44982ef91ce",
+        "pages": [
+          3,
+          6,
+          7
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "domain_id": "domain:randomization"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.39f51e20f06c40d190d79a0832b29d29.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.39f51e20f06c40d190d79a0832b29d29.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.39f51e20f06c40d190d79a0832b29d29.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "domain_id": "domain:deviations"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ba395625d6c74f019d24466b562ffd1b.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ba395625d6c74f019d24466b562ffd1b.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ba395625d6c74f019d24466b562ffd1b.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ba395625d6c74f019d24466b562ffd1b.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.ba395625d6c74f019d24466b562ffd1b.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "query": "deviation",
+        "mode": "prefix",
+        "limit": 5
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "pages": [
+          98,
+          188
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "query": "cross",
+        "mode": "prefix",
+        "limit": 4
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "domain_id": "domain:missing"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.a606b57e5c5e4e17ad125240f001fe84.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/missing.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.a606b57e5c5e4e17ad125240f001fe84.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.a606b57e5c5e4e17ad125240f001fe84.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.a606b57e5c5e4e17ad125240f001fe84.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "query": "imputation",
+        "mode": "prefix",
+        "limit": 10
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/missing.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_71269d85e17f954f",
+        "pages": [
+          4,
+          5
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "domain_id": "domain:measurement"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fa66d140372440099fbb369aaa9c4f2e.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fa66d140372440099fbb369aaa9c4f2e.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fa66d140372440099fbb369aaa9c4f2e.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.fa66d140372440099fbb369aaa9c4f2e.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 11,
+            "start_line": 34,
+            "end_line": 55
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "domain_id": "domain:selection"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b6c8e4fee87343a1b40c2783836dafdc.1"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b6c8e4fee87343a1b40c2783836dafdc.2"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b6c8e4fee87343a1b40c2783836dafdc.3"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b6c8e4fee87343a1b40c2783836dafdc.4"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "get_domain_context",
+      "arguments": {
+        "cursor": "dcp2.b6c8e4fee87343a1b40c2783836dafdc.5"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "pages": [
+          3,
+          133,
+          169
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "blind",
+            "mode": "prefix",
+            "limit": 15
+          },
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "CKD",
+            "mode": "prefix",
+            "limit": 10
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "SKILL.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/measurement.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/selection.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "assessment-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_02a9439a1b7142a8",
+            "page": 1,
+            "start_line": 67,
+            "end_line": 89
+          },
+          {
+            "source_id": "sh_02a9439a1b7142a8",
+            "page": 1,
+            "start_line": 359,
+            "end_line": 360
+          },
+          {
+            "source_id": "sh_02a9439a1b7142a8",
+            "page": 1,
+            "start_line": 365,
+            "end_line": 365
+          },
+          {
+            "source_id": "sh_02a9439a1b7142a8",
+            "page": 1,
+            "start_line": 367,
+            "end_line": 368
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {},
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/codex.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/read-main-report.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/result.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 1,
+            "start_line": 1,
+            "end_line": 70
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 2,
+            "start_line": 1,
+            "end_line": 107
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 3,
+            "start_line": 1,
+            "end_line": 107
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 4,
+            "start_line": 1,
+            "end_line": 108
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 5,
+            "start_line": 1,
+            "end_line": 47
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 160
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 124
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 150
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 151
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 152
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 5,
+            "start_line": 20,
+            "end_line": 47
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 6,
+            "start_line": 1,
+            "end_line": 160
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 7,
+            "start_line": 1,
+            "end_line": 124
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 8,
+            "start_line": 1,
+            "end_line": 150
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 9,
+            "start_line": 1,
+            "end_line": 151
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 10,
+            "start_line": 1,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 152
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 10,
+            "start_line": 13,
+            "end_line": 109
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 11,
+            "start_line": 1,
+            "end_line": 101
+          },
+          {
+            "source_id": "sh_71269d85e17f954f",
+            "page": 12,
+            "start_line": 1,
+            "end_line": 152
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_02a9439a1b7142a8",
+        "pages": [
+          1
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "primary",
+            "mode": "all",
+            "limit": 12
+          },
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "remission",
+            "mode": "all",
+            "limit": 12
+          },
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_edbcf44982ef91ce",
+            "query": "remission",
+            "mode": "all",
+            "limit": 6
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_02a9439a1b7142a8",
+        "pages": [
+          1
+        ],
+        "start_line": 95
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "pages": [
+          1,
+          47,
+          113
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "windows": [
+          {
+            "source_id": "sh_02a9439a1b7142a8",
+            "page": 1,
+            "start_line": 325,
+            "end_line": 370
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "search_sources_batch",
+      "arguments": {
+        "requests": [
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "primary outcome",
+            "mode": "phrase",
+            "limit": 4
+          },
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "9.2.9",
+            "mode": "literal",
+            "limit": 4
+          },
+          {
+            "trial_id": "stop-igan",
+            "source_id": "sh_b90f0fbde940aa5d",
+            "query": "STATISTICAL ANALYSIS PLAN",
+            "mode": "phrase",
+            "limit": 4
+          }
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_71269d85e17f954f",
+        "page": 7
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_71269d85e17f954f",
+        "page": 7
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "pages": [
+          2,
+          3,
+          133,
+          172,
+          173
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_pages",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "pages": [
+          158,
+          159,
+          169,
+          170
+        ]
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "read_guidance",
+      "arguments": {
+        "document": "references/evidence.md"
+      },
+      "status": "completed",
+      "error": null
+    },
+    {
+      "stratum": "proposal-events.jsonl",
+      "tool": "render_page",
+      "arguments": {
+        "trial_id": "stop-igan",
+        "source_id": "sh_b90f0fbde940aa5d",
+        "page": 158
+      },
+      "status": "completed",
+      "error": null
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 69,
+    "tokens": {
+      "input_tokens": 8106317,
+      "cached_input_tokens": 7551232,
+      "output_tokens": 18428,
+      "reasoning_output_tokens": 1160
+    },
+    "dollars": null
+  },
+  "review_focus": "Assess exact target/result matching and source entailment, official interpretation, material mechanisms and warranted uncertainty. Identify material defects with locators; do not score preferred labels.",
+  "raw_seal": "diagnostics/final-medium-verifier-cutover-20261006/cases/stop-igan/scientific-review-seal"
+}

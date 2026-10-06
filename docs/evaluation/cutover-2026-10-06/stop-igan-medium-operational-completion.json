@@ -1,0 +1,58 @@
+{
+  "case": "stop-igan",
+  "runtime_candidate": "7d116f9eea98d3f8aa308c0400d2026f7c64e90d",
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "proposal_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a11007-f006-7292-82e0-436478f1bb2f",
+    "elapsed_seconds": 240.50405951502034,
+    "finalized_batch_observed": false,
+    "initial_sessions": 1,
+    "continuations": 0,
+    "no_operator_science_feedback": true
+  },
+  "assessment_terminal": {
+    "returncode": 0,
+    "reason": null,
+    "session_id": "01a11007-f006-7292-82e0-436478f1bb2f",
+    "elapsed_seconds": 659.9422695940011,
+    "finalized_batch_observed": true,
+    "initial_sessions": 0,
+    "continuations": 1,
+    "no_operator_science_feedback": true
+  },
+  "artifact": "diagnostics/final-medium-verifier-cutover-20261006/cases/stop-igan/workspace-run/.rob2-kit/finalized/7064cbb710277d649be39885fe414b54159ea09cec742e8554f7cdff02e4f131.rob2.zip",
+  "artifact_sha256": "bc939a164ef532327d428dffe41e2c1862c9ca02a63ae610bb6e3b38e00c0812",
+  "product_verifier": true,
+  "standalone_verifier_exit": 0,
+  "source_warrant_review": "pending; structural verification does not certify scientific support",
+  "projection_sha256": "fc7d62607e368db722fc7054f9e186472da178c10d5867119abb8f167ee11bb2",
+  "session_sha256": "5cdb219863b0233d5f05a9a850a40d73ae4faedcddd1f12cf716b440ea129291",
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "unique_observed_usage": {
+    "responses": 69,
+    "tokens": {
+      "input_tokens": 8106317,
+      "cached_input_tokens": 7551232,
+      "output_tokens": 18428,
+      "reasoning_output_tokens": 1160
+    },
+    "dollars": null
+  },
+  "accuracy_gain_claimed": false,
+  "all_attempts_preserved": true
+}
