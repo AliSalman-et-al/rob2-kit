@@ -518,6 +518,66 @@ def test_domain_context_cursor_keeps_snapshot_after_search_changes_evidence(
     ), fresh_candidates["data"]["evidence_workspace"]
 
 
+@pytest.mark.parametrize("domain_id", ["domain:deviations", "domain:missing"])
+def test_stale_submission_restarts_attempted_domain(tmp_path: Path, domain_id: str) -> None:
+    workspace, evidence, _revision = _assessment_workspace(tmp_path)
+    scope = {"trial_id": "trial", "domain_id": domain_id}
+    _call(workspace, "get_domain_context", scope)
+    updated = _call(
+        workspace,
+        "save_working_checkpoint",
+        {
+            "checkpoint": {
+                "trial_id": "trial",
+                "result_account": [
+                    {
+                        "id": "ascertainment",
+                        "aspect": "outcome_ascertainment",
+                        "observation": {
+                            "text": "The selected report supplies the assessment context.",
+                            "sources": [
+                                {
+                                    "source_id": evidence["source_id"],
+                                    "page": 1,
+                                    "start_line": 1,
+                                    "end_line": 1,
+                                }
+                            ],
+                        },
+                    }
+                ],
+            }
+        },
+    )
+    assert updated["outcome"] == "success", updated
+    revision = updated["head"]["state_revision"]
+    before = _state(workspace)
+    blocked = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", domain_id, revision, evidence),
+    )
+    assert blocked["outcome"] == "condition", blocked
+    assert blocked["condition"]["code"] == "domain_context_delivery_stale"
+    action = blocked["head"]["next_action"]
+    assert action["operation"] == "get_domain_context"
+    assert action["trial_id"] == "trial"
+    assert action["domain_id"] == domain_id
+    assert action["cursor"] is None
+    assert blocked["condition"]["recovery"] is None
+    assert _state(workspace) == before
+    assert _call(workspace, "get_status", {})["head"]["next_action"]["domain_id"] == (
+        "domain:randomization"
+    )
+    _call(workspace, action["operation"], scope)
+    saved = _call(
+        workspace,
+        "save_domain_judgment",
+        _domain_draft("trial", domain_id, revision, evidence),
+    )
+    assert saved["outcome"] == "success", saved
+
+
 def test_domain_context_cursor_survives_unrelated_domain_commit(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     scope: dict[str, object] = {"trial_id": "trial", "domain_id": "domain:deviations"}

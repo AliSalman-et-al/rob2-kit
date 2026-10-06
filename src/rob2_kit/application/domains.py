@@ -2803,6 +2803,12 @@ def save_domain_judgment(
                         "changed. Restart get_domain_context before submitting this assessment."
                     ),
                 },
+                continuation={
+                    "operation": "get_domain_context",
+                    "authority": "host",
+                    "trial_id": parsed.trial_id,
+                    "domain_id": parsed.domain_id,
+                },
             )
     if delivery is not None and not bool(delivery.get("complete")):
         next_cursor = delivery.get("next_cursor")
