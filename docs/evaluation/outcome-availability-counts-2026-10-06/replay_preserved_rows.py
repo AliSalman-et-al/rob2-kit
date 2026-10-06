@@ -21,7 +21,7 @@ def digest(value: object) -> str:
     ).hexdigest()
 
 
-def replay(state_root: Path) -> dict:
+def replay(state_root: Path, expected_inventory: Path) -> dict:
     code = subprocess.check_output(["git", "show", f"{BASELINE}:{MODULE}"], text=True)
     namespace = {
         "__name__": "rob2_kit.application._baseline_missing_data",
@@ -38,6 +38,14 @@ def replay(state_root: Path) -> dict:
             "*/cases/*/attempt-02/assessment-terminal-state.json"
         )
     )
+    expected = json.loads(expected_inventory.read_text())
+    expected_paths = {item["path"]: item["state_sha256"] for item in expected["states"]}
+    actual_paths = {
+        str(path.relative_to(state_root)): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in paths
+    }
+    if not expected_paths or actual_paths != expected_paths:
+        raise ValueError("Preserved state inventory or bytes differ from the frozen receipt")
     states, count = [], 0
     for path in paths:
         state = json.loads(path.read_text())
@@ -78,7 +86,10 @@ def replay(state_root: Path) -> dict:
                 "comparisons": comparisons,
             }
         )
+    if len(states) != expected["state_count"] or count != expected["row_count"]:
+        raise ValueError("Preserved state or row counts differ from the frozen receipt")
     return {
+        "expected_inventory_sha256": hashlib.sha256(expected_inventory.read_bytes()).hexdigest(),
         "baseline_commit": BASELINE,
         "baseline_module_sha256": hashlib.sha256(code.encode()).hexdigest(),
         "current_module_sha256": hashlib.sha256(Path(MODULE).read_bytes()).hexdigest(),
@@ -98,8 +109,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--state-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--expected-inventory", type=Path, default=Path(__file__).with_name("preserved-row-replay.json"))
     args = parser.parse_args()
-    receipt = replay(args.state_root)
+    receipt = replay(args.state_root, args.expected_inventory)
     args.output.write_text(json.dumps(receipt, indent=2) + "\n")
     print(
         f"PASS: {receipt['row_count']} rows across {receipt['state_count']} preserved states; "
