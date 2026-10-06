@@ -1,0 +1,63 @@
+{
+  "case": "chua-2022",
+  "order": 6,
+  "freeze_commit": "2a4f9fe3f710e62cf5ac1354ca36fe7645700ce6",
+  "launch": {
+    "command": [
+      "/home/ali/.nvm/versions/node/v24.21.0/bin/codex",
+      "exec",
+      "--strict-config",
+      "--ignore-rules",
+      "--skip-git-repo-check",
+      "-s",
+      "read-only",
+      "-m",
+      "gpt-6.1-sol",
+      "-c",
+      "model_reasoning_effort=\"medium\"",
+      "--json",
+      "-o",
+      "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/chua-2022/proposal-final.txt",
+      "-"
+    ],
+    "cwd": "/home/ali/Documents/Codex/2026-10-02/task-4/rob2-kit/diagnostics/final-medium-verifier-cutover-20261006/cases/chua-2022/workspace-run",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "config_sha256": "cf04632a347bc9f243a8079cbfe03fd4df0893f5fad0f685e2d4098521341d8c",
+    "launcher_sha256": "2317f4192566480f56bc7c7d278fb2afbf69c8e0366bf2f6f5b7a6ea6b9dc285",
+    "manifest_sha256": "7dc1b0f82c14b94617de18c2db6caa572417ee442546e12bd8bb87feb52c796d",
+    "input_sha256": "7ba0a538e3f641d4ded1245e9d642680cef6de0449742027da61bc518f799993",
+    "environment_keys": [
+      "CODEX_HOME",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LC_CTYPE",
+      "LOGNAME",
+      "NO_COLOR",
+      "PATH",
+      "ROB2_WORKSPACE",
+      "SHELL",
+      "TEMP",
+      "TERM",
+      "TMP",
+      "TMPDIR",
+      "USER",
+      "XDG_RUNTIME_DIR"
+    ],
+    "credentials_copied": "Existing authorized credentials into isolated home; contents never logged",
+    "started_at_utc": "2026-10-06T06:44:35.754603+00:00",
+    "ignore_rules": "Suppress ancestor coding instructions; native packaged guidance remains available",
+    "authorized_new_sessions": 1
+  },
+  "actual_profiles": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "active_peer": "beerendonk-1999",
+  "concurrency": 2,
+  "previous_case": "TESTING operationally settled and both verifiers passed",
+  "scientific_results": "Pending; no accuracy gain claimed"
+}
