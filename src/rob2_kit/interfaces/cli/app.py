@@ -23,6 +23,10 @@ def _read_review_acknowledgment(prompt: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    import pymupdf
+
+    # CLI JSON and MCP stdout are protocol streams, not dependency advertisements.
+    pymupdf.no_recommend_layout()
     parser = argparse.ArgumentParser(
         prog="rob2",
         description="RoB 2 workflow and finalized-bundle tools.",

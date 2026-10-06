@@ -53,3 +53,20 @@ def test_actual_stdio_entrypoint_preflight_binds_original_schemas(command, tmp_p
     binding = result["server_binding"]
     assert isinstance(binding, dict)
     assert binding["args"] == [command]
+
+
+@pytest.mark.parametrize("command", ["mcp", "mcp-codex"])
+def test_native_cli_prevents_pdf_recommendation_from_contaminating_stdout(
+    command, monkeypatch, capsys
+):
+    import pymupdf
+
+    from rob2_kit.interfaces.mcp import codex, server
+
+    monkeypatch.setattr(pymupdf, "_recommend_layout", True)
+    monkeypatch.setenv("PYMUPDF_SUGGEST_LAYOUT_ANALYZER", "1")
+    monkeypatch.setattr(pymupdf.importlib.util, "find_spec", lambda name: None)
+    entrypoint = server if command == "mcp" else codex
+    monkeypatch.setattr(entrypoint, "main", pymupdf._warn_layout_once)
+    assert main([command]) == 0
+    assert capsys.readouterr().out == ""
