@@ -158,7 +158,7 @@ _SCIENTIFIC_PACK = {
     "id": "rob2.parallel.assignment",
     "version": "2019.1",
     "result_semantics_version": "rob2-kit.result-semantics.v0.9",
-    "content_hash": "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08",
+    "content_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
     "official_source": {
         "version": "22 August 2019",
         "source_sha256": "A9E9C4FDC4BE2D29B5C0A1A6B828E09F2014A34F6D5C302A532F6153EA0FD670",
@@ -183,6 +183,10 @@ _CONDITIONAL_SCIENTIFIC_PACK = {
     **_SCIENTIFIC_PACK,
     "domain_judgment_contract": _DOMAIN_JUDGMENT_CONTRACT,
     "aggregation_contract": _CONDITIONAL_AGGREGATION_CONTRACT,
+}
+_PRE_BOX9_ORDER_PACK = {
+    **_CONDITIONAL_SCIENTIFIC_PACK,
+    "content_hash": "sha256:0096ab3948d391e476d6d56b4e69f14f416253aa6c210ab0edc4d1b868566f08",
 }
 _PRE_OFFICIAL_CORE_PACK = {
     **_CONDITIONAL_SCIENTIFIC_PACK,
@@ -4911,6 +4915,7 @@ def verify(path: Path) -> tuple[bool, str]:
             if scientific_pack not in (
                 _SCIENTIFIC_PACK,
                 _CONDITIONAL_SCIENTIFIC_PACK,
+                _PRE_BOX9_ORDER_PACK,
                 _PRE_OFFICIAL_CORE_PACK,
                 _PRE_QUALIFICATION_PACK,
                 _PRE_PROBABLE_CHRONOLOGY_PACK,

@@ -2298,9 +2298,8 @@ class DomainAnswer(StrictModel):
     bases: tuple[DomainBasis, ...] = Field(
         min_length=1,
         description=(
-            "Evidence premises for this answer. Definitive yes or no needs direct_support, "
-            "indirect_support, or contradiction; probable answers may also use a limitation, "
-            "valid absence receipt, context, or inference."
+            "Source-bound premises and uncertainty for this answer. Basis roles describe "
+            "provenance; use the complete official guidance to select the answer."
         ),
     )
     missing_data: tuple[MissingDataRow, ...] | None = Field(
@@ -2340,12 +2339,12 @@ class DomainAnswer(StrictModel):
     @model_validator(mode="before")
     @classmethod
     def normalize_limitation_context(cls, value: Any) -> Any:
-        """Move a common nested limitation citation into a non-definitive context basis.
+        """Move a common nested limitation citation into a context basis.
 
         A limitation records what the Sources did not establish. Models sometimes place the
         inspected handle inside that object instead of adding a separate ``context`` basis.
-        Preserve the limitation and make the citation's weaker role explicit before strict
-        validation; definitive answers still require a direct, indirect, or contradictory basis.
+        Preserve the limitation and its citation before strict structural validation.
+        Basis roles do not impose a separate scientific answer standard.
         """
 
         if not isinstance(value, dict) or not isinstance(value.get("bases"), list):

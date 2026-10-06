@@ -311,18 +311,17 @@ Result unavailable.
 ## Domain assessment and revision
 
 The scientific pack contains the fixed five RoB 2 Domains, deterministic question
-activation and judgment logic, the licensed official question guidance, and
-separately attributed rob2-kit operational guidance. The pack retains each
-question's full nested official and operational guidance for authoritative
-assessment and artifact/audit use. `get_domain_context` returns a compact typed
-question-card projection with the full official excerpt and locator plus the
-actionable operational fields needed to answer that question. The receipt's
+activation and judgment logic, and source-bound complete official guidance.
+`get_domain_context` delivers one paginated official core with full question
+elaborations, relevant background and scoped FAQ answers. Recover every page before
+assessment. Question cards provide wording, options, activation, source locators and
+retrieval suggestions; they do not duplicate scientific answering rules. The receipt's
 `pack` object names the exact pack ID, version, and content hash. Each card also
 contains a bounded, typed set of executable query suggestions with compact
 query text, explicit lexical mode, an optional recommended Source role, and purpose.
 Suggestions are maintained retrieval vocabulary and alternatives, not claims
-that a Source uses those words or a mandatory search sequence. Operational guidance
-supplements the official source; it never replaces or impersonates it. In D3,
+that a Source uses those words or a mandatory search sequence. Navigation and
+workflow guidance do not impose additional scientific answer rules. In D3,
 outcome-driven rescue or switching does not establish that endpoint measurements
 were unavailable. Available outcomes excluded from the assignment analysis belong
 to D2; genuinely unobserved measurements require D3 appraisal. A scheduled visit
@@ -555,7 +554,7 @@ There is no automatic application, new canonical ledger or finalization gate; th
 original assessor accepts/rejects findings through ordinary Domain submission.
 See `docs/source-checking.md`. No default paid reviewer stage is enabled.
 
-## Experimental selected-Result reconstruction
+## Optional selected-Result reconstruction
 
 An open Trial's existing working checkpoint may use `result_account` instead of
 its overlapping observation/interpretation/premise/draft collections. Source-linked
@@ -563,9 +562,11 @@ factual steps describe how the selected Result was produced, with counterevidenc
 uncertainty and optional existing participant-flow rows. These rows feed Domain
 context before judgments. Existing Evidence warrants can reference a step identity;
 its original observation and full step are snapshotted without changing source
-scope. Known scope transfers require explicit inference. Changed relied-on steps
+scope. Known scope differences require a rationale for the relevant use as context,
+contradiction or inference, preserving the original scope. Changed relied-on steps
 flag affected answers for reconsideration, never change labels. Historical
-checkpoints and bundles retain their original identities. The route is experimental;
+checkpoints and bundles retain their original identities. The format is supported
+and optional;
 behavioral scientific improvement has not been demonstrated. See ADR0038 and the
 skill's selected-Result reconstruction reference for the host procedure.
 

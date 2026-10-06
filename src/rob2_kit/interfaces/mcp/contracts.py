@@ -2245,17 +2245,6 @@ class ComparisonSlot(PublicModel):
     passages: tuple[ComparisonPassageRef, ...] = ()
 
 
-class ComparisonProposition(PublicModel):
-    """One host-owned scientific seam exposed by a comparison card."""
-
-    question_id: QuestionId
-    name: str = Field(min_length=1)
-    proposition: str = Field(min_length=1)
-    status: Literal["supported", "unknown", "conflicted"] = "unknown"
-    depends_on: tuple[QuestionId, ...] = ()
-    passages: tuple[ComparisonPassageRef, ...] = ()
-
-
 class ComparisonResultScope(PublicModel):
     """Approved assessment target, which can differ from the reported estimate."""
 
@@ -2288,7 +2277,6 @@ class ComparisonCard(PublicModel):
     target_relation: AssessableTargetRelation | None = None
     passage_groups: tuple[ComparisonPassageGroup, ...] = ()
     slots: tuple[ComparisonSlot, ...] = Field(min_length=1)
-    propositions: tuple[ComparisonProposition, ...] = ()
     participant_flow: tuple[ParticipantFlowProjection, ...] = ()
     missing_data: MissingDataReconciliation | None = None
     prompt: str = Field(min_length=1)

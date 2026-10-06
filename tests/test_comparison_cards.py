@@ -79,7 +79,7 @@ def test_deviation_card_exposes_provenance_without_classifying_prose(tmp_path: P
         for passage in group["passages"]
     )
     assert all(group["source_role"] for group in first_card["passage_groups"])
-    assert "do not infer causation" in first_card["prompt"]
+    assert "use the complete official guidance" in first_card["prompt"]
 
 
 def test_missing_data_card_marks_conflicting_typed_counts(tmp_path: Path) -> None:
@@ -223,12 +223,11 @@ def test_selection_comparison_preserves_neutral_method_change_evidence(
     assert {ref["handle"] for ref in card["passage_groups"][0]["passages"]} == {
         value["handle"] for value in catalog.values()
     }
-    assert all(p["status"] == "unknown" for p in card["propositions"])
-    assert not {"answers", "judgment", "expected_answer", "expected_judgment"} & card.keys()
-    assert "unresolved method correspondence" in card["prompt"]
-    premise = next(p for p in card["propositions"] if p["name"] == "plan_applicability")
-    assert "timing and reason" in premise["proposition"]
-    assert "different method label alone" in premise["proposition"]
+    assert (
+        not {"answers", "judgment", "expected_answer", "expected_judgment", "propositions"}
+        & card.keys()
+    )
+    assert "source conflicts" in card["prompt"]
 
 
 def test_result_slot_uses_only_field_bound_passages() -> None:
@@ -316,22 +315,8 @@ def test_card_keeps_reported_completers_distinct_from_randomized_target() -> Non
         assert card["target_relation"] == "narrower"
         assert "definition" not in card["reported_result"]["endpoint"]
         assert "effect_measure" not in card["reported_result"]
-        if domain == "domain:missing":
-            premises = {item["name"]: item for item in card["propositions"]}
-            assert premises["availability"]["status"] == "unknown"
-            assert premises["material_incompleteness"]["status"] == "unknown"
-            assert premises["material_incompleteness"]["question_id"] == (
-                "sq:missing:data-available"
-            )
-            assert premises["material_incompleteness"]["passages"] == []
-        assert (
-            next(
-                p
-                for p in card["propositions"]
-                if p["name"] in {"protocol_inconsistency", "availability", "document_availability"}
-            )["status"]
-            == "unknown"
-        )
+        assert "propositions" not in card
+        assert card["participant_flow"] == []
 
 
 def test_selection_card_keeps_unopened_supplement_and_combined_protocol_navigable() -> None:
@@ -449,95 +434,27 @@ def test_contrast_fixture_is_paired_traceable_and_development_only() -> None:
             )
 
 
-def test_public_domain_cards_pair_endpoint_specific_scientific_contrasts() -> None:
-    pairs_by_domain = {
-        domain_id: {
-            item["pair_id"]: item
-            for item in _comparison_cards(domain_id, {}, {}, [], [])[0]["paired_examples"]
-        }
-        for domain_id in (
-            "domain:deviations",
-            "domain:missing",
-            "domain:measurement",
-            "domain:selection",
-        )
-    }
-    expected_pairs = (
-        ("domain:deviations", "d2-exclusion-rule-and-outcome-availability"),
-        ("domain:missing", "d3-treatment-stop-with-followup-versus-loss"),
-        ("domain:missing", "d3-mitigation-evidence"),
-        ("domain:measurement", "d4-toxicity-visits-by-endpoint"),
-        ("domain:measurement", "d4-safety-window-evidence"),
-        ("domain:selection", "d5-amendment-versus-unblinded-access"),
-        ("domain:selection", "d5-embedded-versus-separate-sap"),
-    )
-    for domain_id, pair_id in expected_pairs:
-        pair = pairs_by_domain[domain_id][pair_id]
-        left = set(pair["left_facts"])
-        right = set(pair["right_facts"])
-        assert len(left ^ right) == 2, pair_id
-        assert pair["changed_premise"]
-        assert pair["reasoning_focus"]
-        assert not {"expected_answer_path", "expected_judgment", "severity"} & pair.keys()
-
-    d4_by_id = pairs_by_domain["domain:measurement"]
-    mortality_pair = d4_by_id["d4-toxicity-visits-by-endpoint"]
-    mortality = " ".join(mortality_pair["left_facts"]).casefold()
-    toxicity = " ".join(mortality_pair["right_facts"]).casefold()
-    for phrase in ("same complete follow-up method", "extra visits"):
-        assert phrase in mortality and phrase in toxicity
-    assert "all-cause mortality" in mortality
-    assert "lab-defined toxicity" in toxicity
-
-    safety_window = d4_by_id["d4-safety-window-evidence"]
-    for facts in (safety_window["left_facts"], safety_window["right_facts"]):
-        joined = " ".join(facts).casefold()
-        assert "median treatment duration" in joined
-        assert "progression-free survival" in joined
-
-    d5_by_id = pairs_by_domain["domain:selection"]
-    amendment = d5_by_id["d5-amendment-versus-unblinded-access"]
-    assert "june 15" in " ".join(amendment["left_facts"]).casefold()
-    assert "july 15" in " ".join(amendment["left_facts"]).casefold()
-    assert "may 15" in " ".join(amendment["right_facts"]).casefold()
-    packaging = d5_by_id["d5-embedded-versus-separate-sap"]
-    assert "appendix 2" in " ".join(packaging["left_facts"]).casefold()
-    assert "separate repository pdf" in " ".join(packaging["right_facts"]).casefold()
-
-
-def test_analysis_rule_context_preserves_conditional_inference() -> None:
-    from copy import deepcopy
-
+def test_comparison_navigation_does_not_add_scientific_dependencies() -> None:
+    from rob2_kit.application.domains import _official_guidance_recovery
     from rob2_kit.interfaces.mcp.contracts import ComparisonCard
+    from rob2_kit.packs import SCIENTIFIC_PACK
 
-    answers = {"sq:deviations:appropriate-analysis": {"answer": "probably_no"}}
-    original = deepcopy(answers)
-    card = _comparison_cards("domain:deviations", {}, answers, [], [])[0]
-    assert answers == original
-    ComparisonCard.model_validate(card)
-    propositions = {p["name"]: p for p in card["propositions"]}
-    rule = propositions["assignment_analysis_rule"]
-    impact = propositions["conditional_analysis_impact"]
-    assert rule["question_id"] == "sq:deviations:appropriate-analysis"
-    assert impact["question_id"] == "sq:deviations:substantial-impact"
-    assert impact["depends_on"] == (rule["question_id"],)
-    assert rule["status"] == impact["status"] == "unknown"
-    assert rule["passages"] == impact["passages"] == []
-    assert "source-stated" in rule["proposition"]
-    assert "host-inferred" in rule["proposition"]
-    assert "conditional" in impact["proposition"]
-    pairs = {p["pair_id"]: p for p in card["paired_examples"]}
-    availability = pairs["d2-exclusion-rule-and-outcome-availability"]
-    assert "90" in availability["left_facts"][0] and "90" in availability["right_facts"][0]
-    assert "unmeasured" in availability["left_facts"][0]
-    assert "measured for all 100" in availability["right_facts"][0]
-    overlap = pairs["d2-exclusion-flow-versus-stated-rule"]
-    assert "not reported" in overlap["left_facts"][0]
-    assert "regardless" in overlap["right_facts"][0]
-    assert "contact is not measurement" in overlap["reasoning_focus"]
-    assert all(
-        not {"expected_answer", "expected_judgment", "severity"} & p.keys() for p in pairs.values()
-    )
+    questions = {q.id: q for q in SCIENTIFIC_PACK.questions}
+    for domain in ("deviations", "missing", "measurement", "selection"):
+        card = _comparison_cards("domain:" + domain, {}, {}, [], [])[0]
+        ComparisonCard.model_validate(card)
+        assert card["slots"]
+        assert not {"propositions", "paired_examples", "answers", "judgment"} & card.keys()
+        core = _official_guidance_recovery("domain:" + domain)
+        assert core["complete"]
+        assert core["sections"]
+    # D5 selection questions stay independent of plan availability; D2 impact
+    # stays conditional on an inappropriate or unknown assignment analysis.
+    for qid in ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"):
+        assert questions[qid].activation.model_dump(mode="json") == {"kind": "always"}
+    assert questions["sq:deviations:substantial-impact"].activation.model_dump(mode="json") != {
+        "kind": "always"
+    }
 
 
 def test_native_completion_preview_and_save_preserve_unknown_observation(tmp_path: Path) -> None:

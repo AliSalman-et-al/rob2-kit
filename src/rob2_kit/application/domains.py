@@ -743,95 +743,6 @@ def _comparison_cards(
     if domain_id not in question_by_domain:
         return []
 
-    proposition_specs = {
-        "domain:deviations": (
-            ("sq:deviations:context-deviations", "protocol_inconsistency", ()),
-            (
-                "sq:deviations:context-deviations",
-                "trial_context_cause",
-                ("sq:deviations:context-deviations",),
-            ),
-            (
-                "sq:deviations:affected-outcome",
-                "outcome_pathway",
-                ("sq:deviations:context-deviations",),
-            ),
-            (
-                "sq:deviations:balanced",
-                "group_balance",
-                ("sq:deviations:context-deviations", "sq:deviations:affected-outcome"),
-            ),
-            ("sq:deviations:appropriate-analysis", "assignment_analysis_rule", ()),
-            (
-                "sq:deviations:substantial-impact",
-                "conditional_analysis_impact",
-                ("sq:deviations:appropriate-analysis",),
-            ),
-        ),
-        "domain:missing": (
-            ("sq:missing:data-available", "availability", ()),
-            ("sq:missing:data-available", "material_incompleteness", ()),
-            ("sq:missing:evidence-unbiased", "mitigation", ("sq:missing:data-available",)),
-            (
-                "sq:missing:true-value-dependent",
-                "possible_dependence",
-                ("sq:missing:evidence-unbiased",),
-            ),
-            (
-                "sq:missing:likely-dependent",
-                "likely_dependence",
-                ("sq:missing:true-value-dependent",),
-            ),
-        ),
-        "domain:measurement": (
-            ("sq:measurement:method-inappropriate", "suitability", ()),
-            ("sq:measurement:differential", "differential_detection", ()),
-            ("sq:measurement:assessor-aware", "assessor_awareness", ()),
-            (
-                "sq:measurement:influence-possible",
-                "susceptibility",
-                ("sq:measurement:assessor-aware",),
-            ),
-            (
-                "sq:measurement:influence-likely",
-                "likely_influence",
-                ("sq:measurement:influence-possible",),
-            ),
-        ),
-        "domain:selection": (
-            ("sq:selection:prespecified-analysis", "document_availability", ()),
-            (
-                "sq:selection:prespecified-analysis",
-                "plan_applicability",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:prespecified-analysis",
-                "chronology",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:multiple-measurements",
-                "eligible_measurements",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:multiple-analyses",
-                "eligible_analyses",
-                ("sq:selection:prespecified-analysis",),
-            ),
-            (
-                "sq:selection:multiple-measurements",
-                "measurement_selection",
-                ("sq:selection:multiple-measurements",),
-            ),
-            (
-                "sq:selection:multiple-analyses",
-                "results_based_selection",
-                ("sq:selection:multiple-measurements", "sq:selection:multiple-analyses"),
-            ),
-        ),
-    }
     refs = []
     for item in catalog.values():
         if not isinstance(item, dict) or item.get("kind") != "narrative":
@@ -1110,23 +1021,6 @@ def _comparison_cards(
             "effect_measure": target["intended_effect_measure"],
         }
 
-    proposition_rows = []
-    for question_id, name, depends_on in proposition_specs[domain_id]:
-        proposition_rows.append(
-            {
-                "question_id": question_id,
-                "name": name,
-                "proposition": next(
-                    question.wording
-                    for question in SCIENTIFIC_PACK.questions
-                    if question.id == question_id
-                ),
-                "status": "unknown",
-                "depends_on": depends_on,
-                "passages": [],
-            }
-        )
-
     # A row-backed count establishes a quantitative premise, not an answer.
     # Expose every stage so the host cannot silently substitute analysis or
     # event membership for outcome availability.
@@ -1264,24 +1158,6 @@ def _comparison_cards(
                     }
                 )
 
-    # Counts expose the availability inputs but never establish the scientific
-    # proposition that data were available for all or nearly all participants.
-    # Even 10 observed of 100 randomized needs a host judgement, while an
-    # analyzed-only or event-only row says nothing about ascertainment.
-    if participant_flow:
-        availability = next(
-            (item for item in proposition_rows if item["name"] == "availability"), None
-        )
-        if availability is not None:
-            availability["status"] = (
-                "conflicted"
-                if any(
-                    item["kind"] in {"randomized", "observed"} and item["status"] == "conflicted"
-                    for item in participant_flow
-                )
-                else "unknown"
-            )
-
     card_id = _identity(
         {
             "version": "rob2-kit.comparison-card.v0.6",
@@ -1302,7 +1178,6 @@ def _comparison_cards(
             "target_relation": result.get("relation"),
             "passage_groups": passage_groups,
             "slots": slots,
-            "propositions": proposition_rows,
             "participant_flow": participant_flow,
             "missing_data": missing_data,
             "prompt": (

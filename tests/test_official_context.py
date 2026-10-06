@@ -120,3 +120,38 @@ def test_preserved_previous_pack_view_recovers_without_schema_failure(tmp_path: 
             ).fetchone()[0]
             == historical_bytes
         )
+
+
+def test_box9_continuation_preserves_words_and_reading_order() -> None:
+    capture = json.loads(
+        Path("tests/fixtures/official-guidance-audit-2019/background.json").read_text()
+    )
+    original49, original50 = capture["original_box9_page_captures"]
+    joined, remaining = capture["sections"][2:4]
+    tail = original50["text"][original50["text"].index("complexity. Furthermore,") :]
+    assert joined["text"] == original49["text"].rstrip() + " " + tail
+    assert remaining["text"] + tail == original50["text"]
+    assert "substantial complexity." in joined["normalized_excerpt"]
+    assert "Consideration of risk of bias in this domain depends on" not in tail
+
+
+def test_runtime_profiler_reassembles_the_same_official_core() -> None:
+    from scripts.profile_domain_context_delivery import _reconstruct
+
+    core = json.loads(json.dumps(_official_guidance_recovery("domain:selection")))
+    pages = {}
+    for index, section in enumerate(core["sections"]):
+        pages[index] = {
+            "data": {
+                "context_page": {"index": index, "section": "official_guidance"},
+                "official_guidance": {
+                    "pack": core["pack"],
+                    "sections": [section],
+                    "complete": False,
+                    "next_cursor": "next",
+                },
+            }
+        }
+    recovered = _reconstruct(pages)
+    assert recovered is not None
+    assert recovered["official_guidance"] == core

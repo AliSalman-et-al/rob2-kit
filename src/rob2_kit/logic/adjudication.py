@@ -23,7 +23,8 @@ def adjudication_context_header_bytes(context: dict[str, Any], record: dict[str,
     header = {
         key: value
         for key, value in context.items()
-        if key not in {"primary_report", "questions", "evidence", "comparison_cards"}
+        if key
+        not in {"primary_report", "questions", "official_guidance", "evidence", "comparison_cards"}
     }
     header.update(decision=record["decision"], current_checkpoint=record["identity"])
     envelope = {"content": [], "structured_content": header}

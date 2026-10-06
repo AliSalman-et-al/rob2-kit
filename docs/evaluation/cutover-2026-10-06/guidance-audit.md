@@ -36,3 +36,18 @@ Final preparation must disclose pages without extracted text and retain native
 visual recovery; this failure does not justify excluding or replacing the case.
 
 Fresh installed-wheel verification passed on the integrated core; see `package-audit-receipt.json`. Current-source focused checks passed (4 tests, 16.34s). The clean final full regression and independent current-version source/prose closure are still pending.
+
+Review follow-up: Box 9's physical page 50 continuation is now joined directly to
+its page 49 ending; both original page captures remain verbatim in the fixture.
+Legacy comparison propositions and their additional dependencies are removed;
+actual official question activation and all factual navigation remain. The runtime
+profiler reconstructs the paginated official core, and adjudication reserves header
+space only for indivisible fields. Retired basis-role certainty prose is removed
+from schema, evidence reference and normalization documentation.
+
+MONALEESA preparation recovery passed the unchanged coverage checker using 598
+actual text windows and one native source-bound image for physical page 180. The
+original failed manifest and captured source bytes are preserved; no workflow state
+or reading receipt changed. This is technical coverage evidence, not a semantic
+completeness claim. The generic preparation helper also distinguishes a physically
+blank page from an image-only page without asserting either interpretation.

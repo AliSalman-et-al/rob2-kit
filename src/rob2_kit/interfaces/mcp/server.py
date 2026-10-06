@@ -4566,7 +4566,8 @@ def save_domain_judgment(
                 "Complete answers for the current Domain path. Every active answer requires a "
                 "nonblank justification, an unknowns array, and a counterevidence array whose "
                 "evidence values are selected Evidence handles; no array indexes are needed. "
-                "Submit only answers on the active path, with all reasoning fields explicit."
+                "Provide reasoning for active answers. Valid inactive answers are accepted "
+                "and ignored."
             ),
             examples=[[_DOMAIN_ANSWER_EXAMPLE]],
         ),

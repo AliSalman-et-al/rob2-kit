@@ -75,10 +75,10 @@ def test_fixed_pack_inputs_add_current_reference_and_question_context() -> None:
     assert "Outcome measurement or detection could differ between groups." in prompts["C-53"]
     assert "Current Domain reference guidance" in prompts["C-31"]
     assert "Current Domain reference guidance" in prompts["C-53"]
-    assert "When a passage discusses several outcomes" in prompts["C-53"]
-    assert "If the Source does not state the window or monitoring schedule" in " ".join(
-        prompts["C-53"].split()
-    )
+    assert "complete official Box 10 elaborations" in prompts["C-53"]
+    reference = Path("src/rob2_kit/skills/rob2-assess/references/measurement.md").read_text()
+    assert reference.rstrip() in prompts["C-53"]
+    assert "Preserve which actor, arm, period and endpoint" in prompts["C-53"]
     assert any(Path(path).name == "measurement.md" for path in hashes)
     assert fixture["model_inputs"][0]["model_input"].count("Current Domain reference") == 0
     assert {item["pair_id"] for item in guided["evaluator_key"]["contrasts"]} == {

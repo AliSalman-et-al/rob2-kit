@@ -490,12 +490,12 @@ def _review_domain_findings(
         if isinstance(premise_checkpoint, dict):
             domain_premises = tuple(
                 item
-                for item in premise_checkpoint.get("premise_records", ())
+                for item in (premise_checkpoint.get("premise_records") or ())
                 if isinstance(item, dict) and item.get("domain_id") == domain.id
             )
             unread_ranges = tuple(
                 item
-                for item in premise_checkpoint.get("unread_ranges", ())
+                for item in (premise_checkpoint.get("unread_ranges") or ())
                 if isinstance(item, dict)
             )
         if investigation is not None and investigation.get("stale"):

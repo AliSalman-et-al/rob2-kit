@@ -41,9 +41,7 @@ def _content_metrics(result: dict[str, Any], response: dict[str, Any]) -> dict[s
     content = result.get("content")
     parts = content if isinstance(content, list) else []
     text_parts = [
-        part
-        for part in parts
-        if isinstance(part, dict) and isinstance(part.get("text"), str)
+        part for part in parts if isinstance(part, dict) and isinstance(part.get("text"), str)
     ]
     exact_text_copies = 0
     for part in text_parts:
@@ -107,6 +105,18 @@ def _reconstruct(pages: dict[int, dict[str, Any]]) -> dict[str, Any] | None:
             *reconstructed.get(section, []),
             *data.get(section, []),
         ]
+    cores = [
+        pages[index]["data"]["official_guidance"]
+        for index in sorted(pages)
+        if pages[index]["data"].get("official_guidance")
+    ]
+    if cores:
+        reconstructed["official_guidance"] = {
+            "pack": cores[0]["pack"],
+            "sections": [section for core in cores for section in core["sections"]],
+            "complete": True,
+            "next_cursor": None,
+        }
     reconstructed.pop("context_page", None)
     return reconstructed
 
@@ -205,17 +215,16 @@ def profile_run(run_dir: Path) -> dict[str, Any]:
             else None
         )
         reconstructed_digest = (
-            hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-            if canonical is not None
-            else None
+            hashlib.sha256(canonical.encode("utf-8")).hexdigest() if canonical is not None else None
         )
         questions = reconstructed.get("questions", []) if reconstructed else []
         evidence = reconstructed.get("evidence", []) if reconstructed else []
         comparison_cards = reconstructed.get("comparison_cards", []) if reconstructed else []
         result_bytes = (
             len(
-                json.dumps(reconstructed["result"], ensure_ascii=False, separators=(",", ":"))
-                .encode("utf-8")
+                json.dumps(
+                    reconstructed["result"], ensure_ascii=False, separators=(",", ":")
+                ).encode("utf-8")
             )
             if reconstructed and "result" in reconstructed
             else 0

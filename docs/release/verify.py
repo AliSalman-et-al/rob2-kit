@@ -153,7 +153,6 @@ def _verify_packaged_skill(skill: str, reference: str) -> None:
             marker in asset
             for marker in (
                 "official",
-                "official",
                 "counterevidence",
                 "missing_data",
             )

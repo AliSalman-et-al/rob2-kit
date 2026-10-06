@@ -43,6 +43,7 @@ def test_question_options_dependencies_and_wording_are_unchanged() -> None:
 def test_native_context_preserves_both_sides_of_official_qualifications(tmp_path: Path) -> None:
     workspace, evidence, revision = _assessment_workspace(tmp_path)
     cards: dict[str, Any] = {}
+    official: dict[str, str] = {}
     for domain in ["randomization", "deviations", "missing", "measurement"]:
         domain_id = "domain:" + domain
         context = _call(
@@ -50,6 +51,13 @@ def test_native_context_preserves_both_sides_of_official_qualifications(tmp_path
         )
         assert context["outcome"] == "success"
         cards.update({card["id"]: card for card in context["data"]["questions"]})
+        official.update(
+            {
+                qid: section["excerpt"]
+                for section in context["data"]["official_guidance"]["sections"]
+                for qid in section["question_ids"]
+            }
+        )
         if domain != "measurement":
             saved = _call(
                 workspace,
@@ -59,36 +67,26 @@ def test_native_context_preserves_both_sides_of_official_qualifications(tmp_path
             assert saved["outcome"] == "success"
             revision = int(saved["head"]["state_revision"])
 
-    sequence = cards["sq:randomization:sequence"]
-    # Circumstantial inference versus genuinely uninformative reporting; general
-    # minimization inference versus an explicitly predictable/nonrandom method.
-    assert "experienced clinical trials unit" in sequence["official_guidance"]
-    assert "trial circumstances" in sequence["no_information_rule"]
-    assert "no random element was used" in sequence["official_guidance"]
-    assert "should generally be considered to be random" in sequence["official_guidance"]
-    assert not any("when it includes" in item for item in sequence["considerations"])
+    sequence = official["sq:randomization:sequence"]
+    assert "experienced clinical trials unit" in sequence
+    assert "no random element was used" in sequence
+    assert "should generally be considered to be random" in sequence
 
-    mitigation = cards["sq:missing:evidence-unbiased"]
-    # Plausible-range reassurance can address unknown missingness; an imputation
-    # label alone still does not establish correction of bias.
-    assert "range of plausible assumptions" in mitigation["official_guidance"]
-    assert "must match the documented" not in mitigation["decision_rule"]
-    assert not any(
-        "documented missingness mechanism" in item for item in mitigation["considerations"]
-    )
-    assert "multiple imputation based only on intervention group" in mitigation["official_guidance"]
-    assert "no_information" not in mitigation["options"]
+    mitigation = official["sq:missing:evidence-unbiased"]
+    assert "range of plausible assumptions" in mitigation
+    assert "multiple imputation based only on intervention group" in mitigation
+    assert "no_information" not in cards["sq:missing:evidence-unbiased"]["options"]
 
-    influence = cards["sq:measurement:influence-possible"]
-    # Observer-reported outcomes without judgement versus participant/observer
-    # judgement outcomes; no logical-impossibility test replaces the source rule.
-    assert "all-cause mortality" in influence["official_guidance"]
-    assert "participant-reported outcomes" in influence["official_guidance"]
-    no_anchor = next(a["text"] for a in influence["answer_anchors"] if a["answer"] == "no")
-    assert "unlikely" in no_anchor
-    assert "could not" not in no_anchor
-    assert influence["activation"] == next(
+    influence = official["sq:measurement:influence-possible"]
+    assert "all-cause mortality" in influence
+    assert "participant-reported outcomes" in influence
+    card = cards["sq:measurement:influence-possible"]
+    assert card["activation"] == next(
         q.activation.model_dump(mode="json")
         for q in SCIENTIFIC_PACK.questions
-        if q.id == influence["id"]
+        if q.id == card["id"]
+    )
+    assert all(
+        not {"decision_rule", "answer_anchors", "official_guidance"} & c.keys()
+        for c in cards.values()
     )
