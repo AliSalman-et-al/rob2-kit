@@ -1,0 +1,14 @@
+{
+  "candidate_code_commit": "3bdd55e8c3ee22c8c23d19c5ba9e87b52c12627c",
+  "status": "fresh installed release verification passed",
+  "wheel": ".release-dist/wheel-vu9zh3ir/rob2_kit-0.11.0-py3-none-any.whl",
+  "bytes": 462037,
+  "sha256": "0fc6707fc1821569d5037b7652c67964431cff03c294a5a2098d6b0428eb1d9a",
+  "scientific_pack_hash": "sha256:4eb71d7745950353cbe13b4a4fa9a2213f797097110d038b0b40a29e39a9cab8",
+  "scope": "Normal installed release verifier passed all five complete official Domain projections; verifier-only runtime delta. Reviewer closure and corrected-head aggregate remain pending. No new paid case launched under this version.",
+  "log_sha256": "697bc6c1a7fb9f9f776e9d611a66b5bfa33e0d411f25c3c9cfd916038bd6b314",
+  "previous_installed_candidate": {
+    "checkpoint": "98f3ea71902e45b81d7a8b4b1cd5e6197e416373",
+    "sha256": "8c03c605ad2c34f9605cd050af882cf665f14ffdde2cfbc1d9e7860e8491325c"
+  }
+}
